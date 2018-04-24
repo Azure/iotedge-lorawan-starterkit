@@ -1,1 +1,3 @@
-# AzureIoT_LoRaWan_StarterKit
+# LoRa Payload Decoder
+
+Pluggable decoders for device data received from LoRa.
