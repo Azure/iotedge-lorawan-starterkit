@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2037
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRaWan.NetworkServer", "LoRaWan.NetworkServer\LoRaWan.NetworkServer.csproj", "{3567DA75-0971-467E-9F29-EB1ADFEA9381}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.NetworkServer", "LoRaWan.NetworkServer\LoRaWan.NetworkServer.csproj", "{3567DA75-0971-467E-9F29-EB1ADFEA9381}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{46CFFE97-CD8C-4CEE-9881-ABE147D8CE18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CmdWrapper", "CmdWrapper\CmdWrapper.csproj", "{D40199A3-5BEB-40E8-B13E-F3250A807FBC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CmdWrapper", "CmdWrapper\CmdWrapper.csproj", "{D40199A3-5BEB-40E8-B13E-F3250A807FBC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkSrvModule", "LoRaWanNetworkSrvModule\LoRaWanNetworkSrvModule.csproj", "{2C9DC203-E201-4C6D-8357-E1676DCB358D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,6 +25,10 @@ Global
 		{D40199A3-5BEB-40E8-B13E-F3250A807FBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D40199A3-5BEB-40E8-B13E-F3250A807FBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D40199A3-5BEB-40E8-B13E-F3250A807FBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C9DC203-E201-4C6D-8357-E1676DCB358D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C9DC203-E201-4C6D-8357-E1676DCB358D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C9DC203-E201-4C6D-8357-E1676DCB358D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C9DC203-E201-4C6D-8357-E1676DCB358D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,18 +38,5 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}
-	EndGlobalSection
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://mandurledur.visualstudio.com/
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = LoRaWan.NetworkServer\\LoRaWan.NetworkServer.csproj
-		SccProjectName1 = LoRaWan.NetworkServer
-		SccLocalPath1 = LoRaWan.NetworkServer
-		SccProjectUniqueName2 = CmdWrapper\\CmdWrapper.csproj
-		SccProjectTopLevelParentUniqueName2 = LoRaWan.NetworkServer.sln
-		SccProjectName2 = CmdWrapper
-		SccLocalPath2 = CmdWrapper
 	EndGlobalSection
 EndGlobal
