@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.NetworkServer", "LoRaWan.NetworkServer\LoRaWan.NetworkServer.csproj", "{E7F85C7C-EB2E-4B38-9DC2-2957FEF5E78C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkSrvModule", "LoRaWanNetworkSrvModule\LoRaWanNetworkSrvModule.csproj", "{A0391B57-5A0F-482B-8FF1-0F96335CB182}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevTools", "DevTools", "{B1840F87-8C3F-4A48-942B-E7FEACF21414}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkSrvCmdWrapper", "DevTools\LorRaWanNetworkSrvCmdWrapper\LoRaWanNetworkSrvCmdWrapper.csproj", "{ACF77456-2DD5-471A-9C05-2241FEC432D4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A0391B57-5A0F-482B-8FF1-0F96335CB182} = {A0391B57-5A0F-482B-8FF1-0F96335CB182}
+		{E7F85C7C-EB2E-4B38-9DC2-2957FEF5E78C} = {E7F85C7C-EB2E-4B38-9DC2-2957FEF5E78C}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E7F85C7C-EB2E-4B38-9DC2-2957FEF5E78C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7F85C7C-EB2E-4B38-9DC2-2957FEF5E78C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7F85C7C-EB2E-4B38-9DC2-2957FEF5E78C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7F85C7C-EB2E-4B38-9DC2-2957FEF5E78C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0391B57-5A0F-482B-8FF1-0F96335CB182}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0391B57-5A0F-482B-8FF1-0F96335CB182}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0391B57-5A0F-482B-8FF1-0F96335CB182}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0391B57-5A0F-482B-8FF1-0F96335CB182}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACF77456-2DD5-471A-9C05-2241FEC432D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACF77456-2DD5-471A-9C05-2241FEC432D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACF77456-2DD5-471A-9C05-2241FEC432D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACF77456-2DD5-471A-9C05-2241FEC432D4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{ACF77456-2DD5-471A-9C05-2241FEC432D4} = {B1840F87-8C3F-4A48-942B-E7FEACF21414}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}
+	EndGlobalSection
+EndGlobal
