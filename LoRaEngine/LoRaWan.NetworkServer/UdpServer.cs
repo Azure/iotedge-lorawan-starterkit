@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
                 {
                     UdpReceiveResult receivedResults = await udpClient.ReceiveAsync();
                     MessageProcessor messageProcessor = new MessageProcessor();
-                    Task.Run(() => messageProcessor.processMessage(receivedResults.Buffer));
+                    await messageProcessor.processMessage(receivedResults.Buffer);
                 }
             }
         }

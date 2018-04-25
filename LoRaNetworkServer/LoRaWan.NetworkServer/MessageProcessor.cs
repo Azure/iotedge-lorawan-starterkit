@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer
 {
     public class MessageProcessor
     {
         const int msgPreambSize = 12;
-        public void processMessage(byte[] message)
+        public async Task processMessage(byte[] message)
         {
             //Decode message
             byte[] preamb = new byte[msgPreambSize];
@@ -27,6 +28,8 @@ namespace LoRaWan.NetworkServer
                 foreach (var val in vals)
                 {
                     Console.WriteLine(val);
+                    IoTHubSender sender = new IoTHubSender();
+                    await sender.sendMessage((string)val);
                 }
             }
         }
