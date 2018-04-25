@@ -17,6 +17,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkSrvCmdWrapper
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PacketForwarderSimulator", "DevTools\PacketForwarderSimulator\PacketForwarderSimulator.csproj", "{86B181A1-1AFE-435F-BF9A-A17327EE53FB}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaTools", "LoraTools\LoRaTools.csproj", "{C67E2C36-24B0-422B-955E-2A4CCEE18AE5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanManagerTest", "DevTools\LoRaWanManagerTest\LoRaWanManagerTest.csproj", "{0BF074D1-69DB-433A-9348-7D5E31529411}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{86B181A1-1AFE-435F-BF9A-A17327EE53FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86B181A1-1AFE-435F-BF9A-A17327EE53FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86B181A1-1AFE-435F-BF9A-A17327EE53FB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C67E2C36-24B0-422B-955E-2A4CCEE18AE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C67E2C36-24B0-422B-955E-2A4CCEE18AE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C67E2C36-24B0-422B-955E-2A4CCEE18AE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C67E2C36-24B0-422B-955E-2A4CCEE18AE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BF074D1-69DB-433A-9348-7D5E31529411}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BF074D1-69DB-433A-9348-7D5E31529411}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BF074D1-69DB-433A-9348-7D5E31529411}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BF074D1-69DB-433A-9348-7D5E31529411}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,6 +58,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{ACF77456-2DD5-471A-9C05-2241FEC432D4} = {B1840F87-8C3F-4A48-942B-E7FEACF21414}
 		{86B181A1-1AFE-435F-BF9A-A17327EE53FB} = {B1840F87-8C3F-4A48-942B-E7FEACF21414}
+		{0BF074D1-69DB-433A-9348-7D5E31529411} = {B1840F87-8C3F-4A48-942B-E7FEACF21414}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}
