@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkSrvCmdWrapper
 		{E7F85C7C-EB2E-4B38-9DC2-2957FEF5E78C} = {E7F85C7C-EB2E-4B38-9DC2-2957FEF5E78C}
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PacketForwarderSimulator", "DevTools\PacketForwarderSimulator\PacketForwarderSimulator.csproj", "{86B181A1-1AFE-435F-BF9A-A17327EE53FB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,12 +35,17 @@ Global
 		{ACF77456-2DD5-471A-9C05-2241FEC432D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACF77456-2DD5-471A-9C05-2241FEC432D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACF77456-2DD5-471A-9C05-2241FEC432D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86B181A1-1AFE-435F-BF9A-A17327EE53FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86B181A1-1AFE-435F-BF9A-A17327EE53FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86B181A1-1AFE-435F-BF9A-A17327EE53FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86B181A1-1AFE-435F-BF9A-A17327EE53FB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{ACF77456-2DD5-471A-9C05-2241FEC432D4} = {B1840F87-8C3F-4A48-942B-E7FEACF21414}
+		{86B181A1-1AFE-435F-BF9A-A17327EE53FB} = {B1840F87-8C3F-4A48-942B-E7FEACF21414}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}
