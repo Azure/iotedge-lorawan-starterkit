@@ -9,20 +9,19 @@ namespace LoRaWanNetworkSrvModule
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using Microsoft.Azure.Devices.Client;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
     class Program
     {
+        static Task udpServerTask = null;
         static void Main(string[] args)
         {
             // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
-            string connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
+            //string connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
 
             // Cert verification is not yet fully functional when using Windows OS for the container
             bool bypassCertVerification = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             if (!bypassCertVerification) InstallCert();
-            Init(connectionString, bypassCertVerification).Wait();
+            Init();
 
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
@@ -71,60 +70,10 @@ namespace LoRaWanNetworkSrvModule
         /// Initializes the DeviceClient and sets up the callback to receive
         /// messages containing temperature information
         /// </summary>
-        static async Task Init(string connectionString, bool bypassCertVerification = false)
+        static void Init()
         {
             UdpServer udpServer = new UdpServer();
-            await udpServer.RunServer();
-
-            //Console.WriteLine("Connection String {0}", connectionString);
-
-            //MqttTransportSettings mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
-            //// During dev you might want to bypass the cert verification. It is highly recommended to verify certs systematically in production
-            //if (bypassCertVerification)
-            //{
-            //    mqttSetting.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
-            //}
-            //ITransportSettings[] settings = { mqttSetting };
-
-            //// Open a connection to the Edge runtime
-            //DeviceClient ioTHubModuleClient = DeviceClient.CreateFromConnectionString(connectionString, settings);
-            //await ioTHubModuleClient.OpenAsync();
-            //Console.WriteLine("IoT Hub module client initialized.");
-
-            //// Register callback to be called when a message is received by the module
-            //await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
+            udpServerTask = udpServer.RunServer();
         }
-
-        /// <summary>
-        /// This method is called whenever the module is sent a message from the EdgeHub. 
-        /// It just pipe the messages without any change.
-        /// It prints all the incoming messages.
-        /// </summary>
-        //static async Task<MessageResponse> PipeMessage(Message message, object userContext)
-        //{
-        //    int counterValue = Interlocked.Increment(ref counter);
-
-        //    var deviceClient = userContext as DeviceClient;
-        //    if (deviceClient == null)
-        //    {
-        //        throw new InvalidOperationException("UserContext doesn't contain " + "expected values");
-        //    }
-
-        //    byte[] messageBytes = message.GetBytes();
-        //    string messageString = Encoding.UTF8.GetString(messageBytes);
-        //    Console.WriteLine($"Received message: {counterValue}, Body: [{messageString}]");
-
-        //    if (!string.IsNullOrEmpty(messageString))
-        //    {
-        //        var pipeMessage = new Message(messageBytes);
-        //        foreach (var prop in message.Properties)
-        //        {
-        //            pipeMessage.Properties.Add(prop.Key, prop.Value);
-        //        }
-        //        await deviceClient.SendEventAsync("output1", pipeMessage);
-        //        Console.WriteLine("Received message sent");
-        //    }
-        //    return MessageResponse.Completed;
-        //}
     }
 }
