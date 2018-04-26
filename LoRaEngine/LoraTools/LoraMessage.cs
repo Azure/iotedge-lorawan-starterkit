@@ -127,12 +127,21 @@ namespace PacketManager
         public string rawB64data { get; set; }
         public string devAddr { get; set; }
         public string decodedData { get; set; }
+        public bool processed { get; set; }
 
         public LoRaMetada(byte[] input)
         {
             gatewayMacAddress= input.Skip(4).Take(6).ToArray();
             var c = BitConverter.ToString(gatewayMacAddress);
             var payload =Encoding.Default.GetString(input.Skip(12).ToArray());
+            if (payload.Count()==0)
+            {
+                processed = false;
+                return;
+            }
+            else
+                processed = true;
+            
             fullPayload= JObject.Parse(payload);
             rawB64data = Convert.ToString(fullPayload.rxpk[0].data);
 
@@ -157,8 +166,9 @@ namespace PacketManager
         public LoRaMessage(byte[] inputMessage)
         {
             lorametadata = new LoRaMetada(inputMessage);
-            //set up the parts of the raw message           
-            payloadMessage = new LoRaPayloadMessage(Convert.FromBase64String(lorametadata.rawB64data));
+            //set up the parts of the raw message 
+            if(lorametadata.processed)
+                payloadMessage = new LoRaPayloadMessage(Convert.FromBase64String(lorametadata.rawB64data));
 
         }
 
