@@ -175,7 +175,7 @@ namespace PacketManager
         /// <summary>
         /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py
         /// </summary>
-        public string DecryptPayload(string appSkey)
+        public byte[] DecryptPayload(string appSkey)
         {
             AesEngine aesEngine = new AesEngine();
             aesEngine.Init(true, new KeyParameter(StringToByteArray(appSkey)));
@@ -211,7 +211,7 @@ namespace PacketManager
                 }
             }
             this.lorametadata.decodedData = Encoding.Default.GetString(decrypted);
-            return Encoding.Default.GetString(decrypted);
+            return decrypted;
         }
 
         private byte[] StringToByteArray(string hex)
