@@ -19,6 +19,7 @@ namespace Simulator
         //Original IP: 10.0.28.34
         static void Main(string[] args)
         {
+            Console.WriteLine("Simulator starting now. Press 'Enter' to generate message.");
             while (true)
             {
                 byte[] leadingByte = StringToByteArray("0205DB00AA555A0000000101");

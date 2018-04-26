@@ -72,8 +72,16 @@ namespace LoRaWanNetworkSrvModule
         /// </summary>
         static void Init()
         {
-            UdpServer udpServer = new UdpServer();
-            udpServerTask = udpServer.RunServer();
+            try
+            {
+                Console.WriteLine("Starting UDP listener...");
+                UdpServer udpServer = new UdpServer();
+                udpServerTask = udpServer.RunServer();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Initialization failed with error: {ex.Message}");
+            }
         }
     }
 }
