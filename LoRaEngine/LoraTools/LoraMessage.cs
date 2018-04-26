@@ -54,6 +54,7 @@ namespace PacketManager
         /// get message direction
         /// </summary>
         public int direction;
+        public bool processed;
 
 
         /// <param name="inputMessage"></param>
@@ -65,6 +66,15 @@ namespace PacketManager
             Array.Copy(inputMessage, 0, mhdr, 0, 1);
             this.mhdr = mhdr;
             //get direction
+            var checkDir=(mhdr[0] >> 5);
+            //in this case the payload is not downlink of our type
+
+            if (checkDir != 2)
+            {
+                processed = false;
+                return;
+            }
+            processed = true;
             direction = (mhdr[0] & (1 << 6 - 1));
 
             //get the address
@@ -105,9 +115,6 @@ namespace PacketManager
             byte[] mic = new byte[4];
             Array.Copy(inputMessage, inputMessage.Length - 4, mic, 0, 4);
             this.mic = mic;
-
-
-
         }
     }
 
@@ -116,8 +123,9 @@ namespace PacketManager
     {
         public byte[] gatewayMacAddress { get; set; }
       public dynamic fullPayload { get; set; }
-        public string data { get; set; }
-
+        public string rawB64data { get; set; }
+        public string devaddr { get; set; }
+        public string decodedData { get; set; }
 
         public LoRaMetada(byte[] input)
         {
@@ -125,7 +133,7 @@ namespace PacketManager
             var c = BitConverter.ToString(gatewayMacAddress);
             var payload =Encoding.Default.GetString(input.Skip(12).ToArray());
             fullPayload= JObject.Parse(payload);
-            data = Convert.ToString(fullPayload.rxpk[0].data);
+            rawB64data = Convert.ToString(fullPayload.rxpk[0].data);
         }
     }
    
@@ -135,13 +143,13 @@ namespace PacketManager
     public class LoRaMessage
     {
         public LoRaPayloadMessage payloadMessage;
-        public LoRaMetada rawMessage;
+        public LoRaMetada lorametadata;
 
         public LoRaMessage(byte[] inputMessage)
         {
-            rawMessage = new LoRaMetada(inputMessage);
+            lorametadata = new LoRaMetada(inputMessage);
             //set up the parts of the raw message           
-            payloadMessage = new LoRaPayloadMessage(Convert.FromBase64String(rawMessage.data));
+            payloadMessage = new LoRaPayloadMessage(Convert.FromBase64String(lorametadata.rawB64data));
 
         }
 
@@ -167,7 +175,7 @@ namespace PacketManager
         /// <summary>
         /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py
         /// </summary>
-        public byte[] DecryptPayload(string appSkey)
+        public string DecryptPayload(string appSkey)
         {
             AesEngine aesEngine = new AesEngine();
             aesEngine.Init(true, new KeyParameter(StringToByteArray(appSkey)));
@@ -202,8 +210,8 @@ namespace PacketManager
                     decrypted[bufferIndex + i] = (byte)(payloadMessage.frmpayload[bufferIndex + i] ^ sBlock[i]);
                 }
             }
-
-            return decrypted;
+            this.lorametadata.decodedData = Encoding.Default.GetString(decrypted);
+            return Encoding.Default.GetString(decrypted);
         }
 
         private byte[] StringToByteArray(string hex)
