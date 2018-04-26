@@ -1,13 +1,16 @@
-﻿using Org.BouncyCastle.Crypto;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using System;
 using System.Linq;
+using System.Text;
 
 namespace PacketManager
 {
-    public class LoRaRawMessage
+    public class LoRaPayloadMessage
     {
         /// <summary>
         /// raw byte of the message
@@ -54,7 +57,7 @@ namespace PacketManager
 
 
         /// <param name="inputMessage"></param>
-        public LoRaRawMessage(byte[] inputMessage)
+        public LoRaPayloadMessage(byte[] inputMessage)
         {
             rawMessage = inputMessage;
             //get the mhdr
@@ -108,17 +111,37 @@ namespace PacketManager
         }
     }
 
+
+    public class LoRaMetada
+    {
+        public byte[] gatewayMacAddress { get; set; }
+      public dynamic fullPayload { get; set; }
+        public string data { get; set; }
+
+
+        public LoRaMetada(byte[] input)
+        {
+            gatewayMacAddress= input.Skip(4).Take(6).ToArray();
+            var c = BitConverter.ToString(gatewayMacAddress);
+            var payload =Encoding.Default.GetString(input.Skip(12).ToArray());
+            fullPayload= JObject.Parse(payload);
+            data = Convert.ToString(fullPayload.rxpk[0].data);
+        }
+    }
+   
     /// <summary>
     /// class exposing usefull message stuff
     /// </summary>
     public class LoRaMessage
     {
-        public LoRaRawMessage rawMessage;
+        public LoRaPayloadMessage payloadMessage;
+        public LoRaMetada rawMessage;
 
         public LoRaMessage(byte[] inputMessage)
         {
-            //set up the parts of the raw message
-            rawMessage = new LoRaRawMessage(inputMessage);
+            rawMessage = new LoRaMetada(inputMessage);
+            //set up the parts of the raw message           
+            payloadMessage = new LoRaPayloadMessage(Convert.FromBase64String(rawMessage.data));
 
         }
 
@@ -127,33 +150,33 @@ namespace PacketManager
         /// </summary>
         /// <param name="nwskey">the network security key</param>
         /// <returns></returns>
-        public bool CheckMic(byte[] nwskey)
+        public bool CheckMic(string nwskey)
         {
             IMac mac = MacUtilities.GetMac("AESCMAC");
-            KeyParameter key = new KeyParameter(nwskey);
+            KeyParameter key = new KeyParameter(StringToByteArray(nwskey));
             mac.Init(key);
-            byte[] block = { 0x49, 0x00, 0x00, 0x00, 0x00, (byte)this.rawMessage.direction, (byte)(this.rawMessage.devAddr[3]), (byte)(rawMessage.devAddr[2]), (byte)(rawMessage.devAddr[1]),
-                (byte)(rawMessage.devAddr[0]),  this.rawMessage.fcnt[1] , this.rawMessage.fcnt[0],0x00, 0x00, 0x00, (byte)(this.rawMessage.rawMessage.Length-4) };
-            var algoinput = block.Concat(this.rawMessage.rawMessage.Take(this.rawMessage.rawMessage.Length - 4)).ToArray();
+            byte[] block = { 0x49, 0x00, 0x00, 0x00, 0x00, (byte)this.payloadMessage.direction, (byte)(this.payloadMessage.devAddr[3]), (byte)(payloadMessage.devAddr[2]), (byte)(payloadMessage.devAddr[1]),
+                (byte)(payloadMessage.devAddr[0]),  this.payloadMessage.fcnt[0] , this.payloadMessage.fcnt[1],0x00, 0x00, 0x00, (byte)(this.payloadMessage.rawMessage.Length-4) };
+            var algoinput = block.Concat(this.payloadMessage.rawMessage.Take(this.payloadMessage.rawMessage.Length - 4)).ToArray();
             byte[] result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);
-            return this.rawMessage.mic.SequenceEqual(result.Take(4).ToArray());
+            return this.payloadMessage.mic.SequenceEqual(result.Take(4).ToArray());
         }
 
         /// <summary>
         /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py
         /// </summary>
-        public byte[] DecryptPayload(byte[] appSkey)
+        public byte[] DecryptPayload(string appSkey)
         {
             AesEngine aesEngine = new AesEngine();
-            aesEngine.Init(true, new KeyParameter(appSkey));
+            aesEngine.Init(true, new KeyParameter(StringToByteArray(appSkey)));
 
-            byte[] aBlock = { 0x01, 0x00, 0x00, 0x00, 0x00, (byte)this.rawMessage.direction, (byte)(rawMessage.devAddr[3]), (byte)(rawMessage.devAddr[2]), (byte)(rawMessage.devAddr[1]),
-                (byte)(rawMessage.devAddr[0]),  0x00 , 0x00,(byte)(rawMessage.fcnt[1]), (byte)(rawMessage.fcnt[0]), 0x00, 0x00, 0x00 };
+            byte[] aBlock = { 0x01, 0x00, 0x00, 0x00, 0x00, (byte)this.payloadMessage.direction, (byte)(payloadMessage.devAddr[3]), (byte)(payloadMessage.devAddr[2]), (byte)(payloadMessage.devAddr[1]),
+                (byte)(payloadMessage.devAddr[0]),(byte)(payloadMessage.fcnt[0]),(byte)(payloadMessage.fcnt[1]),  0x00 , 0x00, 0x00, 0x00 };
 
             byte[] sBlock = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-            int size = rawMessage.frmpayload.Length;
+            int size = payloadMessage.frmpayload.Length;
             byte[] decrypted = new byte[size];
             byte bufferIndex = 0;
             short ctr = 1;
@@ -165,7 +188,7 @@ namespace PacketManager
                 aesEngine.ProcessBlock(aBlock, 0, sBlock, 0);
                 for (i = 0; i < 16; i++)
                 {
-                    decrypted[bufferIndex + i] = (byte)(rawMessage.frmpayload[bufferIndex + i] ^ sBlock[i]);
+                    decrypted[bufferIndex + i] = (byte)(payloadMessage.frmpayload[bufferIndex + i] ^ sBlock[i]);
                 }
                 size -= 16;
                 bufferIndex += 16;
@@ -176,11 +199,19 @@ namespace PacketManager
                 aesEngine.ProcessBlock(aBlock, 0, sBlock, 0);
                 for (i = 0; i < size; i++)
                 {
-                    decrypted[bufferIndex + i] = (byte)(rawMessage.frmpayload[bufferIndex + i] ^ sBlock[i]);
+                    decrypted[bufferIndex + i] = (byte)(payloadMessage.frmpayload[bufferIndex + i] ^ sBlock[i]);
                 }
             }
 
             return decrypted;
+        }
+
+        private byte[] StringToByteArray(string hex)
+        {
+            return Enumerable.Range(0, hex.Length)
+                             .Where(x => x % 2 == 0)
+                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                             .ToArray();
         }
     }
 }
