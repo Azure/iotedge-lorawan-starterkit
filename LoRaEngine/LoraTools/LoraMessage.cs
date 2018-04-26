@@ -133,18 +133,26 @@ namespace PacketManager
         {
             gatewayMacAddress= input.Skip(4).Take(6).ToArray();
             var c = BitConverter.ToString(gatewayMacAddress);
-            var payload =Encoding.Default.GetString(input.Skip(12).ToArray());
-            if (payload.Count()==0)
+            var payload = Encoding.Default.GetString(input.Skip(12).ToArray());
+
+            //check for correct message
+            if (payload.Count() == 0)
             {
                 processed = false;
                 return;
             }
-            else
-                processed = true;
-            
-            fullPayload= JObject.Parse(payload);
-            rawB64data = Convert.ToString(fullPayload.rxpk[0].data);
 
+            fullPayload = JObject.Parse(payload);
+            //check for correct message
+            //TODO have message types
+            if (fullPayload.rxpk==null || fullPayload.rxpk[0].data == null)
+            {
+                processed = false;
+                return;
+            }
+                rawB64data = Convert.ToString(fullPayload.rxpk[0].data);
+
+            processed = true;
 
             //get the address
             byte[] addrbytes = new byte[4];
