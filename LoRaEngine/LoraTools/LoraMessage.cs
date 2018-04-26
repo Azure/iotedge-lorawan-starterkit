@@ -83,6 +83,7 @@ namespace PacketManager
             //address correct but inversed
             Array.Reverse(addrbytes);
             this.devAddr = addrbytes;
+            
 
             //Fctrl Frame Control Octet
             byte[] fctrl = new byte[1];
@@ -124,7 +125,7 @@ namespace PacketManager
         public byte[] gatewayMacAddress { get; set; }
       public dynamic fullPayload { get; set; }
         public string rawB64data { get; set; }
-        public string devaddr { get; set; }
+        public string devAddr { get; set; }
         public string decodedData { get; set; }
 
         public LoRaMetada(byte[] input)
@@ -134,6 +135,14 @@ namespace PacketManager
             var payload =Encoding.Default.GetString(input.Skip(12).ToArray());
             fullPayload= JObject.Parse(payload);
             rawB64data = Convert.ToString(fullPayload.rxpk[0].data);
+
+
+            //get the address
+            byte[] addrbytes = new byte[4];
+            Array.Copy(input, 1, addrbytes, 0, 4);
+            //address correct but inversed
+            Array.Reverse(addrbytes);
+            devAddr = BitConverter.ToString(addrbytes);
         }
     }
    
@@ -213,7 +222,7 @@ namespace PacketManager
             this.lorametadata.decodedData = Encoding.Default.GetString(decrypted);
             return decrypted;
         }
-
+        
         private byte[] StringToByteArray(string hex)
         {
             return Enumerable.Range(0, hex.Length)
