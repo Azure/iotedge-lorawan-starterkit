@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
+using PacketManager;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,29 +9,45 @@ namespace LoRaWan.NetworkServer
 {
     public class MessageProcessor
     {
-        const int msgPreambSize = 12;
+        string testKey = "2B7E151628AED2A6ABF7158809CF4F3C";
         public async Task processMessage(byte[] message)
         {
-            //Decode message
-            byte[] preamb = new byte[msgPreambSize];
-            byte[] msgBody = new byte[message.Length - msgPreambSize];
-            Array.Copy(message, 0, preamb, 0, msgPreambSize);
-            Array.Copy(message, msgPreambSize, msgBody, 0, message.Length - msgPreambSize);
+            LoRaMessage loraMessage = new LoRaMessage(message);
 
-            string msgSting = Encoding.Default.GetString(msgBody);
-            //--------------
-
-            //Getting data payloads
-            var vals = JObject.Parse(msgSting).SelectTokens("rxpk[*].data");
-
-            if(vals != null)
+            if(loraMessage.CheckMic(testKey))
             {
-                foreach (var val in vals)
+                string decryptedMessage = null;
+                try
                 {
-                    Console.WriteLine(val);
-                    IoTHubSender sender = new IoTHubSender();
-                    await sender.sendMessage((string)val);
+                    decryptedMessage = Encoding.Default.GetString(loraMessage.DecryptPayload(testKey));
                 }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Failed to decrypt message: {ex.Message}");
+                }
+
+                if(string.IsNullOrEmpty(decryptedMessage))
+                {
+                    return;
+                }
+
+                Console.WriteLine($"Sending message '{decryptedMessage}' to hub...");
+
+                try
+                {
+                    using (IoTHubSender sender = new IoTHubSender("BE7A00000000888F"))
+                    {
+                        await sender.sendMessage(decryptedMessage);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Failed to send message: {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Check MIC failed! Message will be ignored...");
             }
         }
     }
