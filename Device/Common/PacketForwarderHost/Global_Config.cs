@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -36,5 +36,6 @@ namespace PacketForwarder_JSON
     {
         public SX127xConf SX127x_conf { get; set; }
         public GatewayConf gateway_conf { get; set; }
+
     }
 }

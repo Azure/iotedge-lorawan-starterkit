@@ -11,7 +11,7 @@ namespace PacketForwarderHost
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
-    using System.Collections.Generic;     // for KeyValuePair<>
+    using System.Collections.Generic;     
     using Microsoft.Azure.Devices.Shared; // for TwinCollection
     using Newtonsoft.Json;                // for JsonConvert
 
@@ -20,9 +20,15 @@ namespace PacketForwarderHost
     class Program
     {
         static int counter;
+        static string packetforwardercli = "";
+
+        static System.Diagnostics.Process packetForwarderProcess;
 
         static void Main(string[] args)
         {
+
+            Console.WriteLine("Up and running");
+
             // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
             string connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
 
@@ -31,11 +37,51 @@ namespace PacketForwarderHost
             if (!bypassCertVerification) InstallCert();
             Init(connectionString, bypassCertVerification).Wait();
 
+            StartPacketForwarder(packetforwardercli);
+
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
             AssemblyLoadContext.Default.Unloading += (ctx) => cts.Cancel();
             Console.CancelKeyPress += (sender, cpe) => cts.Cancel();
             WhenCancelled(cts.Token).Wait();
+        }
+
+        /// <summary>
+        /// Start the Packet Forwarder Process
+        /// </summary>
+        public static void StartPacketForwarder(string cmdline)
+        {
+            try
+            {
+                Console.WriteLine("Starting Packet Forwarder");
+                // start packet forwarder
+                packetForwarderProcess = System.Diagnostics.Process.Start(cmdline);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Start packet forwarder failed with: ");
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public static void StopPacketForwarder()
+        {
+            try
+            {
+                packetForwarderProcess.Kill();
+                while(!packetForwarderProcess.HasExited)
+                {
+                    Console.WriteLine("Stopping Packet Forwarder");
+                    Thread.Sleep(250);
+                }
+                Console.WriteLine("Packet Forwarder Stopped");
+                packetForwarderProcess.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Attemting to stop the packet forwarder failed with: ");
+                Console.WriteLine(e.Message);
+            }
         }
 
         /// <summary>
@@ -122,14 +168,25 @@ namespace PacketForwarderHost
                 TwinCollection packetForwarderConfig = new TwinCollection();
 
                 //LoadJson: get the current global_conf.json
-                using (StreamReader r = new StreamReader("./global_config.json"))
+                if(File.Exists("./global_config.json"))
                 {
-                    string currentConfigJson = r.ReadToEnd();
-                    currentConfig = JsonConvert.DeserializeObject<RootObject>(currentConfigJson);
+                    Console.WriteLine("Reading existing global_config.json");
+                    using (StreamReader r = new StreamReader("./global_config.json"))
+                    {
+                        string currentConfigJson = r.ReadToEnd();
+                        currentConfig = JsonConvert.DeserializeObject<RootObject>(currentConfigJson);
 
-                    packetForwarderConfig["configId"] = "0";
-                    packetForwarderConfig["global_config"] = currentConfigJson;
+                        packetForwarderConfig["configId"] = "0";
+                        packetForwarderConfig["global_config"] = currentConfigJson;
+                    }
                 }
+                else
+                {
+                    Console.WriteLine("Creating new global_config.json");
+                    packetForwarderConfig["configId"] = "0";
+                    packetForwarderConfig["global_config"] = "";
+                }
+
                 var desiredTelemetryConfig = desiredProperties["global_config"];
 
                 if ((desiredTelemetryConfig != null) && (desiredTelemetryConfig["configId"] != packetForwarderConfig["configId"]))
@@ -141,14 +198,17 @@ namespace PacketForwarderHost
                     //  serializer.Converters.Add(new JavaScriptDateTimeConverter());
                     serializer.NullValueHandling = NullValueHandling.Ignore;
 
-                    using (StreamWriter sw = new StreamWriter("./new_global_config.json"))
+                    using (StreamWriter sw = new StreamWriter("./global_config.json"))
                     using (JsonWriter writer = new JsonTextWriter(sw))
                     {
                         serializer.Serialize(writer, desiredTelemetryConfig);
                     }
+                    // stop and restart the binary packet forwarder process
+                    StopPacketForwarder();
+                    StartPacketForwarder(packetforwardercli);
 
                     // Update the packetForwarderConfig configId
-                    Console.WriteLine(JsonConvert.SerializeObject(packetForwarderConfig));
+                    Console.WriteLine("Packet Forwarder Updated");
 
                 }
             }

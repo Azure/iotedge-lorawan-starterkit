@@ -10,4 +10,4 @@ RUN dotnet publish -c Release -o out
 FROM microsoft/dotnet:2.0-runtime-stretch-arm32v7
 WORKDIR /app
 COPY --from=build-env /app/out ./
-ENTRYPOINT ["dotnet", "PacketForwarderHost.dll"]
+ENTRYPOINT ["dotnet", "pfhost.dll"]

@@ -18,4 +18,4 @@ FROM base
 WORKDIR /app
 COPY --from=build-env /app/out ./
 
-ENTRYPOINT ["dotnet", "PacketForwarderHost.dll"]
+ENTRYPOINT ["dotnet", "pfhost.dll"]
