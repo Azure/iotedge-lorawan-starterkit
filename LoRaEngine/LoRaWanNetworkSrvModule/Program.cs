@@ -9,19 +9,19 @@ namespace LoRaWanNetworkSrvModule
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
+    using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 
     class Program
     {
-        static Task udpServerTask = null;
+        static UdpServer udpServer = null;
         static void Main(string[] args)
         {
-            // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
-            //string connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
-
             // Cert verification is not yet fully functional when using Windows OS for the container
             bool bypassCertVerification = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             if (!bypassCertVerification) InstallCert();
-            Init();
+
+            Run(bypassCertVerification).Wait();
 
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
@@ -35,6 +35,11 @@ namespace LoRaWanNetworkSrvModule
         /// </summary>
         public static Task WhenCancelled(CancellationToken cancellationToken)
         {
+            if(udpServer != null)
+            {
+                udpServer.Dispose();
+            }
+
             var tcs = new TaskCompletionSource<bool>();
             cancellationToken.Register(s => ((TaskCompletionSource<bool>)s).SetResult(true), tcs);
             return tcs.Task;
@@ -70,13 +75,13 @@ namespace LoRaWanNetworkSrvModule
         /// Initializes the DeviceClient and sets up the callback to receive
         /// messages containing temperature information
         /// </summary>
-        static void Init()
+        static async Task Run(bool bypassCertVerification = false)
         {
             try
             {
                 Console.WriteLine("Starting UDP listener...");
-                UdpServer udpServer = new UdpServer();
-                udpServerTask = udpServer.RunServer();
+                udpServer = new UdpServer();
+                await udpServer.RunServer(bypassCertVerification);
             }
             catch(Exception ex)
             {

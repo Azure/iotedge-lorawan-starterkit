@@ -7,19 +7,33 @@ using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer
 {
-    public class MessageProcessor
+    public class MessageProcessor : IDisposable
     {
         string testKey = "2B7E151628AED2A6ABF7158809CF4F3C";
-        public async Task processMessage(byte[] message)
+        string testDeviceId = "BE7A00000000888F";
+        const int HubRetryCount = 10;
+        IoTHubSender sender = null;
+
+        public async Task processMessage(byte[] message, string connectionString)
         {
             LoRaMessage loraMessage = new LoRaMessage(message);
 
-            if(loraMessage.CheckMic(testKey))
+            if(!loraMessage.lorametadata.processed)
+            {
+                Console.WriteLine($"Skip message from device: {loraMessage.lorametadata.devAddr}. Reason: Prcessed attribyte eq 'False'");
+                return;
+            }
+
+            Console.WriteLine($"Processing message from device: {loraMessage.lorametadata.devAddr}");
+
+            Shared.loraKeysList.TryGetValue(loraMessage.lorametadata.devAddr, out LoraKeys loraKeys);
+
+            if (loraMessage.CheckMic(testKey))
             {
                 string decryptedMessage = null;
                 try
                 {
-                    decryptedMessage = Encoding.Default.GetString(loraMessage.DecryptPayload(testKey));
+                    decryptedMessage = loraMessage.DecryptPayload(testKey);
                 }
                 catch(Exception ex)
                 {
@@ -33,21 +47,33 @@ namespace LoRaWan.NetworkServer
 
                 Console.WriteLine($"Sending message '{decryptedMessage}' to hub...");
 
-                try
+                int hubSendCounter = 1;
+                while (HubRetryCount != hubSendCounter)
                 {
-                    using (IoTHubSender sender = new IoTHubSender("BE7A00000000888F"))
+                    try
                     {
+                        sender = new IoTHubSender(connectionString, testDeviceId);
                         await sender.sendMessage(decryptedMessage);
+                        hubSendCounter = HubRetryCount;
                     }
-                }
-                catch(Exception ex)
-                {
-                    Console.WriteLine($"Failed to send message: {ex.Message}");
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to send message: {ex.Message}");
+                        hubSendCounter++;
+                    }
                 }
             }
             else
             {
                 Console.WriteLine("Check MIC failed! Message will be ignored...");
+            }
+        }
+
+        public void Dispose()
+        {
+            if(sender != null)
+            {
+                try { sender.Dispose(); } catch (Exception ex) { Console.WriteLine($"IoT Hub Sender disposing error: {ex.Message}"); }
             }
         }
     }

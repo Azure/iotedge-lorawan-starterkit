@@ -10,9 +10,8 @@ namespace LoRaWan.NetworkServer
     public class IoTHubSender : IDisposable
     {
         static DeviceClient deviceClient;
-        static string connStr = "HostName=testloriotv3hub.azure-devices.net;SharedAccessKeyName=device;SharedAccessKey=Wt1vLxOMHtCVTILfxzFBAyE3wWguBQOM8NM14dz8YVw=";
 
-        public IoTHubSender(string deviceId)
+        public IoTHubSender(string deviceId, string connStr)
         {
             deviceClient = DeviceClient.CreateFromConnectionString(connStr, deviceId, TransportType.Mqtt);
         }
@@ -25,8 +24,11 @@ namespace LoRaWan.NetworkServer
 
         public void Dispose()
         {
-            deviceClient.CloseAsync().Wait();
-            deviceClient.Dispose();
+            if(deviceClient != null)
+            {
+                try { deviceClient.CloseAsync().Wait(); } catch (Exception ex) { Console.WriteLine($"Device Client closing error: {ex.Message}"); }
+                try { deviceClient.Dispose(); } catch (Exception ex) { Console.WriteLine($"Device Client disposing error: {ex.Message}"); }
+            }
         }
     }
 }
