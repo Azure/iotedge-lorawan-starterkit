@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaTools", "LoraTools\LoRa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanManagerTest", "DevTools\LoRaWanManagerTest\LoRaWanManagerTest.csproj", "{0BF074D1-69DB-433A-9348-7D5E31529411}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAppForEverything", "TestAppForEverything\TestAppForEverything.csproj", "{D649BC23-5663-4746-BB23-802359769736}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{0BF074D1-69DB-433A-9348-7D5E31529411}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BF074D1-69DB-433A-9348-7D5E31529411}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BF074D1-69DB-433A-9348-7D5E31529411}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D649BC23-5663-4746-BB23-802359769736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D649BC23-5663-4746-BB23-802359769736}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D649BC23-5663-4746-BB23-802359769736}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D649BC23-5663-4746-BB23-802359769736}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,6 +65,7 @@ Global
 		{ACF77456-2DD5-471A-9C05-2241FEC432D4} = {B1840F87-8C3F-4A48-942B-E7FEACF21414}
 		{86B181A1-1AFE-435F-BF9A-A17327EE53FB} = {B1840F87-8C3F-4A48-942B-E7FEACF21414}
 		{0BF074D1-69DB-433A-9348-7D5E31529411} = {B1840F87-8C3F-4A48-942B-E7FEACF21414}
+		{D649BC23-5663-4746-BB23-802359769736} = {B1840F87-8C3F-4A48-942B-E7FEACF21414}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}
