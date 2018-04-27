@@ -20,7 +20,7 @@ namespace PacketForwarderHost
     class Program
     {
         static int counter;
-        static string packetforwardercli = "";
+        static string packetforwardercli = "./single_chan_pkt_fwd_eth0";
 
         static System.Diagnostics.Process packetForwarderProcess;
 
@@ -62,6 +62,7 @@ namespace PacketForwarderHost
                 Console.WriteLine("Start packet forwarder failed with: ");
                 Console.WriteLine(e.Message);
             }
+            Console.WriteLine("Started Packet Forwarder");
         }
 
         public static void StopPacketForwarder()
@@ -168,10 +169,10 @@ namespace PacketForwarderHost
                 TwinCollection packetForwarderConfig = new TwinCollection();
 
                 //LoadJson: get the current global_conf.json
-                if(File.Exists("./global_config.json"))
+                if(File.Exists("./global_conf.json"))
                 {
-                    Console.WriteLine("Reading existing global_config.json");
-                    using (StreamReader r = new StreamReader("./global_config.json"))
+                    Console.WriteLine("Reading existing global_conf.json");
+                    using (StreamReader r = new StreamReader("./global_conf.json"))
                     {
                         string currentConfigJson = r.ReadToEnd();
                         currentConfig = JsonConvert.DeserializeObject<RootObject>(currentConfigJson);
@@ -182,7 +183,7 @@ namespace PacketForwarderHost
                 }
                 else
                 {
-                    Console.WriteLine("Creating new global_config.json");
+                    Console.WriteLine("Creating new global_conf.json");
                     packetForwarderConfig["configId"] = "0";
                     packetForwarderConfig["global_config"] = "";
                 }
@@ -198,7 +199,7 @@ namespace PacketForwarderHost
                     //  serializer.Converters.Add(new JavaScriptDateTimeConverter());
                     serializer.NullValueHandling = NullValueHandling.Ignore;
 
-                    using (StreamWriter sw = new StreamWriter("./global_config.json"))
+                    using (StreamWriter sw = new StreamWriter("./global_conf.json"))
                     using (JsonWriter writer = new JsonTextWriter(sw))
                     {
                         serializer.Serialize(writer, desiredTelemetryConfig);

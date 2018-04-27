@@ -29,7 +29,7 @@ namespace PacketForwarder_JSON
         public string name { get; set; }
         public string email { get; set; }
         public string desc { get; set; }
-        public Server servers { get; set; }
+        public List<Server> servers { get; set; }
     }
 
     public class RootObject
