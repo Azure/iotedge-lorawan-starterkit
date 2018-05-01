@@ -21,6 +21,8 @@ namespace Simulator
                               LoRaTools.PrerecordedPackets.GetPacketCount() - 1));
             Console.WriteLine("");
 
+            LoRaTools.PacketForwarder forwarder = new LoRaTools.PacketForwarder(ip, port);
+
             while (true)
             {
                 Console.Write("packet? ");
@@ -40,9 +42,7 @@ namespace Simulator
                         var packet = LoRaTools.PrerecordedPackets.GetPacket(n);
                         var rawBytes = packet.GetRawWireBytes();
 
-                        UdpClient udpConnection = new UdpClient();
-                        IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
-                        udpConnection.Send(rawBytes, rawBytes.Length, ipEndPoint);
+                        forwarder.Send(rawBytes);
 
                         Console.WriteLine(String.Format("  broadcast packet {0}", n));
                     }
