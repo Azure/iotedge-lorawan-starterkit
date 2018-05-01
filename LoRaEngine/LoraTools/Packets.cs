@@ -121,5 +121,10 @@ namespace LoRaTools
             }
             return new RecordedPacket(m_packets[n]);
         }
+
+        public static int GetPacketCount()
+        {
+            return m_packets.Length;
+        }
     }
 }
