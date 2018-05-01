@@ -29,7 +29,7 @@ namespace AESDemo
             
             byte[] messageraw = leadingByte.Concat(Encoding.Default.GetBytes(inputJson)).ToArray();
             LoRaMessage message = new LoRaMessage(messageraw);
-            Console.WriteLine("decrypted "+(message.DecryptPayload("2B7E151628AED2A6ABF7158809CF4F3C"));
+            Console.WriteLine("decrypted "+(message.DecryptPayload("2B7E151628AED2A6ABF7158809CF4F3C")));
             Console.WriteLine("mic is valid: "+message.CheckMic("2B7E151628AED2A6ABF7158809CF4F3C"));
             Console.Read();
         }
