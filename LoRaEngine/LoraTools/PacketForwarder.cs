@@ -34,5 +34,17 @@ namespace LoRaTools
         {
             m_client.Send(bytes, bytes.Length, m_endpoint);
         }
+
+
+        /// <summary>
+        /// Broadcasts a UDP packet corresponding to an IPacket.
+        /// The ip address and port are specified in the constructor.
+        /// </summary>
+        /// <param name="bytes"></param>
+        public void Send(IPacket packet)
+        {
+            var rawBytes = packet.GetRawWireBytes();
+            Send(rawBytes);
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Text.RegularExpressions;
 
 
 namespace LoRaTools
@@ -125,6 +126,30 @@ namespace LoRaTools
         public static int GetPacketCount()
         {
             return m_packets.Length;
+        }
+    }
+
+
+    public class PacketValidator
+    {
+        static Regex m_re;
+
+        static PacketValidator()
+        {
+            string pattern = @"\A[a-f|A-F|0-9]{24}\{.*\}\z";
+            m_re = new Regex(pattern);
+        }
+
+
+        /// <summary>
+        /// A packet passes this test if it starts with 24 hexidecimal
+        /// digits, followed by a block of text surrounded by {}.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static bool IsLikelyValidLoRaWanPacket(string text)
+        {
+            return m_re.Matches(text).Count == 1;
         }
     }
 }
