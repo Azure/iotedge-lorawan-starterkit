@@ -1,15 +1,78 @@
-﻿using System;
+﻿using Mono.Options;
+using System;
+using System.Collections.Generic;
+
 
 namespace Simulator
 {
     class Program
     {
-        //Original IP: 10.0.28.34
         static void Main(string[] args)
         {
+            //
+            // Setup default parameter values.
+            //
             string ip = "127.0.0.1";
             int port = 1680;
+            bool showHelp = false;
 
+            //
+            // Parse command-line arguments.
+            //
+            var ipHelp = String.Format("udp packets will be sent to this ip address (defaults to {0})", ip);
+            var portHelp = String.Format("udp packets will be sent to this port (defaults to {0})", port);
+
+            var options = new OptionSet {
+                { "i|ip=", ipHelp, arg => ip = arg },
+                { "p|port=", portHelp, (int arg) => port = arg },
+                { "h|help", "show this message and exit", arg => showHelp = arg != null },
+            };
+
+            List<string> extra;
+            try
+            {
+                // parse the command line
+                extra = options.Parse(args);
+                if (extra.Count > 0)
+                {
+                    throw new OptionException("Invalid option", extra[0]);
+                }
+            }
+            catch (OptionException e)
+            {
+                // Print error message
+                var name = String.Format("{0}", System.AppDomain.CurrentDomain.FriendlyName);
+                Console.Write(String.Format("{0}: ", name));
+                Console.WriteLine(e.Message);
+                Console.WriteLine(
+                    String.Format("Try `dotnet {0}.dll --help' for more information.",
+                                  name));
+
+                // TODO: return error code here.
+                return;
+            }
+
+            if (showHelp)
+            {
+                Console.WriteLine("Options:");
+                options.WriteOptionDescriptions(Console.Out);
+
+                // TODO: return error code here.
+                return;
+            }
+
+            //
+            // Run the Read-Eval-Print-Loop (REPL).
+            //
+            REPL(ip, port);
+        }
+
+
+        static void REPL(string ip, int port)
+        {
+            //
+            // Run the Read-Eval-Print-Loop (REPL).
+            //
             Console.WriteLine("Welcome to the PacketForwarder Simulator");
             Console.WriteLine(String.Format("Broadcasting to {0}, port {1}.", ip, port));
             Console.WriteLine("");
@@ -30,6 +93,8 @@ namespace Simulator
                 // Exit on blank line.
                 if (line.Length == 0)
                 {
+                    Console.WriteLine("bye");
+                    Console.WriteLine("");
                     break;
                 }
 

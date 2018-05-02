@@ -1,10 +1,19 @@
 # Packet Forwarder Simulator
 
 Diagnostic tool that broadcasts LoRaWAN UDP packets to host ip and port specified on the command line.
-(**NOTE:** Currently the application is hard-coded to broadcast to port `1680` at `127.0.0.1`. Command-line parameters comming soon!)
+Sample usage:
 
+~~~
+% dotnet PacketForwarderSimulator.dll --help
+Options:
+  -i, --ip=VALUE             udp packets will be sent to this ip address (
+                               defaults to 127.0.0.1)
+  -p, --port=VALUE           udp packets will be sent to this port (defaults to
+                               1680)
+  -h, --help                 show this message and exit
+~~~
 
-The tool starts a Read-Eval-Print-Loop that broadcasts packets. The loop can be driven interactively during debugging sessions or it can be used in conjunction with stream redirection for unattended operation as part of test suites.
+The tool starts a _Read-Eval-Print-Loop_ (REPL) that broadcasts packets in response to user commands. The loop can be driven interactively during debugging sessions or it can be used in conjunction with stream redirection for unattended operation as part of test suites.
 
 All simulator functionality exposed in the command-line tool is also available as library calls for use by automated tests.
 
@@ -32,10 +41,10 @@ Legal REPL operations include
 
 * **Blank Line.** Exits the application.
 
-Here's a sample transcript:
+Here's a sample session transcript:
 
 ~~~
-% PacketForwarderSimulator
+% dotnet PacketForwarderSimulator.dll
 
 Welcome to the PacketForwarder Simulator
 Broadcasting to 127.0.0.1, port 1680.
@@ -47,5 +56,7 @@ packet? 1
 packet? 0205DB00AA555A0000000101{"rxpk":[{ "tmst":2166390139,"chan":0,"rfch":1,"freq":868.100000,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","lsnr":9.5,"rssi":-24,"size":18,"data":"QEa5KADAQwAIwahYNa9zWAn1"}]}
   ... broadcasting verbatim packet
 packet?
-Press any key to continue . . .
+bye
+
+%
 ~~~
