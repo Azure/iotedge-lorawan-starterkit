@@ -16,10 +16,20 @@ The constructed module has a .Net Core entrypoint application that faciliates th
 
 The entrypoint application starts a new process for the chosen packet forwarder. On receipt of new Module Twin changes, this process is recycled - being stopped and restarted.
 
+Change gateway_conf properties using the following Module Twin JSON:
+
+{
+  "properties.desired": {
+    "global_conf":{"gateway_conf":{"name": "New Gateway"}}
+  }
+}
+
+NOTE: You must validate property changes are valid for the packet forwarder you specify. Gateway configuration properties vary per packet forwarder implementation.
+
 Issues:
-1) Current JSON class for Global_Conf is redundent as each configuration of packet forwarders can vary greatly. Easier to handle it just as a JSON string, written directly to the global_conf.json file
-2) Module TWIN JSON support does not supoprt JSON array. So the multiple server definition is broken. Packet Forwarders need modification or the received Module TWIN requires manipulation to construct an JSON array in the output to the global_conf.json file.
-3) The Process.Start(packerforwarder) command doesn't appear to always work. It may be that the output from the packet forwarder needs to be redirected appropriate.
+1) Module TWIN JSON support does not supoprt JSON array. So the multiple server definition is broken. Packet Forwarders need modification or the received Module TWIN requires manipulation to construct an JSON array in the output to the global_conf.json file.
+2) Only the gateway_conf section of the global_conf.json is available to modify at this time. Other sections of the global_conf.json need to be implemented as required.
+
 
 When iotedgectl start is complete, the output of the packet forwarder can be viewed in using docker logs <docker process id>
 

@@ -1,7 +1,7 @@
 {
   "SX127x_conf":
   {
-    "freq": 915000000,
+    "freq": 868000000,
     "spread_factor": 7,
     "pin_nss": 10,
     "pin_dio0": 6,
@@ -10,8 +10,8 @@
   },
   "gateway_conf":
   {
-    "ref_latitude": 0.0,
-    "ref_longitude": 0.0,
+    "ref_latitude": 52.39334580,
+    "ref_longitude": 1.29791288,
     "ref_altitude": 10,
 
     "name": "SC Gateway",
@@ -23,12 +23,12 @@
       {
         "address": "router.eu.thethings.network",
         "port": 1700,
-        "enabled": false
+        "enabled": true
       },
       {
         "address": "router.us.thethings.network",
         "port": 1700,
-        "enabled": true
+        "enabled": false
       }
     ]
   }

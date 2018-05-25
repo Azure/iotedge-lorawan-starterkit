@@ -15,8 +15,6 @@ namespace PacketForwarderHost
     using Microsoft.Azure.Devices.Shared; // for TwinCollection
     using Newtonsoft.Json;                // for JsonConvert
 
-    using PacketForwarder_JSON;
-
     class Program
     {
         static int counter;
@@ -28,6 +26,15 @@ namespace PacketForwarderHost
         {
 
             Console.WriteLine("Up and running");
+            Console.Write("Args: ");
+            if(args.Length>0)
+            {
+                Console.WriteLine(args[0]);
+            }
+            else
+            {
+                Console.WriteLine("No args received");
+            }
 
             // The Edge runtime gives us the connection string we need -- it is injected as an environment variable
             string connectionString = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
@@ -151,68 +158,73 @@ namespace PacketForwarderHost
 
             // Register callback to be called when a message is received by the module
             await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PacketForwarderHostMessages, ioTHubModuleClient);
+            // Direct method handler to reset (recycle) the packet forwarder
+            //await ioTHubModuleClient.SetMethodHandlerAsync("Reset", resetHandler, packetForwarderProcess);
         }
 
         /// <summary>
         /// Receive changes from the module twin
         /// Write them to the global_conf.json for the packet forwarder binary to consume
         /// Force restart of the binary packet forwarder
+        /// Issues:
+        ///     Targets only gateway_conf element of global_conf.json.
+        ///     
         /// </summary>
         static Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
-            try
-            {
-                Console.WriteLine("Desired property change:");
-                Console.WriteLine(JsonConvert.SerializeObject(desiredProperties));
-
-                RootObject currentConfig = null;
-                TwinCollection packetForwarderConfig = new TwinCollection();
-
-                //LoadJson: get the current global_conf.json
-                if(File.Exists("./global_conf.json"))
-                {
-                    Console.WriteLine("Reading existing global_conf.json");
-                    using (StreamReader r = new StreamReader("./global_conf.json"))
+            TwinCollection packetForwarderConfig = new TwinCollection();
+            try {
+   
+                    //LoadJson: get the current global_conf.json
+                    if (File.Exists("./global_conf.json"))
                     {
-                        string currentConfigJson = r.ReadToEnd();
-                        currentConfig = JsonConvert.DeserializeObject<RootObject>(currentConfigJson);
-
+                        Console.WriteLine("Reading existing global_conf.json");
+                        using (StreamReader r = new StreamReader("./global_conf.json"))
+                        {
+                            string currentConfigJson = r.ReadToEnd();
+                            packetForwarderConfig["configId"] = "0";
+                            packetForwarderConfig["global_conf"] = currentConfigJson;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Creating new global_conf.json");
                         packetForwarderConfig["configId"] = "0";
-                        packetForwarderConfig["global_config"] = currentConfigJson;
+                        packetForwarderConfig["global_conf"] = "{\"gateway_conf\": {}}";
                     }
-                }
-                else
-                {
-                    Console.WriteLine("Creating new global_conf.json");
-                    packetForwarderConfig["configId"] = "0";
-                    packetForwarderConfig["global_config"] = "";
-                }
 
-                var desiredTelemetryConfig = desiredProperties["global_config"];
-
-                if ((desiredTelemetryConfig != null) && (desiredTelemetryConfig["configId"] != packetForwarderConfig["configId"]))
-                {
-                    // archive the current global_conf.json
-
-                    // write out the new global_conf.json
-                    JsonSerializer serializer = new JsonSerializer();
-                    //  serializer.Converters.Add(new JavaScriptDateTimeConverter());
-                    serializer.NullValueHandling = NullValueHandling.Ignore;
-
-                    using (StreamWriter sw = new StreamWriter("./global_conf.json"))
-                    using (JsonWriter writer = new JsonTextWriter(sw))
+                    if ((desiredProperties != null) && (desiredProperties["configId"] != packetForwarderConfig["configId"]))
                     {
-                        serializer.Serialize(writer, desiredTelemetryConfig);
+                        // Requires refactoring. Going to string to access sections of json is naff
+                        TwinCollection global_Config = new TwinCollection(packetForwarderConfig["global_conf"].ToString());
+                        TwinCollection newGatewayConfig = new TwinCollection(global_Config["gateway_conf"].ToString());
+                        TwinCollection desiredGatewayConfig = new TwinCollection(desiredProperties["global_conf"].ToString());
+                        foreach (Newtonsoft.Json.Linq.JProperty prop in desiredGatewayConfig["gateway_conf"])
+                        {
+                            // Updates or Inserts properties
+                            newGatewayConfig[prop.Name] = prop.Value;
+                        }
+
+                        // write out the new global_conf.json
+                        JsonSerializer serializer = new JsonSerializer();
+                        serializer.NullValueHandling = NullValueHandling.Ignore;
+                        global_Config["gateway_conf"] = newGatewayConfig;
+                        packetForwarderConfig["global_conf"] = global_Config;
+
+                        using (StreamWriter sw = new StreamWriter("./global_conf.json"))
+                        using (JsonWriter writer = new JsonTextWriter(sw))
+                        {
+                            serializer.Serialize(writer, packetForwarderConfig);
+                        }
+                        // stop and restart the binary packet forwarder process
+                        StopPacketForwarder();
+                        StartPacketForwarder(packetforwardercli);
+
+                        // Update the packetForwarderConfig configId
+                        Console.WriteLine("Packet Forwarder Updated");
+
                     }
-                    // stop and restart the binary packet forwarder process
-                    StopPacketForwarder();
-                    StartPacketForwarder(packetforwardercli);
-
-                    // Update the packetForwarderConfig configId
-                    Console.WriteLine("Packet Forwarder Updated");
-
                 }
-            }
             catch (AggregateException ex)
             {
                 foreach (Exception exception in ex.InnerExceptions)
