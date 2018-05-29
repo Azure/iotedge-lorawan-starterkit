@@ -4,7 +4,7 @@
     "image": {
         "repository": "paulfocontainerregistry.azurecr.io/pfhost_single_chl_rpi",
         "tag": {
-            "version": "0.0.15",
+            "version": "0.0.17",
             "platforms": {
                 "amd64": "./Dockerfile", 
                 "amd64.debug": "./Dockerfile.amd64.debug",

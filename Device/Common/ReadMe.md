@@ -20,8 +20,13 @@ Change gateway_conf properties using the following Module Twin JSON:
 
 {
   "properties.desired": {
-    "global_conf":{"gateway_conf":{"name": "New Gateway"}}
-  }
+    "configId":3,
+      "global_conf":{
+        "gateway_conf":{
+          "name":"test gateway"
+          }
+        }
+    }
 }
 
 NOTE: You must validate property changes are valid for the packet forwarder you specify. Gateway configuration properties vary per packet forwarder implementation.
