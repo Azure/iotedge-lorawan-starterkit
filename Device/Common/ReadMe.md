@@ -36,7 +36,10 @@ NOTE: You must validate property changes are valid for the packet forwarder you 
 
 Issues:
 1) Module TWIN JSON support does not supoprt JSON array. So the multiple server definition is broken. Packet Forwarders need modification or the received Module TWIN requires manipulation to construct an JSON array in the output to the global_conf.json file.
-
+2) Observed anomalies:
+    a) A VS Code deployment is overwritten by a Module Twin change via the Azure Portal - even for the same image specification
+    b) IoT Hub sends previously set (historic) Module Twin properties with null values, if said properties aren't specified in new module twins. The packet forwarder negates this by not applying null values to global configuration json file settings.
+    c) Module Twin messages do not reach the module 100% of the time. Often an iotedgectl restart is required to reestablish inter-module message passing (Edge Hub to PacketForwarder)
 
 When iotedgectl start is complete, the output of the packet forwarder can be viewed in using docker logs <docker process id>
 

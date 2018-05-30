@@ -82,25 +82,35 @@ namespace PacketForwarderHost
                         Console.WriteLine("Applying changes to global_conf.json");
                         TwinCollection global_Config = new TwinCollection(packetForwarderConfig["global_conf"].ToString());
                         TwinCollection desiredConfig = new TwinCollection(desiredProperties["global_conf"].ToString());
-                        
+                        Console.WriteLine(desiredProperties["global_conf"].ToString());
 
                         // Iterate over top elements in global_conf, then properties of those elements
                         foreach (System.Collections.Generic.KeyValuePair<string,object> prop in desiredConfig)
                         {
-                            // set to current config
-                            TwinCollection newConfig = new TwinCollection(global_Config[prop.Key].ToString()); 
-                            // set to desired config top element's properties
-                            TwinCollection targetConfig = new TwinCollection(prop.Value.ToString());
-                            // Update or add each desired property value to current config
-                            foreach (System.Collections.Generic.KeyValuePair<string, object> newprop in targetConfig) 
+
+                            Console.WriteLine(prop.Key.ToString());
+                            // This test required. IoT Hub sends historic properties previously set, with null values
+                            if(prop.Value.ToString() != "")
                             {
-                                // Updates or Inserts properties to existing config
-                                newConfig[newprop.Key.ToString()] = newprop.Value;
+                                Console.WriteLine(prop.Value.ToString());
+                                // set to current config
+                                TwinCollection newConfig = new TwinCollection(global_Config[prop.Key].ToString()); 
+                                // set to desired config top element's properties
+                                TwinCollection targetConfig = new TwinCollection(prop.Value.ToString());
+                                // Update or add each desired property value to current config
+                                foreach (System.Collections.Generic.KeyValuePair<string, object> newprop in targetConfig) 
+                                {
+                                    Console.WriteLine(newprop.Key.ToString());
+                                    Console.WriteLine(newprop.Value.ToString());
+                                    // Updates or Inserts properties to existing config
+                                    newConfig[newprop.Key.ToString()] = newprop.Value;
+                                }
+                                // replaces existing config with updated config
+                                global_Config[prop.Key] = newConfig;
                             }
-                            // replaces existing config with updated config
-                            global_Config[prop.Key] = newConfig;
                         }
 
+                        Console.WriteLine("Writing new global_conf.json");
                         // write out the new global_conf.json
                         JsonSerializer serializer = new JsonSerializer();
                         serializer.Formatting = Formatting.Indented;
