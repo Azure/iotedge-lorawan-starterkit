@@ -126,8 +126,10 @@ namespace PacketForwarderHost
         /// </summary>
         static Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
+            Console.WriteLine("Property update received");
             // utilities: processDesiredPropertiesUpdate
-            return processDesiredPropertiesUpdate(desiredProperties,userContext);
+            processDesiredPropertiesUpdate(desiredProperties,userContext);
+            return Task.CompletedTask;
         }
 
 

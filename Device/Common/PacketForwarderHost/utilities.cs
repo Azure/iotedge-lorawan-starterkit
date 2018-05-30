@@ -52,9 +52,10 @@ namespace PacketForwarderHost
         /// Write them to the global_conf.json for the packet forwarder binary to consume
         /// Force restart of the binary packet forwarder
         /// Issues:
-        ///     Targets only gateway_conf element of global_conf.json. Needs extending to process any section of global_conf.json
-        static Task processDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
+        ///     doesn't retain last configId value processed
+        static void processDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
+            Console.WriteLine("Processing property updates");
             TwinCollection packetForwarderConfig = new TwinCollection();
             try {
    
@@ -79,20 +80,31 @@ namespace PacketForwarderHost
                     if ((desiredProperties != null) && (desiredProperties["configId"] != packetForwarderConfig["configId"]))
                     {
                         Console.WriteLine("Applying changes to global_conf.json");
-                        // Requires refactoring. Going to string to access sections of json is naff
                         TwinCollection global_Config = new TwinCollection(packetForwarderConfig["global_conf"].ToString());
-                        TwinCollection newGatewayConfig = new TwinCollection(global_Config["gateway_conf"].ToString());
-                        TwinCollection desiredGatewayConfig = new TwinCollection(desiredProperties["global_conf"].ToString());
-                        foreach (Newtonsoft.Json.Linq.JProperty prop in desiredGatewayConfig["gateway_conf"])
+                        TwinCollection desiredConfig = new TwinCollection(desiredProperties["global_conf"].ToString());
+                        
+
+                        // Iterate over top elements in global_conf, then properties of those elements
+                        foreach (System.Collections.Generic.KeyValuePair<string,object> prop in desiredConfig)
                         {
-                            // Updates or Inserts properties
-                            newGatewayConfig[prop.Name] = prop.Value;
+                            // set to current config
+                            TwinCollection newConfig = new TwinCollection(global_Config[prop.Key].ToString()); 
+                            // set to desired config top element's properties
+                            TwinCollection targetConfig = new TwinCollection(prop.Value.ToString());
+                            // Update or add each desired property value to current config
+                            foreach (System.Collections.Generic.KeyValuePair<string, object> newprop in targetConfig) 
+                            {
+                                // Updates or Inserts properties to existing config
+                                newConfig[newprop.Key.ToString()] = newprop.Value;
+                            }
+                            // replaces existing config with updated config
+                            global_Config[prop.Key] = newConfig;
                         }
 
                         // write out the new global_conf.json
                         JsonSerializer serializer = new JsonSerializer();
+                        serializer.Formatting = Formatting.Indented;
                         serializer.NullValueHandling = NullValueHandling.Ignore;
-                        global_Config["gateway_conf"] = newGatewayConfig;
                         packetForwarderConfig["global_conf"] = global_Config;
 
                         using (StreamWriter sw = new StreamWriter("./global_conf.json"))
@@ -124,7 +136,6 @@ namespace PacketForwarderHost
                 Console.WriteLine();
                 Console.WriteLine("Error in packetforwarder module: {0}", ex.Message);
             }
-            return Task.CompletedTask;
         } 
 
     }
