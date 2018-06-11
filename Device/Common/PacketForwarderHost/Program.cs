@@ -42,7 +42,8 @@ namespace PacketForwarderHost
             if (!bypassCertVerification) InstallCert();
             Init(connectionString, bypassCertVerification).Wait();
 
-            StartPacketForwarder(packetforwardercli);
+            // PacketForwarder started by Init reporting properties process
+            //StartPacketForwarder(packetforwardercli);
 
             // Wait until the app unloads or is cancelled
             var cts = new CancellationTokenSource();
@@ -112,6 +113,9 @@ namespace PacketForwarderHost
             //await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
             var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
             var moduleTwinCollection = moduleTwin.Properties.Desired;
+            // process received module twin setup data
+            processDesiredPropertiesUpdate(moduleTwinCollection,ioTHubModuleClient);
+
             // Attach callback for Twin desired properties updates
             await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, null);
 

@@ -7,6 +7,7 @@ namespace PacketForwarderHost
     using System.Collections.Generic;     
     using Microsoft.Azure.Devices.Shared; // for TwinCollection
     using Newtonsoft.Json;                // for JsonConvert
+    using Microsoft.Azure.Devices.Client;
     partial class Program
     {
         
@@ -33,6 +34,7 @@ namespace PacketForwarderHost
         {
             try
             {
+                if(packetForwarderProcess is null) return; // First time execution, packet process not started
                 packetForwarderProcess.Kill();
                 while(!packetForwarderProcess.HasExited)
                 {
@@ -55,6 +57,7 @@ namespace PacketForwarderHost
         ///     doesn't retain last configId value processed
         static void processDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
+            
             Console.WriteLine("Processing property updates");
             TwinCollection packetForwarderConfig = new TwinCollection();
             try {
@@ -130,6 +133,11 @@ namespace PacketForwarderHost
                         // stop and restart the binary packet forwarder process
                         StopPacketForwarder();
                         StartPacketForwarder(packetforwardercli);
+
+                        DeviceClient ioTHubModuleClient = (DeviceClient) userContext;
+                        TwinCollection reportedProps = new TwinCollection();
+                        reportedProps["reported"] = packetForwarderConfig["global_conf"];
+                        ioTHubModuleClient.UpdateReportedPropertiesAsync(reportedProps);
 
                     }
                 }

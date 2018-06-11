@@ -30,12 +30,12 @@
                 },
                 "modules": {
                     "packetforwarder": {
-                        "version": "0.0.29",
+                        "version": "0.0.33",
                         "type": "docker",
                         "status": "running",
                         "restartPolicy": "always",
                         "settings": {
-                            "image": "paulfocontainerregistry.azurecr.io/pfhost_single_chl_rpi:0.0.29-arm32v7",
+                            "image": "paulfocontainerregistry.azurecr.io/pfhost_single_chl_rpi:0.0.33-arm32v7",
                             "createOptions":  {"HostConfig":
                                     {"Privileged": true}}
                         },
