@@ -5,12 +5,10 @@ namespace LoRaWanNetworkSrvModule
     using System.Runtime.InteropServices;
     using System.Runtime.Loader;
     using System.Security.Cryptography.X509Certificates;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using Microsoft.Azure.Devices.Client;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
+
 
     class Program
     {
@@ -77,16 +75,11 @@ namespace LoRaWanNetworkSrvModule
         /// </summary>
         static async Task Run(bool bypassCertVerification = false)
         {
-            try
-            {
+           
                 Console.WriteLine("Starting UDP listener...");
                 udpServer = new UdpServer();
                 await udpServer.RunServer(bypassCertVerification);
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"Initialization failed with error: {ex.Message}");
-            }
+           
         }
     }
 }

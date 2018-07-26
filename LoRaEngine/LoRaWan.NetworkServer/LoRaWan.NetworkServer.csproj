@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Devices" Version="1.6.0" />
-    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.6.0-preview-001" />
+    <PackageReference Include="Microsoft.Azure.Devices.Client" Version="1.17.0-preview-007" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

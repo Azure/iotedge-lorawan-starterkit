@@ -21,7 +21,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaTools", "LoraTools\LoRa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanManagerTest", "DevTools\LoRaWanManagerTest\LoRaWanManagerTest.csproj", "{0BF074D1-69DB-433A-9348-7D5E31529411}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAppForEverything", "TestAppForEverything\TestAppForEverything.csproj", "{D649BC23-5663-4746-BB23-802359769736}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestAppForEverything", "TestAppForEverything\TestAppForEverything.csproj", "{D649BC23-5663-4746-BB23-802359769736}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanTest", "LoRaWanTest\LoRaWanTest.csproj", "{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoraKeysManagerFacade", "LoraKeysManagerFacade\LoraKeysManagerFacade.csproj", "{7E3FDAAC-242D-40CD-9782-0A8487FD0070}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +61,14 @@ Global
 		{D649BC23-5663-4746-BB23-802359769736}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D649BC23-5663-4746-BB23-802359769736}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D649BC23-5663-4746-BB23-802359769736}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E3FDAAC-242D-40CD-9782-0A8487FD0070}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E3FDAAC-242D-40CD-9782-0A8487FD0070}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E3FDAAC-242D-40CD-9782-0A8487FD0070}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E3FDAAC-242D-40CD-9782-0A8487FD0070}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
