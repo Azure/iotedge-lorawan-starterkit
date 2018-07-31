@@ -192,7 +192,6 @@ namespace AESDemo
             //    Console.Write("Nok");
             //}
 
-
         }
     }
 }

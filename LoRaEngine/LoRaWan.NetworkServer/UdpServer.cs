@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,10 +23,10 @@ namespace LoRaWan.NetworkServer
         private static IPAddress remoteLoRaAggregatorIp;
         private static int remoteLoRaAggregatorPort;
 
-        public async Task RunServer(bool bypassCertVerification)
+        public async Task RunServer()
         {
 
-            await InitCallBack(bypassCertVerification);
+            await InitCallBack();
          
             await RunUdpListener();
 
@@ -33,8 +34,11 @@ namespace LoRaWan.NetworkServer
 
         public static async Task UdpSendMessage(byte[] messageToSend)
         {
-            if (messageToSend!=null && messageToSend.Length != 0)
+            if (messageToSend != null && messageToSend.Length != 0)
+            {
                 await udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp.ToString(), remoteLoRaAggregatorPort);
+                //Console.WriteLine($"UDP message sent on port: {remoteLoRaAggregatorPort}");
+            }
         }
 
         async Task RunUdpListener()
@@ -44,28 +48,30 @@ namespace LoRaWan.NetworkServer
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, PORT);
             udpClient = new UdpClient(endPoint);
 
-            Console.WriteLine($"UDP Listener started on port {PORT}");
+            Console.WriteLine($"LoRaWAN server started on port {PORT}");
                  
 
             while (true)
             {
                 UdpReceiveResult receivedResults = await udpClient.ReceiveAsync();
 
-                Console.WriteLine($"UDP message received ({receivedResults.Buffer.Length} bytes).");
+                //Console.WriteLine($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}");
 
-                //connection
-                if (remoteLoRaAggregatorIp == null)
+             
+                //Todo check that is an ack only, we could do a better check in a future verstion
+                if (receivedResults.Buffer.Length == 12)
                 {
                     remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
-                    remoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port; 
-                        
+                    remoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;                   
                 }
+
+               
 
 
                 try
                 {
                     MessageProcessor messageProcessor = new MessageProcessor();
-                     messageProcessor.processMessage(receivedResults.Buffer);
+                    _= messageProcessor.processMessage(receivedResults.Buffer);
                 }
                 catch (Exception ex)
                 {
@@ -78,26 +84,22 @@ namespace LoRaWan.NetworkServer
            
         }
 
-        async Task InitCallBack(bool bypassCertVerification)
+        async Task InitCallBack()
         {
             try
             {
                 
    
 
-                Console.WriteLine("Setting up MqttTransportSettings");
-                MqttTransportSettings mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
-                // During dev you might want to bypass the cert verification. It is highly recommended to verify certs systematically in production
-                if (bypassCertVerification)
-                {
-                    mqttSetting.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true;
-                }
-                ITransportSettings[] settings = { mqttSetting };
+               
+                ITransportSettings transportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+             
+                ITransportSettings[] settings = { transportSettings };
 
                 //if running as Edge module
-                if (Environment.GetEnvironmentVariable("EdgeHubConnectionString") != null)
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IOTEDGE_APIVERSION")))
                 {
-                    ioTHubModuleClient = ModuleClient.CreateFromEnvironment(settings);
+                    ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
 
                     Console.WriteLine("Getting properties from module twin...");
 
@@ -108,6 +110,8 @@ namespace LoRaWan.NetworkServer
                     try
                     {
                         LoraDeviceInfoManager.FacadeServerUrl = moduleTwinCollection["FacadeServerUrl"];
+                        Console.WriteLine($"Facade function url: {LoraDeviceInfoManager.FacadeServerUrl}");
+
                     }
                     catch (ArgumentOutOfRangeException e)
                     {
@@ -121,21 +125,21 @@ namespace LoRaWan.NetworkServer
                     {
                         Console.WriteLine("Module twin facadeAuthCode not exist");
                     }
+
+                    await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, null);
                 }
+                //todo ronnie what to do when not running as edge?
                 //running as non edge module for test and debugging
                 else
-                {
-
-                    //TODO ronnie remove the test keys
-                    //LoraDeviceInfoManager.FacadeServerUrl = "https://lorafacade.azurewebsites.net/api/";
+                {              
                     LoraDeviceInfoManager.FacadeServerUrl = "http://localhost:7071/api/";
                     LoraDeviceInfoManager.FacadeAuthCode = "";
                 }
 
 
-                Console.WriteLine("Registering callback for module twin update...");
+               
                 // Attach callback for Twin desired properties updates
-               // await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, null);
+              
             }
             catch (Exception ex)
             {
@@ -163,23 +167,23 @@ namespace LoRaWan.NetworkServer
             {
                 foreach (Exception exception in ex.InnerExceptions)
                 {
-                    Console.WriteLine();
+                    
                     Console.WriteLine("Error when receiving desired property: {0}", exception);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine();
+               
                 Console.WriteLine("Error when receiving desired property: {0}", ex.Message);
             }
             return Task.CompletedTask;
         }
 
-
-
+       
         public void Dispose()
         {
 
         }
     }
+
 }

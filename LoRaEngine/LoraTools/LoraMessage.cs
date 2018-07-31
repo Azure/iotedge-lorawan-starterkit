@@ -743,7 +743,12 @@ namespace PacketManager
         public LoRaMetada(byte[] input)
         {  
             var payload = Encoding.Default.GetString(input);
+
+            //todo ronnie implement a better logging by message type
+            if (!payload.StartsWith("{\"stat"))
             Console.WriteLine(payload);
+
+
             var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
             fullPayload = payloadObject;
             //TODO to this in a loop.

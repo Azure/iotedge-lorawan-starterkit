@@ -27,6 +27,10 @@ namespace LoraKeysManagerFacade
         public string NetId;
         public bool IsOurDevice = false;
         public bool IsJoinValid = false;
+        public UInt16 FCntUp;
+        public UInt16 FCntDown;
+        public string GatewayID;
+        //todo ronnie add confirmed or unconfirmed down preference settings
     }
 
   
@@ -85,7 +89,7 @@ namespace LoraKeysManagerFacade
 
                 RegistryManager registryManager = RegistryManager.CreateFromConnectionString(connectionString);
 
-                //Currently registry manageer query only support select so we need to check for injection on the devaddr only for "'"
+                //Currently registry manager query only support select so we need to check for injection on the devaddr only for "'"
                 //TODO check for sql injection
                 devAddr =devAddr.Replace('\'',' ');
 
@@ -106,7 +110,16 @@ namespace LoraKeysManagerFacade
                         if(returnAppSKey)
                             loraDeviceInfo.AppSKey = twin.Tags["AppSKey"].Value;
                         loraDeviceInfo.NwkSKey = twin.Tags["NwkSKey"].Value;
+                        if (twin.Tags.Contains("GatewayID"))
+                            loraDeviceInfo.GatewayID = twin.Tags["GatewayID"].Value;
+                        if (twin.Tags.Contains("AppEUI"))
+                            loraDeviceInfo.AppEUI = twin.Tags["AppEUI"].Value;
                         loraDeviceInfo.IsOurDevice = true;
+                        if (twin.Properties.Reported.Contains("FCntUp"))
+                            loraDeviceInfo.FCntUp = twin.Properties.Reported["FCntUp"];
+                        if (twin.Properties.Reported.Contains("FCntDown"))
+                            loraDeviceInfo.FCntDown = twin.Properties.Reported["FCntDown"];
+                        
                     }
                 }
 
@@ -173,6 +186,8 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(errorMsg);
             }
 
+            string GatewayID = req.Query["GatewayID"];
+
             var config = new ConfigurationBuilder()
                 .SetBasePath(context.FunctionAppDirectory)
                 .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
@@ -215,7 +230,7 @@ namespace LoraKeysManagerFacade
                     }
                     else
                     {
-                        if (twin.Tags["AppEUI"] != appEUI)
+                        if (twin.Tags["AppEUI"].Value != appEUI)
                         {
                             string errorMsg = $"AppEUI for OTAA does not match for device {devEUI}";
                             log.Info(errorMsg);
@@ -232,7 +247,7 @@ namespace LoraKeysManagerFacade
                     }
                     else
                     {
-                        AppKey = twin.Tags["AppKey"];
+                        AppKey = twin.Tags["AppKey"].Value;
                     }
 
                     //Make sure that is a new request and not a replay
@@ -242,7 +257,7 @@ namespace LoraKeysManagerFacade
                         {
                             string errorMsg = $"DevNonce already used for device {devEUI}";
                             log.Info(errorMsg);
-                            loraDeviceInfo.DevAddr = DevNonce;                
+                            loraDeviceInfo.DevAddr = DevNonce;                            
                             loraDeviceInfo.IsJoinValid = false;
                             json = JsonConvert.SerializeObject(loraDeviceInfo);
                             return (ActionResult)new OkObjectResult(json);
@@ -250,7 +265,26 @@ namespace LoraKeysManagerFacade
                        
                     }
 
-                
+                    //Check that the device is joining throught the linked gateway and not another
+                    if (twin.Tags.Contains("GatewayID"))
+                    {
+                       
+
+                        if (twin.Tags["GatewayID"].Value.ToUpper() != GatewayID.ToUpper())
+                        {
+                            string errorMsg = $"Not the right gateway device-gateway:{twin.Tags["GatewayID"].Value} current-gateway:{GatewayID}";
+                            log.Info(errorMsg);
+                            loraDeviceInfo.DevAddr = DevNonce;
+                            if (twin.Tags.Contains("GatewayID"))
+                                loraDeviceInfo.GatewayID = twin.Tags["GatewayID"].Value;
+                            loraDeviceInfo.IsJoinValid = false;
+                            json = JsonConvert.SerializeObject(loraDeviceInfo);
+                            return (ActionResult)new OkObjectResult(json);
+                        }
+
+                    }
+
+
                     byte[] netId = new byte[3] { 0, 0, 1 };
 
                     AppNonce = OTAAKeysGenerator.getAppNonce();
@@ -306,6 +340,7 @@ namespace LoraKeysManagerFacade
                     loraDeviceInfo.NwkSKey = NwkSKey;
                     loraDeviceInfo.AppSKey = AppSKey;
                     loraDeviceInfo.AppNonce = AppNonce;
+                    loraDeviceInfo.AppEUI = appEUI;
                     loraDeviceInfo.NetId = BitConverter.ToString(netId).Replace("-", ""); ;
 
                     if (!returnAppSKey)
@@ -316,6 +351,10 @@ namespace LoraKeysManagerFacade
 
                     var device = await registryManager.GetDeviceAsync(loraDeviceInfo.DevEUI);
                     loraDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
+
+                    if (twin.Tags.Contains("GatewayID"))
+                        loraDeviceInfo.GatewayID = twin.Tags["GatewayID"].Value;
+
                 }
                 else
                 {

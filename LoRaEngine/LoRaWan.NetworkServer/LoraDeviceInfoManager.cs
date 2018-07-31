@@ -33,11 +33,11 @@ namespace LoRaWan.NetworkServer
             return loraDeviceInfo;
         }
 
-        public static async Task<LoraDeviceInfo> PerformOTAAAsync(string DevEUI, string AppEUI, string DevNonce)
+        public static async Task<LoraDeviceInfo> PerformOTAAAsync(string GatewayID, string DevEUI, string AppEUI, string DevNonce)
         {
             var client = new HttpClient();         
 
-            var url = $"{FacadeServerUrl}PerformOTAA?code={FacadeAuthCode}&DevEUI={DevEUI}&DevNonce={DevNonce}&AppEUI={AppEUI}";
+            var url = $"{FacadeServerUrl}PerformOTAA?code={FacadeAuthCode}&GatewayID={GatewayID}&DevEUI={DevEUI}&DevNonce={DevNonce}&AppEUI={AppEUI}";
 
             HttpResponseMessage response = await client.GetAsync(url);
             var result = response.Content.ReadAsStringAsync().Result;

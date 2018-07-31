@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
 using System.Security;
@@ -32,10 +33,10 @@ namespace LoRaWan.NetworkServer
                 try
                 {
 
-                    string partConnection = createIoTHubConnectionString(false);
+                    string partConnection = createIoTHubConnectionString();
                     string deviceConnectionStr = $"{partConnection}DeviceId={DevEUI};SharedAccessKey={PrimaryKey}";
 
-                    deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Mqtt_Tcp_Only);
+                    deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Amqp_Tcp_Only);
 
                     //we set the retry only when sending msgs
                     deviceClient.SetRetryPolicy(new NoRetry());
@@ -59,7 +60,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public async Task SendMessage(string strMessage)
+        public async Task SendMessageAsync(string strMessage)
         {
 
             if (!string.IsNullOrEmpty(strMessage))
@@ -73,9 +74,6 @@ namespace LoRaWan.NetworkServer
                     deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
                     await deviceClient.SendEventAsync(new Message(UTF8Encoding.ASCII.GetBytes(strMessage)));
 
-                    //in future retrive the c2d msg to be sent to the device
-                    //var c2dMsg = await deviceClient.ReceiveAsync((TimeSpan.FromSeconds(2)));
-
                     //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
                     deviceClient.SetRetryPolicy(new NoRetry());
                 }
@@ -86,58 +84,105 @@ namespace LoRaWan.NetworkServer
 
             }
         }
-
-        private string createIoTHubConnectionString(bool enableGateway)
+        public async Task UpdateFcntAsync(int FCntUp, int? FCntDown)
         {
 
-            string connectionStringFromModule = Environment.GetEnvironmentVariable("EdgeHubConnectionString");
 
-            //TODO remove the test connection
-            if(connectionStringFromModule==null)
-                connectionStringFromModule = "HostName=ronnietest.azure-devices.net;GatewayHostName=;";
+            try
+            {
+                CreateDeviceClient();
+
+                Console.WriteLine($"Updating twins...");
+
+                //updating the framecount non blocking because not critical and takes quite a bit of time
+                TwinCollection prop;
+                if (FCntDown != null)
+                    prop = new TwinCollection($"{{\"FCntUp\":{FCntUp},\"FCntDown\":{FCntDown}}}");
+                else
+                    prop = new TwinCollection($"{{\"FCntUp\":{FCntUp}}}");
+
+                await deviceClient.UpdateReportedPropertiesAsync(prop);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Could not update twins with error: {ex.Message}");
+            }
 
             
+        }
+
+        public async Task<Message> GetMessageAsync(TimeSpan timeout)
+        {
+
+
+            try
+            {
+                CreateDeviceClient();
+
+                return await deviceClient.ReceiveAsync(timeout);
+
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Could not retrive message to IoTHub/Edge with error: {ex.Message}");
+                return null;
+            }
+
+
+        }
+
+        public async Task CompleteAsync(Message message)
+        {
+          
+            await deviceClient.CompleteAsync(message);          
+
+        }
+
+        public async Task AbandonAsync(Message message)
+        {
+
+            await deviceClient.AbandonAsync(message);
+
+        }
+
+        public async Task OpenAsync()
+        {
+
+            await deviceClient.OpenAsync();
+
+        }
+
+
+        private string createIoTHubConnectionString()
+        {
+
+            bool enableGateway=false;
             string connectionString = string.Empty;
-            connectionString += $"HostName={getVal("HostName", connectionStringFromModule)};";
+
+            string hostName = Environment.GetEnvironmentVariable("IOTEDGE_IOTHUBHOSTNAME");
+            string gatewayHostName = Environment.GetEnvironmentVariable("IOTEDGE_GATEWAYHOSTNAME");
+
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ENABLE_GATEWAY")))
+                enableGateway = bool.Parse(Environment.GetEnvironmentVariable("ENABLE_GATEWAY"));
+            
+
+            if(string.IsNullOrEmpty(hostName))
+            {
+                Console.WriteLine("Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible");
+            }
+            
+
+            connectionString += $"HostName={hostName};";
 
             if (enableGateway)
-                connectionString += $"GatewayHostName={getVal("GatewayHostName", connectionStringFromModule)};";
-
-
-            string getVal(string key, string connStr)
             {
-                if (string.IsNullOrEmpty(key))
-                {
-                    throw new Exception($"Key cannot be null");
-                }
-
-                if (string.IsNullOrEmpty(connStr))
-                {
-                    throw new Exception($"Connection string cannot be null");
-                }
-
-                string val = null;
-
-                foreach (var keyVal in connStr.Split(';'))
-                {
-                    int splIndex = keyVal.IndexOf('=');
-                    string k = keyVal.Substring(0, splIndex);
-                    if (k.ToLower().Trim() == key.ToLower().Trim())
-                    {
-                        val = keyVal.Substring(splIndex + 1, keyVal.Length - splIndex - 1);
-                        break;
-                    }
-                }
-
-                if (string.IsNullOrEmpty(val))
-                {
-                    throw new Exception($"Key '{key}' not found.");
-                }
-                else
-                {
-                    return val;
-                }
+                connectionString += $"GatewayHostName={hostName};";                
             }
+                      
+            
 
             return connectionString;
 
