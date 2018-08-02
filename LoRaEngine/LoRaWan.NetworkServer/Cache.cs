@@ -11,6 +11,11 @@ namespace LoRaWan.NetworkServer
 
         private static IMemoryCache MemoryCache = new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions());
 
+        public static void Clear()
+        {
+               Cache.MemoryCache = new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions());
+        }
+        
 
         public static void AddToCache(string devAddr, LoraDeviceInfo loraDeviceInfo)
         {

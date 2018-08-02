@@ -90,18 +90,25 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                CreateDeviceClient();
+                //update the twins every 10
+                if (FCntUp % 10 == 0)
+                {
+                    CreateDeviceClient();
 
-                Console.WriteLine($"Updating twins...");
+                    Console.WriteLine($"Updating twins...");                
+                 
+                    TwinCollection prop;
+                    if (FCntDown != null)
+                    {
+                        prop = new TwinCollection($"{{\"FCntUp\":{FCntUp},\"FCntDown\":{FCntDown}}}");
+                    }
+                    else
+                    {
+                        prop = new TwinCollection($"{{\"FCntUp\":{FCntUp}}}");
+                    }
 
-                //updating the framecount non blocking because not critical and takes quite a bit of time
-                TwinCollection prop;
-                if (FCntDown != null)
-                    prop = new TwinCollection($"{{\"FCntUp\":{FCntUp},\"FCntDown\":{FCntDown}}}");
-                else
-                    prop = new TwinCollection($"{{\"FCntUp\":{FCntUp}}}");
-
-                await deviceClient.UpdateReportedPropertiesAsync(prop);
+                    await deviceClient.UpdateReportedPropertiesAsync(prop);
+                }
 
             }
             catch (Exception ex)

@@ -890,7 +890,7 @@ namespace PacketManager
             {
                 payloadMessage = (LoRaPayloadJoinAccept)payload;
                 loraMetadata = new LoRaMetada(payloadMessage, type);
-                var downlinkmsg = new DownlinkPktFwdMessage(loraMetadata.rawB64data,_datr,_rfch,_freq, _tmst+ 5000000);
+                var downlinkmsg = new DownlinkPktFwdMessage(loraMetadata.rawB64data,_datr,_rfch,_freq, _tmst);
               
                 var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
                 Console.WriteLine(jsonMsg);

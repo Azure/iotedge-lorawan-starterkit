@@ -17,6 +17,7 @@ namespace LoRaWan.NetworkServer
         public string AppNonce;
         public string DevNonce;
         public string NetId;
+  
         public bool IsOurDevice = false;
         public bool IsJoinValid = false;
         public IoTHubSender HubSender;

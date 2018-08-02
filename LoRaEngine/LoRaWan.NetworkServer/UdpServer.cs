@@ -127,6 +127,10 @@ namespace LoRaWan.NetworkServer
                     }
 
                     await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, null);
+
+                    await ioTHubModuleClient.SetMethodHandlerAsync("ClearCache", ClearCache, null);
+
+                   
                 }
                 //todo ronnie what to do when not running as edge?
                 //running as non edge module for test and debugging
@@ -146,6 +150,15 @@ namespace LoRaWan.NetworkServer
                 Console.WriteLine($"Initialization failed with error: {ex.Message}.\nWaiting for update desired property 'FacadeServerName' and 'FacadeAuthCode'.");
                
             }
+        }
+
+        private static async Task<MethodResponse> ClearCache(MethodRequest methodRequest, object userContext)
+        {
+            Cache.Clear();
+
+            Console.WriteLine("Cache cleared");
+
+            return new MethodResponse(200);
         }
 
         Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)

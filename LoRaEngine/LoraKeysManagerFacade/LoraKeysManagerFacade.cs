@@ -118,7 +118,11 @@ namespace LoraKeysManagerFacade
                         if (twin.Properties.Reported.Contains("FCntUp"))
                             loraDeviceInfo.FCntUp = twin.Properties.Reported["FCntUp"];
                         if (twin.Properties.Reported.Contains("FCntDown"))
+                        {
                             loraDeviceInfo.FCntDown = twin.Properties.Reported["FCntDown"];
+                            //adding downstram fcnt tolerance. we save every 10 so we make sure that on requery we start from 10 more
+                            loraDeviceInfo.FCntDown += 10;
+                        }
                         
                     }
                 }
