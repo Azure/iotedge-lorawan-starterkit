@@ -532,7 +532,7 @@ namespace LoRaWan.NetworkServer
 
         }
 
-        //todo ronnie remove the http logger once routing works correctly
+        //todo  remove the http logger once routing works correctly
         private void LogMessage(string logJson)
         {
             var content = new StringContent(logJson, Encoding.UTF8, "application/json");

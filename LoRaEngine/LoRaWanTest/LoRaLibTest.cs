@@ -10,7 +10,7 @@ namespace LoRaWanTest
     /// <summary>
     /// all these test cases were inspired from https://github.com/brocaar/lora-app-server
     /// </summary>
-    public class LoRaMessageTest
+    public class LoRaLibTest
     {
         [Fact]
 

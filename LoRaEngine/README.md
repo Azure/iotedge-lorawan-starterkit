@@ -6,7 +6,8 @@ A **.NET Standard 2.0** solution with the following projects:
 * **UDPListener** - executable
 * **LoRaTools** - library
 * **LoRaServer** - IoT edge module executable, Dockerfile, etc.
-* DevTools - folder
+* **DevTools** - submodule folder, check it out using the command 
+              ` git submodule update --init --recursive ` and add the projects to the visual studio solution
   * **PacketForwarderSimulator** - executable
   * **DevTool1** - executable used during development process
   * **DevTool2** - executable used during development process
