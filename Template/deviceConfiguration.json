@@ -1,43 +1,66 @@
 {
-	"moduleContent": {
+	"modulesContent": {
 		"$edgeAgent": {
 			"properties.desired": {
 				"schemaVersion": "1.0",
 				"runtime": {
 					"type": "docker",
 					"settings": {
-						"minDockerVersion": "v1.25",
-							"loggingOptions": ""
+						"loggingOptions": "",
+						"minDockerVersion": "v1.25"
 					}
 				},
 				"systemModules": {
 					"edgeAgent": {
 						"type": "docker",
 						"settings": {
-							"image": "microsoft/azureiotedge-agent:1.0-preview",
-							"createOptions": ""
+							"image": "mcr.microsoft.com/azureiotedge-agent:1.0",
+							"createOptions": "{}"
 						}
 					},
 					"edgeHub": {
 						"type": "docker",
-						"status": "running",
-						"restartPolicy": "always",
 						"settings": {
-							"image": "microsoft/azureiotedge-hub:1.0-preview",
-							"createOptions": ""
-						}
+							"image": "mcr.microsoft.com/azureiotedge-hub:1.0",
+							"createOptions": "{\n  \"HostConfig\": {\n    \"PortBindings\": {\n      \"8883/tcp\": [\n        {\n          \"HostPort\": \"8883\"\n        }\n      ],\n      \"443/tcp\": [\n        {\n          \"HostPort\": \"443\"\n        }\n      ],\n      \"5671/tcp\": [\n        {\n          \"HostPort\": \"5671\"\n        }\n      ]\n    }\n  }\n}"
+						},
+						"env": {
+							"OptimizeForPerformance": {
+								"value": "false"
+							}
+						},
+						"status": "running",
+						"restartPolicy": "always"
 					}
 				},
 				"modules": {
-					"tempSensor": {
-						"version": "1.0",
+					"lorawannetworksrvmodule": {
 						"type": "docker",
-						"status": "running",
-						"restartPolicy": "always",
 						"settings": {
-							"image": "microsoft/azureiotedge-simulated-temperature-sensor:1.0-preview",
-							"createOptions": "{}"
-						}
+							"image": "loraedge/lorawannetworksrvmodule:0.1.42-arm32v7",
+							"createOptions": "{\r\n  \"ExposedPorts\": {\r\n    \"1680/udp\": {}\r\n  },\r\n  \"HostConfig\": {\r\n    \"PortBindings\": {\r\n      \"1680/udp\": [\r\n        {\r\n          \"HostPort\": \"1680\",\r\n          \"HostIp\":\"172.17.0.1\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}\r\n\r\n"
+						},
+						"version": "1.0",
+						"env": {
+							"ENABLE_GATEWAY": {
+								"value": "true"
+							},
+							"USE_SOCKETS": {
+								"value": "false"
+							}
+						},
+						"status": "running",
+						"restartPolicy": "always"
+					},
+					"lorawanpktfwdmodule": {
+						"type": "docker",
+						"settings": {
+							"image": "loraedge/lorawanpktfwdmodule:0.1.0-arm32v7",
+							"createOptions": "  {\r\n  \"HostConfig\": {\r\n    \"NetworkMode\": \"host\", \"Privileged\": true \r\n\r\n  },\r\n  \"NetworkingConfig\": {\r\n    \"EndpointsConfig\": {\r\n      \"host\": {}\r\n    }\r\n  }\r\n}\r\n  \r\n  \r\n  \r\n"
+						},
+						"version": "1.0",
+						"status": "running",
+						"restartPolicy": "always"
 					}
 				}
 			}

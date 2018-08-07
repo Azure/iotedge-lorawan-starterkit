@@ -10,41 +10,79 @@ using System;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace CreateDeviceFunction
 {
     public static class CreateEdgeDevice
     {
         [FunctionName("CreateEdgeDevice")]
-        public static async System.Threading.Tasks.Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, TraceWriter log)
+        public static async System.Threading.Tasks.Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, TraceWriter log, ExecutionContext context)
         {
-            string connectionString = Environment.GetEnvironmentVariable("IOT_HUB_OWNER_CONNECTION_STRING");
-
+            var config = new ConfigurationBuilder()
+                .SetBasePath(context.FunctionAppDirectory)
+                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build();
+            string connectionString = config.GetConnectionString("IoTHubConnectionString");
+            Console.WriteLine(connectionString);
             RegistryManager manager = RegistryManager.CreateFromConnectionString(connectionString);
-
-            string deviceName = req.Query["deviceName"];
-
-            string requestBody = new StreamReader(req.Body).ReadToEnd();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            Device d = new Device(deviceName);
-            d.Capabilities = new DeviceCapabilities()
+            // parse query parameter
+            var queryStrings=req.GetQueryParameterDictionary();
+            string deviceName = "";
+            string facadeKey = "";
+            queryStrings.TryGetValue("deviceName", out deviceName);
+            queryStrings.TryGetValue("facadeKey", out facadeKey);
+            Console.WriteLine(deviceName);
+            Console.WriteLine(facadeKey);
+            Device edgeGatewayDevice = new Device(deviceName);
+            edgeGatewayDevice.Capabilities = new DeviceCapabilities()
             {
                 IotEdge = true
             };
-            await manager.AddDeviceAsync(d);
-            ConfigurationContent spec = JsonConvert.DeserializeObject<ConfigurationContent>(File.ReadAllText("./config.json"));
+            await manager.AddDeviceAsync(edgeGatewayDevice);
+            string json = "";
+            using (WebClient wc = new WebClient())
+            {
+                 json = wc.DownloadString("https://raw.githubusercontent.com/Mandur/AzureIoT_LoRaWan_StarterKit/arduinoPr/Template/deviceConfiguration.json");
+            }
+            ConfigurationContent spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
             await manager.AddModuleAsync(new Module(deviceName, "lorawannetworksrvmodule"));
             await manager.ApplyConfigurationContentOnDeviceAsync(deviceName, spec);
 
             Twin twin = new Twin();
             twin.Properties.Desired = new TwinCollection(@"{FacadeServerUrl:'" + String.Format("https://{0}.azurewebsites.net/api/", GetEnvironmentVariable("FACADE_HOST_NAME")) + "',FacadeAuthCode: " +
-                "'" + GetEnvironmentVariable("FACADE_KEY") + "'}");
+                "'" + facadeKey + "'}");
             var remoteTwin = await manager.GetTwinAsync(deviceName);
 
             await manager.UpdateTwinAsync(deviceName, "lorawannetworksrvmodule", twin, remoteTwin.ETag);
 
+            bool deployEndDevice = false;
+            Boolean.TryParse(Environment.GetEnvironmentVariable("DEPLOY_DEVICE"),out deployEndDevice);
 
-            return new CreatedResult("IoTHub", d);
+            if (deployEndDevice)
+            {
+                Device endDevice = new Device("47AAC86800430028");
+                await manager.AddDeviceAsync(endDevice);
+                Twin endTwin = new Twin();
+                endTwin.Tags = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:''," +
+                "SensorDecoder:'DecoderRotatorySensor'}");
+    
+                var endRemoteTwin = await manager.GetTwinAsync(deviceName);
+                await manager.UpdateTwinAsync("47AAC86800430028", endTwin, endRemoteTwin.ETag);
+
+            }
+
+
+            var template = @"{'$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#', 'contentVersion': '1.0.0.0', 'parameters': {}, 'variables': {}, 'resources': []}";
+            HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
+            Console.WriteLine(template);
+
+            response.Content = new StringContent(template, System.Text.Encoding.UTF8, "application/json");
+
+            return response;
         }
 
         public static string GetEnvironmentVariable(string name)

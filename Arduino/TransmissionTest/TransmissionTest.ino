@@ -3,9 +3,9 @@
 //set to true to send confirmed data up messages
 bool confirmed=false;
 //application information, should be similar to what was provisiionned in the device twins
-String deviceId ="47AAC86800430028";
-String appKey="8AFE71A145B253E49C3031AD068277A1"
-String appEui ="BE7A0000000014E2";
+char * deviceId ="47AAC86800430028";
+char * appKey="8AFE71A145B253E49C3031AD068277A1";
+char* appEui ="BE7A0000000014E2";
 
 /*
 iot hub OTAA tags for deviceid: 47AAC86800430028 
@@ -61,7 +61,7 @@ void loop(void)
     lastCall=millis();
     bool result = false;
     String packetString = "";
-    packetString="R"+String(i);
+    packetString=String(i);
     SerialUSB.println(packetString);
     packetString.toCharArray(data, 10);
 

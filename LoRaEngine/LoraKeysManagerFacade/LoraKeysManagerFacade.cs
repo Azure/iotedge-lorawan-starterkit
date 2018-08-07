@@ -68,14 +68,10 @@ namespace LoraKeysManagerFacade
                 throw new Exception(errorMsg);
             }
 
-            var config = new ConfigurationBuilder()
-                .SetBasePath(context.FunctionAppDirectory)
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
+         
 
 
-            var connectionString = config.GetConnectionString("IoTHubConnectionString");
+            var connectionString = Environment.GetEnvironmentVariable("IoTHubConnectionString");
 
             if (connectionString == null)
             {
