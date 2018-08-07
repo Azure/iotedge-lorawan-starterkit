@@ -36,7 +36,23 @@ namespace LoRaWan.NetworkServer
                     string partConnection = createIoTHubConnectionString();
                     string deviceConnectionStr = $"{partConnection}DeviceId={DevEUI};SharedAccessKey={PrimaryKey}";
 
-                    deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Amqp_Tcp_Only);
+
+                    //enabling Amqp multiplexing
+                    var transportSettings = new ITransportSettings[]
+                    {
+                        new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
+                        {
+                            AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                            {
+                                Pooling = true,
+                                MaxPoolSize = 1
+                            }
+                        }
+                    };
+
+
+
+                    deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, transportSettings);
 
                     //we set the retry only when sending msgs
                     deviceClient.SetRetryPolicy(new NoRetry());

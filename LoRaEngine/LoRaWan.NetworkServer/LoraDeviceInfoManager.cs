@@ -26,6 +26,15 @@ namespace LoRaWan.NetworkServer
             var url = $"{FacadeServerUrl}GetNwkSKeyAppSKey?code={FacadeAuthCode}&devAddr={DevAddr}";
 
             HttpResponseMessage response = await client.GetAsync(url);
+
+           
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Error calling façade api: {response.ReasonPhrase} check the azure function log");
+                return null;
+            }
+
             var result = response.Content.ReadAsStringAsync().Result;
 
             LoraDeviceInfo loraDeviceInfo = (LoraDeviceInfo)JsonConvert.DeserializeObject(result, typeof(LoraDeviceInfo));
@@ -40,6 +49,14 @@ namespace LoRaWan.NetworkServer
             var url = $"{FacadeServerUrl}PerformOTAA?code={FacadeAuthCode}&GatewayID={GatewayID}&DevEUI={DevEUI}&DevNonce={DevNonce}&AppEUI={AppEUI}";
 
             HttpResponseMessage response = await client.GetAsync(url);
+           
+
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Error calling façade api: {response.ReasonPhrase} check the azure function log");
+                return null;
+            }
+
             var result = response.Content.ReadAsStringAsync().Result;
 
             LoraDeviceInfo loraDeviceInfo = (LoraDeviceInfo)JsonConvert.DeserializeObject(result, typeof(LoraDeviceInfo));
