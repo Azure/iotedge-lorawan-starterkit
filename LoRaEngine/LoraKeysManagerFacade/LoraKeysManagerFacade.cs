@@ -57,15 +57,15 @@ namespace LoraKeysManagerFacade
 
         public static async Task<IActionResult> GetKeys(HttpRequest req, TraceWriter log, ExecutionContext context,bool returnAppSKey )
         {
-            log.Info("Function call started");
+           
 
             string devAddr = req.Query["devAddr"];
 
             if (devAddr == null)
             {
                 string errorMsg = "Missing devAddr in querystring";
-                log.Info(errorMsg);
-                return new BadRequestObjectResult(errorMsg);
+                //log.Error(errorMsg);
+                throw new Exception(errorMsg);
             }
 
             var config = new ConfigurationBuilder()
@@ -80,69 +80,60 @@ namespace LoraKeysManagerFacade
             if (connectionString == null)
             {
                 string errorMsg = "Missing IoTHubConnectionString in settings";
-                log.Info(errorMsg);
-                return new BadRequestObjectResult(errorMsg);
+                //log.Error(errorMsg);
+                throw new Exception(errorMsg);
             }
 
-            try
-            {
+          
+            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(connectionString);
 
-                RegistryManager registryManager = RegistryManager.CreateFromConnectionString(connectionString);
+            //Currently registry manager query only support select so we need to check for injection on the devaddr only for "'"
+            //TODO check for sql injection
+            devAddr =devAddr.Replace('\'',' ');
 
-                //Currently registry manager query only support select so we need to check for injection on the devaddr only for "'"
-                //TODO check for sql injection
-                devAddr =devAddr.Replace('\'',' ');
+            var query = registryManager.CreateQuery($"SELECT * FROM devices WHERE tags.DevAddr = '{devAddr}'", 1);
 
-                var query = registryManager.CreateQuery($"SELECT * FROM devices WHERE tags.DevAddr = '{devAddr}'", 1);
-
-                LoraDeviceInfo loraDeviceInfo = new LoraDeviceInfo();
-                loraDeviceInfo.DevAddr = devAddr;
+            LoraDeviceInfo loraDeviceInfo = new LoraDeviceInfo();
+            loraDeviceInfo.DevAddr = devAddr;
 
                
 
-                while (query.HasMoreResults)
-                {
-                    var page = await query.GetNextAsTwinAsync();
-                    //we query only for 1 result 
-                    foreach (var twin in page)
-                    {
-                        loraDeviceInfo.DevEUI = twin.DeviceId;
-                        if(returnAppSKey)
-                            loraDeviceInfo.AppSKey = twin.Tags["AppSKey"].Value;
-                        loraDeviceInfo.NwkSKey = twin.Tags["NwkSKey"].Value;
-                        if (twin.Tags.Contains("GatewayID"))
-                            loraDeviceInfo.GatewayID = twin.Tags["GatewayID"].Value;
-                        if (twin.Tags.Contains("AppEUI"))
-                            loraDeviceInfo.AppEUI = twin.Tags["AppEUI"].Value;
-                        loraDeviceInfo.IsOurDevice = true;
-                        if (twin.Properties.Reported.Contains("FCntUp"))
-                            loraDeviceInfo.FCntUp = twin.Properties.Reported["FCntUp"];
-                        if (twin.Properties.Reported.Contains("FCntDown"))
-                        {
-                            loraDeviceInfo.FCntDown = twin.Properties.Reported["FCntDown"];
-                            //adding downstram fcnt tolerance. we save every 10 so we make sure that on requery we start from 10 more
-                            loraDeviceInfo.FCntDown += 10;
-                        }
-                        
-                    }
-                }
-
-                if (loraDeviceInfo.IsOurDevice)
-                {
-                    var device = await registryManager.GetDeviceAsync(loraDeviceInfo.DevEUI);
-                    loraDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
-                }
-
-                string json = JsonConvert.SerializeObject(loraDeviceInfo);
-
-                return (ActionResult)new OkObjectResult(json);
-
-            }
-            catch (System.Exception ex)
+            while (query.HasMoreResults)
             {
-                log.Error("Error", ex);
-                return new BadRequestObjectResult("Error occured check function log");
+                var page = await query.GetNextAsTwinAsync();
+                //we query only for 1 result 
+                foreach (var twin in page)
+                {
+                    loraDeviceInfo.DevEUI = twin.DeviceId;
+                    if(returnAppSKey)
+                        loraDeviceInfo.AppSKey = twin.Tags["AppSKey"].Value;
+                    loraDeviceInfo.NwkSKey = twin.Tags["NwkSKey"].Value;
+                    if (twin.Tags.Contains("GatewayID"))
+                        loraDeviceInfo.GatewayID = twin.Tags["GatewayID"].Value;
+                    if (twin.Tags.Contains("AppEUI"))
+                        loraDeviceInfo.AppEUI = twin.Tags["AppEUI"].Value;
+                    loraDeviceInfo.IsOurDevice = true;
+                    if (twin.Properties.Reported.Contains("FCntUp"))
+                        loraDeviceInfo.FCntUp = twin.Properties.Reported["FCntUp"];
+                    if (twin.Properties.Reported.Contains("FCntDown"))
+                    {
+                        loraDeviceInfo.FCntDown = twin.Properties.Reported["FCntDown"];
+                    }
+                        
+                }
             }
+
+            if (loraDeviceInfo.IsOurDevice)
+            {
+                var device = await registryManager.GetDeviceAsync(loraDeviceInfo.DevEUI);
+                loraDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
+            }
+
+            string json = JsonConvert.SerializeObject(loraDeviceInfo);
+
+            return (ActionResult)new OkObjectResult(json);
+
+            
         }
 
         public static async Task<IActionResult> PerformOTAA(HttpRequest req, TraceWriter log, ExecutionContext context, bool returnAppSKey)
@@ -161,15 +152,15 @@ namespace LoraKeysManagerFacade
             string AppNonce;
 
 
-            log.Info("Function call started");
+            
 
             string devEUI = req.Query["devEUI"];
 
             if (devEUI == null)
             {
                 string errorMsg = "Missing devEUI in querystring";
-                log.Info(errorMsg);
-                return new BadRequestObjectResult(errorMsg);
+                //log.Error(errorMsg);
+                throw new Exception(errorMsg);
             }
 
             string appEUI = req.Query["appEUI"];
@@ -177,8 +168,8 @@ namespace LoraKeysManagerFacade
             if (appEUI == null)
             {
                 string errorMsg = "Missing appEUI in querystring";
-                log.Info(errorMsg);
-                return new BadRequestObjectResult(errorMsg);
+                //log.Error(errorMsg);
+                throw new Exception(errorMsg);
             }
 
             DevNonce = req.Query["devNonce"];
@@ -186,8 +177,8 @@ namespace LoraKeysManagerFacade
             if (DevNonce == null)
             {
                 string errorMsg = "Missing devNonce in querystring";
-                log.Info(errorMsg);
-                return new BadRequestObjectResult(errorMsg);
+                //log.Error(errorMsg);
+                throw new Exception(errorMsg);
             }
 
             string GatewayID = req.Query["GatewayID"];
@@ -203,12 +194,11 @@ namespace LoraKeysManagerFacade
             if (connectionString == null)
             {
                 string errorMsg = "Missing IoTHubConnectionString in settings";
-                log.Info(errorMsg);
-                return new BadRequestObjectResult(errorMsg);
+                //log.Error(errorMsg);
+                throw new Exception(errorMsg);
             }
 
-            try
-            {
+           
 
                 RegistryManager registryManager = RegistryManager.CreateFromConnectionString(connectionString);
               
@@ -229,16 +219,16 @@ namespace LoraKeysManagerFacade
                     if (!twin.Tags.Contains("AppEUI"))
                     {
                         string errorMsg = $"Missing AppEUI for OTAA for device {devEUI}";
-                        log.Info(errorMsg);
-                        return new BadRequestObjectResult(errorMsg);
+                        //log.Error(errorMsg);
+                        throw new Exception(errorMsg);
                     }
                     else
                     {
                         if (twin.Tags["AppEUI"].Value != appEUI)
                         {
                             string errorMsg = $"AppEUI for OTAA does not match for device {devEUI}";
-                            log.Info(errorMsg);
-                            return new BadRequestObjectResult(errorMsg);
+                            //log.Error(errorMsg);
+                            throw new Exception(errorMsg);
                         }
                     }
 
@@ -246,8 +236,8 @@ namespace LoraKeysManagerFacade
                     if (!twin.Tags.Contains("AppKey"))
                     {
                         string errorMsg = $"Missing AppKey for OTAA for device {devEUI}";
-                        log.Info(errorMsg);
-                        return new BadRequestObjectResult(errorMsg);
+                        //log.Error(errorMsg);
+                        throw new Exception(errorMsg);
                     }
                     else
                     {
@@ -369,12 +359,7 @@ namespace LoraKeysManagerFacade
                 json = JsonConvert.SerializeObject(loraDeviceInfo);
                 return (ActionResult)new OkObjectResult(json);
 
-            }
-            catch (System.Exception ex)
-            {
-                log.Error("Error", ex);
-                return new BadRequestObjectResult("Error occured check function log");
-            }
+           
         }
 
     }

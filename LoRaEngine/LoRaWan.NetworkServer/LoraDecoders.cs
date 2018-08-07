@@ -24,7 +24,7 @@ namespace LoRaWan.NetworkServer
                     sensorData = DecodeRotatorySensor(payload);
                     break;
                 default:
-                    sensorData = "{\"error\": \"no decoder found\"}";
+                    sensorData = $"{{\"error\": \"no decoder found\", \"rawpayload\": \"{payload}\"}}";
                     break;
 
             }

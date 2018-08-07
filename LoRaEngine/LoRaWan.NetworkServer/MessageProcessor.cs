@@ -14,9 +14,7 @@ namespace LoRaWan.NetworkServer
 {
     public class MessageProcessor : IDisposable
     {
-        //string testKey = "2B7E151628AED2A6ABF7158809CF4F3C";
-        //string testDeviceId = "BE7A00000000888F";
-        //private static UInt16 counter=1;
+
 
         private DateTime startTimeProcessing;
      
@@ -129,7 +127,7 @@ namespace LoRaWan.NetworkServer
 
                         //todo ronnie add tollernace range
                         //check if the frame counter is valid: either is above the server one or is an ABP device resetting the counter (relaxed seqno checking)
-                        if (fcntup > loraDeviceInfo.FCntUp || (fcntup == 1 && String.IsNullOrEmpty(loraDeviceInfo.AppEUI)))
+                        if (fcntup > loraDeviceInfo.FCntUp  || (fcntup == 1 && String.IsNullOrEmpty(loraDeviceInfo.AppEUI)))
                         {
                             Console.WriteLine($"Valid frame counter, msg: {fcntup} server: {loraDeviceInfo.FCntUp}");
 
@@ -502,7 +500,7 @@ namespace LoRaWan.NetworkServer
 
                 //todo ronnie check for throtteling of twins
                 //update the frame counter on the server
-                //_ = joinLoraDeviceInfo.HubSender.UpdateFcntAsync(joinLoraDeviceInfo.FCntUp, joinLoraDeviceInfo.FCntDown);
+                _ = joinLoraDeviceInfo.HubSender.UpdateFcntAsync(joinLoraDeviceInfo.FCntUp, joinLoraDeviceInfo.FCntDown);
 
 
 

@@ -2,8 +2,12 @@ FROM microsoft/dotnet:2.0-runtime-stretch AS base
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends unzip procps && \
-    curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l ~/vsdbg && \
     rm -rf /var/lib/apt/lists/*
+
+RUN useradd -ms /bin/bash moduleuser
+USER moduleuser
+RUN curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l ~/vsdbg
+
 
 FROM microsoft/dotnet:2.0-sdk AS build-env
 WORKDIR /app
@@ -15,7 +19,7 @@ COPY ./LoraTools ./LoraTools
 WORKDIR ./LoRaWanNetworkSrvModule
 RUN dotnet restore
 
-RUN dotnet publish -c Release -o out
+RUN dotnet publish -c Debug -o out
 
 FROM base
 WORKDIR /app
