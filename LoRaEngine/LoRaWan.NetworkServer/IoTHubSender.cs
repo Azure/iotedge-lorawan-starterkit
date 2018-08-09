@@ -44,6 +44,7 @@ namespace LoRaWan.NetworkServer
                         {
                             AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
                             {
+                            
                                 Pooling = true,
                                 MaxPoolSize = 1
                             }
@@ -51,6 +52,7 @@ namespace LoRaWan.NetworkServer
                     };
 
 
+                   
 
                     deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, transportSettings);
 
@@ -135,7 +137,7 @@ namespace LoRaWan.NetworkServer
             
         }
 
-        public async Task<Message> GetMessageAsync(TimeSpan timeout)
+        public async Task<Message> ReceiveAsync(TimeSpan timeout)
         {
 
 
@@ -182,7 +184,7 @@ namespace LoRaWan.NetworkServer
         private string createIoTHubConnectionString()
         {
 
-            bool enableGateway=false;
+            bool enableGateway= true;
             string connectionString = string.Empty;
 
             string hostName = Environment.GetEnvironmentVariable("IOTEDGE_IOTHUBHOSTNAME");
@@ -200,9 +202,17 @@ namespace LoRaWan.NetworkServer
 
             connectionString += $"HostName={hostName};";
 
+
+
+
             if (enableGateway)
             {
-                connectionString += $"GatewayHostName={hostName};";                
+                connectionString += $"GatewayHostName={gatewayHostName};";
+                Console.WriteLine($"Using edgeHub as local queue");
+            }
+            else
+            {
+                Console.WriteLine($"Using iotHub directly, no local queue");
             }
                       
             

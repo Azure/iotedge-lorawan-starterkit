@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer
 {
     public class MessageProcessor : IDisposable
     {
-
+       
 
         private DateTime startTimeProcessing;
      
@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
 
         public async Task processMessage(byte[] message)
         {
-            startTimeProcessing = DateTime.Now;
+            startTimeProcessing = DateTime.UtcNow;
 
             //gate the edge device id for checking if the device is linked to a specific gateway
             if (string.IsNullOrEmpty(GatewayID))
@@ -109,7 +109,7 @@ namespace LoRaWan.NetworkServer
             if (loraDeviceInfo.IsOurDevice)
             {
                 //either there is no gateway linked to the device or the gateway is the one that the code is running
-                if (string.IsNullOrEmpty(loraDeviceInfo.GatewayID) || loraDeviceInfo.GatewayID.ToUpper() == GatewayID.ToUpper())
+                if (String.IsNullOrEmpty(loraDeviceInfo.GatewayID) || loraDeviceInfo.GatewayID.ToUpper() == GatewayID.ToUpper())
                 {
                     if (loraMessage.CheckMic(loraDeviceInfo.NwkSKey))
                     {
@@ -125,7 +125,7 @@ namespace LoRaWan.NetworkServer
 
                         UInt16 fcntup = BitConverter.ToUInt16(((LoRaPayloadStandardData)loraMessage.payloadMessage).fcnt, 0);
 
-                        //todo ronnie add tollernace range
+                      
                         //check if the frame counter is valid: either is above the server one or is an ABP device resetting the counter (relaxed seqno checking)
                         if (fcntup > loraDeviceInfo.FCntUp  || (fcntup == 1 && String.IsNullOrEmpty(loraDeviceInfo.AppEUI)))
                         {
@@ -149,14 +149,26 @@ namespace LoRaWan.NetworkServer
 
                             dynamic fullPayload = JObject.FromObject(rxPk);
 
-                            string jsonDataPayload = LoraDecoders.DecodeMessage(decryptedMessage);
-
+                            string jsonDataPayload="";
 
                             //todo ronnie we may add these fields to rxPk?
-                            fullPayload.data = JObject.Parse(jsonDataPayload);
+
+                            if (String.IsNullOrEmpty(loraDeviceInfo.SensorDecoder))
+                            {
+                                jsonDataPayload = decryptedMessage;
+                                fullPayload.data = jsonDataPayload;
+                            }
+                            else
+                            {
+                                jsonDataPayload = LoraDecoders.DecodeMessage(decryptedMessage, loraDeviceInfo.SensorDecoder);
+                                fullPayload.data = JObject.Parse(jsonDataPayload);
+                            }
+
+
                             fullPayload.EUI = loraDeviceInfo.DevEUI;
+
                             //todo check what the other ts are if milliseconds or seconds
-                            fullPayload.edgets = (Int32)(startTimeProcessing.Subtract(new DateTime(1970, 1, 1))).TotalMilliseconds;
+                            fullPayload.edgets = (int)(startTimeProcessing - new DateTime(1970, 1, 1)).TotalMilliseconds; 
 
 
                             string iotHubMsg = fullPayload.ToString(Newtonsoft.Json.Formatting.None);
@@ -170,12 +182,7 @@ namespace LoRaWan.NetworkServer
                             loraDeviceInfo.FCntUp = fcntup;
 
 
-                            //todo ronnie remove this once the routings to visualizer is fixed
-                            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("USE_SOCKETS")))
-                                if (bool.Parse(Environment.GetEnvironmentVariable("USE_SOCKETS")))
-                                    LogMessage(iotHubMsg);
-
-
+                           
 
 
 
@@ -185,16 +192,29 @@ namespace LoRaWan.NetworkServer
                             Console.WriteLine($"Invalid frame counter, msg: {fcntup} server: {loraDeviceInfo.FCntUp}");
                         }
 
-                        //start checking for new c2d message, we do it even if the fcnt is invalid so we suppor replying to the ConfirmedDataUp
-                        //todo ronnie we may lover the timeout or should we wait up to 1 sec?
-                        c2dMsg = await loraDeviceInfo.HubSender.GetMessageAsync(TimeSpan.FromMilliseconds(20));
+                        //start checking for new c2d message, we do it even if the fcnt is invalid so we support replying to the ConfirmedDataUp
+                        //todo ronnie should we wait up to 900 msec?
+                        c2dMsg = await loraDeviceInfo.HubSender.ReceiveAsync(TimeSpan.FromMilliseconds(20));
 
                         byte[] bytesC2dMsg = null;
                         byte[] fport = null;
+                        byte[] fctl = new byte[1] { 32 };
 
                         //check if we got a c2d message to be added in the ack message and preprare the message
                         if (c2dMsg != null)
                         {
+                            //check if there is another message
+                            var secondC2dMsg = await loraDeviceInfo.HubSender.ReceiveAsync(TimeSpan.FromMilliseconds(20));
+                            if (secondC2dMsg != null)
+                            {
+                                //put it back to the queue for the next pickup
+                                _ = loraDeviceInfo.HubSender.AbandonAsync(secondC2dMsg);
+
+                                //set the fpending flag so the lora device will call us back for the next message
+                                fctl = new byte[1] { 48 };
+
+                            }
+
                             bytesC2dMsg = c2dMsg.GetBytes();
                             fport = new byte[1] { 1 };
 
@@ -202,19 +222,19 @@ namespace LoRaWan.NetworkServer
                                 Console.WriteLine($"C2D message: {Encoding.UTF8.GetString(bytesC2dMsg)}");
 
                             //todo ronnie implement a better max payload size by datarate
-                            //cut to the max payload of lora for any datarate
+                            //cut to the max payload of lora for any EU datarate
                             if(bytesC2dMsg.Length>51)
                                 Array.Resize(ref bytesC2dMsg, 51);
 
                             Array.Reverse(bytesC2dMsg);
                         }
 
-
+                     
                         //if confirmation or cloud to device msg send down the message
                         if (loraMessage.loRaMessageType == LoRaMessageType.ConfirmedDataUp || c2dMsg != null)
                         {
                             //check if we are not too late for the 1 and 2 window
-                            if (((DateTime.Now - startTimeProcessing) <= TimeSpan.FromMilliseconds(1900)))
+                            if (((DateTime.UtcNow - startTimeProcessing) <= TimeSpan.FromMilliseconds(1900)))
                             {
 
                                 //increase the fcnt down and save it to iot hub twins
@@ -238,7 +258,7 @@ namespace LoRaWan.NetworkServer
                                 //if we are already longer than 900 mssecond move to the 2 second window
                                 //uncomment to force second windows usage
                                 //Thread.Sleep(901);
-                                if ((DateTime.Now - startTimeProcessing) > TimeSpan.FromMilliseconds(900) )
+                                if ((DateTime.UtcNow - startTimeProcessing) > TimeSpan.FromMilliseconds(900) )
                                 {
                                     if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("RX2_DATR")))
                                     {
@@ -273,8 +293,8 @@ namespace LoRaWan.NetworkServer
 
                                 //todo mik check what is the A0
                                 LoRaPayloadStandardData ackLoRaMessage = new LoRaPayloadStandardData(StringToByteArray("A0"),
-                                    devAddrCorrect,
-                                    new byte[1] { 32 },
+                                    devAddrCorrect,                                   
+                                    fctl,
                                     BitConverter.GetBytes(loraDeviceInfo.FCntDown),
                                     null,
                                     fport,
@@ -350,7 +370,7 @@ namespace LoRaWan.NetworkServer
                 Console.WriteLine($"Ignore message because is not our device");
             }
 
-            Console.WriteLine($"Processing time: {DateTime.Now - startTimeProcessing}");
+            Console.WriteLine($"Processing time: {DateTime.UtcNow - startTimeProcessing}");
 
             return udpMsgForPktForwarder;
         }
@@ -399,7 +419,7 @@ namespace LoRaWan.NetworkServer
                     }
 
                     //Check if the device is trying to join through the wrong gateway
-                    if (joinLoraDeviceInfo.GatewayID.ToUpper() != GatewayID.ToUpper())
+                    if (!String.IsNullOrEmpty(joinLoraDeviceInfo.GatewayID) && joinLoraDeviceInfo.GatewayID.ToUpper() != GatewayID.ToUpper())
                     {
                         Console.WriteLine("Device trying to join not through its linked gateway");
                         return null;
@@ -449,7 +469,7 @@ namespace LoRaWan.NetworkServer
                 //uncomment to force second windows usage
                 //Thread.Sleep(4600-(int)(DateTime.Now - startTimeProcessing).TotalMilliseconds);
                 //in this case it's too late, we need to break
-                if ((DateTime.Now - startTimeProcessing) > TimeSpan.FromMilliseconds(6000))
+                if ((DateTime.UtcNow - startTimeProcessing) > TimeSpan.FromMilliseconds(6000))
                 {
                     Console.WriteLine("Processing of the join request took too long, sending no message");
                     var physicalResponse = new PhysicalPayload(loraMessage.physicalPayload.token, PhysicalIdentifier.PULL_RESP, null);
@@ -457,7 +477,7 @@ namespace LoRaWan.NetworkServer
                     return physicalResponse.GetMessage();
                 }
                 //in this case the second join windows must be used
-                else if ((DateTime.Now - startTimeProcessing) > TimeSpan.FromMilliseconds(4500))
+                else if ((DateTime.UtcNow - startTimeProcessing) > TimeSpan.FromMilliseconds(4500))
                 {
                     Console.WriteLine("Processing of the join request took too long, using second join accept receive windows");
                     _tmst = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].tmst + 6000000;
@@ -498,7 +518,7 @@ namespace LoRaWan.NetworkServer
                 joinLoraDeviceInfo.FCntUp = 0;
                 joinLoraDeviceInfo.FCntDown = 0;
 
-                //todo ronnie check for throtteling of twins
+                
                 //update the frame counter on the server
                 _ = joinLoraDeviceInfo.HubSender.UpdateFcntAsync(joinLoraDeviceInfo.FCntUp, joinLoraDeviceInfo.FCntDown);
 
@@ -530,14 +550,7 @@ namespace LoRaWan.NetworkServer
 
         }
 
-        //todo  remove the http logger once routing works correctly
-        private void LogMessage(string logJson)
-        {
-            var content = new StringContent(logJson, Encoding.UTF8, "application/json");
-            HttpClient httpClient = new HttpClient();
-            httpClient.PostAsync("http://172.17.0.1:3427/message", content);
-        }
-
+       
 
         public void Dispose()
         {

@@ -16,14 +16,14 @@ namespace LoRaWan.NetworkServer
         public string PrimaryKey;
         public string AppNonce;
         public string DevNonce;
-        public string NetId;
-  
+        public string NetId;  
         public bool IsOurDevice = false;
         public bool IsJoinValid = false;
         public IoTHubSender HubSender;
         public UInt16 FCntUp;
         public UInt16 FCntDown;
         public string GatewayID;
+        public string SensorDecoder;
     }
 
 }
