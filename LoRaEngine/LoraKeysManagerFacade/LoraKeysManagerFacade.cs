@@ -30,7 +30,7 @@ namespace LoraKeysManagerFacade
         public UInt16 FCntUp;
         public UInt16 FCntDown;
         public string GatewayID;
-        //todo ronnie add confirmed or unconfirmed down preference settings
+        public string SensorDecoder;
     }
 
   
@@ -110,6 +110,9 @@ namespace LoraKeysManagerFacade
                     loraDeviceInfo.NwkSKey = twin.Tags["NwkSKey"].Value;
                     if (twin.Tags.Contains("GatewayID"))
                         loraDeviceInfo.GatewayID = twin.Tags["GatewayID"].Value;
+                    if (twin.Tags.Contains("SensorDecoder"))
+                        loraDeviceInfo.SensorDecoder = twin.Tags["SensorDecoder"].Value;
+
                     if (twin.Tags.Contains("AppEUI"))
                         loraDeviceInfo.AppEUI = twin.Tags["AppEUI"].Value;
                     loraDeviceInfo.IsOurDevice = true;
@@ -264,7 +267,7 @@ namespace LoraKeysManagerFacade
                     {
                        
 
-                        if (twin.Tags["GatewayID"].Value.ToUpper() != GatewayID.ToUpper())
+                        if (!String.IsNullOrEmpty(twin.Tags["GatewayID"].Value) && twin.Tags["GatewayID"].Value.ToUpper() != GatewayID.ToUpper())
                         {
                             string errorMsg = $"Not the right gateway device-gateway:{twin.Tags["GatewayID"].Value} current-gateway:{GatewayID}";
                             log.Info(errorMsg);
@@ -348,8 +351,11 @@ namespace LoraKeysManagerFacade
 
                     if (twin.Tags.Contains("GatewayID"))
                         loraDeviceInfo.GatewayID = twin.Tags["GatewayID"].Value;
+                    if (twin.Tags.Contains("SensorDecoder"))
+                        loraDeviceInfo.SensorDecoder = twin.Tags["SensorDecoder"].Value;
 
-                }
+
+            }
                 else
                 {
                     loraDeviceInfo.IsOurDevice = false;
