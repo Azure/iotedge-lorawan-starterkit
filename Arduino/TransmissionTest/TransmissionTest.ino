@@ -11,7 +11,9 @@ char* appEui ="BE7A0000000014E2";
 iot hub OTAA tags for deviceid: 47AAC86800430028 
     "tags": {
     "AppEUI": "BE7A0000000014E2",
-    "AppKey": "8AFE71A145B253E49C3031AD068277A1"  
+    "AppKey": "8AFE71A145B253E49C3031AD068277A1",
+    "GatewayID" :"",
+    "SensorDecoder" :"DecoderRotatorySensor"
     },
   */
 
