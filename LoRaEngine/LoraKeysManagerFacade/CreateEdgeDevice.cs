@@ -27,7 +27,6 @@ namespace CreateDeviceFunction
                 .AddEnvironmentVariables()
                 .Build();
             string connectionString = config.GetConnectionString("IoTHubConnectionString");
-            Console.WriteLine(connectionString);
             RegistryManager manager = RegistryManager.CreateFromConnectionString(connectionString);
             // parse query parameter
             var queryStrings=req.GetQueryParameterDictionary();
@@ -35,8 +34,7 @@ namespace CreateDeviceFunction
             string facadeKey = "";
             queryStrings.TryGetValue("deviceName", out deviceName);
             queryStrings.TryGetValue("facadeKey", out facadeKey);
-            Console.WriteLine(deviceName);
-            Console.WriteLine(facadeKey);
+
             Device edgeGatewayDevice = new Device(deviceName);
             edgeGatewayDevice.Capabilities = new DeviceCapabilities()
             {
