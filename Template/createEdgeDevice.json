@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "solutionPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Prefix used in resource names. Should be unique enough since this ends up being used also in domain names."
+            }
+        },
+        "edgeGatewayName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the Edge gateway."
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "name": "deployFunction",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2014-04-01-preview",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[Concat(listsecrets(resourceId('Microsoft.Web/sites/functions', concat(parameters('solutionPrefix'), 'function'), 'CreateEdgeDevice'),'2015-08-01').trigger_url,'&deviceName=',parameters('edgeGatewayName'),'&facadeKey=',listsecrets(resourceId('Microsoft.Web/sites/functions', concat(parameters('solutionPrefix'), 'function'), 'PerformOTAA'),'2015-08-01').key)]",
+                    "contentVersion": "1.0.0.0"
+                }
+            }
+        }
+    ]
+}

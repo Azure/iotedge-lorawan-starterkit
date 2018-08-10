@@ -68,15 +68,15 @@ namespace LoraKeysManagerFacade
                 throw new Exception(errorMsg);
             }
 
+
+
+
             var config = new ConfigurationBuilder()
-                .SetBasePath(context.FunctionAppDirectory)
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
-
-
-            var connectionString = config.GetConnectionString("IoTHubConnectionString");
-
+                          .SetBasePath(context.FunctionAppDirectory)
+                          .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                          .AddEnvironmentVariables()
+                          .Build();
+            string connectionString = config.GetConnectionString("IoTHubConnectionString");
             if (connectionString == null)
             {
                 string errorMsg = "Missing IoTHubConnectionString in settings";
