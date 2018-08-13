@@ -146,6 +146,11 @@
                             "name": "DEPLOY_DEVICE",
                             "value": "[parameters('deployDevice')]"
                         }
+                        ,
+                        {
+                            "name": "DEVICE_CONFIG_LOCATION",
+                            "value": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/AzureIoT_LoRaWan_StarterKit/',variables('gitBranch'),'/Template/deviceConfiguration.json'"
+                        }
                     ]
                 }
             }

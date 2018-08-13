@@ -27,6 +27,7 @@ namespace CreateDeviceFunction
                 .AddEnvironmentVariables()
                 .Build();
             string connectionString = config.GetConnectionString("IoTHubConnectionString");
+            string deviceConfigurationUrl = Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION");
             RegistryManager manager = RegistryManager.CreateFromConnectionString(connectionString);
             // parse query parameter
             var queryStrings=req.GetQueryParameterDictionary();
@@ -42,9 +43,10 @@ namespace CreateDeviceFunction
             };
             await manager.AddDeviceAsync(edgeGatewayDevice);
             string json = "";
+            //todo correct
             using (WebClient wc = new WebClient())
             {
-                 json = wc.DownloadString("https://raw.githubusercontent.com/Mandur/AzureIoT_LoRaWan_StarterKit/arduinoPr/Template/deviceConfiguration.json");
+                 json = wc.DownloadString(deviceConfigurationUrl);
             }
             ConfigurationContent spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
             await manager.AddModuleAsync(new Module(deviceName, "lorawannetworksrvmodule"));
