@@ -39,6 +39,10 @@ namespace LoRaWan.NetworkServer
         {         
             return String.Format("{{\"angle\": {0}}}", result);
         }
+        private static string DecoderTemperatureSensor(string result)
+        {
+            return String.Format("{{\"temperature\": {0}}}", result);
+        }
     }
 
 }
