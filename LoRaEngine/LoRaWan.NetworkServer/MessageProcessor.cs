@@ -166,9 +166,10 @@ namespace LoRaWan.NetworkServer
 
 
                             fullPayload.EUI = loraDeviceInfo.DevEUI;
+                            fullPayload.gatewayId = GatewayID;
 
                             //todo check what the other ts are if milliseconds or seconds
-                            fullPayload.edgets = (int)(startTimeProcessing - new DateTime(1970, 1, 1)).TotalMilliseconds; 
+                            fullPayload.edgets = (long)((startTimeProcessing - new DateTime(1970, 1, 1)).TotalMilliseconds);
 
 
                             string iotHubMsg = fullPayload.ToString(Newtonsoft.Json.Formatting.None);
