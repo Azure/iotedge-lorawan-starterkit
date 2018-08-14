@@ -11,8 +11,7 @@ namespace LoRaWan.NetworkServer
     class LoraDecoders
     {
         public static string DecodeMessage(string payload, string SensorDecoder)
-        {
-                      
+        {                      
             Type decoderType = typeof(LoraDecoders);
             MethodInfo toInvoke = decoderType.GetMethod(
                SensorDecoder, BindingFlags.Static | BindingFlags.NonPublic);
@@ -29,7 +28,6 @@ namespace LoRaWan.NetworkServer
             string[] values = result.Split(':');
             return String.Format("{{\"heartrate\": {0} , \"temperature\": {1}}}", values[0], values[1]);
         }
-
         private static string DecoderGpsSensor(string result)
         {
             string[] values = result.Split(':');

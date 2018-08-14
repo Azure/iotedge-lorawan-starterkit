@@ -1,0 +1,4 @@
+FROM arm32v7/debian:stretch-slim
+WORKDIR /app
+COPY . ./
+ENTRYPOINT ["./reset_lgw.sh","start"]

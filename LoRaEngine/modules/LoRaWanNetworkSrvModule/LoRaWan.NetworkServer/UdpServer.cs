@@ -88,10 +88,6 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                
-   
-
-               
                 ITransportSettings transportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
              
                 ITransportSettings[] settings = { transportSettings };
