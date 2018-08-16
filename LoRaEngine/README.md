@@ -27,14 +27,15 @@ The following guide describes the necessary steps to build and deploy the LoRaEn
 
 ### SetUp Azure function facade and [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/)
 
-- TODO deploy them
+- Deploy the [function](LoraKeysManagerFacade). In VSCode with the [functions plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) you can run the command `Azure Functions: Deploy to function app...`. Then you have to select the folder `LoraKeysManagerFacade/bin/Release/netstandard2.0/publish` (unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder) and select for the environment `C#` in version `beta`.
+
 - Configure IoT Hub access key in the function:
 
 Copy `Connection string` with owner policy applied:
 
 ![Copy IoT Hub Connection string](/pictures/CopyIoTHubString.PNG)
 
-Now paste it into `Application settings` -> `Collection strings` as `IoTHubConnectionString`:
+Now paste it into `Application settings` -> `Connection strings` as `IoTHubConnectionString`:
 
 ![Paste IoT Hub Connection string](/pictures/FunctionPasteString.PNG)
 
@@ -54,21 +55,13 @@ FACADE_AUTH_CODE=yourFunctionHostKey
 
 ### SetUp concentrator with Azure IoT Edge
 
-- Note: if your LoRa chip set is connected by SPI bus don't forget to [enable it](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/), (You need to restart your pi).
+- Note: if your LoRa chip set is connected by SPI on raspberry PI bus don't forget to [enable it](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/), (You need to restart your pi).
 
-- Build network packet forwarder
-
-TODO: update after code change
-
-Our `LoraPktFwdFiltermodule` packages the into an IoT Edge compatible docker container. However, the actual binary is not part of our github repository. If the forwarder is not shipped with your device you can as well compile it on your own. You will need the following repositories for that: https://github.com/Lora-net/packet_forwarder and https://github.com/Lora-net/lora_gateway.
-
-The `lora_pkt_fwd` binary has to be copied `LoraPktFwdFiltermodule`directory.
-
-- Build and deploy entire solution
+- Build and deploy Azure IoT Edge solution
 
 We will use [Azure IoT Edge for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge) extension to build, push and deploy our solution.
 
-First, build an push the solution by right click [deployment.template.json](/LoRaEngine/deployment.template.json) and select `Build and Push IoT Edge Solution`
+First, build an push the solution by right click [deployment.template.json](/LoRaEngine/deployment.template.json) and select `Build and Push IoT Edge Solution` (look as alternative into [deployment.template.amd64.json](/LoRaEngine/deployment.template.amd64.json) for x64 based gateways)
 
 ![VSCode: Build and push edge solution](/pictures/CreateEdgeSolution.PNG)
 
@@ -78,9 +71,9 @@ After that you can push the solution to your IoT Edge device by right clicking o
 
 ### Provision LoRa leaf device
 
-The following sample code is based on [Seeeduino LoRaWAN](http://wiki.seeedstudio.com/Seeeduino_LoRAWAN/) with a [Grove - Temperature Sensor](http://wiki.seeedstudio.com/Grove-Temperature_Sensor_V1.2/). It sends every 30 seconds its current temperature reading and prints out a Cloud-2-Device message if one is transmitted in its receive window.
+The [sample code](/Arduino/TemperatureOtaaLora/TemperatureOtaaLora.ino) used in this example is based on [Seeeduino LoRaWAN](http://wiki.seeedstudio.com/Seeeduino_LoRAWAN/) with a [Grove - Temperature Sensor](http://wiki.seeedstudio.com/Grove-Temperature_Sensor_V1.2/). It sends every 30 seconds its current temperature reading and prints out a Cloud-2-Device message if one is transmitted in its receive window.
 
-The sample has configured the following example [device identifiers and credentials](https://www.thethingsnetwork.org/docs/lorawan/security.html):
+The sample has configured the following sample [device identifiers and credentials](https://www.thethingsnetwork.org/docs/lorawan/security.html):
 
 - DevEUI: `47AAC86800430010`
 - AppEUI: `BE7A0000000014E3`
@@ -88,103 +81,11 @@ The sample has configured the following example [device identifiers and credenti
 
 You will need your own identifiers when provisioning the device.
 
-```Arduino
-#include <Wire.h>
-#include <LoRaWan.h>
+Look out for these code lines:
 
-#define TEMP_SENSOR A0
-
-const int B = 4275;               // B value of the thermistor
-const int R0 = 100000;            // R0 = 100k
-
-char data[51];
-
-char buffer[256];
-
-void setup(void)
-{
-  SerialUSB.begin(115200);
-
-  lora.init();
-  lora.setId(NULL, "47AAC86800430010", "BE7A0000000014E3");
-  lora.setKey(NULL, NULL, "8AFE71A145B253E49C3031AD068277A3");
-
-  lora.setDeciveMode(LWOTAA);
-  lora.setDataRate(DR0, EU868);
-
-  lora.setChannel(0, 868.1);
-  lora.setChannel(1, 868.3);
-  lora.setChannel(2, 868.5);
-
-  lora.setReceiceWindowFirst(0, 868.1);
-  lora.setReceiceWindowSecond(869.5, DR3);
-  lora.setAdaptiveDataRate(false);
-
-  lora.setDutyCycle(false);
-  lora.setJoinDutyCycle(false);
-
-  lora.setPower(14);
-
-  while (!lora.setOTAAJoin(JOIN,20000));
-  digitalWrite(38, HIGH);
-
-  pinsInit();
-}
-
-void loop(void)
-{
-  String packetString = "";
-
-  packetString =  String(getTemp());
-  SerialUSB.println(packetString);
-  sendPacketString(packetString);
-
-  delay(30000);
-}
-
-void sendPacketString(String packetString)
-{
-  packetString.toCharArray(data, 51);
-  bool result = lora.transferPacket(data, 10);
-  if (result)
-  {
-    short length;
-    short rssi;
-
-    memset(buffer, 0, 256);
-    length = lora.receivePacket(buffer, 256, &rssi);
-
-    if (length)
-    {
-      SerialUSB.print("Length is: ");
-      SerialUSB.println(length);
-      SerialUSB.print("RSSI is: ");
-      SerialUSB.println(rssi);
-      SerialUSB.print("Data is: ");
-      for (unsigned char i = 0; i < length; i ++)
-      {
-        SerialUSB.print( char(buffer[i]));
-      }
-      SerialUSB.println();
-    }
-  }
-}
-
-void pinsInit()
-{
-  pinMode(TEMP_SENSOR, INPUT);
-}
-
-float getTemp()
-{
-  int a = analogRead(TEMP_SENSOR);
-
-  float R = 1023.0/a-1.0;
-  R = R0*R;
-
-  float temperature = 1.0/(log(R/R0)/B+1/298.15)-273.15; // convert to temperature via datasheet
-  return temperature;
-}
+```arduino
+lora.setId(NULL, "47AAC86800430010", "BE7A0000000014E3");
+lora.setKey(NULL, NULL, "8AFE71A145B253E49C3031AD068277A3");
 ```
 
 To provisioning a device in Azure IoT Hub with these identifiers and capable to [decode](/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoraDecoders.cs) temperature payload into Json you have to create a device with:
@@ -260,6 +161,10 @@ TX ACK RECEIVED
 ```
 
 Note: an easy way to follow messages send from the device is again with VSCode: right click on the device in the explorer -> `Start Monitoring D2C Message`.
+
+This is how a complete transmission looks like:
+
+![Complete transmission](/pictures/RoundtripTemp.PNG)
 
 You can even test sending Cloud-2-Device message (e.g. by VSCode right click on the device in the explorer -> `Send C2D Message To Device`).
 

@@ -1,6 +1,6 @@
 {
-    "$schema-version": "0.0.1",
-    "description": "",
+  "$schema-version": "0.0.1",
+  "description": "",
   "image": {
     "repository": "$CONTAINER_REGISTRY_ADDRESS/lorawanpktfwdmodule",
     "tag": {
@@ -11,5 +11,5 @@
       }
     }
   },
-    "language": "csharp"
+  "language": "csharp"
 }
