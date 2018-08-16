@@ -59,10 +59,10 @@
             "status": "running",
             "restartPolicy": "always"
           },
-          "LoraPktFwdFilterModule": {
+          "LoRaWanPktFwdModule": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoraPktFwdFilterModule.arm32v7}",
+              "image": "${MODULES.LoRaWanPktFwdModule.arm32v7}",
               "createOptions": "  {\r\n  \"HostConfig\": {\r\n    \"NetworkMode\": \"host\", \"Privileged\": true \r\n\r\n  },\r\n  \"NetworkingConfig\": {\r\n    \"EndpointsConfig\": {\r\n      \"host\": {}\r\n    }\r\n  }\r\n}\r\n  \r\n  \r\n  \r\n"
             },
             "version": "1.0",
