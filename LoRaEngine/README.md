@@ -27,14 +27,15 @@ The following guide describes the necessary steps to build and deploy the LoRaEn
 
 ### SetUp Azure function facade and [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/)
 
-- TODO deploy them
+- Deploy the [function](LoraKeysManagerFacade). In VSCode with the [functions plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) you can run the command `Azure Functions: Deploy to function app...`. Then you have to select the folder `LoraKeysManagerFacade/bin/Release/netstandard2.0/publish` (unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder) and select for the environment `C#` in version `beta`.
+
 - Configure IoT Hub access key in the function:
 
 Copy `Connection string` with owner policy applied:
 
 ![Copy IoT Hub Connection string](/pictures/CopyIoTHubString.PNG)
 
-Now paste it into `Application settings` -> `Collection strings` as `IoTHubConnectionString`:
+Now paste it into `Application settings` -> `Connection strings` as `IoTHubConnectionString`:
 
 ![Paste IoT Hub Connection string](/pictures/FunctionPasteString.PNG)
 
