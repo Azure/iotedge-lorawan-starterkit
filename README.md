@@ -22,6 +22,35 @@ However, customers looking for any of the following are expected to prefer a set
   - Gateway management.
 - Homogenous management of devices and gateways independent of connectivity technology.
 
+## Functionality
+
+- Support of Class A devices
+- Activation through ABP and OTAA 
+- Confirmed and unconfirmed upstream messages
+- Confirmed downstream messages
+- Device and Gateway management done completely in Azure IoT Hub
+
+## Current limitations
+
+- Multigateway works but is not fully tested and you need to implement message deduplication after IoT Hub, if multiples gateways are used in the same range of the device we recommend setting the gateway tag "GatewayID" on the device twins with the IoT Edge ID of the preferred gateway for that device.
+- No Class B and C
+- No ADR
+- No Mac commands
+- Tested only for EU frequency
+- Max 51 bytes downstream payload, longer will be cut. It supports multiple messages with the fpending flag
+- IoT Edge must have internet connectivity, it can work for limited time offline if the device has previously transmitted an upstream message.
+
+## Tested Gateway HW
+
+- [Seeed Studio LoRa LoRaWAN Gateway - 868MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
+
+- [AAEON AIOT-ILRA01 LoRa® Certified Intel® Based Gateway and Network Server](https://www.aaeon.com/en/p/intel-lora-gateway-system-server)
+
+## Architecture
+
+![Architecture](EdgeArchitecture.png)
+
+
 ## Directory Structure
 
 The code is organized into three sections:
