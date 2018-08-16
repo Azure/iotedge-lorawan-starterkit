@@ -68,3 +68,7 @@ Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanat
 - The [network server Azure IoT Edge module](/LoRaEngine/modules/LoRaWanNetworkSrvModule) and the [Facade function](/LoRaEngine/LoraKeysManagerFacade) have an API dependency on each other. its generally recommended for the deployments on the same source level.
 - We generally recommend as read the [Azure IoT Edge trouble shooting guide](https://docs.microsoft.com/en-us/azure/iot-edge/troubleshoot)
   This project is aimed at providing an easy way to connect LoRa sensors/gateways to the Azure Cloud.
+
+## License
+
+This repository is licensed with the [MIT](LICENSE) license.
