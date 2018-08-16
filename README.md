@@ -25,7 +25,7 @@ However, customers looking for any of the following are expected to prefer a set
 ## Functionality
 
 - Support of Class A devices
-- Activation through ABP and OTAA 
+- Activation through ABP and OTAA
 - Confirmed and unconfirmed upstream messages
 - Confirmed downstream messages
 - Device and Gateway management done completely in Azure IoT Hub
@@ -48,8 +48,7 @@ However, customers looking for any of the following are expected to prefer a set
 
 ## Architecture
 
-![Architecture](EdgeArchitecture.png)
-
+![Architecture](pictures/EdgeArchitecture.png)
 
 ## Directory Structure
 
