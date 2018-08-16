@@ -35,7 +35,7 @@
             },
             "env": {
               "OptimizeForPerformance": {
-                "value": "false"
+                "value": "true"
               }
             }
           }
@@ -44,7 +44,7 @@
           "LoRaWanNetworkSrvModule": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoRaWanNetworkSrvModule.arm32v7}",
+              "image": "${MODULES.LoRaWanNetworkSrvModule.amd64}",
               "createOptions": "{\r\n  \"ExposedPorts\": {\r\n    \"1680/udp\": {}\r\n  },\r\n  \"HostConfig\": {\r\n    \"PortBindings\": {\r\n      \"1680/udp\": [\r\n        {\r\n          \"HostPort\": \"1680\",\r\n          \"HostIp\":\"172.17.0.1\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}\r\n\r\n"
             },
             "version": "1.0",
@@ -59,7 +59,7 @@
           "LoRaWanPktFwdModule": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoRaWanPktFwdModule.arm32v7}",
+              "image": "${MODULES.LoRaWanPktFwdModule.amd64}",
               "createOptions": "  {\r\n  \"HostConfig\": {\r\n    \"NetworkMode\": \"host\", \"Privileged\": true \r\n\r\n  },\r\n  \"NetworkingConfig\": {\r\n    \"EndpointsConfig\": {\r\n      \"host\": {}\r\n    }\r\n  }\r\n}\r\n  \r\n  \r\n  \r\n"
             },
             "version": "1.0",

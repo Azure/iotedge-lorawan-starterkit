@@ -1,0 +1,4 @@
+{
+    "azureFunctions.projectLanguage": "C#Script",
+    "azureFunctions.projectRuntime": "beta"
+}
