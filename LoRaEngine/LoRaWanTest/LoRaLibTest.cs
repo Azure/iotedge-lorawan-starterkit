@@ -37,9 +37,9 @@ namespace LoRaWanTest
                 67, 72, 91, 188
                 };
             Assert.True((((LoRaPayloadJoinAccept)joinAcceptMessage.payloadMessage).mic.SequenceEqual(joinAcceptMic)));
-  
+
             var msg = BitConverter.ToString(((LoRaPayloadJoinAccept)joinAcceptMessage.payloadMessage).ToMessage()).Replace("-", String.Empty);
-            Assert.Equal( "20493EEB51FBA2116F810EDB3742975142",msg);
+            Assert.Equal("20493EEB51FBA2116F810EDB3742975142", msg);
 
         }
 
@@ -94,7 +94,7 @@ namespace LoRaWanTest
             Assert.True(joinRequestMessagePayload.appEUI.SequenceEqual(joinRequestAppEui));
             Assert.True(joinRequestMessagePayload.devEUI.SequenceEqual(joinRequestDevEUI));
             Assert.True(joinRequestMessagePayload.devNonce.SequenceEqual(joinRequestDevNonce));
-        
+
 
         }
 
@@ -123,21 +123,21 @@ namespace LoRaWanTest
 
             var jsonUplinkUnconfirmedDataUpBytes = Encoding.Default.GetBytes(jsonUplinkUnconfirmedDataUp);
             LoRaMessage jsonUplinkUnconfirmedMessage = new LoRaMessage(physicalUpstreamPyld.Concat(jsonUplinkUnconfirmedDataUpBytes).ToArray());
-            Assert.Equal(LoRaMessageType.UnconfirmedDataUp,jsonUplinkUnconfirmedMessage.loRaMessageType);
-       
+            Assert.Equal(LoRaMessageType.UnconfirmedDataUp, jsonUplinkUnconfirmedMessage.loRaMessageType);
+
             LoRaPayloadStandardData loRaPayloadUplinkObj = (LoRaPayloadStandardData)jsonUplinkUnconfirmedMessage.payloadMessage;
-          
+
 
             Assert.True(loRaPayloadUplinkObj.fcnt.SequenceEqual(new byte[2] { 1, 0 }));
 
 
-            Assert.True(loRaPayloadUplinkObj.devAddr.SequenceEqual(new byte[4] { 1,2,3,4 }));
+            Assert.True(loRaPayloadUplinkObj.devAddr.SequenceEqual(new byte[4] { 1, 2, 3, 4 }));
             byte[] LoRaPayloadUplinkNwkKey = new byte[16] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 
 
             Assert.True(loRaPayloadUplinkObj.CheckMic(BitConverter.ToString(LoRaPayloadUplinkNwkKey).Replace("-", "")));
 
-                byte[] LoRaPayloadUplinkAppKey = new byte[16] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+            byte[] LoRaPayloadUplinkAppKey = new byte[16] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
             var key = BitConverter.ToString(LoRaPayloadUplinkAppKey).Replace("-", "");
             Assert.Equal("hello", (loRaPayloadUplinkObj.PerformEncryption(key)));
 
@@ -170,7 +170,7 @@ namespace LoRaWanTest
             Array.Reverse(appkey);
             Array.Reverse(nwkkey);
 
-            LoRaPayloadStandardData lora = new LoRaPayloadStandardData(mhdr, devAddr, fctrl, fcnt, null, fport, frmPayload,0);
+            LoRaPayloadStandardData lora = new LoRaPayloadStandardData(mhdr, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
             lora.PerformEncryption(BitConverter.ToString(appkey).Replace("-", ""));
             byte[] testEncrypt = new byte[4]
             {
@@ -182,30 +182,11 @@ namespace LoRaWanTest
             {
                 181, 106, 14, 117
             };
-            Assert.Equal(testMic,lora.mic);
+            Assert.Equal(testMic, lora.mic);
             var mess = lora.ToMessage();
-        //TODO
+            //TODO
 
         }
-
-        //[Theory]
-        //[InlineData("12321_3120321+32181230812309712312")]
-        //public void InvalidPayload_ThrowsException(string payload)
-        //{
-        //    Assert.ThrowsAsync<ArgumentException>(() =>
-        //    {
-        //        throw new ArgumentException();
-        //    });
-
-
-        //}
-
-        //[Theory]
-        //[InlineData(3, 7, 10)]
-        //public void MyFirstTheory(int value, int value2, int expectedResult)
-        //{
-        //    Assert.Equal(expectedResult, value + value2);
-        //}
 
         [Fact]
         public void TestKeys()
