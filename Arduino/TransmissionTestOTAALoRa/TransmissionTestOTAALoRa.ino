@@ -18,7 +18,7 @@ iot hub OTAA tags for deviceid: 47AAC86800430028
   */
 
 //set initial datarate and physical information for the device
-_data_rate_t dr=DR0;
+_data_rate_t dr=DR6;
 _physical_type_t physicalType =EU868 ;
 
 //internal variables
