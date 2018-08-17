@@ -115,6 +115,105 @@ By using the `docker ps` command, you should see the Edge containers being deplo
 ### What does the template do?
 The template provision an IoT Hub with a [packet forwarder](https://github.com/Lora-net/packet_forwarder) and a network server module already preconfigured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](/Template).
 
+## LoRa Device provisioning
+
+A LoRa device is a normal IoT Hub device with some specific device twin tags. You manage it like you would with any other IoT Hub device.
+**To avoid caching issues you should not allow the device to join or send data before it is provisioned in IoT Hub. In case that you did plese follow the ClearCache proecedure that you find below.**
+
+### ABP and OTAA provisioning
+
+- Login in to the Azure portal go to IoT Hub -> IoT devices -> Add 
+- Use the DeviceEUI as DeviceID -> Save
+- Click on the newly created device
+- Click on Device Twin menu
+
+- Add the followings tags for OTAA:
+
+```json
+"tags": {
+    "AppEUI": "App EUI",
+    "AppKey": "App Key",
+    "GatewayID": "",
+    "SensorDecoder": ""    
+  },
+```
+The SensorDecoder tag is used to define which method will be use to decode the LoRa payload. If you leave it out or empty it will send the raw payload to IoT Hub. If you want to decode it on the Edge you need to specify a method that implements the right logic in the LoraDecoders class in the LoraDecoders.cs file of the LoRaWan.NetworkServer.
+
+Or the followings tags for ABP: 
+
+**DevAddr must be unique for every device! It is like an ip address for lora.**
+
+```json
+"tags": {
+    "AppSKey": "Device AppSKey",
+    "NwkSKey": "Device NwkSKey",
+    "DevAddr": "Device Addr",
+    "SensorDecoder": "",
+    "GatewayID": ""
+  },
+```
+
+It should look something like this for ABP:
+
+```json
+{
+  "deviceId": "BE7A00000000888F",
+  "etag": "AAAAAAAAAAs=",
+  "deviceEtag": "NzMzMTE3MTAz",
+  "status": "enabled",
+  "statusUpdateTime": "0001-01-01T00:00:00",
+  "connectionState": "Disconnected",
+  "lastActivityTime": "2018-08-06T15:16:32.0658492",
+  "cloudToDeviceMessageCount": 0,
+  "authenticationType": "sas",
+  "x509Thumbprint": {
+    "primaryThumbprint": null,
+    "secondaryThumbprint": null
+  },
+  "version": 324,
+  "tags": {
+    "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
+    "NwkSKey": "1B6E151628AED2A6ABF7158809CF4F2C",
+    "DevAddr": "0028B9B9",
+    "SensorDecoder": "",
+    "GatewayID": ""
+  },
+  "properties": {
+    "desired": {
+      "$metadata": {
+        "$lastUpdated": "2018-03-28T06:12:46.1007943Z"
+      },
+      "$version": 1
+    },
+    "reported": {
+       "$metadata": {
+        "$lastUpdated": "2018-08-06T15:16:32.2689851Z",
+        "FCntUp": {
+          "$lastUpdated": "2018-08-06T15:16:32.2689851Z"
+        }
+      },
+      "$version": 313
+    }
+  }
+}
+```
+
+- Click Save
+- Turn on the device and you are ready to go
+
+### Cache Clearing
+
+Due to the gateway caching the device information (tags) for 1 day, if the device tries to connect before you have provisioned it, it will not be able to connect because it will be considered a device for another LoRa network. 
+To clear the cache and allow the device to connect follow these steps:
+
+- IoT Hub -> IoT Edge -> click on the device ID of your gateway
+- Click on LoRaWanNetworkSrvModule
+- Click Direct Method
+- Type "ClearCache" on Method Name
+- Click Invoke Method
+
+Alternatively you can restart the Gateway or the LoRaWanNetworkSrvModule container.
+
 ## Customize the solution & Deep dive
 
 Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanation.
