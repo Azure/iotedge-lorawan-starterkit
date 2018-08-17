@@ -2,7 +2,7 @@
 
 Experimental sample implementation of LoRaWAN components to connect LoRaWAN antenna gateway running IoT Edge directly with Azure IoT.
 
-The goal of the project is to provide guidance and a refernce for Azure IoT Edge users to experiment with LoRaWAN technology.
+The goal of the project is to provide guidance and a reference for Azure IoT Edge users to experiment with LoRaWAN technology.
 
 ## Background
 
@@ -37,8 +37,8 @@ However, customers looking for any of the following are expected to prefer a set
 - Max 51 bytes downstream payload, longer will be cut. It supports multiple messages with the fpending flag
 - IoT Edge must have internet connectivity, it can work for limited time offline if the device has previously transmitted an upstream message.
 - The [network server Azure IoT Edge module](/LoRaEngine/modules/LoRaWanNetworkSrvModule) and the [Facade function](/LoRaEngine/LoraKeysManagerFacade) have an API dependency on each other. its generally recommended for the deployments on the same source level.
-- We generally recommend as read the [Azure IoT Edge trouble shooting guide](https://docs.microsoft.com/en-us/azure/iot-edge/troubleshoot)
-  This project is aimed at providing an easy way to connect LoRa sensors/gateways to the Azure Cloud.
+
+- In addition we generally recommend as read the [Azure IoT Edge trouble shooting guide](https://docs.microsoft.com/en-us/azure/iot-edge/troubleshoot)
 
 ## Tested Gateway HW
 
