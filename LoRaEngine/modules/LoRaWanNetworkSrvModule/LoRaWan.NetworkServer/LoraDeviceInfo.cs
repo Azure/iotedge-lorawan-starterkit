@@ -1,4 +1,8 @@
-﻿using System;
+﻿//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -16,7 +20,7 @@ namespace LoRaWan.NetworkServer
         public string PrimaryKey;
         public string AppNonce;
         public string DevNonce;
-        public string NetId;  
+        public string NetId;
         public bool IsOurDevice = false;
         public bool IsJoinValid = false;
         public IoTHubSender HubSender;

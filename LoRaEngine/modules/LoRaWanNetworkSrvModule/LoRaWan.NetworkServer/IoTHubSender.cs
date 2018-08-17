@@ -1,4 +1,8 @@
-﻿using Microsoft.Azure.Devices.Client;
+﻿//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 using System;
 using System.Collections.Generic;
@@ -11,7 +15,7 @@ namespace LoRaWan.NetworkServer
     public class IoTHubSender : IDisposable
     {
         private DeviceClient deviceClient;
-        
+
         private string DevEUI;
 
         private string PrimaryKey;
@@ -44,7 +48,7 @@ namespace LoRaWan.NetworkServer
                         {
                             AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
                             {
-                            
+
                                 Pooling = true,
                                 MaxPoolSize = 1
                             }
@@ -52,7 +56,7 @@ namespace LoRaWan.NetworkServer
                     };
 
 
-                   
+
 
                     deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, transportSettings);
 
@@ -113,8 +117,8 @@ namespace LoRaWan.NetworkServer
                 {
                     CreateDeviceClient();
 
-                    Console.WriteLine($"Updating twins...");                
-                 
+                    Console.WriteLine($"Updating twins...");
+
                     TwinCollection prop;
                     if (FCntDown != null)
                     {
@@ -134,7 +138,7 @@ namespace LoRaWan.NetworkServer
                 Console.WriteLine($"Could not update twins with error: {ex.Message}");
             }
 
-            
+
         }
 
         public async Task<Message> ReceiveAsync(TimeSpan timeout)
@@ -161,8 +165,8 @@ namespace LoRaWan.NetworkServer
 
         public async Task CompleteAsync(Message message)
         {
-          
-            await deviceClient.CompleteAsync(message);          
+
+            await deviceClient.CompleteAsync(message);
 
         }
 
@@ -184,7 +188,7 @@ namespace LoRaWan.NetworkServer
         private string createIoTHubConnectionString()
         {
 
-            bool enableGateway= true;
+            bool enableGateway = true;
             string connectionString = string.Empty;
 
             string hostName = Environment.GetEnvironmentVariable("IOTEDGE_IOTHUBHOSTNAME");
@@ -192,13 +196,13 @@ namespace LoRaWan.NetworkServer
 
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ENABLE_GATEWAY")))
                 enableGateway = bool.Parse(Environment.GetEnvironmentVariable("ENABLE_GATEWAY"));
-            
 
-            if(string.IsNullOrEmpty(hostName))
+
+            if (string.IsNullOrEmpty(hostName))
             {
                 Console.WriteLine("Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible");
             }
-            
+
 
             connectionString += $"HostName={hostName};";
 
@@ -214,8 +218,8 @@ namespace LoRaWan.NetworkServer
             {
                 Console.WriteLine($"Using iotHub directly, no local queue");
             }
-                      
-            
+
+
 
             return connectionString;
 

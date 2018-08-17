@@ -1,4 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
@@ -15,7 +19,7 @@ namespace PacketManager
 
     public enum PhysicalIdentifier
     {
-        PUSH_DATA,PUSH_ACK,PULL_DATA, PULL_RESP, PULL_ACK,TX_ACK
+        PUSH_DATA, PUSH_ACK, PULL_DATA, PULL_RESP, PULL_ACK, TX_ACK
     }
 
     /// <summary>
@@ -77,7 +81,7 @@ namespace PacketManager
                 identifier = type;
                 message = new byte[_message.Length];
                 Array.Copy(_message, 0, message, 0, _message.Length);
-            
+
             }
 
         }
@@ -85,7 +89,7 @@ namespace PacketManager
         //1 byte
         public byte protocolVersion = 2;
         //1-2 bytes
-        public byte[] token =new byte[2];
+        public byte[] token = new byte[2];
         //1 byte
         public PhysicalIdentifier identifier;
         //8 bytes
@@ -99,12 +103,12 @@ namespace PacketManager
             returnList.Add(protocolVersion);
             returnList.AddRange(token);
             returnList.Add((byte)identifier);
-            if(identifier==PhysicalIdentifier.PULL_DATA||
-                identifier==PhysicalIdentifier.TX_ACK||
-                identifier==PhysicalIdentifier.PUSH_DATA
+            if (identifier == PhysicalIdentifier.PULL_DATA ||
+                identifier == PhysicalIdentifier.TX_ACK ||
+                identifier == PhysicalIdentifier.PUSH_DATA
                 )
                 returnList.AddRange(gatewayIdentifier);
-            if(message !=null)
+            if (message != null)
                 returnList.AddRange(message);
             return returnList.ToArray();
         }
@@ -249,7 +253,7 @@ namespace PacketManager
         /// </summary>
         /// <param name="nwskey">The Network Secret Key</param>
         /// <returns></returns>
-        public byte[] CalculateMic(string appKey,byte [] algoinput)
+        public byte[] CalculateMic(string appKey, byte[] algoinput)
         {
             IMac mac = MacUtilities.GetMac("AESCMAC");
             KeyParameter key = new KeyParameter(StringToByteArray(appKey));
@@ -281,20 +285,20 @@ namespace PacketManager
                              .ToArray();
         }
 
-        public byte[] calculateKey(byte[] type,byte[] appnonce,byte[] netid, byte[] devnonce, byte[] appKey)
+        public byte[] calculateKey(byte[] type, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
             Aes aes = new AesManaged();
             aes.Key = appKey;
-         
+
             aes.Mode = CipherMode.ECB;
             aes.Padding = PaddingMode.None;
 
-            byte []pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
+            byte[] pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
             cipher = aes.CreateEncryptor();
-   
+
 
             var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
 
@@ -319,7 +323,7 @@ namespace PacketManager
 
         public LoRaPayloadJoinRequest(byte[] inputMessage) : base(inputMessage)
         {
-            
+
             var inputmsgstr = BitConverter.ToString(inputMessage);
             //get the joinEUI field
             appEUI = new byte[8];
@@ -387,7 +391,7 @@ namespace PacketManager
     /// </summary>
     public class LoRaPayloadStandardData : LoRaDataPayload
     {
-      
+
         /// <summary>
         /// Frame control octet
         /// </summary>
@@ -424,7 +428,7 @@ namespace PacketManager
             var checkDir = (mhdr[0] >> 5);
             //in this case the payload is not downlink of our type
 
-     
+
             direction = (mhdr[0] & (1 << 6 - 1));
 
             //get the address
@@ -463,7 +467,7 @@ namespace PacketManager
 
         }
 
-        public LoRaPayloadStandardData(byte[] _mhdr,byte[] _devAddr,byte[] _fctrl,byte[] _fcnt,byte [] _fOpts, byte [] _fPort ,byte [] _frmPayload,int _direction) : base()
+        public LoRaPayloadStandardData(byte[] _mhdr, byte[] _devAddr, byte[] _fctrl, byte[] _fcnt, byte[] _fOpts, byte[] _fPort, byte[] _frmPayload, int _direction) : base()
         {
             mhdr = _mhdr;
             Array.Reverse(_devAddr);
@@ -473,9 +477,9 @@ namespace PacketManager
             fopts = _fOpts;
             fport = _fPort;
             frmpayload = _frmPayload;
-            if(frmpayload!=null)
+            if (frmpayload != null)
                 Array.Reverse(frmpayload);
-            direction=_direction;
+            direction = _direction;
         }
 
         /// <summary>
@@ -497,7 +501,7 @@ namespace PacketManager
             return mic.SequenceEqual(result.Take(4).ToArray());
         }
 
-        public  void SetMic(string nwskey)
+        public void SetMic(string nwskey)
         {
             rawMessage = this.ToMessage();
             IMac mac = MacUtilities.GetMac("AESCMAC");
@@ -512,7 +516,7 @@ namespace PacketManager
             mic = result.Take(4).ToArray();
         }
 
-       
+
 
         /// <summary>
         /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py
@@ -558,7 +562,8 @@ namespace PacketManager
                 }
                 frmpayload = decrypted;
                 return Encoding.Default.GetString(decrypted);
-            }else
+            }
+            else
                 return null;
         }
 
@@ -577,13 +582,13 @@ namespace PacketManager
             messageArray.AddRange(devAddr.Reverse().ToArray());
             messageArray.AddRange(fctrl);
             messageArray.AddRange(fcnt);
-            if(fopts!=null)
+            if (fopts != null)
                 messageArray.AddRange(fopts);
-            if(fport!=null)
-            messageArray.AddRange(fport);
+            if (fport != null)
+                messageArray.AddRange(fport);
             if (frmpayload != null)
                 messageArray.AddRange(frmpayload);
-            if(mic!=null)
+            if (mic != null)
                 messageArray.AddRange(mic);
             return messageArray.ToArray();
         }
@@ -591,7 +596,7 @@ namespace PacketManager
 
     }
     #endregion
-    
+
     #region LoRaPayloadJoinAccept
     /// <summary>
     /// Implementation of a LoRa Join-Accept frame
@@ -633,17 +638,17 @@ namespace PacketManager
             appNonce = new byte[3];
             netID = new byte[3];
             devAddr = _devAddr;
-            dlSettings = new byte[1] { 0};
+            dlSettings = new byte[1] { 0 };
             rxDelay = new byte[1] { 0 };
             //set payload Wrapper fields
-            mhdr = new byte[] { 32};
-            appNonce=_appNonce;
-            netID = StringToByteArray(_netId.Replace("-",""));
+            mhdr = new byte[] { 32 };
+            appNonce = _appNonce;
+            netID = StringToByteArray(_netId.Replace("-", ""));
             //default param 869.525 MHz / DR0 (F12, 125 kHz)  
-      
+
             //TODO delete
             cfList = null;
-           // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
+            // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
             fcnt = BitConverter.GetBytes(0x01);
             if (BitConverter.IsLittleEndian)
             {
@@ -655,7 +660,7 @@ namespace PacketManager
             if (cfList != null)
                 algoinput = algoinput.Concat(cfList).ToArray();
 
-            CalculateMic(appKey,algoinput);
+            CalculateMic(appKey, algoinput);
             PerformEncryption(appKey);
         }
 
@@ -675,7 +680,7 @@ namespace PacketManager
             aesEngine.Init(true, new KeyParameter(key));
             byte[] rfu = new byte[1];
             rfu[0] = 0x0;
-          
+
             byte[] pt;
             if (cfList != null)
                 pt = appNonce.Concat(netID).Concat(devAddr).Concat(rfu).Concat(rxDelay).Concat(cfList).Concat(mic).ToArray();
@@ -690,14 +695,14 @@ namespace PacketManager
             aes.Mode = CipherMode.ECB;
             aes.Padding = PaddingMode.None;
 
-            ICryptoTransform cipher;    
-          
-                cipher = aes.CreateDecryptor();
+            ICryptoTransform cipher;
+
+            cipher = aes.CreateDecryptor();
             var encryptedPayload = cipher.TransformFinalBlock(pt, 0, pt.Length);
             rawMessage = new byte[encryptedPayload.Length];
             Array.Copy(encryptedPayload, 0, rawMessage, 0, encryptedPayload.Length);
             return Encoding.Default.GetString(encryptedPayload);
-          
+
         }
 
 
@@ -709,7 +714,7 @@ namespace PacketManager
             List<byte> messageArray = new List<Byte>();
             messageArray.AddRange(mhdr);
             messageArray.AddRange(rawMessage);
-    
+
             return messageArray.ToArray();
         }
 
@@ -741,12 +746,12 @@ namespace PacketManager
         /// </summary>
         /// <param name="input"></param>
         public LoRaMetada(byte[] input)
-        {  
+        {
             var payload = Encoding.Default.GetString(input);
 
             //todo ronnie implement a better logging by message type
             if (!payload.StartsWith("{\"stat"))
-            Console.WriteLine(payload);
+                Console.WriteLine(payload);
 
 
             var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
@@ -756,7 +761,7 @@ namespace PacketManager
             {
                 rawB64data = payloadObject.rxpk[0].data;
             }
-       
+
         }
 
         /// <summary>
@@ -765,9 +770,9 @@ namespace PacketManager
         /// <param name="input"></param>
         public LoRaMetada(LoRaGenericPayload payloadMessage, LoRaMessageType messageType)
         {
-            if(messageType == LoRaMessageType.JoinAccept)
-             rawB64data = Convert.ToBase64String(((LoRaPayloadJoinAccept)payloadMessage).ToMessage());
-            else if(messageType== LoRaMessageType.UnconfirmedDataDown||messageType==LoRaMessageType.ConfirmedDataDown)
+            if (messageType == LoRaMessageType.JoinAccept)
+                rawB64data = Convert.ToBase64String(((LoRaPayloadJoinAccept)payloadMessage).ToMessage());
+            else if (messageType == LoRaMessageType.UnconfirmedDataDown || messageType == LoRaMessageType.ConfirmedDataDown)
                 rawB64data = Convert.ToBase64String(((LoRaPayloadStandardData)payloadMessage).ToMessage());
 
 
@@ -812,7 +817,7 @@ namespace PacketManager
         public LoRaMessage(byte[] inputMessage)
         {
             //packet normally sent by the gateway as heartbeat. TODO find more elegant way to integrate.
-         
+
             physicalPayload = new PhysicalPayload(inputMessage);
             if (physicalPayload.message != null)
             {
@@ -838,7 +843,8 @@ namespace PacketManager
 
                     isLoRaMessage = false;
                 }
-            }else
+            }
+            else
             {
                 isLoRaMessage = false;
             }
@@ -857,7 +863,7 @@ namespace PacketManager
         /// 4 = Confirmed Data up
         /// 5 = Confirmed Data down
         /// 6 = Rejoin Request</param>
-        public LoRaMessage(LoRaGenericPayload payload, LoRaMessageType type,byte[] physicalToken)
+        public LoRaMessage(LoRaGenericPayload payload, LoRaMessageType type, byte[] physicalToken)
         {
             //construct a Join Accept Message
             if (type == LoRaMessageType.JoinAccept)
@@ -867,8 +873,8 @@ namespace PacketManager
                 var downlinkmsg = new DownlinkPktFwdMessage(loraMetadata.rawB64data);
                 var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
                 var messageBytes = Encoding.Default.GetBytes(jsonMsg);
-                
-                physicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP,messageBytes);
+
+                physicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);
 
 
             }
@@ -883,15 +889,15 @@ namespace PacketManager
 
         }
 
-        public LoRaMessage(LoRaGenericPayload payload, LoRaMessageType type, byte[] physicalToken,string _datr,uint _rfch,double _freq,long _tmst)
+        public LoRaMessage(LoRaGenericPayload payload, LoRaMessageType type, byte[] physicalToken, string _datr, uint _rfch, double _freq, long _tmst)
         {
             //construct a Join Accept Message
             if (type == LoRaMessageType.JoinAccept)
             {
                 payloadMessage = (LoRaPayloadJoinAccept)payload;
                 loraMetadata = new LoRaMetada(payloadMessage, type);
-                var downlinkmsg = new DownlinkPktFwdMessage(loraMetadata.rawB64data,_datr,_rfch,_freq, _tmst);
-              
+                var downlinkmsg = new DownlinkPktFwdMessage(loraMetadata.rawB64data, _datr, _rfch, _freq, _tmst);
+
                 var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
                 Console.WriteLine(jsonMsg);
                 var messageBytes = Encoding.Default.GetBytes(jsonMsg);
@@ -904,7 +910,7 @@ namespace PacketManager
             {
                 payloadMessage = (LoRaPayloadStandardData)payload;
                 loraMetadata = new LoRaMetada(payloadMessage, type);
-                var downlinkmsg = new DownlinkPktFwdMessage(loraMetadata.rawB64data, _datr, _rfch, _freq, _tmst+ 1000000);
+                var downlinkmsg = new DownlinkPktFwdMessage(loraMetadata.rawB64data, _datr, _rfch, _freq, _tmst + 1000000);
 
                 var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
                 Console.WriteLine(jsonMsg);
@@ -995,7 +1001,7 @@ namespace PacketManager
             };
         }
 
-        public DownlinkPktFwdMessage(string _data,string _datr,uint _rfch,double _freq, long _tmst)
+        public DownlinkPktFwdMessage(string _data, string _datr, uint _rfch, double _freq, long _tmst)
         {
             var byteData = Convert.FromBase64String(_data);
             txpk = new Txpk()

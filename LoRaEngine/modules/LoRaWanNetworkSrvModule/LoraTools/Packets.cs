@@ -1,4 +1,8 @@
-﻿using System;
+﻿//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+using System;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -49,13 +53,13 @@ namespace LoRaTools
             int devAddr,
             Int64 nwkskey,
             Int64 appsKey,
-            Int16 frameCounter, 
-            byte [] payload)
+            Int16 frameCounter,
+            byte[] payload)
             : base(null)
         {
             // TODO: using constructor parameters, build and initialize
             // m_rawBytes here.
-            
+
             // TODO: consider adding methods that allow the specification of
             // various JSON attributes like time, tmms, tmst, freq, etc.
             // There are too many of these specify via constructor parameters,
