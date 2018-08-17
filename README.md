@@ -1,11 +1,8 @@
-# Azure IoT LoRaWan Starter Kit
-
-**Project Leads:** [Ronnie Saurenmann](mailto://ronnies@microsoft.com) and
-[Todd Holmquist-Sutherland](mailto://toddhs@microsoft.com).
+# Azure IoT Edge LoRaWAN Starter Kit
 
 Experimental sample implementation of LoRaWAN components to connect LoRaWAN antenna gateway running IoT Edge directly with Azure IoT.
 
-The goal of the project is to provide guidance and a refernce for Azure IoT Edge users to experiment with LoRaWAN technology.
+The goal of the project is to provide guidance and a reference for Azure IoT Edge users to experiment with LoRaWAN technology.
 
 ## Background
 
@@ -39,6 +36,9 @@ However, customers looking for any of the following are expected to prefer a set
 - Tested only for EU frequency
 - Max 51 bytes downstream payload, longer will be cut. It supports multiple messages with the fpending flag
 - IoT Edge must have internet connectivity, it can work for limited time offline if the device has previously transmitted an upstream message.
+- The [network server Azure IoT Edge module](/LoRaEngine/modules/LoRaWanNetworkSrvModule) and the [Facade function](/LoRaEngine/LoraKeysManagerFacade) have an API dependency on each other. its generally recommended for the deployments on the same source level.
+
+- In addition we generally recommend as read the [Azure IoT Edge trouble shooting guide](https://docs.microsoft.com/en-us/azure/iot-edge/troubleshoot)
 
 ## Tested Gateway HW
 
@@ -59,8 +59,16 @@ The code is organized into three sections:
   - **LoraKeysManagerFacade** - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
   - **LoRaDevTools** - library for dev tools (git submodule)
 - **Arduino** - Examples and references for LoRa Arduino based devices.
-- **EdgeVisualization** - an optional Azure IoT Edge module for visualizing LoRa packet flows inside IoT Edge. Example for local IoT Edge message processing.
 - **Template** - Contain code useful for the "deploy to Azure button"
+
+## Reporting Security Issues
+
+Security issues and bugs should be reported privately, via email, to the Microsoft Security
+Response Center (MSRC) at [secure@microsoft.com](mailto:secure@microsoft.com). You should
+receive a response within 24 hours. If for some reason you do not, please follow up via
+email to ensure we received your original message. Further information, including the
+[MSRC PGP](https://technet.microsoft.com/en-us/security/dn606155) key, can be found in
+the [Security TechCenter](https://technet.microsoft.com/en-us/security/default).
 
 ## Quick start
 
@@ -90,12 +98,6 @@ By using the `docker ps` command, you should see the Edge containers being deplo
 ## Customize the solution & Deep dive
 
 Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanation.
-
-## Known constraints
-
-- The [network server Azure IoT Edge module](/LoRaEngine/modules/LoRaWanNetworkSrvModule) and the [Facade function](/LoRaEngine/LoraKeysManagerFacade) have an API dependency on each other. its generally recommended for the deployments on the same source level.
-- We generally recommend as read the [Azure IoT Edge trouble shooting guide](https://docs.microsoft.com/en-us/azure/iot-edge/troubleshoot)
-  This project is aimed at providing an easy way to connect LoRa sensors/gateways to the Azure Cloud.
 
 ## License
 
