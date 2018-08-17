@@ -75,7 +75,7 @@ the [Security TechCenter](https://technet.microsoft.com/en-us/security/default).
 An Azure deployment template is available to deploy all the required Azure infrastructure and get you started quickly. 
 If you'd rather deploy it manually please jump directly into the [do it yourself section](/LoRaEngine).
 
-### Prequisites & Limitations
+### Prequisites
 Currently, the template work only with ARM based gateways, like a Raspberry Pi, support for x86 will be added in a future release. (you could actually already deploy it for intel by following the instructions in the [do it yourself section](/LoraEngine))
 The template was tested to work on the following gateway types:
 * [Seeed Studio LoRa LoRaWAN Gateway - 868MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
