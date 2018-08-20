@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanTest", "LoRaWanTest\LoRaWanTest.csproj", "{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoraKeysManagerFacade", "LoraKeysManagerFacade\LoraKeysManagerFacade.csproj", "{7E3FDAAC-242D-40CD-9782-0A8487FD0070}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaTools", "modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj", "{1AAB01AD-C93F-4876-B031-B08C26700CA1}"
@@ -12,6 +10,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.NetworkServer", "modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\LoRaWan.NetworkServer.csproj", "{3BC3C6B9-7A4C-469F-AF55-E4525EA89DC6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkSrvModule", "modules\LoRaWanNetworkSrvModule\LoRaWanNetworkSrvModule\LoRaWanNetworkSrvModule.csproj", "{B563A551-BF18-4A79-804F-6E8A3AB31990}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanTest", "modules\LoRaWanNetworkSrvModule\LoRaToolsTest\LoRaWanTest.csproj", "{E96EDB52-7BCD-4418-BE7D-0C914EAA874D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,14 +21,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Debug|x86.Build.0 = Debug|Any CPU
-		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Release|x86.ActiveCfg = Release|Any CPU
-		{E8F006CD-4DBB-4F4F-BFBC-E350A600F63F}.Release|x86.Build.0 = Release|Any CPU
 		{7E3FDAAC-242D-40CD-9782-0A8487FD0070}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7E3FDAAC-242D-40CD-9782-0A8487FD0070}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E3FDAAC-242D-40CD-9782-0A8487FD0070}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -61,6 +53,14 @@ Global
 		{B563A551-BF18-4A79-804F-6E8A3AB31990}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B563A551-BF18-4A79-804F-6E8A3AB31990}.Release|x86.ActiveCfg = Release|Any CPU
 		{B563A551-BF18-4A79-804F-6E8A3AB31990}.Release|x86.Build.0 = Release|Any CPU
+		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D}.Debug|x86.Build.0 = Debug|Any CPU
+		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D}.Release|x86.ActiveCfg = Release|Any CPU
+		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
