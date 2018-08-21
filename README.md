@@ -110,7 +110,7 @@ The template will deploy in your Azure subscription the Following ressources:
 
 5. If your gateway is a Raspberry Pi, **don't forget to [enable SPI](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/) , (You need to restart your pi)**.
 
-By using the `docker ps` command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the [Arduino folder](/Arduino) to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly: TransmissionTestOTAALoRa.ino without provisioning the device first.
+By using the `docker ps` command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the [Arduino folder](/Arduino) to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly "TransmissionTestOTAALoRa.ino" without provisioning the device first.
 
 ### What does the template do?
 The template provision an IoT Hub with a [packet forwarder](https://github.com/Lora-net/packet_forwarder) and a network server module already preconfigured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](/Template).
@@ -218,17 +218,26 @@ Alternatively you can restart the Gateway or the LoRaWanNetworkSrvModule contain
 
 There is a logging mechanisms that output valuable information on the console of the docker container and/or as module message to IoT Hub
 
-You can control the logging with the following environment variable on the lorawannetworksrvmodule module:
+You can control the logging with the following environment variables on the lorawannetworksrvmodule module:
 
 LOG_LEVEL       1          Only errors are logged (default if omitted)
+
 LOG_LEVEL       2          Errors and information are logged
+
 LOG_LEVEL       3          Everything is logged including the up and down messages to the packet forwarder
 
+
+
 LOG_TO_HUB      true       Log info are sent from the module to IoT Hub. You can used VSCode, [IoTHub explorer](https://github.com/Azure/iothub-explorer) or [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer) to monitor the log messages
-LOG_TO_HUB      false      Log info is not sent to IoT Hub (default if omitted)    
+
+LOG_TO_HUB      false      Log info is not sent to IoT Hub (default if omitted)
+
+
 
 LOG_TO_CONSOLE  true       Log info in docker log (default if omitted). Log in to the gateway and use "sudo docker logs lorawannetworksrvmodule -f" to follow the log
+
 LOG_TO_CONSOLE  false      No log info in the docker log
+
 
 ## Customize the solution & Deep dive
 
