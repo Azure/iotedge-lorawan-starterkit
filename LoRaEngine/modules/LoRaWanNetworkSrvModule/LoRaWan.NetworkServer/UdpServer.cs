@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer
     {
         const int PORT = 1680;
            
-        ModuleClient ioTHubModuleClient;
+        static ModuleClient ioTHubModuleClient;
 
         static UdpClient udpClient;
 
@@ -29,6 +29,7 @@ namespace LoRaWan.NetworkServer
 
         public async Task RunServer()
         {
+            Logger.Log( "Starting LoRaWAN Server...", Logger.LoggingLevel.Always);
 
             await InitCallBack();
          
@@ -36,12 +37,13 @@ namespace LoRaWan.NetworkServer
 
         }
 
+
         public static async Task UdpSendMessage(byte[] messageToSend)
         {
             if (messageToSend != null && messageToSend.Length != 0)
             {
                 await udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp.ToString(), remoteLoRaAggregatorPort);
-                //Console.WriteLine($"UDP message sent on port: {remoteLoRaAggregatorPort}");
+               
             }
         }
 
@@ -52,14 +54,14 @@ namespace LoRaWan.NetworkServer
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, PORT);
             udpClient = new UdpClient(endPoint);
 
-            Console.WriteLine($"LoRaWAN server started on port {PORT}");
+            Logger.Log( $"LoRaWAN server started on port {PORT}", Logger.LoggingLevel.Always);
                  
 
             while (true)
             {
                 UdpReceiveResult receivedResults = await udpClient.ReceiveAsync();
 
-                //Console.WriteLine($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}");
+                //Logger.Log($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}");
 
              
                 //Todo check that is an ack only, we could do a better check in a future verstion
@@ -79,7 +81,7 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error processing the message {ex.Message}");
+                    Logger.Log( $"Error processing the message {ex.Message}", Logger.LoggingLevel.Error);
                 }
                    
             }
@@ -101,7 +103,9 @@ namespace LoRaWan.NetworkServer
                 {
                     ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
 
-                    Console.WriteLine("Getting properties from module twin...");
+                    Logger.Init(ioTHubModuleClient);
+
+                    Logger.Log( "Getting properties from module twin...", Logger.LoggingLevel.Info);
 
 
                     var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
@@ -110,12 +114,12 @@ namespace LoRaWan.NetworkServer
                     try
                     {
                         LoraDeviceInfoManager.FacadeServerUrl = moduleTwinCollection["FacadeServerUrl"];
-                        Console.WriteLine($"Facade function url: {LoraDeviceInfoManager.FacadeServerUrl}");
+                        Logger.Log( $"Facade function url: {LoraDeviceInfoManager.FacadeServerUrl}", Logger.LoggingLevel.Always);
 
                     }
                     catch (ArgumentOutOfRangeException e)
                     {
-                        Console.WriteLine("Module twin FacadeServerName not exist");
+                        Logger.Log( "Module twin FacadeServerName not exist", Logger.LoggingLevel.Error);
                     }
                     try
                     {
@@ -123,7 +127,7 @@ namespace LoRaWan.NetworkServer
                     }
                     catch (ArgumentOutOfRangeException e)
                     {
-                        Console.WriteLine("Module twin facadeAuthCode not exist");
+                        Logger.Log( "Module twin FacadeAuthCode does not exist", Logger.LoggingLevel.Error);
                     }
 
                     await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, null);
@@ -142,12 +146,12 @@ namespace LoRaWan.NetworkServer
 
 
                
-                // Attach callback for Twin desired properties updates
+                
               
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Initialization failed with error: {ex.Message}.\nWaiting for update desired property 'FacadeServerName' and 'FacadeAuthCode'.");
+                Logger.Log( $"Initialization failed with error: {ex.Message}", Logger.LoggingLevel.Error);
                
             }
         }
@@ -156,7 +160,7 @@ namespace LoRaWan.NetworkServer
         {
             Cache.Clear();
 
-            Console.WriteLine("Cache cleared");
+            Logger.Log( "Cache cleared", Logger.LoggingLevel.Info);
 
             return new MethodResponse(200);
         }
@@ -165,15 +169,18 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                Console.WriteLine("Desired property change:");
-                Console.WriteLine(JsonConvert.SerializeObject(desiredProperties));
-
                
+                
+
+
+
                 if (desiredProperties["FacadeServerUrl"] != null)
                     LoraDeviceInfoManager.FacadeServerUrl = desiredProperties["FacadeServerUrl"];
 
                 if (desiredProperties["FacadeAuthCode"] != null)
                     LoraDeviceInfoManager.FacadeAuthCode = desiredProperties["FacadeAuthCode"];
+
+                Logger.Log("Desired property changed", Logger.LoggingLevel.Info);
 
             }
             catch (AggregateException ex)
@@ -181,13 +188,13 @@ namespace LoRaWan.NetworkServer
                 foreach (Exception exception in ex.InnerExceptions)
                 {
                     
-                    Console.WriteLine("Error when receiving desired property: {0}", exception);
+                    Logger.Log( $"Error when receiving desired property: {exception}", Logger.LoggingLevel.Error);
                 }
             }
             catch (Exception ex)
             {
                
-                Console.WriteLine("Error when receiving desired property: {0}", ex.Message);
+                Logger.Log( $"Error when receiving desired property: {ex.Message}", Logger.LoggingLevel.Error);
             }
             return Task.CompletedTask;
         }

@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
+using LoRaWan;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto;
@@ -53,7 +54,7 @@ namespace PacketManager
             //TX_ACK That packet type is used by the gateway to send a feedback to the to inform if a downlink request has been accepted or rejected by the gateway.
             if (identifier == PhysicalIdentifier.TX_ACK)
             {
-                Console.WriteLine("TX ACK RECEIVED");
+                Logger.Log($"Tx ack recieved from gateway", Logger.LoggingLevel.Info);
                 Array.Copy(input, 4, gatewayIdentifier, 0, 8);
                 if (input.Length - 12 > 0)
                 {
@@ -751,7 +752,7 @@ namespace PacketManager
 
             //todo ronnie implement a better logging by message type
             if (!payload.StartsWith("{\"stat"))
-                Console.WriteLine(payload);
+                Logger.Log($"DataUp {payload}", Logger.LoggingLevel.Full);
 
 
             var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
@@ -899,7 +900,7 @@ namespace PacketManager
                 var downlinkmsg = new DownlinkPktFwdMessage(loraMetadata.rawB64data, _datr, _rfch, _freq, _tmst);
 
                 var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
-                Console.WriteLine(jsonMsg);
+                Logger.Log( $"JoinAccept {jsonMsg}", Logger.LoggingLevel.Full);
                 var messageBytes = Encoding.Default.GetBytes(jsonMsg);
 
                 physicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);
@@ -913,7 +914,7 @@ namespace PacketManager
                 var downlinkmsg = new DownlinkPktFwdMessage(loraMetadata.rawB64data, _datr, _rfch, _freq, _tmst + 1000000);
 
                 var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
-                Console.WriteLine(jsonMsg);
+                Logger.Log( $"UnconfirmedDataDown {jsonMsg}", Logger.LoggingLevel.Full);
                 var messageBytes = Encoding.Default.GetBytes(jsonMsg);
 
                 physicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);
@@ -925,7 +926,7 @@ namespace PacketManager
                 var downlinkmsg = new DownlinkPktFwdMessage(loraMetadata.rawB64data, _datr, _rfch, _freq, _tmst + 1000000);
 
                 var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
-                Console.WriteLine(jsonMsg);
+                Logger.Log( $"ConfirmedDataDown {jsonMsg}", Logger.LoggingLevel.Full);
                 var messageBytes = Encoding.Default.GetBytes(jsonMsg);
 
                 physicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);

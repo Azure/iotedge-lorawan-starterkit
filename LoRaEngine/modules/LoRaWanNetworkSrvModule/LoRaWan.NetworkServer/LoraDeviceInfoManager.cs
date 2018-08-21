@@ -35,7 +35,7 @@ namespace LoRaWan.NetworkServer
 
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"Error calling façade api: {response.ReasonPhrase} check the azure function log");
+                Logger.Log(DevAddr, $"error calling façade api: {response.ReasonPhrase} check the azure function log", Logger.LoggingLevel.Error);
                 return null;
             }
 
@@ -57,7 +57,7 @@ namespace LoRaWan.NetworkServer
 
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"Error calling façade api: {response.ReasonPhrase} check the azure function log");
+                Logger.Log(DevEUI, $"error calling façade api: {response.ReasonPhrase} check the azure function log", Logger.LoggingLevel.Error);
                 return null;
             }
 

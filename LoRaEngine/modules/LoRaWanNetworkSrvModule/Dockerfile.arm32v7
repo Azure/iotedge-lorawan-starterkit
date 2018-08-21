@@ -1,6 +1,7 @@
 FROM microsoft/dotnet:2.0-sdk AS build-env
 WORKDIR /app
 
+COPY ./Logger ./Logger
 COPY ./LoRaWan.NetworkServer ./LoRaWan.NetworkServer
 COPY ./LoRaWanNetworkSrvModule ./LoRaWanNetworkSrvModule
 COPY ./LoraTools ./LoraTools
