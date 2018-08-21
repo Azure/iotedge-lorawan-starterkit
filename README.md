@@ -214,6 +214,22 @@ To clear the cache and allow the device to connect follow these steps:
 
 Alternatively you can restart the Gateway or the LoRaWanNetworkSrvModule container.
 
+## Monitoring
+
+There is a logging mechanisms that output valuable information on the console of the docker container and/or as module message to IoT Hub
+
+You can control the logging with the following environment variable on the LoRaWanNetworkSrvModule module:
+
+LOG_LEVEL       1          Only errors are logged (default if omitted)
+LOG_LEVEL       2          Errors and information are logged
+LOG_LEVEL       3          Everything is logged including the up and down messages to the packet forwarder
+
+LOG_TO_HUB      true       Log info are sent from the module to IoT Hub. You can used VSCode, [IoTHub explorer](https://github.com/Azure/iothub-explorer) or [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer) to monitor the log messages
+LOG_TO_HUB      false      Log info is not sent to IoT Hub (default if omitted)    
+
+LOG_TO_CONSOLE  true       Log info in docker log (default if omitted). Log in to the gateway and use "sudo docker logs LoRaWanNetworkSrvModule -f" to follow the log
+LOG_TO_CONSOLE  false      No log info in the docker log
+
 ## Customize the solution & Deep dive
 
 Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanation.
