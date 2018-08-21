@@ -26,25 +26,18 @@ namespace LoRaWan.NetworkServer
                 return $"{{\"error\": \"No '{SensorDecoder}' decoder found\", \"rawpayload\": \"{payload}\"}}";
 
         }
-
-        private static string DecoderHealthSensor(string result)
-        {
-            string[] values = result.Split(':');
-            return String.Format("{{\"heartrate\": {0} , \"temperature\": {1}}}", values[0], values[1]);
-        }
+               
         private static string DecoderGpsSensor(string result)
         {
             string[] values = result.Split(':');
             return String.Format("{{\"latitude\": {0} , \"longitude\": {1}}}", values[0], values[1]);
         }
-        private static string DecoderRotatorySensor(string result)
-        {
-            return String.Format("{{\"angle\": {0}}}", result);
-        }
+        
         private static string DecoderTemperatureSensor(string result)
         {
             return String.Format("{{\"temperature\": {0}}}", result);
         }
+
         private static string DecoderValueSensor(string result)
         {
             return String.Format("{{\"value\": {0}}}", result);

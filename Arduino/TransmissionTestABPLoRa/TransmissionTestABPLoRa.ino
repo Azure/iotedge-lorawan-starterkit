@@ -16,7 +16,7 @@ iot hub ABP tags for deviceid: 46AAC86800430028
     "NwkSKey": "3B7E151628AED2A6ABF7158809CF4F3C",
     "DevAddr": "0028B1B1",
     "GatewayID" :"",
-    "SensorDecoder" :"DecoderRotatorySensor"
+    "SensorDecoder" :"DecoderValueSensor"
     },
   */
 

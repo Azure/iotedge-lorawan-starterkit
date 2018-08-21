@@ -137,8 +137,6 @@ A LoRa device is a normal IoT Hub device with some specific device twin tags. Yo
     "SensorDecoder": ""    
   },
 ```
-The SensorDecoder tag is used to define which method will be use to decode the LoRa payload. If you leave it out or empty it will send the raw payload to IoT Hub. If you want to decode it on the Edge you need to specify a method that implements the right logic in the LoraDecoders class in the LoraDecoders.cs file of the LoRaWan.NetworkServer.
-
 Or the followings tags for ABP: 
 
 **DevAddr must be unique for every device! It is like an ip address for lora.**
@@ -201,6 +199,20 @@ It should look something like this for ABP:
 - Click Save
 - Turn on the device and you are ready to go
 
+### Decoders
+
+The SensorDecoder tag is used to define which method will be used to decode the LoRa payload. If you leave it out or empty it will send the raw payload to IoT Hub.
+If you want to decode it on the Edge you need to specify a method that implements the right logic in the LoraDecoders class in the LoraDecoders.cs file of the LoRaWan.NetworkServer. 
+We have already a simple decoder called "DecoderValueSensor" that take the whole payload as string and construct the following json output (example an Arduino sending a sensor value as srting eg. "23.5"):
+
+```json
+{
+  .....
+    "data": {"value": 23.5} 
+  .....  
+}
+```
+
 ### Cache Clearing
 
 Due to the gateway caching the device information (tags) for 1 day, if the device tries to connect before you have provisioned it, it will not be able to connect because it will be considered a device for another LoRa network. 
@@ -218,7 +230,7 @@ Alternatively you can restart the Gateway or the LoRaWanNetworkSrvModule contain
 
 There is a logging mechanisms that output valuable information on the console of the docker container and/or as module message to IoT Hub
 
-You can control the logging with the following environment variables on the lorawannetworksrvmodule module:
+You can control the logging with the following environment variables on the LoRaWanNetworkSrvModule module:
 
 LOG_LEVEL       1          Only errors are logged (default if omitted)
 
@@ -234,7 +246,7 @@ LOG_TO_HUB      false      Log info is not sent to IoT Hub (default if omitted)
 
 
 
-LOG_TO_CONSOLE  true       Log info in docker log (default if omitted). Log in to the gateway and use "sudo docker logs lorawannetworksrvmodule -f" to follow the log
+LOG_TO_CONSOLE  true       Log info in docker log (default if omitted). Log in to the gateway and use "sudo docker logs LoRaWanNetworkSrvModule -f" to follow the log
 
 LOG_TO_CONSOLE  false      No log info in the docker log
 
