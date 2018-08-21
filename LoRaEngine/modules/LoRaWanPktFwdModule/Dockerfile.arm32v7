@@ -8,7 +8,7 @@ RUN ./compile.sh
 WORKDIR /build
 
 
-FROM resin/rpi-raspbian as exec
+FROM microsoft/dotnet:2.0-runtime-stretch-arm32v7 as exec
 WORKDIR /LoRa
 COPY --from=builder /build/packet_forwarder/lora_pkt_fwd/lora_pkt_fwd .
 COPY --from=builder /build/packet_forwarder/lora_pkt_fwd/global_conf.json .

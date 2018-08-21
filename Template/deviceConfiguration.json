@@ -34,7 +34,7 @@
 					}
 				},
 				"modules": {
-					"lorawannetworksrvmodule": {
+					"LoRaWanNetworkSrvModule": {
 						"type": "docker",
 						"settings": {
 							"image": "loraedge/lorawannetworksrvmodule:0.2.0-arm32v7",
@@ -52,7 +52,7 @@
 						"status": "running",
 						"restartPolicy": "always"
 					},
-					"lorawanpktfwdmodule": {
+					"LoRaWanPktFwdModule": {
 						"type": "docker",
 						"settings": {
 							"image": "loraedge/lorawanpktfwdmodule:0.2.0-arm32v7",
