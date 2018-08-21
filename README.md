@@ -227,7 +227,7 @@ LOG_LEVEL       3          Everything is logged including the up and down messag
 LOG_TO_HUB      true       Log info are sent from the module to IoT Hub. You can used VSCode, [IoTHub explorer](https://github.com/Azure/iothub-explorer) or [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer) to monitor the log messages
 LOG_TO_HUB      false      Log info is not sent to IoT Hub (default if omitted)    
 
-LOG_TO_CONSOLE  true       Log info in docker log (default if omitted). Log in to the gateway and use "sudo docker logs LoRaWanNetworkSrvModule -f" to follow the log
+LOG_TO_CONSOLE  true       Log info in docker log (default if omitted). Log in to the gateway and use "sudo docker logs lorawannetworksrvmodule -f" to follow the log
 LOG_TO_CONSOLE  false      No log info in the docker log
 
 ## Customize the solution & Deep dive
