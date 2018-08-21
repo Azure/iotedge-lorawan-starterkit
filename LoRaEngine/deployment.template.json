@@ -49,7 +49,10 @@
             },
             "version": "1.0",
             "env": {
-              "ENABLE_GATEWAY": {
+              "LOG_LEVEL": {
+                "value": "2"
+              },              
+              "LOG_TO_HUB": {
                 "value": "true"
               }
             },

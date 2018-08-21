@@ -60,6 +60,8 @@ namespace LoRaWan.NetworkServer
 
                     deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, transportSettings);
 
+                  
+
                     //we set the retry only when sending msgs
                     deviceClient.SetRetryPolicy(new NoRetry());
 
@@ -70,13 +72,13 @@ namespace LoRaWan.NetworkServer
                         {
                             deviceClient.Dispose();
                             deviceClient = null;
-                            Console.WriteLine("Connection closed by the server");
+                            Logger.Log(DevEUI, $"connection closed by the server",Logger.LoggingLevel.Info);
                         }
                     });
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Could not create IoT Hub Device Client with error: {ex.Message}");
+                    Logger.Log(DevEUI, $"could not create IoT Hub DeviceClient with error: {ex.Message}", Logger.LoggingLevel.Error);
                 }
 
             }
@@ -101,23 +103,21 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Could not send message to IoTHub/Edge with error: {ex.Message}");
+                    Logger.Log(DevEUI, $"could not send message to IoTHub/Edge with error: {ex.Message}", Logger.LoggingLevel.Error);
                 }
 
             }
         }
-        public async Task UpdateFcntAsync(int FCntUp, int? FCntDown)
+        public async Task UpdateFcntAsync(int FCntUp, int? FCntDown, bool force = false)
         {
 
 
             try
             {
                 //update the twins every 10
-                if (FCntUp % 10 == 0)
+                if (FCntUp % 10 == 0 || force == true )
                 {
                     CreateDeviceClient();
-
-                    Console.WriteLine($"Updating twins...");
 
                     TwinCollection prop;
                     if (FCntDown != null)
@@ -130,12 +130,14 @@ namespace LoRaWan.NetworkServer
                     }
 
                     await deviceClient.UpdateReportedPropertiesAsync(prop);
+
+                    Logger.Log(DevEUI, $"twins updated {FCntUp}:{FCntDown}", Logger.LoggingLevel.Info);
                 }
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Could not update twins with error: {ex.Message}");
+                Logger.Log(DevEUI, $"could not update twins with error: {ex.Message}", Logger.LoggingLevel.Error);
             }
 
 
@@ -156,7 +158,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Could not retrive message to IoTHub/Edge with error: {ex.Message}");
+                Logger.Log(DevEUI, $"Could not retrive message to IoTHub/Edge with error: {ex.Message}", Logger.LoggingLevel.Error);
                 return null;
             }
 
@@ -200,7 +202,7 @@ namespace LoRaWan.NetworkServer
 
             if (string.IsNullOrEmpty(hostName))
             {
-                Console.WriteLine("Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible");
+                Logger.Log("Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible", Logger.LoggingLevel.Error);
             }
 
 
@@ -212,11 +214,11 @@ namespace LoRaWan.NetworkServer
             if (enableGateway)
             {
                 connectionString += $"GatewayHostName={gatewayHostName};";
-                Console.WriteLine($"Using edgeHub as local queue");
+                Logger.Log(DevEUI, $"using edgeHub local queue", Logger.LoggingLevel.Info);
             }
             else
             {
-                Console.WriteLine($"Using iotHub directly, no local queue");
+                Logger.Log(DevEUI, $"{DevEUI} using iotHub directly, no edgeHub queue", Logger.LoggingLevel.Info);
             }
 
 
@@ -229,10 +231,7 @@ namespace LoRaWan.NetworkServer
 
         public void Dispose()
         {
-            if (deviceClient != null)
-            {
-                try { deviceClient.Dispose(); } catch (Exception ex) { Console.WriteLine($"Device Client disposing error: {ex.Message}"); }
-            }
+            deviceClient.Dispose();
         }
     }
 }
