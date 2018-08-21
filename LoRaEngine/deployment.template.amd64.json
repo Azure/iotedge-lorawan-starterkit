@@ -49,9 +49,6 @@
             },
             "version": "1.0",
             "env": {
-              "ENABLE_GATEWAY": {
-                "value": "true"
-              },
               "LOG_LEVEL": {
                 "value": "2"
               },              

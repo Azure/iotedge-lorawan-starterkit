@@ -110,7 +110,7 @@ The template will deploy in your Azure subscription the Following ressources:
 
 5. If your gateway is a Raspberry Pi, **don't forget to [enable SPI](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/) , (You need to restart your pi)**.
 
-By using the `docker ps` command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the [Arduino folder](/Arduino) to see LoRa messages being sent to the cloud.
+By using the `docker ps` command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the [Arduino folder](/Arduino) to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly: TransmissionTestOTAALoRa.ino without provisioning the device first.
 
 ### What does the template do?
 The template provision an IoT Hub with a [packet forwarder](https://github.com/Lora-net/packet_forwarder) and a network server module already preconfigured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](/Template).
@@ -120,7 +120,7 @@ The template provision an IoT Hub with a [packet forwarder](https://github.com/L
 A LoRa device is a normal IoT Hub device with some specific device twin tags. You manage it like you would with any other IoT Hub device.
 **To avoid caching issues you should not allow the device to join or send data before it is provisioned in IoT Hub. In case that you did plese follow the ClearCache proecedure that you find below.**
 
-### ABP and OTAA provisioning
+### ABP (personalization) and OTAA (over the air) provisioning
 
 - Login in to the Azure portal go to IoT Hub -> IoT devices -> Add 
 - Use the DeviceEUI as DeviceID -> Save
@@ -218,7 +218,7 @@ Alternatively you can restart the Gateway or the LoRaWanNetworkSrvModule contain
 
 There is a logging mechanisms that output valuable information on the console of the docker container and/or as module message to IoT Hub
 
-You can control the logging with the following environment variable on the LoRaWanNetworkSrvModule module:
+You can control the logging with the following environment variable on the lorawannetworksrvmodule module:
 
 LOG_LEVEL       1          Only errors are logged (default if omitted)
 LOG_LEVEL       2          Errors and information are logged
