@@ -247,7 +247,7 @@ namespace PacketManager
         /// </summary>
         /// <param name="appSkey">the Application Secret Key</param>
         /// <returns></returns>
-        public abstract string PerformEncryption(string appSkey);
+        public abstract byte[] PerformEncryption(string appSkey);
 
         /// <summary>
         /// A Method to calculate the Mic of the message
@@ -367,7 +367,7 @@ namespace PacketManager
             return mic.SequenceEqual(result.Take(4).ToArray());
         }
 
-        public override string PerformEncryption(string appSkey)
+        public override byte[] PerformEncryption(string appSkey)
         {
             throw new NotImplementedException("The payload is not encrypted in case of a join message");
         }
@@ -522,7 +522,7 @@ namespace PacketManager
         /// <summary>
         /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py
         /// </summary>
-        public override string PerformEncryption(string appSkey)
+        public override byte[] PerformEncryption(string appSkey)
         {
             if (frmpayload != null)
             {
@@ -562,7 +562,7 @@ namespace PacketManager
                     }
                 }
                 frmpayload = decrypted;
-                return Encoding.Default.GetString(decrypted);
+                return decrypted;
             }
             else
                 return null;
@@ -673,7 +673,7 @@ namespace PacketManager
                              .ToArray();
         }
 
-        public override string PerformEncryption(string appSkey)
+        public override byte[] PerformEncryption(string appSkey)
         {
             //return null;
             AesEngine aesEngine = new AesEngine();
@@ -702,7 +702,7 @@ namespace PacketManager
             var encryptedPayload = cipher.TransformFinalBlock(pt, 0, pt.Length);
             rawMessage = new byte[encryptedPayload.Length];
             Array.Copy(encryptedPayload, 0, rawMessage, 0, encryptedPayload.Length);
-            return Encoding.Default.GetString(encryptedPayload);
+            return encryptedPayload;
 
         }
 
@@ -738,7 +738,7 @@ namespace PacketManager
 
         public PktFwdMessage fullPayload { get; set; }
         public string rawB64data { get; set; }
-        public string decodedData { get; set; }
+        public byte[] decodedData { get; set; }
 
 
 
@@ -949,7 +949,7 @@ namespace PacketManager
         /// </summary>
         /// <param name="nwskey">The Application Secret Key</param>
         /// <returns>a boolean telling if the MIC is valid or not</returns>
-        public string DecryptPayload(string appSkey)
+        public byte[] DecryptPayload(string appSkey)
         {
             var retValue = ((LoRaDataPayload)payloadMessage).PerformEncryption(appSkey);
             loraMetadata.decodedData = retValue;

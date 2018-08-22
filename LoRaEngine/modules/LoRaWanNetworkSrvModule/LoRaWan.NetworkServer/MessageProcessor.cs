@@ -87,6 +87,7 @@ namespace LoRaWan.NetworkServer
             byte[] udpMsgForPktForwarder = new byte[0];
             string devAddr = BitConverter.ToString(loraMessage.payloadMessage.devAddr).Replace("-", "");
             Message c2dMsg= null;
+          
 
 
 
@@ -142,7 +143,7 @@ namespace LoRaWan.NetworkServer
 
 
 
-                            string decryptedMessage = null;
+                            byte[] decryptedMessage = null;
                             try
                             {
                                 decryptedMessage = loraMessage.DecryptPayload(loraDeviceInfo.AppSKey);
@@ -156,27 +157,32 @@ namespace LoRaWan.NetworkServer
 
                             Rxpk rxPk = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0];
 
-
+                            
                             dynamic fullPayload = JObject.FromObject(rxPk);
 
                             string jsonDataPayload="";
 
-                            //todo ronnie we may add these fields to rxPk?
+                            uint fportUp = (uint)((LoRaPayloadStandardData)loraMessage.payloadMessage).fport[0];
+
+                            fullPayload.port = fportUp;
+
+                            fullPayload.fcnt = fcntup;
 
                             if (String.IsNullOrEmpty(loraDeviceInfo.SensorDecoder))
                             {
-                                jsonDataPayload = decryptedMessage;
+                                jsonDataPayload = Convert.ToBase64String(decryptedMessage);
                                 fullPayload.data = jsonDataPayload;
                             }
                             else
                             {
-                                jsonDataPayload = LoraDecoders.DecodeMessage(decryptedMessage, loraDeviceInfo.SensorDecoder);
+                                Logger.Log(loraDeviceInfo.DevEUI, $"decoding with: {loraDeviceInfo.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Info);
+                                jsonDataPayload = LoraDecoders.DecodeMessage(decryptedMessage, fportUp, loraDeviceInfo.SensorDecoder);                               
                                 fullPayload.data = JObject.Parse(jsonDataPayload);
                             }
 
-
-                            fullPayload.EUI = loraDeviceInfo.DevEUI;
-                            fullPayload.gatewayId = GatewayID;
+                             
+                            fullPayload.eui = loraDeviceInfo.DevEUI;
+                            fullPayload.gatewayid = GatewayID;
 
                             //todo check what the other ts are if milliseconds or seconds
                             fullPayload.edgets = (long)((startTimeProcessing - new DateTime(1970, 1, 1)).TotalMilliseconds);
@@ -184,9 +190,6 @@ namespace LoRaWan.NetworkServer
 
                             string iotHubMsg = fullPayload.ToString(Newtonsoft.Json.Formatting.None);
 
-
-
-                            
 
                             await loraDeviceInfo.HubSender.SendMessageAsync(iotHubMsg);
 
@@ -227,6 +230,8 @@ namespace LoRaWan.NetworkServer
                             }
 
                             bytesC2dMsg = c2dMsg.GetBytes();
+
+                            
                             fport = new byte[1] { 1 };
 
                             if (bytesC2dMsg != null)

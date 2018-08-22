@@ -140,7 +140,7 @@ namespace LoRaWanTest
 
             byte[] LoRaPayloadUplinkAppKey = new byte[16] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
             var key = BitConverter.ToString(LoRaPayloadUplinkAppKey).Replace("-", "");
-            Assert.Equal("hello", (loRaPayloadUplinkObj.PerformEncryption(key)));
+            Assert.Equal("hello",Encoding.ASCII.GetString((loRaPayloadUplinkObj.PerformEncryption(key))));
 
         }
 
