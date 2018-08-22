@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
+using LoRaTools;
 using LoRaWan;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -420,6 +421,13 @@ namespace PacketManager
         /// </summary>
         public int direction;
 
+        public MacCommandHolder getMacCommands()
+        {
+            Logger.Log("fopts : " + fopts.Length, Logger.LoggingLevel.Always);
+            MacCommandHolder macHolder = new MacCommandHolder(fopts);
+            return macHolder;
+        }
+
 
         /// <param name="inputMessage"></param>
         public LoRaPayloadStandardData(byte[] inputMessage) : base(inputMessage)
@@ -444,7 +452,10 @@ namespace PacketManager
             Array.Copy(inputMessage, 5, fctrl, 0, 1);
             int foptsSize = fctrl[0] & 0x0f;
             this.fctrl = fctrl;
-
+            if (foptsSize > 0)
+            {
+                System.Console.Write("asd");
+            }
             //Fcnt
             byte[] fcnt = new byte[2];
             Array.Copy(inputMessage, 6, fcnt, 0, 2);
@@ -472,6 +483,10 @@ namespace PacketManager
             mhdr = _mhdr;
             Array.Reverse(_devAddr);
             devAddr = _devAddr;
+            if (_fOpts != null)
+            {
+                _fctrl[0] = (BitConverter.GetBytes((int)_fctrl[0] + _fOpts.Length))[0];
+            }
             fctrl = _fctrl;
             fcnt = _fcnt;
             fopts = _fOpts;
