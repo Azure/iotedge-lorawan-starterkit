@@ -201,9 +201,9 @@ It should look something like this for ABP:
 
 ### Decoders
 
-The SensorDecoder tag is used to define which method will be used to decode the LoRa payload. If you leave it out or empty it will send the raw payload to IoT Hub.
+The SensorDecoder tag is used to define which method will be used to decode the LoRa payload. If you leave it out or empty it will send the raw decrypted payload in the data field of the json message as Base64 encoded value to IoT Hub.
 If you want to decode it on the Edge you need to specify a method that implements the right logic in the LoraDecoders class in the LoraDecoders.cs file of the LoRaWan.NetworkServer. 
-We have already a simple decoder called "DecoderValueSensor" that take the whole payload as string and construct the following json output (example an Arduino sending a sensor value as srting eg. "23.5"):
+We have already a simple decoder called "DecoderValueSensor" that take the whole payload as single numeric value and construct the following json output (For example an Arduino sending a sensor value as string eg. "23.5" as examples in the Arduino folder):
 
 ```json
 {
@@ -212,6 +212,7 @@ We have already a simple decoder called "DecoderValueSensor" that take the whole
   .....  
 }
 ```
+The "DecoderValueSensor" decoder is not best practice but it makes easier to expermint in sending sensor's readings to IoT Hub without code change.
 
 ### Cache Clearing
 
