@@ -14,13 +14,12 @@
                 "description": "The name of the Edge gateway"
             }
         },
-        "deployDevice":{
+        "deployDevice": {
             "type": "bool",
             "metadata": {
                 "description": "Provision a final LoRa device in the IoT hub in addition to the gateway"
             }
         }
-        
     },
     "variables": {
         "iotHubName": "[concat(parameters('uniqueSolutionPrefix'), 'hub')]",
@@ -33,9 +32,9 @@
         "gitRepoUrl": "[concat('https://github.com/',variables('gitUsername'),'/AzureIoT_LoRaWan_StarterKit.git')]",
         "gitBranch": "master",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-        "iotHubOwnerPolicyName": "iothubowner"
+        "iotHubOwnerPolicyName": "iothubowner",
+        "appInsightName":"[concat(parameters('uniqueSolutionPrefix'), 'insight')]"
     },
-  
     "resources": [
         {
             "type": "Microsoft.Devices/IotHubs",
@@ -101,7 +100,7 @@
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "siteConfig": {
-                    "connectionStrings":[
+                    "connectionStrings": [
                         {
                             "name": "IoTHubConnectionString",
                             "type": "Custom",
@@ -133,7 +132,6 @@
                             "name": "WEBSITE_NODE_DEFAULT_VERSION",
                             "value": "6.5.0"
                         },
-                        
                         {
                             "name": "PROJECT",
                             "value": "LoRaEngine/LoraKeysManagerFacade/LoraKeysManagerFacade.csproj"
@@ -145,11 +143,14 @@
                         {
                             "name": "DEPLOY_DEVICE",
                             "value": "[parameters('deployDevice')]"
-                        }
-                        ,
+                        },
                         {
                             "name": "DEVICE_CONFIG_LOCATION",
                             "value": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/AzureIoT_LoRaWan_StarterKit/',variables('gitBranch'),'/Template/deviceConfiguration.json')]"
+                        },
+                        {
+                            "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                            "value": "[reference(concat('microsoft.insights/components/', variables('appInsightName'))).InstrumentationKey]"
                         }
                     ]
                 }
@@ -172,13 +173,24 @@
                     "solutionPrefix": {
                         "value": "[parameters('uniqueSolutionPrefix')]"
                     },
-                    "edgeGatewayName":{
+                    "edgeGatewayName": {
                         "value": "[parameters('edgeGatewayName')]"
                     }
                 }
             }
+        },
+        {
+            "type": "microsoft.insights/components",
+            "kind": "web",
+            "name": "[variables('appInsightName')]",
+            "apiVersion": "2015-05-01",
+            "location": "[resourceGroup().location]",
+            "scale": null,
+            "properties": {
+                "ApplicationId": "[variables('appInsightName')]"
+            },
+            "dependsOn": []
         }
-
     ],
     "outputs": {}
 }

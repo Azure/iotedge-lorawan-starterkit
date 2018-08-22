@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
+using System.Text;
 
 namespace CreateDeviceFunction
 {
@@ -35,9 +36,36 @@ namespace CreateDeviceFunction
             // parse query parameter
             var queryStrings=req.GetQueryParameterDictionary();
             string deviceName = "";
-            string facadeKey = "";
+            string publishingUserName = "";
+            string publishingPassword = "";
+
             queryStrings.TryGetValue("deviceName", out deviceName);
-            queryStrings.TryGetValue("facadeKey", out facadeKey);
+            queryStrings.TryGetValue("publishingUserName", out publishingUserName);
+            queryStrings.TryGetValue("publishingPassword", out publishingPassword);
+            Console.WriteLine("un "+ publishingUserName);
+            //Get function facade key
+            var base64Auth = Convert.ToBase64String(Encoding.Default.GetBytes($"{publishingUserName}:{publishingPassword}"));
+            var apiUrl = new Uri($"https://{Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE")}.scm.azurewebsites.net/api");
+            var siteUrl = new Uri($"https://{Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE")}.azurewebsites.net");
+            string JWT;
+            Console.WriteLine("api " + apiUrl);
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", $"Basic {base64Auth}");
+
+                var result = client.GetAsync($"{apiUrl}/functions/admin/token").Result;
+                JWT = result.Content.ReadAsStringAsync().Result.Trim('"'); //get  JWT for call funtion key
+            }
+            string facadeKey = "";
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + JWT);
+
+                string jsonResult = client.GetAsync($"{siteUrl}/admin/host/keys").Result.Content.ReadAsStringAsync().Result;
+                dynamic resObject = JsonConvert.DeserializeObject(jsonResult);
+                facadeKey = resObject.keys[0].value;
+            }
+
 
             Device edgeGatewayDevice = new Device(deviceName);
             edgeGatewayDevice.Capabilities = new DeviceCapabilities()
@@ -52,7 +80,7 @@ namespace CreateDeviceFunction
                  json = wc.DownloadString(deviceConfigurationUrl);
             }
             ConfigurationContent spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
-            await manager.AddModuleAsync(new Module(deviceName, "lorawannetworksrvmodule"));
+            await manager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
             await manager.ApplyConfigurationContentOnDeviceAsync(deviceName, spec);
 
             Twin twin = new Twin();
@@ -60,18 +88,20 @@ namespace CreateDeviceFunction
                 "'" + facadeKey + "'}");
             var remoteTwin = await manager.GetTwinAsync(deviceName);
 
-            await manager.UpdateTwinAsync(deviceName, "lorawannetworksrvmodule", twin, remoteTwin.ETag);
+            await manager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
 
             bool deployEndDevice = false;
             Boolean.TryParse(Environment.GetEnvironmentVariable("DEPLOY_DEVICE"),out deployEndDevice);
 
+            //This section will get deployed ONLY if the user selected the "deploy end device" options.
+            //Information in this if clause, is for demo purpose only and should not be used for productive workloads.
             if (deployEndDevice)
             {
                 Device endDevice = new Device("47AAC86800430028");
                 await manager.AddDeviceAsync(endDevice);
                 Twin endTwin = new Twin();
                 endTwin.Tags = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:''," +
-                "SensorDecoder:'DecoderRotatorySensor'}");
+                "SensorDecoder:'DecoderValueSensor'}");
     
                 var endRemoteTwin = await manager.GetTwinAsync(deviceName);
                 await manager.UpdateTwinAsync("47AAC86800430028", endTwin, endRemoteTwin.ETag);
@@ -98,7 +128,6 @@ namespace CreateDeviceFunction
 
 
 }
-
 
 
 
