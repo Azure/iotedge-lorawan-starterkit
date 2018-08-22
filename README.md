@@ -212,7 +212,7 @@ We have already a simple decoder called "DecoderValueSensor" that take the whole
   .....  
 }
 ```
-The "DecoderValueSensor" decoder is not best practice but it makes easier to expermint in sending sensor's readings to IoT Hub without code change.
+The "DecoderValueSensor" decoder is not best practice but it makes easier to experiment in sending sensor's readings to IoT Hub without code change.
 
 ### Cache Clearing
 
