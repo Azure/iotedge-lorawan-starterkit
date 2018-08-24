@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer
 
                   
 
-                    //we set the retry only when sending msgs
+                    //we set the retry only when sending msgs                    
                     deviceClient.SetRetryPolicy(new NoRetry());
 
                     //if the server disconnects dispose the deviceclient and new one will be created when a new d2c msg comes in.
@@ -94,11 +94,11 @@ namespace LoRaWan.NetworkServer
                 {
                     CreateDeviceClient();
 
-                    //Enable retry for this send message
+                    //Enable retry for this send message                 
                     deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
                     await deviceClient.SendEventAsync(new Message(UTF8Encoding.ASCII.GetBytes(strMessage)));
 
-                    //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
+                    //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device                    
                     deviceClient.SetRetryPolicy(new NoRetry());
                 }
                 catch (Exception ex)
