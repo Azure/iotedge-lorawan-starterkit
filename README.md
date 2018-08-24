@@ -233,11 +233,11 @@ There is a logging mechanisms that output valuable information on the console of
 
 You can control the logging with the following environment variables on the LoRaWanNetworkSrvModule module:
 
-LOG_LEVEL       1          Only errors are logged (default if omitted)
+LOG_LEVEL       3          Only errors are logged (default if omitted)
 
 LOG_LEVEL       2          Errors and information are logged
 
-LOG_LEVEL       3          Everything is logged including the up and down messages to the packet forwarder
+LOG_LEVEL       1          Everything is logged including the up and down messages to the packet forwarder
 
 
 
