@@ -442,8 +442,7 @@ namespace PacketManager
             //Fctrl Frame Control Octet
             byte[] fctrl = new byte[1];
             Array.Copy(inputMessage, 5, fctrl, 0, 1);
-            byte optlength = new byte();
-            int foptsSize = (optlength << 4) >> 4;
+            int foptsSize = fctrl[0] & 0x0f;
             this.fctrl = fctrl;
 
             //Fcnt
