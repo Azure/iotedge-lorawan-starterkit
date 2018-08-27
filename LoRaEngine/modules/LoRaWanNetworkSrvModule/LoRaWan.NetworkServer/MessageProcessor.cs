@@ -137,6 +137,9 @@ namespace LoRaWan.NetworkServer
                         //check if the frame counter is valid: either is above the server one or is an ABP device resetting the counter (relaxed seqno checking)
                         if (fcntup > loraDeviceInfo.FCntUp  || (fcntup == 1 && String.IsNullOrEmpty(loraDeviceInfo.AppEUI)))
                         {
+                            //save the reset fcnt for ABP (relaxed seqno checking)
+                            if (fcntup == 1 && String.IsNullOrEmpty(loraDeviceInfo.AppEUI))
+                                _ = loraDeviceInfo.HubSender.UpdateFcntAsync(fcntup, 0, true);
 
                             validFrameCounter = true;
                             Logger.Log(loraDeviceInfo.DevEUI, $"valid frame counter, msg: {fcntup} server: {loraDeviceInfo.FCntUp}", Logger.LoggingLevel.Info);
@@ -366,10 +369,8 @@ namespace LoRaWan.NetworkServer
                             udpMsgForPktForwarder = pushAck.GetMessage();
                             
                            
-                            //if ABP and 1 we reset the counter (loose frame counter) with force, if not we update normally
-                            if (fcntup == 1 && String.IsNullOrEmpty(loraDeviceInfo.AppEUI))
-                                _ = loraDeviceInfo.HubSender.UpdateFcntAsync(fcntup, null, true);
-                            else if(validFrameCounter)
+                                                    
+                            if(validFrameCounter)
                                 _ = loraDeviceInfo.HubSender.UpdateFcntAsync(loraDeviceInfo.FCntUp, null);
 
                         }
