@@ -28,8 +28,8 @@
         "storageAccountName": "[concat(parameters('uniqueSolutionPrefix'), 'storage')]",
         "storageAccountType": "Standard_LRS",
         "functionAppName": "[concat(parameters('uniqueSolutionPrefix'), 'function')]",
-        "gitUsername": "Skraelinger",
-        "gitRepoUrl": "[concat('https://github.com/',variables('gitUsername'),'/AzureIoT_LoRaWan_StarterKit.git')]",
+        "gitUsername": "Azure",
+        "gitRepoUrl": "[concat('https://github.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit.git')]",
         "gitBranch": "master",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "iotHubOwnerPolicyName": "iothubowner",
@@ -146,7 +146,7 @@
                         },
                         {
                             "name": "DEVICE_CONFIG_LOCATION",
-                            "value": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/AzureIoT_LoRaWan_StarterKit/',variables('gitBranch'),'/Template/deviceConfiguration.json')]"
+                            "value": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit/',variables('gitBranch'),'/Template/deviceConfiguration.json')]"
                         },
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
@@ -166,7 +166,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/AzureIoT_LoRaWan_StarterKit/',variables('gitBranch'),'/Template/createEdgeDevice.json')]",
+                    "uri": "[concat('https://raw.githubusercontent.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit/',variables('gitBranch'),'/Template/createEdgeDevice.json')]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
