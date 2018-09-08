@@ -43,6 +43,9 @@ namespace LoRaWan.NetworkServer
 
             LoRaMessage loraMessage = new LoRaMessage(message);
 
+            if(RegionFactory.CurrentRegion==null)
+                RegionFactory.Create(((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0]);
+
             byte[] udpMsgForPktForwarder = new Byte[0];
 
             if (!loraMessage.isLoRaMessage)
@@ -356,15 +359,18 @@ namespace LoRaWan.NetworkServer
 
                                 //check if the c2d message is  a mac command
                                 //in this case we write no messages but only send the maccommand.
-                                var macCmd = c2dMsg.Properties.Where(o => o.Key == "CidType");
                                 byte[] macbytes = null;
-                                if (macCmd != null)
+                                if (c2dMsg != null)
                                 {
+                                    var macCmd = c2dMsg.Properties.Where(o => o.Key == "CidType");
 
-                                    MacCommandHolder macCommandHolder = new MacCommandHolder(Convert.ToByte(macCmd.First().Value) );
-                                    macbytes= macCommandHolder.macCommand[0].ToBytes();
+                                    if (macCmd.Count() != 0)
+                                    {
+
+                                        MacCommandHolder macCommandHolder = new MacCommandHolder(Convert.ToByte(macCmd.First().Value));
+                                        macbytes = macCommandHolder.macCommand[0].ToBytes();
+                                    }
                                 }
-                                                      
                                 LoRaPayloadStandardData ackLoRaMessage = new LoRaPayloadStandardData(StringToByteArray("A0"),
                                     devAddrCorrect,
                                     fctrl,
