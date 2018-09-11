@@ -296,7 +296,7 @@ namespace PacketManager
 
         public MacCommandHolder getMacCommands()
         {
-            Logger.Log("fopts : " + fopts.Length, Logger.LoggingLevel.Always);
+            Logger.Log("fopts : " + fopts.Length, Logger.LoggingLevel.Full);
             MacCommandHolder macHolder = new MacCommandHolder(fopts);
             return macHolder;
         }

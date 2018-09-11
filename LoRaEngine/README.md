@@ -174,7 +174,7 @@ The Arduino example provided above will print the message on the console. Keep i
 ## Debugging outside of IoT Edge and docker
 It is possible to run the bits in the LoRaEngine locally with from Visual Studio in order to enable a better debugging experience. Here are the steps you will need to enable this feature:
 
-1. Go to your Gateway Device and edit the value *server_adress* in the file *global_conf.json* (located in packet_forwarder/lora_pkt_fwd) to match the IP adress of your computer.
+1. Change the value *server_adress* in the file *local_conf.json* (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.
 2. If you are using a Wireless and Windows, make sure your current Wireless network is set as Private in your Windows settings. Otherwise you won't receive the UDP packets.
 3. Open the properties of the project *LoRaWanNetworkServerModule* and set the following values under the Debug tab:
   - IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)

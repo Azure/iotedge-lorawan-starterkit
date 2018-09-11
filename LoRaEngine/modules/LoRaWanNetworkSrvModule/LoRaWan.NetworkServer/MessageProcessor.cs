@@ -136,7 +136,7 @@ namespace LoRaWan.NetworkServer
 
 
                         UInt16 fcntup = BitConverter.ToUInt16(((LoRaPayloadStandardData)loraMessage.payloadMessage).fcnt, 0);
-
+                        byte[] linkCheckCmdResponse = null;
 
                         //check if the frame counter is valid: either is above the server one or is an ABP device resetting the counter (relaxed seqno checking)
                         if (fcntup > loraDeviceInfo.FCntUp || (fcntup == 1 && String.IsNullOrEmpty(loraDeviceInfo.AppEUI)))
@@ -167,11 +167,7 @@ namespace LoRaWan.NetworkServer
                             
                             dynamic fullPayload = JObject.FromObject(rxPk);
 
-                            //Set specific region
-                            if (RegionFactory.CurrentRegion == null)
-                            {
-                                RegionFactory.Create(rxPk);
-                            }
+                
 
                             string jsonDataPayload = "";
 
@@ -200,49 +196,19 @@ namespace LoRaWan.NetworkServer
                             fullPayload.edgets = (long)((startTimeProcessing - new DateTime(1970, 1, 1)).TotalMilliseconds);
 
                             List<KeyValuePair<String,String>> messageProperties = new List<KeyValuePair<String, String>>();
-
+                           
                             //Parsing MacCommands and add them as property of the message to be sent to the IoT Hub.
                             var macCommand = ((LoRaPayloadStandardData)loraMessage.payloadMessage).getMacCommands();
                             if (macCommand.macCommand.Count > 0)
                             {
                                 for (int i = 0; i < macCommand.macCommand.Count; i++)
                                 {
-                                     messageProperties.Add(new KeyValuePair<string, string>(macCommand.macCommand[i].Cid.ToString(), value:JsonConvert.SerializeObject(macCommand.macCommand[i])));
+                                     messageProperties.Add(new KeyValuePair<string, string>(macCommand.macCommand[i].Cid.ToString(), value:JsonConvert.SerializeObject(macCommand.macCommand[i],Newtonsoft.Json.Formatting.None)));
                                     //in case it is a link check mac, we need to send it downstream.
                                     if (macCommand.macCommand[i].Cid == CidEnum.LinkCheckCmd)
                                     {
-                                        var linkCheck=new LinkCheckCmd(rxPk.GetModulationMargin(), 1);
-                                        Byte[] devAddrCorrect = new byte[4];
-                                        Array.Copy(loraMessage.payloadMessage.devAddr, devAddrCorrect, 4);
-                                        byte[] fctrl2 = new byte[1] { 32 };
-
-                                        Array.Reverse(devAddrCorrect);
-                                        LoRaPayloadStandardData macReply = new LoRaPayloadStandardData(StringToByteArray("A0"),
-                                            devAddrCorrect,
-                                            fctrl2,
-                                            BitConverter.GetBytes(loraDeviceInfo.FCntDown),
-                                            null,
-                                            new byte[1] {0},                     
-                                            linkCheck.ToBytes(),
-                                            1);
-
-                                        macReply.PerformEncryption(loraDeviceInfo.AppSKey);
-                                        macReply.SetMic(loraDeviceInfo.NwkSKey);
-
-                                        byte[] rndToken = new byte[2];
-                                        Random rnd = new Random();
-                                        rnd.NextBytes(rndToken);
-
-                                        var _datr = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].datr;
-                                        //todo should discuss about the logic in case of multi channel gateway.
-                                        uint _rfch = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].rfch;
-                                        double _freq = RegionFactory.CurrentRegion.GetDownstreamChannel(((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0]);
-                                        long txDelay = 1000000;
-                                        long _tmst = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].tmst + txDelay;
-
-                                        //todo ronnie should check the device twin preference if using confirmed or unconfirmed down
-                                        LoRaMessage ackMessage = new LoRaMessage(macReply, LoRaMessageType.UnconfirmedDataDown, rndToken, _datr, 0, _freq, _tmst);
-                                        udpMsgForPktForwarder = ackMessage.physicalPayload.GetMessage();
+                                         linkCheckCmdResponse = new LinkCheckCmd(rxPk.GetModulationMargin(), 1).ToBytes();
+                                        
                                     }
                                 }
                             }
@@ -357,8 +323,7 @@ namespace LoRaWan.NetworkServer
                                 Array.Copy(loraMessage.payloadMessage.devAddr, devAddrCorrect, 4);
                                 Array.Reverse(devAddrCorrect);
 
-                                //check if the c2d message is  a mac command
-                                //in this case we write no messages but only send the maccommand.
+                                //check if the c2d message has  a mac command
                                 byte[] macbytes = null;
                                 if (c2dMsg != null)
                                 {
@@ -371,6 +336,9 @@ namespace LoRaWan.NetworkServer
                                         macbytes = macCommandHolder.macCommand[0].ToBytes();
                                     }
                                 }
+                                if(macbytes !=null &&linkCheckCmdResponse!=null)
+                                    macbytes= macbytes.Concat(linkCheckCmdResponse).ToArray();
+                                //adding the FoptsLength
                                 LoRaPayloadStandardData ackLoRaMessage = new LoRaPayloadStandardData(StringToByteArray("A0"),
                                     devAddrCorrect,
                                     fctrl,
@@ -390,6 +358,7 @@ namespace LoRaWan.NetworkServer
                                 //todo ronnie should check the device twin preference if using confirmed or unconfirmed down
                                 LoRaMessage ackMessage = new LoRaMessage(ackLoRaMessage, LoRaMessageType.ConfirmedDataDown, rndToken, _datr, 0, _freq, _tmst);
                                 udpMsgForPktForwarder = ackMessage.physicalPayload.GetMessage();
+                                linkCheckCmdResponse = null;
                                 //confirm the message to iot hub only if we are in time for a delivery
                                 if (c2dMsg != null)
                                 {
@@ -424,13 +393,47 @@ namespace LoRaWan.NetworkServer
                                 _ = loraDeviceInfo.HubSender.UpdateFcntAsync(loraDeviceInfo.FCntUp, null);
 
                         }
+                        if (linkCheckCmdResponse != null)
+                        {
+                            Byte[] devAddrCorrect = new byte[4];
+                            Array.Copy(loraMessage.payloadMessage.devAddr, devAddrCorrect, 4);
+                            byte[] fctrl2 = new byte[1] { 32 };
 
+                            Array.Reverse(devAddrCorrect);
+                            LoRaPayloadStandardData macReply = new LoRaPayloadStandardData(StringToByteArray("A0"),
+                                devAddrCorrect,
+                                fctrl2,
+                                BitConverter.GetBytes(loraDeviceInfo.FCntDown),
+                                null,
+                                new byte[1] { 0 },
+                                linkCheckCmdResponse,
+                                1);
+
+                            macReply.PerformEncryption(loraDeviceInfo.AppSKey);
+                            macReply.SetMic(loraDeviceInfo.NwkSKey);
+
+                            byte[] rndToken = new byte[2];
+                            Random rnd = new Random();
+                            rnd.NextBytes(rndToken);
+
+                            var _datr = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].datr;
+                            //todo should discuss about the logic in case of multi channel gateway.
+                            uint _rfch = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].rfch;
+                            double _freq = RegionFactory.CurrentRegion.GetDownstreamChannel(((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0]);
+                            long txDelay = 1000000;
+                            long _tmst = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].tmst + txDelay;
+
+                            //todo ronnie should check the device twin preference if using confirmed or unconfirmed down
+                            LoRaMessage ackMessage = new LoRaMessage(macReply, LoRaMessageType.UnconfirmedDataDown, rndToken, _datr, 0, _freq, _tmst);
+                            udpMsgForPktForwarder = ackMessage.physicalPayload.GetMessage();
+                        }
                     }
                     else
                     {
                         Logger.Log(loraDeviceInfo.DevEUI, $"with devAddr {devAddr} check MIC failed. Device will be ignored from now on", Logger.LoggingLevel.Info);
                         loraDeviceInfo.IsOurDevice = false;
                     }
+                    
                 }
                 else
                 {
@@ -443,6 +446,8 @@ namespace LoRaWan.NetworkServer
             }
 
             Logger.Log(loraDeviceInfo.DevEUI, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
+
+           
 
             return udpMsgForPktForwarder;
         }
