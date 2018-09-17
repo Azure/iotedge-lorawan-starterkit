@@ -84,7 +84,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public async Task SendMessageAsync(string strMessage)
+        public async Task SendMessageAsync(string strMessage,List<KeyValuePair<String,String>> properties)
         {
 
             if (!string.IsNullOrEmpty(strMessage))
@@ -96,7 +96,10 @@ namespace LoRaWan.NetworkServer
 
                     //Enable retry for this send message                 
                     deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
-                    await deviceClient.SendEventAsync(new Message(UTF8Encoding.ASCII.GetBytes(strMessage)));
+                    var message = new Message(UTF8Encoding.ASCII.GetBytes(strMessage));
+                    foreach (var prop in properties)
+                        message.Properties.Add(prop);
+                    await deviceClient.SendEventAsync(message);
 
                     //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device                    
                     deviceClient.SetRetryPolicy(new NoRetry());
