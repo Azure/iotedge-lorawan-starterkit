@@ -169,3 +169,36 @@ This is how a complete transmission looks like:
 You can even test sending Cloud-2-Device message (e.g. by VSCode right click on the device in the explorer -> `Send C2D Message To Device`).
 
 The Arduino example provided above will print the message on the console. Keep in mind that a [LoRaWAN Class A](https://www.thethingsnetwork.org/docs/lorawan/) device will only receive after a transmit, in our case every 30 seconds.
+
+
+## Debugging outside of IoT Edge and docker
+It is possible to run the bits in the LoRaEngine locally with from Visual Studio in order to enable a better debugging experience. Here are the steps you will need to enable this feature:
+
+1. Change the value *server_adress* in the file *local_conf.json* (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.
+2. If you are using a Wireless and Windows, make sure your current Wireless network is set as Private in your Windows settings. Otherwise you won't receive the UDP packets.
+3. Open the properties of the project *LoRaWanNetworkServerModule* and set the following values under the Debug tab:
+  - IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)
+  - ENABLE_GATEWAY : false
+  - LOG_LEVEL : 0 (optional, to activate logging level)
+4. Add a local.settings.json in the project LoRa KeysManagerFacade with
+```json
+     {
+  "IsEncrypted": false,
+  "values": {
+    "AzureWebJobsStorage": "<Connection String of your deployed blob storage>",
+    "WEBSITE_CONTENTSHARE": "<Name of your Azure function>"
+
+  },
+  "ConnectionStrings": {
+    "IoTHubConnectionString": "<Connection string of your IoT Hub Owner (go to keys -> IoT Hub owner and select the connection string)>"
+  }
+
+}
+ ```
+5. Right click on your solution and select properties, select multiple startup projects. Start LoRaWanNetworkSrvModule and LoRaKeysManagerFacade.
+
+6. If you hit start in your VS solution, you will receive messages directly from your packet forwarder. You will be able to debug directly from your computer. 
+
+Happy Debugging! 
+
+

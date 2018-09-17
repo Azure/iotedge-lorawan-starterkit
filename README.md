@@ -256,6 +256,14 @@ LOG_TO_CONSOLE  false      No log info in the docker log
 
 Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanation.
 
+## MAC Commands
+The Solution has an initial support for MAC Commands. Currently only the command Device Status Command is fully testable. The command will return device status (battery and communication margin). To try it, send a Cloud to Device message on your end device and add the following message properties :
+```
+CidType : 6
+```
+
+![MacCommand](pictures/MacCommand.png)
+
 ## License
 
 This repository is licensed with the [MIT](LICENSE) license.
