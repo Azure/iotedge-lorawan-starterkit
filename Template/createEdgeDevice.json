@@ -27,7 +27,8 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[Concat(listsecrets(resourceId('Microsoft.Web/sites/functions', concat(parameters('solutionPrefix'), 'function'), 'CreateEdgeDevice'),'2015-08-01').trigger_url,'&deviceName=',parameters('edgeGatewayName'),'&publishingUserName=',list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingUserName,'&publishingPassword=',list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingPassword)]",                    "contentVersion": "1.0.0.0"
+                    "uri": "[Concat(listsecrets(resourceId('Microsoft.Web/sites/functions', concat(parameters('solutionPrefix'), 'function'), 'CreateEdgeDevice'),'2015-08-01').trigger_url,'&deviceName=',parameters('edgeGatewayName'),'&publishingUserName=',list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingUserName,'&publishingPassword=',list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingPassword)]",                    
+                    "contentVersion": "1.0.0.0"
                 }
             }
         }
