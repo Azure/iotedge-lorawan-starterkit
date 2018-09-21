@@ -67,7 +67,7 @@
             },
             "env": {
               "IOT_SK_SX1301_RESET_PIN": {
-                "value": "5"
+                "value": "7"
               }
             },
             "version": "1.0",
