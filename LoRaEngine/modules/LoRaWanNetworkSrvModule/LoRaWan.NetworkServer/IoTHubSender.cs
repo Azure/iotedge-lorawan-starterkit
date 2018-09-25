@@ -20,6 +20,60 @@ namespace LoRaWan.NetworkServer
 
         private string PrimaryKey;
 
+        public async Task<Twin> GetTwinAsync()
+        {
+            return await deviceClient.GetTwinAsync();
+        }
+
+        public async Task UpdateFcntAsync(int FCntUp, int? FCntDown, bool force = false)
+        {
+            try
+            {
+                //update the twins every 10
+                if (FCntUp % 10 == 0 || force == true )
+                {
+                    CreateDeviceClient();
+                    TwinCollection prop;
+                    if (FCntDown != null)
+                    {
+                        prop = new TwinCollection($"{{\"FCntUp\":{FCntUp},\"FCntDown\":{FCntDown}}}");
+                    }
+                    else
+                    {
+                        prop = new TwinCollection($"{{\"FCntUp\":{FCntUp}}}");
+                    }
+
+                    await deviceClient.UpdateReportedPropertiesAsync(prop);
+
+                    Logger.Log(DevEUI, $"twins updated {FCntUp}:{FCntDown}", Logger.LoggingLevel.Info);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(DevEUI, $"could not update twins with error: {ex.Message}", Logger.LoggingLevel.Error);
+            }
+
+
+        }
+        /// <summary>
+        /// Method to update reported properties at OTAA time
+        /// </summary>
+        /// <param name="loraDeviceInfo"> the LoRa info to report</param>
+        public async void UpdateReportedPropertiesOTAAasync(LoraDeviceInfo loraDeviceInfo)
+        {
+            CreateDeviceClient();
+            TwinCollection reportedProperties = new TwinCollection();
+            reportedProperties["NwkSKey"] = loraDeviceInfo.NwkSKey;
+            reportedProperties["AppSKey"] = loraDeviceInfo.AppSKey;
+            reportedProperties["DevEUI"] = loraDeviceInfo.DevEUI;
+            reportedProperties["NetId"] = loraDeviceInfo.NetId;
+            reportedProperties["FCntUp"] =loraDeviceInfo.FCntUp;
+            reportedProperties["FCntDown"] =loraDeviceInfo.FCntDown;
+            await deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+            Logger.Log("Join reported properties&fcnt have been set", Logger.LoggingLevel.Info);
+           
+        }
 
         public IoTHubSender(string DevEUI, string PrimaryKey)
         {
@@ -27,8 +81,8 @@ namespace LoRaWan.NetworkServer
             this.PrimaryKey = PrimaryKey;
 
             CreateDeviceClient();
-
-        }
+          
+        }   
 
         private void CreateDeviceClient()
         {
@@ -54,14 +108,7 @@ namespace LoRaWan.NetworkServer
                             }
                         }
                     };
-
-
-
-
                     deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, transportSettings);
-
-                  
-
                     //we set the retry only when sending msgs                    
                     deviceClient.SetRetryPolicy(new NoRetry());
 
@@ -111,40 +158,7 @@ namespace LoRaWan.NetworkServer
 
             }
         }
-        public async Task UpdateFcntAsync(int FCntUp, int? FCntDown, bool force = false)
-        {
 
-
-            try
-            {
-                //update the twins every 10
-                if (FCntUp % 10 == 0 || force == true )
-                {
-                    CreateDeviceClient();
-
-                    TwinCollection prop;
-                    if (FCntDown != null)
-                    {
-                        prop = new TwinCollection($"{{\"FCntUp\":{FCntUp},\"FCntDown\":{FCntDown}}}");
-                    }
-                    else
-                    {
-                        prop = new TwinCollection($"{{\"FCntUp\":{FCntUp}}}");
-                    }
-
-                    await deviceClient.UpdateReportedPropertiesAsync(prop);
-
-                    Logger.Log(DevEUI, $"twins updated {FCntUp}:{FCntDown}", Logger.LoggingLevel.Info);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(DevEUI, $"could not update twins with error: {ex.Message}", Logger.LoggingLevel.Error);
-            }
-
-
-        }
 
         public async Task<Message> ReceiveAsync(TimeSpan timeout)
         {

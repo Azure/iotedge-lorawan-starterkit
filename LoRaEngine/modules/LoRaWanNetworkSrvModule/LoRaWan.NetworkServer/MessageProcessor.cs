@@ -44,25 +44,25 @@ namespace LoRaWan.NetworkServer
             LoRaMessage loraMessage = new LoRaMessage(message);
 
             if(RegionFactory.CurrentRegion==null)
-                RegionFactory.Create(((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0]);
+                RegionFactory.Create(((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0]);
 
             byte[] udpMsgForPktForwarder = new Byte[0];
 
-            if (!loraMessage.isLoRaMessage)
+            if (!loraMessage.IsLoRaMessage)
             {
                 udpMsgForPktForwarder = ProcessNonLoraMessage(loraMessage);
             }
             else
             {
                 //join message
-                if (loraMessage.loRaMessageType == LoRaMessageType.JoinRequest)
+                if (loraMessage.LoRaMessageType == LoRaMessageType.JoinRequest)
                 {
                     udpMsgForPktForwarder = await ProcessJoinRequest(loraMessage);
 
                 }
 
                 //normal message
-                else if (loraMessage.loRaMessageType == LoRaMessageType.UnconfirmedDataUp || loraMessage.loRaMessageType == LoRaMessageType.ConfirmedDataUp)
+                else if (loraMessage.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
                 {
                     udpMsgForPktForwarder = await ProcessLoraMessage(loraMessage);
 
@@ -78,9 +78,9 @@ namespace LoRaWan.NetworkServer
         private byte[] ProcessNonLoraMessage(LoRaMessage loraMessage)
         {
             byte[] udpMsgForPktForwarder = new byte[0];
-            if (loraMessage.physicalPayload.identifier == PhysicalIdentifier.PULL_DATA)
+            if (loraMessage.PhysicalPayload.identifier == PhysicalIdentifier.PULL_DATA)
             {
-                PhysicalPayload pullAck = new PhysicalPayload(loraMessage.physicalPayload.token, PhysicalIdentifier.PULL_ACK, null);
+                PhysicalPayload pullAck = new PhysicalPayload(loraMessage.PhysicalPayload.token, PhysicalIdentifier.PULL_ACK, null);
                 udpMsgForPktForwarder = pullAck.GetMessage();
             }
 
@@ -90,33 +90,19 @@ namespace LoRaWan.NetworkServer
         {
             bool validFrameCounter = false;
             byte[] udpMsgForPktForwarder = new byte[0];
-            string devAddr = BitConverter.ToString(loraMessage.payloadMessage.devAddr).Replace("-", "");
-
+            string devAddr = BitConverter.ToString(loraMessage.PayloadMessage.DevAddr).Replace("-", "");
             Message c2dMsg = null;
-
-
             Cache.TryGetValue(devAddr, out LoraDeviceInfo loraDeviceInfo);
-
-
-
             if (loraDeviceInfo == null)
             {
-
-
                 loraDeviceInfo = await LoraDeviceInfoManager.GetLoraDeviceInfoAsync(devAddr);
-
                 Logger.Log(loraDeviceInfo.DevEUI, $"processing message, device not in cache", Logger.LoggingLevel.Info);
-
                 Cache.AddToCache(devAddr, loraDeviceInfo);
-
             }
             else
             {
                 Logger.Log(loraDeviceInfo.DevEUI, $"processing message, device in cache", Logger.LoggingLevel.Info);
-
             }
-
-
 
             if (loraDeviceInfo.IsOurDevice)
             {
@@ -125,8 +111,6 @@ namespace LoRaWan.NetworkServer
                 {
                     if (loraMessage.CheckMic(loraDeviceInfo.NwkSKey))
                     {
-
-
                         if (loraDeviceInfo.HubSender == null)
                         {
 
@@ -135,7 +119,7 @@ namespace LoRaWan.NetworkServer
                         }
 
 
-                        UInt16 fcntup = BitConverter.ToUInt16(((LoRaPayloadStandardData)loraMessage.payloadMessage).fcnt, 0);
+                        UInt16 fcntup = BitConverter.ToUInt16(((LoRaPayloadStandardData)loraMessage.PayloadMessage).Fcnt, 0);
                         byte[] linkCheckCmdResponse = null;
 
                         //check if the frame counter is valid: either is above the server one or is an ABP device resetting the counter (relaxed seqno checking)
@@ -162,7 +146,7 @@ namespace LoRaWan.NetworkServer
 
 
 
-                            Rxpk rxPk = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0];
+                            Rxpk rxPk = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0];
 
                             
                             dynamic fullPayload = JObject.FromObject(rxPk);
@@ -171,7 +155,7 @@ namespace LoRaWan.NetworkServer
 
                             string jsonDataPayload = "";
 
-                            uint fportUp = (uint)((LoRaPayloadStandardData)loraMessage.payloadMessage).fport[0];
+                            uint fportUp = (uint)((LoRaPayloadStandardData)loraMessage.PayloadMessage).Fport[0];
 
                             fullPayload.port = fportUp;
 
@@ -198,7 +182,7 @@ namespace LoRaWan.NetworkServer
                             List<KeyValuePair<String,String>> messageProperties = new List<KeyValuePair<String, String>>();
                            
                             //Parsing MacCommands and add them as property of the message to be sent to the IoT Hub.
-                            var macCommand = ((LoRaPayloadStandardData)loraMessage.payloadMessage).getMacCommands();
+                            var macCommand = ((LoRaPayloadStandardData)loraMessage.PayloadMessage).GetMacCommands();
                             if (macCommand.macCommand.Count > 0)
                             {
                                 for (int i = 0; i < macCommand.macCommand.Count; i++)
@@ -267,7 +251,7 @@ namespace LoRaWan.NetworkServer
 
 
                         //if confirmation or cloud to device msg send down the message
-                        if (loraMessage.loRaMessageType == LoRaMessageType.ConfirmedDataUp || c2dMsg != null)
+                        if (loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp || c2dMsg != null)
                         {
                             //check if we are not too late for the second receive windows
                             if ((DateTime.UtcNow - startTimeProcessing) <= TimeSpan.FromMilliseconds(RegionFactory.CurrentRegion.receive_delay2*1000-100 ))
@@ -282,10 +266,10 @@ namespace LoRaWan.NetworkServer
                                 //Saving both fcnts to twins
                                 _ = loraDeviceInfo.HubSender.UpdateFcntAsync(loraDeviceInfo.FCntUp, loraDeviceInfo.FCntDown);
                                 //todo need implementation of current configuation to implement this as this depends on RX1DROffset
-                                var _datr = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].datr;
+                                var _datr = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].datr;
                                 //todo should discuss about the logic in case of multi channel gateway.
-                                uint _rfch = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].rfch;
-                                double _freq =RegionFactory.CurrentRegion.GetDownstreamChannel(((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0]);
+                                uint _rfch = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].rfch;
+                                double _freq =RegionFactory.CurrentRegion.GetDownstreamChannel(((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0]);
 
                                 uint txDelay = 0;
 
@@ -318,9 +302,9 @@ namespace LoRaWan.NetworkServer
                                 }
 
 
-                                long _tmst = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].tmst + txDelay;
+                                long _tmst = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].tmst + txDelay;
                                 Byte[] devAddrCorrect = new byte[4];
-                                Array.Copy(loraMessage.payloadMessage.devAddr, devAddrCorrect, 4);
+                                Array.Copy(loraMessage.PayloadMessage.DevAddr, devAddrCorrect, 4);
                                 Array.Reverse(devAddrCorrect);
 
                                 //check if the c2d message has  a mac command
@@ -357,7 +341,7 @@ namespace LoRaWan.NetworkServer
 
                                 //todo ronnie should check the device twin preference if using confirmed or unconfirmed down
                                 LoRaMessage ackMessage = new LoRaMessage(ackLoRaMessage, LoRaMessageType.ConfirmedDataDown, rndToken, _datr, 0, _freq, _tmst);
-                                udpMsgForPktForwarder = ackMessage.physicalPayload.GetMessage();
+                                udpMsgForPktForwarder = ackMessage.PhysicalPayload.GetMessage();
                                 linkCheckCmdResponse = null;
                                 //confirm the message to iot hub only if we are in time for a delivery
                                 if (c2dMsg != null)
@@ -369,7 +353,7 @@ namespace LoRaWan.NetworkServer
                             }
                             else
                             {
-                                PhysicalPayload pushAck = new PhysicalPayload(loraMessage.physicalPayload.token, PhysicalIdentifier.PUSH_ACK, null);
+                                PhysicalPayload pushAck = new PhysicalPayload(loraMessage.PhysicalPayload.token, PhysicalIdentifier.PUSH_ACK, null);
                                 udpMsgForPktForwarder = pushAck.GetMessage();
                                 _ = loraDeviceInfo.HubSender.UpdateFcntAsync(loraDeviceInfo.FCntUp, null);
                                 //put back the c2d message to the queue for the next round
@@ -380,10 +364,10 @@ namespace LoRaWan.NetworkServer
 
                         }
                         //No ack requested and no c2d message we send the udp ack only to the gateway
-                        else if (loraMessage.loRaMessageType == LoRaMessageType.UnconfirmedDataUp && c2dMsg == null)
+                        else if (loraMessage.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp && c2dMsg == null)
                         {
 
-                            PhysicalPayload pushAck = new PhysicalPayload(loraMessage.physicalPayload.token, PhysicalIdentifier.PUSH_ACK, null);
+                            PhysicalPayload pushAck = new PhysicalPayload(loraMessage.PhysicalPayload.token, PhysicalIdentifier.PUSH_ACK, null);
                             udpMsgForPktForwarder = pushAck.GetMessage();
 
                             //if ABP and 1 we reset the counter (loose frame counter) with force, if not we update normally
@@ -396,7 +380,7 @@ namespace LoRaWan.NetworkServer
                         if (linkCheckCmdResponse != null)
                         {
                             Byte[] devAddrCorrect = new byte[4];
-                            Array.Copy(loraMessage.payloadMessage.devAddr, devAddrCorrect, 4);
+                            Array.Copy(loraMessage.PayloadMessage.DevAddr, devAddrCorrect, 4);
                             byte[] fctrl2 = new byte[1] { 32 };
 
                             Array.Reverse(devAddrCorrect);
@@ -416,16 +400,16 @@ namespace LoRaWan.NetworkServer
                             Random rnd = new Random();
                             rnd.NextBytes(rndToken);
 
-                            var _datr = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].datr;
+                            var _datr = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].datr;
                             //todo should discuss about the logic in case of multi channel gateway.
-                            uint _rfch = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].rfch;
-                            double _freq = RegionFactory.CurrentRegion.GetDownstreamChannel(((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0]);
+                            uint _rfch = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].rfch;
+                            double _freq = RegionFactory.CurrentRegion.GetDownstreamChannel(((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0]);
                             long txDelay = 1000000;
-                            long _tmst = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].tmst + txDelay;
+                            long _tmst = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].tmst + txDelay;
 
                             //todo ronnie should check the device twin preference if using confirmed or unconfirmed down
                             LoRaMessage ackMessage = new LoRaMessage(macReply, LoRaMessageType.UnconfirmedDataDown, rndToken, _datr, 0, _freq, _tmst);
-                            udpMsgForPktForwarder = ackMessage.physicalPayload.GetMessage();
+                            udpMsgForPktForwarder = ackMessage.PhysicalPayload.GetMessage();
                         }
                     }
                     else
@@ -456,32 +440,24 @@ namespace LoRaWan.NetworkServer
 
         private async Task<byte[]> ProcessJoinRequest(LoRaMessage loraMessage)
         {
-
-
             byte[] udpMsgForPktForwarder = new Byte[0];
-
             LoraDeviceInfo joinLoraDeviceInfo;
-
-            var joinReq = (LoRaPayloadJoinRequest)loraMessage.payloadMessage;
-
-            Array.Reverse(joinReq.devEUI);
-            Array.Reverse(joinReq.appEUI);
+            var joinReq = (LoRaPayloadJoinRequest)loraMessage.PayloadMessage;
+            Array.Reverse(joinReq.DevEUI);
+            Array.Reverse(joinReq.AppEUI);
 
 
-            string devEui = BitConverter.ToString(joinReq.devEUI).Replace("-", "");
-            string devNonce = BitConverter.ToString(joinReq.devNonce).Replace("-", "");
+            string devEui = BitConverter.ToString(joinReq.DevEUI).Replace("-", "");
+            string devNonce = BitConverter.ToString(joinReq.DevNonce).Replace("-", "");
 
             Logger.Log(devEui, $"join request received", Logger.LoggingLevel.Info);
 
             //checking if this devnonce was already processed or the deveui was already refused
             Cache.TryGetValue(devEui, out joinLoraDeviceInfo);
 
-
-            //we have a join request in the cache
+           //we have a join request in the cache
             if (joinLoraDeviceInfo != null)
             {
-
-
                 //it is not our device so ingore the join
                 if (!joinLoraDeviceInfo.IsOurDevice)
                 {
@@ -505,10 +481,9 @@ namespace LoRaWan.NetworkServer
                         return null;
                     }
                 }
-
             }
 
-            joinLoraDeviceInfo = await LoraDeviceInfoManager.PerformOTAAAsync(GatewayID, devEui, BitConverter.ToString(joinReq.appEUI).Replace("-", ""), devNonce);
+            joinLoraDeviceInfo = await LoraDeviceInfoManager.PerformOTAAAsync(GatewayID, devEui, BitConverter.ToString(joinReq.AppEUI).Replace("-", ""), devNonce);
 
             if (joinLoraDeviceInfo.IsJoinValid)
             {
@@ -533,11 +508,11 @@ namespace LoRaWan.NetworkServer
                     appNonce
                     );
 
-                var _datr = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].datr;
-                uint _rfch = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].rfch;
-                double _freq = RegionFactory.CurrentRegion.GetDownstreamChannel(((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0]);
+                var _datr = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].datr;
+                uint _rfch = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].rfch;
+                double _freq = RegionFactory.CurrentRegion.GetDownstreamChannel(((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0]);
                 //set tmst for the normal case
-                long _tmst = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].tmst + RegionFactory.CurrentRegion.join_accept_delay1*1000000;
+                long _tmst = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].tmst + RegionFactory.CurrentRegion.join_accept_delay1*1000000;
 
                 //uncomment to force second windows usage
                 //Thread.Sleep(4600-(int)(DateTime.Now - startTimeProcessing).TotalMilliseconds);
@@ -545,7 +520,7 @@ namespace LoRaWan.NetworkServer
                 if ((DateTime.UtcNow - startTimeProcessing) > TimeSpan.FromMilliseconds(RegionFactory.CurrentRegion.join_accept_delay2*1000))
                 {
                     Logger.Log(devEui, $"processing of the join request took too long, sending no message", Logger.LoggingLevel.Info);
-                    var physicalResponse = new PhysicalPayload(loraMessage.physicalPayload.token, PhysicalIdentifier.PULL_RESP, null);
+                    var physicalResponse = new PhysicalPayload(loraMessage.PhysicalPayload.token, PhysicalIdentifier.PULL_RESP, null);
 
                     return physicalResponse.GetMessage();
                 }
@@ -553,48 +528,35 @@ namespace LoRaWan.NetworkServer
                 else if ((DateTime.UtcNow - startTimeProcessing) > TimeSpan.FromMilliseconds(RegionFactory.CurrentRegion.join_accept_delay2 * 1000 -500))
                 {
                     Logger.Log(devEui, $"processing of the join request took too long, using second join accept receive window", Logger.LoggingLevel.Info);
-                    _tmst = ((UplinkPktFwdMessage)loraMessage.loraMetadata.fullPayload).rxpk[0].tmst + RegionFactory.CurrentRegion.join_accept_delay2 * 1000000;
+                    _tmst = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].tmst + RegionFactory.CurrentRegion.join_accept_delay2 * 1000000;
                     if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("RX2_DATR")))
                     {
                         Logger.Log(devEui, $"using standard second receive windows for join request", Logger.LoggingLevel.Info);
                         //using EU fix DR for RX2
                         _freq = RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.frequency;
                         _datr = RegionFactory.CurrentRegion.DRtoConfiguration[RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
-
-
                     }
                     //if specific twins are set, specify second channel to be as specified
                     else
                     {
                         Logger.Log(devEui, $"using custom DR second receive windows for join request", Logger.LoggingLevel.Info);
-
                         _freq = double.Parse(Environment.GetEnvironmentVariable("RX2_FREQ"));
                         _datr = Environment.GetEnvironmentVariable("RX2_DATR");
                     }
-
-
                 }
 
-                LoRaMessage joinAcceptMessage = new LoRaMessage(loRaPayloadJoinAccept, LoRaMessageType.JoinAccept, loraMessage.physicalPayload.token, _datr, 0, _freq, _tmst);
-
-                udpMsgForPktForwarder = joinAcceptMessage.physicalPayload.GetMessage();
-
+                LoRaMessage joinAcceptMessage = new LoRaMessage(loRaPayloadJoinAccept, LoRaMessageType.JoinAccept, loraMessage.PhysicalPayload.token, _datr, 0, _freq, _tmst);
+                udpMsgForPktForwarder = joinAcceptMessage.PhysicalPayload.GetMessage();
                 joinLoraDeviceInfo.HubSender = new IoTHubSender(joinLoraDeviceInfo.DevEUI, joinLoraDeviceInfo.PrimaryKey);
-
                 //open the connection to iot hub without waiting for perf optimization in case of the device start sending a msg just after join request
                 _ = joinLoraDeviceInfo.HubSender.OpenAsync();
-
                 //join request resets the frame counters
                 joinLoraDeviceInfo.FCntUp = 0;
                 joinLoraDeviceInfo.FCntDown = 0;
-
-
-                //update the frame counter on the server
-                _ = joinLoraDeviceInfo.HubSender.UpdateFcntAsync(joinLoraDeviceInfo.FCntUp, joinLoraDeviceInfo.FCntDown);
-
+                //update reported properties and frame Counter
+                joinLoraDeviceInfo.HubSender.UpdateReportedPropertiesOTAAasync(joinLoraDeviceInfo);            
                 //add to cache for processing normal messages. This awoids one additional call to the server.
                 Cache.AddToCache(joinLoraDeviceInfo.DevAddr, joinLoraDeviceInfo);
-
                 Logger.Log(devEui, $"join accept sent", Logger.LoggingLevel.Info);
             }
 
