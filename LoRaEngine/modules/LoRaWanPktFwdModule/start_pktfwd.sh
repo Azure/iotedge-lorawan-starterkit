@@ -1,4 +1,4 @@
 #!/bin/sh
 
-./reset_lgw.sh start $IOT_SK_SX1301_RESET_PIN
+./reset_lgw.sh start $RESET_PIN
 ./lora_pkt_fwd

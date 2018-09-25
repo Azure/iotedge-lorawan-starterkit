@@ -66,8 +66,8 @@
               "createOptions": "  {\r\n  \"HostConfig\": {\r\n    \"NetworkMode\": \"host\", \"Privileged\": true \r\n\r\n  },\r\n  \"NetworkingConfig\": {\r\n    \"EndpointsConfig\": {\r\n      \"host\": {}\r\n    }\r\n  }\r\n}\r\n  \r\n  \r\n  \r\n"
             },
             "env": {
-              "IOT_SK_SX1301_RESET_PIN": {
-                "value": "7"
+              "RESET_PIN": {
+                "value": "12"
               }
             },
             "version": "1.0",
