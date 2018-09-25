@@ -51,11 +51,10 @@
             "env": {
               "LOG_LEVEL": {
                 "value": "2"
-              },              
+              },
               "LOG_TO_HUB": {
                 "value": "true"
               }
-
             },
             "status": "running",
             "restartPolicy": "always"
@@ -65,6 +64,11 @@
             "settings": {
               "image": "${MODULES.LoRaWanPktFwdModule.amd64}",
               "createOptions": "  {\r\n  \"HostConfig\": {\r\n    \"NetworkMode\": \"host\", \"Privileged\": true \r\n\r\n  },\r\n  \"NetworkingConfig\": {\r\n    \"EndpointsConfig\": {\r\n      \"host\": {}\r\n    }\r\n  }\r\n}\r\n  \r\n  \r\n  \r\n"
+            },
+            "env": {
+              "RESET_PIN": {
+                "value": "5"
+              }
             },
             "version": "1.0",
             "status": "running",
