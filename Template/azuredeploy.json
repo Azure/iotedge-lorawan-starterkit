@@ -118,7 +118,11 @@
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "2.0.11961-alpha"
+                            "value": "beta"
+                        },
+                        {
+                            "name": "AzureWebJobsSecretStorageType",
+                            "value": "Files"
                         },
                         {
                             "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
