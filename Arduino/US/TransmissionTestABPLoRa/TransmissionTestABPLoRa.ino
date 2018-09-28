@@ -1,5 +1,6 @@
 
 #include <LoRaWan.h>
+
 //set to true to send confirmed data up messages
 bool confirmed=false;
 //application information, should be similar to what was provisiionned in the device twins
@@ -8,21 +9,20 @@ char * devAddr ="0028B1B1";
 char * appSKey ="2B7E151628AED2A6ABF7158809CF4F3C";
 char * nwkSKey ="3B7E151628AED2A6ABF7158809CF4F3C";
 
-
 /*
-iot hub ABP tags for deviceid: 46AAC86800430028 
-    "tags": {
+iot hub ABP desired properties for deviceid: 46AAC86800430028 
+    "desired": {
     "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
     "NwkSKey": "3B7E151628AED2A6ABF7158809CF4F3C",
     "DevAddr": "0028B1B1",
     "GatewayID" :"",
-    "SensorDecoder" :"DecoderValueSensor"
-    },
+    "SensorDecoder" :"DecoderValueSensor",
+   
   */
 
 //set initial datarate and physical information for the device
-_data_rate_t dr=DR6;
-_physical_type_t physicalType =EU868 ;
+_data_rate_t dr=DR0;
+_physical_type_t physicalType =US915HYBRID ;
 
 //internal variables
 char data[10];
@@ -42,14 +42,7 @@ void setup(void)
     
     lora.setDeciveMode(LWABP);
     lora.setDataRate(dr, physicalType);
-    
-    lora.setChannel(0, 868.1);
-    lora.setChannel(1, 868.3);
-    lora.setChannel(2, 868.5);
-    
-    lora.setReceiceWindowFirst(0, 868.1);
-    lora.setReceiceWindowSecond(868.5, DR2);
-    
+   
     lora.setAdaptiveDataRate(false);
 
     lora.setDutyCycle(false);
@@ -60,6 +53,8 @@ void setup(void)
     
    
 }
+
+
 
 void loop(void)
 {   
@@ -102,5 +97,4 @@ void loop(void)
     }
   }
 }
-
 

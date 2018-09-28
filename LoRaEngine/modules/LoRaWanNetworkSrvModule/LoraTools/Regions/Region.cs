@@ -67,7 +67,8 @@ namespace LoRaTools.Regions
         /// </summary>
         public uint adr_adr_delay { get; set; }
         /// <summary>
-        /// timeout for ack transmissiont, tuple with (min,max). Value should be a delay between min and max. [sec, sec]
+        /// timeout for ack transmissiont, tuple with (min,max). Value should be a delay between min and max. [sec, sec].
+        /// If  an  end-­device  does  not  receive  a  frame  with  the  ACK  bit  set  in  one  of  the  two  receive  19   windows  immediately  following  the  uplink  transmission  it  may  resend  the  same  frame  with  20   the  same  payload  and  frame  counter  again  at  least  ACK_TIMEOUT  seconds  after  the  21   second  reception  window
         /// </summary>
         public (uint min, uint max) ack_timeout { get; set; }
 
@@ -89,7 +90,6 @@ namespace LoRaTools.Regions
             this.ack_timeout = ack_timeout;
         }
 
-
         /// <summary>
         /// Implement correct logic to get the correct transmission frequency based on the region.
         /// </summary>
@@ -102,7 +102,7 @@ namespace LoRaTools.Regions
                 //in case of EU, you respond on same frequency as you sent data.
                 return upstreamChannel.freq;
             }
-            else if (this.RegionEnum == RegionEnum.US)
+            else if (this.RegionEnum == RegionEnum.US)           
             {
                 int channelNumber;
                 if (upstreamChannel.datr == "SF8BW500") //==DR4
@@ -113,15 +113,35 @@ namespace LoRaTools.Regions
                 {
                     channelNumber = (int)((upstreamChannel.freq - 902.3) / 0.2);
                 }
-
                 return 923.3 + (channelNumber % 8) * 0.6;
             }
             return 0;
         }
-     
+        /// <summary>
+        /// Implement correct logic to get the downstream data rate based on the region.
+        /// </summary>
+        /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
+        /// <returns></returns>
+        public string GetDownstreamDR(Rxpk upstreamChannel)
+        {
+            if (this.RegionEnum == RegionEnum.EU)
+            {
+                //in case of EU, you respond on same frequency as you sent data.
+                return upstreamChannel.datr;
+            }
+            else if (this.RegionEnum == RegionEnum.US)
+            {
+                var dr = this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == upstreamChannel.datr).Key;
+                //TODO take care of rx1droffset
+                return this.DRtoConfiguration[10-dr].configuration;
+            }
+
+            return null;
+        }
 
 
 
-       
+
+
     }
 }

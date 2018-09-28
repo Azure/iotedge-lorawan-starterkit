@@ -267,7 +267,7 @@ The Solution has an initial support for MAC Commands. Currently only the command
 CidType : 6
 ```
 
-![MacCommand](pictures/MacCommand.png)
+![MacCommand](pictures/MacCommand.PNG)
 
 ## License
 

@@ -22,7 +22,9 @@ namespace LoRaWan.NetworkServer
 
         public async Task<Twin> GetTwinAsync()
         {
-            return await deviceClient.GetTwinAsync();
+            var twin = await deviceClient.GetTwinAsync();
+
+                return twin;
         }
 
         public async Task UpdateFcntAsync(int FCntUp, int? FCntDown, bool force = false)
@@ -71,8 +73,7 @@ namespace LoRaWan.NetworkServer
             reportedProperties["FCntUp"] =loraDeviceInfo.FCntUp;
             reportedProperties["FCntDown"] =loraDeviceInfo.FCntDown;
             await deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
-            Logger.Log("Join reported properties&fcnt have been set", Logger.LoggingLevel.Info);
-           
+            Logger.Log(DevEUI,$"Join reported properties and fcnt have been set", Logger.LoggingLevel.Info);        
         }
 
         public IoTHubSender(string DevEUI, string PrimaryKey)
@@ -235,7 +236,7 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                Logger.Log(DevEUI, $"{DevEUI} using iotHub directly, no edgeHub queue", Logger.LoggingLevel.Info);
+                Logger.Log(DevEUI, $"using iotHub directly, no edgeHub queue", Logger.LoggingLevel.Info);
             }
 
 

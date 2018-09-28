@@ -1,8 +1,8 @@
 /* 
 This samples sends using the "longest" datarate gps coordinates every 30 seconds
 -> Create a new device in IoT Hub with this name: 7A7A7A00000014E2
--> Add the following tag to the device twin:
-"tags": {
+-> Add the following desired properties to the device twin:
+"desired": {
     "AppEUI": "BE7A0000000014E2",
     "AppKey": "634B4631BB1BCCCC006A2608E5601717",   
     "GatewayID" :"",
@@ -53,14 +53,9 @@ void setup(void)
   lora.setKey(NULL, NULL, "634B4631BB1BCCCC006A2608E5601717");
 
   lora.setDeciveMode(LWOTAA);
-  lora.setDataRate(DR0, EU868);
+  lora.setDataRate(DR0, US915HYBRID);
 
-  lora.setChannel(0, 868.1);
-  lora.setChannel(1, 868.3);
-  lora.setChannel(2, 868.5);
 
-  lora.setReceiceWindowFirst(0, 868.1);
-  lora.setReceiceWindowSecond(869.5, DR3);
 
   lora.setDutyCycle(false);
   lora.setJoinDutyCycle(false);

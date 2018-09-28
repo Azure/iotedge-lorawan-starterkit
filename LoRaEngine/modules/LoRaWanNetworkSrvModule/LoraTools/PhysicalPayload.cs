@@ -211,6 +211,7 @@ namespace LoRaTools
                 modu = "LORA",
                 datr = _datr,
                 codr = "4/5",
+                //TODO put 14 for EU
                 powe = 14,
                 ipol = true
 
