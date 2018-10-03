@@ -25,7 +25,7 @@ The following guide describes the necessary steps to build and deploy the LoRaEn
 - SetUp an Azure IoT Hub instance and be familiar with [Azure IoT Edge module deployment](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux) mechanism.
 - Be familiar with [Azure IoT Edge module development](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux). Note: the following guide expects that your modules will be pushed to [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/).
 
-### SetUp Azure function facade and [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/)
+### Setup Azure function facade and [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/)
 
 - Deploy the [function](LoraKeysManagerFacade). In VSCode with the [functions plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) you can run the command `Azure Functions: Deploy to function app...`. Then you have to select the folder `LoraKeysManagerFacade/bin/Release/netstandard2.0/publish` (unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder) and select for the environment `C#` in version `beta`.
 
@@ -90,10 +90,10 @@ lora.setKey(NULL, NULL, "8AFE71A145B253E49C3031AD068277A3");
 
 To provisioning a device in Azure IoT Hub with these identifiers and capable to [decode](/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoraDecoders.cs) temperature payload into Json you have to create a device with:
 
-Device Id: `47AAC86800430010` and Device Twin:
+Device Id: `47AAC86800430010` and Device Twin's deired properties:
 
 ```json
-"tags": {
+"desired": {
   "AppEUI": "BE7A0000000014E3",
   "AppKey": "8AFE71A145B253E49C3031AD068277A3",
   "SensorDecoder": "DecoderTemperatureSensor"
@@ -111,7 +111,7 @@ As soon as you start your device you should see the following:
 - [DevAddr, AppSKey and NwkSKey](https://www.thethingsnetwork.org/docs/lorawan/security.html) are generated and stored in the Device Twin, e.g.:
 
 ```json
-"tags": {
+"desired": {
     "AppEUI": "BE7A0000000014E3",
     "AppKey": "8AFE71A145B253E49C3031AD068277A3",
     "SensorDecoder": "DecoderTemperatureSensor",

@@ -1,5 +1,7 @@
 # Azure IoT Edge LoRaWAN Starter Kit
 
+**Please note this branch is currently under active development and stability is not ensured, please check the master branch for a stable version of the code.**
+
 Experimental sample implementation of LoRaWAN components to connect LoRaWAN antenna gateway running IoT Edge directly with Azure IoT.
 
 The goal of the project is to provide guidance and a reference for Azure IoT Edge users to experiment with LoRaWAN technology.
@@ -33,7 +35,7 @@ However, customers looking for any of the following are expected to prefer a set
 - No Class B and C
 - No ADR
 - No Mac commands
-- Tested only for EU frequency
+- Tested only for EU868 and US915 frequency
 - Max 51 bytes downstream payload, longer will be cut. It supports multiple messages with the fpending flag
 - IoT Edge must have internet connectivity, it can work for limited time offline if the device has previously transmitted an upstream message.
 - The [network server Azure IoT Edge module](/LoRaEngine/modules/LoRaWanNetworkSrvModule) and the [Facade function](/LoRaEngine/LoraKeysManagerFacade) have an API dependency on each other. its generally recommended for the deployments on the same source level.
@@ -133,10 +135,10 @@ A LoRa device is a normal IoT Hub device with some specific device twin tags. Yo
 - Click on the newly created device
 - Click on Device Twin menu
 
-- Add the followings tags for OTAA:
+- Add the followings desired properties for OTAA:
 
 ```json
-"tags": {
+"desired": {
     "AppEUI": "App EUI",
     "AppKey": "App Key",
     "GatewayID": "",
@@ -144,12 +146,12 @@ A LoRa device is a normal IoT Hub device with some specific device twin tags. Yo
   },
 ```
 
-Or the followings tags for ABP:
+Or the followings desired properties for ABP:
 
 **DevAddr must be unique for every device! It is like an ip address for lora.**
 
 ```json
-"tags": {
+"desired": {
     "AppSKey": "Device AppSKey",
     "NwkSKey": "Device NwkSKey",
     "DevAddr": "Device Addr",
@@ -177,14 +179,15 @@ It should look something like this for ABP:
   },
   "version": 324,
   "tags": {
-    "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
-    "NwkSKey": "1B6E151628AED2A6ABF7158809CF4F2C",
-    "DevAddr": "0028B9B9",
-    "SensorDecoder": "",
-    "GatewayID": ""
+  
   },
   "properties": {
     "desired": {
+      "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
+      "NwkSKey": "1B6E151628AED2A6ABF7158809CF4F2C",
+      "DevAddr": "0028B9B9",
+      "SensorDecoder": "",
+      "GatewayID": "",
       "$metadata": {
         "$lastUpdated": "2018-03-28T06:12:46.1007943Z"
       },

@@ -30,7 +30,7 @@
         "functionAppName": "[concat(parameters('uniqueSolutionPrefix'), 'function')]",
         "gitUsername": "Azure",
         "gitRepoUrl": "[concat('https://github.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit.git')]",
-        "gitBranch": "mik-dev-0.2",
+        "gitBranch": "new-mik-dev-0.2",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "iotHubOwnerPolicyName": "iothubowner",
         "appInsightName":"[concat(parameters('uniqueSolutionPrefix'), 'insight')]"
@@ -118,7 +118,7 @@
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "beta"
+                            "value": "~2"
                         },
                         {
                             "name": "AzureWebJobsSecretStorageType",

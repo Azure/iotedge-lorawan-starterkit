@@ -100,7 +100,7 @@ namespace CreateDeviceFunction
                 Device endDevice = new Device("47AAC86800430028");
                 await manager.AddDeviceAsync(endDevice);
                 Twin endTwin = new Twin();
-                endTwin.Tags = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:''," +
+                endTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:''," +
                 "SensorDecoder:'DecoderValueSensor'}");
     
                 var endRemoteTwin = await manager.GetTwinAsync(deviceName);
