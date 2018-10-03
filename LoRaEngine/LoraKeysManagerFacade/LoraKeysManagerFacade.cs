@@ -82,6 +82,11 @@ namespace LoraKeysManagerFacade
 
                 }
             }
+            else
+            {
+                string errorMsg = "Missing devEUI or devAddr";
+                throw new Exception(errorMsg);
+            }
             string json = JsonConvert.SerializeObject(results);
             return (ActionResult)new OkObjectResult(json);
         }
