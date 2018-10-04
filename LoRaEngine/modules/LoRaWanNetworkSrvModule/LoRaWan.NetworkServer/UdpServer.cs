@@ -77,6 +77,8 @@ namespace LoRaWan.NetworkServer
                 try
                 {
                     MessageProcessor messageProcessor = new MessageProcessor();
+
+                    
                     _ = messageProcessor.processMessage(receivedResults.Buffer);
                 }
                 catch (Exception ex)
