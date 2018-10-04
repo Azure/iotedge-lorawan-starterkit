@@ -52,9 +52,14 @@ namespace LoraKeysManagerFacade
             {
                 IoTHubDeviceInfo iotHubDeviceInfo = new IoTHubDeviceInfo();
                 var device = await registryManager.GetDeviceAsync(devEUI);
-                iotHubDeviceInfo.DevEUI = devEUI;
-                iotHubDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
-                results.Add(iotHubDeviceInfo);
+
+                if (device != null)
+                {
+                    iotHubDeviceInfo.DevEUI = devEUI;
+                    iotHubDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
+                    results.Add(iotHubDeviceInfo);
+                }
+                                               
             }
             else if(devAddr!=null)
             {
@@ -87,6 +92,7 @@ namespace LoraKeysManagerFacade
                 string errorMsg = "Missing devEUI or devAddr";
                 throw new Exception(errorMsg);
             }
+
             string json = JsonConvert.SerializeObject(results);
             return (ActionResult)new OkObjectResult(json);
         }

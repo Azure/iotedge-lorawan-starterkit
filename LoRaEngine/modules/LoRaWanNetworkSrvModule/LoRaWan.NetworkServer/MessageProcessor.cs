@@ -526,12 +526,14 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                Logger.Log(devEui, $"Join request refused", Logger.LoggingLevel.Info);
+                Logger.Log(devEui, $"join request refused", Logger.LoggingLevel.Info);
 
             }
+            
             //add to cache to avoid replay attack, btw server side does the check too.
             //TODO Ronnie Check
             //Cache.AddToCache(devEui, joinLoraDeviceInfo);
+
             return udpMsgForPktForwarder;
         }
 
