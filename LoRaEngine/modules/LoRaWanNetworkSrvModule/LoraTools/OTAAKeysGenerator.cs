@@ -4,9 +4,10 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace LoraKeysManagerFacade
+
+namespace PacketManager
 {
-    class OTAAKeysGenerator
+    public class OTAAKeysGenerator
     {
 
         public static byte[] StringToByteArray(string hex)
@@ -50,10 +51,7 @@ namespace LoraKeysManagerFacade
             cipher = aes.CreateEncryptor();
 
 
-            var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
-
-
-           
+            var key = cipher.TransformFinalBlock(pt, 0, pt.Length);          
             return BitConverter.ToString(key).Replace("-", "");
         }
 

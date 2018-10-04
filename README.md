@@ -1,5 +1,7 @@
 # Azure IoT Edge LoRaWAN Starter Kit
 
+**Please note this branch is currently under active development and stability is not ensured, please check the master branch for a stable version of the code.**
+
 Experimental sample implementation of LoRaWAN components to connect LoRaWAN antenna gateway running IoT Edge directly with Azure IoT.
 
 The goal of the project is to provide guidance and a reference for Azure IoT Edge users to experiment with LoRaWAN technology.
@@ -33,7 +35,7 @@ However, customers looking for any of the following are expected to prefer a set
 - No Class B and C
 - No ADR
 - No Mac commands
-- Tested only for EU frequency
+- Tested only for EU868 and US915 frequency
 - Max 51 bytes downstream payload, longer will be cut. It supports multiple messages with the fpending flag
 - IoT Edge must have internet connectivity, it can work for limited time offline if the device has previously transmitted an upstream message.
 - The [network server Azure IoT Edge module](/LoRaEngine/modules/LoRaWanNetworkSrvModule) and the [Facade function](/LoRaEngine/LoraKeysManagerFacade) have an API dependency on each other. its generally recommended for the deployments on the same source level.
@@ -43,8 +45,8 @@ However, customers looking for any of the following are expected to prefer a set
 ## Tested Gateway HW
 
 - [Seeed Studio LoRa LoRaWAN Gateway - 868MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
-
 - [AAEON AIOT-ILRA01 LoRa® Certified Intel® Based Gateway and Network Server](https://www.aaeon.com/en/p/intel-lora-gateway-system-server)
+- [MyPi Industrial IoT Integrator Board](http://www.embeddedpi.com/integrator-board) with [RAK833-SPI mPCIe-LoRa-Concentrator](http://www.embeddedpi.com/iocards)
 
 ## Architecture
 
@@ -72,22 +74,27 @@ the [Security TechCenter](https://technet.microsoft.com/en-us/security/default).
 
 ## Quick start
 
-An Azure deployment template is available to deploy all the required Azure infrastructure and get you started quickly. 
+An Azure deployment template is available to deploy all the required Azure infrastructure and get you started quickly.
 If you'd rather deploy it manually please jump directly into the [do it yourself section](/LoRaEngine).
 
 ### Prequisites
+
 Currently, the template work only with ARM based gateways, like a Raspberry Pi, support for x86 will be added in a future release. (you could actually already deploy it for intel by following the instructions in the [do it yourself section](/LoraEngine))
 The template was tested to work on the following gateway types:
-* [Seeed Studio LoRa LoRaWAN Gateway - 868MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
+
+- [Seeed Studio LoRa LoRaWAN Gateway - 868MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
 
 The LoRa device demo code for Arduino is built only for Seeduino LoRaWan board and was not test with other Arduino LoRa boards.
 
 ### Deployed Azure Infrastructure
+
 The template will deploy in your Azure subscription the Following ressources:
-* [IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
-* [Azure Function](https://azure.microsoft.com/en-us/services/functions/)
+
+- [IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
+- [Azure Function](https://azure.microsoft.com/en-us/services/functions/)
 
 ### Step-by-step instructions
+
 1. Press on the button here below to start your Azure Deployment.
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fmaster%2FTemplate%2Fazuredeploy.json" target="_blank">
@@ -104,15 +111,16 @@ The template will deploy in your Azure subscription the Following ressources:
 
   The deployment would take c.a. 10 minutes to complete.
 
-3.  During this time, you can proceed to [install IoT Edge to your gateway](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm). 
+3.  During this time, you can proceed to [install IoT Edge to your gateway](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm).
 
-4. Once the Azure deployment is finished, connect your IoT Edge with the cloud [as described in point 3](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm#configure-the-azure-iot-edge-security-daemon). You can get the connection string by clicking on the deployed IoT Hub -> IoT Edge Devices -> Connection string, as shown in the picture below.
+4.  Once the Azure deployment is finished, connect your IoT Edge with the cloud [as described in point 3](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm#configure-the-azure-iot-edge-security-daemon). You can get the connection string by clicking on the deployed IoT Hub -> IoT Edge Devices -> Connection string, as shown in the picture below.
 
-5. If your gateway is a Raspberry Pi, **don't forget to [enable SPI](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/) , (You need to restart your pi)**.
+5.  If your gateway is a Raspberry Pi, **don't forget to [enable SPI](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/) , (You need to restart your pi)**.
 
 By using the `docker ps` command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the [Arduino folder](/Arduino) to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly "TransmissionTestOTAALoRa.ino" without provisioning the device first.
 
 ### What does the template do?
+
 The template provision an IoT Hub with a [packet forwarder](https://github.com/Lora-net/packet_forwarder) and a network server module already preconfigured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](/Template).
 
 ## LoRa Device provisioning
@@ -122,27 +130,28 @@ A LoRa device is a normal IoT Hub device with some specific device twin tags. Yo
 
 ### ABP (personalization) and OTAA (over the air) provisioning
 
-- Login in to the Azure portal go to IoT Hub -> IoT devices -> Add 
+- Login in to the Azure portal go to IoT Hub -> IoT devices -> Add
 - Use the DeviceEUI as DeviceID -> Save
 - Click on the newly created device
 - Click on Device Twin menu
 
-- Add the followings tags for OTAA:
+- Add the followings desired properties for OTAA:
 
 ```json
-"tags": {
+"desired": {
     "AppEUI": "App EUI",
     "AppKey": "App Key",
     "GatewayID": "",
-    "SensorDecoder": ""    
+    "SensorDecoder": ""
   },
 ```
-Or the followings tags for ABP: 
+
+Or the followings desired properties for ABP:
 
 **DevAddr must be unique for every device! It is like an ip address for lora.**
 
 ```json
-"tags": {
+"desired": {
     "AppSKey": "Device AppSKey",
     "NwkSKey": "Device NwkSKey",
     "DevAddr": "Device Addr",
@@ -170,21 +179,22 @@ It should look something like this for ABP:
   },
   "version": 324,
   "tags": {
-    "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
-    "NwkSKey": "1B6E151628AED2A6ABF7158809CF4F2C",
-    "DevAddr": "0028B9B9",
-    "SensorDecoder": "",
-    "GatewayID": ""
+  
   },
   "properties": {
     "desired": {
+      "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
+      "NwkSKey": "1B6E151628AED2A6ABF7158809CF4F2C",
+      "DevAddr": "0028B9B9",
+      "SensorDecoder": "",
+      "GatewayID": "",
       "$metadata": {
         "$lastUpdated": "2018-03-28T06:12:46.1007943Z"
       },
       "$version": 1
     },
     "reported": {
-       "$metadata": {
+      "$metadata": {
         "$lastUpdated": "2018-08-06T15:16:32.2689851Z",
         "FCntUp": {
           "$lastUpdated": "2018-08-06T15:16:32.2689851Z"
@@ -202,21 +212,22 @@ It should look something like this for ABP:
 ### Decoders
 
 The SensorDecoder tag is used to define which method will be used to decode the LoRa payload. If you leave it out or empty it will send the raw decrypted payload in the data field of the json message as Base64 encoded value to IoT Hub.
-If you want to decode it on the Edge you need to specify a method that implements the right logic in the LoraDecoders class in the LoraDecoders.cs file of the LoRaWan.NetworkServer. 
+If you want to decode it on the Edge you need to specify a method that implements the right logic in the LoraDecoders class in the LoraDecoders.cs file of the LoRaWan.NetworkServer.
 We have already a simple decoder called "DecoderValueSensor" that take the whole payload as single numeric value and construct the following json output (For example an Arduino sending a sensor value as string eg. "23.5" as examples in the Arduino folder):
 
 ```json
 {
   .....
-    "data": {"value": 23.5} 
-  .....  
+    "data": {"value": 23.5}
+  .....
 }
 ```
+
 The "DecoderValueSensor" decoder is not best practice but it makes easier to experiment in sending sensor's readings to IoT Hub without code change.
 
 ### Cache Clearing
 
-Due to the gateway caching the device information (tags) for 1 day, if the device tries to connect before you have provisioned it, it will not be able to connect because it will be considered a device for another LoRa network. 
+Due to the gateway caching the device information (tags) for 1 day, if the device tries to connect before you have provisioned it, it will not be able to connect because it will be considered a device for another LoRa network.
 To clear the cache and allow the device to connect follow these steps:
 
 - IoT Hub -> IoT Edge -> click on the device ID of your gateway
@@ -233,28 +244,33 @@ There is a logging mechanisms that output valuable information on the console of
 
 You can control the logging with the following environment variables on the LoRaWanNetworkSrvModule module:
 
-LOG_LEVEL       3          Only errors are logged (default if omitted)
+LOG_LEVEL 3 Only errors are logged (default if omitted)
 
-LOG_LEVEL       2          Errors and information are logged
+LOG_LEVEL 2 Errors and information are logged
 
-LOG_LEVEL       1          Everything is logged including the up and down messages to the packet forwarder
+LOG_LEVEL 1 Everything is logged including the up and down messages to the packet forwarder
 
+LOG_TO_HUB true Log info are sent from the module to IoT Hub. You can used VSCode, [IoTHub explorer](https://github.com/Azure/iothub-explorer) or [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer) to monitor the log messages
 
+LOG_TO_HUB false Log info is not sent to IoT Hub (default if omitted)
 
-LOG_TO_HUB      true       Log info are sent from the module to IoT Hub. You can used VSCode, [IoTHub explorer](https://github.com/Azure/iothub-explorer) or [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer) to monitor the log messages
+LOG_TO_CONSOLE true Log info in docker log (default if omitted). Log in to the gateway and use "sudo docker logs LoRaWanNetworkSrvModule -f" to follow the log
 
-LOG_TO_HUB      false      Log info is not sent to IoT Hub (default if omitted)
-
-
-
-LOG_TO_CONSOLE  true       Log info in docker log (default if omitted). Log in to the gateway and use "sudo docker logs LoRaWanNetworkSrvModule -f" to follow the log
-
-LOG_TO_CONSOLE  false      No log info in the docker log
-
+LOG_TO_CONSOLE false No log info in the docker log
 
 ## Customize the solution & Deep dive
 
 Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanation.
+
+## MAC Commands
+
+The Solution has an initial support for MAC Commands. Currently only the command Device Status Command is fully testable. The command will return device status (battery and communication margin). To try it, send a Cloud to Device message on your end device and add the following message properties :
+
+```
+CidType : 6
+```
+
+![MacCommand](pictures/MacCommand.PNG)
 
 ## License
 

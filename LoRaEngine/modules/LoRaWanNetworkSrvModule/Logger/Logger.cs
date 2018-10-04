@@ -27,7 +27,7 @@ namespace LoRaWan
             bool logToHub = false;
             bool logToConsole = true;
 
-            int loggingLevelSetting = (int)LoggingLevel.Error;
+            int loggingLevelSetting = (int)LoggingLevel.Always;
 
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_TO_HUB")))
                 logToHub = bool.Parse(Environment.GetEnvironmentVariable("LOG_TO_HUB"));

@@ -51,7 +51,7 @@
             "env": {
               "LOG_LEVEL": {
                 "value": "2"
-              },
+              },              
               "LOG_TO_HUB": {
                 "value": "true"
               }
@@ -64,11 +64,6 @@
             "settings": {
               "image": "${MODULES.LoRaWanPktFwdModule.arm32v7}",
               "createOptions": "  {\r\n  \"HostConfig\": {\r\n    \"NetworkMode\": \"host\", \"Privileged\": true \r\n\r\n  },\r\n  \"NetworkingConfig\": {\r\n    \"EndpointsConfig\": {\r\n      \"host\": {}\r\n    }\r\n  }\r\n}\r\n  \r\n  \r\n  \r\n"
-            },
-            "env": {
-              "RESET_PIN": {
-                "value": "12"
-              }
             },
             "version": "1.0",
             "status": "running",
@@ -90,9 +85,8 @@
     },
     "LoRaWanNetworkSrvModule": {
       "properties.desired": {
-        "schemaVersion": "1.0",
-        "FacadeServerUrl": "$FACADE_SERVER_URL",
-        "FacadeAuthCode": "$FACADE_AUTH_CODE"
+        "schemaVersion": "1.0"
+     
       }
     }
   }

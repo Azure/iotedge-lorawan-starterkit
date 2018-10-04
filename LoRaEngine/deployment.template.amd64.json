@@ -21,7 +21,7 @@
           "edgeAgent": {
             "type": "docker",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-agent:1.0",
+              "image": "mcr.microsoft.com/azureiotedge-agent:1.0.2",
               "createOptions": ""
             }
           },
@@ -30,7 +30,7 @@
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-hub:1.0",
+              "image": "mcr.microsoft.com/azureiotedge-hub:1.0.2",
               "createOptions": "{\"HostConfig\":{\"PortBindings\":{\"8883/tcp\":[{\"HostPort\":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}]}}}"
             },
             "env": {
@@ -51,11 +51,10 @@
             "env": {
               "LOG_LEVEL": {
                 "value": "2"
-              },              
+              },
               "LOG_TO_HUB": {
                 "value": "true"
               }
-
             },
             "status": "running",
             "restartPolicy": "always"
@@ -65,6 +64,11 @@
             "settings": {
               "image": "${MODULES.LoRaWanPktFwdModule.amd64}",
               "createOptions": "  {\r\n  \"HostConfig\": {\r\n    \"NetworkMode\": \"host\", \"Privileged\": true \r\n\r\n  },\r\n  \"NetworkingConfig\": {\r\n    \"EndpointsConfig\": {\r\n      \"host\": {}\r\n    }\r\n  }\r\n}\r\n  \r\n  \r\n  \r\n"
+            },
+            "env": {
+              "RESET_PIN": {
+                "value": "5"
+              }
             },
             "version": "1.0",
             "status": "running",

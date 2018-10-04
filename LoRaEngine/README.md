@@ -25,7 +25,7 @@ The following guide describes the necessary steps to build and deploy the LoRaEn
 - SetUp an Azure IoT Hub instance and be familiar with [Azure IoT Edge module deployment](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux) mechanism.
 - Be familiar with [Azure IoT Edge module development](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux). Note: the following guide expects that your modules will be pushed to [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/).
 
-### SetUp Azure function facade and [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/)
+### Setup Azure function facade and [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/)
 
 - Deploy the [function](LoraKeysManagerFacade). In VSCode with the [functions plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) you can run the command `Azure Functions: Deploy to function app...`. Then you have to select the folder `LoraKeysManagerFacade/bin/Release/netstandard2.0/publish` (unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder) and select for the environment `C#` in version `beta`.
 
@@ -90,10 +90,10 @@ lora.setKey(NULL, NULL, "8AFE71A145B253E49C3031AD068277A3");
 
 To provisioning a device in Azure IoT Hub with these identifiers and capable to [decode](/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoraDecoders.cs) temperature payload into Json you have to create a device with:
 
-Device Id: `47AAC86800430010` and Device Twin:
+Device Id: `47AAC86800430010` and Device Twin's deired properties:
 
 ```json
-"tags": {
+"desired": {
   "AppEUI": "BE7A0000000014E3",
   "AppKey": "8AFE71A145B253E49C3031AD068277A3",
   "SensorDecoder": "DecoderTemperatureSensor"
@@ -111,7 +111,7 @@ As soon as you start your device you should see the following:
 - [DevAddr, AppSKey and NwkSKey](https://www.thethingsnetwork.org/docs/lorawan/security.html) are generated and stored in the Device Twin, e.g.:
 
 ```json
-"tags": {
+"desired": {
     "AppEUI": "BE7A0000000014E3",
     "AppKey": "8AFE71A145B253E49C3031AD068277A3",
     "SensorDecoder": "DecoderTemperatureSensor",
@@ -169,3 +169,36 @@ This is how a complete transmission looks like:
 You can even test sending Cloud-2-Device message (e.g. by VSCode right click on the device in the explorer -> `Send C2D Message To Device`).
 
 The Arduino example provided above will print the message on the console. Keep in mind that a [LoRaWAN Class A](https://www.thethingsnetwork.org/docs/lorawan/) device will only receive after a transmit, in our case every 30 seconds.
+
+
+## Debugging outside of IoT Edge and docker
+It is possible to run the bits in the LoRaEngine locally with from Visual Studio in order to enable a better debugging experience. Here are the steps you will need to enable this feature:
+
+1. Change the value *server_adress* in the file *local_conf.json* (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.
+2. If you are using a Wireless and Windows, make sure your current Wireless network is set as Private in your Windows settings. Otherwise you won't receive the UDP packets.
+3. Open the properties of the project *LoRaWanNetworkServerModule* and set the following values under the Debug tab:
+  - IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)
+  - ENABLE_GATEWAY : false
+  - LOG_LEVEL : 0 (optional, to activate logging level)
+4. Add a local.settings.json in the project LoRa KeysManagerFacade with
+```json
+     {
+  "IsEncrypted": false,
+  "values": {
+    "AzureWebJobsStorage": "<Connection String of your deployed blob storage>",
+    "WEBSITE_CONTENTSHARE": "<Name of your Azure function>"
+
+  },
+  "ConnectionStrings": {
+    "IoTHubConnectionString": "<Connection string of your IoT Hub Owner (go to keys -> IoT Hub owner and select the connection string)>"
+  }
+
+}
+ ```
+5. Right click on your solution and select properties, select multiple startup projects. Start LoRaWanNetworkSrvModule and LoRaKeysManagerFacade.
+
+6. If you hit start in your VS solution, you will receive messages directly from your packet forwarder. You will be able to debug directly from your computer. 
+
+Happy Debugging! 
+
+

@@ -8,18 +8,18 @@ char * appKey="8AFE71A145B253E49C3031AD068277A1";
 char* appEui ="BE7A0000000014E2";
 
 /*
-iot hub OTAA tags for deviceid: 47AAC86800430028 
-    "tags": {
-    "AppEUI": "BE7A0000000014E2",
-    "AppKey": "8AFE71A145B253E49C3031AD068277A1",
-    "GatewayID" :"",
-    "SensorDecoder" :"DecoderValueSensor"
-    },
+iot hub OTAA desired properties for deviceid: 47AAC86800430028 
+      "desired": {
+      "AppEUI": "BE7A0000000014E2",
+      "AppKey": "8AFE71A145B253E49C3031AD068277A1",
+      "GatewayID" :"",
+      "SensorDecoder" :"DecoderValueSensor"
+      },
   */
 
 //set initial datarate and physical information for the device
-_data_rate_t dr=DR6;
-_physical_type_t physicalType =EU868 ;
+_data_rate_t dr=DR0;
+_physical_type_t physicalType =US915HYBRID ;
 
 //internal variables
 char data[10];
@@ -39,12 +39,7 @@ void setup(void)
     lora.setDeciveMode(LWOTAA);
     lora.setDataRate(dr, physicalType);
     
-    lora.setChannel(0, 868.1);
-    lora.setChannel(1, 868.3);
-    lora.setChannel(2, 868.5);
-    
-    lora.setReceiceWindowFirst(0, 868.1);
-    lora.setReceiceWindowSecond(868.5, DR2);
+
     
   lora.setAdaptiveDataRate(false);
 
