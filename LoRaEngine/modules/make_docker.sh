@@ -12,14 +12,11 @@ if ! [[ $2 =~ [0-9]+\.[0-9]+\.[0-9]+ ]]; then
   exit 0
 fi
 cd  LoRaWanPktFwdModule
-docker build -f Dockerfile -t $1/lorawanpktfwdmodule:x86-eu-$2 .
-docker push $1/lorawanpktfwdmodule:x86-eu-$2 
-docker build -f Dockerfile.arm32v7 -t $1/lorawanpktfwdmodule:arm32v7-eu-$2 .
-docker push $1/lorawanpktfwdmodule:arm32v7-eu-$2 
-docker build -f Dockerfile.us -t $1/lorawanpktfwdmodule:x86-us-$2 .
-docker push $1/lorawanpktfwdmodule:x86-us-$2 
-docker build -f Dockerfile.us.arm32v7 -t $1/lorawanpktfwdmodule:arm32v7-us-$2 .
-docker push $1/lorawanpktfwdmodule:arm32v7-us-$2 
+
+docker build -f Dockerfile -t $1/lorawanpktfwdmodule:x86-$2 .
+docker push $1/lorawanpktfwdmodule:x86-$2 
+docker build -f Dockerfile.arm32v7 -t $1/lorawanpktfwdmodule:arm32v7-$2 .
+docker push $1/lorawanpktfwdmodule:arm32v7-$2 
 cd ..
 cd LoRaWanNetworkSrvModule
 docker build -f Dockerfile -t $1/lorawannetworksrvmodule:x86-$2 .

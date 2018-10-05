@@ -13,6 +13,7 @@ WORKDIR /build
 FROM debian:stretch-slim AS exec
 WORKDIR /LoRa
 COPY --from=builder /packet_forwarder/lora_pkt_fwd/lora_pkt_fwd .
+COPY --from=builder /packet_forwarder/lora_pkt_fwd/global_conf.us.json .
 COPY --from=builder /packet_forwarder/lora_pkt_fwd/global_conf.json .
 COPY --from=builder /lora_gateway/reset_lgw.sh .
 COPY local_conf.json .
