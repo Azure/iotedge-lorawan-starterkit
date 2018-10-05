@@ -15,6 +15,8 @@ WORKDIR /LoRa
 COPY --from=builder /packet_forwarder/lora_pkt_fwd/lora_pkt_fwd .
 COPY --from=builder /packet_forwarder/lora_pkt_fwd/global_conf.json .
 COPY --from=builder /lora_gateway/reset_lgw.sh .
+COPY  global_conf.us.json .
+COPY global_conf.json global_conf.eu.json 
 COPY local_conf.json .
 COPY start_pktfwd.sh .
 ENTRYPOINT ["./start_pktfwd.sh"]

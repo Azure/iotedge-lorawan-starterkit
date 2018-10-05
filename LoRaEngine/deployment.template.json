@@ -67,7 +67,7 @@
             },
             "env": {
               "RESET_PIN": {
-                "value": "12"
+                "value": "7"
               }
             },
             "version": "1.0",
