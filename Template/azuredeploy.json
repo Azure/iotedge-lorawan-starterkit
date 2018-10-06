@@ -118,7 +118,11 @@
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "beta"
+                            "value": "~2"
+                        },
+                        {
+                            "name": "AzureWebJobsSecretStorageType",
+                            "value": "Files"
                         },
                         {
                             "name": "AzureWebJobsSecretStorageType",
