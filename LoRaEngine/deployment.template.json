@@ -68,6 +68,9 @@
             "env": {
               "RESET_PIN": {
                 "value": "7"
+              },
+              "REGION": {
+                "value": "$REGION"
               }
             },
             "version": "1.0",
