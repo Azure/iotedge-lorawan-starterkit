@@ -217,5 +217,3 @@ void sendLoraMessage(void)
         }
     }  
 }
-
-

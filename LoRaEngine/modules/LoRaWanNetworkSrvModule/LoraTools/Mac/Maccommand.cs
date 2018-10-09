@@ -38,7 +38,7 @@ namespace LoRaTools
                     Logger.Log("mac command detected : RXParamCmd", Logger.LoggingLevel.Info);
                     break;
                 case CidEnum.DevStatusCmd:
-                    Logger.Log( "mac command detected : DevStatusCmd", Logger.LoggingLevel.Info);
+                    Logger.Log("mac command detected : DevStatusCmd", Logger.LoggingLevel.Info);
                     DevStatusCmd devStatus = new DevStatusCmd();
                     macCommand.Add(devStatus);
                     break;
@@ -47,18 +47,18 @@ namespace LoRaTools
                     //macCommand.Add(newChannel);
                     break;
                 case CidEnum.RXTimingCmd:
-                    RXTimingSetupCmd rXTimingSetup = new RXTimingSetupCmd();         
+                    RXTimingSetupCmd rXTimingSetup = new RXTimingSetupCmd();
                     macCommand.Add(rXTimingSetup);
                     break;
             }
         }
-        
 
-            /// <summary>
-            /// constructor for message received (upstream)
-            /// </summary>
-            /// <param name="input"></param>
-            public MacCommandHolder(byte[] input)
+
+        /// <summary>
+        /// constructor for message received (upstream)
+        /// </summary>
+        /// <param name="input"></param>
+        public MacCommandHolder(byte[] input)
         {
             int pointer = 0;
             macCommand = new List<GenericMACCommand>();
@@ -75,7 +75,7 @@ namespace LoRaTools
                         macCommand.Add(linkCheck);
                         break;
                     case CidEnum.LinkADRCmd:
-                        Logger.Log("mac command detected : LinkADRCmd", Logger.LoggingLevel.Info);                        
+                        Logger.Log("mac command detected : LinkADRCmd", Logger.LoggingLevel.Info);
                         break;
                     case CidEnum.DutyCycleCmd:
                         Logger.Log("mac command detected : DutyCycleCmd", Logger.LoggingLevel.Info);
@@ -88,7 +88,7 @@ namespace LoRaTools
                         break;
                     case CidEnum.DevStatusCmd:
                         Logger.Log("mac command detected : DevStatusCmd", Logger.LoggingLevel.Info);
-                        DevStatusCmd devStatus = new DevStatusCmd(input[pointer+1],input[pointer+2]);
+                        DevStatusCmd devStatus = new DevStatusCmd(input[pointer + 1], input[pointer + 2]);
                         pointer += devStatus.Length;
                         macCommand.Add(devStatus);
                         break;
@@ -127,7 +127,7 @@ namespace LoRaTools
         /// cid number of 
         /// </summary>
         public CidEnum Cid { get; set; }
-   
+
         public int Length { get; set; }
 
         public override abstract string ToString();
@@ -143,7 +143,7 @@ namespace LoRaTools
             return Cid;
         }
         public abstract byte[] ToBytes();
-        
+
     }
 
     /// <summary>
@@ -180,8 +180,8 @@ namespace LoRaTools
         {
             byte[] returnedBytes = new byte[Length];
             returnedBytes[0] = (byte)Cid;
-            returnedBytes[1]= BitConverter.GetBytes(Margin)[0];
-            returnedBytes[2]= BitConverter.GetBytes(GwCnt)[0];
+            returnedBytes[1] = BitConverter.GetBytes(Margin)[0];
+            returnedBytes[2] = BitConverter.GetBytes(GwCnt)[0];
             return returnedBytes;
         }
 
@@ -196,7 +196,7 @@ namespace LoRaTools
     /// </summary>
     public class LinkADRCmd : GenericMACCommand
     {
-      
+
         byte DataRate_TXPower { get; set; }
         byte[] ChMask = new byte[2];
         byte Redondancy { get; set; }
@@ -219,7 +219,7 @@ namespace LoRaTools
     {
         uint DutyCyclePL { get; set; }
 
-      
+
 
         //Downstream message
         public DutyCycleCmd(uint _dutyCyclePL)
@@ -229,7 +229,7 @@ namespace LoRaTools
             DutyCyclePL = _dutyCyclePL;
         }
 
-       public DutyCycleCmd()
+        public DutyCycleCmd()
         {
             Length = 1;
             Cid = CidEnum.DutyCycleCmd;
@@ -282,10 +282,11 @@ namespace LoRaTools
             Cid = CidEnum.DevStatusCmd;
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
 
-            return String.Format("Battery Level : {0}, Margin : {1}",Battery,Margin);
-                }
+            return String.Format("Battery Level : {0}, Margin : {1}", Battery, Margin);
+        }
 
         /// <summary>
         /// Upstream constructor
@@ -312,7 +313,7 @@ namespace LoRaTools
     /// NewChannelReq & NewChannelAns TODO REGION SPECIFIC
     /// </summary>
     public abstract class NewChannelCmd : GenericMACCommand
-    {   
+    {
     }
 
     /// <summary>
@@ -333,7 +334,7 @@ namespace LoRaTools
             MaxDR = _maxDr;
             MinDR = _minDr;
             Cid = CidEnum.NewChannelCmd;
-            
+
         }
 
         public override byte[] ToBytes()

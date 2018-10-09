@@ -14,9 +14,9 @@ FROM arm32v7/debian:stretch-slim as exec
 WORKDIR /LoRa
 COPY --from=builder /build/packet_forwarder/lora_pkt_fwd/lora_pkt_fwd .
 COPY --from=builder /build/packet_forwarder/lora_pkt_fwd/global_conf.json .
+COPY --from=builder /build/packet_forwarder/lora_pkt_fwd/global_conf.json global_conf.eu.json
 COPY --from=builder /build/lora_gateway/reset_lgw.sh .
 COPY local_conf.json .
 COPY  global_conf.us.json .
-COPY global_conf.json global_conf.eu.json 
 COPY start_pktfwd.sh .
 ENTRYPOINT ["./start_pktfwd.sh"]

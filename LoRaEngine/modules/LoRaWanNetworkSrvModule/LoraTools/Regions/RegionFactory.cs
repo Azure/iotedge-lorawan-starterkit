@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LoRaTools.LoRaPhysical;
+using LoRaTools.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,7 +32,7 @@ namespace LoRaTools.Regions
             Region r = new Region(
                 RegionEnum.EU,
                 0x34,
-                 StringToByteArray("C194C1"),
+                 ConversionHelper.StringToByteArray("C194C1"),
                  (frequency: 869.525, datr : 0),
                  1,
                  2,
@@ -116,12 +118,6 @@ namespace LoRaTools.Regions
             };
             return r;
         }
-        public static byte[] StringToByteArray(string hex)
-        {
-            return Enumerable.Range(0, hex.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                             .ToArray();
-        }
+       
     }
 }

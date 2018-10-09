@@ -16,8 +16,7 @@ namespace LoRaWanNetworkSrvModule
         static UdpServer udpServer = null;
         static void Main(string[] args)
         {
-           
-
+          
             Run().Wait();
 
             // Wait until the app unloads or is cancelled
