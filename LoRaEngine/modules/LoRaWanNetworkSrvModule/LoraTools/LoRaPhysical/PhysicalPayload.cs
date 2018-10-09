@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LoRaTools
 {
-  
+
     public enum PhysicalIdentifier
     {
         PUSH_DATA, PUSH_ACK, PULL_DATA, PULL_RESP, PULL_ACK, TX_ACK
@@ -171,6 +171,14 @@ namespace LoRaTools
     #region PacketForwarder
 
 
+    public class PktFwdMessageAdapter
+    {
+        public List<Rxpk> Rxpks { get; set; }
+        public Txpk Txpk { get; set; }
+
+
+    }
+
 
     /// <summary>
     /// Base type of a Packet Forwarder message (lower level)
@@ -178,13 +186,16 @@ namespace LoRaTools
     public abstract class PktFwdMessage
     {
         PktFwdType pktFwdType;
-    }
+
+        public abstract PktFwdMessageAdapter GetPktFwdMessage();
 
 
-    enum PktFwdType
-    {
-        Downlink,
-        Uplink
+
+        enum PktFwdType
+        {
+            Downlink,
+            Uplink
+        }
     }
 
     /// <summary>
@@ -197,12 +208,12 @@ namespace LoRaTools
 
 
 
-        public DownlinkPktFwdMessage(string _data, string _datr = "SF12BW125", uint _rfch=0, double _freq = 869.525000, long _tmst = 0 )
+        public DownlinkPktFwdMessage(string _data, string _datr = "SF12BW125", uint _rfch = 0, double _freq = 869.525000, long _tmst = 0)
         {
             var byteData = Convert.FromBase64String(_data);
             txpk = new Txpk()
             {
-                imme = _tmst==0?true:false,
+                imme = _tmst == 0 ? true : false,
                 tmst = _tmst,
                 data = _data,
                 size = (uint)byteData.Length,
@@ -217,6 +228,13 @@ namespace LoRaTools
 
             };
         }
+
+        public override PktFwdMessageAdapter GetPktFwdMessage()
+        {
+            PktFwdMessageAdapter pktFwdMessageAdapter = new PktFwdMessageAdapter();
+            pktFwdMessageAdapter.Txpk = this.txpk;
+            return pktFwdMessageAdapter;
+        }
     }
 
 
@@ -226,8 +244,16 @@ namespace LoRaTools
     public class UplinkPktFwdMessage : PktFwdMessage
     {
         public List<Rxpk> rxpk = new List<Rxpk>();
+
+        public override PktFwdMessageAdapter GetPktFwdMessage()
+        {
+            PktFwdMessageAdapter pktFwdMessageAdapter = new PktFwdMessageAdapter();
+            pktFwdMessageAdapter.Rxpks = this.rxpk;
+            return pktFwdMessageAdapter;
+        }
     }
 
 
     #endregion
 }
+
