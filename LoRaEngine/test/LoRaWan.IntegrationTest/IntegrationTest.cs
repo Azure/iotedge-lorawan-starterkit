@@ -130,7 +130,7 @@ namespace LoRaWan.IntegrationTest
 
             for (var joinAttempt=1; joinAttempt <= 5; ++joinAttempt)
             {
-                Console.WriteLine($"Join attempt #{joinAttempt++}");
+                Console.WriteLine($"Join attempt #{joinAttempt}");
                 joinSucceeded = lora.setOTAAJoin(LoRaWanClass._otaa_join_cmd_t.JOIN, 20000);
                 if (joinSucceeded)
                     break;
