@@ -45,12 +45,12 @@
             "type": "docker",
             "settings": {
               "image": "${MODULES.LoRaWanNetworkSrvModule.arm32v7}",
-              "createOptions": "{\r\n  \"ExposedPorts\": {\r\n    \"1680/udp\": {}\r\n  },\r\n  \"HostConfig\": {\r\n    \"PortBindings\": {\r\n      \"1680/udp\": [\r\n        {\r\n          \"HostPort\": \"1680\",\r\n          \"HostIp\":\"172.17.0.1\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}\r\n\r\n"
+              "createOptions": "{  \"ExposedPorts\": { \"1680/udp\": {}, \"1234/udp\": {}  }, \"HostConfig\": { \"PortBindings\": { \"1680/udp\": [ { \"HostPort\": \"1680\", \"HostIp\":\"172.17.0.1\" } ], \"1234/udp\": [ { \"HostPort\": \"1234\" } ] }  }}"
             },
             "version": "1.0",
             "env": {
               "LOG_LEVEL": {
-                "value": "2"
+                "value": "0"
               },
               "LOG_TO_HUB": {
                 "value": "true"
@@ -79,7 +79,25 @@
             "version": "1.0",
             "status": "running",
             "restartPolicy": "always"
-          }
+          },
+          "AzureDevOpsAgent": {
+              "version": "1.0",
+              "type": "docker",
+              "status": "running",
+              "restartPolicy": "always",
+              "settings": {
+                "image": "${MODULES.AzureDevOpsAgent.arm32v7}",
+                "createOptions": "{  \"HostConfig\": { \"Privileged\": true } }"
+              },
+              "env": {
+                "VSTS_SERVER_URL": {
+                  "value": "$VSTS_SERVER_URL"
+                },
+                "VSTS_TOKEN": {
+                  "value": "$VSTS_TOKEN"
+                }
+              }
+            }
         }
       }
     },
