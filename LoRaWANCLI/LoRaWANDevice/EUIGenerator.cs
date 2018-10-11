@@ -6,7 +6,6 @@ namespace LoRaWANDevice
 {
     public partial class Generator
     {
-        
+
     }
-       
 }
