@@ -32,9 +32,13 @@ namespace LoRaWan.IntegrationTest
 
         public string LeafDeviceSerialPort { get; set; } = "/dev/ttyACM";
 
-        public string LeafDeviceId { get; set; }
+        public string LeafDeviceOTAAId { get; set; }
         public string LeafDeviceAppKey { get; set; }
         public string LeafDeviceAppEui { get; set; }
+        public string LeafDeviceABPId { get; set; }
+        public string LeafDeviceABPAddr { get; set; }
+        public string LeafDeviceABPAppSKey { get; set; }
+        public string LeafDeviceABPNetworkSKey { get; set; }
     }
 
 }
