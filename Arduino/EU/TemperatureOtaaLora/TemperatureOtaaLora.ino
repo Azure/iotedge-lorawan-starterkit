@@ -15,19 +15,11 @@ void setup(void)
   SerialUSB.begin(115200);
 
   lora.init();
-  lora.setId(NULL, "47AAC86800430010", "BE7A0000000014E3");
-  lora.setKey(NULL, NULL, "8AFE71A145B253E49C3031AD068277A3");
+  lora.setId(NULL, "50AAC86800430020", "CC7A0000000014E2");
+  lora.setKey(NULL, NULL, "9AFE71A145B253E49C3031AD068277A3");
 
   lora.setDeciveMode(LWOTAA);
-  lora.setDataRate(DR0, EU868);
-
-  lora.setChannel(0, 868.1);
-  lora.setChannel(1, 868.3);
-  lora.setChannel(2, 868.5);
-
-  lora.setReceiceWindowFirst(0, 868.1);
-  lora.setReceiceWindowSecond(869.5, DR3);
-  lora.setAdaptiveDataRate(false);
+  lora.setDataRate(DR0, US915HYBRID);
 
   lora.setDutyCycle(false);
   lora.setJoinDutyCycle(false);
