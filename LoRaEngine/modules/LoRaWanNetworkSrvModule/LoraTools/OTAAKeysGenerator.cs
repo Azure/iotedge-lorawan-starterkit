@@ -18,7 +18,6 @@ namespace PacketManager
                              .ToArray();
         }
 
-
         public static string getDevAddr(Byte[] netId)
         {
             int nwkPart = (netId[2] << 1);
@@ -26,17 +25,16 @@ namespace PacketManager
             byte[] devAddr = new byte[4];
             Random rnd = new Random();
             rnd.NextBytes(devAddr);
-            //loosing a bit
+            //losing a bit
             devAddr[0] = (byte)nwkPart;
 
             return BitConverter.ToString(devAddr).Replace("-", "");
         }
 
-        //type NwkSKey = 0x01 , AppSKey = 0x02
-        //don't work with CFLIST atm
         public static string calculateKey(byte[] type, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
-
+            //type NwkSKey = 0x01 , AppSKey = 0x02
+            //don't work with CFLIST atm
 
             Aes aes = new AesManaged();
             aes.Key = appKey;
@@ -54,7 +52,7 @@ namespace PacketManager
             var key = cipher.TransformFinalBlock(pt, 0, pt.Length);          
             return BitConverter.ToString(key).Replace("-", "");
         }
-
+        
         public static string  getAppNonce()
         {
             Random rnd = new Random();

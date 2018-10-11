@@ -3,14 +3,14 @@
 //set to true to send confirmed data up messages
 bool confirmed=false;
 //application information, should be similar to what was provisiionned in the device twins
-char * deviceId ="47AAC86800430028";
+char * deviceId ="73AAC86800430020";
 char * appKey="8AFE71A145B253E49C3031AD068277A1";
-char* appEui ="BE7A0000000014E2";
+char* appEui ="AA7A0000000014E2";
 
 /*
 iot hub OTAA desired properties for deviceid: 47AAC86800430028 
       "desired": {
-      "AppEUI": "BE7A0000000014E2",
+      "AppEUI": "AA7A0000000014E2",
       "AppKey": "8AFE71A145B253E49C3031AD068277A1",
       "GatewayID" :"",
       "SensorDecoder" :"DecoderValueSensor"
@@ -93,5 +93,3 @@ void loop(void)
     }
   }
 }
-
-
