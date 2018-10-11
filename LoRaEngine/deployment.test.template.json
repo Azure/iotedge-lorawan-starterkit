@@ -81,23 +81,23 @@
             "restartPolicy": "always"
           },
           "AzureDevOpsAgent": {
-              "version": "1.0",
-              "type": "docker",
-              "status": "running",
-              "restartPolicy": "always",
-              "settings": {
-                "image": "${MODULES.AzureDevOpsAgent.arm32v7}",
-                "createOptions": "{  \"HostConfig\": { \"Privileged\": true } }"
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "$CONTAINER_REGISTRY_ADDRESS/azuredevopsagent:0.0.1-arm32v7",
+              "createOptions": "{  \"HostConfig\": { \"Privileged\": true } }"
+            },
+            "env": {
+              "VSTS_SERVER_URL": {
+                "value": "$VSTS_SERVER_URL"
               },
-              "env": {
-                "VSTS_SERVER_URL": {
-                  "value": "$VSTS_SERVER_URL"
-                },
-                "VSTS_TOKEN": {
-                  "value": "$VSTS_TOKEN"
-                }
+              "VSTS_TOKEN": {
+                "value": "$VSTS_TOKEN"
               }
             }
+          }
         }
       }
     },
