@@ -194,7 +194,7 @@ namespace LoRaWan.IntegrationTest
             leafDeviceLog.Clear();
             testFixture.Events.ResetEvents();
 
-
+            /*
             lora.transferPacketWithConfirmed("50", 10);
 
             // After transferPacketWithConfirmed: Expectation from serial
@@ -216,7 +216,7 @@ namespace LoRaWan.IntegrationTest
             Assert.True(
                 await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: sent message '{{\"temperature\": 50}}' to hub"),
                 "Expecting message sent in log");
-         
+         */
 
             //cts.Cancel();
         }
@@ -343,7 +343,7 @@ namespace LoRaWan.IntegrationTest
                 e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: sent message '{{\"value\": 100}}' to hub"),
                 "Expecting message sent in log");
 
-
+            /*
             leafDeviceLog.Clear();
             testFixture.Events.ResetEvents();
 
@@ -373,6 +373,7 @@ namespace LoRaWan.IntegrationTest
                 e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: sent message '{{\"value\": 50}}' to hub"),
                 "Expecting message sent in log");
 
+            */
 
             //cts.Cancel();
         }
