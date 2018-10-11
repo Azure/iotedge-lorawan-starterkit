@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Linq;
+using System.Security.Cryptography;
 
 namespace LoRaWANDevice
 {
-    public partial class CredentialGenerator
+    public class CredentialGenerator
     {
         public static byte[] StringToByteArray(string hex)
         {
@@ -30,14 +32,14 @@ namespace LoRaWANDevice
         public static string genDevAddr(Byte[] netId)
         {
             int nwkPart = (netId[2] << 1);
-            return formatDevAddr(nwkPart, 1);
+            return formatDevAddr(nwkPart); // removed 1 parameter , 1);
         }
 
-        public static string genDevAddr(Byte[] netId)
-        {
-            int nwkPart = (netId[2] << 1);
-            return formatDevAddr(nwkPart, counter);
-        }
+        //public static string genDevAddr(Byte[] netId)
+        //{
+        //    int nwkPart = (netId[2] << 1);
+        //    return formatDevAddr(nwkPart, counter);
+        //}
 
         private static string formatDevAddr(int nwkPart)
         {
@@ -51,7 +53,7 @@ namespace LoRaWANDevice
 
         public static string genKey()
         {
-            var key = new byte[8];
+            var key = new byte[16];
             Random rnd = new Random();
             rnd.NextBytes(key);
             return BitConverter.ToString(key).Replace("-", "");
@@ -69,7 +71,7 @@ namespace LoRaWANDevice
             aes.Mode = CipherMode.ECB;
             aes.Padding = PaddingMode.None;
 
-            byte[] pt = keyType.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
+            byte[] pt = keyType.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[6]).ToArray();
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
