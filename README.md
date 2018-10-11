@@ -1,5 +1,7 @@
 # Azure IoT Edge LoRaWAN Starter Kit
 
+[![Build status](https://dev.azure.com/epicstuff/Azure%20IoT%20Edge%20LoRaWAN%20Starter%20Kit/_apis/build/status/Starter%20Kit%20Build)](https://dev.azure.com/epicstuff/Azure%20IoT%20Edge%20LoRaWAN%20Starter%20Kit/_build/latest?definitionId=1)
+
 **Please note this branch is currently under active development and stability is not ensured, please check the master branch for a stable version of the code.**
 
 Experimental sample implementation of LoRaWAN components to connect LoRaWAN antenna gateway running IoT Edge directly with Azure IoT.
@@ -178,9 +180,7 @@ It should look something like this for ABP:
     "secondaryThumbprint": null
   },
   "version": 324,
-  "tags": {
-  
-  },
+  "tags": {},
   "properties": {
     "desired": {
       "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
