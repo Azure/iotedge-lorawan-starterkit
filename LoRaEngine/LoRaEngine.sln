@@ -15,6 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanTest", "modules\LoRa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "modules\LoRaWanNetworkSrvModule\Logger\Logger.csproj", "{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6C904F71-6C52-4153-B7BD-D34A05EBEFAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRaWan.IntegrationTest", "test\LoRaWan.IntegrationTest\LoRaWan.IntegrationTest.csproj", "{1DC01590-02DA-4487-9867-E0728DA6BDD3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,9 +75,21 @@ Global
 		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|x86.ActiveCfg = Release|Any CPU
 		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|x86.Build.0 = Release|Any CPU
+		{1DC01590-02DA-4487-9867-E0728DA6BDD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DC01590-02DA-4487-9867-E0728DA6BDD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DC01590-02DA-4487-9867-E0728DA6BDD3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1DC01590-02DA-4487-9867-E0728DA6BDD3}.Debug|x86.Build.0 = Debug|Any CPU
+		{1DC01590-02DA-4487-9867-E0728DA6BDD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DC01590-02DA-4487-9867-E0728DA6BDD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DC01590-02DA-4487-9867-E0728DA6BDD3}.Release|x86.ActiveCfg = Release|Any CPU
+		{1DC01590-02DA-4487-9867-E0728DA6BDD3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D} = {6C904F71-6C52-4153-B7BD-D34A05EBEFAE}
+		{1DC01590-02DA-4487-9867-E0728DA6BDD3} = {6C904F71-6C52-4153-B7BD-D34A05EBEFAE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}
