@@ -34,6 +34,7 @@ namespace LoRaWANCLI
                     case "/b":
                         {
                             creator.Configuration.Backup = true;
+                            Console.WriteLine("Backup logged");
                             break;
                         }
                     case "/configfile":
@@ -48,6 +49,7 @@ namespace LoRaWANCLI
                                 creator.Configuration.ConfigFilePath = args[i];
                                 if (creator.LoadValidateConfigFile(args[i]) == 0)
                                 {
+                                    Console.WriteLine("Processing configuration file");
                                     creator.Provision().Wait();
                                 }
                                 else
@@ -68,17 +70,20 @@ namespace LoRaWANCLI
                         }
                     case "/abp":
                         {
+                            Console.WriteLine("ABP switch not implementated");
                             creator.Configuration.ActivationMethod = NodeActivationMethod.ABP;
                             break;
                         }
                     case "/otaa":
                         {
+                            Console.WriteLine("OTAA switch not implementated");
                             creator.Configuration.ActivationMethod = NodeActivationMethod.OTAA;
                             break;
                         }
                     case "/createconfigfile":
                     case "/f":
                         {
+                            Console.WriteLine("Generating config file at %s", args[i]);
                             i++;
                             // Serialise config file class
                             // using next parameter as file name
