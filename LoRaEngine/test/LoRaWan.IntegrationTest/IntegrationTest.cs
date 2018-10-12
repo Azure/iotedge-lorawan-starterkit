@@ -185,7 +185,7 @@ namespace LoRaWan.IntegrationTest
                 "Could not find correct valid frame counter");
 
             Assert.True(
-                await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: decoding with: DecoderTemperatureSensor port: 1"),
+                await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => e.Properties.ContainsKey("log") && messageBody.StartsWith($"{deviceId}: decoding with: DecoderTemperatureSensor port: ")),
                 "Expecting DecoderTemperatureSensor");
 
             Assert.True(
@@ -212,7 +212,7 @@ namespace LoRaWan.IntegrationTest
                "Could not find correct valid frame counter");
 
             Assert.True(
-               await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: decoding with: DecoderTemperatureSensor port: 1"),
+               await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => e.Properties.ContainsKey("log") && messageBody.StartsWith($"{deviceId}: decoding with: DecoderTemperatureSensor port:")),
                "Expecting DecoderTemperatureSensor");
 
             Assert.True(
@@ -337,7 +337,7 @@ namespace LoRaWan.IntegrationTest
 
             Assert.True(
                 await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => 
-                e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: decoding with: DecoderValueSensor port: 1"),
+                e.Properties.ContainsKey("log") && messageBody.StartsWith($"{deviceId}: decoding with: DecoderValueSensor port:")),
                 "Expecting DecoderValueSensor");
 
             Assert.True(
@@ -367,7 +367,7 @@ namespace LoRaWan.IntegrationTest
 
             Assert.True(
                await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => 
-               e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: decoding with: DecoderValueSensor port: 1"),
+               e.Properties.ContainsKey("log") && messageBody.StartsWith($"{deviceId}: decoding with: DecoderValueSensor port:")),
                "Expecting DecoderValueSensor");
 
             Assert.True(
