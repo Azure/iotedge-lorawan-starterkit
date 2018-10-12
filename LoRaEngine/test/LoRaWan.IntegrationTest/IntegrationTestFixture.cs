@@ -61,6 +61,7 @@ namespace LoRaWan.IntegrationTest
             this.Events = null;
             this.registryManager?.Dispose();
             this.registryManager = null;
+
             GC.SuppressFinalize(this);
         }
 

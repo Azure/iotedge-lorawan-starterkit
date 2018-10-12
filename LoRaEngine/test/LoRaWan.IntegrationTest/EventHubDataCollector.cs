@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.EventHubs;
 
@@ -11,9 +12,11 @@ namespace LoRaWan.IntegrationTest
     {
         private EventHubClient eventHubClient;
         private readonly ConcurrentQueue<EventData> events;
-
+        private readonly string connectionString;
         List<PartitionReceiver> receivers;
-        
+
+        public bool LogToConsole { get; set; } = true;
+
 
         public string ConsumerGroupName { get; set; } = "$Default";
         
@@ -23,7 +26,8 @@ namespace LoRaWan.IntegrationTest
         }
 
         public EventHubDataCollector(string connectionString, string consumerGroupName)
-        {
+        {            
+            this.connectionString = connectionString;
             this.eventHubClient = EventHubClient.CreateFromConnectionString(connectionString);
             this.events = new ConcurrentQueue<EventData>();
             this.receivers = new List<PartitionReceiver>();
@@ -36,6 +40,11 @@ namespace LoRaWan.IntegrationTest
             if (this.receivers.Count > 0)
                 throw new InvalidOperationException("Already started");
             
+            if (this.LogToConsole)
+            {
+                Console.WriteLine($"Connecting to IoT Hub Event Hub @{this.connectionString} using consumer group {this.ConsumerGroupName}");
+            }
+
             var rti = await this.eventHubClient.GetRuntimeInformationAsync();
             foreach (var partitionId in rti.PartitionIds)
             {
@@ -52,7 +61,15 @@ namespace LoRaWan.IntegrationTest
         Task IPartitionReceiveHandler.ProcessEventsAsync(IEnumerable<EventData> events)
         {
             foreach (var item in events)
+            {
                 this.events.Enqueue(item);
+
+                if (this.LogToConsole)
+                {
+                    var bodyText = Encoding.UTF8.GetString(item.Body);                    
+                    Console.WriteLine($"[EventHub]: {bodyText}");
+                }
+            }
 
             return Task.FromResult(0);
         }
@@ -75,11 +92,18 @@ namespace LoRaWan.IntegrationTest
             {
                 if (disposing)
                 {
-                    for (int i = this.receivers.Count - 1; i >= 0; i--)
-                    {
-                        this.receivers[i].Close();
-                        this.receivers.RemoveAt(i);
-                    }
+                    //for (int i = this.receivers.Count - 1; i >= 0; i--)
+                    //{
+                    //    try
+                    //    {
+                    //        this.receivers[i].Close();
+                    //    }
+                    //    catch
+                    //    {
+                    //    }
+
+                    //    this.receivers.RemoveAt(i);
+                    //}
 
                     this.eventHubClient.Close();
                     this.eventHubClient = null;

@@ -25,13 +25,14 @@ namespace LoRaWan.IntegrationTest
         private SerialDevice SerialPort { get; set; }
 
         public void Dispose()
-        {
-            GC.SuppressFinalize(this);
+        {            
             this.SerialPort?.Close();
             this.SerialPortWin?.Close();
 
             this.SerialPort = null;
             this.SerialPortWin = null;
+
+            GC.SuppressFinalize(this);
         }
 
         [Fact]
@@ -107,10 +108,9 @@ namespace LoRaWan.IntegrationTest
 
             Console.WriteLine($"Connection type: {LoRaWanClass._device_mode_t.LWOTAA.ToString()}, DeviceId: {deviceId}, DeviceAppEui: {testFixture.Configuration.LeafDeviceAppEui}, DeviceAppKey: {testFixture.Configuration.LeafDeviceAppKey}");
 
-            lora
-                .setDeciveMode(LoRaWanClass._device_mode_t.LWOTAA)
-                .setId(devAddr, deviceId, testFixture.Configuration.LeafDeviceAppEui)
-                .setKey(nwkSKey, appSKey, testFixture.Configuration.LeafDeviceAppKey);
+            await lora.setDeciveModeAsync(LoRaWanClass._device_mode_t.LWOTAA);
+            await lora.setIdAsync(devAddr, deviceId, testFixture.Configuration.LeafDeviceAppEui);
+            await lora.setKeyAsync(nwkSKey, appSKey, testFixture.Configuration.LeafDeviceAppKey);
 
             // EU: lora.setDataRate(LoRaWanClass._data_rate_t.DR6, LoRaWanClass._physical_type_t.EU868);
             //lora.setChannel(0, 868.1F);
@@ -120,20 +120,20 @@ namespace LoRaWan.IntegrationTest
             //lora.setReceiceWindowSecond(868.5F, LoRaWanClass._data_rate_t.DR2);
 
 
-            lora.setDataRate(LoRaWanClass._data_rate_t.DR0, LoRaWanClass._physical_type_t.US915HYBRID);
+            await lora.setDataRateAsync(LoRaWanClass._data_rate_t.DR0, LoRaWanClass._physical_type_t.US915HYBRID);
 
 
-            lora.setAdaptiveDataRate(false)
-                .setDutyCycle(false)
-                .setJoinDutyCycle(false)
-                .setPower(14);
+            await lora.setAdaptiveDataRateAsync(false);
+            await lora.setDutyCycleAsync(false);
+            await lora.setJoinDutyCycleAsync(false);
+            await lora.setPowerAsync(14);
 
             var joinSucceeded = false;
 
             for (var joinAttempt=1; joinAttempt <= 5; ++joinAttempt)
             {
                 Console.WriteLine($"Join attempt #{joinAttempt}");
-                joinSucceeded = lora.setOTAAJoin(LoRaWanClass._otaa_join_cmd_t.JOIN, 20000);
+                joinSucceeded = await lora.setOTAAJoinAsync(LoRaWanClass._otaa_join_cmd_t.JOIN, 20000);
                 if (joinSucceeded)
                     break;
             }
@@ -296,10 +296,9 @@ namespace LoRaWan.IntegrationTest
 
             Console.WriteLine($"Connection type: {LoRaWanClass._device_mode_t.LWABP.ToString()}, DevAddr: {devAddr}, NetworkSKey: {nwkSKey}, AppSKey: {appSKey}");
 
-            lora
-                .setDeciveMode(LoRaWanClass._device_mode_t.LWABP)
-                .setId(devAddr, deviceId, null)
-                .setKey(nwkSKey, appSKey, null);
+            await lora.setDeciveModeAsync(LoRaWanClass._device_mode_t.LWABP);
+            await lora.setIdAsync(devAddr, deviceId, null);
+            await lora.setKeyAsync(nwkSKey, appSKey, null);
 
             // EU: lora.setDataRate(LoRaWanClass._data_rate_t.DR6, LoRaWanClass._physical_type_t.EU868);
             //lora.setChannel(0, 868.1F);
@@ -309,13 +308,13 @@ namespace LoRaWan.IntegrationTest
             //lora.setReceiceWindowSecond(868.5F, LoRaWanClass._data_rate_t.DR2);
 
 
-            lora.setDataRate(LoRaWanClass._data_rate_t.DR0, LoRaWanClass._physical_type_t.US915HYBRID);
+            await lora.setDataRateAsync(LoRaWanClass._data_rate_t.DR0, LoRaWanClass._physical_type_t.US915HYBRID);
 
 
-            lora.setAdaptiveDataRate(false)
-                .setDutyCycle(false)
-                .setJoinDutyCycle(false)
-                .setPower(14);            
+            await lora.setAdaptiveDataRateAsync(false);
+            await lora.setDutyCycleAsync(false);
+            await lora.setJoinDutyCycleAsync(false);
+            await lora.setPowerAsync(14);            
 
            
             leafDeviceLog.Clear();
