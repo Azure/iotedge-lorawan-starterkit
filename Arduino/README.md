@@ -1,6 +1,12 @@
-## Arduino Demo Code
+# Arduino Demo Code
 
 __Please make sure the device twin tags are set correctly in IoT Hub, otherwise the sample won't work. Necessary tags are at the start of every sample file.ino.__
+
+This samples were tested with the [Seeeduino LoRaWan boards](http://wiki.seeedstudio.com/Seeeduino_LoRAWAN/). The LoRaWan libraraie (referenced thru "LoRaWan.h" in the ino files) is coming when you select the platform as a Seeduino LoRaWan board.
+
+![seeduino lorawan](/pictures/seeduinolorawan.png)
+
+If you are using another LoRaWan library, you will have to adjust this code as so far, all LoRaWan libraries are different from one manufacturer to another on Arduino platform. That said, adaptation shouldn't be too difficult and equivalent functions has to exist in all libraries.
 
 This samples were tested with the Seeeduino LoRaWan boards.
 
