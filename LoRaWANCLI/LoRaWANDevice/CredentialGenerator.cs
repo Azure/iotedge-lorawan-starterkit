@@ -30,15 +30,9 @@ namespace LoRaWANDevice
         public static string genDevAddr(Byte[] netId)
         {
             int nwkPart = (netId[2] << 1);
-            return formatDevAddr(nwkPart, 1);
+            return formatDevAddr(nwkPart);
         }
-
-        public static string genDevAddr(Byte[] netId)
-        {
-            int nwkPart = (netId[2] << 1);
-            return formatDevAddr(nwkPart, counter);
-        }
-
+        
         private static string formatDevAddr(int nwkPart)
         {
             byte[] devAddr = new byte[4];
