@@ -37,7 +37,9 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_OTAA_Confirmed_And_Unconfirmed_Message()
         {
-            
+
+            Console.WriteLine($"Starting {nameof(Test_OTAA_Confirmed_And_Unconfirmed_Message)}");
+
             var leafDeviceLog = new ConcurrentQueue<string>();
             string buff = "";
             LoRaWanClass lora;
@@ -225,6 +227,7 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_ABP_Confirmed_And_Unconfirmed_Message()
         {
+            Console.WriteLine($"Starting {nameof(Test_ABP_Confirmed_And_Unconfirmed_Message)}");
 
             var leafDeviceLog = new ConcurrentQueue<string>();
             string buff = "";
