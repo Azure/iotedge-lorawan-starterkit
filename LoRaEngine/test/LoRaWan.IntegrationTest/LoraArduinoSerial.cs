@@ -33,6 +33,7 @@ using System.IO.Ports;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace LoRaWan.IntegrationTest
 {
@@ -99,6 +100,36 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
+        public async Task setIdAsync(string DevAddr, string DevEUI, string AppEUI)
+        {
+
+
+            if (!String.IsNullOrEmpty(DevAddr))
+            {
+
+                string cmd = $"AT+ID=DevAddr,{DevAddr}\r\n";
+                sendCommand(cmd);
+
+                await Task.Delay(DEFAULT_TIMEWAIT);
+            }
+
+            if (!String.IsNullOrEmpty(DevEUI))
+            {
+
+                string cmd = $"AT+ID=DevEui,{DevEUI}\r\n";
+                sendCommand(cmd);
+                await Task.Delay(DEFAULT_TIMEWAIT);
+            }
+
+            if (!String.IsNullOrEmpty(AppEUI))
+            {
+
+                string cmd = $"AT+ID=AppEui,{AppEUI}\r\n";
+                sendCommand(cmd);
+                await Task.Delay(DEFAULT_TIMEWAIT);
+            }
+        }
+
         public LoRaWanClass setKey(string NwkSKey, string AppSKey, string AppKey)
         {
        
@@ -132,6 +163,37 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
+        public async Task setKeyAsync(string NwkSKey, string AppSKey, string AppKey)
+        {
+
+
+            if (!String.IsNullOrEmpty(NwkSKey))
+            {
+
+                string cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
+                sendCommand(cmd);
+                await Task.Delay(DEFAULT_TIMEWAIT);
+            }
+
+            if (!String.IsNullOrEmpty(AppSKey))
+            {
+
+                string cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
+                sendCommand(cmd);
+
+                await Task.Delay(DEFAULT_TIMEWAIT);
+            }
+
+            if (!String.IsNullOrEmpty(AppKey))
+            {
+
+                string cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
+                sendCommand(cmd);
+
+                await Task.Delay(DEFAULT_TIMEWAIT);
+            }            
+        }
+
         public LoRaWanClass setDataRate(_data_rate_t dataRate, _physical_type_t physicalType)
         {
         
@@ -162,19 +224,53 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public LoRaWanClass setPower(short power)
+        public async Task setDataRateAsync(_data_rate_t dataRate, _physical_type_t physicalType)
         {
-        
 
-       
-            string cmd= $"AT+POWER={power}\r\n";
+
+            if (physicalType == _physical_type_t.EU434) sendCommand("AT+DR=EU433\r\n");
+            else if (physicalType == _physical_type_t.EU868) sendCommand("AT+DR=EU868\r\n");
+            else if (physicalType == _physical_type_t.US915) sendCommand("AT+DR=US915\r\n");
+            else if (physicalType == _physical_type_t.US915HYBRID) sendCommand("AT+DR=US915HYBRID\r\n");
+            else if (physicalType == _physical_type_t.AU915) sendCommand("AT+DR=AU915\r\n");
+            else if (physicalType == _physical_type_t.AU915OLD) sendCommand("AT+DR=AU915OLD\r\n");
+            else if (physicalType == _physical_type_t.CN470) sendCommand("AT+DR=CN470\r\n");
+            else if (physicalType == _physical_type_t.CN779) sendCommand("AT+DR=CN779\r\n");
+            else if (physicalType == _physical_type_t.AS923) sendCommand("AT+DR=AS923\r\n");
+            else if (physicalType == _physical_type_t.KR920) sendCommand("AT+DR=KR920\r\n");
+            else if (physicalType == _physical_type_t.IN865) sendCommand("AT+DR=IN865\r\n");
+
+
+
+
+            await Task.Delay(DEFAULT_TIMEWAIT);
+
+
+            string cmd = $"AT+DR={dataRate}\r\n";
             sendCommand(cmd);
 
+            await Task.Delay(DEFAULT_TIMEWAIT);
+
+        }
+
+        public LoRaWanClass setPower(short power)
+        {
+            string cmd= $"AT+POWER={power}\r\n";
+            sendCommand(cmd);
 
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
+        }
+
+        public async Task setPowerAsync(short power)
+        {
+            string cmd = $"AT+POWER={power}\r\n";
+            sendCommand(cmd);
+
+
+            await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
         public LoRaWanClass setPort(int port)
@@ -197,11 +293,17 @@ namespace LoRaWan.IntegrationTest
             if (command) sendCommand("AT+ADR=ON\r\n");
             else sendCommand("AT+ADR=OFF\r\n");
 
-
-
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
+        }
+
+        public async Task setAdaptiveDataRateAsync(bool command)
+        {
+            if (command) sendCommand("AT+ADR=ON\r\n");
+            else sendCommand("AT+ADR=OFF\r\n");
+
+            await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
         public LoRaWanClass setChannel(int channel, float frequency)
@@ -266,10 +368,8 @@ namespace LoRaWan.IntegrationTest
                 else if(start.AddSeconds(timeout)<DateTime.Now)
                     return false;
             }
-
-       
-       
         }
+      
 
         public bool transferPacketWithConfirmed(string buffer, int timeout)
         {
@@ -394,11 +494,17 @@ namespace LoRaWan.IntegrationTest
             if (command) sendCommand("AT+LW=DC, ON\r\n");
             else sendCommand("AT+LW=DC, OFF\r\n");
 
-
-
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
+        }
+
+        public async Task setDutyCycleAsync(bool command)
+        {
+            if (command) sendCommand("AT+LW=DC, ON\r\n");
+            else sendCommand("AT+LW=DC, OFF\r\n");
+
+            await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
         public LoRaWanClass setJoinDutyCycle(bool command)
@@ -410,6 +516,16 @@ namespace LoRaWan.IntegrationTest
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
             return this;
+        }
+
+        public async Task setJoinDutyCycleAsync(bool command)
+        {
+            if (command) sendCommand("AT+LW=JDC,ON\r\n");
+            else sendCommand("AT+LW=JDC,OFF\r\n");
+
+
+
+            await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
         public LoRaWanClass setReceiceWindowDelay(_window_delay_t command, short _delay)
@@ -453,6 +569,15 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
+        public async Task setDeciveModeAsync(_device_mode_t mode)
+        {
+            if (mode == _device_mode_t.LWABP) sendCommand("AT+MODE=LWABP\r\n");
+            else if (mode == _device_mode_t.LWOTAA) sendCommand("AT+MODE=LWOTAA\r\n");
+
+
+            await Task.Delay(DEFAULT_TIMEWAIT);
+        }
+
         public bool setOTAAJoin(_otaa_join_cmd_t command,  int timeout)
         {
        
@@ -484,6 +609,38 @@ namespace LoRaWan.IntegrationTest
             //if (ptr) return false;
 
         
+        }
+
+        public async Task<bool> setOTAAJoinAsync(_otaa_join_cmd_t command, int timeout)
+        {
+
+            if (command == _otaa_join_cmd_t.JOIN) sendCommand("AT+JOIN\r\n");
+            else if (command == _otaa_join_cmd_t.FORCE) sendCommand("AT+JOIN=FORCE\r\n");
+
+
+            await Task.Delay(DEFAULT_TIMEWAIT);
+
+
+            DateTime start = DateTime.Now;
+
+            while (true)
+            {
+                if (IntegrationTest.LastLine.StartsWith("+JOIN: Done"))
+                    return true;
+                else if (IntegrationTest.LastLine.StartsWith("+JOIN: LoRaWAN modem is busy"))
+                    return false;
+                else if (IntegrationTest.LastLine.StartsWith("+JOIN: Join failed"))
+                    return false;
+                else if (start.AddMilliseconds(timeout) < DateTime.Now)
+                    return false;
+            }
+
+            //    ptr = _buffer.Contains("+JOIN: Join failed");
+            //if (ptr) return false;
+            //ptr = _buffer.Contains("+JOIN: LoRaWAN modem is busy");
+            //if (ptr) return false;
+
+
         }
 
         public LoRaWanClass setDeviceLowPower()
