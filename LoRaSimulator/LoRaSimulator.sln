@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaSimulator", "LoRaSimulator\LoRaSimulator.csproj", "{3F932A3B-739B-4A15-AAAF-529063964027}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulatorLaunch", "SimulatorLaunch\SimulatorLaunch.csproj", "{948A575F-DCCA-46D7-88E9-14C4E9162682}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaTools", "..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj", "{073E6976-96D3-4548-A379-F5053FF1F116}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "..\LoRaEngine\modules\LoRaWanNetworkSrvModule\Logger\Logger.csproj", "{2A79CF23-0BB5-4B25-A03C-BB5D84E10A2E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3F932A3B-739B-4A15-AAAF-529063964027}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F932A3B-739B-4A15-AAAF-529063964027}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F932A3B-739B-4A15-AAAF-529063964027}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F932A3B-739B-4A15-AAAF-529063964027}.Release|Any CPU.Build.0 = Release|Any CPU
+		{948A575F-DCCA-46D7-88E9-14C4E9162682}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{948A575F-DCCA-46D7-88E9-14C4E9162682}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{948A575F-DCCA-46D7-88E9-14C4E9162682}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{948A575F-DCCA-46D7-88E9-14C4E9162682}.Release|Any CPU.Build.0 = Release|Any CPU
+		{073E6976-96D3-4548-A379-F5053FF1F116}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{073E6976-96D3-4548-A379-F5053FF1F116}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{073E6976-96D3-4548-A379-F5053FF1F116}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{073E6976-96D3-4548-A379-F5053FF1F116}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A79CF23-0BB5-4B25-A03C-BB5D84E10A2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A79CF23-0BB5-4B25-A03C-BB5D84E10A2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A79CF23-0BB5-4B25-A03C-BB5D84E10A2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A79CF23-0BB5-4B25-A03C-BB5D84E10A2E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {02BFB7D2-4771-4CF5-87C5-32F0F829A720}
+	EndGlobalSection
+EndGlobal
