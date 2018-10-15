@@ -31,7 +31,7 @@ namespace LoRaWan.NetworkServer
 
         private List<byte[]> fOptsPending = new List<byte[]>();
 
-        public async Task processMessage(byte[] message)
+        public async Task ProcessMessage(byte[] message)
         {
             startTimeProcessing = DateTime.UtcNow;
 
@@ -97,7 +97,13 @@ namespace LoRaWan.NetworkServer
             if (loraDeviceInfo == null)
             {
                 loraDeviceInfo = await LoraDeviceInfoManager.GetLoraDeviceInfoAsync(devAddr);
-                Logger.Log(loraDeviceInfo.DevEUI, $"processing message, device not in cache", Logger.LoggingLevel.Info);
+
+                if(loraDeviceInfo.DevEUI!=null)
+                    Logger.Log(loraDeviceInfo.DevEUI, $"processing message, device not in cache", Logger.LoggingLevel.Info);
+                else
+                    Logger.Log(devAddr, $"processing message, device not in cache", Logger.LoggingLevel.Info);
+
+
                 Cache.AddToCache(devAddr, loraDeviceInfo);
             }
             else
@@ -433,14 +439,15 @@ namespace LoRaWan.NetworkServer
             //we have a join request in the cache
             if (joinLoraDeviceInfo != null)
             {
-                //it is not our device so ingore the join
-                if (!joinLoraDeviceInfo.IsOurDevice)
-                {
-                    Logger.Log(devEui, $"join request refused the device is not ours", Logger.LoggingLevel.Info);
-                    return null;
-                }
+                //we query every time in case the device is turned one while not yet in the regestry
+                ////it is not our device so ingore the join
+                //if (!joinLoraDeviceInfo.IsOurDevice)
+                //{
+                //    Logger.Log(devEui, $"join request refused the device is not ours", Logger.LoggingLevel.Info);
+                //    return null;
+                //}
                 //is our device but the join was not valid
-                else if (!joinLoraDeviceInfo.IsJoinValid)
+                if (!joinLoraDeviceInfo.IsJoinValid)
                 {
                     //if the devNonce is equal to the current it is a potential replay attck
                     if (joinLoraDeviceInfo.DevNonce == devNonce)
@@ -458,11 +465,27 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            joinLoraDeviceInfo = await LoraDeviceInfoManager.PerformOTAAAsync(GatewayID, devEui, BitConverter.ToString(joinReq.AppEUI).Replace("-", ""), devNonce);
+            joinLoraDeviceInfo = await LoraDeviceInfoManager.PerformOTAAAsync(GatewayID, devEui, BitConverter.ToString(joinReq.AppEUI).Replace("-", ""), devNonce, joinLoraDeviceInfo, startTimeProcessing);
 
 
             if (joinLoraDeviceInfo != null && joinLoraDeviceInfo.IsJoinValid)
             {
+                //join request resets the frame counters
+                joinLoraDeviceInfo.FCntUp = 0;
+                joinLoraDeviceInfo.FCntDown = 0;
+
+                
+                //in this case it's too late, we need to break and awoid saving twins
+                if ((DateTime.UtcNow - startTimeProcessing) > TimeSpan.FromMilliseconds(RegionFactory.CurrentRegion.join_accept_delay2 * 1000))
+                {
+                    Logger.Log(devEui, $"processing of the join request took too long, sending no message", Logger.LoggingLevel.Info);
+                    var physicalResponse = new PhysicalPayload(loraMessage.PhysicalPayload.token, PhysicalIdentifier.PULL_RESP, null);
+                    return physicalResponse.GetMessage();
+                }
+
+                //update reported properties and frame Counter
+                await joinLoraDeviceInfo.HubSender.UpdateReportedPropertiesOTAAasync(joinLoraDeviceInfo);
+
                 byte[] appNonce = StringToByteArray(joinLoraDeviceInfo.AppNonce);
                 byte[] netId = StringToByteArray(joinLoraDeviceInfo.NetId);
                 byte[] devAddr = StringToByteArray(joinLoraDeviceInfo.DevAddr);
@@ -484,8 +507,6 @@ namespace LoRaWan.NetworkServer
                 //set tmst for the normal case
                 long _tmst = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].tmst + RegionFactory.CurrentRegion.join_accept_delay1 * 1000000;
 
-                //uncomment to force second windows usage
-                //Thread.Sleep(4600-(int)(DateTime.Now - startTimeProcessing).TotalMilliseconds);
                 //in this case it's too late, we need to break
                 if ((DateTime.UtcNow - startTimeProcessing) > TimeSpan.FromMilliseconds(RegionFactory.CurrentRegion.join_accept_delay2 * 1000))
                 {
@@ -515,11 +536,7 @@ namespace LoRaWan.NetworkServer
                 }
                 LoRaMessage joinAcceptMessage = new LoRaMessage(loRaPayloadJoinAccept, LoRaMessageType.JoinAccept, loraMessage.PhysicalPayload.token, _datr, 0, _freq, _tmst);
                 udpMsgForPktForwarder = joinAcceptMessage.PhysicalPayload.GetMessage();
-                //join request resets the frame counters
-                joinLoraDeviceInfo.FCntUp = 0;
-                joinLoraDeviceInfo.FCntDown = 0;
-                //update reported properties and frame Counter
-                await joinLoraDeviceInfo.HubSender.UpdateReportedPropertiesOTAAasync(joinLoraDeviceInfo);
+               
                 //add to cache for processing normal messages. This awoids one additional call to the server.
                 Cache.AddToCache(joinLoraDeviceInfo.DevAddr, joinLoraDeviceInfo);
                 Logger.Log(devEui, $"join accept sent", Logger.LoggingLevel.Info);
@@ -529,10 +546,9 @@ namespace LoRaWan.NetworkServer
                 Logger.Log(devEui, $"join request refused", Logger.LoggingLevel.Info);
 
             }
-            
-            //add to cache to avoid replay attack, btw server side does the check too.
-            //TODO Ronnie Check
-            //Cache.AddToCache(devEui, joinLoraDeviceInfo);
+
+            Logger.Log(joinLoraDeviceInfo.DevEUI, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
+
 
             return udpMsgForPktForwarder;
         }
