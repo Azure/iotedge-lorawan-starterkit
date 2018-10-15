@@ -1,7 +1,7 @@
 
 #include <LoRaWan.h>
 //set to true to send confirmed data up messages
-bool confirmed=false;
+bool confirmed=true;
 //application information, should be similar to what was provisiionned in the device twins
 char * deviceId ="46AAC86800430028";
 char * devAddr ="0028B1B1";
@@ -11,7 +11,7 @@ char * nwkSKey ="3B7E151628AED2A6ABF7158809CF4F3C";
 
 /*
 iot hub ABP tags for deviceid: 46AAC86800430028 
-    "tags": {
+    "desired": {
     "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
     "NwkSKey": "3B7E151628AED2A6ABF7158809CF4F3C",
     "DevAddr": "0028B1B1",
