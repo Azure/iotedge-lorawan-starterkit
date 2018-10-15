@@ -23,10 +23,54 @@ namespace LoRaWan.NetworkServer
 
         }
 
-        public static async Task<LoraDeviceInfo> GetLoraDeviceInfoAsync(string DevAddr)
+
+        public static async Task<ushort> NextFCntDown(string DevEUI, ushort FCntDown, ushort FCntUp, string GatewayId)
+        {
+            Logger.Log(DevEUI, $"synching FCntDown for multigateway", Logger.LoggingLevel.Info);
+            var client = new HttpClient();
+            var url = $"{FacadeServerUrl}NextFCntDown?code={FacadeAuthCode}&DevEUI={DevEUI}&FCntDown={FCntDown}&FCntUp={FCntUp}&GatewayId={GatewayId}";
+            HttpResponseMessage response = await client.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+            {
+                
+                Logger.Log(DevEUI, $"error calling the NextFCntDown function, check the function log", Logger.LoggingLevel.Error);
+                return 0;
+                
+            }
+
+            string fcntDownString = response.Content.ReadAsStringAsync().Result;
+
+            //todo ronnie check for fcnt above ushort
+            ushort newFCntDown = ushort.Parse(fcntDownString);
+
+            return newFCntDown;
+
+        }
+
+        public static async Task<bool> ABPFcntCacheReset(string DevEUI)
+        {
+            Logger.Log(DevEUI, $"ABP FCnt cache reset for multigateway", Logger.LoggingLevel.Info);
+            var client = new HttpClient();
+            var url = $"{FacadeServerUrl}NextFCntDown?code={FacadeAuthCode}&DevEUI={DevEUI}&ABPFcntCacheReset=true";
+            HttpResponseMessage response = await client.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+            {
+
+                Logger.Log(DevEUI, $"error calling the NextFCntDown function, check the function log", Logger.LoggingLevel.Error);
+                return false;
+
+            }
+
+           
+
+            return true;
+
+        }
+
+        public static async Task<LoraDeviceInfo> GetLoraDeviceInfoAsync(string DevAddr, string GatewayId)
         {
             var client = new HttpClient();
-            var url = $"{FacadeServerUrl}GetDevice?code={FacadeAuthCode}&devAddr={DevAddr}";
+            var url = $"{FacadeServerUrl}GetDevice?code={FacadeAuthCode}&DevAddr={DevAddr}&GatewayId={GatewayId}";
             HttpResponseMessage response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
@@ -56,63 +100,64 @@ namespace LoRaWan.NetworkServer
                 IoTHubDeviceInfo iotHubDeviceInfo = iotHubDeviceInfos[0];
 
                 loraDeviceInfo.DevEUI = iotHubDeviceInfo.DevEUI;
+                loraDeviceInfo.PrimaryKey = iotHubDeviceInfo.PrimaryKey;
 
-                Logger.Log(loraDeviceInfo.DevEUI, $"getting twins", Logger.LoggingLevel.Info);
+                
+                loraDeviceInfo.HubSender = new IoTHubConnector(iotHubDeviceInfo.DevEUI, iotHubDeviceInfo.PrimaryKey);
 
-                loraDeviceInfo.HubSender = new IoTHubSender(iotHubDeviceInfo.DevEUI, iotHubDeviceInfo.PrimaryKey);
+
+              
 
                 var twin = await loraDeviceInfo.HubSender.GetTwinAsync();
 
-                if(twin!=null)
-                    Logger.Log(loraDeviceInfo.DevEUI, twin.ToJson(Formatting.None), Logger.LoggingLevel.Info);
-                else
-                    Logger.Log(loraDeviceInfo.DevEUI, $"no twins", Logger.LoggingLevel.Info);
-
-                //ABP Case
-                if (twin.Properties.Desired.Contains("AppSKey"))
+                if (twin != null)
                 {
+                    //ABP Case
+                    if (twin.Properties.Desired.Contains("AppSKey"))
+                    {
 
-                    loraDeviceInfo.AppSKey = twin.Properties.Desired["AppSKey"];
-                    loraDeviceInfo.NwkSKey = twin.Properties.Desired["NwkSKey"];
-                    loraDeviceInfo.DevAddr = twin.Properties.Desired["DevAddr"];
+                        loraDeviceInfo.AppSKey = twin.Properties.Desired["AppSKey"];
+                        loraDeviceInfo.NwkSKey = twin.Properties.Desired["NwkSKey"];
+                        loraDeviceInfo.DevAddr = twin.Properties.Desired["DevAddr"];
 
-                   
+
+                    }
+                    //OTAA Case
+                    else if (twin.Properties.Reported.Contains("AppSKey"))
+                    {
+                        loraDeviceInfo.AppSKey = twin.Properties.Reported["AppSKey"];
+                        loraDeviceInfo.NwkSKey = twin.Properties.Reported["NwkSKey"];
+                        loraDeviceInfo.DevAddr = twin.Properties.Reported["DevAddr"];
+                        loraDeviceInfo.DevNonce = twin.Properties.Reported["DevNonce"];
+
+                        //todo check if appkey and appeui is needed in the flow
+                        loraDeviceInfo.AppEUI = twin.Properties.Desired["AppEUI"];
+                        loraDeviceInfo.AppKey = twin.Properties.Desired["AppKey"];
+
+
+                    }
+                    else
+                    {
+                        Logger.Log(loraDeviceInfo.DevEUI, $"AppSKey not present neither in Desired or in Reported properties", Logger.LoggingLevel.Error);
+                    }
+
+                    if (twin.Properties.Desired.Contains("GatewayID"))
+                        loraDeviceInfo.GatewayID = twin.Properties.Desired["GatewayID"];
+                    if (twin.Properties.Desired.Contains("SensorDecoder"))
+                        loraDeviceInfo.SensorDecoder = twin.Properties.Desired["SensorDecoder"];
+
+
+                    loraDeviceInfo.IsOurDevice = true;
+
+
+                    if (twin.Properties.Reported.Contains("FCntUp"))
+                        loraDeviceInfo.FCntUp = twin.Properties.Reported["FCntUp"];
+                    if (twin.Properties.Reported.Contains("FCntDown"))
+                        loraDeviceInfo.FCntDown = twin.Properties.Reported["FCntDown"];
+
+
+                    Logger.Log(loraDeviceInfo.DevEUI, $"done getting twins", Logger.LoggingLevel.Info);
                 }
-                //OTAA Case
-                else if (twin.Properties.Reported.Contains("AppSKey"))
-                {
-                    loraDeviceInfo.AppSKey = twin.Properties.Reported["AppSKey"];
-                    loraDeviceInfo.NwkSKey = twin.Properties.Reported["NwkSKey"];                   
-                    loraDeviceInfo.DevAddr = twin.Properties.Reported["DevAddr"];
-                    loraDeviceInfo.DevNonce = twin.Properties.Reported["DevNonce"];
-
-                    //todo check if appkey and appeui is needed in the flow
-                    loraDeviceInfo.AppEUI = twin.Properties.Desired["AppEUI"];                   
-                    loraDeviceInfo.AppKey = twin.Properties.Desired["AppKey"];
-                
-
-                }
-                else
-                {
-                    Logger.Log(loraDeviceInfo.DevEUI, $"AppSKey not present neither in Desired or in Reported properties", Logger.LoggingLevel.Error);
-                }
-
-                if (twin.Properties.Desired.Contains("GatewayID"))
-                    loraDeviceInfo.GatewayID = twin.Properties.Desired["GatewayID"];
-                if (twin.Properties.Desired.Contains("SensorDecoder"))
-                    loraDeviceInfo.SensorDecoder = twin.Properties.Desired["SensorDecoder"];
-
-
-                loraDeviceInfo.IsOurDevice = true;
-
-
-                if (twin.Properties.Reported.Contains("FCntUp"))
-                    loraDeviceInfo.FCntUp = twin.Properties.Reported["FCntUp"];
-                if (twin.Properties.Reported.Contains("FCntDown"))
-                    loraDeviceInfo.FCntDown = twin.Properties.Reported["FCntDown"];
-
-
-                Logger.Log(loraDeviceInfo.DevEUI, $"done getting twins", Logger.LoggingLevel.Info);
             }
 
             return loraDeviceInfo;
@@ -126,7 +171,7 @@ namespace LoRaWan.NetworkServer
         /// <param name="AppEUI"></param>
         /// <param name="DevNonce"></param>
         /// <returns></returns>
-        public static async Task<LoraDeviceInfo> PerformOTAAAsync(string GatewayID, string DevEUI, string AppEUI, string DevNonce, LoraDeviceInfo joinLoraDeviceInfo, DateTime startTimeProcessing)
+        public static async Task<LoraDeviceInfo> PerformOTAAAsync(string GatewayID, string DevEUI, string AppEUI, string DevNonce, LoraDeviceInfo joinLoraDeviceInfo, string GatewayId)
         {
            
             string AppSKey;
@@ -152,16 +197,28 @@ namespace LoRaWan.NetworkServer
             joinLoraDeviceInfo.DevEUI = DevEUI;
 
           
-            //we don't have the key to access iot hub query the registry
-            if (joinLoraDeviceInfo.PrimaryKey == null)
-            {
+            ////we don't have the key to access iot hub query the registry
+            //if (joinLoraDeviceInfo.PrimaryKey == null)
+            //{
 
                 Logger.Log(DevEUI, $"quering the registry for device key", Logger.LoggingLevel.Info);
                 var client = new HttpClient();
-                var url = $"{FacadeServerUrl}GetDevice?code={FacadeAuthCode}&devEUI={DevEUI}";
+                var url = $"{FacadeServerUrl}GetDevice?code={FacadeAuthCode}&DevEUI={DevEUI}&DevNonce={DevNonce}&GatewayId={GatewayId}";
                 HttpResponseMessage response = await client.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
                 {
+                    if(response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                    {
+                        var badReqResult = response.Content.ReadAsStringAsync().Result;
+
+                        if (!String.IsNullOrEmpty(badReqResult) && badReqResult == "UsedDevNonce")
+                        {
+                            Logger.Log(DevEUI, $"DevNonce already used by this device", Logger.LoggingLevel.Info);
+                            return null;
+                        }
+                    }
+                    
+                     
                     Logger.Log(DevEUI, $"error calling façade api: {response.ReasonPhrase} check the azure function log", Logger.LoggingLevel.Error);
                     return null;
                 }
@@ -180,11 +237,12 @@ namespace LoRaWan.NetworkServer
                     iotHubDeviceInfo = iotHubDeviceInfos[0];
                     joinLoraDeviceInfo.PrimaryKey = iotHubDeviceInfo.PrimaryKey;
                 }
-            }
+            //}
             
-            //we did not find a device with this devaddr so we assume is not ours
-            joinLoraDeviceInfo.HubSender = new IoTHubSender(joinLoraDeviceInfo.DevEUI, joinLoraDeviceInfo.PrimaryKey);
+            
+            joinLoraDeviceInfo.HubSender = new IoTHubConnector(joinLoraDeviceInfo.DevEUI, joinLoraDeviceInfo.PrimaryKey);
 
+          
             //we don't have yet the twin data so we need to get it 
             if (joinLoraDeviceInfo.AppKey == null || joinLoraDeviceInfo.AppEUI == null)
             {
@@ -222,7 +280,7 @@ namespace LoRaWan.NetworkServer
                     //Make sure that is a new request and not a replay
                     if (twin.Properties.Reported.Contains("DevNonce"))
                     {
-                        joinLoraDeviceInfo.DevNonce = DevNonce;
+                        joinLoraDeviceInfo.DevNonce = twin.Properties.Reported["DevNonce"];
                     }
 
                     if (twin.Properties.Desired.Contains("GatewayID"))
@@ -238,7 +296,12 @@ namespace LoRaWan.NetworkServer
                     Logger.Log(DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
 
                 }
-               
+                else
+                {
+                    Logger.Log(DevEUI, $"failed getting twins for OTAA device", Logger.LoggingLevel.Error);
+                    return null;
+                }
+
 
             }
             else
@@ -261,7 +324,7 @@ namespace LoRaWan.NetworkServer
             if(!String.IsNullOrEmpty(joinLoraDeviceInfo.DevNonce) && joinLoraDeviceInfo.DevNonce == DevNonce)
             {
                        
-                string errorMsg = $"DevNonce already used for device";
+                string errorMsg = $"DevNonce already used by this device";
                 Logger.Log(DevEUI, errorMsg, Logger.LoggingLevel.Info);
                 joinLoraDeviceInfo.IsJoinValid = false;
                 return joinLoraDeviceInfo;
