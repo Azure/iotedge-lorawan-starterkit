@@ -105,8 +105,11 @@ namespace LoRaWan.NetworkServer
                     {
                         if (status == ConnectionStatus.Disconnected)
                         {
-                            deviceClient.Dispose();
-                            deviceClient = null;
+                            if (deviceClient != null)
+                            {
+                                deviceClient.Dispose();
+                                deviceClient = null;
+                            }
                             //todo ronnie should we log the closing of the connection?
                             //Logger.Log(DevEUI, $"connection closed by the server",Logger.LoggingLevel.Info);
                         }
