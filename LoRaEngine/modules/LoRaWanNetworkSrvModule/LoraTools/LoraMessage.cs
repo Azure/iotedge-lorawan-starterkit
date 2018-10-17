@@ -563,6 +563,10 @@ namespace PacketManager
             Mhdr = new byte[1];
             Array.Copy(inputMessage, 0, Mhdr, 0, 1);
             // Then we will take the rest and decrypt it
+            //DecryptPayload(inputMessage);
+            //var decrypted = PerformEncryption(appKey);
+            //Array.Copy(decrypted, 0, inputMessage, 0, decrypted.Length);
+            //DecryptPayload(inputMessage);
             AesEngine aesEngine = new AesEngine();
             var key = StringToByteArray(appKey);
             aesEngine.Init(true, new KeyParameter(key));
@@ -574,7 +578,7 @@ namespace PacketManager
 
             ICryptoTransform cipher;
 
-            cipher = aes.CreateDecryptor();
+            cipher = aes.CreateEncryptor();
             byte[] pt = new byte[inputMessage.Length - 1];
             Array.Copy(inputMessage, 1, pt, 0, pt.Length);
             //Array.Reverse(pt);
@@ -605,6 +609,33 @@ namespace PacketManager
             Mic = new byte[4];
             Array.Copy(inputMessage, inputMessage.Length - 4, Mic, 0, 4);
 
+        }
+
+        private void DecryptPayload(byte[] inputMessage)
+        {
+            // ( MACPayload = AppNonce[3] | NetID[3] | DevAddr[4] | DLSettings[1] | RxDelay[1] | CFList[0|15] )
+            AppNonce = new byte[3];
+            Array.Copy(inputMessage, 1, AppNonce, 0, 3);
+            //Array.Reverse(AppNonce);
+            NetID = new byte[3];
+            Array.Copy(inputMessage, 4, NetID, 0, 3);
+            //Array.Reverse(NetID);
+            DevAddr = new byte[4];
+            Array.Copy(inputMessage, 7, DevAddr, 0, 4);
+            //Array.Reverse(DevAddr);
+            DlSettings = new byte[1];
+            Array.Copy(inputMessage, 11, DlSettings, 0, 1);
+            RxDelay = new byte[1];
+            Array.Copy(inputMessage, 11, RxDelay, 0, 1);
+            // It's the configuration list, it can be empty or up to 15 bytes
+            // - 17 = - 1 - 3 - 3 - 4 - 1 - 1 - 4
+            // This is the size of all mandatory elements of the message
+            CfList = new byte[inputMessage.Length - 17];
+            Array.Copy(inputMessage, 12, CfList, 0, inputMessage.Length - 17);
+            //Array.Reverse(CfList);
+            Mic = new byte[4];
+            Array.Copy(inputMessage, inputMessage.Length - 4, Mic, 0, 4);
+            //Array.Reverse(Mic);
         }
 
         public LoRaPayloadJoinAccept(string _netId, string appKey, byte[] _devAddr, byte[] _appNonce)
@@ -649,17 +680,15 @@ namespace PacketManager
             AesEngine aesEngine = new AesEngine();
             var key = StringToByteArray(appSkey);
             aesEngine.Init(true, new KeyParameter(key));
-            byte[] rfu = new byte[1];
-            rfu[0] = 0x0;
-
+            
             byte[] pt;
             if (CfList != null)
             {
-                pt = AppNonce.Concat(NetID).Concat(DevAddr).Concat(rfu).Concat(RxDelay).Concat(CfList).Concat(Mic).ToArray();
+                pt = AppNonce.Concat(NetID).Concat(DevAddr).Concat(DlSettings).Concat(RxDelay).Concat(CfList).Concat(Mic).ToArray();
             }
             else
             {
-                pt = AppNonce.Concat(NetID).Concat(DevAddr).Concat(rfu).Concat(RxDelay).Concat(Mic).ToArray();
+                pt = AppNonce.Concat(NetID).Concat(DevAddr).Concat(DlSettings).Concat(RxDelay).Concat(Mic).ToArray();
             }
             // byte[] ct = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
