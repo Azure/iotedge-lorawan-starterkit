@@ -39,7 +39,9 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public bool IsLoRaMessage = false;
         public LoRaPayload PayloadMessage { get; set; }
-        public LoRaMetada LoraMetadata { get; set; }
+
+        public PktFwdMessage FullPayload { get; set; }
+
         public PhysicalPayload PhysicalPayload { get; set; }
 
         /// <summary>
@@ -58,12 +60,19 @@ namespace LoRaTools.LoRaMessage
             PhysicalPayload = new PhysicalPayload(inputMessage);
             if (PhysicalPayload.message != null)
             {
-                LoraMetadata = new LoRaMetada(PhysicalPayload.message);
+                var payload = Encoding.Default.GetString(PhysicalPayload.message);
+
+                // todo ronnie implement a better logging by message type
+                if (!payload.StartsWith("{\"stat"))
+                    Logger.Log($"DataUp {payload}", Logger.LoggingLevel.Full);
+
+                var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
+                FullPayload = payloadObject;
                 // set up the parts of the raw message   
                 // status message
-                if (LoraMetadata.RawB64data != null)
+                if (FullPayload.GetPktFwdMessage().Rxpks[0].data != null)
                 {
-                    byte[] convertedInputMessage = Convert.FromBase64String(LoraMetadata.RawB64data);
+                    byte[] convertedInputMessage = Convert.FromBase64String(FullPayload.GetPktFwdMessage().Rxpks[0].data);
                     var messageType = convertedInputMessage[0] >> 5;
                     LoRaMessageType = (LoRaMessageType)messageType;
                     // Uplink Message
@@ -108,10 +117,9 @@ namespace LoRaTools.LoRaMessage
         {
             // construct a Join Accept Message
             if (type == LoRaMessageType.JoinAccept)
-            {
-                PayloadMessage = (LoRaPayloadJoinAccept)payload;
-                LoraMetadata = new LoRaMetada(PayloadMessage, type);
-                var downlinkmsg = new DownlinkPktFwdMessage(LoraMetadata.RawB64data);
+            {                              
+                var downlinkmsg = new DownlinkPktFwdMessage(Convert.ToBase64String(payload.GetByteMessage()));
+                FullPayload = downlinkmsg;
                 var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
                 var messageBytes = Encoding.Default.GetBytes(jsonMsg);
                 PhysicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);
@@ -128,43 +136,13 @@ namespace LoRaTools.LoRaMessage
 
         public LoRaMessageWrapper(LoRaPayload payload, LoRaMessageType type, byte[] physicalToken, string _datr, uint _rfch, double _freq, long _tmst)
         {
-            // construct a Join Accept Message
-            if (type == LoRaMessageType.JoinAccept)
-            {
-                PayloadMessage = (LoRaPayloadJoinAccept)payload;
-                LoraMetadata = new LoRaMetada(PayloadMessage, type);
-                var downlinkmsg = new DownlinkPktFwdMessage(LoraMetadata.RawB64data, _datr, _rfch, _freq, _tmst);
-
+                //UnconfirmedDataDown/ COnfirmedDataDown had tmst of 1000000             
+                var downlinkmsg = new DownlinkPktFwdMessage(Convert.ToBase64String(PayloadMessage.GetByteMessage()), _datr, _rfch, _freq, _tmst);
+            FullPayload = downlinkmsg;
                 var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
                 Logger.Log($"JoinAccept {jsonMsg}", Logger.LoggingLevel.Full);
                 var messageBytes = Encoding.Default.GetBytes(jsonMsg);
-
-                PhysicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);
-            }
-            else if (type == LoRaMessageType.UnconfirmedDataDown)
-            {
-                PayloadMessage = (LoRaPayloadData)payload;
-                LoraMetadata = new LoRaMetada(PayloadMessage, type);
-                var downlinkmsg = new DownlinkPktFwdMessage(LoraMetadata.RawB64data, _datr, _rfch, _freq, _tmst + 1000000);
-
-                var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
-                Logger.Log($"UnconfirmedDataDown {jsonMsg}", Logger.LoggingLevel.Full);
-                var messageBytes = Encoding.Default.GetBytes(jsonMsg);
-
-                PhysicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);
-            }
-            else if (type == LoRaMessageType.ConfirmedDataDown)
-            {
-                PayloadMessage = (LoRaPayloadData)payload;
-                LoraMetadata = new LoRaMetada(PayloadMessage, type);
-                var downlinkmsg = new DownlinkPktFwdMessage(LoraMetadata.RawB64data, _datr, _rfch, _freq, _tmst + 1000000);
-
-                var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
-                Logger.Log($"ConfirmedDataDown {jsonMsg}", Logger.LoggingLevel.Full);
-                var messageBytes = Encoding.Default.GetBytes(jsonMsg);
-
-                PhysicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);
-            }
+                PhysicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);     
         }
 
         /// <summary>

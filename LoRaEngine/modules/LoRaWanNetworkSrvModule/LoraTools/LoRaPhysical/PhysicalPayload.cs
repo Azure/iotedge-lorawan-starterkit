@@ -205,9 +205,6 @@ namespace LoRaTools
     {
         public Txpk txpk;
 
-
-
-
         public DownlinkPktFwdMessage(string _data, string _datr = "SF12BW125", uint _rfch = 0, double _freq = 869.525000, long _tmst = 0)
         {
             var byteData = Convert.FromBase64String(_data);
