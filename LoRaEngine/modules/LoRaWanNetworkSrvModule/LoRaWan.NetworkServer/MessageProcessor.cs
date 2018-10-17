@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
                 GatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID");
             }
 
-            LoRaMessage loraMessage = new LoRaMessage(message);
+           LoRaMessage loraMessage = new LoRaMessage(message);
 
 
 

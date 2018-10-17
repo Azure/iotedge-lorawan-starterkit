@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer
                 {
                     MessageProcessor messageProcessor = new MessageProcessor();
 
-                    
+
                     _ = messageProcessor.processMessage(receivedResults.Buffer);
                 }
                 catch (Exception ex)
@@ -140,6 +140,12 @@ namespace LoRaWan.NetworkServer
                 }
                 //todo ronnie what to do when not running as edge?
                 //running as non edge module for test and debugging
+                else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TEST_DEBUG")))
+                {
+
+                    LoraDeviceInfoManager.FacadeServerUrl = Environment.GetEnvironmentVariable("FACADE_SERVER_URL");
+                    LoraDeviceInfoManager.FacadeAuthCode = Environment.GetEnvironmentVariable("FACADE_AUTH_CODE");
+                }
                 else
                 {
                     LoraDeviceInfoManager.FacadeServerUrl = "http://localhost:7071/api/";
