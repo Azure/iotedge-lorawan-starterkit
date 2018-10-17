@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LoRaTools
 {
-  
+
     public enum PhysicalIdentifier
     {
         PUSH_DATA, PUSH_ACK, PULL_DATA, PULL_RESP, PULL_ACK, TX_ACK
@@ -18,37 +18,52 @@ namespace LoRaTools
     {
 
         //case of inbound messages
-        public PhysicalPayload(byte[] input)
+        public PhysicalPayload(byte[] input, bool server = false)
         {
 
             protocolVersion = input[0];
             Array.Copy(input, 1, token, 0, 2);
             identifier = (PhysicalIdentifier)input[3];
 
-            //PUSH_DATA That packet type is used by the gateway mainly to forward the RF packets received, and associated metadata, to the server
-            if (identifier == PhysicalIdentifier.PUSH_DATA)
+            if (!server)
             {
-                Array.Copy(input, 4, gatewayIdentifier, 0, 8);
-                message = new byte[input.Length - 12];
-                Array.Copy(input, 12, message, 0, input.Length - 12);
-            }
-
-            //PULL_DATA That packet type is used by the gateway to poll data from the server.
-            if (identifier == PhysicalIdentifier.PULL_DATA)
-            {
-                Array.Copy(input, 4, gatewayIdentifier, 0, 8);
-            }
-
-            //TX_ACK That packet type is used by the gateway to send a feedback to the to inform if a downlink request has been accepted or rejected by the gateway.
-            if (identifier == PhysicalIdentifier.TX_ACK)
-            {
-                Logger.Log($"Tx ack recieved from gateway", Logger.LoggingLevel.Info);
-                Array.Copy(input, 4, gatewayIdentifier, 0, 8);
-                if (input.Length - 12 > 0)
+                // case of message received on client side
+                //PUSH_DATA That packet type is used by the gateway mainly to forward the RF packets received, and associated metadata, to the server
+                if (identifier == PhysicalIdentifier.PUSH_DATA)
                 {
+                    Array.Copy(input, 4, gatewayIdentifier, 0, 8);
                     message = new byte[input.Length - 12];
                     Array.Copy(input, 12, message, 0, input.Length - 12);
                 }
+
+                //PULL_DATA That packet type is used by the gateway to poll data from the server.
+                if (identifier == PhysicalIdentifier.PULL_DATA)
+                {
+                    Array.Copy(input, 4, gatewayIdentifier, 0, 8);
+                }
+
+                //TX_ACK That packet type is used by the gateway to send a feedback to the to inform if a downlink request has been accepted or rejected by the gateway.
+                if (identifier == PhysicalIdentifier.TX_ACK)
+                {
+                    Logger.Log($"Tx ack recieved from gateway", Logger.LoggingLevel.Info);
+                    Array.Copy(input, 4, gatewayIdentifier, 0, 8);
+                    if (input.Length - 12 > 0)
+                    {
+                        message = new byte[input.Length - 12];
+                        Array.Copy(input, 12, message, 0, input.Length - 12);
+                    }
+                }
+            }
+            else
+            {
+                // Case of message received on the server
+                // PULL_RESP is an answer from the client to the server for Join requests for example
+                if (identifier == PhysicalIdentifier.PULL_RESP)
+                {                    
+                    message = new byte[input.Length - 4];
+                    Array.Copy(input, 4, message, 0, message.Length);
+                }
+                // TODO : implement other pull ones
             }
         }
 
@@ -64,13 +79,15 @@ namespace LoRaTools
             }
 
             //0x03 PULL_RESP That packet type is used by the server to send RF packets and  metadata that will have to be emitted by the gateway.
-            if (type == PhysicalIdentifier.PULL_RESP)
+            else
             {
                 token = _token;
                 identifier = type;
-                message = new byte[_message.Length];
-                Array.Copy(_message, 0, message, 0, _message.Length);
-
+                if (_message != null)
+                {
+                    message = new byte[_message.Length];
+                    Array.Copy(_message, 0, message, 0, _message.Length);
+                }
             }
 
         }
@@ -100,6 +117,22 @@ namespace LoRaTools
             if (message != null)
                 returnList.AddRange(message);
             return returnList.ToArray();
+        }
+
+        public byte[] GetSyncHeader(byte[] mac)
+        {
+            byte[] buff = new byte[12];
+            // first is the protocole version
+            buff[0] = 2;
+            // Random token
+            buff[1] = token[0];
+            buff[2] = token[1];
+            // PULL_DATA
+            buff[3] = (byte)identifier;
+            // Then the MAC address
+            for (int i = 0; i < 8; i++)
+                buff[4 + i] = mac[i];
+            return buff;
         }
     }
     public class Txpk
@@ -192,17 +225,20 @@ namespace LoRaTools
     /// </summary>
     public class DownlinkPktFwdMessage : PktFwdMessage
     {
-        public Txpk txpk;
+        public Txpk txpk { get; set; }
 
 
+        public DownlinkPktFwdMessage()
+        {
 
+        }
 
-        public DownlinkPktFwdMessage(string _data, string _datr = "SF12BW125", uint _rfch=0, double _freq = 869.525000, long _tmst = 0 )
+        public DownlinkPktFwdMessage(string _data, string _datr = "SF12BW125", uint _rfch = 0, double _freq = 869.525000, long _tmst = 0)
         {
             var byteData = Convert.FromBase64String(_data);
             txpk = new Txpk()
             {
-                imme = _tmst==0?true:false,
+                imme = _tmst == 0 ? true : false,
                 tmst = _tmst,
                 data = _data,
                 size = (uint)byteData.Length,
@@ -219,11 +255,15 @@ namespace LoRaTools
         }
     }
 
+    public class DownlinkMsg: PktFwdMessage
+    {
+        public Txpk txpk { get; set; }
+    }
 
-    /// <summary>
-    /// an uplink Json for the packet forwarder.
-    /// </summary>
-    public class UplinkPktFwdMessage : PktFwdMessage
+        /// <summary>
+        /// an uplink Json for the packet forwarder.
+        /// </summary>
+        public class UplinkPktFwdMessage : PktFwdMessage
     {
         public List<Rxpk> rxpk = new List<Rxpk>();
     }

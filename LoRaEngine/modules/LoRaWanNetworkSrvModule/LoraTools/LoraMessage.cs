@@ -147,7 +147,15 @@ namespace PacketManager
                              .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
                              .ToArray();
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="type">Type 0x01 = NwkSKey, Type 0x02 = AppSKey</param>
+        /// <param name="appnonce"></param>
+        /// <param name="netid"></param>
+        /// <param name="devnonce"></param>
+        /// <param name="appKey"></param>
+        /// <returns></returns>
         public byte[] CalculateKey(byte[] type, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
             Aes aes = new AesManaged();
@@ -206,9 +214,22 @@ namespace PacketManager
 
         }
 
+        public LoRaPayloadJoinRequest(byte[] _AppEUI, byte[] _DevEUI, byte[] _DevNonce)
+        {
+            // Mhdr is always 0 in case of a join request
+            Mhdr = new byte[1] { 0x00 };
+            AppEUI = _AppEUI;
+            DevEUI = _DevEUI;
+            DevNonce = _DevNonce;
+        }
 
 
         public override bool CheckMic(string appKey)
+        {
+            return Mic.SequenceEqual(PerformMic(appKey));
+        }
+
+        private byte[] PerformMic(string appKey)
         {
             IMac mac = MacUtilities.GetMac("AESCMAC");
 
@@ -218,16 +239,20 @@ namespace PacketManager
             var devEUIStr = BitConverter.ToString(DevEUI);
             var devNonceStr = BitConverter.ToString(DevNonce);
 
-            var micstr = BitConverter.ToString(Mic);
+            // var micstr = BitConverter.ToString(Mic);
 
             var algoinput = Mhdr.Concat(AppEUI).Concat(DevEUI).Concat(DevNonce).ToArray();
             byte[] result = new byte[19];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);
             var resStr = BitConverter.ToString(result);
-            return Mic.SequenceEqual(result.Take(4).ToArray());
+            return result.Take(4).ToArray();
         }
 
+        public void SetMic(string appKey)
+        {
+            Mic = PerformMic(appKey);
+        }
         public override byte[] PerformEncryption(string appSkey)
         {
             throw new NotImplementedException("The payload is not encrypted in case of a join message");
@@ -235,7 +260,16 @@ namespace PacketManager
 
         public override byte[] ToMessage()
         {
-            throw new NotImplementedException();
+            List<byte> messageArray = new List<byte>();
+            messageArray.AddRange(Mhdr);
+            messageArray.AddRange(AppEUI);
+            messageArray.AddRange(DevEUI);
+            messageArray.AddRange(DevNonce);
+            if (Mic != null)
+            {
+                messageArray.AddRange(Mic);
+            }
+            return messageArray.ToArray();
         }
 
         private byte[] StringToByteArray(string hex)
@@ -310,7 +344,7 @@ namespace PacketManager
             Array.Copy(inputMessage, 5, fctrl, 0, 1);
             int foptsSize = fctrl[0] & 0x0f;
             this.Fctrl = fctrl;
-         
+
             // Fcnt
             byte[] fcnt = new byte[2];
             Array.Copy(inputMessage, 6, fcnt, 0, 2);
@@ -362,7 +396,7 @@ namespace PacketManager
             IMac mac = MacUtilities.GetMac("AESCMAC");
             KeyParameter key = new KeyParameter(StringToByteArray(nwskey));
             mac.Init(key);
-            byte[] block = 
+            byte[] block =
                 {
                 0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, (byte)DevAddr[3], (byte)DevAddr[2], (byte)DevAddr[1],
                 (byte)DevAddr[0], Fcnt[0], Fcnt[1], 0x00, 0x00, 0x00, (byte)(RawMessage.Length - 4)
@@ -380,7 +414,7 @@ namespace PacketManager
             IMac mac = MacUtilities.GetMac("AESCMAC");
             KeyParameter key = new KeyParameter(StringToByteArray(nwskey));
             mac.Init(key);
-            byte[] block = 
+            byte[] block =
                 {
                 0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, (byte)DevAddr[3], (byte)DevAddr[2], (byte)DevAddr[1],
                 (byte)DevAddr[0], Fcnt[0], Fcnt[1], 0x00, 0x00, 0x00, (byte)RawMessage.Length
@@ -522,6 +556,57 @@ namespace PacketManager
         /// </summary>
         public byte[] Fcnt { get; set; }
 
+        public LoRaPayloadJoinAccept(byte[] inputMessage, string appKey)
+        {
+            // Only MHDR is not encrypted with the key
+            // ( PHYPayload = MHDR[1] | MACPayload[..] | MIC[4] )
+            Mhdr = new byte[1];
+            Array.Copy(inputMessage, 0, Mhdr, 0, 1);
+            // Then we will take the rest and decrypt it
+            AesEngine aesEngine = new AesEngine();
+            var key = StringToByteArray(appKey);
+            aesEngine.Init(true, new KeyParameter(key));
+            Aes aes = new AesManaged();
+            aes.Key = key;
+            aes.IV = new byte[16];
+            aes.Mode = CipherMode.ECB;
+            aes.Padding = PaddingMode.None;
+
+            ICryptoTransform cipher;
+
+            cipher = aes.CreateDecryptor();
+            byte[] pt = new byte[inputMessage.Length - 1];
+            Array.Copy(inputMessage, 1, pt, 0, pt.Length);
+            //Array.Reverse(pt);
+            var decryptedPayload = cipher.TransformFinalBlock(pt, 0, pt.Length);
+            // We will copy back in the main inputMessage the content
+            Array.Copy(decryptedPayload, 0, inputMessage, 1, decryptedPayload.Length);
+
+            // ( MACPayload = AppNonce[3] | NetID[3] | DevAddr[4] | DLSettings[1] | RxDelay[1] | CFList[0|15] )
+            AppNonce = new byte[3];
+            Array.Copy(inputMessage, 1, AppNonce, 0, 3);
+            Array.Reverse(AppNonce);
+            NetID = new byte[3];
+            Array.Copy(inputMessage, 4, NetID, 0, 3);
+            Array.Reverse(NetID);
+            DevAddr = new byte[4];
+            Array.Copy(inputMessage, 7, DevAddr, 0, 4);
+            Array.Reverse(DevAddr);
+            DlSettings = new byte[1];
+            Array.Copy(inputMessage, 11, DlSettings, 0, 1);
+            RxDelay = new byte[1];
+            Array.Copy(inputMessage, 11, RxDelay, 0, 1);
+            // It's the configuration list, it can be empty or up to 15 bytes
+            // - 17 = - 1 - 3 - 3 - 4 - 1 - 1 - 4
+            // This is the size of all mandatory elements of the message
+            CfList = new byte[inputMessage.Length - 17];
+            Array.Copy(inputMessage, 12, CfList, 0, inputMessage.Length - 17);
+            Array.Reverse(CfList);
+            Mic = new byte[4];
+            Array.Copy(inputMessage, inputMessage.Length - 4, Mic, 0, 4);
+
+        }
+
         public LoRaPayloadJoinAccept(string _netId, string appKey, byte[] _devAddr, byte[] _appNonce)
         {
             AppNonce = new byte[3];
@@ -576,7 +661,7 @@ namespace PacketManager
             {
                 pt = AppNonce.Concat(NetID).Concat(DevAddr).Concat(rfu).Concat(RxDelay).Concat(Mic).ToArray();
             }
-            byte[] ct = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+            // byte[] ct = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
             Aes aes = new AesManaged();
             aes.Key = key;
@@ -620,6 +705,7 @@ namespace PacketManager
     public class LoRaMetada
     {
         public PktFwdMessage FullPayload { get; set; }
+        public Txpk Txpk { get; set; }
         public string RawB64data { get; set; }
         public byte[] DecodedData { get; set; }
 
@@ -644,6 +730,23 @@ namespace PacketManager
             if (payloadObject.rxpk.Count > 0)
             {
                 RawB64data = payloadObject.rxpk[0].data;
+            }
+            else
+            {
+                //if there is no rxpk, then maybe there is txpk
+                try
+                {
+                    var txpkObject = JsonConvert.DeserializeObject<DownlinkPktFwdMessage>(payload);
+                    if (txpkObject != null)
+                        Txpk = txpkObject.txpk;
+                    RawB64data = txpkObject.txpk.data;
+                }
+                catch (Exception)
+                {
+
+                    Logger.Log($"Not an uplink message and not a downlink message", Logger.LoggingLevel.Full);
+                }
+
             }
         }
 
@@ -699,11 +802,11 @@ namespace PacketManager
         /// This contructor is used in case of uplink message, hence we don't know the message type yet
         /// </summary>
         /// <param name="inputMessage"></param>
-        public LoRaMessage(byte[] inputMessage)
+        public LoRaMessage(byte[] inputMessage, bool server = false, string AppKey = "")
         {
             // packet normally sent by the gateway as heartbeat. TODO find more elegant way to integrate.
 
-            PhysicalPayload = new PhysicalPayload(inputMessage);
+            PhysicalPayload = new PhysicalPayload(inputMessage, server);
             if (PhysicalPayload.message != null)
             {
                 LoraMetadata = new LoRaMetada(PhysicalPayload.message);
@@ -726,6 +829,10 @@ namespace PacketManager
                     else if (messageType == (int)LoRaMessageType.JoinRequest)
                     {
                         PayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
+                    }
+                    else if (messageType == (int)LoRaMessageType.JoinAccept)
+                    {
+                        PayloadMessage = new LoRaPayloadJoinAccept(convertedInputMessage, AppKey);
                     }
                     IsLoRaMessage = true;
                 }
@@ -839,5 +946,5 @@ namespace PacketManager
     }
     #endregion
 
-  
+
 }

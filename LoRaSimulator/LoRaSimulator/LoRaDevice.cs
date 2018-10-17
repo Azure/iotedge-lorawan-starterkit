@@ -37,6 +37,7 @@ namespace LoRaSimulator
             {
                 var ret = JsonConvert.DeserializeObject<LoRaDevice>(json);
                 DevAddr = ret.DevAddr;
+                AppEUI = ret.AppEUI;
                 DevEUI = ret.DevEUI;
                 AppKey = ret.AppKey;
                 NwkSKey = ret.NwkSKey;
@@ -71,6 +72,8 @@ namespace LoRaSimulator
         { return StringToByteArray(AppSKey); }
         public byte[] GetAppNonce()
         { return StringToByteArray(AppNonce); }
+        public byte[] GetAppKey()
+        { return StringToByteArray(AppKey); }
         public byte[] GetDevNonce()
         { return StringToByteArray(DevNonce); }
         public byte[] GetNetId()

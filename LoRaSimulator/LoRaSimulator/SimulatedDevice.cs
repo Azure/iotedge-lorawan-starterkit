@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using LoRaTools;
+using LoRaWan;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PacketManager;
 using System;
@@ -14,7 +16,8 @@ namespace LoRaSimulator
         public int FrmCntUp { get; set; }
         public int FrmCntDown { get; set; }
 
-        private byte[] _FCnt;
+        private byte[] _FCnt = new byte[2];
+        public PhysicalPayload LastPayload { get; set; }
 
         public SimulatedDevice(string json)
         {
@@ -25,7 +28,10 @@ namespace LoRaSimulator
                 Interval = (int)additional["Interval"];
                 FrmCntDown = (int)additional["FrmCntDown"];
                 FrmCntUp = (int)additional["FrmCntUp"];
-                _FCnt = BitConverter.GetBytes(FrmCntDown);
+                //can store 32 bit but only 16 are sent
+                var fcnt32 = BitConverter.GetBytes(FrmCntDown);
+                _FCnt[0] = fcnt32[0];
+                _FCnt[1] = fcnt32[1];
             }
             catch (Exception)
             {
@@ -34,26 +40,39 @@ namespace LoRaSimulator
             }
         }
 
-        public string GetJoinRequest()
+        public byte[] GetJoinRequest()
         {
-            // TODO Laurent: add the join request creation here
-            return "";
+            //create a join request
+            byte[] AppEUI = LoRaDevice.GetAppEUI();
+            Array.Reverse(AppEUI);
+            byte[] DevEUI = LoRaDevice.GetDevEUI();
+            Array.Reverse(DevEUI);
+            byte[] DevNonce = new byte[2];
+            DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
+            Array.Reverse(DevNonce);
+            LoRaDevice.DevNonce = BitConverter.ToString(DevNonce).Replace("-","");
+            var join = new LoRaPayloadJoinRequest(AppEUI, DevEUI, DevNonce);
+            join.SetMic(LoRaDevice.AppKey);
+            
+            return join.ToMessage();
         }
 
-        public string GetUnconfirmedDataUpMessage()
+        public byte[] GetUnconfirmedDataUpMessage()
         {
             byte[] _mhbr = new byte[] { 0x40 };
-            byte[] _devAddr = LoRaDevice.GetDevAddr();  //new byte[] { 0xAE, 0x13, 0x04, 0x26 };
+            byte[] _devAddr = LoRaDevice.GetDevAddr();
             Array.Reverse(_devAddr);
             byte[] _FCtrl = new byte[] { 0x80 };
             // byte[] _FCnt = new byte[] { 0x00, 0x00 };
             _FCnt[0]++;
             byte[] _Fopts = null;
             byte[] _FPort = new byte[] { 0x01 };
-
+            // Creating a random number
             Random random = new Random();
             int temp = random.Next(-50, 70);
-            byte[] _payload = Encoding.Default.GetBytes(temp.ToString());
+            Logger.Log(LoRaDevice.DevAddr, $"Simulated data: {temp}", Logger.LoggingLevel.Always);
+            byte[] _payload = Encoding.ASCII.GetBytes(temp.ToString());
+            Array.Reverse(_payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
             LoRaPayloadStandardData standardData = new LoRaPayloadStandardData(_mhbr, _devAddr, _FCtrl, _FCnt, _Fopts, _FPort, _payload, direction);
@@ -64,7 +83,7 @@ namespace LoRaSimulator
             // Now we have the full package, create the MIC
             standardData.SetMic(LoRaDevice.NwkSKey); //"99D58493D1205B43EFF938F0F66C339E");
 
-            return Convert.ToBase64String(standardData.ToMessage());
+            return standardData.ToMessage();
 
         }
 
