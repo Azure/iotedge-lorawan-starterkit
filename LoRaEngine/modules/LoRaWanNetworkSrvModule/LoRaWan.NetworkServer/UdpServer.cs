@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
+using LoRaTools;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
@@ -64,13 +65,23 @@ namespace LoRaWan.NetworkServer
                 //Logger.Log($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}");
 
 
-                //Todo check that is an ack only, we could do a better check in a future verstion
+                // If a simple acknoledge is sent by the gateway, we will trap it to gather the IP Address and Port
                 if (receivedResults.Buffer.Length == 12)
                 {
                     remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
                     remoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
                 }
-
+                // If we don't have any IP address and Port, then take the first message and check if valid, then extract the data
+                if (remoteLoRaAggregatorIp == null)
+                {
+                    PhysicalPayload physical = new PhysicalPayload(receivedResults.Buffer);
+                    // We assume we have a valid one if the LoRa version is the correct one.
+                    if (physical.protocolVersion == 2)
+                    {
+                        remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
+                        remoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
+                    }
+                }
 
 
 

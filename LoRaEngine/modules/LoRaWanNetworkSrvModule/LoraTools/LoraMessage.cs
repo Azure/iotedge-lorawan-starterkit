@@ -79,6 +79,15 @@ namespace PacketManager
     public abstract class LoRaDataPayload : LoRaGenericPayload
     {
         /// <summary>
+        /// Used when calculating the Network and App SKey
+        /// </summary>
+        public enum KeyType
+        {
+            NwkSKey = 1,
+            AppSKey = 2,
+        }
+
+        /// <summary>
         /// Wrapper of a LoRa message, consisting of the MIC and MHDR, common to all LoRa messages
         /// This is used for uplink / decoding
         /// </summary>
@@ -148,16 +157,19 @@ namespace PacketManager
                              .ToArray();
         }
         /// <summary>
-        /// 
+        /// Calculate the Netwok and Application Server Key used to encrypt data and compute MIC
         /// </summary>
-        /// <param name="type">Type 0x01 = NwkSKey, Type 0x02 = AppSKey</param>
+        /// <param name="keyType">0x01 = NwkSKey, 0x02 = AppSKey</param>
         /// <param name="appnonce"></param>
         /// <param name="netid"></param>
         /// <param name="devnonce"></param>
         /// <param name="appKey"></param>
         /// <returns></returns>
-        public byte[] CalculateKey(byte[] type, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
+        public byte[] CalculateKey(KeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
+
+            byte[] type = new byte[1];
+            type[0] = (byte)keyType;
             Aes aes = new AesManaged();
             aes.Key = appKey;
 

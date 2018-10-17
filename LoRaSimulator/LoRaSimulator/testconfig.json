@@ -19,6 +19,7 @@
       "NwkSKey": "99D58493D1205B43EFF938F0F66C339E",
       "AppSKey": "0A501524F8EA5FCBF9BDB5AD7D126F75",
       "NetId": "",
+      "DevNonce": "",
       "Interval": "10",
       "FrmCntUp": "1",
       "FrmCntDown": "0"
@@ -30,7 +31,8 @@
       "AppEUI": "70B3D57ED00000DC",
       "NwkSKey": "",
       "AppSKey": "",
-      "NetId": "001",
+      "NetId": "",
+      "DevNonce": "",
       "Interval": "25",
       "FrmCntUp": "0",
       "FrmCntDown": "0"

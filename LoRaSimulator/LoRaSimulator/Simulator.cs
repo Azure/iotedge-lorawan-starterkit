@@ -85,7 +85,7 @@ namespace LoRaSimulator
                                 byte[] data = new byte[header.Length + gat.Length];
                                 Array.Copy(header, data, header.Length);
                                 Array.Copy(gat, 0, data, header.Length, gat.Length);
-                                Logger.Log(simulated.LoRaDevice.DevAddr, $"Sending data: {data}", Logger.LoggingLevel.Always);
+                                Logger.Log(simulated.LoRaDevice.DevAddr, $"Sending data: {BitConverter.ToString(header).Replace("-", "")}{Encoding.Default.GetString(gat)}", Logger.LoggingLevel.Always);
                                 UdpSendMessage(data).GetAwaiter().GetResult();
                             }
                             else
@@ -173,57 +173,66 @@ namespace LoRaSimulator
                     // identifier
                     var identifier = (PhysicalIdentifier)receivedResults.Buffer[3];
                     // Find the device
-                    foreach (var dev in listDevices)
+                    try
                     {
-                        if (dev.LastPayload != null)
-                            if ((dev.LastPayload.token[0] == token[0]) && (dev.LastPayload.token[1] == token[1]))
-                            {
-                                string device = "";
-                                if (dev.LoRaDevice.DevEUI != "")
-                                    device = dev.LoRaDevice.DevEUI;
-                                else
-                                    device = dev.LoRaDevice.DevAddr;
-                                // check last operation and answer
-                                // Is is a simple push data?
-                                if ((dev.LastPayload.identifier == PhysicalIdentifier.PUSH_DATA) && (identifier == PhysicalIdentifier.PUSH_ACK))
+                        foreach (var dev in listDevices)
+                        {
+                            if (dev.LastPayload != null)
+                                if ((dev.LastPayload.token[0] == token[0]) && (dev.LastPayload.token[1] == token[1]))
                                 {
-                                    Logger.Log(device, $"Confirmation receiveced", Logger.LoggingLevel.Always);
-                                }
-                                if (identifier == PhysicalIdentifier.PULL_RESP)
-                                {
-                                    // we asked something, we get an answer
-                                    LoRaMessage loraMessage = new LoRaMessage(receivedResults.Buffer, true, dev.LoRaDevice.AppKey);
-                                    if (!loraMessage.IsLoRaMessage)
-                                    {
-                                        // udpMsgForPktForwarder = ProcessNonLoraMessage(loraMessage);
-                                        Logger.Log(device, $"Received a non LoRa message", Logger.LoggingLevel.Always);
-                                    }
+                                    string device = "";
+                                    if (dev.LoRaDevice.DevEUI != "")
+                                        device = dev.LoRaDevice.DevEUI;
                                     else
+                                        device = dev.LoRaDevice.DevAddr;
+                                    // check last operation and answer
+                                    // Is is a simple push data?
+                                    if ((dev.LastPayload.identifier == PhysicalIdentifier.PUSH_DATA) && (identifier == PhysicalIdentifier.PUSH_ACK))
                                     {
-
-                                        // Check if the device is not joined, then it is maybe the answer
-                                        if ((loraMessage.LoRaMessageType == LoRaMessageType.JoinAccept) && (dev.LoRaDevice.DevAddr == ""))
+                                        Logger.Log(device, $"Confirmation receiveced", Logger.LoggingLevel.Info);
+                                    }
+                                    if (identifier == PhysicalIdentifier.PULL_RESP)
+                                    {
+                                        // we asked something, we get an answer
+                                        LoRaMessage loraMessage = new LoRaMessage(receivedResults.Buffer, true, dev.LoRaDevice.AppKey);
+                                        if (!loraMessage.IsLoRaMessage)
                                         {
-                                            Logger.Log(device, $"Received join accept", Logger.LoggingLevel.Always);
-                                            var payload = (LoRaPayloadJoinAccept)loraMessage.PayloadMessage;
-                                            // Calculate the keys
-                                            var netid = payload.NetID;
-                                            Array.Reverse(netid);
-                                            var appNonce = payload.AppNonce;
-                                            Array.Reverse(appNonce);
-                                            var appSKey = payload.CalculateKey(new byte[1] { 0x01 }, appNonce, netid, dev.LoRaDevice.GetDevNonce(), dev.LoRaDevice.GetAppKey());
-                                            dev.LoRaDevice.AppSKey = BitConverter.ToString(appSKey).Replace("-", "");
-                                            var nwkSKey = payload.CalculateKey(new byte[1] { 0x02 }, payload.AppNonce, payload.NetID, dev.LoRaDevice.GetDevNonce(), dev.LoRaDevice.GetAppKey());
-                                            dev.LoRaDevice.NwkSKey = BitConverter.ToString(nwkSKey).Replace("-", "");
-                                            dev.LoRaDevice.NetId = BitConverter.ToString(netid).Replace("-", "");
-                                            dev.LoRaDevice.AppNonce = BitConverter.ToString(appNonce).Replace("-", "");
-                                            var devAdd = payload.DevAddr;
-                                            Array.Reverse(devAdd);
-                                            dev.LoRaDevice.DevAddr = BitConverter.ToString(devAdd).Replace("-", "");
+                                            // udpMsgForPktForwarder = ProcessNonLoraMessage(loraMessage);
+                                            Logger.Log(device, $"Received a non LoRa message", Logger.LoggingLevel.Error);
+                                        }
+                                        else
+                                        {
+                                            // Check if the device is not joined, then it is maybe the answer
+                                            if ((loraMessage.LoRaMessageType == LoRaMessageType.JoinAccept) && (dev.LoRaDevice.DevAddr == ""))
+                                            {                                                
+                                                Logger.Log(device, $"Received join accept", Logger.LoggingLevel.Info);
+                                                var payload = (LoRaPayloadJoinAccept)loraMessage.PayloadMessage;
+                                                // TODO Need to check if the time is not passed 
+
+                                                // Calculate the keys
+                                                var netid = payload.NetID;
+                                                Array.Reverse(netid);
+                                                var appNonce = payload.AppNonce;
+                                                Array.Reverse(appNonce);
+                                                var appSKey = payload.CalculateKey(LoRaDataPayload.KeyType.AppSKey, appNonce, netid, dev.LoRaDevice.GetDevNonce(), dev.LoRaDevice.GetAppKey());
+                                                dev.LoRaDevice.AppSKey = BitConverter.ToString(appSKey).Replace("-", "");
+                                                var nwkSKey = payload.CalculateKey(LoRaDataPayload.KeyType.NwkSKey, payload.AppNonce, payload.NetID, dev.LoRaDevice.GetDevNonce(), dev.LoRaDevice.GetAppKey());
+                                                dev.LoRaDevice.NwkSKey = BitConverter.ToString(nwkSKey).Replace("-", "");
+                                                dev.LoRaDevice.NetId = BitConverter.ToString(netid).Replace("-", "");
+                                                dev.LoRaDevice.AppNonce = BitConverter.ToString(appNonce).Replace("-", "");
+                                                var devAdd = payload.DevAddr;
+                                                Array.Reverse(devAdd);
+                                                dev.LoRaDevice.DevAddr = BitConverter.ToString(devAdd).Replace("-", "");
+                                            }
                                         }
                                     }
                                 }
-                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+
+                        Logger.Log($"Something when wrong: {ex.Message}",Logger.LoggingLevel.Error);
                     }
                     //if (receivedResults.Buffer[3] == (byte)PhysicalIdentifier.PUSH_ACK)
                     //{

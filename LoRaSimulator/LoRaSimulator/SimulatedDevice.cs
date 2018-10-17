@@ -47,12 +47,22 @@ namespace LoRaSimulator
             Array.Reverse(AppEUI);
             byte[] DevEUI = LoRaDevice.GetDevEUI();
             Array.Reverse(DevEUI);
-            Random random = new Random();
+
             byte[] DevNonce = new byte[2];
-            // DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
-            random.NextBytes(DevNonce);
-            Array.Reverse(DevNonce);
-            LoRaDevice.DevNonce = BitConverter.ToString(DevNonce).Replace("-","");
+            if (LoRaDevice.DevNonce == null)
+            {                               
+                Random random = new Random();
+                // DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
+                random.NextBytes(DevNonce);                
+                LoRaDevice.DevNonce = BitConverter.ToString(DevNonce).Replace("-", "");
+                Array.Reverse(DevNonce);
+            }
+            else
+            {
+                DevNonce = LoRaDevice.GetDevNonce();
+                Array.Reverse(DevNonce);
+            }
+
             Logger.Log(LoRaDevice.DevEUI, $"Join request sent DevNonce: {BitConverter.ToString(DevNonce).Replace("-","")}", Logger.LoggingLevel.Always);
             var join = new LoRaPayloadJoinRequest(AppEUI, DevEUI, DevNonce);
             join.SetMic(LoRaDevice.AppKey);
