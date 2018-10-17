@@ -47,10 +47,13 @@ namespace LoRaSimulator
             Array.Reverse(AppEUI);
             byte[] DevEUI = LoRaDevice.GetDevEUI();
             Array.Reverse(DevEUI);
+            Random random = new Random();
             byte[] DevNonce = new byte[2];
-            DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
+            // DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
+            random.NextBytes(DevNonce);
             Array.Reverse(DevNonce);
             LoRaDevice.DevNonce = BitConverter.ToString(DevNonce).Replace("-","");
+            Logger.Log(LoRaDevice.DevEUI, $"Join request sent DevNonce: {BitConverter.ToString(DevNonce).Replace("-","")}", Logger.LoggingLevel.Always);
             var join = new LoRaPayloadJoinRequest(AppEUI, DevEUI, DevNonce);
             join.SetMic(LoRaDevice.AppKey);
             
@@ -70,7 +73,7 @@ namespace LoRaSimulator
             // Creating a random number
             Random random = new Random();
             int temp = random.Next(-50, 70);
-            Logger.Log(LoRaDevice.DevAddr, $"Simulated data: {temp}", Logger.LoggingLevel.Always);
+            Logger.Log(LoRaDevice.DevAddr, $"Simulated data: {temp.ToString()}", Logger.LoggingLevel.Always);
             byte[] _payload = Encoding.ASCII.GetBytes(temp.ToString());
             Array.Reverse(_payload);
             // 0 = uplink, 1 = downlink

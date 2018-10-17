@@ -202,18 +202,24 @@ namespace LoRaSimulator
                                     {
 
                                         // Check if the device is not joined, then it is maybe the answer
-                                        if ((loraMessage.LoRaMessageType == LoRaMessageType.JoinAccept) && (dev.LoRaDevice.DevAddr != ""))
+                                        if ((loraMessage.LoRaMessageType == LoRaMessageType.JoinAccept) && (dev.LoRaDevice.DevAddr == ""))
                                         {
                                             Logger.Log(device, $"Received join accept", Logger.LoggingLevel.Always);
                                             var payload = (LoRaPayloadJoinAccept)loraMessage.PayloadMessage;
                                             // Calculate the keys
-                                            var appSKey = payload.CalculateKey(new byte[1] { 0x01 }, payload.AppNonce, payload.NetID, dev.LoRaDevice.GetDevNonce(), dev.LoRaDevice.GetAppKey());
-                                            dev.LoRaDevice.AppSKey = Encoding.Default.GetString(appSKey);
+                                            var netid = payload.NetID;
+                                            Array.Reverse(netid);
+                                            var appNonce = payload.AppNonce;
+                                            Array.Reverse(appNonce);
+                                            var appSKey = payload.CalculateKey(new byte[1] { 0x01 }, appNonce, netid, dev.LoRaDevice.GetDevNonce(), dev.LoRaDevice.GetAppKey());
+                                            dev.LoRaDevice.AppSKey = BitConverter.ToString(appSKey).Replace("-", "");
                                             var nwkSKey = payload.CalculateKey(new byte[1] { 0x02 }, payload.AppNonce, payload.NetID, dev.LoRaDevice.GetDevNonce(), dev.LoRaDevice.GetAppKey());
-                                            dev.LoRaDevice.NwkSKey = Encoding.Default.GetString(nwkSKey);
-                                            dev.LoRaDevice.NetId = BitConverter.ToString(payload.NetID).Replace("-", ""); ;
-                                            dev.LoRaDevice.AppNonce = BitConverter.ToString(payload.AppNonce).Replace("-", "");
-                                            dev.LoRaDevice.DevAddr = BitConverter.ToString(payload.DevAddr).Replace("-", "");
+                                            dev.LoRaDevice.NwkSKey = BitConverter.ToString(nwkSKey).Replace("-", "");
+                                            dev.LoRaDevice.NetId = BitConverter.ToString(netid).Replace("-", "");
+                                            dev.LoRaDevice.AppNonce = BitConverter.ToString(appNonce).Replace("-", "");
+                                            var devAdd = payload.DevAddr;
+                                            Array.Reverse(devAdd);
+                                            dev.LoRaDevice.DevAddr = BitConverter.ToString(devAdd).Replace("-", "");
                                         }
                                     }
                                 }
