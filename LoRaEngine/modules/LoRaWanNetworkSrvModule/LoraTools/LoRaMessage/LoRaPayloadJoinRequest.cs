@@ -1,4 +1,5 @@
-﻿using Org.BouncyCastle.Crypto;
+﻿using LoRaTools.Utils;
+using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using System;
@@ -11,7 +12,7 @@ namespace LoRaTools.LoRaMessage
     /// <summary>
     /// Implementation of the Join Request message type.
     /// </summary>
-    public class LoRaPayloadJoinRequest : LoRaDataPayload
+    public class LoRaPayloadJoinRequest : LoRaPayload
     {
         /// <summary>
         /// aka JoinEUI
@@ -38,7 +39,7 @@ namespace LoRaTools.LoRaMessage
         {
             IMac mac = MacUtilities.GetMac("AESCMAC");
 
-            KeyParameter key = new KeyParameter(StringToByteArray(appKey));
+            KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(appKey));
             mac.Init(key);
             var algoinput = Mic.ToArray().Concat(AppEUI.ToArray()).Concat(DevEUI.ToArray()).Concat(DevNonce.ToArray()).ToArray();
             byte[] result = new byte[19];
@@ -56,14 +57,6 @@ namespace LoRaTools.LoRaMessage
         public override byte[] GetByteMessage()
         {
             throw new NotImplementedException();
-        }
-
-        private byte[] StringToByteArray(string hex)
-        {
-            return Enumerable.Range(0, hex.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                             .ToArray();
         }
     }
 }

@@ -13,9 +13,8 @@ namespace LoRaTools.LoRaMessage
     {
         public PktFwdMessage FullPayload { get; set; }
         public string RawB64data { get; set; }
-        public byte[] DecodedData { get; set; }
 
-
+        
 
         /// <summary>
         /// Case of Uplink message. 
@@ -43,7 +42,7 @@ namespace LoRaTools.LoRaMessage
         /// Case of Downlink message. TODO refactor this
         /// </summary>
         /// <param name="input"></param>
-        public LoRaMetada(LoRaGenericPayload payloadMessage, LoRaMessageType messageType)
+        public LoRaMetada(LoRaPayload payloadMessage, LoRaMessageType messageType)
         {
             if (messageType == LoRaMessageType.JoinAccept)
             {
@@ -51,7 +50,7 @@ namespace LoRaTools.LoRaMessage
             }
             else if (messageType == LoRaMessageType.UnconfirmedDataDown || messageType == LoRaMessageType.ConfirmedDataDown)
             {
-                RawB64data = Convert.ToBase64String(((LoRaPayloadStandardData)payloadMessage).GetByteMessage());
+                RawB64data = Convert.ToBase64String(((LoRaPayloadData)payloadMessage).GetByteMessage());
             }
         }
     }

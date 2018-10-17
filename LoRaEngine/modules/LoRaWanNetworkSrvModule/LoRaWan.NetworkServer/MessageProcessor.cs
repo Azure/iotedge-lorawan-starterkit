@@ -5,6 +5,7 @@
 using LoRaTools;
 using LoRaTools.LoRaMessage;
 using LoRaTools.Regions;
+using LoRaTools.Utils;
 using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -158,7 +159,7 @@ namespace LoRaWan.NetworkServer
                             List<KeyValuePair<String, String>> messageProperties = new List<KeyValuePair<String, String>>();
 
                             //Parsing MacCommands and add them as property of the message to be sent to the IoT Hub.
-                            var macCommand = ((LoRaPayloadStandardData)loraMessage.PayloadMessage).GetMacCommands();
+                            var macCommand = ((LoRaPayloadData)loraMessage.PayloadMessage).GetMacCommands();
                             if (macCommand.macCommand.Count > 0)
                             {
                                 for (int i = 0; i < macCommand.macCommand.Count; i++)
@@ -280,7 +281,7 @@ namespace LoRaWan.NetworkServer
                                 if (macbytes != null && linkCheckCmdResponse != null)
                                     macbytes = macbytes.Concat(linkCheckCmdResponse).ToArray();
                                 //adding the FoptsLength
-                                LoRaPayloadStandardData ackLoRaMessage = new LoRaPayloadStandardData(StringToByteArray("A0"),
+                                LoRaPayloadData ackLoRaMessage = new LoRaPayloadData(ConversionHelper.StringToByteArray("A0"),
                                     devAddrCorrect,
                                     fctrl,
                                     BitConverter.GetBytes(loraDeviceInfo.FCntDown),
@@ -339,7 +340,7 @@ namespace LoRaWan.NetworkServer
                             byte[] fctrl2 = new byte[1] { 32 };
 
                             Array.Reverse(devAddrCorrect);
-                            LoRaPayloadStandardData macReply = new LoRaPayloadStandardData(StringToByteArray("A0"),
+                            LoRaPayloadData macReply = new LoRaPayloadData(ConversionHelper.StringToByteArray("A0"),
                                 devAddrCorrect,
                                 fctrl2,
                                 BitConverter.GetBytes(loraDeviceInfo.FCntDown),
@@ -442,9 +443,9 @@ namespace LoRaWan.NetworkServer
 
             if (joinLoraDeviceInfo != null && joinLoraDeviceInfo.IsJoinValid)
             {
-                byte[] appNonce = StringToByteArray(joinLoraDeviceInfo.AppNonce);
-                byte[] netId = StringToByteArray(joinLoraDeviceInfo.NetId);
-                byte[] devAddr = StringToByteArray(joinLoraDeviceInfo.DevAddr);
+                byte[] appNonce = ConversionHelper.StringToByteArray(joinLoraDeviceInfo.AppNonce);
+                byte[] netId = ConversionHelper.StringToByteArray(joinLoraDeviceInfo.NetId);
+                byte[] devAddr = ConversionHelper.StringToByteArray(joinLoraDeviceInfo.DevAddr);
                 string appKey = joinLoraDeviceInfo.AppKey;
                 Array.Reverse(netId);
                 Array.Reverse(appNonce);
@@ -514,15 +515,6 @@ namespace LoRaWan.NetworkServer
             //Cache.AddToCache(devEui, joinLoraDeviceInfo);
 
             return udpMsgForPktForwarder;
-        }
-
-        private byte[] StringToByteArray(string hex)
-        {
-
-            return Enumerable.Range(0, hex.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                             .ToArray();
         }
 
         public void Dispose()

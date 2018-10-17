@@ -10,6 +10,10 @@ namespace LoRaTools.LoRaMessage
         JoinAccept,
         Data
     }
+
+    /// <summary>
+    /// The Message adapter class is a class enabling to get the internals from a Join accept/request or data payload.
+    /// </summary>
     public class LoRaMessageAdapter
     {
         public LoRaMessageAdapterEnum LoRaMessageAdapterEnum { get; set; }
@@ -80,7 +84,7 @@ namespace LoRaTools.LoRaMessage
         //fcnt also here
         #endregion
 
-        public LoRaMessageAdapter(LoRaGenericPayload loRaGenericPayload)
+        public LoRaMessageAdapter(LoRaPayload loRaGenericPayload)
         {
            if(loRaGenericPayload.GetType() == typeof(LoRaPayloadJoinAccept))
             {
@@ -99,15 +103,15 @@ namespace LoRaTools.LoRaMessage
                 DevEUI = ((LoRaPayloadJoinRequest)loRaGenericPayload).DevEUI;
                 DevNonce = ((LoRaPayloadJoinRequest)loRaGenericPayload).DevNonce;
             }
-            else if (loRaGenericPayload.GetType() == typeof(LoRaPayloadStandardData))
+            else if (loRaGenericPayload.GetType() == typeof(LoRaPayloadData))
             {
                 LoRaMessageAdapterEnum = LoRaMessageAdapterEnum.Data;
-                Direction = ((LoRaPayloadStandardData)loRaGenericPayload).Direction;
-                Fcnt = ((LoRaPayloadStandardData)loRaGenericPayload).Fcnt;
-                Fctrl = ((LoRaPayloadStandardData)loRaGenericPayload).Fctrl;
-                Fopts = ((LoRaPayloadStandardData)loRaGenericPayload).Fopts;
-                Fport = ((LoRaPayloadStandardData)loRaGenericPayload).Fport;
-                Frmpayload = ((LoRaPayloadStandardData)loRaGenericPayload).Frmpayload;
+                Direction = ((LoRaPayloadData)loRaGenericPayload).Direction;
+                Fcnt = ((LoRaPayloadData)loRaGenericPayload).Fcnt;
+                Fctrl = ((LoRaPayloadData)loRaGenericPayload).Fctrl;
+                Fopts = ((LoRaPayloadData)loRaGenericPayload).Fopts;
+                Fport = ((LoRaPayloadData)loRaGenericPayload).Fport;
+                Frmpayload = ((LoRaPayloadData)loRaGenericPayload).Frmpayload;
 
             }
             

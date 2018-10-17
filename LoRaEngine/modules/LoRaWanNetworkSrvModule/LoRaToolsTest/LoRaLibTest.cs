@@ -126,7 +126,7 @@ namespace LoRaWanTest
             LoRaMessageWrapper jsonUplinkUnconfirmedMessage = new LoRaMessageWrapper(physicalUpstreamPyld.Concat(jsonUplinkUnconfirmedDataUpBytes).ToArray());
             Assert.Equal(LoRaMessageType.UnconfirmedDataUp, jsonUplinkUnconfirmedMessage.LoRaMessageType);
 
-            LoRaPayloadStandardData loRaPayloadUplinkObj = (LoRaPayloadStandardData)jsonUplinkUnconfirmedMessage.PayloadMessage;
+            LoRaPayloadData loRaPayloadUplinkObj = (LoRaPayloadData)jsonUplinkUnconfirmedMessage.PayloadMessage;
 
 
             Assert.True(loRaPayloadUplinkObj.Fcnt.Span.SequenceEqual(new byte[2] { 1, 0 }));
@@ -171,7 +171,7 @@ namespace LoRaWanTest
             Array.Reverse(appkey);
             Array.Reverse(nwkkey);
 
-            LoRaPayloadStandardData lora = new LoRaPayloadStandardData(mhdr, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
+            LoRaPayloadData lora = new LoRaPayloadData(mhdr, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
             lora.PerformEncryption(BitConverter.ToString(appkey).Replace("-", ""));
             byte[] testEncrypt = new byte[4]
             {

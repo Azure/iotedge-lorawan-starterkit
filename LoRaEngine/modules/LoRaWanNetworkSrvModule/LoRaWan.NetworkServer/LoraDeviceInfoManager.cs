@@ -9,7 +9,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using PacketManager;
+using LoRaTools;
+using LoRaTools.Utils;
 
 namespace LoRaWan.NetworkServer
 {
@@ -224,8 +225,8 @@ namespace LoRaWan.NetworkServer
                     }
                     byte[] netId = new byte[3] { 0, 0, 1 };
                     AppNonce = OTAAKeysGenerator.getAppNonce();
-                    AppSKey = OTAAKeysGenerator.calculateKey(new byte[1] { 0x02 }, OTAAKeysGenerator.StringToByteArray(AppNonce), netId, OTAAKeysGenerator.StringToByteArray(DevNonce), OTAAKeysGenerator.StringToByteArray(AppKey));
-                    NwkSKey = OTAAKeysGenerator.calculateKey(new byte[1] { 0x01 }, OTAAKeysGenerator.StringToByteArray(AppNonce), netId, OTAAKeysGenerator.StringToByteArray(DevNonce), OTAAKeysGenerator.StringToByteArray(AppKey)); ;
+                    AppSKey = OTAAKeysGenerator.calculateKey(new byte[1] { 0x02 }, ConversionHelper.StringToByteArray(AppNonce), netId, ConversionHelper.StringToByteArray(DevNonce), ConversionHelper.StringToByteArray(AppKey));
+                    NwkSKey = OTAAKeysGenerator.calculateKey(new byte[1] { 0x01 }, ConversionHelper.StringToByteArray(AppNonce), netId, ConversionHelper.StringToByteArray(DevNonce), ConversionHelper.StringToByteArray(AppKey)); ;
                     DevAddr = OTAAKeysGenerator.getDevAddr(netId);
                     loraDeviceInfo.DevAddr = DevAddr;
                     loraDeviceInfo.AppKey = AppKey;

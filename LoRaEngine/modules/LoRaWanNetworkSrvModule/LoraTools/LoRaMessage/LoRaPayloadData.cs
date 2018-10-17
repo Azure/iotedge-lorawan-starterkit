@@ -1,4 +1,5 @@
-﻿using LoRaWan;
+﻿using LoRaTools.Utils;
+using LoRaWan;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -13,7 +14,7 @@ namespace LoRaTools.LoRaMessage
     /// <summary>
     /// the body of an Uplink (normal) message
     /// </summary>
-    public class LoRaPayloadStandardData : LoRaDataPayload
+    public class LoRaPayloadData : LoRaPayload
     {
         /// <summary>
         /// Frame control octet
@@ -49,7 +50,7 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <param name="inputMessage"></param>
-        public LoRaPayloadStandardData(byte[] inputMessage) : base(inputMessage)
+        public LoRaPayloadData(byte[] inputMessage) : base(inputMessage)
         {
             // get direction
             var checkDir = Mhdr.Span[0] >> 5;
@@ -93,7 +94,7 @@ namespace LoRaTools.LoRaMessage
 
         }
 
-        public LoRaPayloadStandardData(byte[] mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, byte[] fOpts, byte[] fPort, byte[] frmPayload, int direction) : base()
+        public LoRaPayloadData(byte[] mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, byte[] fOpts, byte[] fPort, byte[] frmPayload, int direction) : base()
         {
             Mhdr = mhdr;
             Array.Reverse(devAddr);
@@ -120,7 +121,7 @@ namespace LoRaTools.LoRaMessage
         public override bool CheckMic(string nwskey)
         {
             IMac mac = MacUtilities.GetMac("AESCMAC");
-            KeyParameter key = new KeyParameter(StringToByteArray(nwskey));
+            KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
             mac.Init(key);
             byte[] block =
                 {
@@ -138,7 +139,7 @@ namespace LoRaTools.LoRaMessage
         {
             RawMessage = this.GetByteMessage();
             IMac mac = MacUtilities.GetMac("AESCMAC");
-            KeyParameter key = new KeyParameter(StringToByteArray(nwskey));
+            KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
             mac.Init(key);
             byte[] block =
                 {
@@ -162,7 +163,7 @@ namespace LoRaTools.LoRaMessage
             if (!Frmpayload.Span.IsEmpty)
             {
                 AesEngine aesEngine = new AesEngine();
-                byte[] tmp = StringToByteArray(appSkey);
+                byte[] tmp = ConversionHelper.StringToByteArray(appSkey);
 
                 aesEngine.Init(true, new KeyParameter(tmp));
 
@@ -206,14 +207,6 @@ namespace LoRaTools.LoRaMessage
             {
                 return null;
             }
-        }
-
-        private byte[] StringToByteArray(string hex)
-        {
-            return Enumerable.Range(0, hex.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                             .ToArray();
         }
 
         public override byte[] GetByteMessage()

@@ -1,4 +1,5 @@
-﻿using Org.BouncyCastle.Crypto.Engines;
+﻿using LoRaTools.Utils;
+using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Parameters;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace LoRaTools.LoRaMessage
     /// <summary>
     /// Implementation of a LoRa Join-Accept frame
     /// </summary>
-    public class LoRaPayloadJoinAccept : LoRaDataPayload
+    public class LoRaPayloadJoinAccept : LoRaPayload
     {
         /// <summary>
         /// Server Nonce aka JoinNonce
@@ -53,7 +54,7 @@ namespace LoRaTools.LoRaMessage
             // set payload Wrapper fields
             Mhdr = new byte[] { 32 };
             AppNonce = _appNonce;
-            NetID = StringToByteArray(_netId.Replace("-", string.Empty));
+            NetID = ConversionHelper.StringToByteArray(_netId.Replace("-", string.Empty));
             // default param 869.525 MHz / DR0 (F12, 125 kHz)  
             CfList = null;
             // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
@@ -72,19 +73,9 @@ namespace LoRaTools.LoRaMessage
             PerformEncryption(appKey);
         }
 
-        private byte[] StringToByteArray(string hex)
-        {
-            return Enumerable.Range(0, hex.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                             .ToArray();
-        }
 
         public override byte[] PerformEncryption(string appSkey)
         {
-            Org.BouncyCastle.Crypto.Engines.AesEngine aesEngine = new AesEngine();
-            var key = StringToByteArray(appSkey);
-            aesEngine.Init(true, new KeyParameter(key));
             byte[] rfu = new byte[1];
             rfu[0] = 0x0;
 
@@ -97,10 +88,9 @@ namespace LoRaTools.LoRaMessage
             {
                 pt = AppNonce.ToArray().Concat(NetID.ToArray()).Concat(DevAddr).Concat(rfu).Concat(RxDelay.ToArray()).Concat(Mic.ToArray()).ToArray();
             }
-            byte[] ct = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
             Aes aes = new AesManaged();
-            aes.Key = key;
+            aes.Key = ConversionHelper.StringToByteArray(appSkey);
             aes.IV = new byte[16];
             aes.Mode = CipherMode.ECB;
             aes.Padding = PaddingMode.None;

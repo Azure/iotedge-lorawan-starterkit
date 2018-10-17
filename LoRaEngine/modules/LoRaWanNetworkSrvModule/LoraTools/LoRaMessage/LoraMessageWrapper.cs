@@ -38,7 +38,7 @@ namespace LoRaTools.LoRaMessage
         /// see 
         /// </summary>
         public bool IsLoRaMessage = false;
-        public LoRaGenericPayload PayloadMessage { get; set; }
+        public LoRaPayload PayloadMessage { get; set; }
         public LoRaMetada LoraMetadata { get; set; }
         public PhysicalPayload PhysicalPayload { get; set; }
 
@@ -69,11 +69,11 @@ namespace LoRaTools.LoRaMessage
                     // Uplink Message
                     if (messageType == (int)LoRaMessageType.UnconfirmedDataUp)
                     {
-                        PayloadMessage = new LoRaPayloadStandardData(convertedInputMessage);
+                        PayloadMessage = new LoRaPayloadData(convertedInputMessage);
                     }
                     else if (messageType == (int)LoRaMessageType.ConfirmedDataUp)
                     {
-                        PayloadMessage = new LoRaPayloadStandardData(convertedInputMessage);
+                        PayloadMessage = new LoRaPayloadData(convertedInputMessage);
                     }
                     else if (messageType == (int)LoRaMessageType.JoinRequest)
                     {
@@ -104,7 +104,7 @@ namespace LoRaTools.LoRaMessage
         /// 4 = Confirmed Data up
         /// 5 = Confirmed Data down
         /// 6 = Rejoin Request</param>
-        public LoRaMessageWrapper(LoRaGenericPayload payload, LoRaMessageType type, byte[] physicalToken)
+        public LoRaMessageWrapper(LoRaPayload payload, LoRaMessageType type, byte[] physicalToken)
         {
             // construct a Join Accept Message
             if (type == LoRaMessageType.JoinAccept)
@@ -126,7 +126,7 @@ namespace LoRaTools.LoRaMessage
             }
         }
 
-        public LoRaMessageWrapper(LoRaGenericPayload payload, LoRaMessageType type, byte[] physicalToken, string _datr, uint _rfch, double _freq, long _tmst)
+        public LoRaMessageWrapper(LoRaPayload payload, LoRaMessageType type, byte[] physicalToken, string _datr, uint _rfch, double _freq, long _tmst)
         {
             // construct a Join Accept Message
             if (type == LoRaMessageType.JoinAccept)
@@ -143,7 +143,7 @@ namespace LoRaTools.LoRaMessage
             }
             else if (type == LoRaMessageType.UnconfirmedDataDown)
             {
-                PayloadMessage = (LoRaPayloadStandardData)payload;
+                PayloadMessage = (LoRaPayloadData)payload;
                 LoraMetadata = new LoRaMetada(PayloadMessage, type);
                 var downlinkmsg = new DownlinkPktFwdMessage(LoraMetadata.RawB64data, _datr, _rfch, _freq, _tmst + 1000000);
 
@@ -155,7 +155,7 @@ namespace LoRaTools.LoRaMessage
             }
             else if (type == LoRaMessageType.ConfirmedDataDown)
             {
-                PayloadMessage = (LoRaPayloadStandardData)payload;
+                PayloadMessage = (LoRaPayloadData)payload;
                 LoraMetadata = new LoRaMetada(PayloadMessage, type);
                 var downlinkmsg = new DownlinkPktFwdMessage(LoraMetadata.RawB64data, _datr, _rfch, _freq, _tmst + 1000000);
 
@@ -174,7 +174,7 @@ namespace LoRaTools.LoRaMessage
         /// <returns>a boolean telling if the MIC is valid or not</returns>
         public bool CheckMic(string nwskey)
         {
-            return ((LoRaDataPayload)PayloadMessage).CheckMic(nwskey);
+            return PayloadMessage.CheckMic(nwskey);
         }
 
         /// <summary>
@@ -184,8 +184,7 @@ namespace LoRaTools.LoRaMessage
         /// <returns>a boolean telling if the MIC is valid or not</returns>
         public byte[] DecryptPayload(string appSkey)
         {
-            var retValue = ((LoRaDataPayload)PayloadMessage).PerformEncryption(appSkey);
-            LoraMetadata.DecodedData = retValue;
+            var retValue = PayloadMessage.PerformEncryption(appSkey);
             return retValue;
         }
     }
