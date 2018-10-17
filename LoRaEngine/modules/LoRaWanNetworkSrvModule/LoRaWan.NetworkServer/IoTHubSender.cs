@@ -97,8 +97,11 @@ namespace LoRaWan.NetworkServer
                     string deviceConnectionStr = $"{partConnection}DeviceId={DevEUI};SharedAccessKey={PrimaryKey}";
 
                     deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Mqtt_Tcp_Only);
+
+                    deviceClient.OperationTimeoutInMilliseconds = 5000;
+                    
                     //we set the retry only when sending msgs                    
-                    deviceClient.SetRetryPolicy(new NoRetry());
+                    //deviceClient.SetRetryPolicy(new NoRetry());
 
                     //if the server disconnects dispose the deviceclient and new one will be created when a new d2c msg comes in.
                     deviceClient.SetConnectionStatusChangesHandler((status, reason) =>
@@ -123,6 +126,20 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        public void SetRetry(bool retryon)
+        {
+            if (retryon)
+            {
+                deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
+                Logger.Log(DevEUI, $"retry is on",Logger.LoggingLevel.Info);
+            }
+            else
+            {
+                deviceClient.SetRetryPolicy(new NoRetry());
+                Logger.Log(DevEUI, $"retry is off", Logger.LoggingLevel.Info);
+            }
+        }
+
         public async Task SendMessageAsync(string strMessage,List<KeyValuePair<String,String>> properties)
         {
 
@@ -133,7 +150,7 @@ namespace LoRaWan.NetworkServer
                     CreateDeviceClient();
 
                     //Enable retry for this send message, on by default              
-                   // deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
+                    //deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
                     var message = new Message(UTF8Encoding.ASCII.GetBytes(strMessage));
                     foreach (var prop in properties)
                         message.Properties.Add(prop);

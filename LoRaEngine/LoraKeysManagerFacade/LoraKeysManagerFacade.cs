@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using StackExchange.Redis;
 
 namespace LoraKeysManagerFacade
 {
@@ -32,6 +33,8 @@ namespace LoraKeysManagerFacade
             string devAddr = req.Query["devAddr"];
             //OTAA Case
             string devEUI = req.Query["devEUI"];
+            string devNonce = req.Query["devNonce"];
+          
 
             var config = new ConfigurationBuilder()
                         .SetBasePath(context.FunctionAppDirectory)
@@ -44,12 +47,43 @@ namespace LoraKeysManagerFacade
                 string errorMsg = "Missing IoTHubConnectionString in settings";
                 throw new Exception(errorMsg);
             }
-            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(connectionString);
+
+            string redisConnectionString = config.GetConnectionString("RedisConnectionString");
+            if (redisConnectionString == null)
+            {
+                string errorMsg = "Missing RedisConnectionString in settings";
+                throw new Exception(errorMsg);
+            }
+
+          
+
+            var redis = ConnectionMultiplexer.Connect(redisConnectionString);
+            var cache = redis.GetDatabase();
+
+
+            RegistryManager registryManager;
 
             List<IoTHubDeviceInfo> results = new List<IoTHubDeviceInfo>();
 
             if (devEUI!=null)
             {
+
+                string cacheKey = devEUI + devNonce;
+                //check if we already got the same devEUI and devNonce it can be a reaply attack or a multigateway setup recieving the same join.We are rfusing all other than the first one.
+                string cachedDevNonce = cache.StringGet(cacheKey, CommandFlags.DemandMaster);
+
+                if (!String.IsNullOrEmpty(cachedDevNonce))
+                {
+                    return (ActionResult)new BadRequestObjectResult("UsedDevNonce");
+
+                }
+
+                cache.StringSet(cacheKey, devNonce,new TimeSpan(0,1,0), When.Always, CommandFlags.DemandMaster);
+                
+
+                //we connect here and not before we do the cache checking
+                registryManager = RegistryManager.CreateFromConnectionString(connectionString);
+
                 IoTHubDeviceInfo iotHubDeviceInfo = new IoTHubDeviceInfo();
                 var device = await registryManager.GetDeviceAsync(devEUI);
 
@@ -65,6 +99,10 @@ namespace LoraKeysManagerFacade
             {
                 //TODO check for sql injection
                 devAddr = devAddr.Replace('\'', ' ');
+
+                //we connect here and not before we do the cache checking
+                registryManager = RegistryManager.CreateFromConnectionString(connectionString);
+
                 var query = registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{devAddr}' OR properties.reported.DevAddr ='{devAddr}'", 100);
                 while (query.HasMoreResults)
                 {

@@ -56,18 +56,18 @@ namespace LoRaWan.NetworkServer
                 IoTHubDeviceInfo iotHubDeviceInfo = iotHubDeviceInfos[0];
 
                 loraDeviceInfo.DevEUI = iotHubDeviceInfo.DevEUI;
+                loraDeviceInfo.PrimaryKey = iotHubDeviceInfo.PrimaryKey;
 
                 Logger.Log(loraDeviceInfo.DevEUI, $"getting twins", Logger.LoggingLevel.Info);
 
                 loraDeviceInfo.HubSender = new IoTHubSender(iotHubDeviceInfo.DevEUI, iotHubDeviceInfo.PrimaryKey);
 
+                //we enable retry to process msgs
+                loraDeviceInfo.HubSender.SetRetry(true);
+
                 var twin = await loraDeviceInfo.HubSender.GetTwinAsync();
 
-                if(twin!=null)
-                    Logger.Log(loraDeviceInfo.DevEUI, twin.ToJson(Formatting.None), Logger.LoggingLevel.Info);
-                else
-                    Logger.Log(loraDeviceInfo.DevEUI, $"no twins", Logger.LoggingLevel.Info);
-
+              
                 //ABP Case
                 if (twin.Properties.Desired.Contains("AppSKey"))
                 {
@@ -152,16 +152,28 @@ namespace LoRaWan.NetworkServer
             joinLoraDeviceInfo.DevEUI = DevEUI;
 
           
-            //we don't have the key to access iot hub query the registry
-            if (joinLoraDeviceInfo.PrimaryKey == null)
-            {
+            ////we don't have the key to access iot hub query the registry
+            //if (joinLoraDeviceInfo.PrimaryKey == null)
+            //{
 
                 Logger.Log(DevEUI, $"quering the registry for device key", Logger.LoggingLevel.Info);
                 var client = new HttpClient();
-                var url = $"{FacadeServerUrl}GetDevice?code={FacadeAuthCode}&devEUI={DevEUI}";
+                var url = $"{FacadeServerUrl}GetDevice?code={FacadeAuthCode}&devEUI={DevEUI}&devNonce={DevNonce}";
                 HttpResponseMessage response = await client.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
                 {
+                    if(response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                    {
+                        var badReqResult = response.Content.ReadAsStringAsync().Result;
+
+                        if (!String.IsNullOrEmpty(badReqResult) && badReqResult == "UsedDevNonce")
+                        {
+                            Logger.Log(DevEUI, $"DevNonce already used by this device", Logger.LoggingLevel.Info);
+                            return null;
+                        }
+                    }
+                    
+                     
                     Logger.Log(DevEUI, $"error calling façade api: {response.ReasonPhrase} check the azure function log", Logger.LoggingLevel.Error);
                     return null;
                 }
@@ -180,10 +192,13 @@ namespace LoRaWan.NetworkServer
                     iotHubDeviceInfo = iotHubDeviceInfos[0];
                     joinLoraDeviceInfo.PrimaryKey = iotHubDeviceInfo.PrimaryKey;
                 }
-            }
+            //}
             
-            //we did not find a device with this devaddr so we assume is not ours
+            
             joinLoraDeviceInfo.HubSender = new IoTHubSender(joinLoraDeviceInfo.DevEUI, joinLoraDeviceInfo.PrimaryKey);
+
+            //todo ronnie check the retry logic, in this case we stop retring to avoid doing iot hub twins while alredy out of time
+            joinLoraDeviceInfo.HubSender.SetRetry(false);
 
             //we don't have yet the twin data so we need to get it 
             if (joinLoraDeviceInfo.AppKey == null || joinLoraDeviceInfo.AppEUI == null)
@@ -222,7 +237,7 @@ namespace LoRaWan.NetworkServer
                     //Make sure that is a new request and not a replay
                     if (twin.Properties.Reported.Contains("DevNonce"))
                     {
-                        joinLoraDeviceInfo.DevNonce = DevNonce;
+                        joinLoraDeviceInfo.DevNonce = twin.Properties.Reported["DevNonce"];
                     }
 
                     if (twin.Properties.Desired.Contains("GatewayID"))
@@ -238,7 +253,7 @@ namespace LoRaWan.NetworkServer
                     Logger.Log(DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
 
                 }
-               
+
 
             }
             else
@@ -261,7 +276,7 @@ namespace LoRaWan.NetworkServer
             if(!String.IsNullOrEmpty(joinLoraDeviceInfo.DevNonce) && joinLoraDeviceInfo.DevNonce == DevNonce)
             {
                        
-                string errorMsg = $"DevNonce already used for device";
+                string errorMsg = $"DevNonce already used by this device";
                 Logger.Log(DevEUI, errorMsg, Logger.LoggingLevel.Info);
                 joinLoraDeviceInfo.IsJoinValid = false;
                 return joinLoraDeviceInfo;

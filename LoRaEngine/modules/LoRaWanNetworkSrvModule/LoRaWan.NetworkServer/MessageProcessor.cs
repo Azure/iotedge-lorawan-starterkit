@@ -118,10 +118,15 @@ namespace LoRaWan.NetworkServer
                 {
                     if (loraMessage.CheckMic(loraDeviceInfo.NwkSKey))
                     {
-                        if (loraDeviceInfo.HubSender == null)
-                        {
+                        //todo ronnie check if it make sense to always recreate the deviceclient
+                        //if (loraDeviceInfo.HubSender == null)
+                        //{
                             loraDeviceInfo.HubSender = new IoTHubSender(loraDeviceInfo.DevEUI, loraDeviceInfo.PrimaryKey);
-                        }
+                        //}
+
+                        //we enable retry to process msgs
+                        loraDeviceInfo.HubSender.SetRetry(true);
+
                         UInt16 fcntup = BitConverter.ToUInt16(((LoRaPayloadStandardData)loraMessage.PayloadMessage).Fcnt, 0);
                         byte[] linkCheckCmdResponse = null;
 
@@ -410,6 +415,9 @@ namespace LoRaWan.NetworkServer
                 Logger.Log(devAddr, $"device with devAddr {devAddr} is not our device, ignore message", Logger.LoggingLevel.Info);
             }
 
+            //we disable retry so other gateway can connet to iothub
+            loraDeviceInfo.HubSender.SetRetry(false);
+
             Logger.Log(loraDeviceInfo.DevEUI, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
 
 
@@ -485,6 +493,7 @@ namespace LoRaWan.NetworkServer
 
                 //update reported properties and frame Counter
                 await joinLoraDeviceInfo.HubSender.UpdateReportedPropertiesOTAAasync(joinLoraDeviceInfo);
+                
 
                 byte[] appNonce = StringToByteArray(joinLoraDeviceInfo.AppNonce);
                 byte[] netId = StringToByteArray(joinLoraDeviceInfo.NetId);
