@@ -62,16 +62,19 @@ namespace LoRaWan.NetworkServer
         /// <param name="loraDeviceInfo"> the LoRa info to report</param>
         public async Task UpdateReportedPropertiesOTAAasync(LoraDeviceInfo loraDeviceInfo)
         {
+            Logger.Log(DevEUI, $"saving join properties twins", Logger.LoggingLevel.Info);
             CreateDeviceClient();
             TwinCollection reportedProperties = new TwinCollection();
             reportedProperties["NwkSKey"] = loraDeviceInfo.NwkSKey;
             reportedProperties["AppSKey"] = loraDeviceInfo.AppSKey;
             reportedProperties["DevEUI"] = loraDeviceInfo.DevEUI;
+            reportedProperties["DevAddr"] = loraDeviceInfo.DevAddr;
             reportedProperties["NetId"] = loraDeviceInfo.NetId;
             reportedProperties["FCntUp"] =loraDeviceInfo.FCntUp;
             reportedProperties["FCntDown"] =loraDeviceInfo.FCntDown;
+            reportedProperties["DevNonce"] = loraDeviceInfo.DevNonce;
             await deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
-            Logger.Log(DevEUI,$"join reported properties and fcnt have been set", Logger.LoggingLevel.Info);        
+            Logger.Log(DevEUI,$"done saving join properties twins", Logger.LoggingLevel.Info);        
         }
 
         public IoTHubSender(string DevEUI, string PrimaryKey)
@@ -92,21 +95,7 @@ namespace LoRaWan.NetworkServer
 
                     string partConnection = createIoTHubConnectionString();
                     string deviceConnectionStr = $"{partConnection}DeviceId={DevEUI};SharedAccessKey={PrimaryKey}";
-                    //enabling Amqp multiplexing
-                    //var transportSettings = new ITransportSettings[]
-                    //{
-                    //    new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-                    //    {
-                    //        AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
-                    //        {
 
-                    //            Pooling = true,
-                    //            MaxPoolSize = 1
-                    //        }
-                    //    }
-                    //};
-                    
-                   
                     deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Mqtt_Tcp_Only);
                     //we set the retry only when sending msgs                    
                     deviceClient.SetRetryPolicy(new NoRetry());
@@ -116,8 +105,11 @@ namespace LoRaWan.NetworkServer
                     {
                         if (status == ConnectionStatus.Disconnected)
                         {
-                            deviceClient.Dispose();
-                            deviceClient = null;
+                            if (deviceClient != null)
+                            {
+                                deviceClient.Dispose();
+                                deviceClient = null;
+                            }
                             //todo ronnie should we log the closing of the connection?
                             //Logger.Log(DevEUI, $"connection closed by the server",Logger.LoggingLevel.Info);
                         }
