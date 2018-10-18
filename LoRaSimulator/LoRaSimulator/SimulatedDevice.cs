@@ -49,7 +49,7 @@ namespace LoRaSimulator
             Array.Reverse(DevEUI);
 
             byte[] DevNonce = new byte[2];
-            if (LoRaDevice.DevNonce == null)
+            if (LoRaDevice.DevNonce == "")
             {                               
                 Random random = new Random();
                 // DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
