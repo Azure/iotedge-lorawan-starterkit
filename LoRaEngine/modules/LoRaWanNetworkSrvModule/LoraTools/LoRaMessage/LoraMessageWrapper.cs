@@ -38,9 +38,9 @@ namespace LoRaTools.LoRaMessage
         /// see 
         /// </summary>
         public bool IsLoRaMessage = false;
-        public LoRaPayload PayloadMessage { get; set; }
+        public LoRaPayload LoRaPayloadMessage { get; set; }
 
-        public PktFwdMessage FullPayload { get; set; }
+        public PktFwdMessage PktFwdPayload { get; set; }
 
         public PhysicalPayload PhysicalPayload { get; set; }
 
@@ -56,7 +56,6 @@ namespace LoRaTools.LoRaMessage
         public LoRaMessageWrapper(byte[] inputMessage)
         {
             // packet normally sent by the gateway as heartbeat. TODO find more elegant way to integrate.
-
             PhysicalPayload = new PhysicalPayload(inputMessage);
             if (PhysicalPayload.message != null)
             {
@@ -67,26 +66,26 @@ namespace LoRaTools.LoRaMessage
                     Logger.Log($"DataUp {payload}", Logger.LoggingLevel.Full);
 
                 var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
-                FullPayload = payloadObject;
+                PktFwdPayload = payloadObject;
                 // set up the parts of the raw message   
                 // status message
-                if (FullPayload.GetPktFwdMessage().Rxpks[0].data != null)
+                if (PktFwdPayload.GetPktFwdMessage().Rxpks[0].data != null)
                 {
-                    byte[] convertedInputMessage = Convert.FromBase64String(FullPayload.GetPktFwdMessage().Rxpks[0].data);
+                    byte[] convertedInputMessage = Convert.FromBase64String(PktFwdPayload.GetPktFwdMessage().Rxpks[0].data);
                     var messageType = convertedInputMessage[0] >> 5;
                     LoRaMessageType = (LoRaMessageType)messageType;
                     // Uplink Message
                     if (messageType == (int)LoRaMessageType.UnconfirmedDataUp)
                     {
-                        PayloadMessage = new LoRaPayloadData(convertedInputMessage);
+                        LoRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
                     }
                     else if (messageType == (int)LoRaMessageType.ConfirmedDataUp)
                     {
-                        PayloadMessage = new LoRaPayloadData(convertedInputMessage);
+                        LoRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
                     }
                     else if (messageType == (int)LoRaMessageType.JoinRequest)
                     {
-                        PayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
+                        LoRaPayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
                     }
                     IsLoRaMessage = true;
                 }
@@ -115,11 +114,12 @@ namespace LoRaTools.LoRaMessage
         /// 6 = Rejoin Request</param>
         public LoRaMessageWrapper(LoRaPayload payload, LoRaMessageType type, byte[] physicalToken)
         {
+            LoRaPayloadMessage = payload;
             // construct a Join Accept Message
             if (type == LoRaMessageType.JoinAccept)
             {                              
                 var downlinkmsg = new DownlinkPktFwdMessage(Convert.ToBase64String(payload.GetByteMessage()));
-                FullPayload = downlinkmsg;
+                PktFwdPayload = downlinkmsg;
                 var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
                 var messageBytes = Encoding.Default.GetBytes(jsonMsg);
                 PhysicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);
@@ -136,13 +136,12 @@ namespace LoRaTools.LoRaMessage
 
         public LoRaMessageWrapper(LoRaPayload payload, LoRaMessageType type, byte[] physicalToken, string _datr, uint _rfch, double _freq, long _tmst)
         {
-                //UnconfirmedDataDown/ COnfirmedDataDown had tmst of 1000000             
-                var downlinkmsg = new DownlinkPktFwdMessage(Convert.ToBase64String(PayloadMessage.GetByteMessage()), _datr, _rfch, _freq, _tmst);
-            FullPayload = downlinkmsg;
-                var jsonMsg = JsonConvert.SerializeObject(downlinkmsg);
-                Logger.Log($"JoinAccept {jsonMsg}", Logger.LoggingLevel.Full);
-                var messageBytes = Encoding.Default.GetBytes(jsonMsg);
-                PhysicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);     
+            LoRaPayloadMessage = payload;
+            PktFwdPayload = new DownlinkPktFwdMessage(Convert.ToBase64String(LoRaPayloadMessage.GetByteMessage()), _datr, _rfch, _freq, _tmst);
+            var jsonMsg = JsonConvert.SerializeObject(PktFwdPayload);
+            Logger.Log($"{type.ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+            var messageBytes = Encoding.Default.GetBytes(jsonMsg);
+            PhysicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);     
         }
 
         /// <summary>
@@ -152,7 +151,7 @@ namespace LoRaTools.LoRaMessage
         /// <returns>a boolean telling if the MIC is valid or not</returns>
         public bool CheckMic(string nwskey)
         {
-            return PayloadMessage.CheckMic(nwskey);
+            return LoRaPayloadMessage.CheckMic(nwskey);
         }
 
         /// <summary>
@@ -162,7 +161,7 @@ namespace LoRaTools.LoRaMessage
         /// <returns>a boolean telling if the MIC is valid or not</returns>
         public byte[] DecryptPayload(string appSkey)
         {
-            var retValue = PayloadMessage.PerformEncryption(appSkey);
+            var retValue = LoRaPayloadMessage.PerformEncryption(appSkey);
             return retValue;
         }
     }

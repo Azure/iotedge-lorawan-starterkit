@@ -89,12 +89,12 @@ namespace LoRaTools.LoRaMessage
            if(loRaGenericPayload.GetType() == typeof(LoRaPayloadJoinAccept))
             {
                 LoRaMessageAdapterEnum = LoRaMessageAdapterEnum.JoinAccept;
-                AppEUI = ((LoRaPayloadJoinAccept)loRaGenericPayload).AppNonce;
-                AppEUI = ((LoRaPayloadJoinAccept)loRaGenericPayload).CfList;
-                AppEUI = ((LoRaPayloadJoinAccept)loRaGenericPayload).DlSettings;
-                AppEUI = ((LoRaPayloadJoinAccept)loRaGenericPayload).Fcnt;
-                AppEUI = ((LoRaPayloadJoinAccept)loRaGenericPayload).NetID;
-                AppEUI = ((LoRaPayloadJoinAccept)loRaGenericPayload).RxDelay;
+                AppNonce = ((LoRaPayloadJoinAccept)loRaGenericPayload).AppNonce;
+                CfList = ((LoRaPayloadJoinAccept)loRaGenericPayload).CfList;
+                DlSettings = ((LoRaPayloadJoinAccept)loRaGenericPayload).DlSettings;
+                Fcnt = ((LoRaPayloadJoinAccept)loRaGenericPayload).Fcnt;
+                NetID = ((LoRaPayloadJoinAccept)loRaGenericPayload).NetID;
+                RxDelay = ((LoRaPayloadJoinAccept)loRaGenericPayload).RxDelay;
             }
             else if (loRaGenericPayload.GetType() == typeof(LoRaPayloadJoinRequest))
             {
