@@ -64,6 +64,16 @@ For OTAA devices, mandatory fields are the following:
 
 **Note**: all the string representation are hexadecimal representations of bytes in bigendian except for ```Interval```, ```FrmCntUp``` and ```FrmCntDown``` which are decimal numbers.
 
+Please note you'll have to create the devices and have the right Device Twin information as well. Here is an example of those 2 devices with the desired properties. You will see as well the reported ones as they've been reporting as well their usage.
+
+![OTTA device twin properties](/pictures/reportedOTAA.png)
+
+![ABP device twin properties](/pictures/reportedABP.png)
+
+**Note**: If you want to use a specific decoder, you have to specify it as well in the device twin. The simulator is so far built for the ```DecoderValueSensor``` one. If nothing is specified, the convertion will be a byte array to string and won't really represent anything valid. You still can run tests of course with it.
+
+**Note**: one more time, for ABP devices, you **must** use the same device id as the DevEUI property.
+
 ## Creating the simulated gateway
 
 The gateway definition is stored in the same file as for the simulated devices. ```testconfig.json``` file located in [/LoRaSimulator/LoraSimulator](/LoRaSimulator/LoraSimulator) folder. As for the simulated devices, the file is copied when building the solution with the executable, once done, if you want to adjust it, make sure you'll do it in the build directory.

@@ -478,6 +478,12 @@ namespace LoRaWan.NetworkServer
                     devAddr,
                     appNonce
                     );
+                // For debug only                
+                // var appSKey = BitConverter.ToString(loRaPayloadJoinAccept.CalculateKey(LoRaDataPayload.KeyType.AppSKey, appNonce, loRaPayloadJoinAccept.NetID, StringToByteArray(devNonce), StringToByteArray(appKey))).Replace("-", "");
+                // var nwkSKey = BitConverter.ToString(loRaPayloadJoinAccept.CalculateKey(LoRaDataPayload.KeyType.NwkSKey, appNonce, loRaPayloadJoinAccept.NetID, StringToByteArray(devNonce), StringToByteArray(appKey))).Replace("-", "");
+                // Logger.Log(BitConverter.ToString(devAddr).Replace("-", ""), $"AppNonce: {BitConverter.ToString(appNonce).Replace("-", "")}" +
+                //    $" AppSKey: {appSKey} NwkSKey: {nwkSKey}", Logger.LoggingLevel.Full);
+                // End of Debug only
                 var _datr = RegionFactory.CurrentRegion.GetDownstreamDR(((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0]);
                 uint _rfch = ((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0].rfch;
                 double _freq = RegionFactory.CurrentRegion.GetDownstreamChannel(((UplinkPktFwdMessage)loraMessage.LoraMetadata.FullPayload).rxpk[0]);

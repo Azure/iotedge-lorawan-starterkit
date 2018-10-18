@@ -214,14 +214,16 @@ namespace LoRaSimulator
                                                 Array.Reverse(netid);
                                                 var appNonce = payload.AppNonce;
                                                 Array.Reverse(appNonce);
-                                                var appSKey = payload.CalculateKey(LoRaDataPayload.KeyType.AppSKey, appNonce, netid, dev.LoRaDevice.GetDevNonce(), dev.LoRaDevice.GetAppKey());
+                                                var devNonce = dev.LoRaDevice.GetDevNonce();
+                                                Array.Reverse(devNonce);
+                                                var appSKey = payload.CalculateKey(LoRaDataPayload.KeyType.AppSKey, appNonce, netid, devNonce, dev.LoRaDevice.GetAppKey());
                                                 dev.LoRaDevice.AppSKey = BitConverter.ToString(appSKey).Replace("-", "");
-                                                var nwkSKey = payload.CalculateKey(LoRaDataPayload.KeyType.NwkSKey, payload.AppNonce, payload.NetID, dev.LoRaDevice.GetDevNonce(), dev.LoRaDevice.GetAppKey());
+                                                var nwkSKey = payload.CalculateKey(LoRaDataPayload.KeyType.NwkSKey, payload.AppNonce, netid, devNonce, dev.LoRaDevice.GetAppKey());
                                                 dev.LoRaDevice.NwkSKey = BitConverter.ToString(nwkSKey).Replace("-", "");
                                                 dev.LoRaDevice.NetId = BitConverter.ToString(netid).Replace("-", "");
                                                 dev.LoRaDevice.AppNonce = BitConverter.ToString(appNonce).Replace("-", "");
                                                 var devAdd = payload.DevAddr;
-                                                Array.Reverse(devAdd);
+                                                //Array.Reverse(devAdd);
                                                 dev.LoRaDevice.DevAddr = BitConverter.ToString(devAdd).Replace("-", "");
                                             }
                                         }
