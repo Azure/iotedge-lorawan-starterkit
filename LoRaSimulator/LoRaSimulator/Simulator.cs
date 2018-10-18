@@ -160,7 +160,7 @@ namespace LoRaSimulator
             {
                 UdpReceiveResult receivedResults = await udpClient.ReceiveAsync();
 
-                Logger.Log($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}", Logger.LoggingLevel.Always);
+                // Logger.Log($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}", Logger.LoggingLevel.Always);
 
 
                 // If 4, it may mean we received a confirmation

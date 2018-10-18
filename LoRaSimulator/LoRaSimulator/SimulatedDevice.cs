@@ -19,6 +19,8 @@ namespace LoRaSimulator
         private byte[] _FCnt = new byte[2];
         public PhysicalPayload LastPayload { get; set; }
 
+        private bool isFirstJoinRequest = true;
+
         public SimulatedDevice(string json)
         {
             try
@@ -49,13 +51,14 @@ namespace LoRaSimulator
             Array.Reverse(DevEUI);
 
             byte[] DevNonce = new byte[2];
-            if (LoRaDevice.DevNonce == "")
+            if ((LoRaDevice.DevNonce == "") || (!isFirstJoinRequest))
             {                               
                 Random random = new Random();
                 // DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
                 random.NextBytes(DevNonce);                
                 LoRaDevice.DevNonce = BitConverter.ToString(DevNonce).Replace("-", "");
                 Array.Reverse(DevNonce);
+                isFirstJoinRequest = false;
             }
             else
             {
