@@ -22,19 +22,26 @@ namespace LoRaWan.NetworkServer
 
         public async Task<Twin> GetTwinAsync()
         {
+            CreateDeviceClient();
+            setRetry(true);
             var twin = await deviceClient.GetTwinAsync();
+            setRetry(false);
 
-                return twin;
+            return twin;
+           
         }
 
         public async Task UpdateFcntAsync(int FCntUp, int? FCntDown, bool force = false)
         {
             try
             {
+
                 //update the twins every 10
                 if (FCntUp % 10 == 0 || force == true )
                 {
                     CreateDeviceClient();
+                    setRetry(true);
+
                     TwinCollection prop;
                     if (FCntDown != null)
                     {
@@ -45,6 +52,8 @@ namespace LoRaWan.NetworkServer
                         prop = new TwinCollection($"{{\"FCntUp\":{FCntUp}}}");
                     }
                     await deviceClient.UpdateReportedPropertiesAsync(prop);
+
+                    setRetry(false);
                     Logger.Log(DevEUI, $"twins updated {FCntUp}:{FCntDown}", Logger.LoggingLevel.Info);
                 }
 
@@ -62,8 +71,11 @@ namespace LoRaWan.NetworkServer
         /// <param name="loraDeviceInfo"> the LoRa info to report</param>
         public async Task UpdateReportedPropertiesOTAAasync(LoraDeviceInfo loraDeviceInfo)
         {
+
             Logger.Log(DevEUI, $"saving join properties twins", Logger.LoggingLevel.Info);
             CreateDeviceClient();
+            setRetry(true);
+
             TwinCollection reportedProperties = new TwinCollection();
             reportedProperties["NwkSKey"] = loraDeviceInfo.NwkSKey;
             reportedProperties["AppSKey"] = loraDeviceInfo.AppSKey;
@@ -74,6 +86,8 @@ namespace LoRaWan.NetworkServer
             reportedProperties["FCntDown"] =loraDeviceInfo.FCntDown;
             reportedProperties["DevNonce"] = loraDeviceInfo.DevNonce;
             await deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+
+            setRetry(false);
             Logger.Log(DevEUI,$"done saving join properties twins", Logger.LoggingLevel.Info);        
         }
 
@@ -99,9 +113,9 @@ namespace LoRaWan.NetworkServer
                     deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Mqtt_Tcp_Only);
 
                     deviceClient.OperationTimeoutInMilliseconds = 5000;
-                    
+
                     //we set the retry only when sending msgs                    
-                    //deviceClient.SetRetryPolicy(new NoRetry());
+                    setRetry(false);
 
                     //if the server disconnects dispose the deviceclient and new one will be created when a new d2c msg comes in.
                     deviceClient.SetConnectionStatusChangesHandler((status, reason) =>
@@ -126,17 +140,23 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public void SetRetry(bool retryon)
+        private void setRetry(bool retryon)
         {
             if (retryon)
             {
-                deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
-                Logger.Log(DevEUI, $"retry is on",Logger.LoggingLevel.Info);
+                if (deviceClient != null)
+                {
+                    deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
+                    Logger.Log(DevEUI, $"retry is on", Logger.LoggingLevel.Info);
+                }
             }
             else
             {
-                deviceClient.SetRetryPolicy(new NoRetry());
-                Logger.Log(DevEUI, $"retry is off", Logger.LoggingLevel.Info);
+                if (deviceClient != null)
+                {
+                    deviceClient.SetRetryPolicy(new NoRetry());
+                    Logger.Log(DevEUI, $"retry is off", Logger.LoggingLevel.Info);
+                }
             }
         }
 
@@ -149,19 +169,26 @@ namespace LoRaWan.NetworkServer
                 {
                     CreateDeviceClient();
 
-                    //Enable retry for this send message, on by default              
-                    //deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
+                    //Enable retry for this send message, off by default              
+                    setRetry(true);
+
                     var message = new Message(UTF8Encoding.ASCII.GetBytes(strMessage));
                     foreach (var prop in properties)
                         message.Properties.Add(prop);
                     await deviceClient.SendEventAsync(message);
 
+                    Logger.Log(DevEUI, $"sent message {message} to hub", Logger.LoggingLevel.Full);
+
                     //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device                    
-                    //deviceClient.SetRetryPolicy(new NoRetry());
+                    setRetry(false);
                 }
                 catch (Exception ex)
                 {
+                    //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device                    
+                     setRetry(false);
+
                     Logger.Log(DevEUI, $"could not send message to IoTHub/Edge with error: {ex.Message}", Logger.LoggingLevel.Error);
+                   
                 }
 
             }

@@ -94,7 +94,8 @@ namespace LoRaWan.NetworkServer
             string devAddr = BitConverter.ToString(loraMessage.PayloadMessage.DevAddr).Replace("-", "");
             Message c2dMsg = null;
             Cache.TryGetValue(devAddr, out LoraDeviceInfo loraDeviceInfo);
-            if (loraDeviceInfo == null)
+
+            if (loraDeviceInfo == null  || !loraDeviceInfo.IsOurDevice)
             {
                 loraDeviceInfo = await LoraDeviceInfoManager.GetLoraDeviceInfoAsync(devAddr);
 
@@ -118,15 +119,13 @@ namespace LoRaWan.NetworkServer
                 {
                     if (loraMessage.CheckMic(loraDeviceInfo.NwkSKey))
                     {
-                        //todo ronnie check if it make sense to always recreate the deviceclient
-                        //if (loraDeviceInfo.HubSender == null)
-                        //{
+                        
+                        if (loraDeviceInfo.HubSender == null)
+                        {
                             loraDeviceInfo.HubSender = new IoTHubSender(loraDeviceInfo.DevEUI, loraDeviceInfo.PrimaryKey);
-                        //}
+                        }
 
-                        //we enable retry to process msgs
-                        loraDeviceInfo.HubSender.SetRetry(true);
-
+                       
                         UInt16 fcntup = BitConverter.ToUInt16(((LoRaPayloadStandardData)loraMessage.PayloadMessage).Fcnt, 0);
                         byte[] linkCheckCmdResponse = null;
 
@@ -193,8 +192,11 @@ namespace LoRaWan.NetworkServer
                             }
 
                             string iotHubMsg = fullPayload.ToString(Newtonsoft.Json.Formatting.None);
+
+                            Logger.Log(loraDeviceInfo.DevEUI, $"sending message '{jsonDataPayload}' to hub", Logger.LoggingLevel.Info);
+
                             await loraDeviceInfo.HubSender.SendMessageAsync(iotHubMsg, messageProperties);
-                            Logger.Log(loraDeviceInfo.DevEUI, $"sent message '{jsonDataPayload}' to hub", Logger.LoggingLevel.Info);
+                           
 
                             loraDeviceInfo.FCntUp = fcntup;
                         }
@@ -415,12 +417,11 @@ namespace LoRaWan.NetworkServer
                 Logger.Log(devAddr, $"device with devAddr {devAddr} is not our device, ignore message", Logger.LoggingLevel.Info);
             }
 
-            //we disable retry so other gateway can connet to iothub
-            loraDeviceInfo.HubSender.SetRetry(false);
+           
+            
 
             Logger.Log(loraDeviceInfo.DevEUI, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
-
-
+            
 
             return udpMsgForPktForwarder;
         }
@@ -557,7 +558,7 @@ namespace LoRaWan.NetworkServer
             }
 
             Logger.Log(joinLoraDeviceInfo.DevEUI, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
-
+     
 
             return udpMsgForPktForwarder;
         }

@@ -58,12 +58,11 @@ namespace LoRaWan.NetworkServer
                 loraDeviceInfo.DevEUI = iotHubDeviceInfo.DevEUI;
                 loraDeviceInfo.PrimaryKey = iotHubDeviceInfo.PrimaryKey;
 
-                Logger.Log(loraDeviceInfo.DevEUI, $"getting twins", Logger.LoggingLevel.Info);
-
+                
                 loraDeviceInfo.HubSender = new IoTHubSender(iotHubDeviceInfo.DevEUI, iotHubDeviceInfo.PrimaryKey);
 
-                //we enable retry to process msgs
-                loraDeviceInfo.HubSender.SetRetry(true);
+                Logger.Log(loraDeviceInfo.DevEUI, $"getting twins", Logger.LoggingLevel.Info);
+
 
                 var twin = await loraDeviceInfo.HubSender.GetTwinAsync();
 
@@ -197,9 +196,7 @@ namespace LoRaWan.NetworkServer
             
             joinLoraDeviceInfo.HubSender = new IoTHubSender(joinLoraDeviceInfo.DevEUI, joinLoraDeviceInfo.PrimaryKey);
 
-            //todo ronnie check the retry logic, in this case we stop retring to avoid doing iot hub twins while alredy out of time
-            joinLoraDeviceInfo.HubSender.SetRetry(false);
-
+          
             //we don't have yet the twin data so we need to get it 
             if (joinLoraDeviceInfo.AppKey == null || joinLoraDeviceInfo.AppEUI == null)
             {
