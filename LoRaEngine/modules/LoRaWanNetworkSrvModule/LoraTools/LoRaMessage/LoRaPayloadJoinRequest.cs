@@ -33,9 +33,27 @@ namespace LoRaTools.LoRaMessage
 
         }
 
-
+        public LoRaPayloadJoinRequest(byte[] _AppEUI, byte[] _DevEUI, byte[] _DevNonce)
+        {
+            // Mhdr is always 0 in case of a join request
+            Mhdr = new byte[1] { 0x00 };
+            AppEUI = new Memory<byte>(_AppEUI);
+            DevEUI = new Memory<byte>(_DevEUI);
+            DevNonce = new Memory<byte>(_DevNonce);
+            Mic = new Memory<byte>();
+        }
 
         public override bool CheckMic(string appKey)
+        {           
+            return Mic.ToArray().SequenceEqual(PerformMic(appKey));
+        }
+
+        public void SetMic(string appKey)
+        {
+            Mic = PerformMic(appKey);
+        }
+
+        private byte[] PerformMic(string appKey)
         {
             IMac mac = MacUtilities.GetMac("AESCMAC");
 
@@ -46,7 +64,7 @@ namespace LoRaTools.LoRaMessage
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);
             var resStr = BitConverter.ToString(result);
-            return Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
+            return result.Take(4).ToArray();
         }
 
         public override byte[] PerformEncryption(string appSkey)
@@ -56,7 +74,16 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] GetByteMessage()
         {
-            throw new NotImplementedException();
+            List<byte> messageArray = new List<byte>();
+            messageArray.AddRange(Mhdr.ToArray());
+            messageArray.AddRange(AppEUI.ToArray());
+            messageArray.AddRange(DevEUI.ToArray());
+            messageArray.AddRange(DevNonce.ToArray());
+            if (!Mic.Span.IsEmpty)
+            {
+                messageArray.AddRange(Mic.ToArray());
+            }
+            return messageArray.ToArray();
         }
     }
 }

@@ -52,10 +52,10 @@ namespace LoRaTools.LoRaMessage
         /// This contructor is used in case of uplink message, hence we don't know the message type yet
         /// </summary>
         /// <param name="inputMessage"></param>
-        public LoRaMessageWrapper(byte[] inputMessage)
+        public LoRaMessageWrapper(byte[] inputMessage, bool server = false, string AppKey = "")
         {
             // packet normally sent by the gateway as heartbeat. TODO find more elegant way to integrate.
-            PhysicalPayload = new PhysicalPayload(inputMessage);
+            PhysicalPayload = new PhysicalPayload(inputMessage, server);
             if (PhysicalPayload.message != null)
             {
                 var payload = Encoding.Default.GetString(PhysicalPayload.message);
@@ -85,6 +85,10 @@ namespace LoRaTools.LoRaMessage
                     else if (messageType == (int)LoRaMessageType.JoinRequest)
                     {
                         LoRaPayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
+                    }
+                    else if (messageType == (int)LoRaMessageType.JoinAccept)
+                    {
+                        LoRaPayloadMessage = new LoRaPayloadJoinAccept(convertedInputMessage, AppKey);
                     }
                     IsLoRaMessage = true;
                 }

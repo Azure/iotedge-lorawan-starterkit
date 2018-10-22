@@ -82,20 +82,77 @@ namespace LoRaTools.LoRaMessage
             PerformEncryption(appKey);
         }
 
+        public LoRaPayloadJoinAccept(byte[] inputMessage, string appKey)
+        {
+            // Only MHDR is not encrypted with the key
+            // ( PHYPayload = MHDR[1] | MACPayload[..] | MIC[4] )
+            Mhdr = new Memory<byte>(inputMessage, 0, 1);
+            // Then we will take the rest and decrypt it
+            //DecryptPayload(inputMessage);
+            //var decrypted = PerformEncryption(appKey);
+            //Array.Copy(decrypted, 0, inputMessage, 0, decrypted.Length);
+            //DecryptPayload(inputMessage);
+            AesEngine aesEngine = new AesEngine();
+            var key = ConversionHelper.StringToByteArray(appKey);
+            aesEngine.Init(true, new KeyParameter(key));
+            Aes aes = new AesManaged();
+            aes.Key = key;
+            aes.IV = new byte[16];
+            aes.Mode = CipherMode.ECB;
+            aes.Padding = PaddingMode.None;
+
+            ICryptoTransform cipher;
+
+            cipher = aes.CreateEncryptor();
+            byte[] pt = new byte[inputMessage.Length - 1];
+            Array.Copy(inputMessage, 1, pt, 0, pt.Length);
+            //Array.Reverse(pt);
+            var decryptedPayload = cipher.TransformFinalBlock(pt, 0, pt.Length);
+            // We will copy back in the main inputMessage the content
+            Array.Copy(decryptedPayload, 0, inputMessage, 1, decryptedPayload.Length);
+
+            // ( MACPayload = AppNonce[3] | NetID[3] | DevAddr[4] | DLSettings[1] | RxDelay[1] | CFList[0|15] )
+            var appNonce = new byte[3];
+            Array.Copy(inputMessage, 1, appNonce, 0, 3);
+            Array.Reverse(appNonce);
+            AppNonce = new Memory<byte>(appNonce);
+            var netID = new byte[3];
+            Array.Copy(inputMessage, 4, netID, 0, 3);
+            Array.Reverse(netID);
+            NetID = new Memory<byte>(netID);
+            var devAddr = new byte[4];
+            Array.Copy(inputMessage, 7, devAddr, 0, 4);
+            Array.Reverse(devAddr);
+            DevAddr = new Memory<byte>(devAddr);
+            var dlSettings = new byte[1];
+            Array.Copy(inputMessage, 11, dlSettings, 0, 1);
+            DlSettings = new Memory<byte>(dlSettings);
+            var rxDelay = new byte[1];
+            Array.Copy(inputMessage, 11, rxDelay, 0, 1);
+            RxDelay = new Memory<byte>(rxDelay);
+            // It's the configuration list, it can be empty or up to 15 bytes
+            // - 17 = - 1 - 3 - 3 - 4 - 1 - 1 - 4
+            // This is the size of all mandatory elements of the message
+            var cfList = new byte[inputMessage.Length - 17];
+            Array.Copy(inputMessage, 12, cfList, 0, inputMessage.Length - 17);
+            Array.Reverse(cfList);
+            CfList = new Memory<byte>(cfList);
+            var mic = new byte[4];
+            Array.Copy(inputMessage, inputMessage.Length - 4, mic, 0, 4);
+            Mic = new Memory<byte>(mic);
+
+        }
 
         public override byte[] PerformEncryption(string appSkey)
         {
-            byte[] rfu = new byte[1];
-            rfu[0] = 0x0;
-
             byte[] pt;
             if (!CfList.Span.IsEmpty)
             {
-                pt = AppNonce.ToArray().Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(rfu).Concat(RxDelay.ToArray()).Concat(CfList.ToArray()).Concat(Mic.ToArray()).ToArray();
+                pt = AppNonce.ToArray().Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).Concat(CfList.ToArray()).Concat(Mic.ToArray()).ToArray();
             }
             else
             {
-                pt = AppNonce.ToArray().Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(rfu).Concat(RxDelay.ToArray()).Concat(Mic.ToArray()).ToArray();
+                pt = AppNonce.ToArray().Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).Concat(Mic.ToArray()).ToArray();
             }
 
             Aes aes = new AesManaged();
