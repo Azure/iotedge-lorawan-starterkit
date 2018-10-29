@@ -1,7 +1,7 @@
 
 #include <LoRaWan.h>
 //set to true to send confirmed data up messages
-bool confirmed=false;
+bool confirmed=true;
 //application information, should be similar to what was provisiionned in the device twins
 char * deviceId ="47AAC86800430028";
 char * appKey="8AFE71A145B253E49C3031AD068277A1";
@@ -44,7 +44,6 @@ void setup(void)
     lora.setChannel(2, 868.5);
     
     lora.setReceiceWindowFirst(0, 868.1);
-    lora.setReceiceWindowSecond(868.5, DR2);
     
   lora.setAdaptiveDataRate(false);
 
@@ -98,5 +97,3 @@ void loop(void)
     }
   }
 }
-
-

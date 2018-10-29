@@ -110,7 +110,6 @@ namespace LoRaTools.LoRaMessage
             var decryptedPayload = cipher.TransformFinalBlock(pt, 0, pt.Length);
             // We will copy back in the main inputMessage the content
             Array.Copy(decryptedPayload, 0, inputMessage, 1, decryptedPayload.Length);
-
             // ( MACPayload = AppNonce[3] | NetID[3] | DevAddr[4] | DLSettings[1] | RxDelay[1] | CFList[0|15] )
             var appNonce = new byte[3];
             Array.Copy(inputMessage, 1, appNonce, 0, 3);

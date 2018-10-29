@@ -108,9 +108,7 @@ void configStandardLoraSettings(void)
     lora.setChannel(1, 868.3);
     lora.setChannel(2, 868.5);
     
-    lora.setReceiceWindowFirst(0, 868.1);
-    lora.setReceiceWindowSecond(868.5, DR2);
-    
+    lora.setReceiceWindowFirst(0, 868.1);    
     lora.setAdaptiveDataRate(false);
 
     lora.setDutyCycle(false);

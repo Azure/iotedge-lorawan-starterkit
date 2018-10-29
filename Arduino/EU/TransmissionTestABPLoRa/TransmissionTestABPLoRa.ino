@@ -48,7 +48,6 @@ void setup(void)
     lora.setChannel(2, 868.5);
     
     lora.setReceiceWindowFirst(0, 868.1);
-    lora.setReceiceWindowSecond(868.5, DR2);
     
     lora.setAdaptiveDataRate(false);
 
@@ -102,5 +101,3 @@ void loop(void)
     }
   }
 }
-
-

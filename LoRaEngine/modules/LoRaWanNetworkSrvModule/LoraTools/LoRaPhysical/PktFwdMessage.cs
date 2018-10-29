@@ -38,19 +38,19 @@ namespace LoRaTools.LoRaPhysical
 
         }
 
-        public DownlinkPktFwdMessage(string _data, string _datr = "SF12BW125", uint _rfch = 0, double _freq = 869.525000, long _tmst = 0)
+        public DownlinkPktFwdMessage(string data, string datr = "SF12BW125", uint rfch = 0, double freq = 869.525000, long tmst = 0)
         {
-            var byteData = Convert.FromBase64String(_data);
+            var byteData = Convert.FromBase64String(data);
             txpk = new Txpk()
             {
-                imme = _tmst == 0 ? true : false,
-                tmst = _tmst,
-                data = _data,
+                imme = tmst == 0 ? true : false,
+                tmst = tmst,
+                data = data,
                 size = (uint)byteData.Length,
-                freq = _freq,
-                rfch = _rfch,
+                freq = freq,
+                rfch = rfch,
                 modu = "LORA",
-                datr = _datr,
+                datr = datr,
                 codr = "4/5",
                 //TODO put 14 for EU
                 powe = 14,
