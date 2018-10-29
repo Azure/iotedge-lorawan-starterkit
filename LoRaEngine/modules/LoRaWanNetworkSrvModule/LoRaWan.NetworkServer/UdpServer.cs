@@ -74,17 +74,13 @@ namespace LoRaWan.NetworkServer
 
 
 
-                try
-                {
+               
                     MessageProcessor messageProcessor = new MessageProcessor();
 
                     
-                    _ = messageProcessor.ProcessMessage(receivedResults.Buffer);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log($"Error processing the message {ex.Message}", Logger.LoggingLevel.Error);
-                }
+                    _ = messageProcessor.ProcessMessageAsync(receivedResults.Buffer);
+                
+                
 
             }
 
@@ -122,6 +118,7 @@ namespace LoRaWan.NetworkServer
                     catch (ArgumentOutOfRangeException e)
                     {
                         Logger.Log("Module twin FacadeServerName not exist", Logger.LoggingLevel.Error);
+                        throw e;
                     }
                     try
                     {
@@ -130,6 +127,7 @@ namespace LoRaWan.NetworkServer
                     catch (ArgumentOutOfRangeException e)
                     {
                         Logger.Log("Module twin FacadeAuthCode does not exist", Logger.LoggingLevel.Error);
+                        throw e;
                     }
 
                     await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, null);
@@ -137,13 +135,12 @@ namespace LoRaWan.NetworkServer
                     await ioTHubModuleClient.SetMethodHandlerAsync("ClearCache", ClearCache, null);
 
 
-                }
-                //todo ronnie what to do when not running as edge?
+                }                
                 //running as non edge module for test and debugging
                 else
-                {
-                    LoraDeviceInfoManager.FacadeServerUrl = "http://localhost:7071/api/";
-                    LoraDeviceInfoManager.FacadeAuthCode = "";
+                {                    
+                    LoraDeviceInfoManager.FacadeServerUrl = Environment.GetEnvironmentVariable("FacadeServerUrl");
+                    LoraDeviceInfoManager.FacadeAuthCode = Environment.GetEnvironmentVariable("FacadeAuthCode");
                 }
 
 
@@ -154,6 +151,7 @@ namespace LoRaWan.NetworkServer
             catch (Exception ex)
             {
                 Logger.Log($"Initialization failed with error: {ex.Message}", Logger.LoggingLevel.Error);
+                throw ex;
 
             }
         }

@@ -9,7 +9,7 @@ COPY ./LoraTools ./LoraTools
 WORKDIR ./LoRaWanNetworkSrvModule
 RUN dotnet restore
 
-RUN dotnet publish -c Release -o out
+RUN dotnet publish -c Debug -o out
 
 FROM microsoft/dotnet:2.0-runtime
 WORKDIR /app

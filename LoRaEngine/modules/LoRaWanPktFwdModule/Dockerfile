@@ -9,14 +9,17 @@ RUN sed -i "s|/dev/spidev0.0|/dev/spidev2.0|g" ./lora_gateway/libloragw/src/lora
 WORKDIR /packet_forwarder
 RUN ./compile.sh
 WORKDIR /build
-
+ 
 FROM debian:stretch-slim AS exec
 WORKDIR /LoRa
 COPY --from=builder /packet_forwarder/lora_pkt_fwd/lora_pkt_fwd .
 COPY --from=builder /packet_forwarder/lora_pkt_fwd/global_conf.json .
+COPY --from=builder /packet_forwarder/lora_pkt_fwd/global_conf.json global_conf.eu.json
 COPY --from=builder /lora_gateway/reset_lgw.sh .
-COPY  global_conf.us.json .
-COPY global_conf.json global_conf.eu.json 
+COPY global_conf.us.json .
 COPY local_conf.json .
 COPY start_pktfwd.sh .
 ENTRYPOINT ["./start_pktfwd.sh"]
+
+
+
