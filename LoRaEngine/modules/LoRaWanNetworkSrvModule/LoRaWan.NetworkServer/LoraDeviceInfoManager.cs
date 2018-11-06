@@ -204,8 +204,7 @@ namespace LoRaWan.NetworkServer
             Logger.Log(DevEUI, $"querying the registry for device key", Logger.LoggingLevel.Info);
             var client = new HttpClient();
             var url = String.Concat($"{FacadeServerUrl}GetDevice?", $"{FacadeAuthCode}"=="" ? "" : $"code={FacadeAuthCode}&", $"DevEUI={DevEUI}&DevNonce={DevNonce}&GatewayId={GatewayID}");
-            Logger.Log(DevEUI, $"calling the following function url : {url}", Logger.LoggingLevel.Info);
-
+   
             HttpResponseMessage response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
