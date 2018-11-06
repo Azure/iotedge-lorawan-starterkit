@@ -289,3 +289,6 @@ __pycache__/
 
 Doc
 .vscode/
+
+# Local settings file
+appsettings.local.json
