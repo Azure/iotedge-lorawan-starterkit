@@ -1,6 +1,6 @@
 # LoRaEngine
 
-A **.NET Standard 2.0** solution with the following projects:
+A **.NET Core 2.1** solution with the following projects:
 
 - **modules** - Azure IoT Edge modules.
   - **LoRaWanPktFwdModule** packages the network forwarder into an IoT Edge compatible docker container. See https://github.com/Lora-net/packet_forwarder and https://github.com/Lora-net/lora_gateway.
@@ -180,6 +180,8 @@ It is possible to run the bits in the LoRaEngine locally with from Visual Studio
   - IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)
   - ENABLE_GATEWAY : false
   - LOG_LEVEL : 0 (optional, to activate logging level)
+  - FacadeServerUrl : http://localhost:7071/api/ (or pointer to the function you want to use)
+  - FacadeAuthCode : <your function auth code, do not set this variable if running locally>
 4. Add a local.settings.json in the project LoRa KeysManagerFacade with
 ```json
      {
@@ -190,7 +192,8 @@ It is possible to run the bits in the LoRaEngine locally with from Visual Studio
 
   },
   "ConnectionStrings": {
-    "IoTHubConnectionString": "<Connection string of your IoT Hub Owner (go to keys -> IoT Hub owner and select the connection string)>"
+    "IoTHubConnectionString": "<Connection string of your IoT Hub Owner (go to keys -> IoT Hub owner and select the connection string)>",
+    "RedisConnectionString": "<your Redis connection string>"
   }
 
 }

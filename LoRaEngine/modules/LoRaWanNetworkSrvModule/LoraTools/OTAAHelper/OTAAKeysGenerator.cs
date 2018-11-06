@@ -1,22 +1,17 @@
-﻿using System;
+﻿using LoRaTools.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
 
-namespace PacketManager
+namespace LoRaTools
 {
     public class OTAAKeysGenerator
     {
 
-        public static byte[] StringToByteArray(string hex)
-        {
-            return Enumerable.Range(0, hex.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                             .ToArray();
-        }
+
 
 
         public static string getDevAddr(Byte[] netId)
@@ -29,7 +24,7 @@ namespace PacketManager
             //loosing a bit
             devAddr[0] = (byte)nwkPart;
 
-            return BitConverter.ToString(devAddr).Replace("-", "");
+            return ConversionHelper.ByteArrayToString(devAddr);
         }
 
         //type NwkSKey = 0x01 , AppSKey = 0x02
@@ -52,7 +47,7 @@ namespace PacketManager
 
 
             var key = cipher.TransformFinalBlock(pt, 0, pt.Length);          
-            return BitConverter.ToString(key).Replace("-", "");
+            return ConversionHelper.ByteArrayToString(key);
         }
 
         public static string  getAppNonce()
@@ -60,7 +55,7 @@ namespace PacketManager
             Random rnd = new Random();
             byte[] appNonce = new byte[3];
             rnd.NextBytes(appNonce);
-            return BitConverter.ToString(appNonce).Replace("-", "");
+            return ConversionHelper.ByteArrayToString(appNonce);
         }
     }
 }
