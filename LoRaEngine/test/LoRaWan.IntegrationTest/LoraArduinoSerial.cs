@@ -481,7 +481,10 @@ namespace LoRaWan.IntegrationTest
 
         private bool ReceivedSerial(Func<string, bool> predicate)
         {
-            return predicate(this.lastSerialLine);
+            if (!string.IsNullOrEmpty(this.lastSerialLine))
+                return predicate(this.lastSerialLine);
+                
+            return false;
         }
 
         public bool transferPacketWithConfirmed (string buffer, int timeout)

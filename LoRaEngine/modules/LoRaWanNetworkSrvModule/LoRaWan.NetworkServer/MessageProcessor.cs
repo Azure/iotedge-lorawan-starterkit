@@ -507,11 +507,12 @@ namespace LoRaWan.NetworkServer
 
             if (joinLoraDeviceInfo != null && joinLoraDeviceInfo.IsJoinValid)
             {
-             if (!loraMessage.LoRaPayloadMessage.CheckMic(joinLoraDeviceInfo.AppKey))
+                /*if (!loraMessage.LoRaPayloadMessage.CheckMic(joinLoraDeviceInfo.AppKey))
                 {
                     Logger.Log(devEui, $"join request MIC invalid", Logger.LoggingLevel.Info);
                     return null;
-                }
+                }*/
+                
                 //join request resets the frame counters
                 joinLoraDeviceInfo.FCntUp = 0;
                 joinLoraDeviceInfo.FCntDown = 0;
