@@ -290,3 +290,6 @@ __pycache__/
 Doc
 /.vscode/arduino.json
 /.vscode/c_cpp_properties.json
+
+# Local settings file
+appsettings.local.json
