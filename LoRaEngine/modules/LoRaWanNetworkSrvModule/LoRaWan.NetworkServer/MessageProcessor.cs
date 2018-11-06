@@ -503,14 +503,15 @@ namespace LoRaWan.NetworkServer
             }
            
             joinLoraDeviceInfo = await LoraDeviceInfoManager.PerformOTAAAsync(GatewayID, devEui, ConversionHelper.ByteArrayToString(joinReq.AppEUI.ToArray()), devNonce,joinLoraDeviceInfo);
-            if (joinLoraDeviceInfo!=null && loraMessage.LoRaPayloadMessage.CheckMic(joinLoraDeviceInfo.AppKey))
-            {
-                Logger.Log(devEui, $"join request MIC invalid", Logger.LoggingLevel.Info);
-                return null;
-            }
+        
 
             if (joinLoraDeviceInfo != null && joinLoraDeviceInfo.IsJoinValid)
             {
+             if (!loraMessage.LoRaPayloadMessage.CheckMic(joinLoraDeviceInfo.AppKey))
+                {
+                    Logger.Log(devEui, $"join request MIC invalid", Logger.LoggingLevel.Info);
+                    return null;
+                }
                 //join request resets the frame counters
                 joinLoraDeviceInfo.FCntUp = 0;
                 joinLoraDeviceInfo.FCntDown = 0;
