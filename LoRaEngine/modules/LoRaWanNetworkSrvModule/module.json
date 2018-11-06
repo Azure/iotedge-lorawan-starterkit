@@ -4,7 +4,7 @@
   "image": {
     "repository": "$CONTAINER_REGISTRY_ADDRESS/lorawannetworksrvmodule",
     "tag": {
-      "version": "$VERSION",
+      "version": "$NET_SRV_VERSION",
       "platforms": {
         "amd64": "./Dockerfile",
         "amd64.debug": "./Dockerfile.amd64.debug",
