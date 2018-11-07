@@ -85,6 +85,8 @@ namespace LoRaWan.IntegrationTest
                 joinSucceeded = await lora.setOTAAJoinAsync(LoRaWanClass._otaa_join_cmd_t.JOIN, 20000);
                 if(joinSucceeded)
                     break;
+
+                await Task.Delay(TimeSpan.FromSeconds(5));
             }
 
             if (!joinSucceeded)
@@ -320,6 +322,9 @@ namespace LoRaWan.IntegrationTest
                 joinSucceeded = await lora.setOTAAJoinAsync(LoRaWanClass._otaa_join_cmd_t.JOIN, 20000);
                 if(joinSucceeded)
                     break;
+
+                await Task.Delay(TimeSpan.FromSeconds(5));
+
             }
 
             Assert.False(joinSucceeded, "Join succeeded with invalid devEUI");

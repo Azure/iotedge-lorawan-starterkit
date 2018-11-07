@@ -152,7 +152,7 @@ namespace LoRaWan.NetworkServer
                     string partConnection = createIoTHubConnectionString();
                     string deviceConnectionStr = $"{partConnection}DeviceId={DevEUI};SharedAccessKey={PrimaryKey}";
 
-                    deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Mqtt_Tcp_Only);
+                    deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Amqp_Tcp_Only);
 
                    
 
@@ -251,7 +251,7 @@ namespace LoRaWan.NetworkServer
 
                 deviceClient.OperationTimeoutInMilliseconds = 1500;
 
-                setRetry(false);
+                setRetry(true);
 
                 Logger.Log(DevEUI, $"checking c2d message", Logger.LoggingLevel.Full);
 
