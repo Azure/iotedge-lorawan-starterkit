@@ -251,7 +251,7 @@ namespace LoRaWan.NetworkServer
 
                 deviceClient.OperationTimeoutInMilliseconds = 1500;
 
-                setRetry(true);
+                setRetry(false);
 
                 Logger.Log(DevEUI, $"checking c2d message", Logger.LoggingLevel.Full);
 

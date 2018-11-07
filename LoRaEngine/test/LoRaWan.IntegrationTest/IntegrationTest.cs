@@ -92,11 +92,14 @@ namespace LoRaWan.IntegrationTest
                 Assert.True(joinSucceeded, "Join failed");
             }
 
+            // wait for serial messages to come
+            await Task.Delay(100);
+            
             // After join: Expectation on serial
             // +JOIN: Network joined
             // +JOIN: NetID 010000 DevAddr 02:9B:0D:3E  
-            Assert.Contains("+JOIN: Network joined", this.lora.SerialLogs);
-            Assert.Contains(this.lora.SerialLogs,(s) => s.StartsWith("+JOIN: NetID 010000", StringComparison.Ordinal));
+            //Assert.Contains("+JOIN: Network joined", this.lora.SerialLogs);            
+            Assert.Contains(this.lora.SerialLogs,(s) => s.StartsWith("+JOIN: NetID", StringComparison.Ordinal));
 
 
             // TODO: Check with Mikhail why the device twin is not being saved
@@ -151,13 +154,17 @@ namespace LoRaWan.IntegrationTest
             this.lora.ClearSerialLogs();
             testFixture.Events?.ResetEvents();
 
-            /*
-            lora.transferPacketWithConfirmed("50", 10);
+            
+            lora.transferPacketWithConfirmed(new Random().Next().ToString(), 10);
+
+            // wait for serial logs to be ready
+            await Task.Delay(TimeSpan.FromMilliseconds(200));
 
             // After transferPacketWithConfirmed: Expectation from serial
             // +CMSG: ACK Received
-            Assert.Contains("+CMSG: ACK Received", leafDeviceLog);
+            Assert.Contains("+CMSG: ACK Received", this.lora.SerialLogs);
 
+            /*
             // After transferPacketWithConfirmed: Expectation from Log
             // 72AAC86800430020: valid frame counter, msg: 2 server: 1
             // 72AAC86800430020: decoding with: DecoderTemperatureSensor port: 1
@@ -239,6 +246,20 @@ namespace LoRaWan.IntegrationTest
             {
                 Console.WriteLine("Ignoring iot hub d2c message checking");
             }
+
+
+            this.lora.ClearSerialLogs();
+            testFixture.Events?.ResetEvents();
+
+            lora.transferPacketWithConfirmed("50", 10);
+
+            // wait for serial logs to be ready
+            await Task.Delay(TimeSpan.FromMilliseconds(200));
+
+            // After transferPacketWithConfirmed: Expectation from serial
+            // +CMSG: ACK Received
+            Assert.Contains("+CMSG: ACK Received", this.lora.SerialLogs);
+
             /*
             leafDeviceLog.Clear();
             testFixture.Events.ResetEvents();
@@ -272,6 +293,40 @@ namespace LoRaWan.IntegrationTest
             */
 
             //cts.Cancel();
+        }
+
+        [Fact]
+        public async Task Test_InvalidDevEUI_OTAA_Join()
+        {
+            Console.WriteLine($"Starting {nameof(Test_InvalidDevEUI_OTAA_Join)}");
+                           
+            string appSKey = null;
+            string nwkSKey = null;
+            string devAddr = null;
+            var deviceId = "BE7A0000000014FF";
+
+            Console.WriteLine($"Connection type: {LoRaWanClass._device_mode_t.LWOTAA.ToString()}, DeviceId: {deviceId}, DeviceAppEui: {testFixture.Configuration.LeafDeviceAppEui}, DeviceAppKey: {testFixture.Configuration.LeafDeviceAppKey}");
+
+            await lora.setDeciveModeAsync(LoRaWanClass._device_mode_t.LWOTAA);
+            await lora.setIdAsync(devAddr, deviceId, testFixture.Configuration.LeafDeviceAppEui);
+            await lora.setKeyAsync(nwkSKey, appSKey, testFixture.Configuration.LeafDeviceAppKey);
+
+            await SetupLora();         
+
+            var joinSucceeded = false;
+            for (var joinAttempt=1; joinAttempt <= 2; ++joinAttempt)
+            {
+                Console.WriteLine($"Join attempt #{joinAttempt}");
+                joinSucceeded = await lora.setOTAAJoinAsync(LoRaWanClass._otaa_join_cmd_t.JOIN, 20000);
+                if(joinSucceeded)
+                    break;
+            }
+
+            Assert.False(joinSucceeded, "Join succeeded with invalid devEUI");
+
+            // After join: Expectation on serial
+            // +JOIN: Join failed
+            Assert.Contains("+JOIN: Join failed", this.lora.SerialLogs);            
         }
     }
 }

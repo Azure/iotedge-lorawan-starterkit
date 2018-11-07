@@ -481,9 +481,12 @@ namespace LoRaWan.IntegrationTest
 
         private bool ReceivedSerial(Func<string, bool> predicate)
         {
-            if (!string.IsNullOrEmpty(this.lastSerialLine))
-                return predicate(this.lastSerialLine);
-                
+            foreach (var serialLine in this.SerialLogs)
+            {
+                if (predicate(serialLine))
+                    return true;
+            }
+
             return false;
         }
 
@@ -717,12 +720,12 @@ namespace LoRaWan.IntegrationTest
             DateTime start = DateTime.Now;
 
             while (true)
-            {                
-                if (ReceivedSerial(x => x.StartsWith ("+JOIN: Done")))
-                    return true;
-                else if (ReceivedSerial(x => x.StartsWith ("+JOIN: LoRaWAN modem is busy")))
+            {            
+                if (ReceivedSerial((s) => s.StartsWith("+JOIN: Network joined", StringComparison.Ordinal)))                
+                     return true;
+                else if (ReceivedSerial(x => x.StartsWith ("+JOIN: LoRaWAN modem is busy", StringComparison.Ordinal)))
                     return false;
-                else if (ReceivedSerial(x => x.StartsWith ("+JOIN: Join failed")))
+                else if (ReceivedSerial(x => x.StartsWith ("+JOIN: Join failed", StringComparison.Ordinal)))
                     return false;
                 else if (start.AddMilliseconds (timeout) < DateTime.Now)
                     return false;         
