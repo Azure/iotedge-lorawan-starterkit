@@ -1,0 +1,20 @@
+FROM microsoft/dotnet:2.1-sdk-stretch
+ 
+# Install curl, wget and git
+RUN apt-get update && apt-get install -y \
+curl \
+wget \
+git
+ 
+# Download compiles vsts-agent
+RUN curl https://vstsagentpackage.azureedge.net/agent/2.141.0/vsts-agent-linux-arm-2.141.0.tar.gz -o vsts-agent-linux-arm-2.141.0.tar.gz
+RUN mkdir vsts-agent
+RUN tar xzf vsts-agent-linux-arm-2.141.0.tar.gz -C ./vsts-agent
+ 
+# install node
+RUN curl -sL https://deb.nodesource.com/setup_8.x
+RUN apt-get install -y nodejs
+
+COPY vsts.sh .
+
+ENTRYPOINT [ "/bin/bash", "./vsts.sh" ]

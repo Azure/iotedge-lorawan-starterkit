@@ -100,13 +100,18 @@ namespace LoRaWan.NetworkServer
                 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IOTEDGE_APIVERSION")))
                 {
                     ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
+                    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IOTEDGE_TIMEOUT")))
+                    {
+                        ioTHubModuleClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(Environment.GetEnvironmentVariable("IOTEDGE_TIMEOUT"));
+                        Logger.Log($"Changing timeout to {ioTHubModuleClient.OperationTimeoutInMilliseconds} ms", Logger.LoggingLevel.Info);
+                    }
 
                     Logger.Init(ioTHubModuleClient);
 
                     Logger.Log("Getting properties from module twin...", Logger.LoggingLevel.Info);
 
 
-                    var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
+                    var moduleTwin = await ioTHubModuleClient.GetTwinAsync();                    
                     var moduleTwinCollection = moduleTwin.Properties.Desired;
 
                     try
