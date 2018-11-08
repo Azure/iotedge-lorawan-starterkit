@@ -23,6 +23,7 @@ namespace LoRaTools.LoRaMessage
 
         public LoRaPayloadJoinRequest(byte[] inputMessage) : base(inputMessage)
         {
+            Mhdr = new Memory<byte>(inputMessage, 0, 1);
             var inputmsgstr = BitConverter.ToString(inputMessage);
             // get the joinEUI field
             AppEUI = new Memory<byte>(inputMessage,1,8) ;
@@ -59,7 +60,8 @@ namespace LoRaTools.LoRaMessage
 
             KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(appKey));
             mac.Init(key);
-            var algoinput = Mic.ToArray().Concat(AppEUI.ToArray()).Concat(DevEUI.ToArray()).Concat(DevNonce.ToArray()).ToArray();
+            
+            var algoinput = Mhdr.ToArray().Concat(AppEUI.ToArray()).Concat(DevEUI.ToArray()).Concat(DevNonce.ToArray()).ToArray();
             byte[] result = new byte[19];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);

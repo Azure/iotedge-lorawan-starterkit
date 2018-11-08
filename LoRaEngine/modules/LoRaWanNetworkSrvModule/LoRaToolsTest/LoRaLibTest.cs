@@ -10,6 +10,7 @@ using System.Linq;
 using LoRaTools.LoRaMessage;
 using LoRaTools.Utils;
 using static LoRaTools.LoRaMessage.LoRaPayload;
+using static LoRaTools.LoRaMessage.LoRaPayloadData;
 
 namespace LoRaWanTest
 {
@@ -170,7 +171,7 @@ namespace LoRaWanTest
             var appkey = new byte[16] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
                 
 
-            LoRaPayloadData lora = new LoRaPayloadData(mhdr, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
+            LoRaPayloadData lora = new LoRaPayloadData(MType.ConfirmedDataUp, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
             lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
             byte[] testEncrypt = new byte[4]
             {
@@ -256,6 +257,9 @@ namespace LoRaWanTest
         [Fact]
         public void test()
         {
+
+         
+
             string jsonUplink = @"{ ""rxpk"":[
  	            {
 		            ""time"":""2013-03-31T16:21:17.528002Z"",

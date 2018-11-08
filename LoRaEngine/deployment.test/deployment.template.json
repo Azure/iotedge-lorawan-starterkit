@@ -70,7 +70,7 @@
             },
             "env": {
               "RESET_PIN": {
-                "value": "7"
+                "value": "$RESET_PIN"
               },
               "REGION": {
                 "value": "$REGION"

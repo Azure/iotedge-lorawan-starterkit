@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 using System;
 using System.Text;
 using LoRaTools.LoRaPhysical;
+using LoRaTools.Utils;
+using static LoRaTools.LoRaMessage.LoRaPayloadData;
 
 namespace LoRaTools.LoRaMessage
 {
@@ -63,7 +65,7 @@ namespace LoRaTools.LoRaMessage
                 // todo ronnie implement a better logging by message type
                 if (!payload.StartsWith("{\"stat"))
                 {
-                    Logger.Log($"DataUp {payload}", Logger.LoggingLevel.Full);
+                    Logger.Log($"Physical dataUp {payload}", Logger.LoggingLevel.Full);
 
                     // Deserialized for uplink messages
                     var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
@@ -103,17 +105,23 @@ namespace LoRaTools.LoRaMessage
                             var payloadDownObject = JsonConvert.DeserializeObject<DownlinkPktFwdMessage>(payload);
                             if (payloadDownObject != null)
                             {
-                                // if we have data, it is a downlink message
-                                if (payloadDownObject.txpk.data != null)
+                                if (payloadDownObject.txpk != null)
                                 {
-                                    byte[] convertedInputMessage = Convert.FromBase64String(payloadDownObject.txpk.data);
-                                    var messageType = convertedInputMessage[0] >> 5;
-                                    LoRaMessageType = (LoRaMessageType)messageType;
-                                    if (messageType == (int)LoRaMessageType.JoinAccept)
+                                    // if we have data, it is a downlink message
+                                    if (payloadDownObject.txpk.data != null)
                                     {
-                                        LoRaPayloadMessage = new LoRaPayloadJoinAccept(convertedInputMessage, AppKey);
+                                        byte[] convertedInputMessage = Convert.FromBase64String(payloadDownObject.txpk.data);
+                                        var messageType = convertedInputMessage[0] >> 5;
+                                        LoRaMessageType = (LoRaMessageType)messageType;
+                                        if (messageType == (int)LoRaMessageType.JoinAccept)
+                                        {
+                                            LoRaPayloadMessage = new LoRaPayloadJoinAccept(convertedInputMessage, AppKey);
+                                        }
+                                        IsLoRaMessage = true;
                                     }
-                                    IsLoRaMessage = true;
+                                }else
+                                {
+                                    Logger.Log("Error: " + payload,Logger.LoggingLevel.Full);
                                 }
                             }
                         }
@@ -122,7 +130,6 @@ namespace LoRaTools.LoRaMessage
                 else
                 {
                     Logger.Log($"Statistic: {payload}", Logger.LoggingLevel.Full);
-
                     IsLoRaMessage = false;
                 }
             }
@@ -172,7 +179,7 @@ namespace LoRaTools.LoRaMessage
             LoRaPayloadMessage = payload;
             PktFwdPayload = new DownlinkPktFwdMessage(Convert.ToBase64String(LoRaPayloadMessage.GetByteMessage()), datr, rfch, freq, tmst);
             var jsonMsg = JsonConvert.SerializeObject(PktFwdPayload);
-            Logger.Log($"{type.ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+            Logger.Log(ConversionHelper.ByteArrayToString(payload.GetLoRaMessage().DevEUI.ToArray()),$"{((MType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
             var messageBytes = Encoding.Default.GetBytes(jsonMsg);
             PhysicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);
         }
