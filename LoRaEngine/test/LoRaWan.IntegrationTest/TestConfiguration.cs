@@ -23,22 +23,16 @@ namespace LoRaWan.IntegrationTest
         }
 
 
-
         public string IoTHubEventHubConnectionString { get; set; }
         public string IoTHubConnectionString { get; set; }
-        public int EnsureHasEventDelayBetweenReadsInSeconds { get; set; } = 2;
-        public int EnsureHasEventMaximumTries { get; set; } = 5;
+        public int EnsureHasEventDelayBetweenReadsInSeconds { get; set; } = 10;
+        public int EnsureHasEventMaximumTries { get; set; } = 2;
         public string IoTHubEventHubConsumerGroup { get; set; } = "$Default";
 
         public string LeafDeviceSerialPort { get; set; } = "/dev/ttyACM";
-
-        public string LeafDeviceOTAAId { get; set; }
-        public string LeafDeviceAppKey { get; set; }
-        public string LeafDeviceAppEui { get; set; }
-        public string LeafDeviceABPId { get; set; }
-        public string LeafDeviceABPAddr { get; set; }
-        public string LeafDeviceABPAppSKey { get; set; }
-        public string LeafDeviceABPNetworkSKey { get; set; }
+        public string LeafDeviceGatewayID { get; set; }
+        public bool CreateDevices { get; set; } = true;
+        public NetworkServerModuleLogAssertLevel NetworkServerModuleLogAssertLevel { get; set; } = NetworkServerModuleLogAssertLevel.Warning;
     }
 
 }

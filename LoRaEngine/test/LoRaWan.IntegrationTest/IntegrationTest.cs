@@ -8,27 +8,20 @@ using Xunit;
 namespace LoRaWan.IntegrationTest
 {
 
-    public enum LoraRegion 
-    {
-        EU,
-        US
-
-    }
-
     /// <summary>
     /// Integration test
     /// </summary>
     public class IntegrationTest : IClassFixture<IntegrationTestFixture>, IDisposable
     {
         private readonly IntegrationTestFixture testFixture;
-        private LoRaWanClass lora;
+        private LoRaArduinoSerial lora;
         LoraRegion loraRegion = LoraRegion.EU;
 
 
         public IntegrationTest(IntegrationTestFixture testFixture)
         {
             this.testFixture = testFixture;
-            this.lora = LoRaWanClass.CreateFromPort(testFixture.Configuration.LeafDeviceSerialPort);
+            this.lora = LoRaArduinoSerial.CreateFromPort(testFixture.Configuration.LeafDeviceSerialPort);
         }
 
         public void Dispose()
@@ -38,51 +31,33 @@ namespace LoRaWan.IntegrationTest
             GC.SuppressFinalize(this);
         }
 
-        async Task SetupLora()
-        {
-            if (this.loraRegion == LoraRegion.EU)
-            {
-                await lora.setDataRateAsync(LoRaWanClass._data_rate_t.DR6, LoRaWanClass._physical_type_t.EU868);
-                await lora.setChannelAsync(0, 868.1F);
-                await lora.setChannelAsync(1, 868.3F);
-                await lora.setChannelAsync(2, 868.5F);
-                await lora.setReceiceWindowFirstAsync(0, 868.1F);
-                await lora.setReceiceWindowSecondAsync(868.5F, LoRaWanClass._data_rate_t.DR2);
-            }
-            else
-            {
-                await lora.setDataRateAsync(LoRaWanClass._data_rate_t.DR0, LoRaWanClass._physical_type_t.US915HYBRID);
-            }
-
-            await lora.setAdaptiveDataRateAsync(false);
-            await lora.setDutyCycleAsync(false);
-            await lora.setJoinDutyCycleAsync(false);
-            await lora.setPowerAsync(14);
-        }
+        /*
 
         [Fact]
         public async Task Test_OTAA_Confirmed_And_Unconfirmed_Message()
         {
             Console.WriteLine($"Starting {nameof(Test_OTAA_Confirmed_And_Unconfirmed_Message)}");
+
+        
                                       
             string appSKey = null;
             string nwkSKey = null;
             string devAddr = null;
             var deviceId = testFixture.Configuration.LeafDeviceOTAAId;
 
-            Console.WriteLine($"Connection type: {LoRaWanClass._device_mode_t.LWOTAA.ToString()}, DeviceId: {deviceId}, DeviceAppEui: {testFixture.Configuration.LeafDeviceAppEui}, DeviceAppKey: {testFixture.Configuration.LeafDeviceAppKey}");
+            Console.WriteLine($"Connection type: {LoRaArduinoSerial._device_mode_t.LWOTAA.ToString()}, DeviceId: {deviceId}, DeviceAppEui: {testFixture.Configuration.LeafDeviceAppEui}, DeviceAppKey: {testFixture.Configuration.LeafDeviceAppKey}");
 
-            await lora.setDeciveModeAsync(LoRaWanClass._device_mode_t.LWOTAA);
+            await lora.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await lora.setIdAsync(devAddr, deviceId, testFixture.Configuration.LeafDeviceAppEui);
             await lora.setKeyAsync(nwkSKey, appSKey, testFixture.Configuration.LeafDeviceAppKey);
 
-            await SetupLora();         
+            await lora.SetupLora(this.loraRegion);         
 
             var joinSucceeded = false;
             for (var joinAttempt=1; joinAttempt <= 5; ++joinAttempt)
             {
                 Console.WriteLine($"Join attempt #{joinAttempt}");
-                joinSucceeded = await lora.setOTAAJoinAsync(LoRaWanClass._otaa_join_cmd_t.JOIN, 20000);
+                joinSucceeded = await lora.setOTAAJoinAsync(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000);
                 if(joinSucceeded)
                     break;
 
@@ -94,8 +69,8 @@ namespace LoRaWan.IntegrationTest
                 Assert.True(joinSucceeded, "Join failed");
             }
 
-            // wait for serial messages to come
-            await Task.Delay(100);
+            // wait 1 second after joined
+            await Task.Delay(TimeSpan.FromSeconds(1));
             
             // After join: Expectation on serial
             // +JOIN: Network joined
@@ -117,6 +92,9 @@ namespace LoRaWan.IntegrationTest
           //  Assert.True(deviceTwin.Properties.Reported.Contains("devAddr"));
 
             Console.WriteLine("Join succeeded");
+
+            // Wait between messages 
+            await Task.Delay(TimeSpan.FromSeconds(10));
 
             this.lora.ClearSerialLogs();
             testFixture.Events?.ResetEvents();
@@ -153,37 +131,43 @@ namespace LoRaWan.IntegrationTest
                 Console.WriteLine("Ignoring iot hub d2c message checking");
             }
 
-            this.lora.ClearSerialLogs();
-            testFixture.Events?.ResetEvents();
 
+            for (var i=0; i < 10; ++i)
+            {
+                // Wait between messages 
+                await Task.Delay(TimeSpan.FromSeconds(10));
+
+                this.lora.ClearSerialLogs();
+                testFixture.Events?.ResetEvents();
+
+                
+                lora.transferPacketWithConfirmed(new Random().Next().ToString(), 20);
+
+                // wait for serial logs to be ready
+                await Task.Delay(TimeSpan.FromMilliseconds(200));
+
+                // After transferPacketWithConfirmed: Expectation from serial
+                // +CMSG: ACK Received
+                Assert.Contains("+CMSG: ACK Received", this.lora.SerialLogs);
+
+                
+                // // After transferPacketWithConfirmed: Expectation from Log
+                // // 72AAC86800430020: valid frame counter, msg: 2 server: 1
+                // // 72AAC86800430020: decoding with: DecoderTemperatureSensor port: 1
+                // // 72AAC86800430020: sent message '{"temperature": 50}' to hub
+                // Assert.True(
+                // await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: valid frame counter, msg: 2 server: 1"),
+                // "Could not find correct valid frame counter");
+
+                // Assert.True(
+                // await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => e.Properties.ContainsKey("log") && messageBody.StartsWith($"{deviceId}: decoding with: DecoderTemperatureSensor port:")),
+                // "Expecting DecoderTemperatureSensor");
+
+                // Assert.True(
+                //     await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: sent message '{{\"temperature\": 50}}' to hub"),
+                //     "Expecting message sent in log");
             
-            lora.transferPacketWithConfirmed(new Random().Next().ToString(), 10);
-
-            // wait for serial logs to be ready
-            await Task.Delay(TimeSpan.FromMilliseconds(200));
-
-            // After transferPacketWithConfirmed: Expectation from serial
-            // +CMSG: ACK Received
-            Assert.Contains("+CMSG: ACK Received", this.lora.SerialLogs);
-
-            /*
-            // After transferPacketWithConfirmed: Expectation from Log
-            // 72AAC86800430020: valid frame counter, msg: 2 server: 1
-            // 72AAC86800430020: decoding with: DecoderTemperatureSensor port: 1
-            // 72AAC86800430020: sent message '{"temperature": 50}' to hub
-            Assert.True(
-               await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: valid frame counter, msg: 2 server: 1"),
-               "Could not find correct valid frame counter");
-
-            Assert.True(
-               await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => e.Properties.ContainsKey("log") && messageBody.StartsWith($"{deviceId}: decoding with: DecoderTemperatureSensor port:")),
-               "Expecting DecoderTemperatureSensor");
-
-            Assert.True(
-                await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: sent message '{{\"temperature\": 50}}' to hub"),
-                "Expecting message sent in log");
-         */
-
+            }
             //cts.Cancel();
         }
 
@@ -200,9 +184,9 @@ namespace LoRaWan.IntegrationTest
             string devAddr = testFixture.Configuration.LeafDeviceABPAddr;
             var deviceId = testFixture.Configuration.LeafDeviceABPId;
 
-            Console.WriteLine($"Connection type: {LoRaWanClass._device_mode_t.LWABP.ToString()}, DevAddr: {devAddr}, NetworkSKey: {nwkSKey}, AppSKey: {appSKey}");
+            Console.WriteLine($"Connection type: {LoRaArduinoSerial._device_mode_t.LWABP.ToString()}, DevAddr: {devAddr}, NetworkSKey: {nwkSKey}, AppSKey: {appSKey}");
 
-            await lora.setDeciveModeAsync(LoRaWanClass._device_mode_t.LWABP);
+            await lora.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await lora.setIdAsync(devAddr, deviceId, null);
             await lora.setKeyAsync(nwkSKey, appSKey, null);
 
@@ -273,26 +257,26 @@ namespace LoRaWan.IntegrationTest
             // +CMSG: ACK Received
             Assert.Contains("+CMSG: ACK Received", leafDeviceLog);
 
-            // After transferPacketWithConfirmed: Expectation from Log
-            // 72AAC86800430020: valid frame counter, msg: 2 server: 1
-            // 72AAC86800430020: decoding with: DecoderValueSensor port: 1
-            // 72AAC86800430020: sent message '{"value": 50}' to hub
-            Assert.True(
-               await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => 
-               e.Properties.ContainsKey("log") && messageBody.StartsWith($"{deviceId}: valid frame counter, msg: ")),
-               "Could not find correct valid frame counter");
+            // // After transferPacketWithConfirmed: Expectation from Log
+            // // 72AAC86800430020: valid frame counter, msg: 2 server: 1
+            // // 72AAC86800430020: decoding with: DecoderValueSensor port: 1
+            // // 72AAC86800430020: sent message '{"value": 50}' to hub
+            // Assert.True(
+            //    await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => 
+            //    e.Properties.ContainsKey("log") && messageBody.StartsWith($"{deviceId}: valid frame counter, msg: ")),
+            //    "Could not find correct valid frame counter");
 
-            Assert.True(
-               await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => 
-               e.Properties.ContainsKey("log") && messageBody.StartsWith($"{deviceId}: decoding with: DecoderValueSensor port:")),
-               "Expecting DecoderValueSensor");
+            // Assert.True(
+            //    await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => 
+            //    e.Properties.ContainsKey("log") && messageBody.StartsWith($"{deviceId}: decoding with: DecoderValueSensor port:")),
+            //    "Expecting DecoderValueSensor");
 
-            Assert.True(
-                await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => 
-                e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: sent message '{{\"value\": 50}}' to hub"),
-                "Expecting message sent in log");
+            // Assert.True(
+            //     await testFixture.EnsureHasEvent((e, deviceIdFromMessage, messageBody) => 
+            //     e.Properties.ContainsKey("log") && messageBody == $"{deviceId}: sent message '{{\"value\": 50}}' to hub"),
+            //     "Expecting message sent in log");
 
-            */
+            
 
             //cts.Cancel();
         }
@@ -307,9 +291,9 @@ namespace LoRaWan.IntegrationTest
             string devAddr = null;
             var deviceId = "BE7A0000000014FF";
 
-            Console.WriteLine($"Connection type: {LoRaWanClass._device_mode_t.LWOTAA.ToString()}, DeviceId: {deviceId}, DeviceAppEui: {testFixture.Configuration.LeafDeviceAppEui}, DeviceAppKey: {testFixture.Configuration.LeafDeviceAppKey}");
+            Console.WriteLine($"Connection type: {LoRaArduinoSerial._device_mode_t.LWOTAA.ToString()}, DeviceId: {deviceId}, DeviceAppEui: {testFixture.Configuration.LeafDeviceAppEui}, DeviceAppKey: {testFixture.Configuration.LeafDeviceAppKey}");
 
-            await lora.setDeciveModeAsync(LoRaWanClass._device_mode_t.LWOTAA);
+            await lora.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await lora.setIdAsync(devAddr, deviceId, testFixture.Configuration.LeafDeviceAppEui);
             await lora.setKeyAsync(nwkSKey, appSKey, testFixture.Configuration.LeafDeviceAppKey);
 
@@ -319,7 +303,7 @@ namespace LoRaWan.IntegrationTest
             for (var joinAttempt=1; joinAttempt <= 2; ++joinAttempt)
             {
                 Console.WriteLine($"Join attempt #{joinAttempt}");
-                joinSucceeded = await lora.setOTAAJoinAsync(LoRaWanClass._otaa_join_cmd_t.JOIN, 20000);
+                joinSucceeded = await lora.setOTAAJoinAsync(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000);
                 if(joinSucceeded)
                     break;
 
@@ -333,5 +317,7 @@ namespace LoRaWan.IntegrationTest
             // +JOIN: Join failed
             Assert.Contains("+JOIN: Join failed", this.lora.SerialLogs);            
         }
+        */
     }
+    
 }

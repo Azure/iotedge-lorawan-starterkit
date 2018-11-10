@@ -40,7 +40,7 @@ using System.Threading.Tasks;
 
 namespace LoRaWan.IntegrationTest
 {
-    public sealed class LoRaWanClass : IDisposable
+    public sealed partial class LoRaArduinoSerial : IDisposable
     {
 
         private SerialPort serialPortWin;
@@ -58,62 +58,7 @@ namespace LoRaWan.IntegrationTest
         public enum _data_rate_t { DR0 = 0, DR1, DR2, DR3, DR4, DR5, DR6, DR7, DR8, DR9, DR10, DR11, DR12, DR13, DR14, DR15 };
 
         // Creates a new instance based on port identifier
-        public static LoRaWanClass CreateFromPort (string port)
-        {
-            var isWindows = RuntimeInformation.IsOSPlatform (OSPlatform.Windows);
-
-            LoRaWanClass result = null;
-
-            if (!isWindows)
-            {
-                Console.WriteLine ($"Starting serial port '{port}' on non-Windows");
-
-                var serialPort = new SerialDevice (port, BaudRate.B115200);
-                result = new LoRaWanClass (serialPort);
-
-                Console.WriteLine ($"Opening serial port");
-                try
-                {
-                    serialPort.Open ();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine ($"Error opening serial port '{port}': {ex.ToString()}");
-                    throw;
-                }
-
-            }
-            else
-            {
-                Console.WriteLine ($"Starting serial port '{port}' on Windows");
-
-                var serialPortWin = new SerialPort (port)
-                {
-                    BaudRate = 115200,
-                    Parity = Parity.None,
-                    StopBits = StopBits.One,
-                    DataBits = 8,
-                    DtrEnable = true,
-                    Handshake = Handshake.None
-                };
-                result = new LoRaWanClass (serialPortWin);
-
-                try
-                {
-                    serialPortWin.Open();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine ($"Error opening serial port '{port}': {ex.ToString()}");
-                    throw;
-                }
-                
-            }
-
-            return result;
-        }
-        
-        LoRaWanClass (SerialDevice serialPort)
+        LoRaArduinoSerial (SerialDevice serialPort)
         {
             this.serialPort = serialPort;
 
@@ -125,7 +70,7 @@ namespace LoRaWan.IntegrationTest
         }
 
         byte[] windowsSerialPortBuffer = null;        
-        LoRaWanClass(SerialPort sp)
+        LoRaArduinoSerial(SerialPort sp)
         {
             serialPortWin = sp;
             this.windowsSerialPortBuffer = new byte[this.serialPortWin.ReadBufferSize];              
@@ -142,7 +87,6 @@ namespace LoRaWan.IntegrationTest
         void OnSerialDataReceived(string rawData)
         {                        
             var data = rawData.Replace("\r", "");
-            //Console.WriteLine("[Serial Read] " + data);            
 
             var lines = string.Concat(buff, data).Split('\n');
             buff = string.Empty;
@@ -153,7 +97,6 @@ namespace LoRaWan.IntegrationTest
                 {
                     if (!string.IsNullOrEmpty(lines[i]))
                     {
-                        this.lastSerialLine = lines[i];
                         AppendSerialLog(lines[i]);
                     }
                 }
@@ -166,7 +109,6 @@ namespace LoRaWan.IntegrationTest
                     {
                         // add as finished line
                         AppendSerialLog(lastParsedLine);
-                        this.lastSerialLine = lastParsedLine;
                     }
                     else
                     {
@@ -179,7 +121,6 @@ namespace LoRaWan.IntegrationTest
 
         
 
-        string lastSerialLine = null;
         ConcurrentQueue<string> serialLogs = new ConcurrentQueue<string>();
         string buff = "";
 
@@ -190,14 +131,10 @@ namespace LoRaWan.IntegrationTest
         }
         public IReadOnlyCollection<string> SerialLogs { get { return this.serialLogs; } }
 
-        public void ClearSerialLogs() => this.serialLogs.Clear();
+        public void ClearSerialLogs() => this.serialLogs.Clear();        
         
 
-        
-
-        
-
-        public LoRaWanClass setId (string DevAddr, string DevEUI, string AppEUI)
+        public LoRaArduinoSerial setId (string DevAddr, string DevEUI, string AppEUI)
         {
 
             if (!String.IsNullOrEmpty (DevAddr))
@@ -257,7 +194,7 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        public LoRaWanClass setKey (string NwkSKey, string AppSKey, string AppKey)
+        public LoRaArduinoSerial setKey (string NwkSKey, string AppSKey, string AppKey)
         {
 
             if (!String.IsNullOrEmpty (NwkSKey))
@@ -319,7 +256,7 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        public LoRaWanClass setDataRate (_data_rate_t dataRate, _physical_type_t physicalType)
+        public LoRaArduinoSerial setDataRate (_data_rate_t dataRate, _physical_type_t physicalType)
         {
 
             if (physicalType == _physical_type_t.EU434) sendCommand ("AT+DR=EU433\r\n");
@@ -368,7 +305,7 @@ namespace LoRaWan.IntegrationTest
 
         }
 
-        public LoRaWanClass setPower (short power)
+        public LoRaArduinoSerial setPower (short power)
         {
             string cmd = $"AT+POWER={power}\r\n";
             sendCommand (cmd);
@@ -386,7 +323,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay (DEFAULT_TIMEWAIT);
         }
 
-        public LoRaWanClass setPort (int port)
+        public LoRaArduinoSerial setPort (int port)
         {
 
             string cmd = "AT+PORT={port}\r\n";
@@ -397,7 +334,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public LoRaWanClass setAdaptiveDataRate (bool command)
+        public LoRaArduinoSerial setAdaptiveDataRate (bool command)
         {
             if (command) sendCommand ("AT+ADR=ON\r\n");
             else sendCommand ("AT+ADR=OFF\r\n");
@@ -415,7 +352,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay (DEFAULT_TIMEWAIT);
         }
 
-        public LoRaWanClass setChannel (int channel, float frequency)
+        public LoRaArduinoSerial setChannel (int channel, float frequency)
         {
 
             string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
@@ -436,7 +373,7 @@ namespace LoRaWan.IntegrationTest
 
         }
 
-        public LoRaWanClass setChannel (char channel, float frequency, _data_rate_t dataRata)
+        public LoRaArduinoSerial setChannel (char channel, float frequency, _data_rate_t dataRata)
         {
 
             string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10},{dataRata}\r\n";
@@ -447,7 +384,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public LoRaWanClass setChannel (char channel, float frequency, _data_rate_t dataRataMin, _data_rate_t dataRataMax)
+        public LoRaArduinoSerial setChannel (char channel, float frequency, _data_rate_t dataRataMin, _data_rate_t dataRataMax)
         {
 
             string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10},{dataRataMin},{dataRataMax}\r\n";
@@ -511,7 +448,7 @@ namespace LoRaWan.IntegrationTest
 
         }
 
-        public LoRaWanClass setUnconfirmedMessageRepeatTime (uint time)
+        public LoRaArduinoSerial setUnconfirmedMessageRepeatTime (uint time)
         {
 
             if (time > 15)
@@ -527,7 +464,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public LoRaWanClass setConfirmedMessageRetryTime (uint time)
+        public LoRaArduinoSerial setConfirmedMessageRetryTime (uint time)
         {
 
             if (time > 15) time = 15;
@@ -541,7 +478,19 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public LoRaWanClass setReceiceWindowFirst (bool command)
+        public async Task setConfirmedMessageRetryTimeAsync(uint time)
+        {
+
+            if (time > 15) time = 15;
+            else if (time == 0) time = 1;
+
+            string cmd = $"AT+RETRY={time}\r\n";
+            sendCommand (cmd);
+
+            await Task.Delay(DEFAULT_TIMEWAIT);
+        }
+
+        public LoRaArduinoSerial setReceiceWindowFirst (bool command)
         {
             if (command) sendCommand ("AT+RXWIN1=ON\r\n");
             else sendCommand ("AT+RXWIN1=OFF\r\n");
@@ -551,7 +500,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public LoRaWanClass setReceiceWindowFirst (int channel, float frequency)
+        public LoRaArduinoSerial setReceiceWindowFirst (int channel, float frequency)
         {
 
             string cmd = $"AT+RXWIN1={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
@@ -571,7 +520,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay (DEFAULT_TIMEWAIT);
         }
 
-        public LoRaWanClass setReceiceWindowSecond (float frequency, _data_rate_t dataRate)
+        public LoRaArduinoSerial setReceiceWindowSecond (float frequency, _data_rate_t dataRate)
         {
 
             string cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{dataRate}\r\n";
@@ -591,7 +540,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay (DEFAULT_TIMEWAIT);
         }
 
-        public LoRaWanClass setReceiceWindowSecond (float frequency, _spreading_factor_t spreadingFactor, _band_width_t bandwidth)
+        public LoRaArduinoSerial setReceiceWindowSecond (float frequency, _spreading_factor_t spreadingFactor, _band_width_t bandwidth)
         {
 
             string cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{spreadingFactor},{bandwidth}\r\n";
@@ -602,7 +551,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public LoRaWanClass setDutyCycle (bool command)
+        public LoRaArduinoSerial setDutyCycle (bool command)
         {
             if (command) sendCommand ("AT+LW=DC, ON\r\n");
             else sendCommand ("AT+LW=DC, OFF\r\n");
@@ -620,7 +569,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay (DEFAULT_TIMEWAIT);
         }
 
-        public LoRaWanClass setJoinDutyCycle (bool command)
+        public LoRaArduinoSerial setJoinDutyCycle (bool command)
         {
             if (command) sendCommand ("AT+LW=JDC,ON\r\n");
             else sendCommand ("AT+LW=JDC,OFF\r\n");
@@ -637,7 +586,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay (DEFAULT_TIMEWAIT);
         }
 
-        public LoRaWanClass setReceiceWindowDelay (_window_delay_t command, short _delay)
+        public LoRaArduinoSerial setReceiceWindowDelay (_window_delay_t command, short _delay)
         {
 
             string cmd = "";
@@ -652,7 +601,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public LoRaWanClass setClassType (_class_type_t type)
+        public LoRaArduinoSerial setClassType (_class_type_t type)
         {
             if (type == _class_type_t.CLASS_A) sendCommand ("AT+CLASS=A\r\n");
             else if (type == _class_type_t.CLASS_C) sendCommand ("AT+CLASS=C\r\n");
@@ -662,7 +611,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public LoRaWanClass setDeciveMode (_device_mode_t mode)
+        public LoRaArduinoSerial setDeciveMode (_device_mode_t mode)
         {
             if (mode == _device_mode_t.LWABP) sendCommand ("AT+MODE=LWABP\r\n");
             else if (mode == _device_mode_t.LWOTAA) sendCommand ("AT+MODE=LWOTAA\r\n");
@@ -672,7 +621,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public async Task setDeciveModeAsync (_device_mode_t mode)
+        public async Task setDeviceModeAsync (_device_mode_t mode)
         {
             if (mode == _device_mode_t.LWABP) sendCommand ("AT+MODE=LWABP\r\n");
             else if (mode == _device_mode_t.LWOTAA) sendCommand ("AT+MODE=LWOTAA\r\n");
@@ -709,39 +658,45 @@ namespace LoRaWan.IntegrationTest
 
         }
 
-        public async Task<bool> setOTAAJoinAsync (_otaa_join_cmd_t command, int timeout)
-        {
+        public async Task<bool> setOTAAJoinAsyncWithRetry(_otaa_join_cmd_t command, int timeoutPerTry, int retries, int delayBetweenRetries = 5000)
+        {     
+            for (var attempt=1; attempt <= retries; ++attempt)
+            {        
+                Console.WriteLine($"Join attempt #{attempt}/{retries}");
+                if (command == _otaa_join_cmd_t.JOIN) 
+                    sendCommand ("AT+JOIN\r\n");
+                else if (command == _otaa_join_cmd_t.FORCE) 
+                    sendCommand ("AT+JOIN=FORCE\r\n");
 
-            if (command == _otaa_join_cmd_t.JOIN) sendCommand ("AT+JOIN\r\n");
-            else if (command == _otaa_join_cmd_t.FORCE) sendCommand ("AT+JOIN=FORCE\r\n");
+                await Task.Delay (DEFAULT_TIMEWAIT);
 
-            await Task.Delay (DEFAULT_TIMEWAIT);
+                DateTime start = DateTime.Now;
 
-            DateTime start = DateTime.Now;
+                while (DateTime.Now.Subtract(start).TotalMilliseconds < timeoutPerTry)
+                {                                           
+                    if (ReceivedSerial((s) => s.StartsWith("+JOIN: Network joined", StringComparison.Ordinal)))                
+                        return true;
+                    else if (ReceivedSerial(x => x.StartsWith ("+JOIN: LoRaWAN modem is busy", StringComparison.Ordinal)))
+                        break;
+                    else if (ReceivedSerial(x => x.StartsWith ("+JOIN: Join failed", StringComparison.Ordinal)))
+                        break;
 
-            while (true)
-            {            
+                    // wait a bit to not starve CPU, still waiting for a response from serial port
+                    await Task.Delay(50);       
+                }
+
+                await Task.Delay(delayBetweenRetries);
+
+                // check serial log again before sending another request
                 if (ReceivedSerial((s) => s.StartsWith("+JOIN: Network joined", StringComparison.Ordinal)))                
-                     return true;
-                else if (ReceivedSerial(x => x.StartsWith ("+JOIN: LoRaWAN modem is busy", StringComparison.Ordinal)))
-                    return false;
-                else if (ReceivedSerial(x => x.StartsWith ("+JOIN: Join failed", StringComparison.Ordinal)))
-                    return false;
-                else if (start.AddMilliseconds (timeout) < DateTime.Now)
-                    return false;         
-
-                // wait a bit to not starve CPU
-                await Task.Delay(50);       
+                    return true;
             }
 
-            //    ptr = _buffer.Contains("+JOIN: Join failed");
-            //if (ptr) return false;
-            //ptr = _buffer.Contains("+JOIN: LoRaWAN modem is busy");
-            //if (ptr) return false;
+            return false;
 
         }
 
-        public LoRaWanClass setDeviceLowPower ()
+        public LoRaArduinoSerial setDeviceLowPower ()
         {
             sendCommand ("AT+LOWPOWER\r\n");
 
@@ -750,7 +705,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public LoRaWanClass setDeviceReset ()
+        public LoRaArduinoSerial setDeviceReset ()
         {
             sendCommand ("AT+RESET\r\n");
 
