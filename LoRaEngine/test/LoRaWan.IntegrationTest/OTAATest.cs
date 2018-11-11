@@ -5,19 +5,15 @@ using Xunit;
 namespace LoRaWan.IntegrationTest
 {
     // Tests OTAA requests
+    [Collection("ArduinoSerialCollection")] // run in serial
     public sealed class OTAATest : IClassFixture<IntegrationTestFixture>, IDisposable
     {
-        const int TIME_BETWEEN_MESSAGES = 1000 * 5;
-        const int DELAY_AFTER_SENDING_PACKET = 100; 
-
         private readonly IntegrationTestFixture testFixture;
-        private readonly LoraRegion loraRegion;
         private LoRaArduinoSerial lora;
 
         public OTAATest(IntegrationTestFixture testFixture)
         {
             this.testFixture = testFixture;
-            this.loraRegion = LoraRegion.EU;
             this.lora = LoRaArduinoSerial.CreateFromPort(testFixture.Configuration.LeafDeviceSerialPort);
             this.testFixture.ClearNetworkServerLogEvents();
         }
@@ -42,7 +38,7 @@ namespace LoRaWan.IntegrationTest
             await lora.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await lora.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await lora.SetupLora(LoraRegion.EU);
+            await lora.SetupLora(this.testFixture.Configuration.LoraRegion);
 
              var joinSucceeded = await lora.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
 
@@ -52,7 +48,7 @@ namespace LoRaWan.IntegrationTest
             }
 
             // wait 1 second after joined
-            await Task.Delay(TimeSpan.FromSeconds(1)); 
+            await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN); 
 
             // Sends 10x unconfirmed messages            
             for (var i=0; i < MESSAGES_COUNT; ++i)
@@ -60,9 +56,7 @@ namespace LoRaWan.IntegrationTest
                 var msg = (100 + i).ToString();
                 lora.transferPacket(msg, 10);
 
-                // wait for serial logs to be ready
-                await Task.Delay(DELAY_AFTER_SENDING_PACKET);
-
+                await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
                 // After transferPacket: Expectation from serial
                 // +MSG: Done                        
@@ -84,7 +78,7 @@ namespace LoRaWan.IntegrationTest
                 this.lora.ClearSerialLogs();
                 testFixture.ClearNetworkServerLogEvents();
 
-                await Task.Delay(TIME_BETWEEN_MESSAGES);
+                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
 
             // Sends 10x confirmed messages
@@ -93,8 +87,7 @@ namespace LoRaWan.IntegrationTest
                 var msg = (50 + i).ToString();
                 lora.transferPacketWithConfirmed(msg, 10);
 
-                // wait for serial logs to be ready
-                await Task.Delay(DELAY_AFTER_SENDING_PACKET);
+                await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
                 // After transferPacketWithConfirmed: Expectation from serial
                 // +CMSG: ACK Received
@@ -115,7 +108,7 @@ namespace LoRaWan.IntegrationTest
                 this.lora.ClearSerialLogs();
                 testFixture.ClearNetworkServerLogEvents();
 
-                await Task.Delay(TIME_BETWEEN_MESSAGES);
+                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
         }
     }

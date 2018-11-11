@@ -92,8 +92,6 @@ namespace LoRaWan.IntegrationTest
             {
                 if(disposing)
                 {
-
-
                     for(int i = this.receivers.Count - 1; i >= 0; i--)
                     {
                         try
