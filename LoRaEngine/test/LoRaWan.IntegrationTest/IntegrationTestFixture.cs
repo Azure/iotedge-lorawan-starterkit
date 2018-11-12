@@ -66,13 +66,15 @@ namespace LoRaWan.IntegrationTest
                 startTask.ConfigureAwait(false).GetAwaiter().GetResult();
             }
 
+            var gatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID") ?? this.Configuration.LeafDeviceGatewayID;
+
             // Device1_OTAA: used for join test only
             this.Device1_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000001",
                 AppEUI = "BE7A0000000014E3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",                
-                GatewayID = this.Configuration.LeafDeviceGatewayID,
+                GatewayID = gatewayID,
                 RealDevice = true                            
             };
 
@@ -82,7 +84,7 @@ namespace LoRaWan.IntegrationTest
                 DeviceID = "0000000000000002",
                 AppEUI = "BE7A0000000014E3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",
-                GatewayID = "itestArm1",
+                GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 RealDevice = false,
             };
@@ -93,7 +95,7 @@ namespace LoRaWan.IntegrationTest
                 DeviceID = "0000000000000003",
                 AppEUI = "BE7A0000000014E3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",
-                GatewayID = "itestArm1",
+                GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 RealDevice = true,
             };
@@ -105,7 +107,7 @@ namespace LoRaWan.IntegrationTest
                 DeviceID = "0000000000000004",
                 AppEUI = "BE7A0000000014E3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",
-                GatewayID = "itestArm1",
+                GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 RealDevice = true,
             };        
@@ -116,7 +118,7 @@ namespace LoRaWan.IntegrationTest
             {
                 DeviceID = "0000000000000005",
                 AppEUI = "0000000000000005",
-                GatewayID = "itestArm1",
+                GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 RealDevice = true,
                 AppSKey="2B7E151628AED2A6ABF7158809CF4F3C",
@@ -129,7 +131,7 @@ namespace LoRaWan.IntegrationTest
             {
                 DeviceID = "0000000000000006",
                 AppEUI = "0000000000000006",
-                GatewayID = "itestArm1",
+                GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 RealDevice = false,
                 AppSKey="2B7E151628AED2A6ABF7158809CF4F3C",
@@ -142,7 +144,7 @@ namespace LoRaWan.IntegrationTest
             {
                 DeviceID = "0000000000000007",
                 AppEUI = "0000000000000007",
-                GatewayID = "itestArm1",
+                GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 RealDevice = true,
                 AppSKey="2B7E151628AED2A6ABF7158809CF4F3C",
@@ -155,7 +157,7 @@ namespace LoRaWan.IntegrationTest
             {
                 DeviceID = "0000000000000008",
                 AppEUI = "0000000000000008",
-                GatewayID = "itestArm1",
+                GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 RealDevice = true,
                 AppSKey="2B7E151628AED2A6ABF7158809CF4F3C",
@@ -169,7 +171,7 @@ namespace LoRaWan.IntegrationTest
                 DeviceID = "0000000000000009",
                 AppEUI = "BE7A0000000014E3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",                
-                GatewayID = this.Configuration.LeafDeviceGatewayID,
+                GatewayID = gatewayID,
                 RealDevice = true                            
             };  
 
@@ -179,7 +181,7 @@ namespace LoRaWan.IntegrationTest
                 DeviceID = "0000000000000010",
                 AppEUI = "BE7A0000000014E3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",                
-                GatewayID = this.Configuration.LeafDeviceGatewayID,
+                GatewayID = gatewayID,
                 RealDevice = true                            
             };  
         }
