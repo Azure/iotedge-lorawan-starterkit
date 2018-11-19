@@ -21,7 +21,7 @@
           "edgeAgent": {
             "type": "docker",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-agent:1.0.2",
+              "image": "mcr.microsoft.com/azureiotedge-agent:1.0.3",
               "createOptions": ""
             }
           },
@@ -30,7 +30,7 @@
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-hub:1.0.2",
+              "image": "mcr.microsoft.com/azureiotedge-hub:1.0.3",
               "createOptions": "{\"HostConfig\":{\"PortBindings\":{\"8883/tcp\":[{\"HostPort\":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}]}}}"
             },
             "env": {
@@ -44,30 +44,39 @@
           "LoRaWanNetworkSrvModule": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoRaWanNetworkSrvModule.amd64}",
-              "createOptions": "{\r\n  \"ExposedPorts\": {\r\n    \"1680/udp\": {}\r\n  },\r\n  \"HostConfig\": {\r\n    \"PortBindings\": {\r\n      \"1680/udp\": [\r\n        {\r\n          \"HostPort\": \"1680\",\r\n          \"HostIp\":\"172.17.0.1\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}\r\n\r\n"
+              "image": "${MODULES.LoRaWanNetworkSrvModule.arm32v7}",
+              "createOptions": "{  \"ExposedPorts\": {    \"1680/udp\": {}  },  \"HostConfig\": {    \"PortBindings\": {      \"1680/udp\": [        {          \"HostPort\": \"1680\",          \"HostIp\":\"172.17.0.1\"        }      ]    }  }}"
             },
             "version": "1.0",
             "env": {
               "LOG_LEVEL": {
-                "value": "1"
+                "value": "0"
               },
               "LOG_TO_HUB": {
                 "value": "true"
+              },
+              "IOTEDGE_TIMEOUT": {
+                "value": "$IOTEDGE_TIMEOUT"
               }
             },
             "status": "running",
             "restartPolicy": "always"
           },
-          "LoRaWanPktFwdModule": {
+          "LoRaSimulator": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoRaWanPktFwdModule.amd64}",
-              "createOptions": "  {\r\n  \"HostConfig\": {\r\n    \"NetworkMode\": \"host\", \"Privileged\": true \r\n\r\n  },\r\n  \"NetworkingConfig\": {\r\n    \"EndpointsConfig\": {\r\n      \"host\": {}\r\n    }\r\n  }\r\n}\r\n  \r\n  \r\n  \r\n"
-            },
+              "image": "${MODULES.LoRaSimulator.arm32v7}",
+              "createOptions": "{  \"ExposedPorts\": {    \"$SIMULATOR_PORT/udp\": {}  },  \"HostConfig\": {    \"PortBindings\": {      \"$SIMULATOR_PORT/udp\": [        {          \"HostPort\": \"$SIMULATOR_PORT\",          \"HostIp\":\"172.17.0.1\"        }      ]    }  }}"
+            },              
             "env": {
               "RESET_PIN": {
-                "value": "5"
+                "value": "7"
+              },
+              "REGION": {
+                "value": "$REGION"
+              },
+              "SIMULATOR_PORT": {
+                "value": "$SIMULATOR_PORT"
               }
             },
             "version": "1.0",

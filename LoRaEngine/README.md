@@ -8,6 +8,35 @@ A **.NET Core 2.1** solution with the following projects:
 - **LoraKeysManagerFacade** - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
 - **LoRaDevTools** - library for dev tools (git submodule)
 
+## The overall architecture
+
+This schema represent the various components and how they intereact to have a better understand of the various solution elements.
+
+![schema](/pictures/detailedschema.png)
+
+1. Once the IoT Edge engine start on the Edge device, the code modules are downloaded from the Azure Container Registry.
+2. The module containing the ```LoRaWan network server``` is downloaded on the Edge device
+
+Notes:
+
+- The Edge device can be on the same machine at the LoRaWan gateway but not necessary
+- The LoRaWan gateway must implement a UDP server on port 1680 to forward the LoRa commands from/to the ```LoRaWan Network Server``` module. In our case it is called ```LoRaWan Packet Forwarder```
+
+3. The LoRaWan Network Server request status for the LoRa devices. The Azure Function ```LoraKeysManagerFacade``` is used as permanent storage for the applicaiton device keys of the devices so nothing is permanently stored into the container.
+4. In the case you're using the demo version with the automatic deployment Azure Resource Manager (ARM) template: the Azure function ```LoraKeysManagerFacade``` will register the device ```47AAC86800430028``` into the Azure IoT Hub. Otherwise it does not.
+5. The Azure function ```LoraKeysManagerFacade``` sends back the device details to the module
+6. The ```LoRaWan Network Server``` module:
+
+- register the device on the LoRa Gateway if needed
+- gather the LoRa sensor data from the LoRaWan gateway thru the ```LoRaWan Packet Forwarder```
+- decode the LoRa data if requested
+
+7. Publish the LoRa sensor data to Azure IoT Hub
+
+Another view of the architecture and a more message driven view is the following:
+
+![architecture details](/pictures/archidetails2.jpg)
+
 ## Getting started with: Build and deploy LoRaEngine
 
 The following guide describes the necessary steps to build and deploy the LoRaEngine to an [Azure IoT Edge](https://azure.microsoft.com/en-us/services/iot-edge/) installation on a LoRaWAN antenna gateway.
@@ -170,8 +199,8 @@ You can even test sending Cloud-2-Device message (e.g. by VSCode right click on 
 
 The Arduino example provided above will print the message on the console. Keep in mind that a [LoRaWAN Class A](https://www.thethingsnetwork.org/docs/lorawan/) device will only receive after a transmit, in our case every 30 seconds.
 
-
 ## Debugging outside of IoT Edge and docker
+
 It is possible to run the bits in the LoRaEngine locally with from Visual Studio in order to enable a better debugging experience. Here are the steps you will need to enable this feature:
 
 1. Change the value *server_adress* in the file *local_conf.json* (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.

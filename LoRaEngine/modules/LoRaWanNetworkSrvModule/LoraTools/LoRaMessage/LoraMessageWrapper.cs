@@ -65,33 +65,58 @@ namespace LoRaTools.LoRaMessage
                 {
                     Logger.Log($"DataUp {payload}", Logger.LoggingLevel.Full);
 
+                    // Deserialized for uplink messages
                     var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
                     PktFwdPayload = payloadObject;
                     // set up the parts of the raw message   
                     // status message
-                    if (PktFwdPayload.GetPktFwdMessage().Rxpks[0].data != null)
+                    if (PktFwdPayload != null)
                     {
-                        byte[] convertedInputMessage = Convert.FromBase64String(PktFwdPayload.GetPktFwdMessage().Rxpks[0].data);
-                        var messageType = convertedInputMessage[0] >> 5;
-                        LoRaMessageType = (LoRaMessageType)messageType;
-                        // Uplink Message
-                        if (messageType == (int)LoRaMessageType.UnconfirmedDataUp)
+                        // if there is no packet, then it maybe a downlink message
+                        if (PktFwdPayload.GetPktFwdMessage().Rxpks.Count > 0)
                         {
-                            LoRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
+                            if (PktFwdPayload.GetPktFwdMessage().Rxpks[0].data != null)
+                            {
+                                byte[] convertedInputMessage = Convert.FromBase64String(PktFwdPayload.GetPktFwdMessage().Rxpks[0].data);
+                                var messageType = convertedInputMessage[0] >> 5;
+                                LoRaMessageType = (LoRaMessageType)messageType;
+                                // Uplink Message
+                                if (messageType == (int)LoRaMessageType.UnconfirmedDataUp)
+                                {
+                                    LoRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
+                                }
+                                else if (messageType == (int)LoRaMessageType.ConfirmedDataUp)
+                                {
+                                    LoRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
+                                }
+                                else if (messageType == (int)LoRaMessageType.JoinRequest)
+                                {
+                                    LoRaPayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
+                                }
+                                 
+                                IsLoRaMessage = true;
+                            }
                         }
-                        else if (messageType == (int)LoRaMessageType.ConfirmedDataUp)
+                        else
                         {
-                            LoRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
+                            // deselrialize for a downlink message
+                            var payloadDownObject = JsonConvert.DeserializeObject<DownlinkPktFwdMessage>(payload);
+                            if (payloadDownObject != null)
+                            {
+                                // if we have data, it is a downlink message
+                                if (payloadDownObject.txpk.data != null)
+                                {
+                                    byte[] convertedInputMessage = Convert.FromBase64String(payloadDownObject.txpk.data);
+                                    var messageType = convertedInputMessage[0] >> 5;
+                                    LoRaMessageType = (LoRaMessageType)messageType;
+                                    if (messageType == (int)LoRaMessageType.JoinAccept)
+                                    {
+                                        LoRaPayloadMessage = new LoRaPayloadJoinAccept(convertedInputMessage, AppKey);
+                                    }
+                                    IsLoRaMessage = true;
+                                }
+                            }
                         }
-                        else if (messageType == (int)LoRaMessageType.JoinRequest)
-                        {
-                            LoRaPayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
-                        }
-                        else if (messageType == (int)LoRaMessageType.JoinAccept)
-                        {
-                            LoRaPayloadMessage = new LoRaPayloadJoinAccept(convertedInputMessage, AppKey);
-                        }
-                        IsLoRaMessage = true;
                     }
                 }
                 else

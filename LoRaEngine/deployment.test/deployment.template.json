@@ -45,14 +45,17 @@
             "type": "docker",
             "settings": {
               "image": "${MODULES.LoRaWanNetworkSrvModule.arm32v7}",
-              "createOptions": "{  \"ExposedPorts\": {    \"1680/udp\": {}  },  \"HostConfig\": {    \"PortBindings\": {      \"1680/udp\": [        {          \"HostPort\": \"1680\",          \"HostIp\":\"172.17.0.1\"        }      ]    }  }}"
+              "createOptions": "{  \"ExposedPorts\": { \"1680/udp\": {}, \"1234/udp\": {}  }, \"HostConfig\": { \"PortBindings\": { \"1680/udp\": [ { \"HostPort\": \"1680\", \"HostIp\":\"172.17.0.1\" } ], \"1234/udp\": [ { \"HostPort\": \"1234\" } ] }  }}"
             },
             "version": "1.0",
             "env": {
               "LOG_LEVEL": {
-                "value": "1"
+                "value": "0"
               },
               "LOG_TO_HUB": {
+                "value": "true"
+              },
+              "LOG_TO_TEST": {
                 "value": "true"
               }
             },
@@ -67,15 +70,33 @@
             },
             "env": {
               "RESET_PIN": {
-                "value": "25"
+                "value": "7"
               },
               "REGION": {
                 "value": "$REGION"
-              }             
+              }
             },
             "version": "1.0",
             "status": "running",
             "restartPolicy": "always"
+          },
+          "AzureDevOpsAgent": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "$CONTAINER_REGISTRY_ADDRESS/azuredevopsagent:0.0.1-arm32v7",
+              "createOptions": "{  \"HostConfig\": { \"Privileged\": true } }"
+            },
+            "env": {
+              "VSTS_SERVER_URL": {
+                "value": "$VSTS_SERVER_URL"
+              },
+              "VSTS_TOKEN": {
+                "value": "$VSTS_TOKEN"
+              }
+            }
           }
         }
       }
@@ -100,4 +121,3 @@
     }
   }
 }
-

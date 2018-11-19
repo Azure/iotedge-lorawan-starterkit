@@ -83,9 +83,11 @@ namespace LoRaTools
             {
                 token = _token;
                 identifier = type;
-                message = new byte[_message.Length];
-                Array.Copy(_message, 0, message, 0, _message.Length);
-
+                if (_message != null)
+                {
+                    message = new byte[_message.Length];
+                    Array.Copy(_message, 0, message, 0, _message.Length);
+                }
             }
 
         }
