@@ -92,7 +92,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                ITransportSettings transportSettings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+                ITransportSettings transportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
 
                 ITransportSettings[] settings = { transportSettings };
 

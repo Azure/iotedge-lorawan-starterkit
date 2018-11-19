@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -26,6 +27,20 @@ namespace LoRaWan.IntegrationTest
             this.lora = null;
             GC.SuppressFinalize(this);
 
+        }
+
+
+        string ToHexString(string str)
+        {
+            var sb = new StringBuilder();
+
+            var bytes = Encoding.UTF8.GetBytes(str);
+            foreach (var t in bytes)
+            {
+                sb.Append(t.ToString("X2"));
+            }
+
+            return sb.ToString(); // returns: "48656C6C6F20776F726C64" for "Hello world"
         }
 
         // Ensures that C2D messages are received when working with confirmed messages
@@ -83,7 +98,8 @@ namespace LoRaWan.IntegrationTest
 
             var foundC2DMessage = false;
             var foundReceivePacket = false;
-            var expectedRxSerial = $"+CMSG: PORT: 1; RX: \"3{c2dMessageBody[0]}3{c2dMessageBody[1]}\"";
+            var expectedRxSerial = $"+CMSG: PORT: 1; RX: \"{ToHexString(c2dMessageBody)}\"";
+            Console.WriteLine($"Expected C2D received log is: {expectedRxSerial}");
 
             // Sends 8x confirmed messages, stopping if C2D message is found
             for (var i=2; i <= 10; ++i)
@@ -105,15 +121,23 @@ namespace LoRaWan.IntegrationTest
                 // 0000000000000009: C2D message: 58
                 (var foundExpectedLog, _) = await this.testFixture.FindNetworkServerEventLog((e, deviceID, messageBody) => {
                     return messageBody.StartsWith($"{device.DeviceID}: C2D message: {c2dMessageBody}");
-                });
+                }, $"{device.DeviceID}: C2D message: {c2dMessageBody}");
 
-                foundC2DMessage = foundExpectedLog;                    
-                Console.WriteLine($"{device.DeviceID}: Found C2D message in log (after sending {i}/10) ? {foundC2DMessage}");
-                if (foundC2DMessage)
-                    break;
-
-                if (!foundReceivePacket)
-                    foundReceivePacket = this.lora.SerialLogs.Contains(expectedRxSerial);
+                // We should only receive the message once
+                if (foundExpectedLog)
+                {
+                    Console.WriteLine($"{device.DeviceID}: Found C2D message in log (after sending {i}/10) ? {foundC2DMessage}");
+                    Assert.False(foundC2DMessage, "Cloud to Device message should have been detected in Network Service module only once");
+                    foundC2DMessage = true;                    
+                }
+                
+                
+                var localFoundCloudToDeviceInSerial = this.lora.SerialLogs.Contains(expectedRxSerial);
+                if (localFoundCloudToDeviceInSerial)
+                {                    
+                    Assert.False(foundReceivePacket, "Cloud to device message should have been received only once");
+                    foundReceivePacket = true;
+                }
                 
                 
                 this.lora.ClearSerialLogs();

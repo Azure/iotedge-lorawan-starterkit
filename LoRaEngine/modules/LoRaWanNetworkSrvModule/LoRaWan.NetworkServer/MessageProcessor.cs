@@ -226,7 +226,7 @@ namespace LoRaWan.NetworkServer
                             {
                                 //put it back to the queue for the next pickup
                                 //todo ronnie check abbandon logic especially in case of mqtt
-                                //_ = loraDeviceInfo.HubSender.AbandonAsync(secondC2dMsg);
+                                _ = await loraDeviceInfo.HubSender.AbandonAsync(secondC2dMsg);
                                 //set the fpending flag so the lora device will call us back for the next message
                                 fctrl = new byte[1] { 48 };
                             }
@@ -373,12 +373,12 @@ namespace LoRaWan.NetworkServer
                                 PhysicalPayload pushAck = new PhysicalPayload(loraMessage.PhysicalPayload.token, PhysicalIdentifier.PUSH_ACK, null);
                                 udpMsgForPktForwarder = pushAck.GetMessage();
                                
-                                //put back the c2d message to the queue for the next round
-                                //todo ronnie check abbandon logic especially in case of mqtt
-                                //if (c2dMsg != null)
-                                //{
-                                //    bool rit = await loraDeviceInfo.HubSender.AbandonAsync(c2dMsg);
-                                //}
+                                // put back the c2d message to the queue for the next round
+                                // todo ronnie check abbandon logic especially in case of mqtt
+                                if (c2dMsg != null)
+                                {
+                                   bool rit = await loraDeviceInfo.HubSender.AbandonAsync(c2dMsg);
+                                }
                                 Logger.Log(loraDeviceInfo.DevEUI, $"too late for down message, sending only ACK to gateway", Logger.LoggingLevel.Info);
                                 _ = loraDeviceInfo.HubSender.UpdateFcntAsync(loraDeviceInfo.FCntUp, null);
                             }

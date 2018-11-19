@@ -148,7 +148,6 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-
                     string partConnection = createIoTHubConnectionString();
                     string deviceConnectionStr = $"{partConnection}DeviceId={DevEUI};SharedAccessKey={PrimaryKey}";
 

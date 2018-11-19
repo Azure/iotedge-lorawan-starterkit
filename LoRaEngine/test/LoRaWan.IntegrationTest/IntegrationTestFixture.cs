@@ -220,7 +220,7 @@ namespace LoRaWan.IntegrationTest
 
         // Search the network server logs for a value
         //internal async Task<Tuple<bool, HashSet<string>>> FindNetworkServerEventLog(Func<EventData, string, string, bool> predicate)
-        internal async Task<(bool found, HashSet<string> logs)> FindNetworkServerEventLog(Func<EventData, string, string, bool> predicate)      
+        internal async Task<(bool found, HashSet<string> logs)> FindNetworkServerEventLog(Func<EventData, string, string, bool> predicate, string description = null)
         {
             var processedEvents = new HashSet<string>();
             for (int i = 0; i < this.Configuration.EnsureHasEventMaximumTries; i++)
@@ -228,7 +228,14 @@ namespace LoRaWan.IntegrationTest
                 if (i > 0)
                 {
                     var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    Console.WriteLine($"Network server event log not found, attempt {i}/{this.Configuration.EnsureHasEventMaximumTries}, waiting {timeToWait} secs");
+                    if (!string.IsNullOrEmpty(description))
+                    {
+                        Console.WriteLine($"Network server event log '{description}' not found, attempt {i}/{this.Configuration.EnsureHasEventMaximumTries}, waiting {timeToWait} secs");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Network server event log not found, attempt {i}/{this.Configuration.EnsureHasEventMaximumTries}, waiting {timeToWait} secs");
+                    }
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
