@@ -56,7 +56,7 @@ namespace LoRaWan
 
                 }
                 if (logToConsole)
-                    Console.WriteLine(msg);
+                    Console.WriteLine(String.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," ", msg));
             }
         }
     }

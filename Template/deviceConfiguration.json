@@ -22,7 +22,7 @@
 						"type": "docker",
 						"settings": {
 							"image": "mcr.microsoft.com/azureiotedge-hub:1.0.2",
-							"createOptions": "{\n  \"HostConfig\": {\n    \"PortBindings\": {\n      \"8883/tcp\": [\n        {\n          \"HostPort\": \"8883\"\n        }\n      ],\n      \"443/tcp\": [\n        {\n          \"HostPort\": \"443\"\n        }\n      ],\n      \"5671/tcp\": [\n        {\n          \"HostPort\": \"5671\"\n        }\n      ]\n    }\n  }\n}"
+							"createOptions": "{ \"HostConfig\": {   \"PortBindings\": {\"8883/tcp\": [  {\"HostPort\": \"8883\" }  ], \"443/tcp\": [ { \"HostPort\": \"443\" } ], \"5671/tcp\": [ { \"HostPort\": \"5671\"  }] } }}"
 						},
 						"env": {
 							"OptimizeForPerformance": {
@@ -38,7 +38,7 @@
 						"type": "docker",
 						"settings": {
 							"image": "loraedge/lorawannetworksrvmodule:0.2.0-preview-dev-1",
-							"createOptions": "{\r\n  \"ExposedPorts\": {\r\n    \"1680/udp\": {}\r\n  },\r\n  \"HostConfig\": {\r\n    \"PortBindings\": {\r\n      \"1680/udp\": [\r\n        {\r\n          \"HostPort\": \"1680\",\r\n          \"HostIp\":\"172.17.0.1\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}\r\n\r\n"
+							"createOptions": "{\"ExposedPorts\": { \"1680/udp\": {}}, \"HostConfig\": {  \"PortBindings\": {\"1680/udp\": [  { \"HostPort\": \"1680\", \"HostIp\":\"172.17.0.1\" } ]}}}"
 						},
 						"version": "1.0",
 						"env": {
@@ -46,7 +46,7 @@
 							  "value": "2"
 							},              
 							"LOG_TO_HUB": {
-							  "value": "true"
+							  "value": "false"
 							}					
 						},
 						"status": "running",
@@ -56,8 +56,16 @@
 						"type": "docker",
 						"settings": {
 							"image": "loraedge/lorawanpktfwdmodule:0.2.0-preview-dev-1",
-							"createOptions": "  {\r\n  \"HostConfig\": {\r\n    \"NetworkMode\": \"host\", \"Privileged\": true \r\n\r\n  },\r\n  \"NetworkingConfig\": {\r\n    \"EndpointsConfig\": {\r\n      \"host\": {}\r\n    }\r\n  }\r\n}\r\n  \r\n  \r\n  \r\n"
+							"createOptions": "  {\"HostConfig\": {\"NetworkMode\": \"host\", \"Privileged\": true },  \"NetworkingConfig\": {\"EndpointsConfig\": {\"host\": {} }}}"
 						},
+						"env": {
+							"RESET_PIN": {
+							  "value": "[$reset_pin]"
+							},
+							"REGION": {
+							  "value": "[$region]"
+							}
+						  },
 						"version": "1.0",
 						"status": "running",
 						"restartPolicy": "always"

@@ -152,7 +152,7 @@ namespace LoRaWan.NetworkServer
                     string partConnection = createIoTHubConnectionString();
                     string deviceConnectionStr = $"{partConnection}DeviceId={DevEUI};SharedAccessKey={PrimaryKey}";
 
-                    deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Mqtt_Tcp_Only);
+                    deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Amqp_Tcp_Only);
 
                    
 
@@ -189,7 +189,7 @@ namespace LoRaWan.NetworkServer
                 if (deviceClient != null)
                 {
                     deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
-                    Logger.Log(DevEUI, $"retry is on", Logger.LoggingLevel.Full);
+                    //Logger.Log(DevEUI, $"retry is on", Logger.LoggingLevel.Full);
                 }
             }
             else
@@ -197,7 +197,7 @@ namespace LoRaWan.NetworkServer
                 if (deviceClient != null)
                 {
                     deviceClient.SetRetryPolicy(new NoRetry());
-                    Logger.Log(DevEUI, $"retry is off", Logger.LoggingLevel.Full);
+                    //Logger.Log(DevEUI, $"retry is off", Logger.LoggingLevel.Full);
                 }
             }
         }
