@@ -352,6 +352,24 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay (DEFAULT_TIMEWAIT);
         }
 
+        // Wait until the serial data is empty
+        internal async Task<bool> WaitForIdleAsync(TimeSpan? timeout = null)
+        {
+            var timeoutToUse = timeout ?? TimeSpan.FromSeconds(60);
+            var start = DateTime.UtcNow;
+
+            do 
+            {
+                this.ClearSerialLogs();
+                await Task.Delay(TimeSpan.FromSeconds(30));
+
+                if (!SerialLogs.Any())
+                    return true;
+            } while (start.Subtract(DateTime.UtcNow) <= timeoutToUse);
+            
+            return false;            
+        }
+
         public LoRaArduinoSerial setChannel (int channel, float frequency)
         {
 
@@ -394,6 +412,28 @@ namespace LoRaWan.IntegrationTest
             Thread.Sleep (DEFAULT_TIMEWAIT);
 
             return this;
+        }
+
+        public async Task<bool> transferPacketAsync (string buffer, int timeout)
+        {
+
+            sendCommand ("AT+MSG=\"");
+
+            sendCommand (buffer);
+
+            sendCommand ("\"\r\n");
+
+            DateTime start = DateTime.Now;
+
+            while (true)
+            {
+                if (this.ReceivedSerial(x => x.StartsWith("+MSG: Done")))
+                    return true;
+                else if (start.AddSeconds (timeout) < DateTime.Now)
+                    return false;
+
+                await Task.Delay(100);
+            }
         }
 
         public bool transferPacket (string buffer, int timeout)
@@ -442,6 +482,29 @@ namespace LoRaWan.IntegrationTest
                     return true;
                 else if (start.AddSeconds (timeout) < DateTime.Now)
                     return false;
+            }
+
+            //if (_buffer.Contains("+CMSG: ACK Received")) return true;
+
+        }
+
+        public async Task<bool> transferPacketWithConfirmedAsync (string buffer, int timeout)
+        {
+
+            sendCommand ("AT+CMSG=\"");
+            sendCommand (buffer);
+            sendCommand ("\"\r\n");
+
+            DateTime start = DateTime.Now;
+
+            while (true)
+            {
+                if (ReceivedSerial(x => x.StartsWith ("+CMSG: ACK Received")))
+                    return true;
+                else if (start.AddSeconds (timeout) < DateTime.Now)
+                    return false;
+
+                await Task.Delay(100);
             }
 
             //if (_buffer.Contains("+CMSG: ACK Received")) return true;

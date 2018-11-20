@@ -49,25 +49,22 @@ namespace LoRaWan.IntegrationTest
             {
                 var msg = (101 + i).ToString();
                 Console.WriteLine($"{device.DeviceID}: Sending unconfirmed '{msg}' {i+1}/{MESSAGES_COUNT}");
-                lora.transferPacket(msg, 10);
+                await lora.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
                 // After transferPacket: Expectation from serial
                 // +MSG: Done                        
-                Assert.Contains("+MSG: Done", this.lora.SerialLogs);
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.lora.SerialLogs);
 
                 // 0000000000000005: valid frame counter, msg: 1 server: 0
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: valid frame counter, msg:");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
 
                 // 0000000000000005: decoding with: DecoderValueSensor port: 8
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
             
-                // 0000000000000005: sending message {"time":null,"tmms":0,"tmst":188399595,"freq":868.5,"chan":2,"rfch":1,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","rssi":-59,"lsnr":7.5,"size":16,"data":{"value":100},"port":8,"fcnt":1,"eui":"0000000000000005","gatewayid":"itestArm1","edgets":1541886640047} to hub
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: sending message ");
-
                 // 0000000000000005: message '{"value": 51}' sent to hub
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: message '{{\"value\": {msg}}}' sent to hub");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
                 this.lora.ClearSerialLogs();
                 testFixture.ClearNetworkServerLogEvents();
@@ -78,25 +75,22 @@ namespace LoRaWan.IntegrationTest
             {
                 var msg = (51 + i).ToString();
                 Console.WriteLine($"{device.DeviceID}: Sending confirmed '{msg}' {i+1}/{MESSAGES_COUNT}");
-                lora.transferPacketWithConfirmed(msg, 10);
+                await lora.transferPacketWithConfirmedAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
                 // After transferPacketWithConfirmed: Expectation from serial
                 // +CMSG: ACK Received
-                Assert.Contains("+CMSG: ACK Received", this.lora.SerialLogs);
+                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.lora.SerialLogs);
 
                 // 0000000000000005: valid frame counter, msg: 1 server: 0
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: valid frame counter, msg:");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
 
                 // 0000000000000005: decoding with: DecoderValueSensor port: 8
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
             
-                // 0000000000000005: sending message {"time":null,"tmms":0,"tmst":188399595,"freq":868.5,"chan":2,"rfch":1,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","rssi":-59,"lsnr":7.5,"size":16,"data":{"value":100},"port":8,"fcnt":1,"eui":"0000000000000005","gatewayid":"itestArm1","edgets":1541886640047} to hub
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: sending message ");
-
                 // 0000000000000005: message '{"value": 51}' sent to hub
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: message '{{\"value\": {msg}}}' sent to hub");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
                 this.lora.ClearSerialLogs();
                 testFixture.ClearNetworkServerLogEvents();
@@ -119,16 +113,16 @@ namespace LoRaWan.IntegrationTest
 
             await lora.SetupLora(this.testFixture.Configuration.LoraRegion); 
             
-            lora.transferPacket("100", 10);
+            await lora.transferPacketAsync("100", 10);
 
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
             // After transferPacket: Expectation from serial
             // +MSG: Done                        
-            Assert.Contains("+MSG: Done", this.lora.SerialLogs);
+            await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.lora.SerialLogs);
 
             // 05060708: device is not our device, ignore message
-            await this.testFixture.ValidateNetworkServerEventLog($"{devAddrToUse}: device is not our device, ignore message");
+            await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{devAddrToUse}: device is not our device, ignore message");
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -136,7 +130,7 @@ namespace LoRaWan.IntegrationTest
             testFixture.ClearNetworkServerLogEvents();
 
             // Try with confirmed message
-            lora.transferPacketWithConfirmed("51", 10);
+            await lora.transferPacketWithConfirmedAsync("51", 10);
 
             // wait for serial logs to be ready
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -146,7 +140,7 @@ namespace LoRaWan.IntegrationTest
             Assert.DoesNotContain("+CMSG: ACK Received", this.lora.SerialLogs);
 
             // 05060708: device is not our device, ignore message
-            await this.testFixture.ValidateNetworkServerEventLog($"{devAddrToUse}: device is not our device, ignore message");
+            await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{devAddrToUse}: device is not our device, ignore message");
 
         }
 
@@ -172,7 +166,7 @@ namespace LoRaWan.IntegrationTest
 
             await lora.SetupLora(this.testFixture.Configuration.LoraRegion); 
             
-            lora.transferPacket("100", 10);
+            await lora.transferPacketAsync("100", 10);
 
             // wait for serial logs to be ready
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -180,10 +174,10 @@ namespace LoRaWan.IntegrationTest
 
             // After transferPacket: Expectation from serial
             // +MSG: Done                        
-            Assert.Contains("+MSG: Done", this.lora.SerialLogs);
+            //await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.lora.SerialLogs);
        
             // 0000000000000005: with devAddr 0028B1B0 check MIC failed. Device will be ignored from now on
-            await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
+            await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -192,12 +186,15 @@ namespace LoRaWan.IntegrationTest
 
             // Try with confirmed message
 
-            lora.transferPacketWithConfirmed("51", 10);
+            await lora.transferPacketWithConfirmedAsync("51", 10);
 
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
             // 0000000000000005: with devAddr 0028B1B0 check MIC failed. Device will be ignored from now on
-            await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
+            await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
+
+            // wait until arduino stops trying to send confirmed msg
+            await this.lora.WaitForIdleAsync();
         }    
 
         // Tests using a invalid Network Session key, resulting in mic failed
@@ -222,10 +219,10 @@ namespace LoRaWan.IntegrationTest
 
             // After transferPacket: Expectation from serial
             // +MSG: Done                        
-            Assert.Contains("+MSG: Done", this.lora.SerialLogs);
+            await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.lora.SerialLogs);
 
             // 0000000000000008: with devAddr 0028B1B3 check MIC failed. Device will be ignored from now on
-            await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
+            await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
 
     
             this.lora.ClearSerialLogs();
@@ -233,12 +230,16 @@ namespace LoRaWan.IntegrationTest
 
             // Try with confirmed message
 
-            lora.transferPacketWithConfirmed("51", 10);
+            await lora.transferPacketWithConfirmedAsync("51", 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             // 0000000000000008: with devAddr 0028B1B3 check MIC failed. Device will be ignored from now on
-            await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
+            await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
+
+
+            // Before starting new test, wait until Lora drivers stops sending/receiving data
+            await lora.WaitForIdleAsync();
         }        
     }
 }

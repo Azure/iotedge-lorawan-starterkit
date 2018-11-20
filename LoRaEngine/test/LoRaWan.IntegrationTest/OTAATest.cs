@@ -54,26 +54,23 @@ namespace LoRaWan.IntegrationTest
             for (var i=0; i < MESSAGES_COUNT; ++i)
             {
                 var msg = (100 + i).ToString();
-                lora.transferPacket(msg, 10);
+                await lora.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
                 // After transferPacket: Expectation from serial
                 // +MSG: Done                        
-                Assert.Contains("+MSG: Done", this.lora.SerialLogs);
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.lora.SerialLogs);
 
 
                 // 0000000000000005: valid frame counter, msg: 1 server: 0
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: valid frame counter, msg:");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
 
                 // 0000000000000005: decoding with: DecoderValueSensor port: 8
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
             
-                // 0000000000000005: sending message {"time":null,"tmms":0,"tmst":188399595,"freq":868.5,"chan":2,"rfch":1,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","rssi":-59,"lsnr":7.5,"size":16,"data":{"value":100},"port":8,"fcnt":1,"eui":"0000000000000005","gatewayid":"itestArm1","edgets":1541886640047} to hub
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: sending message ");
-
                 // 0000000000000005: message '{"value": 51}' sent to hub
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: message '{{\"value\": {msg}}}' sent to hub");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
                 this.lora.ClearSerialLogs();
                 testFixture.ClearNetworkServerLogEvents();
@@ -85,25 +82,22 @@ namespace LoRaWan.IntegrationTest
             for (var i=0; i < MESSAGES_COUNT; ++i)
             {
                 var msg = (50 + i).ToString();
-                lora.transferPacketWithConfirmed(msg, 10);
+                await lora.transferPacketWithConfirmedAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
                 // After transferPacketWithConfirmed: Expectation from serial
                 // +CMSG: ACK Received
-                Assert.Contains("+CMSG: ACK Received", this.lora.SerialLogs);
+                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.lora.SerialLogs);
 
                 // 0000000000000005: valid frame counter, msg: 1 server: 0
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: valid frame counter, msg:");
+                //await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
 
                 // 0000000000000005: decoding with: DecoderValueSensor port: 8
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
             
-                // 0000000000000005: sending message {"time":null,"tmms":0,"tmst":188399595,"freq":868.5,"chan":2,"rfch":1,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","rssi":-59,"lsnr":7.5,"size":16,"data":{"value":100},"port":8,"fcnt":1,"eui":"0000000000000005","gatewayid":"itestArm1","edgets":1541886640047} to hub
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: sending message ");
-
                 // 0000000000000005: message '{"value": 51}' sent to hub
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: message '{{\"value\": {msg}}}' sent to hub");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
                 this.lora.ClearSerialLogs();
                 testFixture.ClearNetworkServerLogEvents();

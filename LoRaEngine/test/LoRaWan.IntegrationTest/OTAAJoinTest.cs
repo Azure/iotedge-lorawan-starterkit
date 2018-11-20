@@ -61,9 +61,11 @@ namespace LoRaWan.IntegrationTest
             // After join: Expectation on serial
             // +JOIN: Network joined
             // +JOIN: NetID 010000 DevAddr 02:9B:0D:3E  
-            //Assert.Contains("+JOIN: Network joined", this.lora.SerialLogs);            
-            Assert.Contains(this.lora.SerialLogs,(s) => s.StartsWith("+JOIN: NetID", StringComparison.Ordinal));
-
+            //Assert.Contains("+JOIN: Network joined", this.lora.SerialLogs);   
+            await AssertUtils.ContainsWithRetriesAsync(
+                (s) => s.StartsWith("+JOIN: NetID", StringComparison.Ordinal),
+                this.lora.SerialLogs
+            );
 
             // verify status in device twin
             await Task.Delay(TimeSpan.FromSeconds(60));
@@ -87,16 +89,16 @@ namespace LoRaWan.IntegrationTest
        
             // Verify network server log
             // 0000000000000001: join request received
-            await testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: join request received");
+            await testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: join request received");
 
             // 0000000000000001: querying the registry for device key
-            await testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: querying the registry for device key");
+            await testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: querying the registry for device key");
 
             // 0000000000000001: saving join properties twins
-            await testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: saving join properties twins");
+            await testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: saving join properties twins");
 
             // 0000000000000001: join accept sent
-            await testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: join accept sent");
+            await testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: join accept sent");
         }
 
 
@@ -122,17 +124,16 @@ namespace LoRaWan.IntegrationTest
             {
                 // Expected messages in log
                 // 0000000000000002: join request received
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: join request received");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: join request received");
                 
                 // 0000000000000002: querying the registry for device key
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: querying the registry for device key");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: querying the registry for device key");
                 
                 // 0000000000000002: join request refused
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: join request refused");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: join request refused");
             }
         }
-
-        // TODO: check with Mikhail to find out why it works
+        
         // Ensure that a join with an invalid AppKey fails
         // Uses Device3_OTAA
         [Fact]
@@ -155,13 +156,49 @@ namespace LoRaWan.IntegrationTest
             {
                 // Expected messages in log
                 // 0000000000000002: join request received
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: join request received");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: join request received");
                 
                 // 0000000000000002: querying the registry for device key
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: querying the registry for device key");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: querying the registry for device key");
                 
                 // 0000000000000002: join request refused
-                await this.testFixture.ValidateNetworkServerEventLog($"{device.DeviceID}: join request refused");
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: join request refused");
+            }
+        }
+
+
+        // Ensure that a join with an invalid AppKey fails
+        // Uses Device13_OTAA
+        [Fact]
+        public async Task OTAA_Join_With_Wrong_AppEUI_Fails()
+        {
+            var device = this.testFixture.Device13_OTAA; 
+            Console.WriteLine($"Starting {nameof(OTAA_Join_With_Wrong_AppEUI_Fails)} using device {device.DeviceID}");      
+            var appEUIToUse = "FF7A00000000FCE3";
+            Assert.NotEqual(appEUIToUse, device.AppEUI);
+            await lora.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await lora.setIdAsync(device.DevAddr, device.DeviceID, appEUIToUse);
+            await lora.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+
+            await lora.SetupLora(this.testFixture.Configuration.LoraRegion);
+
+            var joinSucceeded = await lora.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            Assert.False(joinSucceeded, "Join suceeded for invalid AppKey");
+
+            if (this.testFixture.Configuration.NetworkServerModuleLogAssertLevel != NetworkServerModuleLogAssertLevel.Ignore)
+            {
+                // Expected messages in log
+                // 0000000000000013: join request received
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: join request received");
+                
+                // 0000000000000013: querying the registry for device key
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: querying the registry for device key");
+                
+                // 0000000000000013: join request refused
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: join request refused");
+
+                // 0000000000000013: AppEUI for OTAA does not match for device
+                await this.testFixture.ValidateNetworkServerEventLogStartsWithAsync($"{device.DeviceID}: AppEUI for OTAA does not match for device");
             }
         }
     }

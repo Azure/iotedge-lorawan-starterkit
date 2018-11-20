@@ -11,7 +11,7 @@ using Xunit;
 
 namespace LoRaWan.IntegrationTest
 {
-    public class IntegrationTestFixture : IDisposable, IAsyncLifetime
+    public partial class IntegrationTestFixture : IDisposable, IAsyncLifetime
     {
         public const string MESSAGE_IDENTIFIER_PROPERTY_NAME = "messageIdentifier";
         RegistryManager registryManager;
@@ -55,6 +55,14 @@ namespace LoRaWan.IntegrationTest
         // Device10_OTAA: used for OTAA unconfirmed messages, C2D test
         public TestDeviceInfo Device10_OTAA { get; }  
 
+        // Device11_OTAA: used for http decoder
+        public TestDeviceInfo Device11_OTAA { get; }  
+
+        // Device12_OTAA: used for reflection based decoder
+        public TestDeviceInfo Device12_OTAA { get; } 
+
+        // Device13_OTAA: used for wrong AppEUI OTAA join
+        public TestDeviceInfo Device13_OTAA { get; }
         public IntegrationTestFixture()
         {
             this.Configuration = TestConfiguration.GetConfiguration();
@@ -93,7 +101,7 @@ namespace LoRaWan.IntegrationTest
             this.Device3_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000003",
-                AppEUI = "BE7A0000000014E3",
+                AppEUI = "BE7A00000000FFE3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
@@ -184,6 +192,39 @@ namespace LoRaWan.IntegrationTest
                 GatewayID = gatewayID,
                 RealDevice = true                            
             };  
+
+            // Device11_OTAA: used for http decoder
+            this.Device11_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000011",
+                AppEUI = "BE7A0000000014E3",
+                AppKey = "8AFE71A145B253E49C3031AD068277A3",                
+                GatewayID = gatewayID,
+                RealDevice = true,                                      
+                SensorDecoder = "http://sensordecodermodule/api/DecoderValueSensor",                           
+            };  
+
+            // Device12_OTAA: used for reflection based decoder
+            this.Device12_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000012",
+                AppEUI = "BE7A0000000014E3",
+                AppKey = "8AFE71A145B253E49C3031AD068277A3",                
+                GatewayID = gatewayID,
+                RealDevice = true,                                      
+                SensorDecoder = "DecoderValueSensor",                           
+            };  
+
+            // Device13_OTAA: used for Join with wrong AppEUI
+            this.Device13_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000013",
+                AppEUI = "BE7A00000000FEE3",
+                AppKey = "8AFE71A145B253E49C3031AD068277A3",                
+                GatewayID = gatewayID,
+                RealDevice = true,                                      
+                SensorDecoder = "DecoderValueSensor",                           
+            };  
         }
 
         internal string GetMessageIdentifier(EventData eventData) 
@@ -193,11 +234,16 @@ namespace LoRaWan.IntegrationTest
         }      
 
         // Validate the network server log for the existence of a message
-        public async Task ValidateNetworkServerEventLog(string logMessageStart)
+        public async Task ValidateNetworkServerEventLogStartsWithAsync(string logMessageStart)
         {
             if (this.Configuration.NetworkServerModuleLogAssertLevel != NetworkServerModuleLogAssertLevel.Ignore)
             {
-                var findResult = await this.FindNetworkServerEventLog((e, deviceID, messageBody) => messageBody.StartsWith(logMessageStart));
+                var findResult = await this.FindNetworkServerEventLog((e, deviceID, messageBody) => messageBody.StartsWith(logMessageStart),
+                new FindNetworkServerEventLogOptions
+                {
+                    Description = logMessageStart
+                });
+
                 if (this.Configuration.NetworkServerModuleLogAssertLevel == NetworkServerModuleLogAssertLevel.Error)
                 {
                     var logs = string.Join("\n\t", findResult.Item2.TakeLast(5));
@@ -220,21 +266,22 @@ namespace LoRaWan.IntegrationTest
 
         // Search the network server logs for a value
         //internal async Task<Tuple<bool, HashSet<string>>> FindNetworkServerEventLog(Func<EventData, string, string, bool> predicate)
-        internal async Task<(bool found, HashSet<string> logs)> FindNetworkServerEventLog(Func<EventData, string, string, bool> predicate, string description = null)
+        internal async Task<(bool found, HashSet<string> logs)> FindNetworkServerEventLog(Func<EventData, string, string, bool> predicate, FindNetworkServerEventLogOptions options = null)
         {
+            var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<string>();
-            for (int i = 0; i < this.Configuration.EnsureHasEventMaximumTries; i++)
+            for (int i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
                 {
                     var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    if (!string.IsNullOrEmpty(description))
+                    if (!string.IsNullOrEmpty(options?.Description))
                     {
-                        Console.WriteLine($"Network server event log '{description}' not found, attempt {i}/{this.Configuration.EnsureHasEventMaximumTries}, waiting {timeToWait} secs");
+                        Console.WriteLine($"Network server event log '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
                     else
                     {
-                        Console.WriteLine($"Network server event log not found, attempt {i}/{this.Configuration.EnsureHasEventMaximumTries}, waiting {timeToWait} secs");
+                        Console.WriteLine($"Network server event log not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
@@ -317,6 +364,9 @@ namespace LoRaWan.IntegrationTest
                     this.Device8_ABP,
                     this.Device9_OTAA,
                     this.Device10_OTAA,
+                    this.Device11_OTAA,
+                    this.Device12_OTAA,
+                    this.Device13_OTAA,
                 };
 
                 var registryManager = GetRegistryManager();
