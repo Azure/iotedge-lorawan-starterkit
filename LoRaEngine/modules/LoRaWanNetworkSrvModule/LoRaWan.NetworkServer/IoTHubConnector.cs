@@ -265,7 +265,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log(DevEUI, $"Could not retrive c2d message with error: {ex.Message}", Logger.LoggingLevel.Error);
+                Logger.Log(DevEUI, $"Could not retrieve c2d message with error: {ex.Message}", Logger.LoggingLevel.Error);
                 return null;
             }
         }

@@ -113,8 +113,6 @@ namespace LoRaWan.NetworkServer
                 });
             }
 
-            Logger.Log($"Result from {sensorDecoderModuleUrl} = {result}", Logger.LoggingLevel.Info);
-
             return result;
         }
 
