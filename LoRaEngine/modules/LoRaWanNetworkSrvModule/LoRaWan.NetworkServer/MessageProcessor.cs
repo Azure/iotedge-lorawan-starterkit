@@ -156,7 +156,7 @@ namespace LoRaWan.NetworkServer
                             fullPayload.port = fportUp;
                             fullPayload.fcnt = fcntup;
 
-                            if (!isAckFromDevice)
+                            if (isAckFromDevice)
                             {
                                 jsonDataPayload = Convert.ToBase64String(decryptedMessage);
                                 fullPayload.data = jsonDataPayload;
