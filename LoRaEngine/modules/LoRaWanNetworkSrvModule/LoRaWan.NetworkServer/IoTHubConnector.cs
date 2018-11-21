@@ -188,7 +188,7 @@ namespace LoRaWan.NetworkServer
                 if (deviceClient != null)
                 {
                     deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
-                    Logger.Log(DevEUI, $"retry is on", Logger.LoggingLevel.Full);
+                    //Logger.Log(DevEUI, $"retry is on", Logger.LoggingLevel.Full);
                 }
             }
             else
@@ -196,7 +196,7 @@ namespace LoRaWan.NetworkServer
                 if (deviceClient != null)
                 {
                     deviceClient.SetRetryPolicy(new NoRetry());
-                    Logger.Log(DevEUI, $"retry is off", Logger.LoggingLevel.Full);
+                    //Logger.Log(DevEUI, $"retry is off", Logger.LoggingLevel.Full);
                 }
             }
         }

@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer
 
         public static async Task<ushort> NextFCntDown(string DevEUI, ushort FCntDown, ushort FCntUp, string GatewayId)
         {
-            Logger.Log(DevEUI, $"synching FCntDown for multigateway", Logger.LoggingLevel.Info);
+            Logger.Log(DevEUI, $"syncing FCntDown for multigateway", Logger.LoggingLevel.Info);
             var client = new HttpClient();
             var url = $"{FacadeServerUrl}NextFCntDown?code={FacadeAuthCode}&DevEUI={DevEUI}&FCntDown={FCntDown}&FCntUp={FCntUp}&GatewayId={GatewayId}";
             HttpResponseMessage response = await client.GetAsync(url);
@@ -337,7 +337,7 @@ namespace LoRaWan.NetworkServer
             if (!String.IsNullOrEmpty(joinLoraDeviceInfo.GatewayID) && joinLoraDeviceInfo.GatewayID.ToUpper() != GatewayID.ToUpper())
             {
                 string errorMsg = $"not the right gateway device-gateway:{joinLoraDeviceInfo.GatewayID} current-gateway:{GatewayID}";
-                Logger.Log(errorMsg, Logger.LoggingLevel.Info);
+                Logger.Log(DevEUI,errorMsg, Logger.LoggingLevel.Info);
                 joinLoraDeviceInfo.IsJoinValid = false;
                 return joinLoraDeviceInfo;
             }

@@ -44,7 +44,6 @@ namespace LoRaTools.LoRaMessage
 
         public MacCommandHolder GetMacCommands()
         {
-            Logger.Log("fopts : " + Fopts.Length, Logger.LoggingLevel.Full);
             MacCommandHolder macHolder = new MacCommandHolder(Fopts.ToArray());
             return macHolder;
         }
@@ -66,14 +65,31 @@ namespace LoRaTools.LoRaMessage
             // Fcnt
             this.Fcnt = new Memory<byte>(inputMessage,6,2);
             // FOpts
-            this.Fopts = new Memory<byte>(inputMessage, 8, foptsSize);        
+            this.Fopts = new Memory<byte>(inputMessage, 8, foptsSize);
+            //in this case the message don't have a Fport as the payload is empty
+            int fportLength = 1;
+            if (inputMessage.Length < 13)
+            {
+                fportLength = 0;
+            }
             // Fport can be empty if no commands! 
-            this.Fport = new Memory<byte>(inputMessage,8+foptsSize,1) ;
+            this.Fport = new Memory<byte>(inputMessage,8+foptsSize,fportLength) ;
             // frmpayload
-            this.Frmpayload = new Memory<byte>(inputMessage,9+foptsSize, inputMessage.Length - 9 - 4 - foptsSize);
+            this.Frmpayload = new Memory<byte>(inputMessage,8+fportLength+foptsSize, inputMessage.Length - 8- fportLength - 4 - foptsSize);
         }
 
-        public LoRaPayloadData(byte[] mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, byte[] fOpts, byte[] fPort, byte[] frmPayload, int direction) : base()
+        public enum MType
+        {
+            JoinRequest,
+            JoinAccept=32,
+            UnconfirmedDataUp=64,
+            UnconfirmedDataDown=96,
+            ConfirmedDataUp=128,
+            ConfirmedDataDown=160
+
+        }
+
+        public LoRaPayloadData(MType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, byte[] fOpts, byte[] fPort, byte[] frmPayload, int direction) : base()
         {
             int fOptsLen = fOpts == null ? 0 : fOpts.Length;
             int frmPayloadLen = frmPayload == null ? 0 : frmPayload.Length;
@@ -82,7 +98,8 @@ namespace LoRaTools.LoRaMessage
             int macPyldSize =  devAddr.Length + fctrl.Length + fcnt.Length + fOptsLen+frmPayloadLen+fPortLen;
             RawMessage = new byte[1 + macPyldSize + 4];
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
-            Array.Copy(mhdr, 0, RawMessage, 0, 1);
+            RawMessage[0] = (byte)mhdr;
+           // Array.Copy(mhdr, 0, RawMessage, 0, 1);
             Array.Reverse(devAddr);
             DevAddr = new Memory<byte>(RawMessage, 1, 4);
             Array.Copy(devAddr, 0, RawMessage, 1, 4);

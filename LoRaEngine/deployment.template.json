@@ -61,7 +61,8 @@
             }
           }
         },
-        "modules": {          
+        "modules": {
+         
           "LoRaWanNetworkSrvModule": {
             "type": "docker",
             "settings": {
@@ -112,11 +113,11 @@
             },
             "env": {
               "RESET_PIN": {
-                "value": "7"
+                "value": "$RESET_PIN"
               },
               "REGION": {
                 "value": "$REGION"
-              }             
+              }
             },
             "version": "1.0",
             "status": "running",
