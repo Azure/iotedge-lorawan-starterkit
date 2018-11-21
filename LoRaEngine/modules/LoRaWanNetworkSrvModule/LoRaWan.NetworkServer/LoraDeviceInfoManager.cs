@@ -8,6 +8,7 @@ using LoRaTools.Utils;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace LoRaWan.NetworkServer
         public static async Task<ushort> NextFCntDown(string DevEUI, ushort FCntDown, ushort FCntUp, string GatewayId)
         {
             Logger.Log(DevEUI, $"syncing FCntDown for multigateway", Logger.LoggingLevel.Info);
-            var client = new HttpClient();
+            var client = GetHttpProxyClient();
             var url = $"{FacadeServerUrl}NextFCntDown?code={FacadeAuthCode}&DevEUI={DevEUI}&FCntDown={FCntDown}&FCntUp={FCntUp}&GatewayId={GatewayId}";
             HttpResponseMessage response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -50,7 +51,7 @@ namespace LoRaWan.NetworkServer
         public static async Task<bool> ABPFcntCacheReset(string DevEUI)
         {
             Logger.Log(DevEUI, $"ABP FCnt cache reset for multigateway", Logger.LoggingLevel.Info);
-            var client = new HttpClient();
+            var client = GetHttpProxyClient();
             var url = $"{FacadeServerUrl}NextFCntDown?code={FacadeAuthCode}&DevEUI={DevEUI}&ABPFcntCacheReset=true";
             HttpResponseMessage response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -69,7 +70,7 @@ namespace LoRaWan.NetworkServer
 
         public static async Task<LoraDeviceInfo> GetLoraDeviceInfoAsync(string DevAddr, string GatewayId)
         {
-            var client = new HttpClient();
+            var client = GetHttpProxyClient();
             var url = $"{FacadeServerUrl}GetDevice?code={FacadeAuthCode}&DevAddr={DevAddr}&GatewayId={GatewayId}";
             HttpResponseMessage response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -202,7 +203,7 @@ namespace LoRaWan.NetworkServer
             //{
 
             Logger.Log(DevEUI, $"querying the registry for device key", Logger.LoggingLevel.Info);
-            var client = new HttpClient();
+            var client = GetHttpProxyClient();
             var url = String.Concat($"{FacadeServerUrl}GetDevice?", $"{FacadeAuthCode}"=="" ? "" : $"code={FacadeAuthCode}&", $"DevEUI={DevEUI}&DevNonce={DevNonce}&GatewayId={GatewayID}");
    
             HttpResponseMessage response = await client.GetAsync(url);
@@ -358,9 +359,31 @@ namespace LoRaWan.NetworkServer
 
             return joinLoraDeviceInfo;
         }
+
+        static HttpClient GetHttpProxyClient()
+        {
+            HttpClient httpClient;
+
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("https_proxy")))
+            {
+                var webProxy = new WebProxy(
+                    new Uri(Environment.GetEnvironmentVariable("https_proxy")),
+                    BypassOnLocal: false);
+
+                var proxyHttpClientHandler = new HttpClientHandler
+                {
+                    Proxy = webProxy,
+                    UseProxy = true,
+                };
+
+                httpClient = new HttpClient(proxyHttpClientHandler);
+            }
+            else
+            {
+                httpClient = new HttpClient();
+            }
+
+            return httpClient;
+        }
     }
-
-
-
-
 }
