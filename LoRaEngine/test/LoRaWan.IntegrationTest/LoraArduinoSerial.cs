@@ -737,11 +737,11 @@ namespace LoRaWan.IntegrationTest
 
                 while (DateTime.Now.Subtract(start).TotalMilliseconds < timeoutPerTry)
                 {                                           
-                    if (ReceivedSerial((s) => s.StartsWith("+JOIN: Network joined", StringComparison.Ordinal)))                
+                    if (ReceivedSerial((s) => s.Contains("+JOIN: Network joined", StringComparison.Ordinal)))
                         return true;
-                    else if (ReceivedSerial(x => x.StartsWith ("+JOIN: LoRaWAN modem is busy", StringComparison.Ordinal)))
+                    else if (ReceivedSerial(x => x.Contains("+JOIN: LoRaWAN modem is busy", StringComparison.Ordinal)))
                         break;
-                    else if (ReceivedSerial(x => x.StartsWith ("+JOIN: Join failed", StringComparison.Ordinal)))
+                    else if (ReceivedSerial(x => x.Contains("+JOIN: Join failed", StringComparison.Ordinal)))
                         break;
 
                     // wait a bit to not starve CPU, still waiting for a response from serial port

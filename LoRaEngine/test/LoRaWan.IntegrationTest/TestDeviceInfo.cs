@@ -9,8 +9,8 @@ namespace LoRaWan.IntegrationTest
         // Device ID in IoT Hub
         public string DeviceID { get; set; }
 
-        // Indicates if the device actually exists
-        public bool RealDevice { get; set; }
+        // Indicates if the device actually exists in IoT Hub
+        public bool IsIoTHubDevice { get; set; }
 
         // Application Identifier
         // Used by OTAA devices

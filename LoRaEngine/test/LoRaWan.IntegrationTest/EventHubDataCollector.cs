@@ -35,7 +35,7 @@ namespace LoRaWan.IntegrationTest
                 this.ConsumerGroupName = consumerGroupName;
         }
 
-        public async Task Start()
+        public async Task StartAsync()
         {
             if(this.receivers.Count > 0)
                 throw new InvalidOperationException("Already started");
@@ -88,6 +88,8 @@ namespace LoRaWan.IntegrationTest
 
         protected virtual void Dispose(bool disposing)
         {
+            Console.WriteLine($"{nameof(EventHubDataCollector)} disposed");
+
             if(!disposedValue)
             {
                 if(disposing)
