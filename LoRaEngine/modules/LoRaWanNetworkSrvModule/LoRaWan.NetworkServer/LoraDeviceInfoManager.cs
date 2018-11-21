@@ -307,7 +307,7 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                Logger.Log(DevEUI, $"unsing cached twins for OTAA device", Logger.LoggingLevel.Info);
+                Logger.Log(DevEUI, $"using cached twins for OTAA device", Logger.LoggingLevel.Info);
             }
 
             //We add it to the cache so the next join has already the data, important for offline
