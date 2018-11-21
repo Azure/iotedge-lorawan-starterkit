@@ -38,7 +38,7 @@ namespace LoRaWan.NetworkServer
 
             }
 
-            string fcntDownString = response.Content.ReadAsStringAsync().Result;
+            string fcntDownString = await response.Content.ReadAsStringAsync();
 
             //todo ronnie check for fcnt above ushort
             ushort newFCntDown = ushort.Parse(fcntDownString);
@@ -79,7 +79,7 @@ namespace LoRaWan.NetworkServer
                 return null;
             }
 
-            var result = response.Content.ReadAsStringAsync().Result;
+            var result = await response.Content.ReadAsStringAsync();
             //TODO enable multi devices with the same devaddr
 
             List<IoTHubDeviceInfo> iotHubDeviceInfos = ((List<IoTHubDeviceInfo>)JsonConvert.DeserializeObject(result, typeof(List<IoTHubDeviceInfo>)));
@@ -210,7 +210,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
-                    var badReqResult = response.Content.ReadAsStringAsync().Result;
+                    var badReqResult = await response.Content.ReadAsStringAsync();
 
                     if (!String.IsNullOrEmpty(badReqResult) && badReqResult == "UsedDevNonce")
                     {
@@ -224,7 +224,7 @@ namespace LoRaWan.NetworkServer
                 return null;
             }
 
-            var result = response.Content.ReadAsStringAsync().Result;
+            var result = await response.Content.ReadAsStringAsync();
 
             List<IoTHubDeviceInfo> iotHubDeviceInfos = ((List<IoTHubDeviceInfo>)JsonConvert.DeserializeObject(result, typeof(List<IoTHubDeviceInfo>)));
             if (iotHubDeviceInfos.Count == 0)

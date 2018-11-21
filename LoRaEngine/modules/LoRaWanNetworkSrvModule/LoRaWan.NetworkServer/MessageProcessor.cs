@@ -158,17 +158,13 @@ namespace LoRaWan.NetworkServer
 
                             if (!isAckFromDevice)
                             {
-                                if (String.IsNullOrEmpty(loraDeviceInfo.SensorDecoder))
-                                {
-                                    jsonDataPayload = Convert.ToBase64String(decryptedMessage);
-                                    fullPayload.data = jsonDataPayload;
-                                }
-                                else
-                                {
-                                    Logger.Log(loraDeviceInfo.DevEUI, $"decoding with: {loraDeviceInfo.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Info);
-                                    jsonDataPayload = LoraDecoders.DecodeMessage(decryptedMessage, fportUp, loraDeviceInfo.SensorDecoder);
-                                    fullPayload.data = JObject.Parse(jsonDataPayload);
-                                }
+                                jsonDataPayload = Convert.ToBase64String(decryptedMessage);
+                                fullPayload.data = jsonDataPayload;
+                            }
+                            else
+                            {
+                                Logger.Log(loraDeviceInfo.DevEUI, $"decoding with: {loraDeviceInfo.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Info);
+                                fullPayload.data = await LoraDecoders.DecodeMessage(decryptedMessage, fportUp, loraDeviceInfo.SensorDecoder);
                             }
 
                             fullPayload.eui = loraDeviceInfo.DevEUI;
@@ -193,6 +189,7 @@ namespace LoRaWan.NetworkServer
                             }
                             string iotHubMsg = fullPayload.ToString(Newtonsoft.Json.Formatting.None);
                             await loraDeviceInfo.HubSender.SendMessageAsync(iotHubMsg, messageProperties);
+                            
                             if (isAckFromDevice)
                             {
                                 Logger.Log(loraDeviceInfo.DevEUI, $"ack from device sent to hub", Logger.LoggingLevel.Info);
@@ -200,7 +197,12 @@ namespace LoRaWan.NetworkServer
                             }
                             else
                             {
-                                Logger.Log(loraDeviceInfo.DevEUI, $"message '{jsonDataPayload}' sent to hub", Logger.LoggingLevel.Info);
+                                var fullPayloadAsString = fullPayload.data as string;
+                                if (fullPayloadAsString == null)
+                                {
+                                    fullPayloadAsString = ((JObject)fullPayload.data).ToString(Formatting.None);
+                                }
+                                Logger.Log(loraDeviceInfo.DevEUI, $"message '{fullPayloadAsString}' sent to hub", Logger.LoggingLevel.Info);
                             }
                             loraDeviceInfo.FCntUp = fcntup;
                         }

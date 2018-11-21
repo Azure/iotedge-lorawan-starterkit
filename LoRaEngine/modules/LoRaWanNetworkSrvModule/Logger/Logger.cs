@@ -32,7 +32,7 @@ namespace LoRaWan
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_TO_HUB")))
                 logToHub = bool.Parse(Environment.GetEnvironmentVariable("LOG_TO_HUB"));
 
-
+            
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_LEVEL")))
                 loggingLevelSetting = int.Parse(Environment.GetEnvironmentVariable("LOG_LEVEL"));
 
