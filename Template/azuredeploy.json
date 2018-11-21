@@ -20,11 +20,11 @@
                 "description": "Provision a final LoRa device in the IoT hub in addition to the gateway"
             }
         },
-        "resetPin": {
-            "type": "int",
-            "metadata": {
-                "description": "Provide the reset pin value of your gateway. Please refer to the doc if you are unfamiliar with the value"
-            }
+            "resetPin": {
+                "type": "int",
+                "metadata": {
+                    "description": "Provide the reset pin value of your gateway. Please refer to the doc if you are unfamiliar with the value"
+                }
         },
         "region": {
             "type": "string",
@@ -35,9 +35,9 @@
             "defaultValue": "EU",
             "metadata": {
                 "description": "In what region is your gateway deployed?"
-            }
-        }
-    },
+    }
+}
+},
     "variables": {
         "iotHubName": "[concat(parameters('uniqueSolutionPrefix'), 'hub')]",
         "location": "[resourceGroup().location]",
@@ -50,8 +50,8 @@
         "gitBranch": "dev-0.2",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "iotHubOwnerPolicyName": "iothubowner",
-        "appInsightName": "[concat(parameters('uniqueSolutionPrefix'), 'insight')]",
-        "redisCacheName": "[concat(parameters('uniqueSolutionPrefix'), 'redis')]"
+        "appInsightName":"[concat(parameters('uniqueSolutionPrefix'), 'insight')]",
+        "redisCacheName":"[concat(parameters('uniqueSolutionPrefix'), 'redis')]"
     },
     "resources": [
         {
@@ -86,7 +86,9 @@
             "properties": {
                 "accountType": "[variables('storageAccountType')]"
             },
-            "dependsOn": []
+            "dependsOn": [
+                
+            ]
         },
         {
             "apiVersion": "2016-08-01",
@@ -203,11 +205,11 @@
                     "edgeGatewayName": {
                         "value": "[parameters('edgeGatewayName')]"
                     },
-                    "region": {
+                    "region":{
                         "value": "[parameters('region')]"
                     },
-                    "resetPin": {
-                        "value": "[parameters('resetPin')]"
+                    "resetPin":{
+                        "value":"[parameters('resetPin')]"
                     }
                 }
             }
@@ -230,11 +232,11 @@
             "type": "Microsoft.Cache/Redis",
             "location": "[resourceGroup().location]",
             "properties": {
-                "sku": {
-                    "capacity": 0,
-                    "family": "C",
-                    "name": "Basic"
-                }
+              "sku": {
+                "capacity": 0,
+                "family": "C",
+                "name": "Basic"
+              }
             }
         }
     ],
