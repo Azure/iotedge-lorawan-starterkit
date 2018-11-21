@@ -31,6 +31,7 @@ However, customers looking for any of the following are expected to prefer a set
 
 ## Current limitations
 
+- **This version has some breaking changes and is not compatible with the previous one (v0.1.0-preview). We recommend to redeploy your solution from scratch to avoid any issues**
 - Multigateway works but is not fully tested and you need to implement message deduplication after IoT Hub, if multiples gateways are used in the same range of the device we recommend setting the gateway tag "GatewayID" on the device twins with the IoT Edge ID of the preferred gateway for that device.
 - No Class B and C
 - No ADR
