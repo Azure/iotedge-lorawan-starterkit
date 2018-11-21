@@ -121,7 +121,7 @@ namespace LoRaWan.NetworkServer
         private static string DecoderValueSensor(byte[] payload, uint fport)
         {
             var result = Encoding.ASCII.GetString(payload);            
-            return $"{{ value:{result} }}";
+            return $"{{ \"value\":{result} }}";
         }
     }
 
