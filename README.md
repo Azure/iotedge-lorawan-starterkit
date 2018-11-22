@@ -1,7 +1,5 @@
 # Azure IoT Edge LoRaWAN Starter Kit
 
-**Please note this branch is currently under active development and stability is not ensured, please check the master branch for a stable version of the code.**
-
 Experimental sample implementation of LoRaWAN components to connect LoRaWAN antenna gateway running IoT Edge directly with Azure IoT.
 
 The goal of the project is to provide guidance and a reference for Azure IoT Edge users to experiment with LoRaWAN technology.
@@ -50,6 +48,7 @@ However, customers looking for any of the following are expected to prefer a set
 - [Seeed Studio LoRa LoRaWAN Gateway - 868MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
 - [AAEON AIOT-ILRA01 LoRa® Certified Intel® Based Gateway and Network Server](https://www.aaeon.com/en/p/intel-lora-gateway-system-server)
 - [MyPi Industrial IoT Integrator Board](http://www.embeddedpi.com/integrator-board) with [RAK833-SPI mPCIe-LoRa-Concentrator](http://www.embeddedpi.com/iocards)
+- Raspberry Pi 3 with [IC880A](https://wireless-solutions.de/products/radiomodules/ic880a.html)
 
 ## Architecture
 
