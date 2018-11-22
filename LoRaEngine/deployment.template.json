@@ -21,7 +21,7 @@
           "edgeAgent": {
             "type": "docker",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-agent:1.0",
+              "image": "mcr.microsoft.com/azureiotedge-agent:1.0.4",
               "createOptions": ""
             }
           },
@@ -30,28 +30,64 @@
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-hub:1.0",
-              "createOptions": "{\"HostConfig\":{\"PortBindings\":{\"8883/tcp\":[{\"HostPort\":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}]}}}"
+              "image": "mcr.microsoft.com/azureiotedge-hub:1.0.4",
+              "createOptions": {
+                "HostConfig": {
+                  "PortBindings": {
+                    "8883/tcp": [
+                      {
+                        "HostPort": "8883"
+                      }
+                    ],
+                    "443/tcp": [
+                      {
+                        "HostPort": "443"
+                      }
+                    ]
+                  }
+                }
+              }
             },
             "env": {
               "OptimizeForPerformance": {
+                "value": "false"
+              },
+              "mqttSettings__enabled": {
+                "value": "false"
+              },
+              "httpSettings__enabled": {
                 "value": "false"
               }
             }
           }
         },
         "modules": {
+         
           "LoRaWanNetworkSrvModule": {
             "type": "docker",
             "settings": {
               "image": "${MODULES.LoRaWanNetworkSrvModule.arm32v7}",
-              "createOptions": "{\r\n  \"ExposedPorts\": {\r\n    \"1680/udp\": {}\r\n  },\r\n  \"HostConfig\": {\r\n    \"PortBindings\": {\r\n      \"1680/udp\": [\r\n        {\r\n          \"HostPort\": \"1680\",\r\n          \"HostIp\":\"172.17.0.1\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}\r\n\r\n"
+              "createOptions": {
+                "ExposedPorts": {
+                  "1680/udp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "1680/udp": [
+                      {
+                        "HostPort": "1680",
+                        "HostIp": "172.17.0.1"
+                      }
+                    ]
+                  }
+                }
+              }
             },
             "version": "1.0",
             "env": {
               "LOG_LEVEL": {
                 "value": "2"
-              },              
+              },
               "LOG_TO_HUB": {
                 "value": "true"
               }
@@ -63,7 +99,25 @@
             "type": "docker",
             "settings": {
               "image": "${MODULES.LoRaWanPktFwdModule.arm32v7}",
-              "createOptions": "  {\r\n  \"HostConfig\": {\r\n    \"NetworkMode\": \"host\", \"Privileged\": true \r\n\r\n  },\r\n  \"NetworkingConfig\": {\r\n    \"EndpointsConfig\": {\r\n      \"host\": {}\r\n    }\r\n  }\r\n}\r\n  \r\n  \r\n  \r\n"
+              "createOptions": {
+                "HostConfig": {
+                  "NetworkMode": "host",
+                  "Privileged": true
+                },
+                "NetworkingConfig": {
+                  "EndpointsConfig": {
+                    "host": {}
+                  }
+                }
+              }
+            },
+            "env": {
+              "RESET_PIN": {
+                "value": "$RESET_PIN"
+              },
+              "REGION": {
+                "value": "$REGION"
+              }
             },
             "version": "1.0",
             "status": "running",

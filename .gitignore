@@ -288,3 +288,9 @@ __pycache__/
 *.xsd.cs
 
 Doc
+.vscode/
+/LoRaEngine/modules/LoRaSimulator/Logger
+/LoRaEngine/modules/LoRaSimulator/LoraTools
+
+# local settings file
+appsettings.local.json

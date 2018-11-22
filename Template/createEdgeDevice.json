@@ -13,8 +13,25 @@
             "metadata": {
                 "description": "The name of the Edge gateway."
             }
-        }
+        },
+        "resetPin": {
+            "type": "int",
+            "metadata": {
+                "description": "Provide the reset pin value of your gateway. Please refer to the doc if you are unfamiliar with the value"
+            }
     },
+        "region": {
+            "type": "string",
+            "allowedValues": [
+                "EU",
+                "US"
+            ],
+            "defaultValue": "EU",
+            "metadata": {
+                "description": "In what region is your gateway deployed?"
+    }
+    }
+},
     "variables": {
 
         "functionAppName":"[concat(parameters('solutionPrefix'), 'function')]"
@@ -27,7 +44,8 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[Concat(listsecrets(resourceId('Microsoft.Web/sites/functions', concat(parameters('solutionPrefix'), 'function'), 'CreateEdgeDevice'),'2015-08-01').trigger_url,'&deviceName=',parameters('edgeGatewayName'),'&publishingUserName=',list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingUserName,'&publishingPassword=',list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingPassword)]",                    "contentVersion": "1.0.0.0"
+                    "uri": "[Concat(listsecrets(resourceId('Microsoft.Web/sites/functions', concat(parameters('solutionPrefix'), 'function'), 'CreateEdgeDevice'),'2015-08-01').trigger_url,'&region=',parameters('region'),'&resetPin=',parameters('resetPin'),'&deviceName=',parameters('edgeGatewayName'),'&publishingUserName=', list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingUserName,'&publishingPassword=',list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingPassword)]",                    
+                    "contentVersion": "1.0.0.0"
                 }
             }
         }

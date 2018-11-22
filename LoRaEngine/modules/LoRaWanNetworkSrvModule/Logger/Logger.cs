@@ -27,12 +27,12 @@ namespace LoRaWan
             bool logToHub = false;
             bool logToConsole = true;
 
-            int loggingLevelSetting = (int)LoggingLevel.Error;
+            int loggingLevelSetting = (int)LoggingLevel.Always;
 
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_TO_HUB")))
                 logToHub = bool.Parse(Environment.GetEnvironmentVariable("LOG_TO_HUB"));
 
-
+            
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_LEVEL")))
                 loggingLevelSetting = int.Parse(Environment.GetEnvironmentVariable("LOG_LEVEL"));
 
@@ -56,7 +56,7 @@ namespace LoRaWan
 
                 }
                 if (logToConsole)
-                    Console.WriteLine(msg);
+                    Console.WriteLine(String.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," ", msg));
             }
         }
     }

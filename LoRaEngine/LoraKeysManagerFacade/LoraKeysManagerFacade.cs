@@ -10,363 +10,292 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Devices;
 using System.Threading.Tasks;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using StackExchange.Redis;
+using Microsoft.Extensions.Logging;
 
 namespace LoraKeysManagerFacade
 {
-    public class LoraDeviceInfo
+    public class IoTHubDeviceInfo
     {
         public string DevAddr;
         public string DevEUI;
-        public string AppKey;
-        public string AppEUI;
-        public string NwkSKey;
-        public string AppSKey;
         public string PrimaryKey;
-        public string AppNonce;
-        public string DevNonce;
-        public string NetId;
-        public bool IsOurDevice = false;
-        public bool IsJoinValid = false;
-        public UInt16 FCntUp;
-        public UInt16 FCntDown;
-        public string GatewayID;
-        public string SensorDecoder;
     }
 
-  
-    public static class NwkSKeyAppSKey
+    public class FCnt
     {
-        [FunctionName("GetNwkSKeyAppSKey")]
-        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, TraceWriter log, ExecutionContext context)
-        {
-            return await KeysManager.GetKeys(req, log, context, true);
-        }
+        public int FCntUp;
+        public int FCntDown;
+        public string GatewayId;
     }
 
-    public static class OTAAKeys
+
+    public static class DeviceGetter
     {
-        [FunctionName("PerformOTAA")]
-        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, TraceWriter log, ExecutionContext context)
+        static IDatabase redisCache;
+
+        static RegistryManager registryManager;
+
+        [FunctionName("GetDevice")]
+        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
         {
-            return await KeysManager.PerformOTAA(req, log, context, true);
-        }
-    }
+            //ABP Case
+            string devAddr = req.Query["DevAddr"];
+            //OTAA Case
+            string devEUI = req.Query["DevEUI"];
+            string devNonce = req.Query["DevNonce"];
 
-    public static class KeysManager
-    {
+            string gatewayId = req.Query["GatewayId"];
 
-        public static async Task<IActionResult> GetKeys(HttpRequest req, TraceWriter log, ExecutionContext context,bool returnAppSKey )
-        {
-           
-
-            string devAddr = req.Query["devAddr"];
-
-            if (devAddr == null)
+            if (redisCache == null || registryManager == null)
             {
-                string errorMsg = "Missing devAddr in querystring";
-                //log.Error(errorMsg);
-                throw new Exception(errorMsg);
-            }
-
-
-
-
-            var config = new ConfigurationBuilder()
+                lock (typeof(FCntCacheChechk))
+                {
+                    if (redisCache == null || registryManager == null)
+                    {
+                        var config = new ConfigurationBuilder()
                           .SetBasePath(context.FunctionAppDirectory)
                           .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
                           .AddEnvironmentVariables()
                           .Build();
-            string connectionString = config.GetConnectionString("IoTHubConnectionString");
-            if (connectionString == null)
-            {
-                string errorMsg = "Missing IoTHubConnectionString in settings";
-                //log.Error(errorMsg);
-                throw new Exception(errorMsg);
-            }
+                        string connectionString = config.GetConnectionString("IoTHubConnectionString");
 
-          
-            RegistryManager registryManager = RegistryManager.CreateFromConnectionString(connectionString);
-
-            //Currently registry manager query only support select so we need to check for injection on the devaddr only for "'"
-            //TODO check for sql injection
-            devAddr =devAddr.Replace('\'',' ');
-
-            var query = registryManager.CreateQuery($"SELECT * FROM devices WHERE tags.DevAddr = '{devAddr}'", 1);
-
-            LoraDeviceInfo loraDeviceInfo = new LoraDeviceInfo();
-            loraDeviceInfo.DevAddr = devAddr;
-
-               
-
-            while (query.HasMoreResults)
-            {
-                var page = await query.GetNextAsTwinAsync();
-                //we query only for 1 result 
-                foreach (var twin in page)
-                {
-                    loraDeviceInfo.DevEUI = twin.DeviceId;
-                    if(returnAppSKey)
-                        loraDeviceInfo.AppSKey = twin.Tags["AppSKey"].Value;
-                    loraDeviceInfo.NwkSKey = twin.Tags["NwkSKey"].Value;
-                    if (twin.Tags.Contains("GatewayID"))
-                        loraDeviceInfo.GatewayID = twin.Tags["GatewayID"].Value;
-                    if (twin.Tags.Contains("SensorDecoder"))
-                        loraDeviceInfo.SensorDecoder = twin.Tags["SensorDecoder"].Value;
-
-                    if (twin.Tags.Contains("AppEUI"))
-                        loraDeviceInfo.AppEUI = twin.Tags["AppEUI"].Value;
-                    loraDeviceInfo.IsOurDevice = true;
-                    if (twin.Properties.Reported.Contains("FCntUp"))
-                        loraDeviceInfo.FCntUp = twin.Properties.Reported["FCntUp"];
-                    if (twin.Properties.Reported.Contains("FCntDown"))
-                    {
-                        loraDeviceInfo.FCntDown = twin.Properties.Reported["FCntDown"];
-                    }
-                        
-                }
-            }
-
-            if (loraDeviceInfo.IsOurDevice)
-            {
-                var device = await registryManager.GetDeviceAsync(loraDeviceInfo.DevEUI);
-                loraDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
-            }
-
-            string json = JsonConvert.SerializeObject(loraDeviceInfo);
-
-            return (ActionResult)new OkObjectResult(json);
-
-            
-        }
-
-        public static async Task<IActionResult> PerformOTAA(HttpRequest req, TraceWriter log, ExecutionContext context, bool returnAppSKey)
-        {
-
-           
-
-
-            string json;
-
-            string AppKey;
-            string AppSKey;
-            string NwkSKey;
-            string DevAddr;
-            string DevNonce;
-            string AppNonce;
-
-
-            
-
-            string devEUI = req.Query["devEUI"];
-
-            if (devEUI == null)
-            {
-                string errorMsg = "Missing devEUI in querystring";
-                //log.Error(errorMsg);
-                throw new Exception(errorMsg);
-            }
-
-            string appEUI = req.Query["appEUI"];
-
-            if (appEUI == null)
-            {
-                string errorMsg = "Missing appEUI in querystring";
-                //log.Error(errorMsg);
-                throw new Exception(errorMsg);
-            }
-
-            DevNonce = req.Query["devNonce"];
-
-            if (DevNonce == null)
-            {
-                string errorMsg = "Missing devNonce in querystring";
-                //log.Error(errorMsg);
-                throw new Exception(errorMsg);
-            }
-
-            string GatewayID = req.Query["GatewayID"];
-
-            var config = new ConfigurationBuilder()
-                .SetBasePath(context.FunctionAppDirectory)
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
-
-            var connectionString = config.GetConnectionString("IoTHubConnectionString");
-
-            if (connectionString == null)
-            {
-                string errorMsg = "Missing IoTHubConnectionString in settings";
-                //log.Error(errorMsg);
-                throw new Exception(errorMsg);
-            }
-
-           
-
-                RegistryManager registryManager = RegistryManager.CreateFromConnectionString(connectionString);
-              
-
-                LoraDeviceInfo loraDeviceInfo = new LoraDeviceInfo();
-
-
-                loraDeviceInfo.DevEUI = devEUI;
-                                
-                var twin = await registryManager.GetTwinAsync(devEUI);
-
-                if (twin != null)
-                {
-
-                    loraDeviceInfo.IsOurDevice = true;
-
-                    //Make sure that there is the AppEUI and it matches if not we cannot do the OTAA
-                    if (!twin.Tags.Contains("AppEUI"))
-                    {
-                        string errorMsg = $"Missing AppEUI for OTAA for device {devEUI}";
-                        //log.Error(errorMsg);
-                        throw new Exception(errorMsg);
-                    }
-                    else
-                    {
-                        if (twin.Tags["AppEUI"].Value != appEUI)
+                        if (connectionString == null)
                         {
-                            string errorMsg = $"AppEUI for OTAA does not match for device {devEUI}";
-                            //log.Error(errorMsg);
+                            string errorMsg = "Missing IoTHubConnectionString in settings";
                             throw new Exception(errorMsg);
                         }
-                    }
 
-                    //Make sure that there is the AppKey if not we cannot do the OTAA
-                    if (!twin.Tags.Contains("AppKey"))
-                    {
-                        string errorMsg = $"Missing AppKey for OTAA for device {devEUI}";
-                        //log.Error(errorMsg);
-                        throw new Exception(errorMsg);
-                    }
-                    else
-                    {
-                        AppKey = twin.Tags["AppKey"].Value;
-                    }
-
-                    //Make sure that is a new request and not a replay
-                    if (twin.Tags.Contains("DevNonce"))
-                    {
-                        if (twin.Tags["DevNonce"] == DevNonce)
+                        string redisConnectionString = config.GetConnectionString("RedisConnectionString");
+                        if (redisConnectionString == null)
                         {
-                            string errorMsg = $"DevNonce already used for device {devEUI}";
-                            log.Info(errorMsg);
-                            loraDeviceInfo.DevAddr = DevNonce;                            
-                            loraDeviceInfo.IsJoinValid = false;
-                            json = JsonConvert.SerializeObject(loraDeviceInfo);
-                            return (ActionResult)new OkObjectResult(json);
-                        }
-                       
-                    }
-
-                    //Check that the device is joining throught the linked gateway and not another
-                    if (twin.Tags.Contains("GatewayID"))
-                    {
-                       
-
-                        if (!String.IsNullOrEmpty(twin.Tags["GatewayID"].Value) && twin.Tags["GatewayID"].Value.ToUpper() != GatewayID.ToUpper())
-                        {
-                            string errorMsg = $"Not the right gateway device-gateway:{twin.Tags["GatewayID"].Value} current-gateway:{GatewayID}";
-                            log.Info(errorMsg);
-                            loraDeviceInfo.DevAddr = DevNonce;
-                            if (twin.Tags.Contains("GatewayID"))
-                                loraDeviceInfo.GatewayID = twin.Tags["GatewayID"].Value;
-                            loraDeviceInfo.IsJoinValid = false;
-                            json = JsonConvert.SerializeObject(loraDeviceInfo);
-                            return (ActionResult)new OkObjectResult(json);
+                            string errorMsg = "Missing RedisConnectionString in settings";
+                            throw new Exception(errorMsg);
                         }
 
+                        registryManager = RegistryManager.CreateFromConnectionString(connectionString);
+
+                        var redis = ConnectionMultiplexer.Connect(redisConnectionString);
+                        redisCache = redis.GetDatabase();
                     }
-
-
-                    byte[] netId = new byte[3] { 0, 0, 1 };
-
-                    AppNonce = OTAAKeysGenerator.getAppNonce();
-
-                    AppSKey = OTAAKeysGenerator.calculateKey( new byte[1]{ 0x02 }, OTAAKeysGenerator.StringToByteArray(AppNonce), netId, OTAAKeysGenerator.StringToByteArray(DevNonce), OTAAKeysGenerator.StringToByteArray(AppKey));
-                    NwkSKey = OTAAKeysGenerator.calculateKey(new byte[1] { 0x01 }, OTAAKeysGenerator.StringToByteArray(AppNonce), netId, OTAAKeysGenerator.StringToByteArray(DevNonce), OTAAKeysGenerator.StringToByteArray(AppKey)); ;
-
-                   
-                    
-                    //check that the devaddr is unique in the IoTHub registry
-                    bool isDevAddrUnique = false;
-                    
-                    do
-                    {
-                        DevAddr = OTAAKeysGenerator.getDevAddr(netId);
-
-                      
-
-                        var query = registryManager.CreateQuery($"SELECT * FROM devices WHERE tags.DevAddr = '{DevAddr}'", 1);
-                        if (query.HasMoreResults)
-                        {
-                            var page = await query.GetNextAsTwinAsync();
-                            if(!page.GetEnumerator().MoveNext())
-                                isDevAddrUnique = true;
-                            else
-                                isDevAddrUnique = false;
-                        }
-                        else
-                        {
-                            isDevAddrUnique = true;
-                        }
-
-                    } while (!isDevAddrUnique);
-
-                                   
-
-                    var patch = new
-                    {
-                        tags = new
-                        {
-                            AppSKey,
-                            NwkSKey,
-                            DevAddr,
-                            DevNonce
-
-                        }
-                    };
-
-                    await registryManager.UpdateTwinAsync(loraDeviceInfo.DevEUI, JsonConvert.SerializeObject(patch), twin.ETag);
-
-                    loraDeviceInfo.DevAddr = DevAddr;
-                    loraDeviceInfo.AppKey = twin.Tags["AppKey"].Value;
-                    loraDeviceInfo.NwkSKey = NwkSKey;
-                    loraDeviceInfo.AppSKey = AppSKey;
-                    loraDeviceInfo.AppNonce = AppNonce;
-                    loraDeviceInfo.AppEUI = appEUI;
-                    loraDeviceInfo.NetId = BitConverter.ToString(netId).Replace("-", ""); ;
-
-                    if (!returnAppSKey)
-                        loraDeviceInfo.AppSKey = null;
-
-                    //Accept the JOIN Request and the futher messages
-                    loraDeviceInfo.IsJoinValid = true;
-
-                    var device = await registryManager.GetDeviceAsync(loraDeviceInfo.DevEUI);
-                    loraDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
-
-                    if (twin.Tags.Contains("GatewayID"))
-                        loraDeviceInfo.GatewayID = twin.Tags["GatewayID"].Value;
-                    if (twin.Tags.Contains("SensorDecoder"))
-                        loraDeviceInfo.SensorDecoder = twin.Tags["SensorDecoder"].Value;
+                }
 
 
             }
-                else
+
+
+            List<IoTHubDeviceInfo> results = new List<IoTHubDeviceInfo>();
+
+            //OTAA join
+            if (devEUI!=null)
+            {
+
+                string cacheKey = devEUI + devNonce;
+
+                try
                 {
-                    loraDeviceInfo.IsOurDevice = false;
+
+                    if (redisCache.LockTake(cacheKey + "joinlock", gatewayId, new TimeSpan(0, 0, 10)))
+                    {
+                        //check if we already got the same devEUI and devNonce it can be a reaply attack or a multigateway setup recieving the same join.We are rfusing all other than the first one.
+
+                        string cachedDevNonce = redisCache.StringGet(cacheKey, CommandFlags.DemandMaster);
+
+                        if (!String.IsNullOrEmpty(cachedDevNonce))
+                        {
+                            return (ActionResult)new BadRequestObjectResult("UsedDevNonce");
+
+                        }
+
+                        redisCache.StringSet(cacheKey, devNonce, new TimeSpan(0, 1, 0), When.Always, CommandFlags.DemandMaster);
+
+                        IoTHubDeviceInfo iotHubDeviceInfo = new IoTHubDeviceInfo();
+                        var device = await registryManager.GetDeviceAsync(devEUI);
+
+                        if (device != null)
+                        {
+                            iotHubDeviceInfo.DevEUI = devEUI;
+                            iotHubDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
+                            results.Add(iotHubDeviceInfo);
+
+                            //clear device FCnt cache after join
+                            redisCache.KeyDelete(devEUI);
+                        }
+                    }
                 }
-             
+                finally
+                {
+                    redisCache.LockRelease(cacheKey + "joinlock", gatewayId);
+                }
+                                               
+            }
+            //ABP or normal message
+            else if(devAddr!=null)
+            {
+                //TODO check for sql injection
+                devAddr = devAddr.Replace('\'', ' ');
+            
+                var query = registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{devAddr}' OR properties.reported.DevAddr ='{devAddr}'", 100);
+                while (query.HasMoreResults)
+                {
+                    var page = await query.GetNextAsTwinAsync();
 
-                json = JsonConvert.SerializeObject(loraDeviceInfo);
-                return (ActionResult)new OkObjectResult(json);
+                    foreach (var twin in page)
+                    {
+                        if (twin.DeviceId != null)
+                        {
+                            IoTHubDeviceInfo iotHubDeviceInfo = new IoTHubDeviceInfo();
+                            iotHubDeviceInfo.DevAddr = devAddr;
+                            var device = await registryManager.GetDeviceAsync(twin.DeviceId);
+                            iotHubDeviceInfo.DevEUI = twin.DeviceId;
+                            iotHubDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
+                            results.Add(iotHubDeviceInfo);
+                            break;
+                        }
 
-           
+                    }
+
+                }
+            }
+            else
+            {
+                string errorMsg = "Missing devEUI or devAddr";
+                throw new Exception(errorMsg);
+            }
+
+            string json = JsonConvert.SerializeObject(results);
+            return (ActionResult)new OkObjectResult(json);
+        }
+    }
+
+    public static class FCntCacheChechk
+    {
+      
+        static IDatabase redisCache;
+       
+        [FunctionName("NextFCntDown")]
+        public static async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
+        {
+            FCnt serverFCnt;
+            string devEUI = req.Query["DevEUI"]; 
+            string fCntDown = req.Query["FCntDown"];
+            string fCntUp = req.Query["FCntUp"];  
+            string gatewayId = req.Query["GatewayId"];
+            string ABPFcntCacheReset = req.Query["ABPFcntCacheReset"];
+            int newFCntDown=0;
+            if (redisCache == null)
+            {
+                lock (typeof(FCntCacheChechk))
+                {
+                    if (redisCache == null)
+                    {
+                       
+                        var config = new ConfigurationBuilder()
+                                    .SetBasePath(context.FunctionAppDirectory)
+                                    .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                                    .AddEnvironmentVariables()
+                                    .Build();
+              
+                        var redisConnectionString = config.GetConnectionString("RedisConnectionString");
+
+
+                        if (string.IsNullOrEmpty(redisConnectionString))
+                        {
+                            string errorMsg = "Missing RedisConnectionString in settings";
+                            throw new Exception(errorMsg);
+                        }
+
+                        var redis = ConnectionMultiplexer.Connect(redisConnectionString);
+                        redisCache = redis.GetDatabase();
+                    }
+                }
+
+            }
+
+            if(!string.IsNullOrEmpty(ABPFcntCacheReset))
+            {
+                redisCache.KeyDelete(devEUI);
+                return (ActionResult)new OkObjectResult(null);
+            }
+
+            if (!String.IsNullOrEmpty(devEUI) && !String.IsNullOrEmpty(fCntDown) && !String.IsNullOrEmpty(fCntUp) && !String.IsNullOrEmpty(gatewayId))
+            {
+                int clientFCntDown = int.Parse(fCntDown);
+                int clientFCntUp = int.Parse(fCntUp);
+
+                string cacheKey = devEUI;
+
+                try
+                {
+                    if (redisCache.LockTake(cacheKey + "msglock", gatewayId, new TimeSpan(0, 0, 10)))
+                    {
+                        string cachedFCnt = redisCache.StringGet(cacheKey, CommandFlags.DemandMaster);
+                        //we have it cached
+                        if (!string.IsNullOrEmpty(cachedFCnt))
+                        {
+
+                            serverFCnt = (FCnt)JsonConvert.DeserializeObject(cachedFCnt, typeof(FCnt));
+                            //it is a new message coming up by the first gateway 
+                            if (clientFCntUp > serverFCnt.FCntUp)
+                            {
+                                if (clientFCntDown >= serverFCnt.FCntDown)
+                                    newFCntDown = (int)(clientFCntDown + 1);
+                                else
+                                    newFCntDown = (int)(serverFCnt.FCntDown + 1);
+
+                                serverFCnt.FCntUp = clientFCntUp;
+                                serverFCnt.FCntDown = newFCntDown;
+                                serverFCnt.GatewayId = gatewayId;
+
+                                CacheFcnt(serverFCnt, redisCache, cacheKey);
+
+                            }
+                            //it is a retry message coming up by the same first gateway 
+                            else if (clientFCntUp == serverFCnt.FCntUp && gatewayId == serverFCnt.GatewayId)
+                            {
+                                newFCntDown = serverFCnt.FCntDown + 1;
+                                serverFCnt.FCntDown = newFCntDown;
+
+                                CacheFcnt(serverFCnt, redisCache, cacheKey);
+                            }
+                            else
+                            {
+                                //we tell not to send any ack or downstream msg
+                                newFCntDown = 0;
+                            }
+                        }
+                        //it is the first message from this device
+                        else
+                        {
+
+                            newFCntDown = clientFCntDown + 1;
+                            serverFCnt = new FCnt();
+                            serverFCnt.FCntDown = newFCntDown;
+                            serverFCnt.FCntUp = clientFCntUp;
+                            serverFCnt.GatewayId = gatewayId;
+
+                            CacheFcnt(serverFCnt, redisCache, cacheKey);
+                        }
+                     }
+                }
+                finally
+                {
+                    redisCache.LockRelease(cacheKey + "msglock", gatewayId);
+                }
+            }
+            else
+            {
+                string errorMsg = "Missing DevEUI or FCntDown or FCntUp or GatewayId";
+                throw new Exception(errorMsg);
+            }          
+            return (ActionResult)new OkObjectResult(newFCntDown);
         }
 
+        private static void CacheFcnt(FCnt serverFCnt, IDatabase cache, string cacheKey)
+        {
+            cache.StringSet(cacheKey, JsonConvert.SerializeObject(serverFCnt), new TimeSpan(30, 0, 0, 0), When.Always, CommandFlags.DemandMaster);           
+        }
     }
 }

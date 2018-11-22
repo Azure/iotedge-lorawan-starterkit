@@ -19,6 +19,23 @@
             "metadata": {
                 "description": "Provision a final LoRa device in the IoT hub in addition to the gateway"
             }
+        },
+        "resetPin": {
+            "type": "int",
+            "metadata": {
+                "description": "Provide the reset pin value of your gateway. Please refer to the doc if you are unfamiliar with the value"
+            }
+        },
+        "region": {
+            "type": "string",
+            "allowedValues": [
+                "EU",
+                "US"
+            ],
+            "defaultValue": "EU",
+            "metadata": {
+                "description": "In what region is your gateway deployed?"
+            }
         }
     },
     "variables": {
@@ -33,7 +50,8 @@
         "gitBranch": "master",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "iotHubOwnerPolicyName": "iothubowner",
-        "appInsightName":"[concat(parameters('uniqueSolutionPrefix'), 'insight')]"
+        "appInsightName": "[concat(parameters('uniqueSolutionPrefix'), 'insight')]",
+        "redisCacheName": "[concat(parameters('uniqueSolutionPrefix'), 'redis')]"
     },
     "resources": [
         {
@@ -68,9 +86,7 @@
             "properties": {
                 "accountType": "[variables('storageAccountType')]"
             },
-            "dependsOn": [
-                "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]"
-            ]
+            "dependsOn": []
         },
         {
             "apiVersion": "2016-08-01",
@@ -80,7 +96,9 @@
             "kind": "functionapp",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+                "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]",
+                "[resourceId('Microsoft.Cache/Redis', variables('redisCacheName'))]"
             ],
             "resources": [
                 {
@@ -105,6 +123,11 @@
                             "name": "IoTHubConnectionString",
                             "type": "Custom",
                             "connectionString": "[concat('HostName=', variables('iotHubName'), '.azure-devices.net;SharedAccessKeyName=', variables('iotHubOwnerPolicyName'), ';SharedAccessKey=', listKeys(resourceId('Microsoft.Devices/IotHubs/IotHubKeys', variables('iotHubName'), variables('iotHubOwnerPolicyName')), '2017-01-19').primaryKey)]"
+                        },
+                        {
+                            "name": "RedisConnectionString",
+                            "type": "Custom",
+                            "connectionString": "[concat(variables('redisCacheName'),'.redis.cache.windows.net,abortConnect=false,ssl=true,password=', listKeys(resourceId('Microsoft.Cache/Redis', variables('redisCacheName')), '2015-08-01').primaryKey)]"
                         }
                     ],
                     "appSettings": [
@@ -118,7 +141,7 @@
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "beta"
+                            "value": "~2"
                         },
                         {
                             "name": "AzureWebJobsSecretStorageType",
@@ -179,12 +202,18 @@
                     },
                     "edgeGatewayName": {
                         "value": "[parameters('edgeGatewayName')]"
+                    },
+                    "region": {
+                        "value": "[parameters('region')]"
+                    },
+                    "resetPin": {
+                        "value": "[parameters('resetPin')]"
                     }
                 }
             }
         },
         {
-            "type": "microsoft.insights/components",
+            "type": "Microsoft.Insights/components",
             "kind": "web",
             "name": "[variables('appInsightName')]",
             "apiVersion": "2015-05-01",
@@ -194,6 +223,19 @@
                 "ApplicationId": "[variables('appInsightName')]"
             },
             "dependsOn": []
+        },
+        {
+            "apiVersion": "2015-08-01",
+            "name": "[variables('redisCacheName')]",
+            "type": "Microsoft.Cache/Redis",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "sku": {
+                    "capacity": 0,
+                    "family": "C",
+                    "name": "Basic"
+                }
+            }
         }
     ],
     "outputs": {}

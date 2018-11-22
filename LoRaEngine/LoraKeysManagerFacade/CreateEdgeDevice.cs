@@ -38,21 +38,24 @@ namespace CreateDeviceFunction
             string deviceName = "";
             string publishingUserName = "";
             string publishingPassword = "";
+            string region="";
+            string resetPin="";
 
             queryStrings.TryGetValue("deviceName", out deviceName);
             queryStrings.TryGetValue("publishingUserName", out publishingUserName);
             queryStrings.TryGetValue("publishingPassword", out publishingPassword);
-            Console.WriteLine("un "+ publishingUserName);
+            queryStrings.TryGetValue("region", out region);
+            queryStrings.TryGetValue("resetPin", out resetPin);
+
+
             //Get function facade key
             var base64Auth = Convert.ToBase64String(Encoding.Default.GetBytes($"{publishingUserName}:{publishingPassword}"));
             var apiUrl = new Uri($"https://{Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE")}.scm.azurewebsites.net/api");
             var siteUrl = new Uri($"https://{Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE")}.azurewebsites.net");
             string JWT;
-            Console.WriteLine("api " + apiUrl);
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", $"Basic {base64Auth}");
-
                 var result = client.GetAsync($"{apiUrl}/functions/admin/token").Result;
                 JWT = result.Content.ReadAsStringAsync().Result.Trim('"'); //get  JWT for call funtion key
             }
@@ -72,6 +75,7 @@ namespace CreateDeviceFunction
             {
                 IotEdge = true
             };
+            
             await manager.AddDeviceAsync(edgeGatewayDevice);
             string json = "";
             //todo correct
@@ -79,8 +83,12 @@ namespace CreateDeviceFunction
             {
                  json = wc.DownloadString(deviceConfigurationUrl);
             }
+
+            json = json.Replace("[$region]", region);
+            json = json.Replace("[$reset_pin]", resetPin);
             ConfigurationContent spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
             await manager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
+            
             await manager.ApplyConfigurationContentOnDeviceAsync(deviceName, spec);
 
             Twin twin = new Twin();
@@ -97,21 +105,27 @@ namespace CreateDeviceFunction
             //Information in this if clause, is for demo purpose only and should not be used for productive workloads.
             if (deployEndDevice)
             {
-                Device endDevice = new Device("47AAC86800430028");
-                await manager.AddDeviceAsync(endDevice);
-                Twin endTwin = new Twin();
-                endTwin.Tags = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:''," +
+                string OTAAdeviceId = "47AAC86800430028";
+                Device OTAADevice = new Device(OTAAdeviceId);
+                await manager.AddDeviceAsync(OTAADevice);
+                Twin OTAAendTwin = new Twin();
+                OTAAendTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:''," +
                 "SensorDecoder:'DecoderValueSensor'}");
-    
-                var endRemoteTwin = await manager.GetTwinAsync(deviceName);
-                await manager.UpdateTwinAsync("47AAC86800430028", endTwin, endRemoteTwin.ETag);
-
+                var OTAARemoteTwin = await manager.GetTwinAsync(OTAAdeviceId);
+                await manager.UpdateTwinAsync(OTAAdeviceId, OTAAendTwin, OTAARemoteTwin.ETag);
+                string ABPdeviceId = "46AAC86800430028";
+                Device ABPDevice = new Device(ABPdeviceId);
+                await manager.AddDeviceAsync(ABPDevice);
+                Twin ABPTwin = new Twin();
+                ABPTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:''," +
+                "DevAddr:'0028B1B1',SensorDecoder:'DecoderValueSensor'}");
+                var ABPRemoteTwin = await manager.GetTwinAsync(ABPdeviceId);
+                await manager.UpdateTwinAsync(ABPdeviceId, ABPTwin, ABPRemoteTwin.ETag);
             }
-
 
             var template = @"{'$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#', 'contentVersion': '1.0.0.0', 'parameters': {}, 'variables': {}, 'resources': []}";
             HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-            Console.WriteLine(template);
+            
 
             response.Content = new StringContent(template, System.Text.Encoding.UTF8, "application/json");
 

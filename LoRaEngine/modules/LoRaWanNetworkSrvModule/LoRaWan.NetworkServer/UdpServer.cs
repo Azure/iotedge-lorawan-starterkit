@@ -19,7 +19,7 @@ namespace LoRaWan.NetworkServer
     public class UdpServer : IDisposable
     {
         const int PORT = 1680;
-           
+
         static ModuleClient ioTHubModuleClient;
 
         static UdpClient udpClient;
@@ -29,10 +29,10 @@ namespace LoRaWan.NetworkServer
 
         public async Task RunServer()
         {
-            Logger.Log( "Starting LoRaWAN Server...", Logger.LoggingLevel.Always);
+            Logger.Log("Starting LoRaWAN Server...", Logger.LoggingLevel.Always);
 
             await InitCallBack();
-         
+
             await RunUdpListener();
 
         }
@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer
             if (messageToSend != null && messageToSend.Length != 0)
             {
                 await udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp.ToString(), remoteLoRaAggregatorPort);
-               
+
             }
         }
 
@@ -54,8 +54,8 @@ namespace LoRaWan.NetworkServer
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, PORT);
             udpClient = new UdpClient(endPoint);
 
-            Logger.Log( $"LoRaWAN server started on port {PORT}", Logger.LoggingLevel.Always);
-                 
+            Logger.Log($"LoRaWAN server started on port {PORT}", Logger.LoggingLevel.Always);
+
 
             while (true)
             {
@@ -63,31 +63,29 @@ namespace LoRaWan.NetworkServer
 
                 //Logger.Log($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}");
 
-             
+
                 //Todo check that is an ack only, we could do a better check in a future verstion
                 if (receivedResults.Buffer.Length == 12)
                 {
                     remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
-                    remoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;                   
+                    remoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
                 }
+
+
+
 
                
-
-
-                try
-                {
                     MessageProcessor messageProcessor = new MessageProcessor();
-                    _= messageProcessor.processMessage(receivedResults.Buffer);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log( $"Error processing the message {ex.Message}", Logger.LoggingLevel.Error);
-                }
-                   
-            }
-           
 
-           
+                    
+                    _ = messageProcessor.ProcessMessageAsync(receivedResults.Buffer);
+                
+                
+
+            }
+
+
+
         }
 
         async Task InitCallBack()
@@ -95,31 +93,37 @@ namespace LoRaWan.NetworkServer
             try
             {
                 ITransportSettings transportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
-             
+
                 ITransportSettings[] settings = { transportSettings };
 
                 //if running as Edge module
                 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IOTEDGE_APIVERSION")))
                 {
                     ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
+                    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IOTEDGE_TIMEOUT")))
+                    {
+                        ioTHubModuleClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(Environment.GetEnvironmentVariable("IOTEDGE_TIMEOUT"));
+                        Logger.Log($"Changing timeout to {ioTHubModuleClient.OperationTimeoutInMilliseconds} ms", Logger.LoggingLevel.Info);
+                    }
 
                     Logger.Init(ioTHubModuleClient);
 
-                    Logger.Log( "Getting properties from module twin...", Logger.LoggingLevel.Info);
+                    Logger.Log("Getting properties from module twin...", Logger.LoggingLevel.Info);
 
 
-                    var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
+                    var moduleTwin = await ioTHubModuleClient.GetTwinAsync();                    
                     var moduleTwinCollection = moduleTwin.Properties.Desired;
 
                     try
                     {
                         LoraDeviceInfoManager.FacadeServerUrl = moduleTwinCollection["FacadeServerUrl"];
-                        Logger.Log( $"Facade function url: {LoraDeviceInfoManager.FacadeServerUrl}", Logger.LoggingLevel.Always);
+                        Logger.Log($"Facade function url: {LoraDeviceInfoManager.FacadeServerUrl}", Logger.LoggingLevel.Always);
 
                     }
                     catch (ArgumentOutOfRangeException e)
                     {
-                        Logger.Log( "Module twin FacadeServerName not exist", Logger.LoggingLevel.Error);
+                        Logger.Log("Module twin FacadeServerName not exist", Logger.LoggingLevel.Error);
+                        throw e;
                     }
                     try
                     {
@@ -127,32 +131,33 @@ namespace LoRaWan.NetworkServer
                     }
                     catch (ArgumentOutOfRangeException e)
                     {
-                        Logger.Log( "Module twin FacadeAuthCode does not exist", Logger.LoggingLevel.Error);
+                        Logger.Log("Module twin FacadeAuthCode does not exist", Logger.LoggingLevel.Error);
+                        throw e;
                     }
 
                     await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, null);
 
                     await ioTHubModuleClient.SetMethodHandlerAsync("ClearCache", ClearCache, null);
 
-                   
-                }
-                //todo ronnie what to do when not running as edge?
+
+                }                
                 //running as non edge module for test and debugging
                 else
-                {              
-                    LoraDeviceInfoManager.FacadeServerUrl = "http://localhost:7071/api/";
-                    LoraDeviceInfoManager.FacadeAuthCode = "";
+                {                    
+                    LoraDeviceInfoManager.FacadeServerUrl = Environment.GetEnvironmentVariable("FacadeServerUrl");
+                    LoraDeviceInfoManager.FacadeAuthCode = Environment.GetEnvironmentVariable("FacadeAuthCode");
                 }
 
 
-               
-                
-              
+
+
+
             }
             catch (Exception ex)
             {
-                Logger.Log( $"Initialization failed with error: {ex.Message}", Logger.LoggingLevel.Error);
-               
+                Logger.Log($"Initialization failed with error: {ex.Message}", Logger.LoggingLevel.Error);
+                throw ex;
+
             }
         }
 
@@ -160,7 +165,7 @@ namespace LoRaWan.NetworkServer
         {
             Cache.Clear();
 
-            Logger.Log( "Cache cleared", Logger.LoggingLevel.Info);
+            Logger.Log("Cache cleared", Logger.LoggingLevel.Info);
 
             return new MethodResponse(200);
         }
@@ -169,9 +174,6 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-               
-                
-
 
 
                 if (desiredProperties["FacadeServerUrl"] != null)
@@ -187,19 +189,19 @@ namespace LoRaWan.NetworkServer
             {
                 foreach (Exception exception in ex.InnerExceptions)
                 {
-                    
-                    Logger.Log( $"Error when receiving desired property: {exception}", Logger.LoggingLevel.Error);
+
+                    Logger.Log($"Error when receiving desired property: {exception}", Logger.LoggingLevel.Error);
                 }
             }
             catch (Exception ex)
             {
-               
-                Logger.Log( $"Error when receiving desired property: {ex.Message}", Logger.LoggingLevel.Error);
+
+                Logger.Log($"Error when receiving desired property: {ex.Message}", Logger.LoggingLevel.Error);
             }
             return Task.CompletedTask;
         }
 
-       
+
         public void Dispose()
         {
 

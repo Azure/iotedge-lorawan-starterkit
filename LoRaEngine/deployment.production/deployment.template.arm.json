@@ -1,0 +1,103 @@
+{
+  "moduleContent": {
+    "$edgeAgent": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "runtime": {
+          "type": "docker",
+          "settings": {
+            "minDockerVersion": "v1.25",
+            "loggingOptions": "",
+            "registryCredentials": {
+              "$CONTAINER_REGISTRY_USERNAME": {
+                "username": "$CONTAINER_REGISTRY_USERNAME",
+                "password": "$CONTAINER_REGISTRY_PASSWORD",
+                "address": "$CONTAINER_REGISTRY_ADDRESS"
+              }
+            }
+          }
+        },
+        "systemModules": {
+          "edgeAgent": {
+            "type": "docker",
+            "settings": {
+              "image": "mcr.microsoft.com/azureiotedge-agent:1.0.4",
+              "createOptions": ""
+            }
+          },
+          "edgeHub": {
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "mcr.microsoft.com/azureiotedge-hub:1.0.4",
+              "createOptions": "{\"HostConfig\":{\"PortBindings\":{\"8883/tcp\":[{\"HostPort\":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}]}}}"
+            },
+            "env": {
+              "OptimizeForPerformance": {
+                "value": "false"
+              }
+            }
+          }
+        },
+        "modules": {
+          "LoRaWanNetworkSrvModule": {
+            "type": "docker",
+            "settings": {
+              "image": "${MODULES.LoRaWanNetworkSrvModule.arm32v7}",
+              "createOptions": "{  \"ExposedPorts\": {    \"1680/udp\": {}  },  \"HostConfig\": {    \"PortBindings\": {      \"1680/udp\": [        {          \"HostPort\": \"1680\",          \"HostIp\":\"172.17.0.1\"        }      ]    }  }}"
+            },
+            "version": "1.0",
+            "env": {
+              "LOG_LEVEL": {
+                "value": "1"
+              },
+              "LOG_TO_HUB": {
+                "value": "true"
+              }
+            },
+            "status": "running",
+            "restartPolicy": "always"
+          },
+          "LoRaWanPktFwdModule": {
+            "type": "docker",
+            "settings": {
+              "image": "${MODULES.LoRaWanPktFwdModule.arm32v7}",
+              "createOptions": "  {  \"HostConfig\": {    \"NetworkMode\": \"host\", \"Privileged\": true   },  \"NetworkingConfig\": {    \"EndpointsConfig\": {      \"host\": {}    }  }}      "
+            },
+            "env": {
+              "RESET_PIN": {
+                "value": "$RESET_PIN"
+              },
+              "REGION": {
+                "value": "$REGION"
+              }             
+            },
+            "version": "1.0",
+            "status": "running",
+            "restartPolicy": "always"
+          }
+        }
+      }
+    },
+    "$edgeHub": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "routes": {
+          "route": "FROM /* INTO $upstream"
+        },
+        "storeAndForwardConfiguration": {
+          "timeToLiveSecs": 7200
+        }
+      }
+    },
+    "LoRaWanNetworkSrvModule": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "FacadeServerUrl": "$FACADE_SERVER_URL",
+        "FacadeAuthCode": "$FACADE_AUTH_CODE"
+      }
+    }
+  }
+}
+
