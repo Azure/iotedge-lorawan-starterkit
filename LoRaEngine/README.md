@@ -46,6 +46,7 @@ The following guide describes the necessary steps to build and deploy the LoRaEn
 - [Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
 - [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/)
 - [Azure Functions](https://azure.microsoft.com/en-us/services/functions/)
+- [Redis Cache](https://azure.microsoft.com/en-us/services/cache/)
 
 ### Prerequisites
 
@@ -53,36 +54,51 @@ The following guide describes the necessary steps to build and deploy the LoRaEn
 - [Installed Azure IoT Edge](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm) on your LoRaWAN concentrator enabled edge device.
 - SetUp an Azure IoT Hub instance and be familiar with [Azure IoT Edge module deployment](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux) mechanism.
 - Be familiar with [Azure IoT Edge module development](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux). Note: the following guide expects that your modules will be pushed to [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/).
+- Create a new IoT Edge device in you IoT Hub with a name of your choice and the default settings.
+
+### Create Redis Cache
+
+- Create a `Redis Cache` in your resource group and the region you are using with a `DNS Name` of your choice and of the size `Standard C0`. Leave all other settings unchanged.
+- Navigate to your Redis Cache and from Settings -> Access Keys, note the `Primary connection string (StackExchange.Redis)`.
 
 ### Setup Azure function facade and [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/)
 
 - Deploy the [function](LoraKeysManagerFacade). In VSCode with the [functions plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) you can run the command `Azure Functions: Deploy to function app...`. Then you have to select the folder `LoraKeysManagerFacade/bin/Release/netstandard2.0/publish` (unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder) and select for the environment `C#` in version `beta`.
 
-- Configure IoT Hub access key in the function:
+- Configure IoT Hub and Redis connection strings in the function:
 
-Copy `Connection string` with owner policy applied:
+Copy your Redis Cache connection string in a connection string names `RedisConnectionString`
+
+Copy your IoT Hub `Connection string` with owner policy applied:
 
 ![Copy IoT Hub Connection string](/pictures/CopyIoTHubString.PNG)
 
-Now paste it into `Application settings` -> `Connection strings` as `IoTHubConnectionString`:
+Now paste it into `Application settings` -> `Connection strings` as `IoTHubConnectionString` of type `Custom`:
 
 ![Paste IoT Hub Connection string](/pictures/FunctionPasteString.PNG)
 
-- Extract Facade function `Host key` (needed in next step)
+Also, add the previously saved `Primary connection string (StackExchange.Redis)` from your Redis Cache to the `Connection strings` of your function. Use type `Custom` again.
+
+![Add Redis Cache Connection string](/pictures/FunctionRedisKey.PNG)
+
+From the Facade Azure function, extract the `Host key` of type `_master` and save it somewhere. (We will need it in the next step)
 
 ![Extract Facade function Host key](/pictures/FunctionHostKey.PNG)
 
-- Configure your `.env` file with your [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/) as well as the Facade access URL and credentials. Those variables will be used by our [Azure IoT Edge solution template](/LoRaEngine/deployment.template.json)
+- Configure your `.env` file with your [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/) as well as the Facade access URL and credentials. Those variables will be used by our [Azure IoT Edge solution template](/LoRaEngine/deployment.template.json). You can find an example of this file [here](/LoRaEngine/modules/example.env)
 
 ```{bash}
-CONTAINER_REGISTRY_USERNAME=myregistryrocks
-CONTAINER_REGISTRY_PASSWORD=ghjGD5jrK6667
-CONTAINER_REGISTRY_ADDRESS=myregistryrocks.azurecr.io
-FACADE_SERVER_URL=https://lorafacadefunctionrocks.azurewebsites.net/api/
-FACADE_AUTH_CODE=yourFunctionHostKey
+CONTAINER_REGISTRY_ADDRESS=yourregistry.azurecr.io
+CONTAINER_REGISTRY_USERNAME=yourlogin
+CONTAINER_REGISTRY_PASSWORD=registrypassword
+PKT_FWD_VERSION=0.0.3
+NET_SRV_VERSION=0.0.2
+REGION=EU
+FACADE_SERVER_URL=https://yourfunction.azurewebsites.net/api/
+FACADE_AUTH_CODE=functionpassword
 ```
 
-### SetUp concentrator with Azure IoT Edge
+### Setup concentrator with Azure IoT Edge
 
 - Note: if your LoRa chip set is connected by SPI on raspberry PI bus don't forget to [enable it](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/), (You need to restart your pi).
 
@@ -90,7 +106,9 @@ FACADE_AUTH_CODE=yourFunctionHostKey
 
 We will use [Azure IoT Edge for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge) extension to build, push and deploy our solution.
 
-First, build an push the solution by right click [deployment.template.json](/LoRaEngine/deployment.template.json) and select `Build and Push IoT Edge Solution` (look as alternative into [deployment.template.amd64.json](/LoRaEngine/deployment.template.amd64.json) for x64 based gateways)
+Make sure you are logged in to the Azure Container Registry you are using. Run `docker login <mycontainerregistry>.azurecr.io` on your development machine.
+
+Now, build an push the solution by right clicking [deployment.template.json](/LoRaEngine/deployment.template.json) and select `Build and Push IoT Edge Solution` (look as alternative into [deployment.template.amd64.json](/LoRaEngine/deployment.template.amd64.json) for x64 based gateways)
 
 ![VSCode: Build and push edge solution](/pictures/CreateEdgeSolution.PNG)
 
@@ -125,7 +143,7 @@ Device Id: `47AAC86800430010` and Device Twin's deired properties:
 "desired": {
   "AppEUI": "BE7A0000000014E3",
   "AppKey": "8AFE71A145B253E49C3031AD068277A3",
-  "SensorDecoder": "DecoderTemperatureSensor"
+  "SensorDecoder": "DecoderValueSensor"
 }
 ```
 
@@ -208,7 +226,7 @@ It is possible to run the bits in the LoRaEngine locally with from Visual Studio
 3. Open the properties of the project *LoRaWanNetworkServerModule* and set the following values under the Debug tab:
   - IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)
   - ENABLE_GATEWAY : false
-  - LOG_LEVEL : 0 (optional, to activate logging level)
+  - LOG_LEVEL : 1 (optional, to activate most verbose logging level)
   - FacadeServerUrl : http://localhost:7071/api/ (or pointer to the function you want to use)
   - FacadeAuthCode : <your function auth code, do not set this variable if running locally>
 4. Add a local.settings.json in the project LoRa KeysManagerFacade with

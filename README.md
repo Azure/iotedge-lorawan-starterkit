@@ -1,7 +1,5 @@
 # Azure IoT Edge LoRaWAN Starter Kit
 
-**Please note this branch is currently under active development and stability is not ensured, please check the master branch for a stable version of the code.**
-
 Experimental sample implementation of LoRaWAN components to connect LoRaWAN antenna gateway running IoT Edge directly with Azure IoT.
 
 The goal of the project is to provide guidance and a reference for Azure IoT Edge users to experiment with LoRaWAN technology.
@@ -26,15 +24,18 @@ However, customers looking for any of the following are expected to prefer a set
 - Support of Class A devices
 - Activation through ABP and OTAA
 - Confirmed and unconfirmed upstream messages
-- Confirmed downstream messages
+- Confirmed and unconfirmed downstream messages
 - Device and Gateway management done completely in Azure IoT Hub
+- Support of EU868 and US915 channel frequencies
+- Experimental support of MAC commands
+- Multi-gateway support
 
 ## Current limitations
 
+- **This version has some breaking changes and is not compatible with the previous one (v0.1.0-preview). We recommend to redeploy your solution from scratch to avoid any issues**
 - Multigateway works but is not fully tested and you need to implement message deduplication after IoT Hub, if multiples gateways are used in the same range of the device we recommend setting the gateway tag "GatewayID" on the device twins with the IoT Edge ID of the preferred gateway for that device.
 - No Class B and C
 - No ADR
-- No Mac commands
 - Tested only for EU868 and US915 frequency
 - Max 51 bytes downstream payload, longer will be cut. It supports multiple messages with the fpending flag
 - IoT Edge must have internet connectivity, it can work for limited time offline if the device has previously transmitted an upstream message.
@@ -47,6 +48,7 @@ However, customers looking for any of the following are expected to prefer a set
 - [Seeed Studio LoRa LoRaWAN Gateway - 868MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
 - [AAEON AIOT-ILRA01 LoRa® Certified Intel® Based Gateway and Network Server](https://www.aaeon.com/en/p/intel-lora-gateway-system-server)
 - [MyPi Industrial IoT Integrator Board](http://www.embeddedpi.com/integrator-board) with [RAK833-SPI mPCIe-LoRa-Concentrator](http://www.embeddedpi.com/iocards)
+- Raspberry Pi 3 with [IC880A](https://wireless-solutions.de/products/radiomodules/ic880a.html)
 
 ## Architecture
 
@@ -62,6 +64,7 @@ The code is organized into three sections:
   - **LoRaDevTools** - library for dev tools (git submodule)
 - **Arduino** - Examples and references for LoRa Arduino based devices.
 - **Template** - Contain code useful for the "deploy to Azure button"
+- **Samples** - Contains sample decoders  
 
 ## Reporting Security Issues
 
@@ -82,9 +85,10 @@ If you'd rather deploy it manually please jump directly into the [do it yourself
 Currently, the template work only with ARM based gateways, like a Raspberry Pi, support for x86 will be added in a future release. (you could actually already deploy it for intel by following the instructions in the [do it yourself section](/LoraEngine))
 The template was tested to work on the following gateway types:
 
-- [Seeed Studio LoRa LoRaWAN Gateway - 868MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
+- [Seeed Studio LoRa LoRaWAN Gateway - 868MHz/915MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
+- [IC880A](https://wireless-solutions.de/products/radiomodules/ic880a.html)
 
-The LoRa device demo code for Arduino is built only for Seeduino LoRaWan board and was not test with other Arduino LoRa boards.
+The LoRa device demo code in the Arduino folder is built only for Seeduino LoRaWan board and was not test with other Arduino LoRa boards.
 
 ### Deployed Azure Infrastructure
 
@@ -92,12 +96,13 @@ The template will deploy in your Azure subscription the Following ressources:
 
 - [IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
 - [Azure Function](https://azure.microsoft.com/en-us/services/functions/)
+- [Redis Cache](https://azure.microsoft.com/en-us/services/cache/)
 
 ### Step-by-step instructions
 
 1. Press on the button here below to start your Azure Deployment.
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fdev-0.2%2FTemplate%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fmaster%2FTemplate%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
@@ -107,7 +112,9 @@ The template will deploy in your Azure subscription the Following ressources:
 - **Location** - In which Datacenter the resources should be deployed.
 - **Unique Solution Prefix** - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail.
 - **Edge gateway name** - the name of your LoRa Gateway node in the IoT Hub.
-- **Deploy Device** - Do you want a demo end device to be already provisioned. If yes the code located in the [Arduino folder](/Arduino) would be ready to use immediately.
+- **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP). If yes, the code located in the [Arduino folder](/Arduino) would be ready to use immediately.
+- **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
+- **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)
 
   The deployment would take c.a. 10 minutes to complete.
 
@@ -126,7 +133,7 @@ The template provision an IoT Hub with a [packet forwarder](https://github.com/L
 ## LoRa Device provisioning
 
 A LoRa device is a normal IoT Hub device with some specific device twin tags. You manage it like you would with any other IoT Hub device.
-**To avoid caching issues you should not allow the device to join or send data before it is provisioned in IoT Hub. In case that you did plese follow the ClearCache proecedure that you find below.**
+**To avoid caching issues you should not allow the device to join or send data before it is provisioned in IoT Hub. In case that you did plese follow the ClearCache procedure that you find below.**
 
 ### ABP (personalization) and OTAA (over the air) provisioning
 
@@ -225,6 +232,8 @@ We have already a simple decoder called "DecoderValueSensor" that take the whole
 
 The "DecoderValueSensor" decoder is not best practice but it makes easier to experiment in sending sensor's readings to IoT Hub without code change.
 
+if the SensorDecoder tag has a "http" in it's string value, it will forward the decoding call to an external decoder using standard Http. The call expect a return with a same form as the json here above or an error string.
+
 ### Cache Clearing
 
 Due to the gateway caching the device information (tags) for 1 day, if the device tries to connect before you have provisioned it, it will not be able to connect because it will be considered a device for another LoRa network.
@@ -244,9 +253,9 @@ There is a logging mechanisms that output valuable information on the console of
 
 You can control the logging with the following environment variables on the LoRaWanNetworkSrvModule module:
 
-LOG_LEVEL 3 Only errors are logged (default if omitted)
+LOG_LEVEL 3 Only errors are logged 
 
-LOG_LEVEL 2 Errors and information are logged
+LOG_LEVEL 2 Errors and information are logged (default if omitted)
 
 LOG_LEVEL 1 Everything is logged including the up and down messages to the packet forwarder
 
@@ -271,6 +280,10 @@ CidType : 6
 ```
 
 ![MacCommand](pictures/MacCommand.PNG)
+
+## Cloud to device confirmed message
+
+You can send confirmed cloud to device messages by adding a "Confirmed" property set to true to your cloud to device message (same as above).
 
 ## License
 
