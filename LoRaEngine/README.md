@@ -93,7 +93,7 @@ CONTAINER_REGISTRY_USERNAME=yourlogin
 CONTAINER_REGISTRY_PASSWORD=registrypassword
 PKT_FWD_VERSION=0.0.3
 NET_SRV_VERSION=0.0.2
-REGION=US
+REGION=EU
 FACADE_SERVER_URL=https://yourfunction.azurewebsites.net/api/
 FACADE_AUTH_CODE=functionpassword
 ```
