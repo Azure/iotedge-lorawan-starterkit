@@ -209,11 +209,12 @@ namespace LoRaWan.NetworkServer
                             validFrameCounter = false;
                             Logger.Log(loraDeviceInfo.DevEUI, $"invalid frame counter, msg: {fcntup} server: {loraDeviceInfo.FCntUp}", Logger.LoggingLevel.Info);
                         }
-
+                        byte[] fctrl = new byte[1] { 0 };
 
                         //we lock as fast as possible and get the down fcnt for multi gateway support for confirmed message
                         if (loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp && String.IsNullOrEmpty(loraDeviceInfo.GatewayID))
                         {
+                            fctrl[0]= (int)FctrlEnum.Ack;
                             ushort newFCntDown = await this.loraDeviceInfoManager.NextFCntDown(loraDeviceInfo.DevEUI, loraDeviceInfo.FCntDown, fcntup, this.configuration.GatewayID);
                             //ok to send down ack or msg
                             if (newFCntDown > 0)
@@ -235,8 +236,8 @@ namespace LoRaWan.NetworkServer
                         c2dMsg = await loraDeviceInfo.HubSender.ReceiveAsync(TimeSpan.FromMilliseconds(20));
                         byte[] bytesC2dMsg = null;
                         byte[] fport = null;
-                        //Todo revamp fctrl
-                        byte[] fctrl = new byte[1] { 0 };
+                      
+                    
                         //check if we got a c2d message to be added in the ack message and prepare the message
                         if (c2dMsg != null)
                         {
@@ -248,10 +249,13 @@ namespace LoRaWan.NetworkServer
                                 //todo ronnie check abbandon logic especially in case of mqtt
                                 _ = await loraDeviceInfo.HubSender.AbandonAsync(secondC2dMsg);
                                 //set the fpending flag so the lora device will call us back for the next message
-                                fctrl = new byte[1] { 16 };
+                                fctrl[0]+= (int)FctrlEnum.FpendingOrClassB ;
+                                Logger.Log(loraDeviceInfo.DevEUI, $"Additional C2D messages waiting, setting FPending to 1", Logger.LoggingLevel.Info);
+
                             }
 
                             bytesC2dMsg = c2dMsg.GetBytes();
+                            //default fport
                             fport = new byte[1] { 1 };
 
                             if (bytesC2dMsg != null)
@@ -268,6 +272,9 @@ namespace LoRaWan.NetworkServer
                         //if confirmation or cloud to device msg send down the message
                         if (loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp || c2dMsg != null)
                         {
+                            if(loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
+                                fctrl[0] += (int)FctrlEnum.Ack;
+
                             //check if we are not too late for the second receive windows
                             if ((DateTime.UtcNow - startTimeProcessing) <= TimeSpan.FromMilliseconds(RegionFactory.CurrentRegion.receive_delay2 * 1000 - 100))
                             {
@@ -315,7 +322,7 @@ namespace LoRaWan.NetworkServer
 
                                 if ((DateTime.UtcNow - startTimeProcessing) > TimeSpan.FromMilliseconds(RegionFactory.CurrentRegion.receive_delay1 * 1000 - 100))
                                 {
-                                    fctrl = new byte[1] { 0 };
+                              
                                     if (string.IsNullOrEmpty(configuration.Rx2DataRate))
                                     {
                                         Logger.Log(loraDeviceInfo.DevEUI, $"using standard second receive windows", Logger.LoggingLevel.Info);
@@ -340,7 +347,7 @@ namespace LoRaWan.NetworkServer
                                 byte[] macbytes = null;
                                 if (c2dMsg != null)
                                 {
-                                    
+                             
                                     if (c2dMsg.Properties.Keys.Contains("CidType"))
                                     {
                                             MacCommandHolder macCommandHolder = new MacCommandHolder(Convert.ToByte(c2dMsg.Properties["CidType"]));
@@ -355,13 +362,17 @@ namespace LoRaWan.NetworkServer
                                     if (c2dMsg.Properties.Keys.Contains("Fport"))
                                     {
                                         int fportint= int.Parse(c2dMsg.Properties["Fport"]);
-                                        fport = BitConverter.GetBytes(fportint);
+                                        
+                                        fport[0] = BitConverter.GetBytes(fportint)[0];
                                         Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device message with a Fport of "+ fportint, Logger.LoggingLevel.Info);
 
                                     }
                                 }
-                                if(requestForConfirmedResponse )
-                                    fctrl[0]+=32 ;
+                               
+                                if (requestForConfirmedResponse )
+                                {
+                                    fctrl[0] += (int)FctrlEnum.FpendingOrClassB;
+                                }
                                 if (macbytes != null && linkCheckCmdResponse != null)
                                     macbytes = macbytes.Concat(linkCheckCmdResponse).ToArray();
                                 LoRaPayloadData ackLoRaMessage = new LoRaPayloadData(
@@ -415,6 +426,7 @@ namespace LoRaWan.NetworkServer
                                 {
                                     _ = await loraDeviceInfo.HubSender.AbandonAsync(c2dMsg);
                                 }
+                         
                                 Logger.Log(loraDeviceInfo.DevEUI, $"too late for down message, sending only ACK to gateway", Logger.LoggingLevel.Info);
                                 _ = loraDeviceInfo.HubSender.UpdateFcntAsync(loraDeviceInfo.FCntUp, null);
                             }
@@ -439,7 +451,7 @@ namespace LoRaWan.NetworkServer
                         {
                             Byte[] devAddrCorrect = new byte[4];
                             Array.Copy(loraMessage.LoRaPayloadMessage.DevAddr.ToArray(), devAddrCorrect, 4);
-                            byte[] fctrl2 = new byte[1] { 32 };
+                            byte[] fctrl2 = new byte[1] { 0 };
 
                             Array.Reverse(devAddrCorrect);
                             LoRaPayloadData macReply = new LoRaPayloadData(MType.ConfirmedDataDown,

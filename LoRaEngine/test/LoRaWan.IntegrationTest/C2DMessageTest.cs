@@ -294,7 +294,7 @@ namespace LoRaWan.IntegrationTest
 
             var foundC2DMessage = false;
             var foundReceivePacket = false;
-            var expectedRxSerial = $"+MSG: PORT: 2; RX:";
+            var expectedRxSerial = $"+MSG: PORT: 2; RX: \"{ToHexString(c2dMessageBody)}\"";
             Log($"Expected C2D start with: {expectedRxSerial}");
 
             // Sends 8x confirmed messages, stopping if C2D message is found
@@ -330,7 +330,7 @@ namespace LoRaWan.IntegrationTest
                 }
 
 
-                var localFoundCloudToDeviceInSerial = this.ArduinoDevice.SerialLogs.Any(x => x.StartsWith(expectedRxSerial));
+                var localFoundCloudToDeviceInSerial = this.ArduinoDevice.SerialLogs.Contains(expectedRxSerial);
                 if (localFoundCloudToDeviceInSerial)
                 {
                     Assert.False(foundReceivePacket, "Cloud to device message should have been received only once");
