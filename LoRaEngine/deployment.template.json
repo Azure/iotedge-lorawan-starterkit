@@ -61,17 +61,7 @@
             }
           }
         },
-        "modules": {
-          "sensordecodermodule":{
-            "type": "docker",
-            "settings": {
-              "image": "fbeltrao/decodersample:1.0-arm32v7",
-              "createOptions": {}
-            },
-            "status": "running",
-            "restartPolicy": "always",
-            "version": "1.0"          
-          },
+        "modules": {          
           "LoRaWanNetworkSrvModule": {
             "type": "docker",
             "settings": {
@@ -97,7 +87,7 @@
               "LOG_LEVEL": {
                 "value": "2"
               },
-              "LOG_TO_UDP": {
+              "LOG_TO_HUB": {
                 "value": "true"
               }
             },
