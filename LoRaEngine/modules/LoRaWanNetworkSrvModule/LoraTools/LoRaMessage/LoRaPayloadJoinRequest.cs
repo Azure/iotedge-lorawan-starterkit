@@ -60,8 +60,9 @@ namespace LoRaTools.LoRaMessage
 
             KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(appKey));
             mac.Init(key);
-            
-            var algoinput = Mhdr.ToArray().Concat(AppEUI.ToArray()).Concat(DevEUI.ToArray()).Concat(DevNonce.ToArray()).ToArray();
+            var newDevEUI = DevEUI.ToArray();
+            Array.Reverse(newDevEUI);
+            var algoinput = Mhdr.ToArray().Concat(AppEUI.ToArray()).Concat(newDevEUI).Concat(DevNonce.ToArray()).ToArray();
             byte[] result = new byte[19];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);

@@ -188,7 +188,7 @@ namespace LoRaWan.NetworkServer
                             string iotHubMsg = fullPayload.ToString(Newtonsoft.Json.Formatting.None);
                             await loraDeviceInfo.HubSender.SendMessageAsync(iotHubMsg, messageProperties);
                             
-                            if (isAckFromDevice)
+                            if (isAckFromDevice)    
                             {
                                 Logger.Log(loraDeviceInfo.DevEUI, $"ack from device sent to hub", Logger.LoggingLevel.Info);
 
@@ -340,16 +340,18 @@ namespace LoRaWan.NetworkServer
                                 byte[] macbytes = null;
                                 if (c2dMsg != null)
                                 {
-                                    var macCmd = c2dMsg.Properties.Where(o => o.Key == "CidType");
-                                    if (macCmd.Count() != 0)
+                                    if (c2dMsg.Properties["CidType"] != null)
                                     {
-                                        MacCommandHolder macCommandHolder = new MacCommandHolder(Convert.ToByte(macCmd.First().Value));
-                                        macbytes = macCommandHolder.macCommand[0].ToBytes();
+                                            MacCommandHolder macCommandHolder = new MacCommandHolder(Convert.ToByte(c2dMsg.Properties["CidType"]));
+                                            macbytes = macCommandHolder.macCommand[0].ToBytes();
                                     }
-                                    var confirmCmd = c2dMsg.Properties.Where(o => o.Key == "Confirmed");
-                                    if (confirmCmd.Count() != 0)
+                                    if (c2dMsg.Properties["Confirmed"] == "true")
                                     {
                                         requestForConfirmedResponse = true;
+                                    }
+                                    if (c2dMsg.Properties["Fport"] != null)
+                                    {
+                                        fport = BitConverter.GetBytes(int.Parse(c2dMsg.Properties["Fport"]));
                                     }
                                 }
                                 if(requestForConfirmedResponse )
