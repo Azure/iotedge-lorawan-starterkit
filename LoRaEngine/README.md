@@ -98,6 +98,22 @@ FACADE_SERVER_URL=https://yourfunction.azurewebsites.net/api/
 FACADE_AUTH_CODE=functionpassword
 ```
 
+### Use a Proxy server to connect your Concentrator to Azure
+
+**This step is optional and should only be executed if your concentrator needs to use a proxy server to communicate with Azure**
+
+Follow the guide on [configuring an IoT Edge device to communicate through a proxy server](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-configure-proxy-support) to:
+
+1. Configure the Docker daemon and the IoT Edge daemon on your device to use a proxy server.
+2. Configure the edgeAgent properties in the config.yaml file on your device.
+3. Set environment variables for the IoT Edge runtime in the deployment manifest. 
+
+After that, add the environment variable ```https_proxy``` to the ```LoRaWanNetworkSrvModule``` in your ```IoT Hub``` -> ```IoT Edge``` -> ```Edge Device``` -> ```Set Modules``` section.
+
+![IoT Hub Edge Device Module Setting](/pictures/EdgeSetProxy.PNG)
+
+**End of optional proxy configuration**
+
 ### Setup concentrator with Azure IoT Edge
 
 - Note: if your LoRa chip set is connected by SPI on raspberry PI bus don't forget to [enable it](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/), (You need to restart your pi).
