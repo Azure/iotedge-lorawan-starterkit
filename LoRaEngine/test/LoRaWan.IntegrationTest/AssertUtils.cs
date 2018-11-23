@@ -26,6 +26,7 @@ public static class AssertUtils
             }
 
             await Task.Delay(intervalToUse);
+            intervalToUse += intervalToUse;
 
         }
     }

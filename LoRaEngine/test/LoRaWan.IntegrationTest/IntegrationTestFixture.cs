@@ -7,6 +7,7 @@ using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.EventHubs;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace LoRaWan.IntegrationTest
@@ -15,67 +16,84 @@ namespace LoRaWan.IntegrationTest
     {
         public const string MESSAGE_IDENTIFIER_PROPERTY_NAME = "messageIdentifier";
         RegistryManager registryManager;
+        private UdpLogListener udpLogListener;
 
         public TestConfiguration Configuration { get; }
 
-        public EventHubDataCollector NetworkServerLogEvents { get; private set; }
+        public EventHubDataCollector IoTHubMessages { get; private set; }
      
-        public void ClearNetworkServerLogEvents() => this.NetworkServerLogEvents?.ResetEvents();
-
-
+      
         // Device1_OTAA: used for join test only
-        public TestDeviceInfo Device1_OTAA { get; }
+        public TestDeviceInfo Device1_OTAA { get; private set; }
 
         // Device2_OTAA: used for failed join (wrong devEUI)
-        public TestDeviceInfo Device2_OTAA { get; }
+        public TestDeviceInfo Device2_OTAA { get; private set; }
 
         // Device3_OTAA: used for failed join (wrong appKey)
-        public TestDeviceInfo Device3_OTAA { get; }
+        public TestDeviceInfo Device3_OTAA { get; private set; }
         
 
         // Device4_OTAA: used for OTAA confirmed & unconfirmed messaging
-        public TestDeviceInfo Device4_OTAA { get; }
+        public TestDeviceInfo Device4_OTAA { get; private set; }
 
 
         // Device5_ABP: used for ABP confirmed & unconfirmed messaging
-        public TestDeviceInfo Device5_ABP { get; }
+        public TestDeviceInfo Device5_ABP { get; private set; }
 
         // Device6_ABP: used for ABP wrong devaddr
-        public TestDeviceInfo Device6_ABP { get; }
+        public TestDeviceInfo Device6_ABP { get; private set; }
 
         // Device7_ABP: used for ABP wrong nwkskey
-        public TestDeviceInfo Device7_ABP { get; }
+        public TestDeviceInfo Device7_ABP { get; private set; }
 
         // Device8_ABP: used for ABP invalid nwkskey (mic fails)
-        public TestDeviceInfo Device8_ABP { get; }
+        public TestDeviceInfo Device8_ABP { get; private set; }
 
         // Device9_OTAA: used for OTAA confirmed messages, C2D test
-        public TestDeviceInfo Device9_OTAA { get; }
+        public TestDeviceInfo Device9_OTAA { get; private set; }
 
         // Device10_OTAA: used for OTAA unconfirmed messages, C2D test
-        public TestDeviceInfo Device10_OTAA { get; }  
+        public TestDeviceInfo Device10_OTAA { get; private set; }  
 
         // Device11_OTAA: used for http decoder
-        public TestDeviceInfo Device11_OTAA { get; }  
+        public TestDeviceInfo Device11_OTAA { get; private set; }  
 
         // Device12_OTAA: used for reflection based decoder
-        public TestDeviceInfo Device12_OTAA { get; } 
+        public TestDeviceInfo Device12_OTAA { get; private set; } 
 
         // Device13_OTAA: used for wrong AppEUI OTAA join
-        public TestDeviceInfo Device13_OTAA { get; }
+        public TestDeviceInfo Device13_OTAA { get; private set; }
+
+
         public IntegrationTestFixture()
         {
             this.Configuration = TestConfiguration.GetConfiguration();
 
-            if (!string.IsNullOrEmpty(Configuration.IoTHubEventHubConnectionString) && this.Configuration.NetworkServerModuleLogAssertLevel != NetworkServerModuleLogAssertLevel.Ignore)
+            SetupTestDevices();
+
+            // Fix device ID if a prefix was defined (DO NOT MOVE THIS LINE ABOVE DEVICE CREATION)             
+            if (!string.IsNullOrEmpty(Configuration.DevicePrefix))
             {
-                this.NetworkServerLogEvents = new EventHubDataCollector(Configuration.IoTHubEventHubConnectionString, Configuration.IoTHubEventHubConsumerGroup);
-                var startTask = this.NetworkServerLogEvents.Start();                
-                startTask.ConfigureAwait(false).GetAwaiter().GetResult();
+                foreach (var d in GetAllDevices())
+                {
+                    d.DeviceID = string.Concat(Configuration.DevicePrefix, d.DeviceID.Substring(Configuration.DevicePrefix.Length, d.DeviceID.Length - Configuration.DevicePrefix.Length));
+                    if (!string.IsNullOrEmpty(d.AppEUI))                    
+                        d.AppEUI = string.Concat(Configuration.DevicePrefix, d.AppEUI.Substring(Configuration.DevicePrefix.Length, d.AppEUI.Length - Configuration.DevicePrefix.Length));
+
+                    if (!string.IsNullOrEmpty(d.AppSKey))                    
+                        d.AppSKey = string.Concat(Configuration.DevicePrefix, d.AppSKey.Substring(Configuration.DevicePrefix.Length, d.AppSKey.Length - Configuration.DevicePrefix.Length));
+
+                    if (!string.IsNullOrEmpty(d.NwkSKey))                    
+                        d.NwkSKey = string.Concat(Configuration.DevicePrefix, d.NwkSKey.Substring(Configuration.DevicePrefix.Length, d.NwkSKey.Length - Configuration.DevicePrefix.Length));                                            
+                }
             }
+        }
 
+        // Setup the test devices here
+        void SetupTestDevices()
+        {
             var gatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID") ?? this.Configuration.LeafDeviceGatewayID;
-
+          
             // Device1_OTAA: used for join test only
             this.Device1_OTAA = new TestDeviceInfo()
             {
@@ -83,7 +101,7 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = "BE7A0000000014E3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",                
                 GatewayID = gatewayID,
-                RealDevice = true                            
+                IsIoTHubDevice = true                            
             };
 
             // Device2_OTAA: used for failed join (wrong devEUI)
@@ -94,7 +112,7 @@ namespace LoRaWan.IntegrationTest
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
-                RealDevice = false,
+                IsIoTHubDevice = false,
             };
 
             // Device3_OTAA: used for failed join (wrong appKey)
@@ -105,7 +123,7 @@ namespace LoRaWan.IntegrationTest
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
-                RealDevice = true,
+                IsIoTHubDevice = true,
             };
             
 
@@ -117,7 +135,7 @@ namespace LoRaWan.IntegrationTest
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
-                RealDevice = true,
+                IsIoTHubDevice = true,
             };        
 
 
@@ -128,7 +146,7 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = "0000000000000005",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
-                RealDevice = true,
+                IsIoTHubDevice = true,
                 AppSKey="2B7E151628AED2A6ABF7158809CF4F3C",
                 NwkSKey="3B7E151628AED2A6ABF7158809CF4F3C",
                 DevAddr="0028B1B0"
@@ -141,7 +159,7 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = "0000000000000006",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
-                RealDevice = false,
+                IsIoTHubDevice = false,
                 AppSKey="2B7E151628AED2A6ABF7158809CF4F3C",
                 NwkSKey="3B7E151628AED2A6ABF7158809CF4F3C",
                 DevAddr="0028B1B1",
@@ -154,7 +172,7 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = "0000000000000007",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
-                RealDevice = true,
+                IsIoTHubDevice = true,
                 AppSKey="2B7E151628AED2A6ABF7158809CF4F3C",
                 NwkSKey="3B7E151628AED2A6ABF7158809CF4F3C",
                 DevAddr="0028B1B2"
@@ -167,7 +185,7 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = "0000000000000008",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
-                RealDevice = true,
+                IsIoTHubDevice = true,
                 AppSKey="2B7E151628AED2A6ABF7158809CF4F3C",
                 NwkSKey="3B7E151628AED2A6ABF7158809CF4F3C",
                 DevAddr="0028B1B3"
@@ -180,7 +198,7 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = "BE7A0000000014E3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",                
                 GatewayID = gatewayID,
-                RealDevice = true                            
+                IsIoTHubDevice = true                            
             };  
 
             // Device10_OTAA: used for unconfirmed message & C2D
@@ -190,7 +208,7 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = "BE7A0000000014E3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",                
                 GatewayID = gatewayID,
-                RealDevice = true                            
+                IsIoTHubDevice = true                            
             };  
 
             // Device11_OTAA: used for http decoder
@@ -200,7 +218,7 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = "BE7A0000000014E3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",                
                 GatewayID = gatewayID,
-                RealDevice = true,                                      
+                IsIoTHubDevice = true,                                      
                 SensorDecoder = "http://sensordecodermodule/api/DecoderValueSensor",                           
             };  
 
@@ -211,7 +229,7 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = "BE7A0000000014E3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",                
                 GatewayID = gatewayID,
-                RealDevice = true,                                      
+                IsIoTHubDevice = true,                                      
                 SensorDecoder = "DecoderValueSensor",                           
             };  
 
@@ -222,94 +240,50 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = "BE7A00000000FEE3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",                
                 GatewayID = gatewayID,
-                RealDevice = true,                                      
+                IsIoTHubDevice = true,                                      
                 SensorDecoder = "DecoderValueSensor",                           
             };  
         }
 
-        internal string GetMessageIdentifier(EventData eventData) 
+        // Helper method to return all devices
+        IEnumerable<TestDeviceInfo> GetAllDevices()
         {
-            eventData.Properties.TryGetValue("messageIdentifier", out var actualMessageIdentifier);
-            return actualMessageIdentifier?.ToString();
-        }      
-
-        // Validate the network server log for the existence of a message
-        public async Task ValidateNetworkServerEventLogStartsWithAsync(string logMessageStart)
-        {
-            if (this.Configuration.NetworkServerModuleLogAssertLevel != NetworkServerModuleLogAssertLevel.Ignore)
+            var t = this.GetType();
+            foreach (var prop in t.GetProperties())
             {
-                var findResult = await this.FindNetworkServerEventLog((e, deviceID, messageBody) => messageBody.StartsWith(logMessageStart),
-                new FindNetworkServerEventLogOptions
+                if (prop.PropertyType == typeof(TestDeviceInfo))
                 {
-                    Description = logMessageStart
-                });
-
-                if (this.Configuration.NetworkServerModuleLogAssertLevel == NetworkServerModuleLogAssertLevel.Error)
-                {
-                    var logs = string.Join("\n\t", findResult.Item2.TakeLast(5));
-                    Assert.True(findResult.Item1, $"Did not find '{logMessageStart}' in logs [{logs}]");
-                }
-                else if (this.Configuration.NetworkServerModuleLogAssertLevel == NetworkServerModuleLogAssertLevel.Warning)
-                {
-                    if (findResult.Item1)
-                    {
-                        Console.WriteLine($"'{logMessageStart}' found in logs? {findResult.Item1}");
-                    }
-                    else
-                    {
-                        var logs = string.Join("\n\t", findResult.Item2.TakeLast(5));
-                        Console.WriteLine($"'{logMessageStart}' found in logs? {findResult.Item1}. Logs: [{logs}]");
-                    }
+                    var device = (TestDeviceInfo)prop.GetValue(this);
+                    yield return device;
                 }
             }
         }
-
-        // Search the network server logs for a value
-        //internal async Task<Tuple<bool, HashSet<string>>> FindNetworkServerEventLog(Func<EventData, string, string, bool> predicate)
-        internal async Task<(bool found, HashSet<string> logs)> FindNetworkServerEventLog(Func<EventData, string, string, bool> predicate, FindNetworkServerEventLogOptions options = null)
-        {
-            var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
-            var processedEvents = new HashSet<string>();
-            for (int i = 0; i < maxAttempts; i++)
-            {
-                if (i > 0)
-                {
-                    var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    if (!string.IsNullOrEmpty(options?.Description))
-                    {
-                        Console.WriteLine($"Network server event log '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Network server event log not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
-                    }
-                    await Task.Delay(TimeSpan.FromSeconds(timeToWait));
-                }
-
-                foreach (var item in this.NetworkServerLogEvents.GetEvents())
-                {
-                    var bodyText = System.Text.Encoding.UTF8.GetString(item.Body);
-                    processedEvents.Add(bodyText);
-                    item.SystemProperties.TryGetValue("iothub-connection-device-id", out var deviceId);
-                    if (predicate(item, deviceId?.ToString(), bodyText))
-                    {
-                        return (found: true, logs: processedEvents);// new Tuple<bool, HashSet<string>>(true, processedEvents);
-                    }
-                }
-            }
-
-            return (found: false, logs: processedEvents);
-            //return new Tuple<bool, HashSet<string>>(false, processedEvents);
+      
+        public void ClearNetworkServerModuleLog()
+        { 
+            this.IoTHubMessages?.ResetEvents();
+            this.udpLogListener?.ResetEvents();
         }
 
+        bool disposed = false;
         public void Dispose()
         {
-            this.NetworkServerLogEvents?.Dispose();
-            this.NetworkServerLogEvents = null;
+            Console.WriteLine($"{nameof(IntegrationTestFixture)} disposed");
+
+            if (disposed)
+                return;
+            
+            this.IoTHubMessages?.Dispose();
+            this.IoTHubMessages = null;
             this.registryManager?.Dispose();
             this.registryManager = null;
 
+            this.udpLogListener?.Dispose();
+            this.udpLogListener = null;
+
             GC.SuppressFinalize(this);
+
+            this.disposed = true;
         }
 
         RegistryManager GetRegistryManager()
@@ -352,54 +326,61 @@ namespace LoRaWan.IntegrationTest
         {
             if (this.Configuration.CreateDevices)
             {
-                var devices = new TestDeviceInfo[] 
-                {
-                    this.Device1_OTAA,
-                    this.Device2_OTAA,
-                    this.Device3_OTAA,
-                    this.Device4_OTAA,
-                    this.Device5_ABP,
-                    this.Device6_ABP,
-                    this.Device7_ABP,
-                    this.Device8_ABP,
-                    this.Device9_OTAA,
-                    this.Device10_OTAA,
-                    this.Device11_OTAA,
-                    this.Device12_OTAA,
-                    this.Device13_OTAA,
-                };
+               await CreateOrUpdateDevicesAsync();
+            }
 
-                var registryManager = GetRegistryManager();
-                foreach (var testDevice in devices.Where(x => x.RealDevice))
-                {
-                    var getDeviceResult = await registryManager.GetDeviceAsync(testDevice.DeviceID);
-                    if (getDeviceResult == null)
-                    {
-                        Console.WriteLine($"Device {testDevice.DeviceID} does not exist. Creating");
-                        var device = new Device(testDevice.DeviceID);
-                        var twin = new Twin(testDevice.DeviceID);                                            
-                        twin.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(testDevice.GetDesiredProperties()));
+            if (!string.IsNullOrEmpty(Configuration.IoTHubEventHubConnectionString) && this.Configuration.NetworkServerModuleLogAssertLevel != IoTHubAssertLevel.Ignore)
+            {
+                this.IoTHubMessages = new EventHubDataCollector(Configuration.IoTHubEventHubConnectionString, Configuration.IoTHubEventHubConsumerGroup);
+                await this.IoTHubMessages.StartAsync(); 
+            }
 
-                        Console.WriteLine($"Creating device {testDevice.DeviceID}");
-                        await registryManager.AddDeviceWithTwinAsync(device, twin);
-                    }
-                    else 
+            if (Configuration.UdpLog)
+            {
+                this.udpLogListener = new UdpLogListener(Configuration.UdpLogPort);
+                this.udpLogListener.Start();
+            }
+        }
+
+        private async Task CreateOrUpdateDevicesAsync()
+        {
+            var registryManager = GetRegistryManager();
+            foreach (var testDevice in GetAllDevices().Where(x => x.IsIoTHubDevice))
+            {
+                var deviceID = testDevice.DeviceID;
+                if (!string.IsNullOrEmpty(Configuration.DevicePrefix))
+                {
+                    deviceID = string.Concat(Configuration.DevicePrefix, deviceID.Substring(Configuration.DevicePrefix.Length, deviceID.Length - Configuration.DevicePrefix.Length));
+                    testDevice.DeviceID = deviceID;
+                }
+
+                var getDeviceResult = await registryManager.GetDeviceAsync(testDevice.DeviceID);
+                if (getDeviceResult == null)
+                {
+                    Console.WriteLine($"Device {testDevice.DeviceID} does not exist. Creating");
+                    var device = new Device(testDevice.DeviceID);
+                    var twin = new Twin(testDevice.DeviceID);                                            
+                    twin.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(testDevice.GetDesiredProperties()));
+
+                    Console.WriteLine($"Creating device {testDevice.DeviceID}");
+                    await registryManager.AddDeviceWithTwinAsync(device, twin);
+                }
+                else 
+                {
+                    // compare device twin and make changes if needed
+                    var deviceTwin = await registryManager.GetTwinAsync(testDevice.DeviceID);
+                    var desiredProperties = testDevice.GetDesiredProperties();
+                    foreach (var kv in desiredProperties)
                     {
-                        // compare device twin and make changes if needed
-                        var deviceTwin = await registryManager.GetTwinAsync(testDevice.DeviceID);
-                        var desiredProperties = testDevice.GetDesiredProperties();
-                        foreach (var kv in desiredProperties)
+                        if (!deviceTwin.Properties.Desired.Contains(kv.Key) || (string)deviceTwin.Properties.Desired[kv.Key] != kv.Value)
                         {
-                            if (!deviceTwin.Properties.Desired.Contains(kv.Key) || (string)deviceTwin.Properties.Desired[kv.Key] != kv.Value)
-                            {
-                                Console.WriteLine($"Unexpected value for device {testDevice.DeviceID} twin property {kv.Key}, expecting '{kv.Value}', actual is '{(string)deviceTwin.Properties.Desired[kv.Key]}'");
-                                
-                                var patch = new Twin();
-                                patch.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(desiredProperties));
-                                await registryManager.UpdateTwinAsync(testDevice.DeviceID, patch, deviceTwin.ETag);
-                                Console.WriteLine($"Update twin for device {testDevice.DeviceID}");
-                                break;
-                            }
+                            Console.WriteLine($"Unexpected value for device {testDevice.DeviceID} twin property {kv.Key}, expecting '{kv.Value}', actual is '{(string)deviceTwin.Properties.Desired[kv.Key]}'");
+                            
+                            var patch = new Twin();
+                            patch.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(desiredProperties));
+                            await registryManager.UpdateTwinAsync(testDevice.DeviceID, patch, deviceTwin.ETag);
+                            Console.WriteLine($"Update twin for device {testDevice.DeviceID}");
+                            break;
                         }
                     }
                 }

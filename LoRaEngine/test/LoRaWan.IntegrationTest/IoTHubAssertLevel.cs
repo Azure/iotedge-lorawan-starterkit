@@ -1,7 +1,7 @@
 namespace LoRaWan.IntegrationTest
 {
-    // Defines how NetworkServerModule log validation should occur
-    public enum NetworkServerModuleLogAssertLevel
+    // Defines how IoTHub message validation should occur
+    public enum IoTHubAssertLevel
     {
         // Ignore it
         Ignore,

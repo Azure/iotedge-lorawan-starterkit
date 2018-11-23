@@ -31,10 +31,19 @@ namespace LoRaWan.IntegrationTest
 
         public string LeafDeviceSerialPort { get; set; } = "/dev/ttyACM";
         public string LeafDeviceGatewayID { get; set; }
+
+        // Device prefix to be used
+        public string DevicePrefix { get; set; }
         public bool CreateDevices { get; set; } = true;
-        public NetworkServerModuleLogAssertLevel NetworkServerModuleLogAssertLevel { get; set; } = NetworkServerModuleLogAssertLevel.Warning;
+        public IoTHubAssertLevel NetworkServerModuleLogAssertLevel { get; set; } = IoTHubAssertLevel.Warning;
 
         public LoraRegion LoraRegion { get; set; } = LoraRegion.EU;
+
+        // Gets/sets if network server is using udp for logging
+        public bool UdpLog { get; set; }
+
+        // Gets/sets network server udp log port
+        public int UdpLogPort { get; set; } = 6000;
     }
 
 }

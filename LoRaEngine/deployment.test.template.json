@@ -55,17 +55,31 @@
               "type": "docker",
               "settings": {
                 "image": "${MODULES.LoRaWanNetworkSrvModule.arm32v7}",
-                "createOptions": "{  \"ExposedPorts\": { \"1680/udp\": {}, \"1234/udp\": {}  }, \"HostConfig\": { \"PortBindings\": { \"1680/udp\": [ { \"HostPort\": \"1680\", \"HostIp\":\"172.17.0.1\" } ], \"1234/udp\": [ { \"HostPort\": \"1234\" } ] }  }}"
+                "createOptions": {
+                  "ExposedPorts": {
+                    "1680/udp": {}
+                  },
+                  "HostConfig": {
+                    "PortBindings": {
+                      "1680/udp": [
+                        {
+                          "HostPort": "1680",
+                          "HostIp": "172.17.0.1"
+                        }
+                      ]
+                    }
+                  }
+                }
               },
               "version": "1.0",
               "env": {
                 "LOG_LEVEL": {
-                  "value": "0"
+                  "value": "2"
                 },
                 "LOG_TO_HUB": {
-                  "value": "true"
+                  "value": "false"
                 },
-                "LOG_TO_TEST": {
+                "LOG_TO_UDP": {
                   "value": "true"
                 }
               },
@@ -76,11 +90,21 @@
               "type": "docker",
               "settings": {
                 "image": "${MODULES.LoRaWanPktFwdModule.arm32v7}",
-                "createOptions": "  {\r\n  \"HostConfig\": {\r\n    \"NetworkMode\": \"host\", \"Privileged\": true \r\n\r\n  },\r\n  \"NetworkingConfig\": {\r\n    \"EndpointsConfig\": {\r\n      \"host\": {}\r\n    }\r\n  }\r\n}\r\n  \r\n  \r\n  \r\n"
+                "createOptions": {
+                  "HostConfig": {
+                    "NetworkMode": "host",
+                    "Privileged": true
+                  },
+                  "NetworkingConfig": {
+                    "EndpointsConfig": {
+                      "host": {}
+                    }
+                  }
+                }
               },
               "env": {
                 "RESET_PIN": {
-                  "value": "7"
+                  "value": "$RESET_PIN"
                 },
                 "REGION": {
                   "value": "$REGION"
@@ -97,7 +121,19 @@
               "restartPolicy": "always",
               "settings": {
                 "image": "$CONTAINER_REGISTRY_ADDRESS/azuredevopsagent:0.0.1-arm32v7",
-                "createOptions": "{  \"HostConfig\": { \"Privileged\": true } }"
+                "createOptions": {
+                  "HostConfig": { 
+                    "Privileged": true 
+                  },
+                  "PortBindings": {
+                    "6000/udp": [
+                      {
+                        "HostPort": "6000",
+                        "HostIp": "172.17.0.1"
+                      }
+                    ]
+                  }
+                }
               },
               "env": {
                 "VSTS_SERVER_URL": {
