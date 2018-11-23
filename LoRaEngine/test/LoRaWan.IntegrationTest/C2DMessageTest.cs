@@ -8,24 +8,12 @@ namespace LoRaWan.IntegrationTest
 {
     // Tests Cloud to Device messages
     [Collection("ArduinoSerialCollection")] // run in serial
-    public sealed class C2DMessageTest : IClassFixture<IntegrationTestFixture>, IDisposable
+    public sealed class C2DMessageTest : IntegrationTestBase
     {
-        private readonly IntegrationTestFixture testFixture;
-        private LoRaArduinoSerial arduinoDevice;
         static Random random = new Random();
 
-        public C2DMessageTest(IntegrationTestFixture testFixture)
+        public C2DMessageTest(IntegrationTestFixture testFixture) : base(testFixture)
         {
-            this.testFixture = testFixture;
-            this.arduinoDevice = LoRaArduinoSerial.CreateFromPort(testFixture.Configuration.LeafDeviceSerialPort);
-            this.testFixture.ClearNetworkServerModuleLog();
-        }
-
-        public void Dispose()
-        {
-            this.arduinoDevice?.Dispose();
-            this.arduinoDevice = null;
-            GC.SuppressFinalize(this);
         }
 
         string ToHexString(string str)
@@ -46,16 +34,16 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_OTAA_Confirmed_Receives_C2D_Message()
         {
-            var device = this.testFixture.Device9_OTAA;
-            Console.WriteLine($"Starting {nameof(Test_OTAA_Confirmed_Receives_C2D_Message)} using device {device.DeviceID}");      
+            var device = this.TestFixture.Device9_OTAA;
+            Log($"Starting {nameof(Test_OTAA_Confirmed_Receives_C2D_Message)} using device {device.DeviceID}");      
 
-            await arduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await arduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await arduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await arduinoDevice.SetupLora(this.testFixture.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
 
-             var joinSucceeded = await arduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
 
             if (!joinSucceeded)
             {                
@@ -69,48 +57,48 @@ namespace LoRaWan.IntegrationTest
             for (var i=1; i <= 2; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
-                Console.WriteLine($"{device.DeviceID}: Sending confirmed '{msg}' {i}/10");
+                Log($"{device.DeviceID}: Sending confirmed '{msg}' {i}/10");
 
-                await arduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
+                await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
                 // +CMSG: ACK Received
-                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.arduinoDevice.SerialLogs);
+                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
-                this.arduinoDevice.ClearSerialLogs();
-                testFixture.ClearNetworkServerModuleLog();
+                this.ArduinoDevice.ClearSerialLogs();
+                this.TestFixture.ClearNetworkServerModuleLog();
             }
 
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.testFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody);
-            Console.WriteLine($"Message {c2dMessageBody} sent to device, need to check if it receives");
+            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody);
+            Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
             var foundReceivePacket = false;
             var expectedRxSerial = $"+CMSG: PORT: 1; RX: \"{ToHexString(c2dMessageBody)}\"";
-            Console.WriteLine($"Expected C2D received log is: {expectedRxSerial}");
+            Log($"Expected C2D received log is: {expectedRxSerial}");
 
             // Sends 8x confirmed messages, stopping if C2D message is found
             for (var i=3; i <= 10; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
-                Console.WriteLine($"{device.DeviceID}: Sending confirmed '{msg}' {i}/10");
-                await arduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
+                Log($"{device.DeviceID}: Sending confirmed '{msg}' {i}/10");
+                await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
                 await Task.Delay(TimeSpan.FromSeconds(5));
 
                 // After transferPacketWithConfirmed: Expectation from serial
                 // +CMSG: ACK Received
-                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.arduinoDevice.SerialLogs);
+                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
                 
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
                 var c2dLogMessage = $"{device.DeviceID}: C2D message: {c2dMessageBody}";
-                var searchResults = await this.testFixture.SearchNetworkServerModuleAsync(
+                var searchResults = await this.TestFixture.SearchNetworkServerModuleAsync(
                     (messageBody) => {
                         return messageBody.StartsWith(c2dLogMessage);
                     },
@@ -122,13 +110,13 @@ namespace LoRaWan.IntegrationTest
                 // We should only receive the message once
                 if (searchResults.Found)
                 {
-                    Console.WriteLine($"{device.DeviceID}: Found C2D message in log (after sending {i}/10) ? {foundC2DMessage}");
+                    Log($"{device.DeviceID}: Found C2D message in log (after sending {i}/10) ? {foundC2DMessage}");
                     Assert.False(foundC2DMessage, "Cloud to Device message should have been detected in Network Service module only once");
                     foundC2DMessage = true;                    
                 }
                 
                 
-                var localFoundCloudToDeviceInSerial = this.arduinoDevice.SerialLogs.Contains(expectedRxSerial);
+                var localFoundCloudToDeviceInSerial = this.ArduinoDevice.SerialLogs.Contains(expectedRxSerial);
                 if (localFoundCloudToDeviceInSerial)
                 {                    
                     Assert.False(foundReceivePacket, "Cloud to device message should have been received only once");
@@ -136,8 +124,8 @@ namespace LoRaWan.IntegrationTest
                 }
                 
                 
-                this.arduinoDevice.ClearSerialLogs();
-                testFixture.ClearNetworkServerModuleLog();
+                this.ArduinoDevice.ClearSerialLogs();
+                this.TestFixture.ClearNetworkServerModuleLog();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -146,7 +134,7 @@ namespace LoRaWan.IntegrationTest
 
             // checks if log arrived
             if (!foundReceivePacket)
-                foundReceivePacket = this.arduinoDevice.SerialLogs.Contains(expectedRxSerial);
+                foundReceivePacket = this.ArduinoDevice.SerialLogs.Contains(expectedRxSerial);
             Assert.True(foundReceivePacket, $"Could not find lora receiving message '{expectedRxSerial}'");
                 
         }
@@ -157,16 +145,16 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_OTAA_Unconfirmed_Receives_C2D_Message()
         {
-            var device = this.testFixture.Device10_OTAA;
-            Console.WriteLine($"Starting {nameof(Test_OTAA_Confirmed_Receives_C2D_Message)} using device {device.DeviceID}");      
+            var device = this.TestFixture.Device10_OTAA;
+            Log($"Starting {nameof(Test_OTAA_Confirmed_Receives_C2D_Message)} using device {device.DeviceID}");      
 
-            await arduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await arduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await arduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await arduinoDevice.SetupLora(this.testFixture.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
 
-             var joinSucceeded = await arduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
 
             if (!joinSucceeded)
             {                
@@ -180,44 +168,44 @@ namespace LoRaWan.IntegrationTest
             for (var i=1; i <= 2; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
-                Console.WriteLine($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
+                Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
 
-                await arduinoDevice.transferPacketAsync(msg, 10);                
+                await this.ArduinoDevice.transferPacketAsync(msg, 10);                
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", arduinoDevice.SerialLogs);
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                this.arduinoDevice.ClearSerialLogs();
-                testFixture.ClearNetworkServerModuleLog();
+                this.ArduinoDevice.ClearSerialLogs();
+                this.TestFixture.ClearNetworkServerModuleLog();
             }
 
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.testFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody);
-            Console.WriteLine($"Message {c2dMessageBody} sent to device, need to check if it receives");
+            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody);
+            Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
             var foundReceivePacket = false;
             var expectedRxSerial = $"+MSG: PORT: 1; RX: \"{ToHexString(c2dMessageBody)}\"";
-            Console.WriteLine($"Expected C2D received log is: {expectedRxSerial}");
+            Log($"Expected C2D received log is: {expectedRxSerial}");
 
             // Sends 8x confirmed messages, stopping if C2D message is found
             for (var i=3; i <= 10; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
-                Console.WriteLine($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
-                await arduinoDevice.transferPacketAsync(msg, 10);
+                Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
+                await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", arduinoDevice.SerialLogs);
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
                 
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
                 var c2dLogMessage = $"{device.DeviceID}: C2D message: {c2dMessageBody}";
-                var searchResults = await this.testFixture.SearchNetworkServerModuleAsync(
+                var searchResults = await this.TestFixture.SearchNetworkServerModuleAsync(
                     (messageBody) => {
                         return messageBody.StartsWith(c2dLogMessage);
                     },
@@ -229,13 +217,13 @@ namespace LoRaWan.IntegrationTest
                 // We should only receive the message once
                 if (searchResults.Found)
                 {
-                    Console.WriteLine($"{device.DeviceID}: Found C2D message in log (after sending {i}/10) ? {foundC2DMessage}");
+                    Log($"{device.DeviceID}: Found C2D message in log (after sending {i}/10) ? {foundC2DMessage}");
                     Assert.False(foundC2DMessage, "Cloud to Device message should have been detected in Network Service module only once");
                     foundC2DMessage = true;                    
                 }
                 
                 
-                var localFoundCloudToDeviceInSerial = this.arduinoDevice.SerialLogs.Contains(expectedRxSerial);
+                var localFoundCloudToDeviceInSerial = this.ArduinoDevice.SerialLogs.Contains(expectedRxSerial);
                 if (localFoundCloudToDeviceInSerial)
                 {                    
                     Assert.False(foundReceivePacket, "Cloud to device message should have been received only once");
@@ -243,8 +231,8 @@ namespace LoRaWan.IntegrationTest
                 }
                 
                 
-                this.arduinoDevice.ClearSerialLogs();
-                testFixture.ClearNetworkServerModuleLog();
+                this.ArduinoDevice.ClearSerialLogs();
+                this.TestFixture.ClearNetworkServerModuleLog();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -253,7 +241,7 @@ namespace LoRaWan.IntegrationTest
 
             // checks if log arrived
             if (!foundReceivePacket)
-                foundReceivePacket = this.arduinoDevice.SerialLogs.Contains(expectedRxSerial);
+                foundReceivePacket = this.ArduinoDevice.SerialLogs.Contains(expectedRxSerial);
             Assert.True(foundReceivePacket, $"Could not find lora receiving message '{expectedRxSerial}'");
                 
         }

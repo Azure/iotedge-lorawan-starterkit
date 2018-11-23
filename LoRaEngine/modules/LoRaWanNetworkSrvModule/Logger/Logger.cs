@@ -5,52 +5,40 @@ using System.Net.Sockets;
 using System.Text;
 
 namespace LoRaWan
-{
- 
+{ 
     public class Logger
     {
-
         public enum LoggingLevel : int { Always=0, Full, Info, Error };
 
-        private static ModuleClient edgeModuleClient;
-
+        static LoggerConfiguration configuration = new LoggerConfiguration();
         static UdpClient udpClient;
         static IPEndPoint udpEndpoint;
-        const int DEFAULT_LOG_UDP_PORT = 6000;
 
-        public static void Init(ModuleClient moduleClient)
+        public static void Init(LoggerConfiguration loggerConfiguration)
         {
-            edgeModuleClient = moduleClient;
+            configuration = loggerConfiguration;
 
-            
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_TO_UDP")))
+            if (configuration.LogToUdp)
             {
-                if (bool.TryParse(Environment.GetEnvironmentVariable("LOG_TO_UDP"), out var logToUDP) && logToUDP)
+                try
                 {
-                    if (!int.TryParse(Environment.GetEnvironmentVariable("LOG_TO_UDP_PORT"), out var logUdpPort))                    
-                        logUdpPort = DEFAULT_LOG_UDP_PORT;
+                    if (string.IsNullOrEmpty(configuration.LogToUdpAddress))
+                    {                        
+                        udpEndpoint = new IPEndPoint(IPAddress.Broadcast, configuration.LogToUdpPort);
+                    }
+                    else
+                    {
+                        udpEndpoint = new IPEndPoint(IPAddress.Parse(configuration.LogToUdpAddress), configuration.LogToUdpPort);
+                    }
                     
-                    try
-                    {
-                        var logUdpAddress = Environment.GetEnvironmentVariable("LOG_TO_UDP_ADDRESS");                    
-                        if (string.IsNullOrEmpty(logUdpAddress))
-                        {                        
-                            udpEndpoint = new IPEndPoint(IPAddress.Broadcast, logUdpPort);
-                        }
-                        else
-                        {
-                            udpEndpoint = new IPEndPoint(IPAddress.Parse(logUdpAddress), logUdpPort);
-                        }
-                        
-                        udpClient = new UdpClient();
-                        udpClient.ExclusiveAddressUse = false;
+                    udpClient = new UdpClient();
+                    udpClient.ExclusiveAddressUse = false;
 
-                        Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," Logging to Udp: ", udpEndpoint.ToString()));
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," Error starting UDP logging: ", ex.ToString()));
-                    }
+                    Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," Logging to Udp: ", udpEndpoint.ToString()));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," Error starting UDP logging: ", ex.ToString()));
                 }
             }
         }
@@ -61,24 +49,8 @@ namespace LoRaWan
         }
 
         public static void Log(string deviceId, string message, LoggingLevel loggingLevel)
-        {
-            bool logToHub = false;
-            bool logToConsole = true;
-           
-
-            int loggingLevelSetting = (int)LoggingLevel.Always;
-
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_TO_HUB")))
-                logToHub = bool.Parse(Environment.GetEnvironmentVariable("LOG_TO_HUB"));
-            
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_LEVEL")))
-                loggingLevelSetting = int.Parse(Environment.GetEnvironmentVariable("LOG_LEVEL"));
-
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LOG_TO_CONSOLE")))
-                logToConsole = bool.Parse(Environment.GetEnvironmentVariable("LOG_TO_CONSOLE"));
-    
-
-            if ((int)loggingLevel >= loggingLevelSetting  || loggingLevel == LoggingLevel.Always)
+        {            
+            if ((int)loggingLevel >= configuration.LogLevel || loggingLevel == LoggingLevel.Always)
             {
                 string msg = "";
 
@@ -87,13 +59,12 @@ namespace LoRaWan
                 else
                     msg = $"{deviceId}: { message}";
 
-                if (logToHub)
+                if (configuration.LogToHub && configuration.ModuleClient != null)
                 {
-                    if (edgeModuleClient != null)
-                        edgeModuleClient.SendEventAsync(new Message(UTF8Encoding.ASCII.GetBytes(msg)));
-
+                    configuration.ModuleClient.SendEventAsync(new Message(UTF8Encoding.ASCII.GetBytes(msg)));
                 }
-                if (logToConsole)
+
+                if (configuration.LogToConsole)
                     Console.WriteLine(String.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," ", msg));
 
                 if (udpClient != null)

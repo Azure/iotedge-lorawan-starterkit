@@ -16,8 +16,6 @@ namespace LoRaTools.LoRaPhysical
     /// </summary>
     public abstract class PktFwdMessage
     {
-        PktFwdType pktFwdType;
-
         public abstract PktFwdMessageAdapter GetPktFwdMessage();
         enum PktFwdType
         {

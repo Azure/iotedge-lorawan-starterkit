@@ -19,6 +19,7 @@ namespace LoRaWan.NetworkServer
         private string DevEUI;
 
         private string PrimaryKey;
+        private readonly NetworkServerConfiguration configuration;
 
         public async Task<Twin> GetTwinAsync()
         {
@@ -133,11 +134,11 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public IoTHubConnector(string DevEUI, string PrimaryKey)
+        public IoTHubConnector(string DevEUI, string PrimaryKey, NetworkServerConfiguration configuration)
         {
             this.DevEUI = DevEUI;
             this.PrimaryKey = PrimaryKey;
-
+            this.configuration = configuration;
             CreateDeviceClient();
           
         }   
@@ -334,25 +335,19 @@ namespace LoRaWan.NetworkServer
 
         private string createIoTHubConnectionString()
         {
-            bool enableGateway = true;
             string connectionString = string.Empty;
 
-            string hostName = Environment.GetEnvironmentVariable("IOTEDGE_IOTHUBHOSTNAME");
-            string gatewayHostName = Environment.GetEnvironmentVariable("IOTEDGE_GATEWAYHOSTNAME");
 
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ENABLE_GATEWAY")))
-                enableGateway = bool.Parse(Environment.GetEnvironmentVariable("ENABLE_GATEWAY"));
-
-            if (string.IsNullOrEmpty(hostName))
+            if (string.IsNullOrEmpty(configuration.IoTHubHostName))
             {
-                Logger.Log("Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible", Logger.LoggingLevel.Error);
+                Logger.Log("Configuration/Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible", Logger.LoggingLevel.Error);
             }
 
-            connectionString += $"HostName={hostName};";
+            connectionString += $"HostName={configuration.IoTHubHostName};";
 
-            if (enableGateway)
+            if (configuration.EnableGateway)
             {
-                connectionString += $"GatewayHostName={gatewayHostName};";
+                connectionString += $"GatewayHostName={configuration.GatewayHostName};";
                 Logger.Log(DevEUI, $"using edgeHub local queue", Logger.LoggingLevel.Info);
             }
             else

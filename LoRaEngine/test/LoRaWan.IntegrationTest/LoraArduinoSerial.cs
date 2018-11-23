@@ -126,7 +126,7 @@ namespace LoRaWan.IntegrationTest
 
         void AppendSerialLog(string message)
         {
-            Console.WriteLine($"[Serial log] {message}");
+            TestLogger.Log($"[Serial log] {message}");
             this.serialLogs.Enqueue(message);
         }
         public IReadOnlyCollection<string> SerialLogs { get { return this.serialLogs; } }
@@ -724,8 +724,8 @@ namespace LoRaWan.IntegrationTest
         public async Task<bool> setOTAAJoinAsyncWithRetry(_otaa_join_cmd_t command, int timeoutPerTry, int retries, int delayBetweenRetries = 5000)
         {     
             for (var attempt=1; attempt <= retries; ++attempt)
-            {        
-                Console.WriteLine($"Join attempt #{attempt}/{retries}");
+            {
+                TestLogger.Log($"Join attempt #{attempt}/{retries}");
                 if (command == _otaa_join_cmd_t.JOIN) 
                     sendCommand ("AT+JOIN\r\n");
                 else if (command == _otaa_join_cmd_t.FORCE) 

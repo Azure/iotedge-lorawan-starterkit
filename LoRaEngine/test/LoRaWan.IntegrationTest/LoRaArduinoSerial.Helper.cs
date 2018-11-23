@@ -16,26 +16,26 @@ namespace LoRaWan.IntegrationTest
 
             if (!isWindows)
             {
-                Console.WriteLine ($"Starting serial port '{port}' on non-Windows");
+                TestLogger.Log($"Starting serial port '{port}' on non-Windows");
 
                 var serialPort = new SerialDevice (port, BaudRate.B115200);
                 result = new LoRaArduinoSerial (serialPort);
 
-                Console.WriteLine ($"Opening serial port");
+                TestLogger.Log($"Opening serial port");
                 try
                 {
                     serialPort.Open ();
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine ($"Error opening serial port '{port}': {ex.ToString()}");
+                    TestLogger.Log($"Error opening serial port '{port}': {ex.ToString()}");
                     throw;
                 }
 
             }
             else
             {
-                Console.WriteLine ($"Starting serial port '{port}' on Windows");
+                TestLogger.Log($"Starting serial port '{port}' on Windows");
 
                 var serialPortWin = new SerialPort (port)
                 {
@@ -54,7 +54,7 @@ namespace LoRaWan.IntegrationTest
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine ($"Error opening serial port '{port}': {ex.ToString()}");
+                    TestLogger.Log($"Error opening serial port '{port}': {ex.ToString()}");
                     throw;
                 }
                 
