@@ -5,6 +5,7 @@ A **.NET Core 2.1** solution with the following projects:
 - **modules** - Azure IoT Edge modules.
   - **LoRaWanPktFwdModule** packages the network forwarder into an IoT Edge compatible docker container. See https://github.com/Lora-net/packet_forwarder and https://github.com/Lora-net/lora_gateway.
   - **LoRaWanNetworkSrvModule** - is the LoRaWAN network server implementation.
+  - **RAK833PktFwd** - is the LoRaWan network server implementation when using a RAK833 thru a USB dongle. You have to use either  ```LoRaWanNetworkSrvModule```either  ```RAK833PktFwd```
 - **LoraKeysManagerFacade** - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
 - **LoRaDevTools** - library for dev tools (git submodule)
 
@@ -12,14 +13,14 @@ A **.NET Core 2.1** solution with the following projects:
 
 This schema represent the various components and how they intereact to have a better understand of the various solution elements.
 
-![schema](/pictures/detailedschema.png)
+![schema](/pictures/detailedschema.jpg)
 
 1. Once the IoT Edge engine start on the Edge device, the code modules are downloaded from the Azure Container Registry.
 2. The module containing the ```LoRaWan network server``` is downloaded on the Edge device
 
 Notes:
 
-- The Edge device can be on the same machine at the LoRaWan gateway but not necessary
+- The LoRaWanPktFwdModule can be replaced by the ```/LoRaEngine/modules/RAK833PktFwd``` if you have a RAK833 connected thru USB
 - The LoRaWan gateway must implement a UDP server on port 1680 to forward the LoRa commands from/to the ```LoRaWan Network Server``` module. In our case it is called ```LoRaWan Packet Forwarder```
 
 3. The LoRaWan Network Server request status for the LoRa devices. The Azure Function ```LoraKeysManagerFacade``` is used as permanent storage for the applicaiton device keys of the devices so nothing is permanently stored into the container.
@@ -127,6 +128,8 @@ Make sure you are logged in to the Azure Container Registry you are using. Run `
 Now, build an push the solution by right clicking [deployment.template.json](/LoRaEngine/deployment.template.json) and select `Build and Push IoT Edge Solution` (look as alternative into [deployment.template.amd64.json](/LoRaEngine/deployment.template.amd64.json) for x64 based gateways)
 
 ![VSCode: Build and push edge solution](/pictures/CreateEdgeSolution.PNG)
+
+**Note**: Deployment templates are located in ```deployment```directories. Each directory has a specific templates for specific scenarios. Just copy/paste the content of the template you'd like to use and replace it in the ```/LoRaEngine/deployment.template.json``` file. You can then use VS Code extention to build your modules and create the ```/LoRaEngine/config/deployment.json``` deployment template.
 
 After that you can push the solution to your IoT Edge device by right clicking on the device and select `Create Deployment for single device`
 

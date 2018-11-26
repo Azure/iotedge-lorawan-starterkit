@@ -1,0 +1,14 @@
+{
+    "$schema-version": "0.0.1",
+    "description": "",
+    "image": {
+        "repository": "$CONTAINER_REGISTRY_ADDRESS/rak833pktfwd",
+        "tag": {
+            "version": "$MPCIE_FWD_VERSION",            
+            "platforms": {
+                "arm32v7": "./Dockerfile.arm32v7"
+            }
+        },
+        "buildOptions": []
+    }
+}
