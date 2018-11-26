@@ -484,7 +484,11 @@ requestForConfirmedResponse ? MType.ConfirmedDataDown : MType.UnconfirmedDataDow
 
             Logger.Log(loraDeviceInfo.DevEUI, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
 
-
+            if (udpMsgForPktForwarder.Length == 0)
+            {
+                PhysicalPayload pushAck = new PhysicalPayload(loraMessage.PhysicalPayload.token, PhysicalIdentifier.PUSH_ACK, null);
+                udpMsgForPktForwarder = pushAck.GetMessage();
+            }
             return udpMsgForPktForwarder;
         }
 
@@ -539,12 +543,12 @@ requestForConfirmedResponse ? MType.ConfirmedDataDown : MType.UnconfirmedDataDow
 
             if (joinLoraDeviceInfo != null && joinLoraDeviceInfo.IsJoinValid)
             {
-                //TODO to be fixed by Mik
-                //if (!loraMessage.LoRaPayloadMessage.CheckMic(joinLoraDeviceInfo.AppKey))
-                //{
-                //    Logger.Log(devEui, $"join request MIC invalid", Logger.LoggingLevel.Info);
-                //    return null;
-                //}
+                if (!loraMessage.LoRaPayloadMessage.CheckMic(joinLoraDeviceInfo.AppKey))
+                {
+                    Logger.Log(devEui, $"join request MIC invalid", Logger.LoggingLevel.Info);
+                    var physicalResponse = new PhysicalPayload(loraMessage.PhysicalPayload.token, PhysicalIdentifier.PUSH_ACK, null);
+                    return physicalResponse.GetMessage();
+                }
                 //join request resets the frame counters
                 joinLoraDeviceInfo.FCntUp = 0;
                 joinLoraDeviceInfo.FCntDown = 0;
