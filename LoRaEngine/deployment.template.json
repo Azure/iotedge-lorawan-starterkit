@@ -21,7 +21,7 @@
           "edgeAgent": {
             "type": "docker",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-agent:1.0.2",
+              "image": "mcr.microsoft.com/azureiotedge-agent:1.0.4",
               "createOptions": ""
             }
           },
@@ -30,7 +30,7 @@
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-hub:1.0.2",
+              "image": "mcr.microsoft.com/azureiotedge-hub:1.0.4",
               "createOptions": "{\"HostConfig\":{\"PortBindings\":{\"8883/tcp\":[{\"HostPort\":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}]}}}"
             },
             "env": {
@@ -58,21 +58,24 @@
             },
             "status": "running",
             "restartPolicy": "always"
-          },          
-          "RAK833PktFwd": {
-            "version": "1.0",
+          },
+          "LoRaWanPktFwdModule": {
             "type": "docker",
-            "status": "running",
-            "restartPolicy": "always",
             "settings": {
-              "image": "${MODULES.RAK833PktFwd.arm32v7}",
+              "image": "${MODULES.LoRaWanPktFwdModule.arm32v7}",
               "createOptions": "  {  \"HostConfig\": {    \"NetworkMode\": \"host\", \"Privileged\": true   },  \"NetworkingConfig\": {    \"EndpointsConfig\": {      \"host\": {}    }  }}      "
+            },
+            "env": {
+              "RESET_PIN": {
+                "value": "$RESET_PIN"
               },
-              "env": {                
-                "REGION": {
-                  "value": "$REGION"
-                }                         
-            }
+              "REGION": {
+                "value": "$REGION"
+              }             
+            },
+            "version": "1.0",
+            "status": "running",
+            "restartPolicy": "always"
           }
         }
       }
