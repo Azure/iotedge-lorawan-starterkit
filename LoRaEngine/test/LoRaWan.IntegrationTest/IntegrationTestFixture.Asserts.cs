@@ -36,7 +36,7 @@ namespace LoRaWan.IntegrationTest
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error searching device payload: {eventDataMessageBody}. {ex.ToString()}");
+                    TestLogger.Log($"Error searching device payload: {eventDataMessageBody}. {ex.ToString()}");
                 }
             } 
            
@@ -70,12 +70,12 @@ namespace LoRaWan.IntegrationTest
             {
                 if (searchResult.Found)
                 {
-                    Console.WriteLine($"'{expectedDataValue}' for device {deviceID} found in logs? {searchResult.Found}");
+                    TestLogger.Log($"'{expectedDataValue}' for device {deviceID} found in logs? {searchResult.Found}");
                 }
                 else
                 {
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                    Console.WriteLine($"'{expectedDataValue}' for device {deviceID} found in logs? {searchResult.Found}. Logs: [{logs}]");
+                    TestLogger.Log($"'{expectedDataValue}' for device {deviceID} found in logs? {searchResult.Found}. Logs: [{logs}]");
                 }
             }                    
         }
@@ -122,12 +122,12 @@ namespace LoRaWan.IntegrationTest
             {
                 if (searchResult.Found)
                 {
-                    Console.WriteLine($"'{options?.Description ?? "??"}' found in logs? {searchResult.Found}");
+                    TestLogger.Log($"'{options?.Description ?? "??"}' found in logs? {searchResult.Found}");
                 }
                 else
                 {
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                    Console.WriteLine($"'{options?.Description ?? "??"}' found in logs? {searchResult.Found}. Logs: [{logs}]");
+                    TestLogger.Log($"'{options?.Description ?? "??"}' found in logs? {searchResult.Found}. Logs: [{logs}]");
                 }
             }            
         }
@@ -143,11 +143,11 @@ namespace LoRaWan.IntegrationTest
                     var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
                     if (!string.IsNullOrEmpty(options?.Description))
                     {
-                        Console.WriteLine($"UDP log message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
+                        TestLogger.Log($"UDP log message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
                     else
                     {
-                        Console.WriteLine($"UDP log message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
+                        TestLogger.Log($"UDP log message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
@@ -177,11 +177,11 @@ namespace LoRaWan.IntegrationTest
                     var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
                     if (!string.IsNullOrEmpty(options?.Description))
                     {
-                        Console.WriteLine($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
+                        TestLogger.Log($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
                     else
                     {
-                        Console.WriteLine($"IoT Hub message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
+                        TestLogger.Log($"IoT Hub message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
@@ -212,11 +212,11 @@ namespace LoRaWan.IntegrationTest
                     var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
                     if (!string.IsNullOrEmpty(options?.Description))
                     {
-                        Console.WriteLine($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
+                        TestLogger.Log($"IoT Hub message '{options.Description}' not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
                     else
                     {
-                        Console.WriteLine($"IoT Hub message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
+                        TestLogger.Log($"IoT Hub message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
@@ -235,7 +235,7 @@ namespace LoRaWan.IntegrationTest
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Error searching in IoT Hub message log: " + ex.ToString());
+                        TestLogger.Log("Error searching in IoT Hub message log: " + ex.ToString());
                     }
                 }
             }

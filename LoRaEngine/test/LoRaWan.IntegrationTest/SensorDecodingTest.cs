@@ -8,25 +8,10 @@ namespace LoRaWan.IntegrationTest
 {
     // Tests sensor decoding test (http, reflection)
     [Collection("ArduinoSerialCollection")] // run in serial
-    public class SensorDecodingTest: IClassFixture<IntegrationTestFixture>, IDisposable
+    public class SensorDecodingTest: IntegrationTestBase
     {
-        private readonly IntegrationTestFixture testFixture;
-        private LoRaArduinoSerial arduinoDevice;
-        
-
-        public SensorDecodingTest(IntegrationTestFixture testFixture)
+        public SensorDecodingTest(IntegrationTestFixture testFixture) : base(testFixture)
         {
-            this.testFixture = testFixture;
-            this.arduinoDevice = LoRaArduinoSerial.CreateFromPort(testFixture.Configuration.LeafDeviceSerialPort);
-            this.testFixture.ClearNetworkServerModuleLog();
-        }
-
-        public void Dispose()
-        {
-            this.arduinoDevice?.Dispose();
-            this.arduinoDevice = null;
-            GC.SuppressFinalize(this);
-
         }
 
 
@@ -35,16 +20,16 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task SensorDecoder_HttpBased_ValueSensorDecoder_DecodesPayload()
         {
-            var device = this.testFixture.Device11_OTAA;
-            Console.WriteLine($"Starting {nameof(SensorDecoder_HttpBased_ValueSensorDecoder_DecodesPayload)} using device {device.DeviceID}");      
+            var device = this.TestFixture.Device11_OTAA;
+            Log($"Starting {nameof(SensorDecoder_HttpBased_ValueSensorDecoder_DecodesPayload)} using device {device.DeviceID}");      
 
-            await arduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await arduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await arduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await arduinoDevice.SetupLora(this.testFixture.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
 
-            var joinSucceeded = await arduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
 
             if (!joinSucceeded)
             {                
@@ -55,18 +40,18 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN); 
 
             
-            await arduinoDevice.transferPacketWithConfirmedAsync("1234", 10);
+            await this.ArduinoDevice.transferPacketWithConfirmedAsync("1234", 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             // +CMSG: ACK Received
-            await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.arduinoDevice.SerialLogs);
+            await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
             // Find "0000000000000011: message '{"value":1234}' sent to hub" in network server logs
-            await this.testFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":1234}}' sent to hub");
+            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":1234}}' sent to hub");
 
-            this.arduinoDevice.ClearSerialLogs();
-            testFixture.ClearNetworkServerModuleLog();
+            this.ArduinoDevice.ClearSerialLogs();
+            this.TestFixture.ClearNetworkServerModuleLog();
         }
 
         // Ensures that reflect based sensor decoder decodes payload
@@ -74,16 +59,16 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task SensorDecoder_ReflectionBased_ValueSensorDecoder_DecodesPayload()
         {
-            var device = this.testFixture.Device12_OTAA;
-            Console.WriteLine($"Starting {nameof(SensorDecoder_HttpBased_ValueSensorDecoder_DecodesPayload)} using device {device.DeviceID}");      
+            var device = this.TestFixture.Device12_OTAA;
+            Log($"Starting {nameof(SensorDecoder_HttpBased_ValueSensorDecoder_DecodesPayload)} using device {device.DeviceID}");      
 
-            await arduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await arduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await arduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await arduinoDevice.SetupLora(this.testFixture.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
 
-            var joinSucceeded = await arduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
 
             if (!joinSucceeded)
             {                
@@ -94,18 +79,18 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN); 
 
             
-            await arduinoDevice.transferPacketWithConfirmedAsync("4321", 10);
+            await this.ArduinoDevice.transferPacketWithConfirmedAsync("4321", 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             // +CMSG: ACK Received
-            await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.arduinoDevice.SerialLogs);
+            await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
             // Find "0000000000000011: message '{"value":1234}' sent to hub" in network server logs
-            await this.testFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":4321}}' sent to hub");
+            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":4321}}' sent to hub");
 
-            this.arduinoDevice.ClearSerialLogs();
-            testFixture.ClearNetworkServerModuleLog();
+            this.ArduinoDevice.ClearSerialLogs();
+            this.TestFixture.ClearNetworkServerModuleLog();
         }
     }
 

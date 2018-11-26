@@ -18,14 +18,16 @@ namespace LoRaWan.NetworkServer
 
     public class LoraDeviceInfoManager
     {
-        public static string FacadeServerUrl;
-        public static string FacadeAuthCode;
-        public LoraDeviceInfoManager()
-        {
+        public string FacadeServerUrl;
+        public string FacadeAuthCode;
+        private readonly NetworkServerConfiguration configuration;
 
+        public LoraDeviceInfoManager(NetworkServerConfiguration configuration)
+        {
+            this.configuration = configuration;
         }
 
-        public static async Task<ushort> NextFCntDown(string DevEUI, ushort FCntDown, ushort FCntUp, string GatewayId)
+        public async Task<ushort> NextFCntDown(string DevEUI, ushort FCntDown, ushort FCntUp, string GatewayId)
         {
             Logger.Log(DevEUI, $"syncing FCntDown for multigateway", Logger.LoggingLevel.Info);
             var client = GetHttpClient();
@@ -48,7 +50,7 @@ namespace LoRaWan.NetworkServer
 
         }
 
-        public static async Task<bool> ABPFcntCacheReset(string DevEUI)
+        public async Task<bool> ABPFcntCacheReset(string DevEUI)
         {
             Logger.Log(DevEUI, $"ABP FCnt cache reset for multigateway", Logger.LoggingLevel.Info);
             var client = GetHttpClient();
@@ -68,7 +70,7 @@ namespace LoRaWan.NetworkServer
 
         }
 
-        public static async Task<LoraDeviceInfo> GetLoraDeviceInfoAsync(string DevAddr, string GatewayId)
+        public async Task<LoraDeviceInfo> GetLoraDeviceInfoAsync(string DevAddr, string GatewayId)
         {
             var client = GetHttpClient();
             var url = $"{FacadeServerUrl}GetDevice?code={FacadeAuthCode}&DevAddr={DevAddr}&GatewayId={GatewayId}";
@@ -104,7 +106,7 @@ namespace LoRaWan.NetworkServer
                 loraDeviceInfo.PrimaryKey = iotHubDeviceInfo.PrimaryKey;
 
 
-                loraDeviceInfo.HubSender = new IoTHubConnector(iotHubDeviceInfo.DevEUI, iotHubDeviceInfo.PrimaryKey);
+                loraDeviceInfo.HubSender = new IoTHubConnector(iotHubDeviceInfo.DevEUI, iotHubDeviceInfo.PrimaryKey, this.configuration);
 
 
 
@@ -172,7 +174,7 @@ namespace LoRaWan.NetworkServer
         /// <param name="AppEUI"></param>
         /// <param name="DevNonce"></param>
         /// <returns></returns>
-        public static async Task<LoraDeviceInfo> PerformOTAAAsync(string GatewayID, string DevEUI, string AppEUI, string DevNonce, LoraDeviceInfo joinLoraDeviceInfo)
+        public async Task<LoraDeviceInfo> PerformOTAAAsync(string GatewayID, string DevEUI, string AppEUI, string DevNonce, LoraDeviceInfo joinLoraDeviceInfo)
         {
 
             string AppSKey;
@@ -242,7 +244,7 @@ namespace LoRaWan.NetworkServer
             //}
 
 
-            joinLoraDeviceInfo.HubSender = new IoTHubConnector(joinLoraDeviceInfo.DevEUI, joinLoraDeviceInfo.PrimaryKey);
+            joinLoraDeviceInfo.HubSender = new IoTHubConnector(joinLoraDeviceInfo.DevEUI, joinLoraDeviceInfo.PrimaryKey, this.configuration);
 
 
             //we don't have yet the twin data so we need to get it 
@@ -360,14 +362,14 @@ namespace LoRaWan.NetworkServer
             return joinLoraDeviceInfo;
         }
 
-        static HttpClient GetHttpClient()
+        HttpClient GetHttpClient()
         {
             HttpClient httpClient;
 
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("https_proxy")))
+            if (!string.IsNullOrEmpty(this.configuration.HttpsProxy))
             {
                 var webProxy = new WebProxy(
-                    new Uri(Environment.GetEnvironmentVariable("https_proxy")),
+                    new Uri(this.configuration.HttpsProxy),
                     BypassOnLocal: false);
 
                 var proxyHttpClientHandler = new HttpClientHandler

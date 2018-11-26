@@ -17,6 +17,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "modules\LoRaWanNe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRaWan.IntegrationTest", "test\LoRaWan.IntegrationTest\LoRaWan.IntegrationTest.csproj", "{26DF2637-43E0-4FFF-92BD-F4395C88DD50}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A3AF6806-947C-426F-8063-7229B71A4472}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRaWanNetworkServer.Test", "test\LoRaWanNetworkServer.Test\LoRaWanNetworkServer.Test.csproj", "{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,11 +85,24 @@ Global
 		{26DF2637-43E0-4FFF-92BD-F4395C88DD50}.Release|Any CPU.Build.0 = Release|Any CPU
 		{26DF2637-43E0-4FFF-92BD-F4395C88DD50}.Release|x86.ActiveCfg = Release|Any CPU
 		{26DF2637-43E0-4FFF-92BD-F4395C88DD50}.Release|x86.Build.0 = Release|Any CPU
+		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Debug|x86.Build.0 = Debug|Any CPU
+		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Release|x86.ActiveCfg = Release|Any CPU
+		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{26DF2637-43E0-4FFF-92BD-F4395C88DD50} = {A3AF6806-947C-426F-8063-7229B71A4472}
+		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D} = {A3AF6806-947C-426F-8063-7229B71A4472}
+		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305} = {A3AF6806-947C-426F-8063-7229B71A4472}
 	EndGlobalSection
 EndGlobal

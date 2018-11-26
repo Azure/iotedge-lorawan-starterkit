@@ -19,14 +19,29 @@ namespace LoRaWan.NetworkServer
     public class UdpServer : IDisposable
     {
         const int PORT = 1680;
+        private readonly NetworkServerConfiguration configuration;
+        private readonly LoraDeviceInfoManager loraDeviceInfoManager;
+        ModuleClient ioTHubModuleClient;
 
-        static ModuleClient ioTHubModuleClient;
+        UdpClient udpClient;
 
-        static UdpClient udpClient;
+        private IPAddress remoteLoRaAggregatorIp;
+        private int remoteLoRaAggregatorPort;
 
-        private static IPAddress remoteLoRaAggregatorIp;
-        private static int remoteLoRaAggregatorPort;
+        // Creates a new instance of UdpServer
+        public static UdpServer Create()
+        {
+            var configuration = NetworkServerConfiguration.CreateFromEnviromentVariables();
+            var loraDeviceInfoManager = new LoraDeviceInfoManager(configuration);
+            return new UdpServer(configuration, loraDeviceInfoManager);
+        }
 
+        // Creates a new instance of UdpServer
+        public UdpServer(NetworkServerConfiguration configuration, LoraDeviceInfoManager loraDeviceInfoManager)
+        {
+            this.configuration = configuration;
+            this.loraDeviceInfoManager = loraDeviceInfoManager;
+        }
         public async Task RunServer()
         {
             Logger.Log("Starting LoRaWAN Server...", Logger.LoggingLevel.Always);
@@ -38,7 +53,7 @@ namespace LoRaWan.NetworkServer
         }
 
 
-        public static async Task UdpSendMessage(byte[] messageToSend)
+        public async Task UdpSendMessage(byte[] messageToSend)
         {
             if (messageToSend != null && messageToSend.Length != 0)
             {
@@ -71,21 +86,24 @@ namespace LoRaWan.NetworkServer
                     remoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
                 }
 
+                MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager);
 
-
-
-               
-                    MessageProcessor messageProcessor = new MessageProcessor();
-
-                    
-                    _ = messageProcessor.ProcessMessageAsync(receivedResults.Buffer);
-                
-                
-
+                // Message processing runs in the background
+                #pragma warning disable CS4014 
+                Task.Run(async () => {
+                    try
+                    {
+                        var resultMessage = await messageProcessor.ProcessMessageAsync(receivedResults.Buffer);
+                        if (resultMessage != null && resultMessage.Length > 0)
+                            await this.UdpSendMessage(resultMessage);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log($"Error processing the message {ex.Message}, {ex.StackTrace}", Logger.LoggingLevel.Error);
+                    }
+                });                    
+                #pragma warning restore CS4014 
             }
-
-
-
         }
 
         async Task InitCallBack()
@@ -97,16 +115,25 @@ namespace LoRaWan.NetworkServer
                 ITransportSettings[] settings = { transportSettings };
 
                 //if running as Edge module
-                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IOTEDGE_APIVERSION")))
+                if (configuration.RunningAsIoTEdgeModule)
                 {
                     ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
-                    if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IOTEDGE_TIMEOUT")))
+                    
+                    Logger.Init(new LoggerConfiguration{
+                        ModuleClient = ioTHubModuleClient,
+                        LogLevel = configuration.LogLevel,
+                        LogToConsole = configuration.LogToConsole,
+                        LogToHub = configuration.LogToHub,
+                        LogToUdp = configuration.LogToUdp,
+                        LogToUdpPort = configuration.LogToUdpPort,
+                        LogToUdpAddress = configuration.LogToUdpAddress,
+                    });
+                    
+                    if (configuration.IoTEdgeTimeout > 0)
                     {
-                        ioTHubModuleClient.OperationTimeoutInMilliseconds = Convert.ToUInt32(Environment.GetEnvironmentVariable("IOTEDGE_TIMEOUT"));
+                        ioTHubModuleClient.OperationTimeoutInMilliseconds = configuration.IoTEdgeTimeout;
                         Logger.Log($"Changing timeout to {ioTHubModuleClient.OperationTimeoutInMilliseconds} ms", Logger.LoggingLevel.Info);
                     }
-
-                    Logger.Init(ioTHubModuleClient);
 
                     Logger.Log("Getting properties from module twin...", Logger.LoggingLevel.Info);
 
@@ -116,8 +143,8 @@ namespace LoRaWan.NetworkServer
 
                     try
                     {
-                        LoraDeviceInfoManager.FacadeServerUrl = moduleTwinCollection["FacadeServerUrl"];
-                        Logger.Log($"Facade function url: {LoraDeviceInfoManager.FacadeServerUrl}", Logger.LoggingLevel.Always);
+                        this.loraDeviceInfoManager.FacadeServerUrl = moduleTwinCollection["FacadeServerUrl"];
+                        Logger.Log($"Facade function url: {this.loraDeviceInfoManager.FacadeServerUrl}", Logger.LoggingLevel.Always);
 
                     }
                     catch (ArgumentOutOfRangeException e)
@@ -127,7 +154,7 @@ namespace LoRaWan.NetworkServer
                     }
                     try
                     {
-                        LoraDeviceInfoManager.FacadeAuthCode = moduleTwinCollection["FacadeAuthCode"];
+                        this.loraDeviceInfoManager.FacadeAuthCode = moduleTwinCollection["FacadeAuthCode"];
                     }
                     catch (ArgumentOutOfRangeException e)
                     {
@@ -143,9 +170,19 @@ namespace LoRaWan.NetworkServer
                 }                
                 //running as non edge module for test and debugging
                 else
-                {                    
-                    LoraDeviceInfoManager.FacadeServerUrl = Environment.GetEnvironmentVariable("FacadeServerUrl");
-                    LoraDeviceInfoManager.FacadeAuthCode = Environment.GetEnvironmentVariable("FacadeAuthCode");
+                {   
+                    Logger.Init(new LoggerConfiguration{
+                        ModuleClient = null,
+                        LogLevel = configuration.LogLevel,
+                        LogToConsole = configuration.LogToConsole,
+                        LogToHub = configuration.LogToHub,
+                        LogToUdp = configuration.LogToUdp,
+                        LogToUdpPort = configuration.LogToUdpPort,
+                        LogToUdpAddress = configuration.LogToUdpAddress,
+                    });
+
+                    this.loraDeviceInfoManager.FacadeServerUrl = configuration.FacadeServerUrl;
+                    this.loraDeviceInfoManager.FacadeAuthCode = configuration.FacadeAuthCode;
                 }
 
 
@@ -161,13 +198,13 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private static async Task<MethodResponse> ClearCache(MethodRequest methodRequest, object userContext)
+        private static Task<MethodResponse> ClearCache(MethodRequest methodRequest, object userContext)
         {
             Cache.Clear();
 
             Logger.Log("Cache cleared", Logger.LoggingLevel.Info);
 
-            return new MethodResponse(200);
+            return Task.FromResult(new MethodResponse(200));
         }
 
         Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
@@ -177,10 +214,10 @@ namespace LoRaWan.NetworkServer
 
 
                 if (desiredProperties["FacadeServerUrl"] != null)
-                    LoraDeviceInfoManager.FacadeServerUrl = desiredProperties["FacadeServerUrl"];
+                    this.loraDeviceInfoManager.FacadeServerUrl = desiredProperties["FacadeServerUrl"];
 
                 if (desiredProperties["FacadeAuthCode"] != null)
-                    LoraDeviceInfoManager.FacadeAuthCode = desiredProperties["FacadeAuthCode"];
+                    this.loraDeviceInfoManager.FacadeAuthCode = desiredProperties["FacadeAuthCode"];
 
                 Logger.Log("Desired property changed", Logger.LoggingLevel.Info);
 

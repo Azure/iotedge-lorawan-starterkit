@@ -42,7 +42,7 @@ namespace LoRaWan.IntegrationTest
             
             if(this.LogToConsole)
             {
-                Console.WriteLine($"Connecting to IoT Hub Event Hub @{this.connectionString} using consumer group {this.ConsumerGroupName}");
+                TestLogger.Log($"Connecting to IoT Hub Event Hub @{this.connectionString} using consumer group {this.ConsumerGroupName}");
             }
 
             var rti = await this.eventHubClient.GetRuntimeInformationAsync();
@@ -67,7 +67,7 @@ namespace LoRaWan.IntegrationTest
                 if(this.LogToConsole)
                 {
                     var bodyText = Encoding.UTF8.GetString(item.Body);                    
-                    Console.WriteLine($"[EventHub]: {bodyText}");
+                    TestLogger.Log($"[EventHub]: {bodyText}");
                 }
             }
 
@@ -88,7 +88,7 @@ namespace LoRaWan.IntegrationTest
 
         protected virtual void Dispose(bool disposing)
         {
-            Console.WriteLine($"{nameof(EventHubDataCollector)} disposed");
+            TestLogger.Log($"{nameof(EventHubDataCollector)} disposed");
 
             if(!disposedValue)
             {
@@ -103,7 +103,7 @@ namespace LoRaWan.IntegrationTest
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Error closing event hub receiver: {ex.ToString()}");
+                            TestLogger.Log($"Error closing event hub receiver: {ex.ToString()}");
                         }
 
                         this.receivers.RemoveAt(i);

@@ -34,8 +34,8 @@ namespace LoRaWan.IntegrationTest
             this.events.Enqueue(msg);
 
             if(this.LogToConsole)
-            {                
-                Console.WriteLine($"[UDPLog]: {msg}");
+            {
+                TestLogger.Log($"[UDPLog]: {msg}");
             }
         }
 
@@ -59,7 +59,7 @@ namespace LoRaWan.IntegrationTest
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error in UDP listener: {ex.ToString()}");
+                    TestLogger.Log($"Error in UDP listener: {ex.ToString()}");
                 }
             });
         }

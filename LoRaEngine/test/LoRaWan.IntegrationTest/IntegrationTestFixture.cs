@@ -268,7 +268,7 @@ namespace LoRaWan.IntegrationTest
         bool disposed = false;
         public void Dispose()
         {
-            Console.WriteLine($"{nameof(IntegrationTestFixture)} disposed");
+            TestLogger.Log($"{nameof(IntegrationTestFixture)} disposed");
 
             if (disposed)
                 return;
@@ -317,7 +317,7 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error replacing twin for device {deviceId}: {ex.ToString()}");
+                TestLogger.Log($"Error replacing twin for device {deviceId}: {ex.ToString()}");
                 throw;
             }
         }
@@ -357,12 +357,12 @@ namespace LoRaWan.IntegrationTest
                 var getDeviceResult = await registryManager.GetDeviceAsync(testDevice.DeviceID);
                 if (getDeviceResult == null)
                 {
-                    Console.WriteLine($"Device {testDevice.DeviceID} does not exist. Creating");
+                    TestLogger.Log($"Device {testDevice.DeviceID} does not exist. Creating");
                     var device = new Device(testDevice.DeviceID);
                     var twin = new Twin(testDevice.DeviceID);                                            
                     twin.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(testDevice.GetDesiredProperties()));
 
-                    Console.WriteLine($"Creating device {testDevice.DeviceID}");
+                    TestLogger.Log($"Creating device {testDevice.DeviceID}");
                     await registryManager.AddDeviceWithTwinAsync(device, twin);
                 }
                 else 
@@ -374,12 +374,12 @@ namespace LoRaWan.IntegrationTest
                     {
                         if (!deviceTwin.Properties.Desired.Contains(kv.Key) || (string)deviceTwin.Properties.Desired[kv.Key] != kv.Value)
                         {
-                            Console.WriteLine($"Unexpected value for device {testDevice.DeviceID} twin property {kv.Key}, expecting '{kv.Value}', actual is '{(string)deviceTwin.Properties.Desired[kv.Key]}'");
+                            TestLogger.Log($"Unexpected value for device {testDevice.DeviceID} twin property {kv.Key}, expecting '{kv.Value}', actual is '{(string)deviceTwin.Properties.Desired[kv.Key]}'");
                             
                             var patch = new Twin();
                             patch.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(desiredProperties));
                             await registryManager.UpdateTwinAsync(testDevice.DeviceID, patch, deviceTwin.ETag);
-                            Console.WriteLine($"Update twin for device {testDevice.DeviceID}");
+                            TestLogger.Log($"Update twin for device {testDevice.DeviceID}");
                             break;
                         }
                     }

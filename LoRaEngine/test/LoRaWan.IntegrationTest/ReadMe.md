@@ -67,7 +67,8 @@ The value of `LeafDeviceSerialPort` in Windows will be the COM port where the Ar
     "LeafDeviceGatewayID": "your-iot-edge-device-id",
     "CreateDevices": true,
     "NetworkServerModuleLogAssertLevel": "Error",
-    "DevicePrefix": "your-two-letter-device-prefix"
+    "DevicePrefix": "your-two-letter-device-prefix",
+    "UdpLog": "true"
   }
 }
 ```
@@ -115,18 +116,18 @@ this.Device13_OTAA = new TestDeviceInfo()
 [Fact]
 public async Task Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error()
 {
-    var device = this.testFixture.Device8_ABP;
+    var device = this.TestFixture.Device8_ABP;
     Console.WriteLine($"Starting {nameof(Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error)} using device {device.DeviceID}");
 
     var nwkSKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
     Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
-    await arduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
-    await arduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
-    await arduinoDevice.setKeyAsync(nwkSKeyToUse, device.AppSKey, null);
+    await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+    await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+    await this.ArduinoDevice.setKeyAsync(nwkSKeyToUse, device.AppSKey, null);
 
-    await arduinoDevice.SetupLora(this.testFixture.Configuration.LoraRegion);
+    await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
 
-    await arduinoDevice.transferPacketAsync("100", 10);
+    await this.ArduinoDevice.transferPacketAsync("100", 10);
 
     // THIS DELAY IS IMPORTANT!
     // Don't pollute radio transmission channel
@@ -143,39 +144,19 @@ Integration tests cannot be parallelized because they all share dependency to Ar
 Therefore, when creating a new test class follow the guidelines:
 
 * Use attribute `[Collection("ArduinoSerialCollection")` to ensure executing in serial
-* inherit from `IClassFixture<IntegrationTestFixture>` to receive a singleton of `IntegrationTestFixture`. Make sure the constructor has a `IntegrationTestFixture` parameter.
-* Implement IDisposable interface to ensure that the serial port is closed at the end of a single test execution
+* inherit from `IntegrationTestBase`. Create a single constructor receiving a  `IntegrationTestFixture` as parameter. Call the base class constructor passing the parameter.
 
 Example:
 
 ```c#
  // Tests xxxx
 [Collection("ArduinoSerialCollection")] // Set the same collection to ensure execution in serial
-public sealed class MyTest : IClassFixture<IntegrationTestFixture>, IDisposable
+public sealed class MyTest : IntegrationTestBase
 {
-    private readonly IntegrationTestFixture testFixture;
-    private LoRaArduinoSerial arduinoDevice;
-
+    
     // Constructor receives the IntegrationTestFixture that is a singleton
-    public MyTest(IntegrationTestFixture testFixture)
+    public MyTest(IntegrationTestFixture testFixture) : base(testFixture)
     {
-        // Test fixture contains assertation helpers and devices
-        // This class also has helpers to interact with IoT Hub Registry Manager (getting twins, create devices, etc.)
-        this.testFixture = testFixture;
-
-        // Create the lora arduino serial from a port
-        this.arduinoDevice = LoRaArduinoSerial.CreateFromPort(testFixture.Configuration.LeafDeviceSerialPort);
-
-        // Clear up the network server module log, to ensure noise from a previous test is removed
-        this.testFixture.ClearNetworkServerModuleLog();
-    }
-
-    public void Dispose()
-    {
-        // Ensure that the port is closed for the next test
-        this.lora?.Dispose();
-        this.lora = null;
-        GC.SuppressFinalize(this);
     }
 }
 ```
@@ -193,7 +174,7 @@ Checks can be done the following way:
 ```c#
 // After transferPacketWithConfirmed: Expectation from serial "+CMSG: ACK Received"
 // It has retries to account for i/o delays
-await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.lora.SerialLogs);
+await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 ```
 
 ### LoRaWan Network Server Module logs
@@ -209,7 +190,7 @@ Validating against the module logs.
 ```c#
 // Ensures that the message 0000000000000004: message '{"value": 51}' sent to hub is logged
 // It contains retries to account for i/o delays
-await this.testFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
 ```
 
@@ -221,5 +202,5 @@ For end to end validation we listen for device messages arriving in IoT Hub. Exa
 // Ensure device payload is available. It contains retries to account for i/o delays
 // Data: {"value": 51}
 var expectedPayload = $"{{\"value\":{msg}}}";
-await this.testFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 ```

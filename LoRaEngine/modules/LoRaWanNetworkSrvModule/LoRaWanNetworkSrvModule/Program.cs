@@ -50,7 +50,7 @@ namespace LoRaWanNetworkSrvModule
         {
            
                
-                udpServer = new UdpServer();
+                udpServer = UdpServer.Create();
                 await udpServer.RunServer();
            
         }
