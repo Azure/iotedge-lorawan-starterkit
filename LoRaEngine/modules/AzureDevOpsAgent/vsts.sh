@@ -1,3 +1,3 @@
 #! /bin/bash
-./vsts-agent/bin/Agent.Listener configure --unattended --url $VSTS_SERVER_URL --auth PAT --token $VSTS_TOKEN --pool default --agent myAgent --replace --acceptTeeEula
+./vsts-agent/bin/Agent.Listener configure --unattended --url "https://$VSTS_ACCOUNT.visualstudio.com" --auth PAT --token $VSTS_TOKEN --pool $VSTS_POOL --agent $VSTS_AGENT --replace --acceptTeeEula
 ./vsts-agent/bin/Agent.Listener run

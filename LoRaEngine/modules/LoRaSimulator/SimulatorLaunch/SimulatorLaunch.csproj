@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LoRaSimulator\LoRaSimulator.csproj" />
+    <ProjectReference Include="../LoRaSimulator/LoRaSimulator.csproj" />
   </ItemGroup>
 
 </Project>

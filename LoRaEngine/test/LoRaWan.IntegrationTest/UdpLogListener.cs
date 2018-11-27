@@ -17,7 +17,11 @@ namespace LoRaWan.IntegrationTest
 
         public bool LogToConsole { get; set; } = true;
 
-        public void ResetEvents() => this.events.Clear();
+        public void ResetEvents()
+        {
+            TestLogger.Log($"*** Clearing udp logs ({this.events.Count}) ***");
+            this.events.Clear();
+        }
 
     
 
@@ -35,7 +39,7 @@ namespace LoRaWan.IntegrationTest
 
             if(this.LogToConsole)
             {
-                TestLogger.Log($"[UDPLog]: {msg}");
+                TestLogger.Log($"[UDPLOG] {msg}");
             }
         }
 

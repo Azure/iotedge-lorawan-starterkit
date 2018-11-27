@@ -7,7 +7,7 @@ using Xunit;
 namespace LoRaWan.IntegrationTest
 {
     // Tests OTAA requests
-    [Collection("ArduinoSerialCollection")] // run in serial
+    [Collection(Constants.TestCollectionName)] // run in serial
     public sealed class OTAATest : IntegrationTestBase
     {
 
@@ -26,7 +26,7 @@ namespace LoRaWan.IntegrationTest
             const int MESSAGES_COUNT = 10;
 
             var device = this.TestFixture.Device4_OTAA;
-            Log($"Starting {nameof(Test_OTAA_Confirmed_And_Unconfirmed_Message)} using device {device.DeviceID}");      
+            Log($"[INFO] ** Starting {nameof(Test_OTAA_Confirmed_And_Unconfirmed_Message)} using device {device.DeviceID} **");      
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -34,19 +34,19 @@ namespace LoRaWan.IntegrationTest
 
             await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
 
-             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
-
-            if (!joinSucceeded)
-            {                
-                Assert.True(joinSucceeded, "Join failed");
-            }
-
+            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            Assert.True(joinSucceeded, "Join failed");
+            
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN); 
 
             // Sends 10x unconfirmed messages            
             for (var i=0; i < MESSAGES_COUNT; ++i)
             {
+                Console.WriteLine($"Starting sending OTTA unconfirmed message {i+1}/{MESSAGES_COUNT}");
+                this.ArduinoDevice.ClearSerialLogs();
+                this.TestFixture.ClearNetworkServerModuleLog();
+
                 var msg = PayloadGenerator.Next().ToString();
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
@@ -71,15 +71,16 @@ namespace LoRaWan.IntegrationTest
                 var expectedPayload = $"{{\"value\":{msg}}}";
                 await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
-
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
 
             // Sends 10x confirmed messages
             for (var i=0; i < MESSAGES_COUNT; ++i)
             {
+                Console.WriteLine($"Starting sending OTTA confirmed message {i+1}/{MESSAGES_COUNT}");
+                this.ArduinoDevice.ClearSerialLogs();
+                this.TestFixture.ClearNetworkServerModuleLog();
+
                 var msg = PayloadGenerator.Next().ToString();
                 await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
@@ -100,10 +101,9 @@ namespace LoRaWan.IntegrationTest
                 var expectedPayload = $"{{\"value\":{msg}}}";
                 await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
-
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+
             }
         }
     }

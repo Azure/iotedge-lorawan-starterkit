@@ -74,6 +74,10 @@ namespace LoRaWan.IntegrationTest
         public IntegrationTestFixture()
         {
             this.Configuration = TestConfiguration.GetConfiguration();
+            TestLogger.Log($"[INFO] {nameof(this.Configuration.IoTHubAssertLevel)}: {this.Configuration.IoTHubAssertLevel}");
+            TestLogger.Log($"[INFO] {nameof(this.Configuration.NetworkServerModuleLogAssertLevel)}: {this.Configuration.NetworkServerModuleLogAssertLevel}");
+
+            AppDomain.CurrentDomain.UnhandledException += this.OnUnhandledException;
 
             SetupTestDevices();
 
@@ -93,6 +97,11 @@ namespace LoRaWan.IntegrationTest
                         d.NwkSKey = string.Concat(Configuration.DevicePrefix, d.NwkSKey.Substring(Configuration.DevicePrefix.Length, d.NwkSKey.Length - Configuration.DevicePrefix.Length));                                            
                 }
             }
+        }
+
+        private void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Console.WriteLine("Unhandled exception: " + e.ExceptionObject?.ToString() ?? string.Empty);
         }
 
         // Setup the test devices here
@@ -294,13 +303,22 @@ namespace LoRaWan.IntegrationTest
         }
 
         bool disposed = false;
+
+        private LoRaArduinoSerial arduinoDevice;
+        public LoRaArduinoSerial ArduinoDevice { get { return this.arduinoDevice; } }
+
         public void Dispose()
         {
             TestLogger.Log($"{nameof(IntegrationTestFixture)} disposed");
 
             if (disposed)
                 return;
-            
+
+            AppDomain.CurrentDomain.UnhandledException -= this.OnUnhandledException;
+
+            this.arduinoDevice?.Dispose();
+            this.arduinoDevice = null;
+
             this.IoTHubMessages?.Dispose();
             this.IoTHubMessages = null;
             this.registryManager?.Dispose();
@@ -313,6 +331,9 @@ namespace LoRaWan.IntegrationTest
 
             this.disposed = true;
         }
+
+
+        public Task DisposeAsync() => Task.FromResult(0);
 
         RegistryManager GetRegistryManager()
         {
@@ -359,12 +380,14 @@ namespace LoRaWan.IntegrationTest
 
         public async Task InitializeAsync()
         {
+            this.arduinoDevice = LoRaArduinoSerial.CreateFromPort(this.Configuration.LeafDeviceSerialPort);
+
             if (this.Configuration.CreateDevices)
             {
                await CreateOrUpdateDevicesAsync();
             }
 
-            if (!string.IsNullOrEmpty(Configuration.IoTHubEventHubConnectionString) && this.Configuration.NetworkServerModuleLogAssertLevel != IoTHubAssertLevel.Ignore)
+            if (!string.IsNullOrEmpty(Configuration.IoTHubEventHubConnectionString) && this.Configuration.NetworkServerModuleLogAssertLevel != LogValidationAssertLevel.Ignore)
             {
                 this.IoTHubMessages = new EventHubDataCollector(Configuration.IoTHubEventHubConnectionString, Configuration.IoTHubEventHubConsumerGroup);
                 await this.IoTHubMessages.StartAsync(); 
@@ -422,6 +445,5 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        public Task DisposeAsync() => Task.FromResult(0);
     }
 }

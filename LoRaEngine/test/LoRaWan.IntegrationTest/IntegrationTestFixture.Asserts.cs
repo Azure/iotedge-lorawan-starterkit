@@ -46,11 +46,11 @@ namespace LoRaWan.IntegrationTest
         // Asserts leaf device message payload exists. It searches inside the payload "data" property. Has built-in retries
         public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string expectedDataValue, SearchLogOptions options = null)
         {           
-            var assertLevel = this.Configuration.NetworkServerModuleLogAssertLevel;
+            var assertionLevel = this.Configuration.IoTHubAssertLevel;
             if (options != null && options.TreatAsError.HasValue)
-                assertLevel = options.TreatAsError.Value ? IoTHubAssertLevel.Error : IoTHubAssertLevel.Warning;
+                assertionLevel = options.TreatAsError.Value ? LogValidationAssertLevel.Error : LogValidationAssertLevel.Warning;
 
-            if (assertLevel == IoTHubAssertLevel.Ignore)
+            if (assertionLevel == LogValidationAssertLevel.Ignore)
                 return;
 
             var searchResult = await this.SearchIoTHubMessageAsync(
@@ -61,21 +61,17 @@ namespace LoRaWan.IntegrationTest
                     TreatAsError = options?.TreatAsError,
                 });
 
-            if (assertLevel == IoTHubAssertLevel.Error)
+            if (assertionLevel == LogValidationAssertLevel.Error)
             {
                 var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
                 Assert.True(searchResult.Found, $"Searching for {expectedDataValue} failed for device {deviceID}. Current log content: [{logs}]");
             }
-            else if (assertLevel == IoTHubAssertLevel.Warning)
+            else if (assertionLevel == LogValidationAssertLevel.Warning)
             {
-                if (searchResult.Found)
-                {
-                    TestLogger.Log($"'{expectedDataValue}' for device {deviceID} found in logs? {searchResult.Found}");
-                }
-                else
+                if (!searchResult.Found)
                 {
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                    TestLogger.Log($"'{expectedDataValue}' for device {deviceID} found in logs? {searchResult.Found}. Logs: [{logs}]");
+                    TestLogger.Log($"[WARN] '{expectedDataValue}' for device {deviceID} found in logs? {searchResult.Found}. Logs: [{logs}]");
                 }
             }                    
         }
@@ -84,7 +80,7 @@ namespace LoRaWan.IntegrationTest
          // Asserts network server module log contains
         public async Task AssertNetworkServerModuleLogStartsWithAsync(string logMessageStart)
         {
-            if (this.Configuration.NetworkServerModuleLogAssertLevel == IoTHubAssertLevel.Ignore)
+            if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
                 return;
 
             await this.AssertNetworkServerModuleLogExistsAsync((input) => logMessageStart.StartsWith(logMessageStart), new SearchLogOptions(logMessageStart));
@@ -104,7 +100,7 @@ namespace LoRaWan.IntegrationTest
         // Asserts Network Server Module log exists. It has built-in retries and delays
         public async Task AssertNetworkServerModuleLogExistsAsync(Func<string, bool> predicate, SearchLogOptions options)
         {
-            if (this.Configuration.NetworkServerModuleLogAssertLevel == IoTHubAssertLevel.Ignore)
+            if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
                 return;
             
             SearchLogResult searchResult;
@@ -113,21 +109,17 @@ namespace LoRaWan.IntegrationTest
             else
                 searchResult = await SearchIoTHubLogs(predicate, options);
 
-            if (this.Configuration.NetworkServerModuleLogAssertLevel == IoTHubAssertLevel.Error)
+            if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Error)
             {
                 var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
                 Assert.True(searchResult.Found, $"Searching for {options?.Description ?? "??"} failed. Current log content: [{logs}]");
             }
-            else if (this.Configuration.NetworkServerModuleLogAssertLevel == IoTHubAssertLevel.Warning)
+            else if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Warning)
             {
-                if (searchResult.Found)
-                {
-                    TestLogger.Log($"'{options?.Description ?? "??"}' found in logs? {searchResult.Found}");
-                }
-                else
+                if (!searchResult.Found)                
                 {
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                    TestLogger.Log($"'{options?.Description ?? "??"}' found in logs? {searchResult.Found}. Logs: [{logs}]");
+                    TestLogger.Log($"[WARN] '{options?.Description ?? "??"}' found in logs? {searchResult.Found}. Logs: [{logs}]");
                 }
             }            
         }

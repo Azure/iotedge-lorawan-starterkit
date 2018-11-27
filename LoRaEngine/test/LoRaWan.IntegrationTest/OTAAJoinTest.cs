@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Xunit;
+using Xunit.Sdk;
 
 namespace LoRaWan.IntegrationTest
 {
@@ -11,7 +12,7 @@ namespace LoRaWan.IntegrationTest
     // - DevEUI: a globally unique end-device identifier
     // - AppEUI: application identifier
     // - AppKey: a AES-128 key
-    [Collection("ArduinoSerialCollection")] // run in serial
+    [Collection(Constants.TestCollectionName)] // run in serial
     public sealed class OTAAJoinTest : IntegrationTestBase
     {
 
@@ -25,7 +26,7 @@ namespace LoRaWan.IntegrationTest
         public async Task OTAA_Join_With_Valid_Device_Updates_DeviceTwin()
         {   
             var device = this.TestFixture.Device1_OTAA; 
-            Log($"Starting {nameof(OTAA_Join_With_Valid_Device_Updates_DeviceTwin)} using device {device.DeviceID}");      
+            Log($"[INFO] ** Starting {nameof(OTAA_Join_With_Valid_Device_Updates_DeviceTwin)} using device {device.DeviceID} **");      
 
             var twinBeforeJoin = await TestFixture.GetTwinAsync(device.DeviceID);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
@@ -54,20 +55,36 @@ namespace LoRaWan.IntegrationTest
             var twinAfterJoin = await this.TestFixture.GetTwinAsync(device.DeviceID);
             Assert.NotNull(twinAfterJoin);
             Assert.NotNull(twinAfterJoin.Properties.Reported);
-            Assert.True(twinAfterJoin.Properties.Reported.Contains("FCntUp"), "Property FCntUp does not exist");
-            Assert.True(twinAfterJoin.Properties.Reported.Contains("FCntDown"), "Property FCntDown does not exist");
-            Assert.True(twinAfterJoin.Properties.Reported.Contains("NetId"), "Property NetId does not exist");
-            Assert.True(twinAfterJoin.Properties.Reported.Contains("DevAddr"), "Property DevAddr does not exist");
-            Assert.True(twinAfterJoin.Properties.Reported.Contains("DevNonce"), "Property DevNonce does not exist");
-            Assert.True(twinAfterJoin.Properties.Reported.Contains("NwkSKey"), "Property NwkSKey does not exist");
-            Assert.True(twinAfterJoin.Properties.Reported.Contains("AppSKey"), "Property AppSKey does not exist");
-            Assert.True(twinAfterJoin.Properties.Reported.Contains("DevEUI"), "Property DevEUI does not exist");
-            var devAddrBefore = (string)twinBeforeJoin.Properties.Reported["DevAddr"];
-            var devAddrAfter = (string)twinAfterJoin.Properties.Reported["DevAddr"];
-            var actualReportedDevEUI = (string)twinAfterJoin.Properties.Reported["DevEUI"];
-            Assert.NotEqual(devAddrAfter, devAddrBefore);
-            Assert.Equal(device.DeviceID, actualReportedDevEUI);
-            Assert.True((twinBeforeJoin.Properties.Reported.Version) < (twinAfterJoin.Properties.Reported.Version), "Twin was not updated after join");                
+            try
+            {
+                Assert.True(twinAfterJoin.Properties.Reported.Contains("FCntUp"), "Property FCntUp does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.Contains("FCntDown"), "Property FCntDown does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.Contains("NetId"), "Property NetId does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.Contains("DevAddr"), "Property DevAddr does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.Contains("DevNonce"), "Property DevNonce does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.Contains("NwkSKey"), "Property NwkSKey does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.Contains("AppSKey"), "Property AppSKey does not exist");
+                Assert.True(twinAfterJoin.Properties.Reported.Contains("DevEUI"), "Property DevEUI does not exist");
+                var devAddrBefore = (string)twinBeforeJoin.Properties.Reported["DevAddr"];
+                var devAddrAfter = (string)twinAfterJoin.Properties.Reported["DevAddr"];
+                var actualReportedDevEUI = (string)twinAfterJoin.Properties.Reported["DevEUI"];
+                Assert.NotEqual(devAddrAfter, devAddrBefore);
+                Assert.Equal(device.DeviceID, actualReportedDevEUI);
+                Assert.True((twinBeforeJoin.Properties.Reported.Version) < (twinAfterJoin.Properties.Reported.Version), "Twin was not updated after join");
+                Log($"[INFO] Twin was updated successfully. Version changed from {twinBeforeJoin.Properties.Reported.Version} to {twinAfterJoin.Properties.Reported.Version}");      
+              
+            }
+            catch (XunitException xunitException)
+            {
+                if (this.TestFixture.Configuration.IoTHubAssertLevel == LogValidationAssertLevel.Warning)
+                {
+                    Log($"[WARN] {nameof(OTAA_Join_With_Valid_Device_Updates_DeviceTwin)} failed. {xunitException.ToString()}");
+                }
+                else if (this.TestFixture.Configuration.IoTHubAssertLevel == LogValidationAssertLevel.Error)
+                {                    
+                    throw;
+                }   
+            }
         }
 
 
@@ -78,7 +95,7 @@ namespace LoRaWan.IntegrationTest
         public async Task OTAA_Join_With_Wrong_DevEUI_Fails()
         {
             var device = this.TestFixture.Device2_OTAA; 
-            Log($"Starting {nameof(OTAA_Join_With_Wrong_DevEUI_Fails)} using device {device.DeviceID}");
+            Log($"[INFO] ** Starting {nameof(OTAA_Join_With_Wrong_DevEUI_Fails)} using device {device.DeviceID} **");
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -98,7 +115,7 @@ namespace LoRaWan.IntegrationTest
         public async Task OTAA_Join_With_Wrong_AppKey_Fails()
         {
             var device = this.TestFixture.Device3_OTAA; 
-            Log($"Starting {nameof(OTAA_Join_With_Wrong_AppKey_Fails)} using device {device.DeviceID}");      
+            Log($"[INFO] ** Starting {nameof(OTAA_Join_With_Wrong_AppKey_Fails)} using device {device.DeviceID} **");      
             var appKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
             Assert.NotEqual(appKeyToUse, device.AppKey);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
@@ -121,7 +138,7 @@ namespace LoRaWan.IntegrationTest
         public async Task OTAA_Join_With_Wrong_AppEUI_Fails()
         {
             var device = this.TestFixture.Device13_OTAA; 
-            Log($"Starting {nameof(OTAA_Join_With_Wrong_AppEUI_Fails)} using device {device.DeviceID}");      
+            Log($"[INFO] ** Starting {nameof(OTAA_Join_With_Wrong_AppEUI_Fails)} using device {device.DeviceID} **");      
             var appEUIToUse = "FF7A00000000FCE3";
             Assert.NotEqual(appEUIToUse, device.AppEUI);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);

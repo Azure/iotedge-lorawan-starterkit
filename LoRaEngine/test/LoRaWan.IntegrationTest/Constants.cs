@@ -11,6 +11,8 @@ namespace LoRaWan.IntegrationTest
         // Time to wait between joining and expecting a serial response
         public const int DELAY_FOR_SERIAL_AFTER_JOIN = 1000;
 
+        public const string TestCollectionName = "ArduinoSerialCollection";
+
     }
 
 }

@@ -28,17 +28,40 @@ namespace LoRaWan
                     }
                     else
                     {
-                        udpEndpoint = new IPEndPoint(IPAddress.Parse(configuration.LogToUdpAddress), configuration.LogToUdpPort);
+                        if (IPAddress.TryParse(configuration.LogToUdpAddress, out var parsedIpAddress))
+                        {
+                            udpEndpoint = new IPEndPoint(parsedIpAddress, configuration.LogToUdpPort);
+                        }
+                        else
+                        {
+                            // try to parse the address as dns
+                            var addresses = Dns.GetHostAddresses(configuration.LogToUdpAddress);
+                            if (addresses == null || addresses.Length == 0)
+                            {
+                                LogToConsole($"Could not resolve ip address from '{configuration.LogToUdpAddress}'");
+                            }
+                            else
+                            {
+                                udpEndpoint = new IPEndPoint(addresses[0], configuration.LogToUdpPort);     
+                            }                            
+                        }
                     }
-                    
-                    udpClient = new UdpClient();
-                    udpClient.ExclusiveAddressUse = false;
 
-                    Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," Logging to Udp: ", udpEndpoint.ToString()));
+                    if (udpEndpoint == null)
+                    {
+                        LogToConsole($"Logging to Udp failed. Could not resolve ip address from '{configuration.LogToUdpAddress}'");
+                    }
+                    else
+                    {                    
+                        udpClient = new UdpClient();
+                        udpClient.ExclusiveAddressUse = false;
+
+                        LogToConsole(string.Concat("Logging to Udp: ", udpEndpoint.ToString()));
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," Error starting UDP logging: ", ex.ToString()));
+                    LogToConsole(string.Concat("Error starting UDP logging: ", ex.ToString()));
                 }
             }
         }
@@ -65,7 +88,7 @@ namespace LoRaWan
                 }
 
                 if (configuration.LogToConsole)
-                    Console.WriteLine(String.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," ", msg));
+                    LogToConsole(msg);
 
                 if (udpClient != null)
                     LogToUdp(msg);
@@ -83,6 +106,11 @@ namespace LoRaWan
             {
                 Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," Error logging to UDP: ", ex.ToString()));
             }
+        }
+
+        static void LogToConsole(string message)
+        {
+            Console.WriteLine(String.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," ", message));
         }
     }
 }

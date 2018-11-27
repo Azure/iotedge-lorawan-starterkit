@@ -62,11 +62,20 @@ namespace LoRaWan.IntegrationTest
         {
             this.serialPort = serialPort;
 
-            this.serialPort.DataReceived += (object sender, byte[] data) =>
+            this.serialPort.DataReceived += OnSerialDeviceData;            
+        }
+
+        private void OnSerialDeviceData(object arg1, byte[] data)
+        {
+            try
             {
                 var dataread = System.Text.Encoding.UTF8.GetString (data);
                 OnSerialDataReceived (dataread);
-            };
+            }
+            catch (Exception ex)
+            {
+                TestLogger.Log($"Error in serial data rx. {ex.ToString()}");
+            }
         }
 
         byte[] windowsSerialPortBuffer = null;        
@@ -75,48 +84,65 @@ namespace LoRaWan.IntegrationTest
             serialPortWin = sp;
             this.windowsSerialPortBuffer = new byte[this.serialPortWin.ReadBufferSize];              
 
-            this.serialPortWin.DataReceived += (object sender, SerialDataReceivedEventArgs e) =>
+            this.serialPortWin.DataReceived += OnSerialDeviceDataForWindows;          
+        }
+
+        private void OnSerialDeviceDataForWindows(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
             {
                 var myserialPort = (SerialPort) sender;
                 var readCount = myserialPort.Read(this.windowsSerialPortBuffer, 0, this.windowsSerialPortBuffer.Length);
                 var dataread = System.Text.Encoding.UTF8.GetString (this.windowsSerialPortBuffer, 0, readCount);
                 OnSerialDataReceived(dataread);
-            };            
+            }
+            catch (Exception ex)
+            {
+                TestLogger.Log($"Error in serial data rx. {ex.ToString()}");
+            }
+            
         }
 
         void OnSerialDataReceived(string rawData)
-        {                        
-            var data = rawData.Replace("\r", "");
+        {              
+            try
+            {          
+                var data = rawData.Replace("\r", "");
 
-            var lines = string.Concat(buff, data).Split('\n');
-            buff = string.Empty;
+                var lines = string.Concat(buff, data).Split('\n');
+                buff = string.Empty;
 
-            if (lines.Length > 0)
-            {                
-                for (var i = 0; i < lines.Length - 1; i++)
-                {
-                    if (!string.IsNullOrEmpty(lines[i]))
+                if (lines.Length > 0)
+                {                
+                    for (var i = 0; i < lines.Length - 1; i++)
                     {
-                        AppendSerialLog(lines[i]);
+                        if (!string.IsNullOrEmpty(lines[i]))
+                        {
+                            AppendSerialLog(lines[i]);
+                        }
                     }
-                }
 
-                // last line: does the input ends with a new line?
-                var lastParsedLine = lines[lines.Length - 1];
-                if (!string.IsNullOrEmpty(lastParsedLine))
-                {
-                    if (data.EndsWith('\n'))
+                    // last line: does the input ends with a new line?
+                    var lastParsedLine = lines[lines.Length - 1];
+                    if (!string.IsNullOrEmpty(lastParsedLine))
                     {
-                        // add as finished line
-                        AppendSerialLog(lastParsedLine);
+                        if (data.EndsWith('\n'))
+                        {
+                            // add as finished line
+                            AppendSerialLog(lastParsedLine);
+                        }
+                        else
+                        {
+                            // buffer it for next line
+                            buff = lastParsedLine;
+                        }
                     }
-                    else
-                    {
-                        // buffer it for next line
-                        buff = lastParsedLine;
-                    }
-                }
-            }            
+                }            
+            }
+            catch (Exception ex)
+            {
+                TestLogger.Log($"Error processing serial data. {ex.ToString()}");
+            }
         }
 
         
@@ -126,12 +152,16 @@ namespace LoRaWan.IntegrationTest
 
         void AppendSerialLog(string message)
         {
-            TestLogger.Log($"[Serial log] {message}");
+            TestLogger.Log($"[SERIAL] {message}");
             this.serialLogs.Enqueue(message);
         }
         public IReadOnlyCollection<string> SerialLogs { get { return this.serialLogs; } }
 
-        public void ClearSerialLogs() => this.serialLogs.Clear();        
+        public void ClearSerialLogs()
+        {
+            TestLogger.Log($"*** Clearing serial logs ({this.serialLogs.Count}) ***");
+            this.serialLogs.Clear();
+        }
         
 
         public LoRaArduinoSerial setId (string DevAddr, string DevEUI, string AppEUI)
@@ -167,30 +197,37 @@ namespace LoRaWan.IntegrationTest
 
         public async Task setIdAsync (string DevAddr, string DevEUI, string AppEUI)
         {
-
-            if (!String.IsNullOrEmpty (DevAddr))
+            try
             {
 
-                string cmd = $"AT+ID=DevAddr,{DevAddr}\r\n";
-                sendCommand (cmd);
+                if (!String.IsNullOrEmpty (DevAddr))
+                {
 
-                await Task.Delay (DEFAULT_TIMEWAIT);
+                    string cmd = $"AT+ID=DevAddr,{DevAddr}\r\n";
+                    sendCommand (cmd);
+
+                    await Task.Delay (DEFAULT_TIMEWAIT);
+                }
+
+                if (!String.IsNullOrEmpty (DevEUI))
+                {
+
+                    string cmd = $"AT+ID=DevEui,{DevEUI}\r\n";
+                    sendCommand (cmd);
+                    await Task.Delay (DEFAULT_TIMEWAIT);
+                }
+
+                if (!String.IsNullOrEmpty (AppEUI))
+                {
+
+                    string cmd = $"AT+ID=AppEui,{AppEUI}\r\n";
+                    sendCommand (cmd);
+                    await Task.Delay (DEFAULT_TIMEWAIT);
+                }
             }
-
-            if (!String.IsNullOrEmpty (DevEUI))
+            catch (Exception ex)
             {
-
-                string cmd = $"AT+ID=DevEui,{DevEUI}\r\n";
-                sendCommand (cmd);
-                await Task.Delay (DEFAULT_TIMEWAIT);
-            }
-
-            if (!String.IsNullOrEmpty (AppEUI))
-            {
-
-                string cmd = $"AT+ID=AppEui,{AppEUI}\r\n";
-                sendCommand (cmd);
-                await Task.Delay (DEFAULT_TIMEWAIT);
+                TestLogger.Log($"Error during {nameof(setIdAsync)}. {ex.ToString()}");
             }
         }
 
@@ -228,31 +265,38 @@ namespace LoRaWan.IntegrationTest
 
         public async Task setKeyAsync (string NwkSKey, string AppSKey, string AppKey)
         {
-
-            if (!String.IsNullOrEmpty (NwkSKey))
+            try
             {
 
-                string cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
-                sendCommand (cmd);
-                await Task.Delay (DEFAULT_TIMEWAIT);
+                if (!String.IsNullOrEmpty (NwkSKey))
+                {
+
+                    string cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
+                    sendCommand (cmd);
+                    await Task.Delay (DEFAULT_TIMEWAIT);
+                }
+
+                if (!String.IsNullOrEmpty (AppSKey))
+                {
+
+                    string cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
+                    sendCommand (cmd);
+
+                    await Task.Delay (DEFAULT_TIMEWAIT);
+                }
+
+                if (!String.IsNullOrEmpty (AppKey))
+                {
+
+                    string cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
+                    sendCommand (cmd);
+
+                    await Task.Delay (DEFAULT_TIMEWAIT);
+                }
             }
-
-            if (!String.IsNullOrEmpty (AppSKey))
+            catch (Exception ex)
             {
-
-                string cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
-                sendCommand (cmd);
-
-                await Task.Delay (DEFAULT_TIMEWAIT);
-            }
-
-            if (!String.IsNullOrEmpty (AppKey))
-            {
-
-                string cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
-                sendCommand (cmd);
-
-                await Task.Delay (DEFAULT_TIMEWAIT);
+                TestLogger.Log($"Error during {nameof(setKeyAsync)}. {ex.ToString()}");
             }
         }
 
@@ -356,12 +400,13 @@ namespace LoRaWan.IntegrationTest
         internal async Task<bool> WaitForIdleAsync(TimeSpan? timeout = null)
         {
             var timeoutToUse = timeout ?? TimeSpan.FromSeconds(60);
+            var delayTime = timeoutToUse / 2;
             var start = DateTime.UtcNow;
 
             do 
             {
                 this.ClearSerialLogs();
-                await Task.Delay(TimeSpan.FromSeconds(30));
+                await Task.Delay(delayTime);
 
                 if (!SerialLogs.Any())
                     return true;
@@ -416,23 +461,31 @@ namespace LoRaWan.IntegrationTest
 
         public async Task<bool> transferPacketAsync (string buffer, int timeout)
         {
-
-            sendCommand ("AT+MSG=\"");
-
-            sendCommand (buffer);
-
-            sendCommand ("\"\r\n");
-
-            DateTime start = DateTime.Now;
-
-            while (true)
+            try
             {
-                if (this.ReceivedSerial(x => x.StartsWith("+MSG: Done")))
-                    return true;
-                else if (start.AddSeconds (timeout) < DateTime.Now)
-                    return false;
 
-                await Task.Delay(100);
+                sendCommand ("AT+MSG=\"");
+
+                sendCommand (buffer);
+
+                sendCommand ("\"\r\n");
+
+                DateTime start = DateTime.Now;
+
+                while (true)
+                {
+                    if (this.ReceivedSerial(x => x.StartsWith("+MSG: Done")))
+                        return true;
+                    else if (start.AddSeconds (timeout) < DateTime.Now)
+                        return false;
+
+                    await Task.Delay(100);
+                }
+            }
+            catch (Exception ex)
+            {
+                TestLogger.Log($"Error during {nameof(transferPacketAsync)}. {ex.ToString()}");
+                return false;
             }
         }
 
@@ -490,25 +543,31 @@ namespace LoRaWan.IntegrationTest
 
         public async Task<bool> transferPacketWithConfirmedAsync (string buffer, int timeout)
         {
-
-            sendCommand ("AT+CMSG=\"");
-            sendCommand (buffer);
-            sendCommand ("\"\r\n");
-
-            DateTime start = DateTime.Now;
-
-            while (true)
+            try
             {
-                if (ReceivedSerial(x => x.StartsWith ("+CMSG: ACK Received")))
-                    return true;
-                else if (start.AddSeconds (timeout) < DateTime.Now)
-                    return false;
+                sendCommand ("AT+CMSG=\"");
+                sendCommand (buffer);
+                sendCommand ("\"\r\n");
 
-                await Task.Delay(100);
+                DateTime start = DateTime.Now;
+
+                while (true)
+                {
+                    if (ReceivedSerial(x => x.StartsWith ("+CMSG: ACK Received")))
+                        return true;
+                    else if (start.AddSeconds (timeout) < DateTime.Now)
+                        return false;
+
+                    await Task.Delay(100);
+                }
+
+                //if (_buffer.Contains("+CMSG: ACK Received")) return true;
             }
-
-            //if (_buffer.Contains("+CMSG: ACK Received")) return true;
-
+            catch (Exception ex)
+            {
+                TestLogger.Log($"Error during {nameof(transferPacketWithConfirmedAsync)}. {ex.ToString()}");
+                return false;
+            }
         }
 
         public LoRaArduinoSerial setUnconfirmedMessageRepeatTime (uint time)
@@ -686,10 +745,17 @@ namespace LoRaWan.IntegrationTest
 
         public async Task setDeviceModeAsync (_device_mode_t mode)
         {
-            if (mode == _device_mode_t.LWABP) sendCommand ("AT+MODE=LWABP\r\n");
-            else if (mode == _device_mode_t.LWOTAA) sendCommand ("AT+MODE=LWOTAA\r\n");
+            try
+            {
+                if (mode == _device_mode_t.LWABP) sendCommand ("AT+MODE=LWABP\r\n");
+                else if (mode == _device_mode_t.LWOTAA) sendCommand ("AT+MODE=LWOTAA\r\n");
 
-            await Task.Delay (DEFAULT_TIMEWAIT);
+                await Task.Delay (DEFAULT_TIMEWAIT);
+             }
+            catch (Exception ex)
+            {
+                TestLogger.Log($"Error during {nameof(setDeviceModeAsync)}. {ex.ToString()}");
+            }
         }
 
         public bool setOTAAJoin (_otaa_join_cmd_t command, int timeout)
@@ -799,20 +865,35 @@ namespace LoRaWan.IntegrationTest
 
         public void sendCommand(string command)
         {
-            if (!RuntimeInformation.IsOSPlatform (OSPlatform.Windows))
-                serialPort.Write (Encoding.UTF8.GetBytes (command));
-            else
-                serialPortWin.Write (command);
-
+            try
+            {
+                if (!RuntimeInformation.IsOSPlatform (OSPlatform.Windows))
+                    serialPort.Write (Encoding.UTF8.GetBytes (command));
+                else
+                    serialPortWin.Write (command);
+            }
+            catch (Exception ex)
+            {
+                TestLogger.Log($"Error writing to serial port. {ex.ToString()}");
+                throw;
+            }
         }
 
         public void Dispose ()
         {
-            this.serialPort?.Close();
-            this.serialPortWin?.Close();
+            if (this.serialPort != null)
+            {
+                this.serialPort.DataReceived -= OnSerialDeviceData;
+                this.serialPort.Close();                
+                this.serialPort = null;
+            }
 
-            this.serialPort = null;
-            this.serialPortWin = null;
+            if (this.serialPortWin != null)
+            {
+                this.serialPortWin.DataReceived -= OnSerialDeviceDataForWindows;                
+                this.serialPortWin.Close();
+                this.serialPortWin = null;
+            }
 
             GC.SuppressFinalize(this);
 

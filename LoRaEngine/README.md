@@ -136,7 +136,7 @@ Now, build an push the solution by right clicking [deployment.template.json](/Lo
 
 ![VSCode: Build and push edge solution](/Docs/Pictures/CreateEdgeSolution.PNG)
 
-After that you can push the solution to your IoT Edge device by right clicking on the device and selecting `Create Deployment for single device`. In the file dialog, navigate to the `LoRaEngine\config` folder and selet the `deployment.json` file which was created during the previous step.
+After that you can push the solution to your IoT Edge device by right clicking on the device and selecting `Create Deployment for single device`. In the file dialog, navigate to the `LoRaEngine\config` folder and select the `deployment.json` file which was created during the previous step.
 
 ![VSCode: Deploy edge solution](/Docs/Pictures/DeployEdge.PNG)
 

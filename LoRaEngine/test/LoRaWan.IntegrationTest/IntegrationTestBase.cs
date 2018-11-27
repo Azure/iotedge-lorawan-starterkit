@@ -17,8 +17,9 @@ namespace LoRaWan.IntegrationTest
         public IntegrationTestBase(IntegrationTestFixture testFixture)
         {
             this.testFixture = testFixture;
-            this.arduinoDevice = LoRaArduinoSerial.CreateFromPort(this.TestFixture.Configuration.LeafDeviceSerialPort);
+            this.arduinoDevice = testFixture.ArduinoDevice;
             this.TestFixture.ClearNetworkServerModuleLog();
+            this.arduinoDevice.ClearSerialLogs();
         }
 
 
@@ -31,8 +32,9 @@ namespace LoRaWan.IntegrationTest
             {
                 if (disposing)
                 {
-                    this.arduinoDevice?.Dispose();
-                    this.arduinoDevice = null;
+                    // Before starting a new test, wait 5 seconds to ensure serial port is not receiving dirty data
+                    if (this.arduinoDevice != null)
+                        this.arduinoDevice.WaitForIdleAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
                 }
             
                 disposedValue = true;
