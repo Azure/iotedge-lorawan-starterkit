@@ -340,16 +340,17 @@ namespace LoRaWan.NetworkServer
                                 byte[] macbytes = null;
                                 if (c2dMsg != null)
                                 {
-                                    if (c2dMsg.Properties["CidType"] != null)
+                                    
+                                    if (c2dMsg.Properties.Keys.Contains("CidType"))
                                     {
                                             MacCommandHolder macCommandHolder = new MacCommandHolder(Convert.ToByte(c2dMsg.Properties["CidType"]));
                                             macbytes = macCommandHolder.macCommand[0].ToBytes();
                                     }
-                                    if (c2dMsg.Properties["Confirmed"] == "true")
+                                    if (c2dMsg.Properties.Keys.Contains("Confirmed")&&c2dMsg.Properties["Confirmed"] == "true")
                                     {
                                         requestForConfirmedResponse = true;
                                     }
-                                    if (c2dMsg.Properties["Fport"] != null)
+                                    if (c2dMsg.Properties.Keys.Contains("Fport"))
                                     {
                                         fport = BitConverter.GetBytes(int.Parse(c2dMsg.Properties["Fport"]));
                                     }

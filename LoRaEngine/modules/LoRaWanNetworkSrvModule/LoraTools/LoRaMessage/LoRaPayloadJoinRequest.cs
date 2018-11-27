@@ -62,7 +62,10 @@ namespace LoRaTools.LoRaMessage
             mac.Init(key);
             var newDevEUI = DevEUI.ToArray();
             Array.Reverse(newDevEUI);
-            var algoinput = Mhdr.ToArray().Concat(AppEUI.ToArray()).Concat(newDevEUI).Concat(DevNonce.ToArray()).ToArray();
+
+            var newAppEUI = AppEUI.ToArray();
+            Array.Reverse(newAppEUI);
+            var algoinput = Mhdr.ToArray().Concat(newAppEUI).Concat(newDevEUI).Concat(DevNonce.ToArray()).ToArray();
             byte[] result = new byte[19];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);

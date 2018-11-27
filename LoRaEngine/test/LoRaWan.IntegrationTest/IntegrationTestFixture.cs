@@ -64,6 +64,9 @@ namespace LoRaWan.IntegrationTest
         // Device13_OTAA: used for wrong AppEUI OTAA join
         public TestDeviceInfo Device13_OTAA { get; private set; }
 
+        // Device14_OTAA: used for test confirmed C2D
+        public TestDeviceInfo Device14_OTAA { get; private set; }
+
 
         public IntegrationTestFixture()
         {
@@ -242,7 +245,18 @@ namespace LoRaWan.IntegrationTest
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,                                      
                 SensorDecoder = "DecoderValueSensor",                           
-            };  
+            };
+
+            // Device14_OTAA: used for Confirmed C2D message
+            this.Device14_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000013",
+                AppEUI = "BE7A00000000FEE3",
+                AppKey = "8AFE71A145B253E49C3031AD068277A3",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+                SensorDecoder = "DecoderValueSensor",
+            };
         }
 
         // Helper method to return all devices
@@ -296,9 +310,13 @@ namespace LoRaWan.IntegrationTest
             return await GetRegistryManager().GetTwinAsync(deviceId);            
         }
 
-        internal async Task SendCloudToDeviceMessage(string deviceId, string messageText)
+        internal async Task SendCloudToDeviceMessage(string deviceId, string messageText, Dictionary<String,String> messageProperties)
         {
             var msg = new Message(Encoding.UTF8.GetBytes(messageText));
+            foreach(var messageProperty in messageProperties)
+            {
+                msg.Properties.Add(messageProperty.Key,messageProperty.Value);
+            }
             await SendCloudToDeviceMessage(deviceId, msg);
         }
 
