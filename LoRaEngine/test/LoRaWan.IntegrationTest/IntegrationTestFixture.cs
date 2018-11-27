@@ -327,9 +327,12 @@ namespace LoRaWan.IntegrationTest
         internal async Task SendCloudToDeviceMessage(string deviceId, string messageText, Dictionary<String,String> messageProperties)
         {
             var msg = new Message(Encoding.UTF8.GetBytes(messageText));
-            foreach(var messageProperty in messageProperties)
+            if (messageProperties != null)
             {
-                msg.Properties.Add(messageProperty.Key,messageProperty.Value);
+                foreach (var messageProperty in messageProperties)
+                {
+                    msg.Properties.Add(messageProperty.Key, messageProperty.Value);
+                }
             }
             await SendCloudToDeviceMessage(deviceId, msg);
         }

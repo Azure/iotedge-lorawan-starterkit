@@ -236,7 +236,7 @@ namespace LoRaWan.NetworkServer
                         byte[] bytesC2dMsg = null;
                         byte[] fport = null;
                         //Todo revamp fctrl
-                        byte[] fctrl = new byte[1] { 32 };
+                        byte[] fctrl = new byte[1] { 0 };
                         //check if we got a c2d message to be added in the ack message and prepare the message
                         if (c2dMsg != null)
                         {
@@ -248,7 +248,7 @@ namespace LoRaWan.NetworkServer
                                 //todo ronnie check abbandon logic especially in case of mqtt
                                 _ = await loraDeviceInfo.HubSender.AbandonAsync(secondC2dMsg);
                                 //set the fpending flag so the lora device will call us back for the next message
-                                fctrl = new byte[1] { 48 };
+                                fctrl = new byte[1] { 16 };
                             }
 
                             bytesC2dMsg = c2dMsg.GetBytes();
@@ -315,7 +315,7 @@ namespace LoRaWan.NetworkServer
 
                                 if ((DateTime.UtcNow - startTimeProcessing) > TimeSpan.FromMilliseconds(RegionFactory.CurrentRegion.receive_delay1 * 1000 - 100))
                                 {
-                                    fctrl = new byte[1] { 32 };
+                                    fctrl = new byte[1] { 0 };
                                     if (string.IsNullOrEmpty(configuration.Rx2DataRate))
                                     {
                                         Logger.Log(loraDeviceInfo.DevEUI, $"using standard second receive windows", Logger.LoggingLevel.Info);
@@ -349,18 +349,23 @@ namespace LoRaWan.NetworkServer
                                     if (c2dMsg.Properties.Keys.Contains("Confirmed")&&c2dMsg.Properties["Confirmed"] == "true")
                                     {
                                         requestForConfirmedResponse = true;
+                                        Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device message requesting a confirmation", Logger.LoggingLevel.Info);
+
                                     }
                                     if (c2dMsg.Properties.Keys.Contains("Fport"))
                                     {
-                                        fport = BitConverter.GetBytes(int.Parse(c2dMsg.Properties["Fport"]));
+                                        int fportint= int.Parse(c2dMsg.Properties["Fport"]);
+                                        fport = BitConverter.GetBytes(fportint);
+                                        Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device message with a Fport of "+ fportint, Logger.LoggingLevel.Info);
+
                                     }
                                 }
                                 if(requestForConfirmedResponse )
-                                    fctrl[0]+=16 ;
+                                    fctrl[0]+=32 ;
                                 if (macbytes != null && linkCheckCmdResponse != null)
                                     macbytes = macbytes.Concat(linkCheckCmdResponse).ToArray();
                                 LoRaPayloadData ackLoRaMessage = new LoRaPayloadData(
-requestForConfirmedResponse ? MType.ConfirmedDataDown : MType.UnconfirmedDataDown,
+                                    requestForConfirmedResponse ? MType.ConfirmedDataDown : MType.UnconfirmedDataDown,
                                     //ConversionHelper.StringToByteArray(requestForConfirmedResponse?"A0":"60"),
                                     devAddrCorrect,
                                     fctrl,
