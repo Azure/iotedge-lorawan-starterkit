@@ -67,6 +67,9 @@ namespace LoRaWan.IntegrationTest
         // Device14_OTAA: used for test confirmed C2D
         public TestDeviceInfo Device14_OTAA { get; private set; }
 
+        // Device15_OTAA: used for test fport C2D
+        public TestDeviceInfo Device15_OTAA { get; private set; }
+
 
         public IntegrationTestFixture()
         {
@@ -249,6 +252,17 @@ namespace LoRaWan.IntegrationTest
 
             // Device14_OTAA: used for Confirmed C2D message
             this.Device14_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000013",
+                AppEUI = "BE7A00000000FEE3",
+                AppKey = "8AFE71A145B253E49C3031AD068277A3",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+                SensorDecoder = "DecoderValueSensor",
+            };
+
+            // Device15_OTAA: used for the Fport test
+            this.Device15_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000013",
                 AppEUI = "BE7A00000000FEE3",
