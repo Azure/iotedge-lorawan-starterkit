@@ -17,7 +17,7 @@ namespace LoRaWan.IntegrationTest
         /// <param name="text"></param>
         internal static void Log(string text)
         {
-            // Log to diagnostics if a debbuger is attached
+          // Log to diagnostics if a debbuger is attached
             if (Debugger.IsAttached)
             {
                 System.Diagnostics.Debug.WriteLine(text);

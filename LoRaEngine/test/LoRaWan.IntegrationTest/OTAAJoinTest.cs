@@ -108,7 +108,8 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
 
             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
-            Assert.False(joinSucceeded, "Join suceeded for invalid AppKey");
+            Assert.False(joinSucceeded, "Join suceeded for invalid AppKey (mic check should fail)");
+            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: join request MIC invalid");
 
             await this.ArduinoDevice.WaitForIdleAsync();
         }
