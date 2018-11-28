@@ -53,7 +53,7 @@ void loop()
 
 2. Create/edit integration settings in file `appsettings.local.json`
 
-The value of `LeafDeviceSerialPort` in Windows will be the COM port where the Arduino board is connected to (Arduino IDE displays it). On macos and/or Linux you can discover through `ls /dev/tty*` and/or `ls /dev/cu*` bash commands.
+The value of `LeafDeviceSerialPort` in Windows will be the COM port where the Arduino board is connected to (Arduino IDE displays it). On macos you can discover through `ls /dev/tty*` and/or `ls /dev/cu*` bash commands. On Linux you can discover them with `ls /dev/ttyACM*`. 
 
 ```json
 {

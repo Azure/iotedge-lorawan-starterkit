@@ -73,7 +73,7 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody,null);
+            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody);
             Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -183,7 +183,7 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody,null);
+            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody);
             Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -247,7 +247,7 @@ namespace LoRaWan.IntegrationTest
         }
 
         // Ensures that C2D messages are received when working with unconfirmed messages
-        // Uses Device10_OTAA
+        // Uses Device15_OTAA
         [Fact]
         public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_Message()
         {
@@ -262,11 +262,8 @@ namespace LoRaWan.IntegrationTest
 
             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
 
-            if (!joinSucceeded)
-            {
-                Assert.True(joinSucceeded, "Join failed");
-            }
-
+            Assert.True(joinSucceeded, "Join failed");
+        
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 

@@ -17,12 +17,14 @@ namespace LoRaWan.IntegrationTest
         /// <param name="text"></param>
         internal static void Log(string text)
         {
-            Console.WriteLine(text);
-
-            // Log to diagnostics in Windows or if debugger is attached
-            if (Debugger.IsAttached || Environment.OSVersion.Platform == PlatformID.Win32NT)
+          // Log to diagnostics if a debbuger is attached
+            if (Debugger.IsAttached)
             {
                 System.Diagnostics.Debug.WriteLine(text);
+            }
+            else
+            {
+                Console.WriteLine(text);
             }
         }
 

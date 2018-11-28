@@ -253,7 +253,7 @@ namespace LoRaWan.IntegrationTest
             // Device14_OTAA: used for Confirmed C2D message
             this.Device14_OTAA = new TestDeviceInfo()
             {
-                DeviceID = "0000000000000013",
+                DeviceID = "0000000000000014",
                 AppEUI = "BE7A00000000FEE3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",
                 GatewayID = gatewayID,
@@ -264,7 +264,7 @@ namespace LoRaWan.IntegrationTest
             // Device15_OTAA: used for the Fport test
             this.Device15_OTAA = new TestDeviceInfo()
             {
-                DeviceID = "0000000000000013",
+                DeviceID = "0000000000000015",
                 AppEUI = "BE7A00000000FEE3",
                 AppKey = "8AFE71A145B253E49C3031AD068277A3",
                 GatewayID = gatewayID,
@@ -324,7 +324,7 @@ namespace LoRaWan.IntegrationTest
             return await GetRegistryManager().GetTwinAsync(deviceId);            
         }
 
-        internal async Task SendCloudToDeviceMessage(string deviceId, string messageText, Dictionary<String,String> messageProperties)
+        internal async Task SendCloudToDeviceMessage(string deviceId, string messageText, Dictionary<String,String> messageProperties=null)
         {
             var msg = new Message(Encoding.UTF8.GetBytes(messageText));
             if (messageProperties != null)
