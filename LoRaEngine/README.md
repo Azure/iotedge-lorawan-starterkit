@@ -110,7 +110,7 @@ Follow the guide on [configuring an IoT Edge device to communicate through a pro
 
 After that, add the environment variable ```https_proxy``` to the ```LoRaWanNetworkSrvModule``` in your ```IoT Hub``` -> ```IoT Edge``` -> ```Edge Device``` -> ```Set Modules``` section.
 
-![IoT Hub Edge Device Module Setting](/Docs/Pictures/EdgeSetProxy.PNG)
+![IoT Hub Edge Device Module Setting](/Docs/Pictures/EdgeSetProxy.png)
 
 **End of optional proxy configuration**
 
