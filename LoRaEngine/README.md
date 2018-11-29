@@ -3,7 +3,7 @@
 A **.NET Core 2.1** solution with the following projects:
 
 - **modules** - Azure IoT Edge modules.
-  - **LoRaWanPktFwdModule** packages the network forwarder into an IoT Edge compatible docker container. See https://github.com/Lora-net/packet_forwarder and https://github.com/Lora-net/lora_gateway.
+  - **LoRaWanPktFwdModule** packages the network forwarder into an IoT Edge compatible docker container. See https://github.com/Lora-net/packet_forwarder and https://github.com/Lora-net/lora_gateway. If you are using a RAK833-USB see this [submodule](/Docs/LoRaWanPktFwdRAK833USB)
   - **LoRaWanNetworkSrvModule** - is the LoRaWAN network server implementation.
 - **LoraKeysManagerFacade** - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
 - **LoRaDevTools** - library for dev tools (git submodule)
@@ -12,14 +12,14 @@ A **.NET Core 2.1** solution with the following projects:
 
 This schema represent the various components and how they intereact to have a better understand of the various solution elements.
 
-![schema](/pictures/detailedschema.png)
+![schema](/Docs/Pictures/detailedschema.jpg)
 
 1. Once the IoT Edge engine start on the Edge device, the code modules are downloaded from the Azure Container Registry.
 2. The module containing the ```LoRaWan network server``` is downloaded on the Edge device
 
 Notes:
 
-- The Edge device can be on the same machine at the LoRaWan gateway but not necessary
+- The LoRaWanPktFwdModule can be replaced by the [LoRaWan Packet Forwarder for RAK833-USB](/Docs/LoRaWanPktFwdRAK833USB) if you have a RAK833 connected thru USB
 - The LoRaWan gateway must implement a UDP server on port 1680 to forward the LoRa commands from/to the ```LoRaWan Network Server``` module. In our case it is called ```LoRaWan Packet Forwarder```
 
 3. The LoRaWan Network Server request status for the LoRa devices. The Azure Function ```LoraKeysManagerFacade``` is used as permanent storage for the applicaiton device keys of the devices so nothing is permanently stored into the container.
@@ -35,7 +35,7 @@ Notes:
 
 Another view of the architecture and a more message driven view is the following:
 
-![architecture details](/pictures/archidetails2.jpg)
+![architecture details](/Docs/Pictures/architectdetails2.png)
 
 ## Getting started with: Build and deploy LoRaEngine
 
@@ -71,19 +71,19 @@ Copy your Redis Cache connection string in a connection string names `RedisConne
 
 Copy your IoT Hub `Connection string` with owner policy applied:
 
-![Copy IoT Hub Connection string](/pictures/CopyIoTHubString.PNG)
+![Copy IoT Hub Connection string](/Docs/Pictures/CopyIoTHubString.PNG)
 
 Now paste it into `Application settings` -> `Connection strings` as `IoTHubConnectionString` of type `Custom`:
 
-![Paste IoT Hub Connection string](/pictures/FunctionPasteString.PNG)
+![Paste IoT Hub Connection string](/Docs/Pictures/FunctionPasteString.PNG)
 
 Also, add the previously saved `Primary connection string (StackExchange.Redis)` from your Redis Cache to the `Connection strings` of your function. Use type `Custom` again.
 
-![Add Redis Cache Connection string](/pictures/FunctionRedisKey.PNG)
+![Add Redis Cache Connection string](/Docs/Pictures/FunctionRedisKey.PNG)
 
 From the Facade Azure function, extract the `Host key` of type `_master` and save it somewhere. (We will need it in the next step)
 
-![Extract Facade function Host key](/pictures/FunctionHostKey.PNG)
+![Extract Facade function Host key](/Docs/Pictures/FunctionHostKey.PNG)
 
 - Configure your `.env` file with your [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/) as well as the Facade access URL and credentials. Those variables will be used by our [Azure IoT Edge solution template](/LoRaEngine/deployment.template.json). You can find an example of this file [here](/LoRaEngine/modules/example.env)
 
@@ -110,7 +110,7 @@ Follow the guide on [configuring an IoT Edge device to communicate through a pro
 
 After that, add the environment variable ```https_proxy``` to the ```LoRaWanNetworkSrvModule``` in your ```IoT Hub``` -> ```IoT Edge``` -> ```Edge Device``` -> ```Set Modules``` section.
 
-![IoT Hub Edge Device Module Setting](/pictures/EdgeSetProxy.PNG)
+![IoT Hub Edge Device Module Setting](/Docs/Pictures/EdgeSetProxy.png)
 
 **End of optional proxy configuration**
 
@@ -126,11 +126,11 @@ Make sure you are logged in to the Azure Container Registry you are using. Run `
 
 Now, build an push the solution by right clicking [deployment.template.json](/LoRaEngine/deployment.template.json) and select `Build and Push IoT Edge Solution` (look as alternative into [deployment.template.amd64.json](/LoRaEngine/deployment.template.amd64.json) for x64 based gateways)
 
-![VSCode: Build and push edge solution](/pictures/CreateEdgeSolution.PNG)
+![VSCode: Build and push edge solution](/Docs/Pictures/CreateEdgeSolution.PNG)
 
 After that you can push the solution to your IoT Edge device by right clicking on the device and select `Create Deployment for single device`
 
-![VSCode: Deploy edge solution](/pictures/DeployEdge.PNG)
+![VSCode: Deploy edge solution](/Docs/Pictures/DeployEdge.PNG)
 
 ### Provision LoRa leaf device
 
@@ -163,9 +163,9 @@ Device Id: `47AAC86800430010` and Device Twin's deired properties:
 }
 ```
 
-![Create device in Azure IoT Hub](/pictures/CreateDevice.PNG)
+![Create device in Azure IoT Hub](/Docs/Pictures/CreateDevice.PNG)
 
-![Set device twin in Azure IoT Hub](/pictures/DeviceTwin.PNG)
+![Set device twin in Azure IoT Hub](/Docs/Pictures/DeviceTwin.PNG)
 
 ### Device to Cloud and Cloud to Device messaging in action
 
@@ -227,7 +227,7 @@ Note: an easy way to follow messages send from the device is again with VSCode: 
 
 This is how a complete transmission looks like:
 
-![Complete transmission](/pictures/RoundtripTemp.PNG)
+![Complete transmission](/Docs/Pictures/RoundtripTemp.PNG)
 
 You can even test sending Cloud-2-Device message (e.g. by VSCode right click on the device in the explorer -> `Send C2D Message To Device`).
 

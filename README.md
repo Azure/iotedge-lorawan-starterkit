@@ -49,10 +49,11 @@ However, customers looking for any of the following are expected to prefer a set
 - [AAEON AIOT-ILRA01 LoRa® Certified Intel® Based Gateway and Network Server](https://www.aaeon.com/en/p/intel-lora-gateway-system-server)
 - [MyPi Industrial IoT Integrator Board](http://www.embeddedpi.com/integrator-board) with [RAK833-SPI mPCIe-LoRa-Concentrator](http://www.embeddedpi.com/iocards)
 - Raspberry Pi 3 with [IC880A](https://wireless-solutions.de/products/radiomodules/ic880a.html)
+- [RAK833-USB mPCIe-LoRa-Concentrator with Raspberry Pi 3](/Docs/LoRaWanPktFwdRAK833USB)
 
 ## Architecture
 
-![Architecture](pictures/EdgeArchitecture.png)
+![Architecture](/Docs/Pictures/EdgeArchitecture.png)
 
 ## Directory Structure
 
@@ -64,7 +65,8 @@ The code is organized into three sections:
   - **LoRaDevTools** - library for dev tools (git submodule)
 - **Arduino** - Examples and references for LoRa Arduino based devices.
 - **Template** - Contain code useful for the "deploy to Azure button"
-- **Samples** - Contains sample decoders  
+- **Samples** - Contains sample decoders
+- **Docs** - Additional modules, pictures and documentations
 
 ## Reporting Security Issues
 
@@ -87,6 +89,8 @@ The template was tested to work on the following gateway types:
 
 - [Seeed Studio LoRa LoRaWAN Gateway - 868MHz/915MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
 - [IC880A](https://wireless-solutions.de/products/radiomodules/ic880a.html)
+
+If you want to use the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in this [submodule](/Docs/LoRaWanPktFwdRAK833USB).
 
 The LoRa device demo code in the Arduino folder is built only for Seeduino LoRaWan board and was not test with other Arduino LoRa boards.
 
@@ -129,6 +133,8 @@ By using the `docker ps` command, you should see the Edge containers being deplo
 ### What does the template do?
 
 The template provision an IoT Hub with a [packet forwarder](https://github.com/Lora-net/packet_forwarder) and a network server module already preconfigured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](/Template).
+
+If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in this [submodule](/Docs/LoRaWanPktFwdRAK833USB).
 
 ## LoRa Device provisioning
 
@@ -279,7 +285,7 @@ The Solution has an initial support for MAC Commands. Currently only the command
 CidType : 6
 ```
 
-![MacCommand](pictures/MacCommand.PNG)
+![MacCommand](/Docs/Pictures/MacCommand.PNG)
 
 ## Cloud to device confirmed message
 
