@@ -71,7 +71,7 @@ http://localhost:8881/api/DecoderValueSensor?fport=1&payload=ABCDE12345
 
 If required, add credentials to access your container registry to the IoT Edge device by adding them to IoT Hub &rarr; IoT Edge &rarr; Your Device &rarr; Set Modules &rarr; Container Registry settings.
 
-![Decoder Sample - Edge Module Container Registry Permission](Docs/Pictures/decodersample-edgepermission.png)
+![Decoder Sample - Edge Module Container Registry Permission](/Docs/Pictures/decodersample-edgepermission.png)
 
 Configure your IoT Edge gateway device to include the custom container. IoT Hub &rarr; IoT Edge &rarr; Your Device &rarr; Set Modules &rarr; Deployment Modules &rarr; Add &rarr; IoT Edge Module. Set the module Name and Image URI, pointing to your image created above.
 

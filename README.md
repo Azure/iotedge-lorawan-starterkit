@@ -53,7 +53,7 @@ However, customers looking for any of the following are expected to prefer a set
 
 ## Architecture
 
-![Architecture](pictures/EdgeArchitecture.png)
+![Architecture](/Docs/Pictures/EdgeArchitecture.png)
 
 ## Directory Structure
 
@@ -285,7 +285,7 @@ The Solution has an initial support for MAC Commands. Currently only the command
 CidType : 6
 ```
 
-![MacCommand](pictures/MacCommand.PNG)
+![MacCommand](/Docs/Pictures/MacCommand.PNG)
 
 ## Cloud to device confirmed message
 
