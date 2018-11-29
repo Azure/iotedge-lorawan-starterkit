@@ -75,7 +75,7 @@ They are all mandatory:
 
 To build and deploy the solution, we strongly encourage you to use VS Code and the Azure IoT Edge extension. It will make your life easier.
 
-![deployment](/pictures/iotedgebuildcontainer.png)
+![deployment](/Docs/Pictures/iotedgebuildcontainer.png)
 
 Select ```deployment.template.json```, right click on it and then select ```Build and Push IoT Edge solution```. This will automatically create a ```deployment.json``` file in the ```config``` folder. Right click on it and select ```Create deployment for single device``` and select the Azure IoT Edge device you want to deploy the solution on. Of course, you can as well deploy it on any docker enable Linux arm32 device (or amd64 if you selected this configuration). 
 

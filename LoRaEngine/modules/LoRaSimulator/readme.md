@@ -66,9 +66,9 @@ For OTAA devices, mandatory fields are the following:
 
 Please note you'll have to create the devices and have the right Device Twin information as well. Here is an example of those 2 devices with the desired properties. You will see as well the reported ones as they've been reporting as well their usage.
 
-![OTTA device twin properties](/pictures/reportedOTAA.png)
+![OTTA device twin properties](/Docs/Pictures/reportedOTAA.png)
 
-![ABP device twin properties](/pictures/reportedABP.png)
+![ABP device twin properties](/Docs/Pictures/reportedABP.png)
 
 **Note**: If you want to use a specific decoder, you have to specify it as well in the device twin. The simulator is so far built for the ```DecoderValueSensor``` one. If nothing is specified, the convertion will be a byte array to string and won't really represent anything valid. You still can run tests of course with it.
 
@@ -100,11 +100,11 @@ All fields are mandatory for the simulation to work correctly. They **must** rep
 
 If you want to run the LoRaEngine and the simulator on the same machine, with 2 different instances of VS Code or Visual Studio, it is possible. You'll have to setup different environment variables for the LoRaEngine. Go to the properties of the ```LoRaWanNetworkSrvModule```
 
-![properties](/pictures/loraengineproperties.png)
+![properties](/Docs/Pictures/loraengineproperties.png)
 
 then to the debug tab:
 
-![properties details](/pictures/loraenginepropertiesdetails.png)
+![properties details](/Docs/Pictures/loraenginepropertiesdetails.png)
 
 and add the following environment variables:
 

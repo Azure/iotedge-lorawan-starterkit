@@ -42,7 +42,7 @@ http://localhost:yourPort/api/<decodername>?fport=<1>&payload=<ABCDE12345>
 
 You should see the result as JSON string.
 
-![Decoder Sample - Debugging on localhost](/pictures/decodersample-debugging.png)
+![Decoder Sample - Debugging on localhost](/Docs/Pictures/decodersample-debugging.png)
 
 When running the solution in a container, the [Kestrel webserver](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-2.1) from .NET Core uses the HTTP default port 80 of the container and does not need to bind it to a port on the host machine as Docker allows for container-to-container communication. IoT Edge automatically creates the required [Docker Network Bridge](https://docs.docker.com/network/bridge/).
 
@@ -71,13 +71,13 @@ http://localhost:8881/api/DecoderValueSensor?fport=1&payload=ABCDE12345
 
 If required, add credentials to access your container registry to the IoT Edge device by adding them to IoT Hub &rarr; IoT Edge &rarr; Your Device &rarr; Set Modules &rarr; Container Registry settings.
 
-![Decoder Sample - Edge Module Container Registry Permission](/pictures/decodersample-edgepermission.png)
+![Decoder Sample - Edge Module Container Registry Permission](Docs/Pictures/decodersample-edgepermission.png)
 
 Configure your IoT Edge gateway device to include the custom container. IoT Hub &rarr; IoT Edge &rarr; Your Device &rarr; Set Modules &rarr; Deployment Modules &rarr; Add &rarr; IoT Edge Module. Set the module Name and Image URI, pointing to your image created above.
 
 **Make sure to choose all lowercase letters for the Module Name as the container will be unreachable otherwise!**
 
-![Decoder Sample - Edge Module](/pictures/decodersample-edgemodule.png)
+![Decoder Sample - Edge Module](/Docs/Pictures/decodersample-edgemodule.png)
 
 To activate the decoder for a LoRa device, navigate to your IoT Hub &rarr; IoT Devices &rarr; Device Details &rarr; Device Twin and set the ```SensorDecoder``` value in the desired properties to: 
 
@@ -87,6 +87,6 @@ http://<decoder module name>/api/<DecoderName>
 
 **Again make sure to chosse all lowercase letters for the module name to make sure it is reachable.**
 
-![Decoder Sample - LoRa Device Twin](/pictures/decodersample-devicetwin.png)
+![Decoder Sample - LoRa Device Twin](/Docs/Pictures/decodersample-devicetwin.png)
 
 In case the custom decoder is unreachable, throws an error or return invalid JSON, the error message will be shown in your device's messages in IoT Hub.
