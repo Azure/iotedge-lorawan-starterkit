@@ -18,6 +18,7 @@
             "stopAtEntry": false,
             "internalConsoleOptions": "openOnSessionStart"
         },
+    
         {
             "name": ".NET Core Attach",
             "type": "coreclr",
