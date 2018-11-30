@@ -24,6 +24,9 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly LoraDeviceInfoManager loraDeviceInfoManager;
         ModuleClient ioTHubModuleClient;
+        private IPAddress remoteLoRaAggregatorIp;
+        private int pullAckRemoteLoRaAggregatorPort=0;
+        private int pushDataRemoteLoRaAggregatorPort=0;
 
         UdpClient udpClient;
 
@@ -52,11 +55,11 @@ namespace LoRaWan.NetworkServer
         }
 
 
-        public async Task UdpSendMessage(byte[] messageToSend, IPAddress remoteLoRaAggregatorIp, int remoteLoRaAggregatorPort)
+        public async Task UdpSendMessage(byte[] messageToSend, string remoteLoRaAggregatorIp, int remoteLoRaAggregatorPort)
         {
             if (messageToSend != null && messageToSend.Length != 0)
             {
-                await udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp.ToString(), remoteLoRaAggregatorPort);
+                await udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp, remoteLoRaAggregatorPort);
 
             }
         }
@@ -75,48 +78,46 @@ namespace LoRaWan.NetworkServer
             {
                 UdpReceiveResult receivedResults = await udpClient.ReceiveAsync();
 
-                //Logger.Log($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}");
-                   
-                var remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
-                var remoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
-                
+               //Logger.Log($"UDP message received ({receivedResults.Buffer[3]}) from port: {receivedResults.RemoteEndPoint.Port} and IP: {receivedResults.RemoteEndPoint.Address.ToString()}",LoggingLevel.Always);
+                 
+
                 switch (receivedResults.Buffer[3])
                 {
                     //In this case we have a keep-alive PULL_DATA packet we don't need to start the engine and can return immediately a response to the challenge
-                    case 0x02:               
-                        byte[] response = new byte[4]{
-                            receivedResults.Buffer[0],
-                            receivedResults.Buffer[1],
-                            receivedResults.Buffer[2],
-                            0x04
-                            };
-                        _ = UdpSendMessage(response,remoteLoRaAggregatorIp,remoteLoRaAggregatorPort);
+                    case 0x02:
+                        if (pullAckRemoteLoRaAggregatorPort == 0)
+                        {
+                            remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
+                            pullAckRemoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
+                        }
+                        sendAcknowledgementMessage(receivedResults,0x04, pullAckRemoteLoRaAggregatorPort);
                         break;
                     //This is a PUSH_DATA (upstream message).
                     case 0x00:
-                        byte[] response2 = new byte[4]{
-                            receivedResults.Buffer[0],
-                            receivedResults.Buffer[1],
-                            receivedResults.Buffer[2],
-                            0x01
-                            };
-                        _ = UdpSendMessage(response2,remoteLoRaAggregatorIp,remoteLoRaAggregatorPort);
-                        MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager);
-                        // Message processing runs in the background
-#pragma warning disable CS4014
-                        Task.Run(async () =>
+                        if (pushDataRemoteLoRaAggregatorPort == 0)
                         {
+                            remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
+                            pushDataRemoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
+                        }
+                        sendAcknowledgementMessage(receivedResults, 0x01, pushDataRemoteLoRaAggregatorPort);
+
+                        // Message processing runs in the background
+                        MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager);
+
+#pragma warning disable CS4014
+                        Task.Run(async () => {
                             try
                             {
                                 var resultMessage = await messageProcessor.ProcessMessageAsync(receivedResults.Buffer);
                                 if (resultMessage != null && resultMessage.Length > 0)
-                                    await this.UdpSendMessage(resultMessage,remoteLoRaAggregatorIp,remoteLoRaAggregatorPort);
+                                    await this.UdpSendMessage(resultMessage, remoteLoRaAggregatorIp.ToString(), pullAckRemoteLoRaAggregatorPort);
                             }
                             catch (Exception ex)
                             {
                                 Logger.Log($"Error processing the message {ex.Message}, {ex.StackTrace}", Logger.LoggingLevel.Error);
                             }
                         });
+#pragma warning restore CS4014
                         break;
                     //This is a ack to a transmission we did previously
                     case 0x05:
@@ -144,6 +145,18 @@ namespace LoRaWan.NetworkServer
 
             }
         }
+
+        private void sendAcknowledgementMessage(UdpReceiveResult receivedResults, byte messageType, int remotePort)
+        {
+            byte[] response = new byte[4]{
+                            receivedResults.Buffer[0],
+                            receivedResults.Buffer[1],
+                            receivedResults.Buffer[2],
+                            messageType
+                            };
+            _ = UdpSendMessage(response, remoteLoRaAggregatorIp.ToString(), remotePort);
+        }
+
 
         async Task InitCallBack()
         {

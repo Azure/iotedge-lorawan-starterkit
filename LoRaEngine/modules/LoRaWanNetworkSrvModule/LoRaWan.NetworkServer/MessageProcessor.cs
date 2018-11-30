@@ -350,7 +350,7 @@ namespace LoRaWan.NetworkServer
                                         Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device message with a Fport of " + fPortValue, Logger.LoggingLevel.Info);
 
                                     }
-                                    Logger.Log(loraDeviceInfo.DevEUI,String.Format("Sending a C2D message with ID {0}",
+                                    Logger.Log(loraDeviceInfo.DevEUI,String.Format("Sending a downstream message with ID {0}",
                                         ConversionHelper.ByteArrayToString(rndToken)),
                                         Logger.LoggingLevel.Full);
                                 }
@@ -605,11 +605,14 @@ namespace LoRaWan.NetworkServer
                     }
                 }
                 LoRaMessageWrapper joinAcceptMessage = new LoRaMessageWrapper(loRaPayloadJoinAccept, LoRaMessageType.JoinAccept, loraMessage.PhysicalPayload.token, datr, 0, freq, tmst);
+
                 udpMsgForPktForwarder = joinAcceptMessage.PhysicalPayload.GetMessage();
 
                 //add to cache for processing normal messages. This awoids one additional call to the server.
                 Cache.AddToCache(joinLoraDeviceInfo.DevAddr, joinLoraDeviceInfo);
-                Logger.Log(devEui, $"join accept sent", Logger.LoggingLevel.Info);
+                Logger.Log(devEui, String.Format("join accept sent with ID {0}", 
+                    ConversionHelper.ByteArrayToString(loraMessage.PhysicalPayload.token)), 
+                    Logger.LoggingLevel.Full);
             }
             else
             {
