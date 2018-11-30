@@ -21,7 +21,7 @@
           "edgeAgent": {
             "type": "docker",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-agent:1.0.4",
+              "image": "mcr.microsoft.com/azureiotedge-agent:$EDGE_AGENT_VERSION",
               "createOptions": ""
             }
           },
@@ -30,8 +30,23 @@
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-hub:1.0.4",
-              "createOptions": "{\"HostConfig\":{\"PortBindings\":{\"8883/tcp\":[{\"HostPort\":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}]}}}"
+              "image": "mcr.microsoft.com/azureiotedge-hub:$EDGE_HUB_VERSION",
+              "createOptions": {
+                "HostConfig": {
+                  "PortBindings": {
+                    "8883/tcp": [
+                      {
+                        "HostPort": "8883"
+                      }
+                    ],
+                    "443/tcp": [
+                      {
+                        "HostPort": "443"
+                      }
+                    ]
+                  }
+                }
+              }
             },
             "env": {
               "OptimizeForPerformance": {
@@ -44,8 +59,22 @@
           "LoRaWanNetworkSrvModule": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoRaWanNetworkSrvModule.arm32v7}",
-              "createOptions": "{  \"ExposedPorts\": {    \"1680/udp\": {}  },  \"HostConfig\": {    \"PortBindings\": {      \"1680/udp\": [        {          \"HostPort\": \"1680\",          \"HostIp\":\"172.17.0.1\"        }      ]    }  }}"
+              "image": "${MODULES.LoRaWanNetworkSrvModule.amd64}",
+              "createOptions": {
+                "ExposedPorts": {
+                  "1680/udp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "1680/udp": [
+                      {
+                        "HostPort": "1680",
+                        "HostIp": "172.17.0.1"
+                      }
+                    ]
+                  }
+                }
+              }
             },
             "version": "1.0",
             "env": {
@@ -62,8 +91,18 @@
           "LoRaWanPktFwdModule": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoRaWanPktFwdModule.arm32v7}",
-              "createOptions": "  {  \"HostConfig\": {    \"NetworkMode\": \"host\", \"Privileged\": true   },  \"NetworkingConfig\": {    \"EndpointsConfig\": {      \"host\": {}    }  }}      "
+              "image": "${MODULES.LoRaWanPktFwdModule.amd64}",
+              "createOptions": {
+                "HostConfig": {
+                  "NetworkMode": "host",
+                  "Privileged": true
+                },
+                "NetworkingConfig": {
+                  "EndpointsConfig": {
+                    "host": {}
+                  }
+                }
+              }
             },
             "env": {
               "RESET_PIN": {
@@ -71,7 +110,7 @@
               },
               "REGION": {
                 "value": "$REGION"
-              }             
+              }
             },
             "version": "1.0",
             "status": "running",
@@ -100,4 +139,3 @@
     }
   }
 }
-

@@ -6,11 +6,13 @@
     "tag": {
       "version": "$NET_SRV_VERSION",
       "platforms": {
-        "amd64": "./Dockerfile",
+        "amd64": "./Dockerfile.amd64",
         "amd64.debug": "./Dockerfile.amd64.debug",
         "arm32v7": "./Dockerfile.arm32v7"
       }
-    }
+    },
+    "buildOptions": [],
+    "contextPath": "./"
   },
   "language": "csharp"
 }
