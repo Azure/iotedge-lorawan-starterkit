@@ -1,0 +1,217 @@
+name: $(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+variables:
+  # image tag prefix for dev branch
+  DEV_IMAGE_TAG: preview
+
+  # Consumer group used by integration test monitoring IoT Hub
+  INTEGRATIONTEST_IoTHubEventHubConsumerGroup: reserved_integrationtest
+  
+  # Network Server module version
+  NET_SRV_VERSION: ""
+
+  # Packet Forward module version
+  PKT_FWD_VERSION: ""
+
+  # Indicates whether or not ci label was added to PR
+  prWithCILabel: false
+
+# Enable PR validation on branches master and dev
+pr:
+  branches:
+    include:
+    - master
+    - dev
+
+# Enable CI on branches master and dev
+# Batch builds
+trigger:
+  batch: true
+  branches:
+    include:
+    - dev
+    - master
+
+jobs:
+
+# Smoke test job: ensure code compiles and unit tests are working
+- job: build_and_test
+  condition: ne(variables['RunTestsOnly'], 'true') # do not run if RunTestsOnly == true
+  displayName: Build and Test Solution
+  continueOnError: false
+  pool:
+    #name: docker
+    #demands: Agent.OSArchitecture -equals X64
+    vmImage: 'Ubuntu 16.04'   
+
+  steps:
+  # build LoRa Engine
+  - script: dotnet build --configuration $(buildConfiguration) ./LoRaEngine/LoRaEngine.sln
+    displayName: Build LoRa Engine    
+
+  # build LoRa Simulator
+  - script: dotnet build --configuration $(buildConfiguration) ./LoRaEngine/modules/LoRaSimulator/LoRaSimulator.sln
+    displayName: Build LoRa Simulator    
+
+  # Run unit tests
+  - script: |
+      mkdir $(Build.SourcesDirectory)\results
+      dotnet test --logger trx ./LoRaEngine/test/LoRaWanNetworkServer.Test/*.csproj
+      dotnet test --logger trx ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaToolsTest/*.csproj
+    displayName: Run unit tests
+  
+  # Quick test runner test
+  - bash: ./test_runner.sh "$COMMON_TESTRESULTSDIRECTORY"
+    displayName: Execute LoRaWanNetworkServer.Test tests (with retry)
+    workingDirectory: ./LoRaEngine/test/LoRaWanNetworkServer.Test
+    failOnStderr: true
+    timeoutInMinutes: 45
+    enabled: false
+
+  # Publish Test Results to Azure Pipelines/TFS
+  - task: PublishTestResults@2
+    condition: always()
+    inputs:
+      testResultsFormat: 'VSTest' # Options: JUnit, NUnit, VSTest, xUnit
+      testResultsFiles: '**/*.trx' 
+
+  # Find out if full ci is enabled for Pull Request validation
+  - bash: |
+     echo "Looking for label at https://api.github.com/repos/$BUILD_REPOSITORY_ID/issues/$SYSTEM_PULLREQUEST_PULLREQUESTNUMBER/labels"
+     if curl -s "https://api.github.com/repos/$BUILD_REPOSITORY_ID/issues/$SYSTEM_PULLREQUEST_PULLREQUESTNUMBER/labels" | grep '"name": "fullci"'
+     then       
+       echo "##vso[task.setvariable variable=prWithCILabel;isOutput=true]true"
+       echo "fullci label found!"
+     fi
+    displayName: Check for CI label build on PR
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    name: checkPrCILabel
+
+# Build, push and deploy IoT Edge Solution 
+- job: full_ci_deploy
+  displayName: Build, push and deploy IoT Edge Solution
+  variables:
+    IOT_DEPLOYMENT_ID: integrationtest
+    prCI: $[ dependencies.build_and_test.outputs['checkPrCILabel.prWithCILabel'] ]
+  dependsOn: build_and_test
+  condition: and(ne(variables['RunTestsOnly'], 'true'), and(succeeded(), or(eq(dependencies.build_and_test.outputs['checkPrCILabel.prWithCILabel'], true), or(eq(variables['FullCI'],'true'), in(variables['Build.SourceBranch'], 'refs/heads/master', 'refs/heads/dev', 'refs/heads/fbe-dev-ci-changes')))))
+  pool:
+    # name: Default
+    # demands: Agent.OSArchitecture -equals X64
+    vmImage: 'Ubuntu 16.04'  
+    
+  
+  steps:
+
+  # Find out the image tag
+  # master        -> $buildId
+  # dev           -> preview$buildId
+  # pr            -> pr-$prId-$buildId
+  # custom branch -> custom-$branchname-$buildId
+  - bash: |
+     if [ "$BUILD_SOURCEBRANCH" = "refs/heads/dev" ]; then
+       echo "dev"
+       IMAGE_TAG="$DEV_IMAGE_TAG-"
+     elif [ "$BUILD_SOURCEBRANCH" = "refs/heads/master" ]; then
+       echo "master"
+       IMAGE_TAG=""
+     elif [ "$SYSTEM_PULLREQUEST_PULLREQUESTNUMBER" != "" ]; then
+       echo "pull request"
+       IMAGE_TAG="pr-$SYSTEM_PULLREQUEST_PULLREQUESTNUMBER-"
+     else
+       echo "all others"
+       IMAGE_TAG="custom-$BUILD_SOURCEBRANCHNAME-"
+     fi
+     echo "Using image tag prefix $IMAGE_TAG"
+     IMAGE_TAG="$IMAGE_TAG$BUILD_BUILDID"
+     echo "Using image tag $IMAGE_TAG"
+     echo "##vso[task.setvariable variable=NET_SRV_VERSION]$IMAGE_TAG"
+     echo "##vso[task.setvariable variable=PKT_FWD_VERSION]$IMAGE_TAG"      
+     cp LoRaEngine/deployment.test.template.json LoRaEngine/deployment.template.json 
+    displayName: Set Module version numbers and activate test template
+    name: setImageTag
+
+  # Build and Push IoT Edge Solution
+  - task: vsc-iot.iot-edge-build-deploy.custom-build-release-task.AzureIoTEdge@1
+    displayName: "Build and Push IoT Edge Solution"
+    env:
+      AZURE_SUBSCRIPTIONID: $(AZURE_SUBSCRIPTIONID_SECRET)
+      CONTAINER_REGISTRY_PASSWORD: $(CONTAINER_REGISTRY_PASSWORD_SECRET)
+    inputs:
+      azureSubscriptionEndpoint: IntegrationTestRG
+      moduleJsons: 'modules/*/module.json'
+      containerregistrytype: 'Azure Container Registry'
+      azureContainerRegistry: '{"loginServer":"$(CONTAINER_REGISTRY_ADDRESS)", "id" : "/subscriptions/$(AZURE_SUBSCRIPTIONID)/resourceGroups/$(ACR_RG)/providers/Microsoft.ContainerRegistry/registries/$(ACR_NAME)"}'
+      rootPath: ./LoRaEngine
+  
+  # Deploy to test device
+  - task: vsc-iot.iot-edge-build-deploy.custom-build-release-task.AzureIoTEdge@1
+    displayName: 'Azure IoT Edge - Deploy to integration test device $(INTEGRATIONTEST_LeafDeviceGatewayID)'
+    inputs:
+      action: 'Deploy to IoT Edge devices'
+      azureSubscription: IntegrationTestRG
+      iothubname: '$(INTEGRATIONTEST_IOTHUB_NAME)'
+      deploymentid: '$(IOT_DEPLOYMENT_ID)'
+      deviceOption: 'Single Device'
+      deviceId: '$(INTEGRATIONTEST_LeafDeviceGatewayID)'
+      rootPath: ./LoRaEngine
+
+  # Wait until deployment has completed
+  - task: AzureCLI@1
+    displayName: 'Waiting deployment $(IOT_DEPLOYMENT_ID) to be ready at $(INTEGRATIONTEST_LeafDeviceGatewayID)...'
+    inputs:
+      azureSubscription: IntegrationTestRG
+      timeoutInMinutes: 30
+      scriptLocation: inlineScript
+      inlineScript: |
+        az extension add --name azure-cli-iot-ext     
+        until `az iot edge deployment show-metric --deployment-id $(IOT_DEPLOYMENT_ID) --metric-id reportedSuccessfulCount  --hub-name $(INTEGRATIONTEST_IOTHUB_NAME)|grep -q $(INTEGRATIONTEST_LeafDeviceGatewayID)`; do sleep 10 && echo wait; done
+
+# Runs the test in the device using VSTS Agent
+- job: test_runner_eu
+  displayName: Run tests in device
+  dependsOn: full_ci_deploy
+  condition: or(succeeded(), eq(variables['RunTestsOnly'], 'true'))
+  timeoutInMinutes: 45
+  pool:    
+    name: Default
+    demands: Agent.OSArchitecture -equals ARM # Run on pi atm
+  variables:      
+    INTEGRATIONTEST_LeafDeviceSerialPort: "/dev/ttyACM0"
+    INTEGRATIONTEST_IoTHubEventHubConsumerGroup: "reserved_integrationtest" 
+
+  # Replaces test configuration with variables  
+  steps:
+  - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+    displayName: 'Configure test in **/test/LoRaWan.IntegrationTest/appsettings.json'  
+    inputs:
+      targetFiles: '**/test/LoRaWan.IntegrationTest/appsettings.json'
+
+  # Runs test with retries, only if no additional integration test arguments were passed
+  - bash: ./test_runner.sh "$COMMON_TESTRESULTSDIRECTORY"
+    displayName: Execute integration tests (with retry)
+    condition: eq(variables['AdditionalIntegrationTestArguments'], '')
+    workingDirectory: ./LoRaEngine/test/LoRaWan.IntegrationTest
+    failOnStderr: true
+    timeoutInMinutes: 45
+
+   # Publish Test Results to Azure Pipelines/TFS
+  - task: PublishTestResults@2
+    condition: always()
+    inputs:
+      testResultsFormat: 'VSTest' # Options: JUnit, NUnit, VSTest, xUnit
+      testResultsFiles: '**/*.trx'
+      searchFolder: '$(Common.TestResultsDirectory)'
+      testRunTitle: Integration tests
+      mergeTestResults: true
+
+  # Run integration test with filters only, no built-in retries
+  - task: DotNetCoreCLI@2
+    displayName: 'Run integration test with additional arguments (no retry)'
+    enabled: true
+    condition: ne(variables['AdditionalIntegrationTestArguments'], '')
+    inputs:
+      command: test
+      projects: '**/test/LoRaWan.IntegrationTest/LoRaWan.IntegrationTest.csproj'
+      arguments: '-p:ParallelizeTestCollections=false $(AdditionalIntegrationTestArguments)'
+  
+
