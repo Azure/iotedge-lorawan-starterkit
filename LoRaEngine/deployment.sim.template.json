@@ -50,7 +50,13 @@
             },
             "env": {
               "OptimizeForPerformance": {
-                "value": "false"
+                "value": "$EDGEHUB_OPTIMIZEFORPERFORMANCE"
+              },
+              "mqttSettings__enabled": {
+                "value": "$EDGEHUB_MQTTSETTINGS_ENABLED"
+              },
+              "httpSettings__enabled": {
+                "value": "$EDGEHUB_HTTPSETTINGS_ENABLED"
               }
             }
           }
@@ -59,7 +65,7 @@
           "LoRaWanNetworkSrvModule": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoRaWanNetworkSrvModule.arm32v7}",
+              "image": "${MODULES.LoRaWanNetworkSrvModule}",
               "createOptions": {
                 "ExposedPorts": {
                   "1680/udp": {}
@@ -79,13 +85,16 @@
             "version": "1.0",
             "env": {
               "LOG_LEVEL": {
-                "value": "0"
+                "value": "$NET_SRV_LOG_LEVEL"
               },
               "LOG_TO_HUB": {
-                "value": "true"
+                "value": "$NET_SRV_LOGTO_HUB"
+              },
+              "LOG_TO_UDP": {
+                "value": "$NET_SRV_LOGTO_UDP"
               },
               "IOTEDGE_TIMEOUT": {
-                "value": "$IOTEDGE_TIMEOUT"
+                "value": "$NET_SRV_IOTEDGE_TIMEOUT"
               }
             },
             "status": "running",
@@ -133,7 +142,7 @@
       "properties.desired": {
         "schemaVersion": "1.0",
         "routes": {
-          "route": "FROM /* INTO $upstream"
+          "route": "$EDGEHUB_ROUTE"
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200
