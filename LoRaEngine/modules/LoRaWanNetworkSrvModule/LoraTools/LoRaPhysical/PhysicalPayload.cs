@@ -9,7 +9,7 @@ namespace LoRaTools
 
     public enum PhysicalIdentifier
     {
-        PUSH_DATA, PUSH_ACK, PULL_DATA, PULL_RESP, PULL_ACK, TX_ACK
+        PUSH_DATA, PUSH_ACK, PULL_DATA, PULL_RESP, PULL_ACK, TX_ACK, UNKNOWN=Byte.MaxValue
     }
 
     /// <summary>
@@ -17,6 +17,22 @@ namespace LoRaTools
     /// </summary>
     public class PhysicalPayload
     {
+        // Position in payload where the identifier is located (3)
+        private const int PHYSICAL_IDENTIFIER_INDEX = 3;
+
+        /// <summary>
+        /// Get the type of a physical payload
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <returns></returns>
+        public static PhysicalIdentifier GetIdentifierFromPayload(byte[] packet)
+        {
+            // Unknown if: packet is null or does not have the physical identifier byte
+            if (packet == null || packet.Length < (PHYSICAL_IDENTIFIER_INDEX + 1))
+                return PhysicalIdentifier.UNKNOWN;
+
+            return (PhysicalIdentifier)packet[3];
+        }
 
         //case of inbound messages
         public PhysicalPayload(byte[] input, bool server = false)
@@ -24,7 +40,7 @@ namespace LoRaTools
 
             protocolVersion = input[0];
             Array.Copy(input, 1, token, 0, 2);
-            identifier = (PhysicalIdentifier)input[3];
+            identifier = GetIdentifierFromPayload(input);
 
             if (!server)
             {
@@ -119,21 +135,7 @@ namespace LoRaTools
             return returnList.ToArray();
         }
 
-        public byte[] GetSyncHeader(byte[] mac)
-        {
-            byte[] buff = new byte[12];
-            // first is the protocole version
-            buff[0] = 2;
-            // Random token
-            buff[1] = token[0];
-            buff[2] = token[1];
-            // the identifier
-            buff[3] = (byte)identifier;
-            // Then the MAC address specific to the server
-            for (int i = 0; i < 8; i++)
-                buff[4 + i] = mac[i];
-            return buff;
-        }
+
     }
 
 }

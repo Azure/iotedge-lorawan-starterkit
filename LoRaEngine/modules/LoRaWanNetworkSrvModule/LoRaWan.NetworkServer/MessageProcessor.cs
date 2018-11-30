@@ -35,7 +35,6 @@ namespace LoRaWan.NetworkServer
         {
             startTimeProcessing = DateTime.UtcNow;
             LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(message);
-            byte[] udpMsgForPktForwarder = new Byte[0];
             if (loraMessage.IsLoRaMessage)
             {
                 if (RegionFactory.CurrentRegion == null)
@@ -43,17 +42,15 @@ namespace LoRaWan.NetworkServer
                 //join message
                 if (loraMessage.LoRaMessageType == LoRaMessageType.JoinRequest)
                 {
-                    udpMsgForPktForwarder = await ProcessJoinRequest(loraMessage);
+                    return await ProcessJoinRequest(loraMessage);
                 }
                 //normal message
                 else if (loraMessage.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
                 {
-                    udpMsgForPktForwarder = await ProcessLoraMessage(loraMessage);
+                    return await ProcessLoraMessage(loraMessage);
                 }
             }
-
-            //send reply to pktforwarder
-            return udpMsgForPktForwarder;
+            return null;
 
         }
         private async Task<byte[]> ProcessLoraMessage(LoRaMessageWrapper loraMessage)

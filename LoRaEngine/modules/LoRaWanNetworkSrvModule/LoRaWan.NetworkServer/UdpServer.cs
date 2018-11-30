@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
+using LoRaTools;
 using LoRaTools.Utils;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
@@ -26,7 +27,6 @@ namespace LoRaWan.NetworkServer
         ModuleClient ioTHubModuleClient;
         private IPAddress remoteLoRaAggregatorIp;
         private int pullAckRemoteLoRaAggregatorPort=0;
-        private int pushDataRemoteLoRaAggregatorPort=0;
 
         UdpClient udpClient;
 
@@ -81,25 +81,20 @@ namespace LoRaWan.NetworkServer
                //Logger.Log($"UDP message received ({receivedResults.Buffer[3]}) from port: {receivedResults.RemoteEndPoint.Port} and IP: {receivedResults.RemoteEndPoint.Address.ToString()}",LoggingLevel.Always);
                  
 
-                switch (receivedResults.Buffer[3])
+                switch (PhysicalPayload.GetIdentifierFromPayload(receivedResults.Buffer))
                 {
                     //In this case we have a keep-alive PULL_DATA packet we don't need to start the engine and can return immediately a response to the challenge
-                    case 0x02:
+                    case PhysicalIdentifier.PULL_DATA:
                         if (pullAckRemoteLoRaAggregatorPort == 0)
                         {
                             remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
                             pullAckRemoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
                         }
-                        sendAcknowledgementMessage(receivedResults,0x04, pullAckRemoteLoRaAggregatorPort);
+                        SendAcknowledgementMessage(receivedResults,(int)PhysicalIdentifier.PULL_ACK, pullAckRemoteLoRaAggregatorPort);
                         break;
                     //This is a PUSH_DATA (upstream message).
-                    case 0x00:
-                        if (pushDataRemoteLoRaAggregatorPort == 0)
-                        {
-                            remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
-                            pushDataRemoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
-                        }
-                        sendAcknowledgementMessage(receivedResults, 0x01, pushDataRemoteLoRaAggregatorPort);
+                    case PhysicalIdentifier.PUSH_DATA:
+                        SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PUSH_ACK, receivedResults.RemoteEndPoint.Port);
 
                         // Message processing runs in the background
                         MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager);
@@ -120,7 +115,7 @@ namespace LoRaWan.NetworkServer
 #pragma warning restore CS4014
                         break;
                     //This is a ack to a transmission we did previously
-                    case 0x05:
+                    case PhysicalIdentifier.TX_ACK:
                         if (receivedResults.Buffer.Length == 12)
                         {
                             Logger.Log(String.Format("Packet with id {0} successfully transmitted by the aggregator",
@@ -130,13 +125,13 @@ namespace LoRaWan.NetworkServer
                         else
                         {
                             Logger.Log(String.Format("Packet with id {0} had a problem to be transmitted over the air :{1}",
-                            ConversionHelper.ByteArrayToString(receivedResults.Buffer.RangeSubset(1, 2)),
-                            Encoding.UTF8.GetString(receivedResults.Buffer.RangeSubset(12, receivedResults.Buffer.Length - 12)))
+                            receivedResults.Buffer.Length > 2 ? ConversionHelper.ByteArrayToString(receivedResults.Buffer.RangeSubset(1, 2)) : "",
+                            receivedResults.Buffer.Length > 12 ? Encoding.UTF8.GetString(receivedResults.Buffer.RangeSubset(12, receivedResults.Buffer.Length - 12)) : "")
                             , LoggingLevel.Error);
                         }
                         break;
                     default:
-                        Logger.Log("Unknown packet type being received", LoggingLevel.Error);
+                        Logger.Log("Unknown packet type or length being received", LoggingLevel.Error);
                         break;
 
 
@@ -146,7 +141,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private void sendAcknowledgementMessage(UdpReceiveResult receivedResults, byte messageType, int remotePort)
+        private void SendAcknowledgementMessage(UdpReceiveResult receivedResults, byte messageType, int remotePort)
         {
             byte[] response = new byte[4]{
                             receivedResults.Buffer[0],
