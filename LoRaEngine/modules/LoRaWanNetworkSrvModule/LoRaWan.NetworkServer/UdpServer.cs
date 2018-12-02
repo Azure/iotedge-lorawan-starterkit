@@ -2,6 +2,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
+using LoRaTools;
+using LoRaTools.Utils;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
@@ -13,6 +15,7 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using static LoRaWan.Logger;
 
 namespace LoRaWan.NetworkServer
 {
@@ -22,11 +25,10 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly LoraDeviceInfoManager loraDeviceInfoManager;
         ModuleClient ioTHubModuleClient;
+        private IPAddress remoteLoRaAggregatorIp;
+        private int pullAckRemoteLoRaAggregatorPort=0;
 
         UdpClient udpClient;
-
-        private IPAddress remoteLoRaAggregatorIp;
-        private int remoteLoRaAggregatorPort;
 
         // Creates a new instance of UdpServer
         public static UdpServer Create()
@@ -53,11 +55,11 @@ namespace LoRaWan.NetworkServer
         }
 
 
-        public async Task UdpSendMessage(byte[] messageToSend)
+        public async Task UdpSendMessage(byte[] messageToSend, string remoteLoRaAggregatorIp, int remoteLoRaAggregatorPort)
         {
             if (messageToSend != null && messageToSend.Length != 0)
             {
-                await udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp.ToString(), remoteLoRaAggregatorPort);
+                await udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp, remoteLoRaAggregatorPort);
 
             }
         }
@@ -76,35 +78,80 @@ namespace LoRaWan.NetworkServer
             {
                 UdpReceiveResult receivedResults = await udpClient.ReceiveAsync();
 
-                //Logger.Log($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}");
+               //Logger.Log($"UDP message received ({receivedResults.Buffer[3]}) from port: {receivedResults.RemoteEndPoint.Port} and IP: {receivedResults.RemoteEndPoint.Address.ToString()}",LoggingLevel.Always);
+                 
 
-
-                //Todo check that is an ack only, we could do a better check in a future verstion
-                if (receivedResults.Buffer.Length == 12)
+                switch (PhysicalPayload.GetIdentifierFromPayload(receivedResults.Buffer))
                 {
-                    remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
-                    remoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
+                    //In this case we have a keep-alive PULL_DATA packet we don't need to start the engine and can return immediately a response to the challenge
+                    case PhysicalIdentifier.PULL_DATA:
+                        if (pullAckRemoteLoRaAggregatorPort == 0)
+                        {
+                            remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
+                            pullAckRemoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
+                        }
+                        SendAcknowledgementMessage(receivedResults,(int)PhysicalIdentifier.PULL_ACK, pullAckRemoteLoRaAggregatorPort);
+                        break;
+                    //This is a PUSH_DATA (upstream message).
+                    case PhysicalIdentifier.PUSH_DATA:
+                        SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PUSH_ACK, receivedResults.RemoteEndPoint.Port);
+
+                        // Message processing runs in the background
+                        MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager);
+
+#pragma warning disable CS4014
+                        Task.Run(async () => {
+                            try
+                            {
+                                var resultMessage = await messageProcessor.ProcessMessageAsync(receivedResults.Buffer);
+                                if (resultMessage != null && resultMessage.Length > 0)
+                                    await this.UdpSendMessage(resultMessage, remoteLoRaAggregatorIp.ToString(), pullAckRemoteLoRaAggregatorPort);
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Log($"Error processing the message {ex.Message}, {ex.StackTrace}", Logger.LoggingLevel.Error);
+                            }
+                        });
+#pragma warning restore CS4014
+                        break;
+                    //This is a ack to a transmission we did previously
+                    case PhysicalIdentifier.TX_ACK:
+                        if (receivedResults.Buffer.Length == 12)
+                        {
+                            Logger.Log(String.Format("Packet with id {0} successfully transmitted by the aggregator",
+                            ConversionHelper.ByteArrayToString(receivedResults.Buffer.RangeSubset(1, 2)))
+                            , LoggingLevel.Full);
+                        }
+                        else
+                        {
+                            Logger.Log(String.Format("Packet with id {0} had a problem to be transmitted over the air :{1}",
+                            receivedResults.Buffer.Length > 2 ? ConversionHelper.ByteArrayToString(receivedResults.Buffer.RangeSubset(1, 2)) : "",
+                            receivedResults.Buffer.Length > 12 ? Encoding.UTF8.GetString(receivedResults.Buffer.RangeSubset(12, receivedResults.Buffer.Length - 12)) : "")
+                            , LoggingLevel.Error);
+                        }
+                        break;
+                    default:
+                        Logger.Log("Unknown packet type or length being received", LoggingLevel.Error);
+                        break;
+
+
                 }
+#pragma warning restore CS4014
 
-                MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager);
-
-                // Message processing runs in the background
-                #pragma warning disable CS4014 
-                Task.Run(async () => {
-                    try
-                    {
-                        var resultMessage = await messageProcessor.ProcessMessageAsync(receivedResults.Buffer);
-                        if (resultMessage != null && resultMessage.Length > 0)
-                            await this.UdpSendMessage(resultMessage);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log($"Error processing the message {ex.Message}, {ex.StackTrace}", Logger.LoggingLevel.Error);
-                    }
-                });                    
-                #pragma warning restore CS4014 
             }
         }
+
+        private void SendAcknowledgementMessage(UdpReceiveResult receivedResults, byte messageType, int remotePort)
+        {
+            byte[] response = new byte[4]{
+                            receivedResults.Buffer[0],
+                            receivedResults.Buffer[1],
+                            receivedResults.Buffer[2],
+                            messageType
+                            };
+            _ = UdpSendMessage(response, remoteLoRaAggregatorIp.ToString(), remotePort);
+        }
+
 
         async Task InitCallBack()
         {
@@ -118,8 +165,9 @@ namespace LoRaWan.NetworkServer
                 if (configuration.RunningAsIoTEdgeModule)
                 {
                     ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
-                    
-                    Logger.Init(new LoggerConfiguration{
+
+                    Logger.Init(new LoggerConfiguration
+                    {
                         ModuleClient = ioTHubModuleClient,
                         LogLevel = configuration.LogLevel,
                         LogToConsole = configuration.LogToConsole,
@@ -128,7 +176,7 @@ namespace LoRaWan.NetworkServer
                         LogToUdpPort = configuration.LogToUdpPort,
                         LogToUdpAddress = configuration.LogToUdpAddress,
                     });
-                    
+
                     if (configuration.IoTEdgeTimeout > 0)
                     {
                         ioTHubModuleClient.OperationTimeoutInMilliseconds = configuration.IoTEdgeTimeout;
@@ -138,7 +186,7 @@ namespace LoRaWan.NetworkServer
                     Logger.Log("Getting properties from module twin...", Logger.LoggingLevel.Info);
 
 
-                    var moduleTwin = await ioTHubModuleClient.GetTwinAsync();                    
+                    var moduleTwin = await ioTHubModuleClient.GetTwinAsync();
                     var moduleTwinCollection = moduleTwin.Properties.Desired;
 
                     try
@@ -167,11 +215,12 @@ namespace LoRaWan.NetworkServer
                     await ioTHubModuleClient.SetMethodHandlerAsync("ClearCache", ClearCache, null);
 
 
-                }                
+                }
                 //running as non edge module for test and debugging
                 else
-                {   
-                    Logger.Init(new LoggerConfiguration{
+                {
+                    Logger.Init(new LoggerConfiguration
+                    {
                         ModuleClient = null,
                         LogLevel = configuration.LogLevel,
                         LogToConsole = configuration.LogToConsole,
