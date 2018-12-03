@@ -45,8 +45,7 @@ namespace LoRaWan.IntegrationTest
             // Find "0000000000000011: message '{"value":1234}' sent to hub" in network server logs
             await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":1234}}' sent to hub");
 
-            this.ArduinoDevice.ClearSerialLogs();
-            this.TestFixture.ClearNetworkServerModuleLog();
+            this.TestFixture.ClearLogs();
         }
 
         // Ensures that reflect based sensor decoder decodes payload
@@ -80,8 +79,7 @@ namespace LoRaWan.IntegrationTest
             // Find "0000000000000011: message '{"value":1234}' sent to hub" in network server logs
             await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":4321}}' sent to hub");
 
-            this.ArduinoDevice.ClearSerialLogs();
-            this.TestFixture.ClearNetworkServerModuleLog();
+            this.TestFixture.ClearLogs();
         }
     }
 

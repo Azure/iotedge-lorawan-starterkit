@@ -51,8 +51,7 @@ namespace LoRaWan.IntegrationTest
                 // 0000000000000005: message '{"value": 51}' sent to hub
                 await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
             }
 
             // Sends 10x confirmed messages
@@ -77,8 +76,7 @@ namespace LoRaWan.IntegrationTest
                 // 0000000000000005: message '{"value": 51}' sent to hub
                 await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
             }
         }
 
@@ -111,8 +109,7 @@ namespace LoRaWan.IntegrationTest
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-             this.ArduinoDevice.ClearSerialLogs();
-            this.TestFixture.ClearNetworkServerModuleLog();
+            this.TestFixture.ClearLogs();
 
             // Try with confirmed message
             await this.ArduinoDevice.transferPacketWithConfirmedAsync(PayloadGenerator.Next().ToString(), 10);
@@ -166,8 +163,7 @@ namespace LoRaWan.IntegrationTest
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-            this.ArduinoDevice.ClearSerialLogs();
-            this.TestFixture.ClearNetworkServerModuleLog();
+            this.TestFixture.ClearLogs();
 
             // Try with confirmed message
 
@@ -210,8 +206,7 @@ namespace LoRaWan.IntegrationTest
             await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
 
     
-            this.ArduinoDevice.ClearSerialLogs();
-            this.TestFixture.ClearNetworkServerModuleLog();
+            this.TestFixture.ClearLogs();
 
             // Try with confirmed message
 

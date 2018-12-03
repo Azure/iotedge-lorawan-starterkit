@@ -18,8 +18,7 @@ namespace LoRaWan.IntegrationTest
         {
             this.testFixture = testFixture;
             this.arduinoDevice = testFixture.ArduinoDevice;
-            this.TestFixture.ClearNetworkServerModuleLog();
-            this.arduinoDevice.ClearSerialLogs();
+            this.TestFixture.ClearLogs();
         }
 
 

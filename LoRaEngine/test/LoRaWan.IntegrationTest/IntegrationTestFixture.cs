@@ -296,10 +296,12 @@ namespace LoRaWan.IntegrationTest
             }
         }
       
-        public void ClearNetworkServerModuleLog()
+        // Clear IoT Hub, Udp logs and Arduino serial logs
+        public void ClearLogs()
         { 
             this.IoTHubMessages?.ResetEvents();
             this.udpLogListener?.ResetEvents();
+            this.ArduinoDevice?.ClearSerialLogs();
         }
 
         bool disposed = false;

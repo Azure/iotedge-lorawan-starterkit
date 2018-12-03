@@ -63,8 +63,7 @@ namespace LoRaWan.IntegrationTest
                 // +CMSG: ACK Received
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
             }
 
 
@@ -121,8 +120,7 @@ namespace LoRaWan.IntegrationTest
                 }
                 
                 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -170,8 +168,7 @@ namespace LoRaWan.IntegrationTest
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
             }
 
 
@@ -225,8 +222,7 @@ namespace LoRaWan.IntegrationTest
                 }
                 
                 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -273,8 +269,7 @@ namespace LoRaWan.IntegrationTest
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
             }
 
 
@@ -329,8 +324,7 @@ namespace LoRaWan.IntegrationTest
                 }
 
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -376,8 +370,7 @@ namespace LoRaWan.IntegrationTest
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
             }
 
 
@@ -435,8 +428,7 @@ namespace LoRaWan.IntegrationTest
                 }
 
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }

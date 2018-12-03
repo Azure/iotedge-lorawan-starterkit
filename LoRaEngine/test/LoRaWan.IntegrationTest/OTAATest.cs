@@ -44,8 +44,7 @@ namespace LoRaWan.IntegrationTest
             for (var i=0; i < MESSAGES_COUNT; ++i)
             {
                 Console.WriteLine($"Starting sending OTTA unconfirmed message {i+1}/{MESSAGES_COUNT}");
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
 
                 var msg = PayloadGenerator.Next().ToString();
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
@@ -78,8 +77,7 @@ namespace LoRaWan.IntegrationTest
             for (var i=0; i < MESSAGES_COUNT; ++i)
             {
                 Console.WriteLine($"Starting sending OTTA confirmed message {i+1}/{MESSAGES_COUNT}");
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
 
                 var msg = PayloadGenerator.Next().ToString();
                 await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);

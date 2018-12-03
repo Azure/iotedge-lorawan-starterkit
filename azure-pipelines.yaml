@@ -192,7 +192,7 @@ jobs:
     - full_ci_deploy_arm
     - full_ci_deploy_facade_function
   condition: or(succeeded(), eq(variables['RunTestsOnly'], 'true'))
-  timeoutInMinutes: 45
+  timeoutInMinutes: 60 # Raspberry PI is slow, allow taking 60 minutes
   pool:    
     name: Default
     demands: Agent.OSArchitecture -equals ARM # Run on pi atm
