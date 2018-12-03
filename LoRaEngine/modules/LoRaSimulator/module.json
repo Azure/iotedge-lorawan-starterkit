@@ -10,7 +10,8 @@
                 "arm32v7": "./Dockerfile.arm32v7"
             }
         },
-        "buildOptions": []
+        "buildOptions": [],
+        "contextPath": "./"
     },
     "language": "csharp"
 }

@@ -1,169 +1,193 @@
 {
-    "moduleContent": {
-      "$edgeAgent": {
-        "properties.desired": {
-          "schemaVersion": "1.0",
-          "runtime": {
+  "moduleContent": {
+    "$edgeAgent": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "runtime": {
+          "type": "docker",
+          "settings": {
+            "minDockerVersion": "v1.25",
+            "loggingOptions": "",
+            "registryCredentials": {
+              "$CONTAINER_REGISTRY_USERNAME": {
+                "username": "$CONTAINER_REGISTRY_USERNAME",
+                "password": "$CONTAINER_REGISTRY_PASSWORD",
+                "address": "$CONTAINER_REGISTRY_ADDRESS"
+              }
+            }
+          }
+        },
+        "systemModules": {
+          "edgeAgent": {
             "type": "docker",
             "settings": {
-              "minDockerVersion": "v1.25",
-              "loggingOptions": "",
-              "registryCredentials": {
-                "$CONTAINER_REGISTRY_USERNAME": {
-                  "username": "$CONTAINER_REGISTRY_USERNAME",
-                  "password": "$CONTAINER_REGISTRY_PASSWORD",
-                  "address": "$CONTAINER_REGISTRY_ADDRESS"
-                }
-              }
+              "image": "mcr.microsoft.com/azureiotedge-agent:$EDGE_AGENT_VERSION",
+              "createOptions": ""
             }
           },
-          "systemModules": {
-            "edgeAgent": {
-              "type": "docker",
-              "settings": {
-                "image": "mcr.microsoft.com/azureiotedge-agent:1.0.4",
-                "createOptions": ""
-              }
-            },
-            "edgeHub": {
-              "type": "docker",
-              "status": "running",
-              "restartPolicy": "always",
-              "settings": {
-                "image": "mcr.microsoft.com/azureiotedge-hub:1.0.4",
-                "createOptions": "{\"HostConfig\":{\"PortBindings\":{\"8883/tcp\":[{\"HostPort\":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}]}}}"
-              },
-              "env": {
-                "OptimizeForPerformance": {
-                  "value": "false"
-                }
-              }
-            }
-          },
-          "modules": {
-            "sensordecodermodule":{
-              "type": "docker",
-              "settings": {
-                "image": "fbeltrao/decodersample:1.0-arm32v7",
-                "createOptions": {}
-              },
-              "status": "running",
-              "restartPolicy": "always",
-              "version": "1.0"          
-            },
-            "LoRaWanNetworkSrvModule": {
-              "type": "docker",
-              "settings": {
-                "image": "${MODULES.LoRaWanNetworkSrvModule.arm32v7}",
-                "createOptions": {
-                  "ExposedPorts": {
-                    "1680/udp": {}
-                  },
-                  "HostConfig": {
-                    "PortBindings": {
-                      "1680/udp": [
-                        {
-                          "HostPort": "1680",
-                          "HostIp": "172.17.0.1"
-                        }
-                      ]
-                    }
-                  }
-                }
-              },
-              "version": "1.0",
-              "env": {
-                "LOG_LEVEL": {
-                  "value": "2"
-                },
-                "LOG_TO_HUB": {
-                  "value": "false"
-                },
-                "LOG_TO_UDP": {
-                  "value": "true"
-                }
-              },
-              "status": "running",
-              "restartPolicy": "always"
-            },
-            "LoRaWanPktFwdModule": {
-              "type": "docker",
-              "settings": {
-                "image": "${MODULES.LoRaWanPktFwdModule.arm32v7}",
-                "createOptions": {
-                  "HostConfig": {
-                    "NetworkMode": "host",
-                    "Privileged": true
-                  },
-                  "NetworkingConfig": {
-                    "EndpointsConfig": {
-                      "host": {}
-                    }
-                  }
-                }
-              },
-              "env": {
-                "RESET_PIN": {
-                  "value": "$RESET_PIN"
-                },
-                "REGION": {
-                  "value": "$REGION"
-                }
-              },
-              "version": "1.0",
-              "status": "running",
-              "restartPolicy": "always"
-            },
-            "AzureDevOpsAgent": {
-              "version": "1.0",
-              "type": "docker",
-              "status": "running",
-              "restartPolicy": "always",
-              "settings": {
-                "image": "$CONTAINER_REGISTRY_ADDRESS/azuredevopsagent:0.0.1-arm32v7",
-                "createOptions": {
-                  "HostConfig": { 
-                    "Privileged": true 
-                  },
+          "edgeHub": {
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "mcr.microsoft.com/azureiotedge-hub:$EDGE_HUB_VERSION",
+              "createOptions": {
+                "HostConfig": {
                   "PortBindings": {
-                    "6000/udp": [
+                    "8883/tcp": [
                       {
-                        "HostPort": "6000",
+                        "HostPort": "8883"
+                      }
+                    ],
+                    "443/tcp": [
+                      {
+                        "HostPort": "443"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "env": {
+              "OptimizeForPerformance": {
+                "value": "$EDGEHUB_OPTIMIZEFORPERFORMANCE"
+              },
+              "mqttSettings__enabled": {
+                "value": "$EDGEHUB_MQTTSETTINGS_ENABLED"
+              },
+              "httpSettings__enabled": {
+                "value": "$EDGEHUB_HTTPSETTINGS_ENABLED"
+              }
+            }
+          }
+        },
+        "modules": {
+          "LoRaWanNetworkSrvModule": {
+            "type": "docker",
+            "settings": {
+              "image": "${MODULES.LoRaWanNetworkSrvModule}",
+              "createOptions": {
+                "ExposedPorts": {
+                  "1680/udp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "1680/udp": [
+                      {
+                        "HostPort": "1680",
                         "HostIp": "172.17.0.1"
                       }
                     ]
                   }
                 }
+              }
+            },
+            "version": "1.0",
+            "env": {
+              "LOG_LEVEL": {
+                "value": "$NET_SRV_LOG_LEVEL"
               },
-              "env": {
-                "VSTS_SERVER_URL": {
-                  "value": "$VSTS_SERVER_URL"
+              "LOG_TO_HUB": {
+                "value": "$NET_SRV_LOGTO_HUB"
+              },
+              "LOG_TO_UDP": {
+                "value": "$NET_SRV_LOGTO_UDP"
+              },
+              "IOTEDGE_TIMEOUT": {
+                "value": "$NET_SRV_IOTEDGE_TIMEOUT"
+              }
+            },
+            "status": "running",
+            "restartPolicy": "always"
+          },
+          "LoRaWanPktFwdModule": {
+            "type": "docker",
+            "settings": {
+              "image": "${MODULES.LoRaWanPktFwdModule}",
+              "createOptions": {
+                "HostConfig": {
+                  "NetworkMode": "host",
+                  "Privileged": true
                 },
-                "VSTS_TOKEN": {
-                  "value": "$VSTS_TOKEN"
+                "NetworkingConfig": {
+                  "EndpointsConfig": {
+                    "host": {}
+                  }
                 }
               }
-            }
-          }
-        }
-      },
-      "$edgeHub": {
-        "properties.desired": {
-          "schemaVersion": "1.0",
-          "routes": {
-            "route": "FROM /* INTO $upstream"
+            },
+            "env": {
+              "RESET_PIN": {
+                "value": "$RESET_PIN"
+              },
+              "REGION": {
+                "value": "$REGION"
+              }
+            },
+            "version": "1.0",
+            "status": "running",
+            "restartPolicy": "always"
           },
-          "storeAndForwardConfiguration": {
-            "timeToLiveSecs": 7200
+          "AzureDevOpsAgent": {
+            "version": "1.0",
+            "type": "docker",
+            "status": "running",
+            "restartPolicy": "always",
+            "settings": {
+              "image": "${MODULES.AzureDevOpsAgent}",
+              "createOptions": {
+                "HostConfig": { 
+                  "Privileged": true 
+                },
+                "PortBindings": {
+                  "6000/udp": [
+                    {
+                      "HostPort": "6000",
+                      "HostIp": "172.17.0.1"
+                    }
+                  ]
+                }
+              }
+            },
+            "env": {
+              "VSTS_SERVER_URL": {
+                "value": "$VSTS_SERVER_URL"
+              },
+              "VSTS_TOKEN": {
+                "value": "$VSTS_TOKEN"
+              }
+            }
+          },
+          "sensordecodermodule":{
+            "type": "docker",
+            "settings": {
+              "image": "fbeltrao/decodersample:1.0-arm32v7",
+              "createOptions": {}
+            },
+            "status": "running",
+            "restartPolicy": "always",
+            "version": "1.0"          
           }
         }
-      },
-      "LoRaWanNetworkSrvModule": {
-        "properties.desired": {
-          "schemaVersion": "1.0",
-          "FacadeServerUrl": "$FACADE_SERVER_URL",
-          "FacadeAuthCode": "$FACADE_AUTH_CODE"
+      }
+    },
+    "$edgeHub": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "routes": {
+          "route": "$EDGEHUB_ROUTE"
+        },
+        "storeAndForwardConfiguration": {
+          "timeToLiveSecs": 7200
         }
+      }
+    },
+    "LoRaWanNetworkSrvModule": {
+      "properties.desired": {
+        "schemaVersion": "1.0",
+        "FacadeServerUrl": "$FACADE_SERVER_URL",
+        "FacadeAuthCode": "$FACADE_AUTH_CODE"
       }
     }
   }
+}

@@ -21,7 +21,7 @@
           "edgeAgent": {
             "type": "docker",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-agent:1.0.4",
+              "image": "mcr.microsoft.com/azureiotedge-agent:$EDGE_AGENT_VERSION",
               "createOptions": ""
             }
           },
@@ -30,12 +30,33 @@
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-hub:1.0.4",
-              "createOptions": "{\"HostConfig\":{\"PortBindings\":{\"8883/tcp\":[{\"HostPort\":\"8883\"}],\"443/tcp\":[{\"HostPort\":\"443\"}]}}}"
+              "image": "mcr.microsoft.com/azureiotedge-hub:$EDGE_HUB_VERSION",
+              "createOptions": {
+                "HostConfig": {
+                  "PortBindings": {
+                    "8883/tcp": [
+                      {
+                        "HostPort": "8883"
+                      }
+                    ],
+                    "443/tcp": [
+                      {
+                        "HostPort": "443"
+                      }
+                    ]
+                  }
+                }
+              }
             },
             "env": {
               "OptimizeForPerformance": {
-                "value": "false"
+                "value": "$EDGEHUB_OPTIMIZEFORPERFORMANCE"
+              },
+              "mqttSettings__enabled": {
+                "value": "$EDGEHUB_MQTTSETTINGS_ENABLED"
+              },
+              "httpSettings__enabled": {
+                "value": "$EDGEHUB_HTTPSETTINGS_ENABLED"
               }
             }
           }
@@ -44,16 +65,36 @@
           "LoRaWanNetworkSrvModule": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoRaWanNetworkSrvModule.amd64}",
-              "createOptions": "{  \"ExposedPorts\": {    \"1680/udp\": {}  },  \"HostConfig\": {    \"PortBindings\": {      \"1680/udp\": [        {          \"HostPort\": \"1680\",          \"HostIp\":\"172.17.0.1\"        }      ]    }  }}"
+              "image": "${MODULES.LoRaWanNetworkSrvModule}",
+              "createOptions": {
+                "ExposedPorts": {
+                  "1680/udp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "1680/udp": [
+                      {
+                        "HostPort": "1680",
+                        "HostIp": "172.17.0.1"
+                      }
+                    ]
+                  }
+                }
+              }
             },
             "version": "1.0",
             "env": {
               "LOG_LEVEL": {
-                "value": "1"
+                "value": "$NET_SRV_LOG_LEVEL"
               },
               "LOG_TO_HUB": {
-                "value": "true"
+                "value": "$NET_SRV_LOGTO_HUB"
+              },
+              "LOG_TO_UDP": {
+                "value": "$NET_SRV_LOGTO_UDP"
+              },
+              "IOTEDGE_TIMEOUT": {
+                "value": "$NET_SRV_IOTEDGE_TIMEOUT"
               }
             },
             "status": "running",
@@ -62,8 +103,18 @@
           "LoRaWanPktFwdModule": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoRaWanPktFwdModule.amd64}",
-              "createOptions": "  {  \"HostConfig\": {    \"NetworkMode\": \"host\", \"Privileged\": true   },  \"NetworkingConfig\": {    \"EndpointsConfig\": {      \"host\": {}    }  }}      "
+              "image": "${MODULES.LoRaWanPktFwdModule}",
+              "createOptions": {
+                "HostConfig": {
+                  "NetworkMode": "host",
+                  "Privileged": true
+                },
+                "NetworkingConfig": {
+                  "EndpointsConfig": {
+                    "host": {}
+                  }
+                }
+              }
             },
             "env": {
               "RESET_PIN": {
@@ -84,7 +135,7 @@
       "properties.desired": {
         "schemaVersion": "1.0",
         "routes": {
-          "route": "FROM /* INTO $upstream"
+          "route": "$EDGEHUB_ROUTE"
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200

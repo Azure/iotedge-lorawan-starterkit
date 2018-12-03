@@ -85,17 +85,21 @@ From the Facade Azure function, extract the `Host key` of type `_master` and sav
 
 ![Extract Facade function Host key](/Docs/Pictures/FunctionHostKey.PNG)
 
-- Configure your `.env` file with your [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/) as well as the Facade access URL and credentials. Those variables will be used by our [Azure IoT Edge solution template](/LoRaEngine/deployment.template.json). You can find an example of this file [here](/LoRaEngine/modules/example.env)
+- Create your `.env` file in the `/LoRaEngine` folder by copying the `example.env` file located [here](/LoRaEngine/example.env)
+- Configure your `.env` file with your own [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/) as well as the Facade access URL and credentials. Set the region to "EU" or "US" based on your location. You do not need to change any of the other settings at this point.
+Those variables will be used by our [Azure IoT Edge solution template](/LoRaEngine/deployment.template.json).
 
 ```{bash}
+...
 CONTAINER_REGISTRY_ADDRESS=yourregistry.azurecr.io
 CONTAINER_REGISTRY_USERNAME=yourlogin
 CONTAINER_REGISTRY_PASSWORD=registrypassword
-PKT_FWD_VERSION=0.0.3
-NET_SRV_VERSION=0.0.2
+...
 REGION=EU
+...
 FACADE_SERVER_URL=https://yourfunction.azurewebsites.net/api/
-FACADE_AUTH_CODE=functionpassword
+FACADE_AUTH_CODE=yourfunctionpassword
+...
 ```
 
 ### Use a Proxy server to connect your Concentrator to Azure
@@ -108,7 +112,7 @@ Follow the guide on [configuring an IoT Edge device to communicate through a pro
 2. Configure the edgeAgent properties in the config.yaml file on your device.
 3. Set environment variables for the IoT Edge runtime in the deployment manifest. 
 
-After that, add the environment variable ```https_proxy``` to the ```LoRaWanNetworkSrvModule``` in your ```IoT Hub``` -> ```IoT Edge``` -> ```Edge Device``` -> ```Set Modules``` section.
+After that, add the environment variable `https_proxy` to the `LoRaWanNetworkSrvModule` in your `IoT Hub` &rarr; `IoT Edge` &rarr; `Edge Device` &rarr; `Set Modules` section.
 
 ![IoT Hub Edge Device Module Setting](/Docs/Pictures/EdgeSetProxy.png)
 
@@ -124,11 +128,15 @@ We will use [Azure IoT Edge for Visual Studio Code](https://marketplace.visualst
 
 Make sure you are logged in to the Azure Container Registry you are using. Run `docker login <mycontainerregistry>.azurecr.io` on your development machine.
 
-Now, build an push the solution by right clicking [deployment.template.json](/LoRaEngine/deployment.template.json) and select `Build and Push IoT Edge Solution` (look as alternative into [deployment.template.amd64.json](/LoRaEngine/deployment.template.amd64.json) for x64 based gateways)
+Select the architecture of your gateway (Azure IoT Edge Solution Default Platform) by clicking on the  button in the taskbar and selecting `amd64` or `arm32v7` in the command pallette.
+
+![VSCode: Azure IoT Edge Solution Default Platform](/Docs/Pictures/iotedgetargetplatform.png)
+
+Now, build an push the solution by right clicking [deployment.template.json](/LoRaEngine/deployment.template.json) and select `Build and Push IoT Edge Solution`.
 
 ![VSCode: Build and push edge solution](/Docs/Pictures/CreateEdgeSolution.PNG)
 
-After that you can push the solution to your IoT Edge device by right clicking on the device and select `Create Deployment for single device`
+After that you can push the solution to your IoT Edge device by right clicking on the device and selecting `Create Deployment for single device`. In the file dialog, navigate to the `LoRaEngine\config` folder and selet the `deployment.json` file which was created during the previous step.
 
 ![VSCode: Deploy edge solution](/Docs/Pictures/DeployEdge.PNG)
 

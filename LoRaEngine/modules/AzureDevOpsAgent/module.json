@@ -4,12 +4,14 @@
     "image": {
         "repository": "$CONTAINER_REGISTRY_ADDRESS/azuredevopsagent",
         "tag": {
-            "version": "$AGENT_VERSION",
+            "version": "$DEVOPS_AGENT_VERSION",
             "platforms": {
                 "amd64": "./Dockerfile.amd64", 
                 "arm32v7": "./Dockerfile.arm32v7"
             }
-        }
+        },
+        "buildOptions": [],
+        "contextPath": "./"
     },
     "language": "csharp"
 }
