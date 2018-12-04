@@ -253,6 +253,28 @@ In both cases, we have already provided a simple decoder called `"DecoderValueSe
 }
 ```
 
+To add the sample `"DecoderValueSensor"` to the sample LoRa device configured above, change it's desired properties in IoT Hub as follows for option 1:
+
+```json
+"desired": {
+    "AppEUI": "App EUI",
+    "AppKey": "App Key",
+    "GatewayID": "",
+    "SensorDecoder": "DecoderValueSensor"
+  },
+```
+
+or as follows for option 2:
+
+```json
+"desired": {
+    "AppEUI": "App EUI",
+    "AppKey": "App Key",
+    "GatewayID": "",
+    "SensorDecoder": "http://your_container_name/api/DecoderValueSensor"
+  },
+```
+
 The `"DecoderValueSensor"` decoder is not a best practice but it makes it easier to experiment sending sensor readings to IoT Hub without having to change any code.
 
 if the SensorDecoder tag has a "http" in it's string value, it will forward the decoding call to an external decoder, as described in option 2 above, using standard Http. The call expects a return value with the same format as the json here above or an error string.
