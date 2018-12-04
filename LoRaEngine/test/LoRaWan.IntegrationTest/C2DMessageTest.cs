@@ -7,7 +7,7 @@ using Xunit;
 namespace LoRaWan.IntegrationTest
 {
     // Tests Cloud to Device messages
-    [Collection("ArduinoSerialCollection")] // run in serial
+    [Collection(Constants.TestCollectionName)] // run in serial
     public sealed class C2DMessageTest : IntegrationTestBase
     {
         static Random random = new Random();
@@ -35,7 +35,7 @@ namespace LoRaWan.IntegrationTest
         public async Task Test_OTAA_Confirmed_Receives_C2D_Message()
         {
             var device = this.TestFixture.Device9_OTAA;
-            Log($"Starting {nameof(Test_OTAA_Confirmed_Receives_C2D_Message)} using device {device.DeviceID}");      
+            Log($"[INFO] ** Starting {nameof(Test_OTAA_Confirmed_Receives_C2D_Message)} using device {device.DeviceID}");      
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -43,12 +43,9 @@ namespace LoRaWan.IntegrationTest
 
             await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
 
-             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
-
-            if (!joinSucceeded)
-            {                
-                Assert.True(joinSucceeded, "Join failed");
-            }
+            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            Assert.True(joinSucceeded, "Join failed");
+            
 
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN); 
@@ -66,8 +63,7 @@ namespace LoRaWan.IntegrationTest
                 // +CMSG: ACK Received
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
             }
 
 
@@ -124,8 +120,7 @@ namespace LoRaWan.IntegrationTest
                 }
                 
                 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -146,7 +141,7 @@ namespace LoRaWan.IntegrationTest
         public async Task Test_OTAA_Unconfirmed_Receives_C2D_Message()
         {
             var device = this.TestFixture.Device10_OTAA;
-            Log($"Starting {nameof(Test_OTAA_Confirmed_Receives_C2D_Message)} using device {device.DeviceID}");      
+            Log($"[INFO] ** Starting {nameof(Test_OTAA_Confirmed_Receives_C2D_Message)} using device {device.DeviceID} **");      
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -154,12 +149,9 @@ namespace LoRaWan.IntegrationTest
 
             await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
 
-             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
-
-            if (!joinSucceeded)
-            {                
-                Assert.True(joinSucceeded, "Join failed");
-            }
+            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            Assert.True(joinSucceeded, "Join failed");
+            
 
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN); 
@@ -176,8 +168,7 @@ namespace LoRaWan.IntegrationTest
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
             }
 
 
@@ -231,8 +222,7 @@ namespace LoRaWan.IntegrationTest
                 }
                 
                 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -279,8 +269,7 @@ namespace LoRaWan.IntegrationTest
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
             }
 
 
@@ -335,8 +324,7 @@ namespace LoRaWan.IntegrationTest
                 }
 
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -365,12 +353,8 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
 
             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
-
-            if (!joinSucceeded)
-            {
-                Assert.True(joinSucceeded, "Join failed");
-            }
-
+            Assert.True(joinSucceeded, "Join failed");
+            
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
@@ -386,8 +370,7 @@ namespace LoRaWan.IntegrationTest
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
             }
 
 
@@ -445,8 +428,7 @@ namespace LoRaWan.IntegrationTest
                 }
 
 
-                this.ArduinoDevice.ClearSerialLogs();
-                this.TestFixture.ClearNetworkServerModuleLog();
+                this.TestFixture.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }

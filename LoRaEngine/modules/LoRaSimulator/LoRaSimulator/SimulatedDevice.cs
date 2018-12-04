@@ -91,7 +91,7 @@ namespace LoRaSimulator
             Array.Reverse(_payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            LoRaPayloadData standardData = new LoRaPayloadData(_mhbr, _devAddr, _FCtrl, _FCnt, _Fopts, _FPort, _payload, direction);
+            LoRaPayloadData standardData = new LoRaPayloadData((LoRaPayloadData.MType)_mhbr[0], _devAddr, _FCtrl, _FCnt, _Fopts, _FPort, _payload, direction);
             // Need to create Fops. If not, then MIC won't be correct
             standardData.Fopts = new byte[0];
             // First encrypt the data

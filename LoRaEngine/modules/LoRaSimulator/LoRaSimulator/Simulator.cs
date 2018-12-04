@@ -47,13 +47,13 @@ namespace LoRaSimulator
 
             Logger.Log($"LoRaWAN Simulator started on port {PORT}", Logger.LoggingLevel.Always);
             //send first sync
-            Task.Factory.StartNew(async () =>
+            _ = Task.Factory.StartNew(async () =>
             {
                 while (true)
                 {
                     var sync = new PhysicalPayload(GetRandomToken(), PhysicalIdentifier.PUSH_DATA, null);
                     await UdpSendMessage(sync.GetSyncHeader(mac));
-                    Thread.Sleep(10000);
+                    await Task.Delay(10000);
                 }
             });
             // Reading the test configuration
@@ -73,7 +73,7 @@ namespace LoRaSimulator
                 listDevices.Add(simulated);
 
                 // create a new thread that will post content
-                Task.Factory.StartNew(() =>
+                _ = Task.Factory.StartNew(async () =>
                 {
                     DateTimeOffset dt = DateTimeOffset.Now;
 
@@ -97,7 +97,7 @@ namespace LoRaSimulator
                                 Array.Copy(header, data, header.Length);
                                 Array.Copy(gat, 0, data, header.Length, gat.Length);
                                 Logger.Log(simulated.LoRaDevice.DevAddr, $"Sending data: {BitConverter.ToString(header).Replace("-", "")}{Encoding.Default.GetString(gat)}", Logger.LoggingLevel.Always);
-                                UdpSendMessage(data).GetAwaiter().GetResult();
+                                await UdpSendMessage(data);
                             }
                             else
                             {
@@ -113,7 +113,7 @@ namespace LoRaSimulator
                                 Array.Copy(header, data, header.Length);
                                 Array.Copy(gat, 0, data, header.Length, gat.Length);
 
-                                UdpSendMessage(data).GetAwaiter().GetResult();
+                                await UdpSendMessage(data);
                             }
 
                         }

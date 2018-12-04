@@ -95,6 +95,9 @@
               },
               "IOTEDGE_TIMEOUT": {
                 "value": "$NET_SRV_IOTEDGE_TIMEOUT"
+              },
+              "LOG_TO_UDP_ADDRESS": {
+                "value": "AzureDevOpsAgent"
               }
             },
             "status": "running",
@@ -134,28 +137,26 @@
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "${MODULES.AzureDevOpsAgent}",
+              "image": "$DEVOPS_AGENT_IMAGE",
               "createOptions": {
-                "HostConfig": { 
-                  "Privileged": true 
+                "HostConfig": {
+                  "Privileged": true
                 },
-                "PortBindings": {
-                  "6000/udp": [
-                    {
-                      "HostPort": "6000",
-                      "HostIp": "172.17.0.1"
-                    }
-                  ]
+                "ExposedPorts": {
+                  "6000/udp": {}
                 }
               }
             },
             "env": {
-              "VSTS_SERVER_URL": {
-                "value": "$VSTS_SERVER_URL"
+              "VSTS_ACCOUNT": {
+                "value": "$VSTS_ACCOUNT"
               },
               "VSTS_TOKEN": {
                 "value": "$VSTS_TOKEN"
-              }
+              },
+              "VSTS_AGENT": {
+                "value": "$VSTS_AGENT"
+              } 
             }
           },
           "sensordecodermodule":{
@@ -166,7 +167,7 @@
             },
             "status": "running",
             "restartPolicy": "always",
-            "version": "1.0"          
+            "version": "1.0"
           }
         }
       }

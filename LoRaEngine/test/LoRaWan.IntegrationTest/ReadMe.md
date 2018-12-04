@@ -143,14 +143,14 @@ Integration tests cannot be parallelized because they all share dependency to Ar
 
 Therefore, when creating a new test class follow the guidelines:
 
-* Use attribute `[Collection("ArduinoSerialCollection")` to ensure executing in serial
+* Use attribute `[Collection(Constants.TestCollectionName)]` to ensure executing in serial
 * inherit from `IntegrationTestBase`. Create a single constructor receiving a  `IntegrationTestFixture` as parameter. Call the base class constructor passing the parameter.
 
 Example:
 
 ```c#
  // Tests xxxx
-[Collection("ArduinoSerialCollection")] // Set the same collection to ensure execution in serial
+[Collection(Constants.TestCollectionName)] // Set the same collection to ensure execution in serial
 public sealed class MyTest : IntegrationTestBase
 {
     

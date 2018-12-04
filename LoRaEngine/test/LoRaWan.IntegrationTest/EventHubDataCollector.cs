@@ -54,21 +54,32 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        public void ResetEvents() => this.events.Clear();
+        public void ResetEvents()
+        {
+            TestLogger.Log($"*** Clearing iot hub logs ({this.events.Count}) ***");
+            this.events.Clear();
+        }
 
         public IReadOnlyCollection<EventData> GetEvents() => this.events;
 
         Task IPartitionReceiveHandler.ProcessEventsAsync(IEnumerable<EventData> events)
         {
-            foreach(var item in events)
+            try
             {
-                this.events.Enqueue(item);
-
-                if(this.LogToConsole)
+                foreach(var item in events)
                 {
-                    var bodyText = Encoding.UTF8.GetString(item.Body);                    
-                    TestLogger.Log($"[EventHub]: {bodyText}");
+                    this.events.Enqueue(item);
+
+                    if(this.LogToConsole)
+                    {
+                        var bodyText = Encoding.UTF8.GetString(item.Body);                    
+                        TestLogger.Log($"[IOTHUB] {bodyText}");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                TestLogger.Log($"Error processing iot hub event. {ex.ToString()}");
             }
 
             return Task.FromResult(0);

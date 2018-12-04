@@ -9,14 +9,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Logger\Logger.csproj" />
-    <ProjectReference Include="..\LoraTools\LoRaTools.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="testconfig.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../../LoRaWanNetworkSrvModule/Logger/Logger.csproj" />
+    <ProjectReference Include="../../LoRaWanNetworkSrvModule/LoraTools/LoRaTools.csproj" />
+  </ItemGroup>
 </Project>

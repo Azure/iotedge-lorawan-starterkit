@@ -35,7 +35,8 @@ namespace LoRaWan.IntegrationTest
         // Device prefix to be used
         public string DevicePrefix { get; set; }
         public bool CreateDevices { get; set; } = true;
-        public IoTHubAssertLevel NetworkServerModuleLogAssertLevel { get; set; } = IoTHubAssertLevel.Warning;
+        public LogValidationAssertLevel NetworkServerModuleLogAssertLevel { get; set; } = LogValidationAssertLevel.Warning;
+        public LogValidationAssertLevel IoTHubAssertLevel { get; set; } = LogValidationAssertLevel.Warning;
 
         public LoraRegion LoraRegion { get; set; } = LoraRegion.EU;
 
