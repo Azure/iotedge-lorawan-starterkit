@@ -149,7 +149,7 @@ namespace LoRaWan.NetworkServer
                             // Decoder is set in LoRa Device Twin. Send decrpytedMessage (payload) and fportUp (fPort) to decoder.
                             else
                             {
-                                Logger.Log(loraDeviceInfo.DevEUI, $"decoding with: {loraDeviceInfo.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Info);
+                                Logger.Log(loraDeviceInfo.DevEUI, $"decoding with: {loraDeviceInfo.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Full);
                                 fullPayload.data = await LoraDecoders.DecodeMessage(decryptedMessage, fportUp, loraDeviceInfo.SensorDecoder);
                             }
 
