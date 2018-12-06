@@ -126,7 +126,7 @@ jobs:
     EDGEHUB_HTTPSETTINGS_ENABLED: false
     EDGEHUB_ROUTE: FROM /* INTO $upstream
     # LoRaWan Modules
-    NET_SRV_LOG_LEVEL: 2  
+    NET_SRV_LOG_LEVEL: 1  
     NET_SRV_LOGTO_UDP: true
     NET_SRV_LOGTO_HUB: false
     NET_SRV_IOTEDGE_TIMEOUT: 0

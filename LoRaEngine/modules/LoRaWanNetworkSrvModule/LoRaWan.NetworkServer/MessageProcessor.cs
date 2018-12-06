@@ -135,14 +135,21 @@ namespace LoRaWan.NetworkServer
                             fullPayload.port = fportUp;
                             fullPayload.fcnt = fcntup;
 
-                            if (isAckFromDevice)
+                           // ACK from device or no decoder set in LoRa Device Twin. Simply return decryptedMessage
+                            if (isAckFromDevice || String.IsNullOrEmpty(loraDeviceInfo.SensorDecoder))
                             {
+                                if (String.IsNullOrEmpty(loraDeviceInfo.SensorDecoder))
+                                {
+                                    Logger.Log(loraDeviceInfo.DevEUI, $"no decoder set in device twin. port: {fportUp}", Logger.LoggingLevel.Full);
+                                }
+
                                 jsonDataPayload = Convert.ToBase64String(decryptedMessage);
                                 fullPayload.data = jsonDataPayload;
                             }
+                            // Decoder is set in LoRa Device Twin. Send decrpytedMessage (payload) and fportUp (fPort) to decoder.
                             else
                             {
-                                Logger.Log(loraDeviceInfo.DevEUI, $"decoding with: {loraDeviceInfo.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Info);
+                                Logger.Log(loraDeviceInfo.DevEUI, $"decoding with: {loraDeviceInfo.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Full);
                                 fullPayload.data = await LoraDecoders.DecodeMessage(decryptedMessage, fportUp, loraDeviceInfo.SensorDecoder);
                             }
 
@@ -172,15 +179,18 @@ namespace LoRaWan.NetworkServer
                             if (isAckFromDevice)
                             {
                                 Logger.Log(loraDeviceInfo.DevEUI, $"ack from device sent to hub", Logger.LoggingLevel.Info);
-
                             }
                             else
                             {
-                                var fullPayloadAsString = fullPayload.data as string;
-                                if (fullPayloadAsString == null)
+                                var fullPayloadAsString = string.Empty;
+                                if (fullPayload.data is JValue jvalue)
                                 {
-                                    fullPayloadAsString = ((JObject)fullPayload.data).ToString(Formatting.None);
+                                    fullPayloadAsString = jvalue.ToString();
                                 }
+                                else if (fullPayload.data is JObject jobject)
+                                {
+                                    fullPayloadAsString = jobject.ToString(Formatting.None);
+                                }   
                                 Logger.Log(loraDeviceInfo.DevEUI, $"message '{fullPayloadAsString}' sent to hub", Logger.LoggingLevel.Info);
                             }
                             loraDeviceInfo.FCntUp = fcntup;
