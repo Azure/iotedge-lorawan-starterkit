@@ -140,7 +140,7 @@ namespace LoRaWan.NetworkServer
                             {
                                 if (String.IsNullOrEmpty(loraDeviceInfo.SensorDecoder))
                                 {
-                                    Logger.Log(loraDeviceInfo.DevEUI, $"no decoder set in device twin. port: {fportUp}", Logger.LoggingLevel.Info);
+                                    Logger.Log(loraDeviceInfo.DevEUI, $"no decoder set in device twin. port: {fportUp}", Logger.LoggingLevel.Full);
                                 }
 
                                 jsonDataPayload = Convert.ToBase64String(decryptedMessage);
