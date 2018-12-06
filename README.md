@@ -136,6 +136,17 @@ The template provision an IoT Hub with a [packet forwarder](https://github.com/L
 
 If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in this [submodule](/Docs/LoRaWanPktFwdRAK833USB).
 
+## Using a Proxy Server to connect your Concentrator to Azure
+
+This is an optional configuration that should only be executed if your concentrator needs to use a proxy server to communicate with Azure.
+
+Follow [this guide](./LoRaEngine#use-a-proxy-server-to-connect-your-concentrator-to-azure) to:
+
+1. Configure the Docker daemon and the IoT Edge daemon on your device to use a proxy server.
+2. Configure the `edgeAgent` properties in the `config.yaml` file on your device.
+3. Set environment variables for the IoT Edge runtime in the deployment manifest.
+4. Add the `https_proxy` environment variable to the `LoRaWanNetworkSrvModule` in IoT Hub.
+
 ## LoRa Device provisioning
 
 A LoRa device is a normal IoT Hub device with some specific device twin tags. You manage it like you would with any other IoT Hub device.
@@ -225,8 +236,14 @@ It should look something like this for ABP:
 ### Decoders
 
 The SensorDecoder tag is used to define which method will be used to decode the LoRa payload. If you leave it out or empty it will send the raw decrypted payload in the data field of the json message as Base64 encoded value to IoT Hub.
-If you want to decode it on the Edge you need to specify a method that implements the right logic in the LoraDecoders class in the LoraDecoders.cs file of the LoRaWan.NetworkServer.
-We have already a simple decoder called "DecoderValueSensor" that take the whole payload as single numeric value and construct the following json output (For example an Arduino sending a sensor value as string eg. "23.5" as examples in the Arduino folder):
+
+If you want to decode it on the Edge you have the following two options:
+
+1. Specify a method that implements the right logic in the `LoraDecoders` class in the `LoraDecoders.cs` file of the `LoRaWan.NetworkServer`.
+
+2. Adapt the [DecoderSample](./Samples/DecoderSample) which allows you to create and run your own LoRa message decoder in an independent container running on your LoRa gateway without having to edit the main LoRa Engine. [This description](./Samples/DecoderSample#azure-iot-edge-lorawan-starter-kit) shows you how to get started.
+
+In both cases, we have already provided a simple decoder called `"DecoderValueSensor"` that takes the whole payload as a single numeric value and constructs the following json output as a response (The example of an Arduino sending a sensor value as string (i.e. "23.5") is available in the [Arduino folder](./Arduino)):
 
 ```json
 {
@@ -236,9 +253,31 @@ We have already a simple decoder called "DecoderValueSensor" that take the whole
 }
 ```
 
-The "DecoderValueSensor" decoder is not best practice but it makes easier to experiment in sending sensor's readings to IoT Hub without code change.
+To add the sample `"DecoderValueSensor"` to the sample LoRa device configured above, change it's desired properties in IoT Hub as follows for option 1:
 
-if the SensorDecoder tag has a "http" in it's string value, it will forward the decoding call to an external decoder using standard Http. The call expect a return with a same form as the json here above or an error string.
+```json
+"desired": {
+    "AppEUI": "App EUI",
+    "AppKey": "App Key",
+    "GatewayID": "",
+    "SensorDecoder": "DecoderValueSensor"
+  },
+```
+
+or as follows for option 2:
+
+```json
+"desired": {
+    "AppEUI": "App EUI",
+    "AppKey": "App Key",
+    "GatewayID": "",
+    "SensorDecoder": "http://your_container_name/api/DecoderValueSensor"
+  },
+```
+
+The `"DecoderValueSensor"` decoder is not a best practice but it makes it easier to experiment sending sensor readings to IoT Hub without having to change any code.
+
+if the SensorDecoder tag has a "http" in it's string value, it will forward the decoding call to an external decoder, as described in option 2 above, using standard Http. The call expects a return value with the same format as the json here above or an error string.
 
 ### Cache Clearing
 
