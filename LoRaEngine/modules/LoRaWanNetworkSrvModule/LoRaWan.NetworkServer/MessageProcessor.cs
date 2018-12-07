@@ -556,7 +556,14 @@ namespace LoRaWan.NetworkServer
                     Logger.Log(devEui, $"processing of the join request took too long, sending no message", Logger.LoggingLevel.Info);
                 }
                 //update reported properties and frame Counter
-                await joinLoraDeviceInfo.HubSender.UpdateReportedPropertiesOTAAasync(joinLoraDeviceInfo);
+                //in case not successfull we interrupt the flow
+                if (!await joinLoraDeviceInfo.HubSender.UpdateReportedPropertiesOTAAasync(joinLoraDeviceInfo))
+                {
+                    Logger.Log(devEui, $"join request could not save twins, aborting...", Logger.LoggingLevel.Error);
+
+                    return null;
+                }
+               
                 byte[] appNonce = ConversionHelper.StringToByteArray(joinLoraDeviceInfo.AppNonce);
                 byte[] netId = ConversionHelper.StringToByteArray(joinLoraDeviceInfo.NetId);
                 byte[] devAddr = ConversionHelper.StringToByteArray(joinLoraDeviceInfo.DevAddr);
