@@ -25,7 +25,6 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly LoraDeviceInfoManager loraDeviceInfoManager;
         ModuleClient ioTHubModuleClient;
-        private IPAddress remoteLoRaAggregatorIp;
         private int pullAckRemoteLoRaAggregatorPort=0;
 
         UdpClient udpClient;
@@ -87,14 +86,13 @@ namespace LoRaWan.NetworkServer
                     case PhysicalIdentifier.PULL_DATA:
                         if (pullAckRemoteLoRaAggregatorPort == 0)
                         {
-                            remoteLoRaAggregatorIp = receivedResults.RemoteEndPoint.Address;
                             pullAckRemoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
                         }
-                        SendAcknowledgementMessage(receivedResults,(int)PhysicalIdentifier.PULL_ACK, pullAckRemoteLoRaAggregatorPort);
+                        SendAcknowledgementMessage(receivedResults,(int)PhysicalIdentifier.PULL_ACK, receivedResults.RemoteEndPoint);
                         break;
                     //This is a PUSH_DATA (upstream message).
                     case PhysicalIdentifier.PUSH_DATA:
-                        SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PUSH_ACK, receivedResults.RemoteEndPoint.Port);
+                        SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PUSH_ACK, receivedResults.RemoteEndPoint);
 
                         // Message processing runs in the background
                         MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager);
@@ -105,7 +103,7 @@ namespace LoRaWan.NetworkServer
                             {
                                 var resultMessage = await messageProcessor.ProcessMessageAsync(receivedResults.Buffer);
                                 if (resultMessage != null && resultMessage.Length > 0)
-                                    await this.UdpSendMessage(resultMessage, remoteLoRaAggregatorIp.ToString(), pullAckRemoteLoRaAggregatorPort);
+                                    await this.UdpSendMessage(resultMessage, receivedResults.RemoteEndPoint.Address.ToString(), pullAckRemoteLoRaAggregatorPort);
                             }
                             catch (Exception ex)
                             {
@@ -141,7 +139,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private void SendAcknowledgementMessage(UdpReceiveResult receivedResults, byte messageType, int remotePort)
+        private void SendAcknowledgementMessage(UdpReceiveResult receivedResults, byte messageType, IPEndPoint remoteEndpoint)
         {
             byte[] response = new byte[4]{
                             receivedResults.Buffer[0],
@@ -149,7 +147,7 @@ namespace LoRaWan.NetworkServer
                             receivedResults.Buffer[2],
                             messageType
                             };
-            _ = UdpSendMessage(response, remoteLoRaAggregatorIp.ToString(), remotePort);
+            _ = UdpSendMessage(response, remoteEndpoint.Address.ToString(), remoteEndpoint.Port);
         }
 
 

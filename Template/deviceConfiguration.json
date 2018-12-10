@@ -46,7 +46,7 @@
 							  "value": "2"
 							},              
 							"LOG_TO_HUB": {
-							  "value": "false"
+							  "value": "true"
 							}					
 						},
 						"status": "running",
