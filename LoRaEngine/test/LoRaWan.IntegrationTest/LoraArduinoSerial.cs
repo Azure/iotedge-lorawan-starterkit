@@ -157,6 +157,10 @@ namespace LoRaWan.IntegrationTest
         }
         public IReadOnlyCollection<string> SerialLogs { get { return this.serialLogs; } }
 
+        // Gets/sets if serial writes should be logged
+        // Disabled by default
+        public bool LogWrites { get; set; }
+
         public void ClearSerialLogs()
         {
             TestLogger.Log($"*** Clearing serial logs ({this.serialLogs.Count}) ***");
@@ -871,6 +875,9 @@ namespace LoRaWan.IntegrationTest
                     serialPort.Write (Encoding.UTF8.GetBytes (command));
                 else
                     serialPortWin.Write (command);
+
+                if (this.LogWrites)
+                    TestLogger.Log($"[SERIALW] {command}");
             }
             catch (Exception ex)
             {

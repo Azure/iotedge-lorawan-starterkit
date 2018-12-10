@@ -1,0 +1,36 @@
+# File: azure-pipeline-integration-test-steps-template.yaml
+parameters:
+  platform: ''  
+
+steps:
+- task: qetza.replacetokens.replacetokens-task.replacetokens@3
+  displayName: 'Configure test in **/test/LoRaWan.IntegrationTest/appsettings.json'  
+  inputs:
+    targetFiles: '**/test/LoRaWan.IntegrationTest/appsettings.json'
+
+# Runs test with retries, only if no additional integration test arguments were passed
+- bash: ./test_runner.sh "$COMMON_TESTRESULTSDIRECTORY"
+  displayName: Execute integration tests (with retry)
+  condition: eq(variables['AdditionalIntegrationTestArguments'], '')
+  workingDirectory: ./LoRaEngine/test/LoRaWan.IntegrationTest
+  failOnStderr: true
+  timeoutInMinutes: 60 # up to 1 hour, increase if we need more
+
+# Run integration test with filters only, no built-in retries
+- task: DotNetCoreCLI@2
+  displayName: 'Run integration test with additional arguments (no retry)'
+  condition: ne(variables['AdditionalIntegrationTestArguments'], '')
+  inputs:
+    command: test
+    projects: '**/test/LoRaWan.IntegrationTest/LoRaWan.IntegrationTest.csproj'
+    arguments: '-p:ParallelizeTestCollections=false $(AdditionalIntegrationTestArguments)'
+
+  # Publish Test Results to Azure Pipelines/TFS
+- task: PublishTestResults@2
+  condition: always()
+  inputs:
+    testResultsFormat: 'VSTest' # Options: JUnit, NUnit, VSTest, xUnit
+    testResultsFiles: '**/*.trx'
+    searchFolder: '$(Common.TestResultsDirectory)'
+    testRunTitle: '${{ parameters.platform }}-Integration tests'
+    mergeTestResults: true

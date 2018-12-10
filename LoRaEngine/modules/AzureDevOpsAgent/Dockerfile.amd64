@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.1-sdk-stretch-arm32v7
+FROM microsoft/dotnet:2.1-sdk-stretch
 
 ENV VSTS_POOL=default VSTS_AGENT=myAgent
 
@@ -9,8 +9,8 @@ wget \
 git
  
 # Download compiles vsts-agent
-RUN curl https://vstsagentpackage.azureedge.net/agent/2.142.1/vsts-agent-linux-arm-2.142.1.tar.gz -o vsts-agent.tar.gz
-RUN mkdir vsts-agent
+RUN curl https://vstsagentpackage.azureedge.net/agent/2.142.1/vsts-agent-linux-x64-2.142.1.tar.gz -o vsts-agent.tar.gz
+RUN mkdir mkdir -p vsts-agent/_diag && chmod o+w ./vsts-agent
 RUN tar xzf vsts-agent.tar.gz -C ./vsts-agent
  
 # install node
@@ -20,4 +20,3 @@ RUN apt-get install -y nodejs
 COPY vsts.sh .
 
 ENTRYPOINT [ "/bin/bash", "./vsts.sh" ]
-

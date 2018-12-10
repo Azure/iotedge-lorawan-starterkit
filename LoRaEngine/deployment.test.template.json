@@ -156,13 +156,13 @@
               },
               "VSTS_AGENT": {
                 "value": "$VSTS_AGENT"
-              } 
+              }
             }
           },
-          "sensordecodermodule":{
+          "sensordecodermodule": {
             "type": "docker",
             "settings": {
-              "image": "fbeltrao/decodersample:1.0-arm32v7",
+              "image": "fbeltrao/decodersample:1.0",
               "createOptions": {}
             },
             "status": "running",
