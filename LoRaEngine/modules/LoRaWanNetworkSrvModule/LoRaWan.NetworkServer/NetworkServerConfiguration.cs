@@ -90,8 +90,8 @@ namespace LoRaWan.NetworkServer
             config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", string.Empty);           
             config.Rx2DataFrequency = envVars.GetEnvVar("RX2_FREQ", config.Rx2DataFrequency);
             config.IoTEdgeTimeout = envVars.GetEnvVar("IOTEDGE_TIMEOUT", config.IoTEdgeTimeout);
-            config.FacadeServerUrl = envVars.GetEnvVar("FacadeServerUrl", string.Empty);
-            config.FacadeAuthCode = envVars.GetEnvVar("FacadeAuthCode", string.Empty);
+            config.FacadeServerUrl = envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty);
+            config.FacadeAuthCode = envVars.GetEnvVar("FACADE_AUTH_CODE", string.Empty);
             config.LogToHub = envVars.GetEnvVar("LOG_TO_HUB", config.LogToHub);
             config.LogLevel = envVars.GetEnvVar("LOG_LEVEL", config.LogLevel);
             config.LogToConsole = envVars.GetEnvVar("LOG_TO_CONSOLE", config.LogToConsole);
