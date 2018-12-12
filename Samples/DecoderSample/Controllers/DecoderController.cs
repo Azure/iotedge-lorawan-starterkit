@@ -29,7 +29,7 @@ namespace SensorDecoderModule.Controllers
 
             if (toInvoke != null)
             {
-                return (string)toInvoke.Invoke(null, new object[] { Encoding.UTF8.GetBytes(payload), Convert.ToUInt16(fport) });
+                return (string)toInvoke.Invoke(null, new object[] { Convert.FromBase64String(payload), Convert.ToUInt16(fport) });
             }
             else
             {
