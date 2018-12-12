@@ -28,16 +28,23 @@ When creating a debugging configuration in Visual Studio Code or a ```launchSett
 
 On launching the debugger you will see a webbrowser with a ```404 Not Found``` error as there is no default document to be served in this Web API app.
 
+You will also manually need to [base64-encode](https://www.base64encode.org/) and [URL-encode](https://www.urlencoder.org/) the payload before adding it to the URL parameters.
+
+For example, to test a payload of `ABCDE12345`, you:
+- Convert it to a base64 encoded string: `QUJDREUxMjM0NQ==`
+- Convert the result to a valid URL parameter: `QUJDREUxMjM0NQ%3D%3D`
+- Add this to your test URL.
+
 For the built-in sample decoder ```DecoderValueSensor``` with Visual Studio (Code)'s default settings this would be:
 
 ```
-http://localhost:5000/api/DecoderValueSensor?fport=1&payload=ABCDE12345
+http://localhost:5000/api/DecoderValueSensor?fport=1&payload=QUJDREUxMjM0NQ%3D%3D
 `````
 
 You can call your decoder at:
 
 ```
-http://localhost:yourPort/api/<decodername>?fport=<1>&payload=<ABCDE12345>
+http://localhost:yourPort/api/<decodername>?fport=<1>&payload=<QUJDREUxMjM0NQ%3D%3D>
 ```
 
 You should see the result as JSON string.
@@ -64,7 +71,7 @@ docker run --rm -it -p 8881:80 --name decodersample <container registry>/<image>
 You can then use a browser to navigate to:
 
 ```
-http://localhost:8881/api/DecoderValueSensor?fport=1&payload=ABCDE12345
+http://localhost:8881/api/DecoderValueSensor?fport=1&payload=QUJDREUxMjM0NQ%3D%3D
 ```
 
 ### Deploying to IoT Edge

@@ -104,11 +104,11 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log($"Error in decoder handling: {ex.ToString()}", Logger.LoggingLevel.Error);
+                Logger.Log($"Error in decoder handling: {ex.Message}", Logger.LoggingLevel.Error);
                 
                 result = JsonConvert.SerializeObject(new {
                     error = $"Call to SensorDecoderModule '{sensorDecoderModuleUrl}' failed.",
-                    exceptionMessage = ex.ToString(),
+                    exceptionMessage = ex.Message,
                     rawpayload = base64Payload
                 });
             }
