@@ -218,9 +218,12 @@ namespace LoRaWan.NetworkServer
                     //Enable retry for this send message, off by default              
                     setRetry(true);
 
-                    var message = new Message(UTF8Encoding.ASCII.GetBytes(strMessage));
+                    var message = new Message(Encoding.UTF8.GetBytes(strMessage));
 
                     Logger.Log(DevEUI, $"sending message {strMessage} to hub", Logger.LoggingLevel.Full);
+
+                    message.ContentEncoding = "UTF-8";
+                    message.ContentType = "application/json";
 
                     foreach (var prop in properties)
                         message.Properties.Add(prop);

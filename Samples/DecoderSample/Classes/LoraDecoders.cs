@@ -12,7 +12,7 @@ namespace SensorDecoderModule.Classes
     {   
         private static string DecoderValueSensor(byte[] payload, uint fport)
         {
-            var result = Encoding.ASCII.GetString(payload);            
+            var result = Encoding.UTF8.GetString(payload);            
             return JsonConvert.SerializeObject(new { value = result });
         }
     }       

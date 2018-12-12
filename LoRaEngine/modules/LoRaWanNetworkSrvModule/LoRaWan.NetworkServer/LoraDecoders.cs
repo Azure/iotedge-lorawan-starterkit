@@ -51,7 +51,7 @@ namespace LoRaWan.NetworkServer
 
                 // use HttpUtility to UrlEncode Fport and payload
                 string fportEncoded = HttpUtility.UrlEncode(fport.ToString());
-                string payloadEncoded = HttpUtility.UrlEncode(Encoding.ASCII.GetString(payload));
+                string payloadEncoded = HttpUtility.UrlEncode(base64Payload);
 
                 // Add Fport and Payload to URL
                 toCall = $"{toCall}?fport={fportEncoded}&payload={payloadEncoded}";
