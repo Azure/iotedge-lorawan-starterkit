@@ -9,5 +9,7 @@ namespace LoRaWan.NetworkServer
         public string DevAddr;
         public string DevEUI;
         public string PrimaryKey;
+
+
     }
 }

@@ -152,7 +152,7 @@ namespace LoraKeysManagerFacade
                             iotHubDeviceInfo.DevEUI = twin.DeviceId;
                             iotHubDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
                             results.Add(iotHubDeviceInfo);
-                            break;
+                  
                         }
 
                     }

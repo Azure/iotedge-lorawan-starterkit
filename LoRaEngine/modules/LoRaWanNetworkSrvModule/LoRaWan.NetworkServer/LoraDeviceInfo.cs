@@ -11,23 +11,29 @@ namespace LoRaWan.NetworkServer
 
     public class LoraDeviceInfo
     {
-        public string DevAddr;
-        public string DevEUI;
-        public string AppKey;
-        public string AppEUI;
-        public string NwkSKey;
-        public string AppSKey;
-        public string PrimaryKey;
-        public string AppNonce;
-        public string DevNonce;
-        public string NetId;
+        public string DevAddr { get; set; }
+        public string DevEUI{ get; set; }
+    public string AppKey{ get; set; }
+public string AppEUI{ get; set; }
+        public string NwkSKey { get; set; }
+        public string AppSKey { get; set; }
+        public string PrimaryKey { get; set; }
+        public string AppNonce { get; set; }
+        public string DevNonce { get; set; }
+        public string NetId { get; set; }
         public bool IsOurDevice = false;
         public bool IsJoinValid = false;
         public IoTHubConnector HubSender;
         public UInt16 FCntUp;
         public UInt16 FCntDown;
-        public string GatewayID;
-        public string SensorDecoder;
+        public string GatewayID { get; set; }
+        public string SensorDecoder { get; set; }
+
+
+        public LoraDeviceInfo()
+        {
+        }
     }
+
 
 }

@@ -220,6 +220,79 @@ namespace LoRaWan.IntegrationTest
 
             // Before starting new test, wait until Lora drivers stops sending/receiving data
             await this.ArduinoDevice.WaitForIdleAsync();
-        }        
+        }
+
+        // Verifies that ABP confirmed and unconfirmed messages are working
+        // Uses Device5_ABP
+        [Fact]
+        public async Task Test_ABP_Device_With_Same_DevAddr()
+        {
+            const int MESSAGES_COUNT = 2;
+
+            await SendABPMessages(MESSAGES_COUNT, this.TestFixture.Device16_ABP);
+            await SendABPMessages(MESSAGES_COUNT, this.TestFixture.Device17_ABP);
+
+        }
+
+        private async Task SendABPMessages(int MESSAGES_COUNT, TestDeviceInfo device)
+        {
+            Log($"[INFO] ** Starting {nameof(Test_ABP_Confirmed_And_Unconfirmed_Message)} using device {device.DeviceID} **");
+
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
+
+            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
+
+            // Sends 10x unconfirmed messages            
+            for (var i = 0; i < MESSAGES_COUNT; ++i)
+            {
+                var msg = PayloadGenerator.Next().ToString();
+                Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i + 1}/{MESSAGES_COUNT}");
+                await this.ArduinoDevice.transferPacketAsync(msg, 10);
+
+                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+                // After transferPacket: Expectation from serial
+                // +MSG: Done                        
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
+
+                // 0000000000000005: valid frame counter, msg: 1 server: 0
+                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+
+                // 0000000000000005: decoding with: DecoderValueSensor port: 8
+                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+
+                // 0000000000000005: message '{"value": 51}' sent to hub
+                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+
+                this.TestFixture.ClearLogs();
+            }
+
+            // Sends 10x confirmed messages
+            for (var i = 0; i < MESSAGES_COUNT; ++i)
+            {
+                var msg = PayloadGenerator.Next().ToString();
+                Log($"{device.DeviceID}: Sending confirmed '{msg}' {i + 1}/{MESSAGES_COUNT}");
+                await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
+
+                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+                // After transferPacketWithConfirmed: Expectation from serial
+                // +CMSG: ACK Received
+                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
+
+                // 0000000000000005: valid frame counter, msg: 1 server: 0
+                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+
+                // 0000000000000005: decoding with: DecoderValueSensor port: 8
+                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+
+                // 0000000000000005: message '{"value": 51}' sent to hub
+                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+
+                this.TestFixture.ClearLogs();
+            }
+        }
     }
 }

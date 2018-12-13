@@ -21,7 +21,33 @@ namespace LoRaWan.NetworkServer
         }
 
 
-        public static void AddToCache(string devAddr, LoraDeviceInfo loraDeviceInfo)
+        public static void AddRequestToCache(string devAddr, LoraDeviceInfo deviceInfo)
+        {
+
+            var concurrentdict = Cache.MemoryCache.GetOrCreate
+              (devAddr, entry =>
+              {
+                  entry.SlidingExpiration = new TimeSpan(1, 0, 0, 0);
+                  return new ConcurrentDictionary<string, LoraDeviceInfo>() {};
+              });
+            concurrentdict.GetOrAdd(deviceInfo.DevEUI, devinf =>
+             {
+                 return deviceInfo;
+             });
+
+               
+        }
+
+
+
+        public static void TryGetRequestValue(string key, out  ConcurrentDictionary<string,LoraDeviceInfo> loraDeviceInfo)
+        {
+            Cache.MemoryCache.TryGetValue(key, out object loraDeviceInfoCache);
+            loraDeviceInfo = ( ConcurrentDictionary<string,LoraDeviceInfo>)loraDeviceInfoCache;
+        }
+
+
+        public static void AddJoinRequestToCache(string devAddr, LoraDeviceInfo loraDeviceInfo)
         {
             using (var entry = Cache.MemoryCache.CreateEntry(devAddr))
             {
@@ -30,13 +56,11 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public static void TryGetValue(string key, out LoraDeviceInfo loraDeviceInfo)
+        public static void TryGetJoinRequestValue(string key, out LoraDeviceInfo loraDeviceInfo)
         {
             Cache.MemoryCache.TryGetValue(key, out object loraDeviceInfoCache);
 
             loraDeviceInfo = (LoraDeviceInfo)loraDeviceInfoCache;
-
-
         }
     }
 }
