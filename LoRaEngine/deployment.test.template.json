@@ -97,7 +97,7 @@
                 "value": "$NET_SRV_IOTEDGE_TIMEOUT"
               },
               "LOG_TO_UDP_ADDRESS": {
-                "value": "AzureDevOpsAgent"
+                "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
               }
             },
             "status": "running",

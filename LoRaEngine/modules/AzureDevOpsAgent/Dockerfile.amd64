@@ -9,7 +9,7 @@ wget \
 git
  
 # Download compiles vsts-agent
-RUN curl https://vstsagentpackage.azureedge.net/agent/2.142.1/vsts-agent-linux-x64-2.142.1.tar.gz -o vsts-agent.tar.gz
+RUN curl https://vstsagentpackage.azureedge.net/agent/2.144.0/vsts-agent-linux-x64-2.144.0.tar.gz -o vsts-agent.tar.gz
 RUN mkdir mkdir -p vsts-agent/_diag && chmod o+w ./vsts-agent
 RUN tar xzf vsts-agent.tar.gz -C ./vsts-agent
  
