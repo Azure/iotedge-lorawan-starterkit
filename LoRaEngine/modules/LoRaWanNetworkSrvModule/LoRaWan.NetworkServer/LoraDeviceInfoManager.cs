@@ -5,9 +5,11 @@
 
 using LoRaTools;
 using LoRaTools.Utils;
+using LoRaWan.Shared;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -15,28 +17,32 @@ using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer
 {
-
     public class LoraDeviceInfoManager
     {
         public string FacadeServerUrl;
         public string FacadeAuthCode;
         private readonly NetworkServerConfiguration configuration;
+        private readonly IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider;
+        
 
-        public LoraDeviceInfoManager(NetworkServerConfiguration configuration)
+        public LoraDeviceInfoManager(NetworkServerConfiguration configuration, IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider)
         {
             this.configuration = configuration;
+            this.serviceFacadeHttpClientProvider = serviceFacadeHttpClientProvider;     
         }
+
+        
 
         public async Task<ushort> NextFCntDown(string DevEUI, ushort FCntDown, ushort FCntUp, string GatewayId)
         {
             Logger.Log(DevEUI, $"syncing FCntDown for multigateway", Logger.LoggingLevel.Info);
-            var client = GetHttpClient();
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = $"{FacadeServerUrl}NextFCntDown?code={FacadeAuthCode}&DevEUI={DevEUI}&FCntDown={FCntDown}&FCntUp={FCntUp}&GatewayId={GatewayId}";
             HttpResponseMessage response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
 
-                Logger.Log(DevEUI, $"error calling the NextFCntDown function, check the function log", Logger.LoggingLevel.Error);
+                Logger.Log(DevEUI, $"error calling the NextFCntDown function, check the function log. {response.ReasonPhrase}", Logger.LoggingLevel.Error);
                 return 0;
 
             }
@@ -53,18 +59,16 @@ namespace LoRaWan.NetworkServer
         public async Task<bool> ABPFcntCacheReset(string DevEUI)
         {
             Logger.Log(DevEUI, $"ABP FCnt cache reset for multigateway", Logger.LoggingLevel.Info);
-            var client = GetHttpClient();
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = $"{FacadeServerUrl}NextFCntDown?code={FacadeAuthCode}&DevEUI={DevEUI}&ABPFcntCacheReset=true";
             HttpResponseMessage response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
 
-                Logger.Log(DevEUI, $"error calling the NextFCntDown function, check the function log", Logger.LoggingLevel.Error);
+                Logger.Log(DevEUI, $"error calling the NextFCntDown function, check the function log, {response.ReasonPhrase}", Logger.LoggingLevel.Error);
                 return false;
 
             }
-
-
 
             return true;
 
@@ -72,7 +76,7 @@ namespace LoRaWan.NetworkServer
 
         public async Task<LoraDeviceInfo> GetLoraDeviceInfoAsync(string DevAddr, string GatewayId, LoRaTools.LoRaMessage.LoRaMessageWrapper loraMessage)
         {
-            var client = GetHttpClient();
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = $"{FacadeServerUrl}GetDevice?code={FacadeAuthCode}&DevAddr={DevAddr}&GatewayId={GatewayId}";
             HttpResponseMessage response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -167,6 +171,8 @@ namespace LoRaWan.NetworkServer
             };
         }
 
+
+
         /// <summary>
         /// Code Performing the OTAA
         /// </summary>
@@ -206,7 +212,7 @@ namespace LoRaWan.NetworkServer
             //{
 
             Logger.Log(DevEUI, $"querying the registry for device key", Logger.LoggingLevel.Info);
-            var client = GetHttpClient();
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = String.Concat($"{FacadeServerUrl}GetDevice?", $"{FacadeAuthCode}"=="" ? "" : $"code={FacadeAuthCode}&", $"DevEUI={DevEUI}&DevNonce={DevNonce}&GatewayId={GatewayID}");
    
             HttpResponseMessage response = await client.GetAsync(url);
@@ -224,7 +230,7 @@ namespace LoRaWan.NetworkServer
                 }
 
 
-                Logger.Log(DevEUI, $"error calling façade api: {response.ReasonPhrase} check the azure function log", Logger.LoggingLevel.Error);
+                Logger.Log(DevEUI, $"error calling façade api, check the azure function log. {response.ReasonPhrase}", Logger.LoggingLevel.Error);
                 return null;
             }
 
@@ -360,32 +366,6 @@ namespace LoRaWan.NetworkServer
             joinLoraDeviceInfo.IsJoinValid = true;
 
             return joinLoraDeviceInfo;
-        }
-
-        HttpClient GetHttpClient()
-        {
-            HttpClient httpClient;
-
-            if (!string.IsNullOrEmpty(this.configuration.HttpsProxy))
-            {
-                var webProxy = new WebProxy(
-                    new Uri(this.configuration.HttpsProxy),
-                    BypassOnLocal: false);
-
-                var proxyHttpClientHandler = new HttpClientHandler
-                {
-                    Proxy = webProxy,
-                    UseProxy = true,
-                };
-
-                httpClient = new HttpClient(proxyHttpClientHandler);
-            }
-            else
-            {
-                httpClient = new HttpClient();
-            }
-
-            return httpClient;
         }
     }
 }

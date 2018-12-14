@@ -483,6 +483,10 @@ namespace LoRaWan.NetworkServer
             {
                 Logger.Log(devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
             }
+
+
+
+
             Logger.Log(loraDeviceInfo?.DevEUI ?? devAddr, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
 
             return udpMsgForPktForwarder;
@@ -545,7 +549,7 @@ namespace LoRaWan.NetworkServer
                 //in case not successfull we interrupt the flow
                 if (!await joinLoraDeviceInfo.HubSender.UpdateReportedPropertiesOTAAasync(joinLoraDeviceInfo))
                 {
-                    Logger.Log(devEui, $"join request could not save twins, aborting...", Logger.LoggingLevel.Error);
+                    Logger.Log(devEui, $"join request could not save twins, join refused", Logger.LoggingLevel.Error);
 
                     return null;
                 }
