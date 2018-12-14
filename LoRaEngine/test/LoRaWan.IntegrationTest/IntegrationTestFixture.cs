@@ -71,6 +71,18 @@ namespace LoRaWan.IntegrationTest
         // Device15_OTAA: used for test fport C2D
         public TestDeviceInfo Device15_OTAA { get; private set; }
 
+        // Device18_ABP: used for simulated device
+        public TestDeviceInfo Device18_ABP { get; private set; }
+
+        // Device19_OTAA: used for simulated device
+        public TestDeviceInfo Device19_OTAA { get; private set; }
+
+        // Device20_Simulated_HttpBasedDecoder: used for simulated device testing with http based decoder
+        public TestDeviceInfo Device20_Simulated_HttpBasedDecoder { get; private set; }
+
+        List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP { get { return deviceRange1000_ABP; } }
+
 
         public IntegrationTestFixture()
         {
@@ -287,6 +299,58 @@ namespace LoRaWan.IntegrationTest
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
             };
+
+            // Device18_ABP: used for ABP simulator
+            this.Device18_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000018",
+                AppEUI = "0000000000000018",
+                GatewayID = gatewayID,
+                SensorDecoder = "DecoderValueSensor",
+                IsIoTHubDevice = true,
+                AppSKey="00000000000000000000000000000018",
+                NwkSKey="00000000000000000000000000000018",
+                DevAddr="00000018"
+            };
+
+            // Device19_OTAA: used for ABP simulator
+            this.Device19_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000019",
+                AppEUI = "0000000000000019",
+                AppKey = "00000000000000000000000000000019",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+                SensorDecoder = "DecoderValueSensor",
+            }; 
+
+            this.Device20_Simulated_HttpBasedDecoder = new TestDeviceInfo
+            {
+                DeviceID = "0000000000000020",
+                AppEUI = "0000000000000020",
+                AppKey = "00000000000000000000000000000020",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+                SensorDecoder = "http://localhost:8888/api/DecoderValueSensor",
+            };
+
+            for (var deviceID=1000; deviceID <= 1010; deviceID++)
+            {
+                this.deviceRange1000_ABP.Add(
+                    new TestDeviceInfo
+                    {
+                        DeviceID = deviceID.ToString("0000000000000000"),
+                        AppEUI = deviceID.ToString("0000000000000000"),
+                        AppKey = deviceID.ToString("00000000000000000000000000000000"),
+                        GatewayID = gatewayID,
+                        IsIoTHubDevice = true,
+                        SensorDecoder = "DecoderValueSensor",
+                        AppSKey=deviceID.ToString("00000000000000000000000000000000"),
+                        NwkSKey=deviceID.ToString("00000000000000000000000000000000"),
+                        DevAddr=deviceID.ToString("00000000"),
+                    }
+                );
+            }
         }
 
         // Helper method to return all devices
@@ -299,6 +363,12 @@ namespace LoRaWan.IntegrationTest
                 {
                     var device = (TestDeviceInfo)prop.GetValue(this);
                     yield return device;
+                }
+                else if (prop.PropertyType == typeof(IReadOnlyCollection<TestDeviceInfo>))
+                {
+                    var devices = (IReadOnlyCollection<TestDeviceInfo>)prop.GetValue(this);
+                    foreach (var device in devices)
+                        yield return device;
                 }
             }
         }
@@ -389,7 +459,14 @@ namespace LoRaWan.IntegrationTest
 
         public async Task InitializeAsync()
         {
-            this.arduinoDevice = LoRaArduinoSerial.CreateFromPort(this.Configuration.LeafDeviceSerialPort);
+            if (!string.IsNullOrEmpty(this.Configuration.LeafDeviceSerialPort))
+            {
+                this.arduinoDevice = LoRaArduinoSerial.CreateFromPort(this.Configuration.LeafDeviceSerialPort);
+            }
+            else
+            {
+                TestLogger.Log("[WARN] Not serial port defined for test");
+            }
 
             if (this.Configuration.CreateDevices)
             {

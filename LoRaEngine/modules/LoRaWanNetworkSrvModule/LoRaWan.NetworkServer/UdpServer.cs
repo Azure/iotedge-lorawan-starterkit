@@ -4,6 +4,7 @@
 //
 using LoRaTools;
 using LoRaTools.Utils;
+using LoRaWan.Shared;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
@@ -33,7 +34,7 @@ namespace LoRaWan.NetworkServer
         public static UdpServer Create()
         {
             var configuration = NetworkServerConfiguration.CreateFromEnviromentVariables();
-            var loraDeviceInfoManager = new LoraDeviceInfoManager(configuration);
+            var loraDeviceInfoManager = new LoraDeviceInfoManager(configuration, new ServiceFacadeHttpClientProvider(configuration, ApiVersion.LatestVersion));
             return new UdpServer(configuration, loraDeviceInfoManager);
         }
 
@@ -101,9 +102,13 @@ namespace LoRaWan.NetworkServer
                         Task.Run(async () => {
                             try
                             {
+                                var port = pullAckRemoteLoRaAggregatorPort;
+                                if (port <= 0)
+                                    port = receivedResults.RemoteEndPoint.Port;
+
                                 var resultMessage = await messageProcessor.ProcessMessageAsync(receivedResults.Buffer);
                                 if (resultMessage != null && resultMessage.Length > 0)
-                                    await this.UdpSendMessage(resultMessage, receivedResults.RemoteEndPoint.Address.ToString(), pullAckRemoteLoRaAggregatorPort);
+                                    await this.UdpSendMessage(resultMessage, receivedResults.RemoteEndPoint.Address.ToString(), port);
                             }
                             catch (Exception ex)
                             {

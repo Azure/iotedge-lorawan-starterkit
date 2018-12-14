@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
+# Visual Studio Version 15
 VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoraKeysManagerFacade", "LoraKeysManagerFacade\LoraKeysManagerFacade.csproj", "{7E3FDAAC-242D-40CD-9782-0A8487FD0070}"
@@ -15,11 +15,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanTest", "modules\LoRa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "modules\LoRaWanNetworkSrvModule\Logger\Logger.csproj", "{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRaWan.IntegrationTest", "test\LoRaWan.IntegrationTest\LoRaWan.IntegrationTest.csproj", "{26DF2637-43E0-4FFF-92BD-F4395C88DD50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.IntegrationTest", "test\LoRaWan.IntegrationTest\LoRaWan.IntegrationTest.csproj", "{26DF2637-43E0-4FFF-92BD-F4395C88DD50}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A3AF6806-947C-426F-8063-7229B71A4472}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRaWanNetworkServer.Test", "test\LoRaWanNetworkServer.Test\LoRaWanNetworkServer.Test.csproj", "{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkServer.Test", "test\LoRaWanNetworkServer.Test\LoRaWanNetworkServer.Test.csproj", "{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{C1EBF66C-3FB3-4520-B495-24B35785D3FB}"
+	ProjectSection(SolutionItems) = preProject
+		shared\ApiVersion.cs = shared\ApiVersion.cs
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoraKeysManagerFacade.Test", "test\LoraKeysManagerFacade.Test\LoraKeysManagerFacade.Test.csproj", "{BDC96E16-510C-41DA-A075-4336CB5D58A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,16 +100,25 @@ Global
 		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Release|x86.ActiveCfg = Release|Any CPU
 		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Release|x86.Build.0 = Release|Any CPU
+		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Debug|x86.Build.0 = Debug|Any CPU
+		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Release|x86.ActiveCfg = Release|Any CPU
+		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D} = {A3AF6806-947C-426F-8063-7229B71A4472}
+		{26DF2637-43E0-4FFF-92BD-F4395C88DD50} = {A3AF6806-947C-426F-8063-7229B71A4472}
+		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305} = {A3AF6806-947C-426F-8063-7229B71A4472}
+		{BDC96E16-510C-41DA-A075-4336CB5D58A1} = {A3AF6806-947C-426F-8063-7229B71A4472}
+	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{26DF2637-43E0-4FFF-92BD-F4395C88DD50} = {A3AF6806-947C-426F-8063-7229B71A4472}
-		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D} = {A3AF6806-947C-426F-8063-7229B71A4472}
-		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305} = {A3AF6806-947C-426F-8063-7229B71A4472}
 	EndGlobalSection
 EndGlobal

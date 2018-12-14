@@ -63,12 +63,16 @@ namespace LoRaWan.NetworkServer
 
             if (loraDeviceInfo == null || !loraDeviceInfo.IsOurDevice)
             {
+                // if IoT Hub is throtling this will return null
                 loraDeviceInfo = await this.loraDeviceInfoManager.GetLoraDeviceInfoAsync(devAddr, this.configuration.GatewayID);
-                if (loraDeviceInfo.DevEUI != null)
-                    Logger.Log(loraDeviceInfo.DevEUI, $"processing message, device not in cache", Logger.LoggingLevel.Info);
-                else
-                    Logger.Log(devAddr, $"processing message, device not in cache", Logger.LoggingLevel.Info);
-                Cache.AddToCache(devAddr, loraDeviceInfo);
+                if (loraDeviceInfo != null)
+                {                
+                    if (loraDeviceInfo.DevEUI != null)
+                        Logger.Log(loraDeviceInfo.DevEUI, $"processing message, device not in cache", Logger.LoggingLevel.Info);
+                    else
+                        Logger.Log(devAddr, $"processing message, device not in cache", Logger.LoggingLevel.Info);
+                    Cache.AddToCache(devAddr, loraDeviceInfo);
+                }
             }
             else
             {
@@ -486,7 +490,7 @@ namespace LoRaWan.NetworkServer
 
 
 
-            Logger.Log(loraDeviceInfo.DevEUI, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
+            Logger.Log(loraDeviceInfo?.DevEUI ?? devAddr, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
 
             return udpMsgForPktForwarder;
         }
@@ -559,7 +563,7 @@ namespace LoRaWan.NetworkServer
                 //in case not successfull we interrupt the flow
                 if (!await joinLoraDeviceInfo.HubSender.UpdateReportedPropertiesOTAAasync(joinLoraDeviceInfo))
                 {
-                    Logger.Log(devEui, $"join request could not save twins, aborting...", Logger.LoggingLevel.Error);
+                    Logger.Log(devEui, $"join request could not save twins, join refused", Logger.LoggingLevel.Error);
 
                     return null;
                 }
