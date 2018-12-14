@@ -20,6 +20,11 @@ namespace LoRaSimulator
         public PhysicalPayload LastPayload { get; set; }
 
         private bool isFirstJoinRequest = true;
+        public int RandomInterval { get; set; }
+        public int GroupRxpk { get; set; }
+        public DateTimeOffset dt { get; set; }
+
+        private ulong IncrementalData { get; set; }
 
         public SimulatedDevice(string json)
         {
@@ -27,19 +32,30 @@ namespace LoRaSimulator
             {
                 LoRaDevice = new LoRaDevice(json);
                 var additional = JsonConvert.DeserializeObject<JObject>(json);
-                Interval = (int)additional["Interval"];
-                FrmCntDown = (int)additional["FrmCntDown"];
-                FrmCntUp = (int)additional["FrmCntUp"];
+                Interval = GetProperty(additional,"Interval");
+                FrmCntDown = GetProperty(additional, "FrmCntDown");
+                FrmCntUp = GetProperty(additional, "FrmCntUp");
+                RandomInterval = GetProperty(additional, "RandomInterval");
+                GroupRxpk = GetProperty(additional, "GroupRxpk");
                 //can store 32 bit but only 16 are sent
                 var fcnt32 = BitConverter.GetBytes(FrmCntDown);
                 _FCnt[0] = fcnt32[0];
                 _FCnt[1] = fcnt32[1];
+                IncrementalData = 0;
             }
             catch (Exception)
             {
                 if (LoRaDevice == null)
                     LoRaDevice = new LoRaDevice();
             }
+        }
+
+        private int GetProperty(JObject additional, string propname)
+        {
+            var ret = additional[propname];
+            if (ret == null)
+                return 0;
+            return ret.Value<int>();
         }
 
         public byte[] GetJoinRequest()
@@ -84,10 +100,11 @@ namespace LoRaSimulator
             byte[] _Fopts = null;
             byte[] _FPort = new byte[] { 0x01 };
             // Creating a random number
-            Random random = new Random();
-            int temp = random.Next(-50, 70);
-            Logger.Log(LoRaDevice.DevAddr, $"Simulated data: {temp.ToString()}", Logger.LoggingLevel.Always);
-            byte[] _payload = Encoding.ASCII.GetBytes(temp.ToString());
+            //Random random = new Random();
+            //int temp = random.Next(-50, 70);
+            IncrementalData++;
+            Logger.Log(LoRaDevice.DevEUI, $"Simulated data: {IncrementalData.ToString()}", Logger.LoggingLevel.Always);
+            byte[] _payload = Encoding.ASCII.GetBytes(IncrementalData.ToString());
             Array.Reverse(_payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
