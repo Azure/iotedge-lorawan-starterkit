@@ -20,9 +20,6 @@ variables:
   edgeAgentVersion: 1.0.4
   edgeHubVersion: 1.0.4
   edgeHubRoute: FROM /* INTO $upstream
-  
-  # Defines image version to use in case in ARM architecture
-  DEVOPS_AGENT_IMAGE_VERSION: 2.142.1
 
   # Defines the name of the VSTS agent in ARM architecture
   vstsAgentARM: myAgent-arm32v7
@@ -31,7 +28,7 @@ variables:
   vstsAgentAMD: ronnies-amd-agent
 
   # Network Server module level: 1 in order to get decoder information
-  networkServerLogLevel: 1
+  networkServerLogLevel: 1  
 
 # Enable PR validation on branches master and dev
 pr:
@@ -132,6 +129,7 @@ jobs:
     NET_SRV_LOGTO_HUB: false
     NET_SRV_IOTEDGE_TIMEOUT: 0
     NET_SRV_VERSION: "" # Network Server module version
+    NET_SRV_LOG_TO_UDP_ADDRESS: AzureDevOpsAgent # Hostname of container where AzureDevOpsAgent will be running for Udp logging sink
     PKT_FWD_VERSION: "" # Packet Forward module version
     VSTS_AGENT: "$(vstsAgentARM)"
     # Defines image version to use in case in ARM architecture
@@ -168,6 +166,8 @@ jobs:
     NET_SRV_IOTEDGE_TIMEOUT: 0
     NET_SRV_VERSION: "" # Network Server module version
     PKT_FWD_VERSION: "" # Packet Forward module version
+    NET_SRV_LOG_TO_UDP_ADDRESS: AzureDevOpsAgent # Hostname of container where AzureDevOpsAgent will be running for Udp logging sink
+
     VSTS_AGENT: "$(vstsAgentAMD)"
     # Defines image version to use in case in AMD architecture
     DEVOPS_AGENT_IMAGE: "$(CONTAINER_REGISTRY_ADDRESS)/azuredevopsagent:$(DEVOPS_AGENT_IMAGE_VERSION)-amd64"
