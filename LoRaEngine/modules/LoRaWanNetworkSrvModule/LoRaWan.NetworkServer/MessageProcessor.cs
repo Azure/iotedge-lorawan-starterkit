@@ -36,19 +36,21 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly LoraDeviceInfoManager loraDeviceInfoManager;
 
-        public MessageProcessor(NetworkServerConfiguration configuration, LoraDeviceInfoManager loraDeviceInfoManager)
+        public MessageProcessor(NetworkServerConfiguration configuration, LoraDeviceInfoManager loraDeviceInfoManager,DateTime start)
         {
+            startTimeProcessing = start;
             this.configuration = configuration;
             this.loraDeviceInfoManager = loraDeviceInfoManager;
         }
-        public async Task<byte[]> ProcessMessageAsync(byte[] message)
+        
+
+        public async Task<DownlinkPktFwdMessage> ProcessMessageAsync(Rxpk rxpk)
         {
-            startTimeProcessing = DateTime.UtcNow;
-            LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(message);
-            if (loraMessage.IsLoRaMessage)
-            {
+            
+            LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(rxpk);
+ 
                 if (RegionFactory.CurrentRegion == null)
-                    RegionFactory.Create(loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0]);
+                    RegionFactory.Create(rxpk);
                 //join message
                 if (loraMessage.LoRaMessageType == LoRaMessageType.JoinRequest)
                 {
@@ -59,13 +61,13 @@ namespace LoRaWan.NetworkServer
                 {
                     return await ProcessLoraMessage(loraMessage);
                 }
-            }
-            return null;
+                return null;
         }
-        private async Task<byte[]> ProcessLoraMessage(LoRaMessageWrapper loraMessage)
+        
+        private async Task<DownlinkPktFwdMessage> ProcessLoraMessage(LoRaMessageWrapper loraMessage)
         {
             bool validFrameCounter = false;
-            byte[] udpMsgForPktForwarder = new byte[0];
+            DownlinkPktFwdMessage downLinkMessage = new DownlinkPktFwdMessage();
             string devAddr = ConversionHelper.ByteArrayToString(loraMessage.LoRaPayloadMessage.DevAddr.ToArray());
             Message c2dMsg = null;
             LoraDeviceInfo loraDeviceInfo = null;
@@ -403,8 +405,9 @@ namespace LoRaWan.NetworkServer
 
 
                             //todo ronnie should check the device twin preference if using confirmed or unconfirmed down
-                            LoRaMessageWrapper ackMessage = new LoRaMessageWrapper(ackLoRaMessage, LoRaMessageType.UnconfirmedDataDown, rndToken, datr, 0, freq, tmst);
-                            udpMsgForPktForwarder = ackMessage.PhysicalPayload.GetMessage();
+                            LoRaMessageWrapper ackMessage = new LoRaMessageWrapper(ackLoRaMessage, LoRaMessageType.UnconfirmedDataDown, datr, 0, freq, tmst);
+
+                            downLinkMessage = (DownlinkPktFwdMessage)ackMessage.PktFwdPayload;
 
                             linkCheckCmdResponse = null;
                             //confirm the message to iot hub only if we are in time for a delivery
@@ -481,8 +484,9 @@ namespace LoRaWan.NetworkServer
                         double freq = RegionFactory.CurrentRegion.GetDownstreamChannel(loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0]);
                         long tmst = loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0].tmst + RegionFactory.CurrentRegion.receive_delay1 * 1000000;
                         //todo ronnie should check the device twin preference if using confirmed or unconfirmed down
-                        LoRaMessageWrapper ackMessage = new LoRaMessageWrapper(macReply, LoRaMessageType.UnconfirmedDataDown, rndToken, datr, 0, freq, tmst);
-                        udpMsgForPktForwarder = ackMessage.PhysicalPayload.GetMessage();
+                        LoRaMessageWrapper ackMessage = new LoRaMessageWrapper(macReply, LoRaMessageType.UnconfirmedDataDown, datr, 0, freq, tmst);
+
+                        downLinkMessage = (DownlinkPktFwdMessage)ackMessage.PktFwdPayload;
                     }
 
 
@@ -503,7 +507,7 @@ namespace LoRaWan.NetworkServer
 
             Logger.Log(loraDeviceInfo?.DevEUI ?? devAddr, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
 
-            return udpMsgForPktForwarder;
+            return downLinkMessage;
         }
        
         // Validate cloud to device message
@@ -529,11 +533,10 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-
-        private async Task<byte[]> ProcessJoinRequest(LoRaMessageWrapper loraMessage)
+        private async Task<DownlinkPktFwdMessage> ProcessJoinRequest(LoRaMessageWrapper loraMessage)
         {
 
-            byte[] udpMsgForPktForwarder = new Byte[0];
+            DownlinkPktFwdMessage downlinkMessage = new DownlinkPktFwdMessage();
             var joinReq = (LoRaPayloadJoinRequest)loraMessage.LoRaPayloadMessage;
             joinReq.DevEUI.Span.Reverse();
             joinReq.AppEUI.Span.Reverse();
@@ -646,17 +649,14 @@ namespace LoRaWan.NetworkServer
                         datr = configuration.Rx2DataRate;
                     }
                 }
-                LoRaMessageWrapper joinAcceptMessage = new LoRaMessageWrapper(loRaPayloadJoinAccept, LoRaMessageType.JoinAccept, loraMessage.PhysicalPayload.token, datr, 0, freq, tmst);
+                LoRaMessageWrapper joinAcceptMessage = new LoRaMessageWrapper(loRaPayloadJoinAccept, LoRaMessageType.JoinAccept,  datr, 0, freq, tmst);
+                var jsonMsg = JsonConvert.SerializeObject(joinAcceptMessage.PktFwdPayload);
 
-                udpMsgForPktForwarder = joinAcceptMessage.PhysicalPayload.GetMessage();
+                downlinkMessage = (DownlinkPktFwdMessage)joinAcceptMessage.PktFwdPayload;
 
                 //add to cache for processing normal messages. This awoids one additional call to the server.
-
                 Cache.AddRequestToCache(joinLoraDeviceInfo.DevAddr, joinLoraDeviceInfo);
-
-                Logger.Log(devEui, String.Format("join accept sent with ID {0}",
-                    ConversionHelper.ByteArrayToString(loraMessage.PhysicalPayload.token)),
-                    Logger.LoggingLevel.Full);
+         
             }
             else
             {
@@ -667,7 +667,7 @@ namespace LoRaWan.NetworkServer
             Logger.Log(devEui, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
 
 
-            return udpMsgForPktForwarder;
+            return downlinkMessage;
         }
 
         public void Dispose()

@@ -47,7 +47,7 @@
         "functionAppName": "[concat(parameters('uniqueSolutionPrefix'), 'function')]",
         "gitUsername": "Azure",
         "gitRepoUrl": "[concat('https://github.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit.git')]",
-        "gitBranch": "master",
+        "gitBranch": "mik-dev-template",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "iotHubOwnerPolicyName": "iothubowner",
         "appInsightName": "[concat(parameters('uniqueSolutionPrefix'), 'insight')]",

@@ -71,6 +71,11 @@ namespace LoRaTools.LoRaPhysical
     {
         public List<Rxpk> rxpk = new List<Rxpk>();
 
+        public UplinkPktFwdMessage(Rxpk rxpkInput){
+            rxpk= new List<Rxpk>(){
+                rxpkInput
+            };
+        }
         public override PktFwdMessageAdapter GetPktFwdMessage()
         {
             PktFwdMessageAdapter pktFwdMessageAdapter = new PktFwdMessageAdapter();

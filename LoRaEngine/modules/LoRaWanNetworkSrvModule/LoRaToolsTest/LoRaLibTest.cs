@@ -11,6 +11,8 @@ using LoRaTools.LoRaMessage;
 using LoRaTools.Utils;
 using static LoRaTools.LoRaMessage.LoRaPayload;
 using static LoRaTools.LoRaMessage.LoRaPayloadData;
+using LoRaTools.LoRaPhysical;
+using System.Collections.Generic;
 
 namespace LoRaWanTest
 {
@@ -34,15 +36,15 @@ namespace LoRaWanTest
                 2,3,25,128
             };
             var netId = ConversionHelper.ByteArrayToString(NetId);
-            LoRaPayloadJoinAccept joinAccept = new LoRaPayloadJoinAccept(netId, "00112233445566778899AABBCCDDEEFF", DevAddr, AppNonce, new byte[] { 0 }, new byte[] { 0 },null);
+            LoRaPayloadJoinAccept joinAccept = new LoRaPayloadJoinAccept(netId, "00112233445566778899AABBCCDDEEFF", DevAddr, AppNonce, new byte[] { 0 }, new byte[] { 0 }, null);
             Console.WriteLine(BitConverter.ToString(joinAccept.GetByteMessage()));
-            LoRaMessageWrapper joinAcceptMessage = new LoRaMessageWrapper(joinAccept, LoRaMessageType.JoinAccept, new byte[] { 0x01 });
+            LoRaMessageWrapper joinAcceptMessage = new LoRaMessageWrapper(joinAccept, LoRaMessageType.JoinAccept);
             byte[] joinAcceptMic = new byte[4]{
                 67, 72, 91, 188
                 };
 
             Assert.True((((LoRaPayloadJoinAccept)joinAcceptMessage.LoRaPayloadMessage).Mic.ToArray().SequenceEqual(joinAcceptMic)));
-           
+
             var msg = ConversionHelper.ByteArrayToString(joinAcceptMessage.LoRaPayloadMessage.GetByteMessage());
             Assert.Equal("20493EEB51FBA2116F810EDB3742975142", msg);
 
@@ -71,7 +73,14 @@ namespace LoRaWanTest
  		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
                 }]}";
             var joinRequestInput = Encoding.Default.GetBytes(jsonUplink);
-            LoRaMessageWrapper joinRequestMessage = new LoRaMessageWrapper(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
+            List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
+            testRxpk(rxpk[0]);
+
+        }
+
+        private static void testRxpk(Rxpk rxpk)
+        {
+            LoRaMessageWrapper joinRequestMessage = new LoRaMessageWrapper(rxpk);
 
             if (joinRequestMessage.LoRaMessageType != LoRaMessageType.JoinRequest)
                 Console.WriteLine("Join Request type was not parsed correclty");
@@ -97,8 +106,6 @@ namespace LoRaWanTest
             Assert.True(joinRequestMessage.LoRaPayloadMessage.GetLoRaMessage().AppEUI.ToArray().SequenceEqual(joinRequestAppEui));
             Assert.True(joinRequestMessage.LoRaPayloadMessage.GetLoRaMessage().DevEUI.ToArray().SequenceEqual(joinRequestDevEUI));
             Assert.True(joinRequestMessage.LoRaPayloadMessage.GetLoRaMessage().DevNonce.ToArray().SequenceEqual(joinRequestDevNonce));
-
-
         }
 
         [Fact]
@@ -125,16 +132,17 @@ namespace LoRaWanTest
             physicalUpstreamPyld[0] = 2;
 
             var jsonUplinkUnconfirmedDataUpBytes = Encoding.Default.GetBytes(jsonUplinkUnconfirmedDataUp);
-            LoRaMessageWrapper jsonUplinkUnconfirmedMessage = new LoRaMessageWrapper(physicalUpstreamPyld.Concat(jsonUplinkUnconfirmedDataUpBytes).ToArray());
+            List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(jsonUplinkUnconfirmedDataUpBytes).ToArray());
+            LoRaMessageWrapper jsonUplinkUnconfirmedMessage = new LoRaMessageWrapper(rxpk[0]);
             Assert.Equal(LoRaMessageType.UnconfirmedDataUp, jsonUplinkUnconfirmedMessage.LoRaMessageType);
 
             LoRaPayloadData loRaPayloadUplinkObj = (LoRaPayloadData)jsonUplinkUnconfirmedMessage.LoRaPayloadMessage;
 
 
-            Assert.True(loRaPayloadUplinkObj.Fcnt.Span.SequenceEqual(new byte[2] {  1 ,0}));
+            Assert.True(loRaPayloadUplinkObj.Fcnt.Span.SequenceEqual(new byte[2] { 1, 0 }));
 
 
-            Assert.True(loRaPayloadUplinkObj.DevAddr.Span.SequenceEqual(new byte[4] { 1,2,3,4 }));
+            Assert.True(loRaPayloadUplinkObj.DevAddr.Span.SequenceEqual(new byte[4] { 1, 2, 3, 4 }));
             byte[] LoRaPayloadUplinkNwkKey = new byte[16] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
 
 
@@ -142,7 +150,7 @@ namespace LoRaWanTest
 
             byte[] LoRaPayloadUplinkAppKey = new byte[16] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
             var key = ConversionHelper.ByteArrayToString(LoRaPayloadUplinkAppKey);
-            Assert.Equal("hello",Encoding.ASCII.GetString((loRaPayloadUplinkObj.PerformEncryption(key))));
+            Assert.Equal("hello", Encoding.ASCII.GetString((loRaPayloadUplinkObj.PerformEncryption(key))));
 
         }
 
@@ -169,7 +177,7 @@ namespace LoRaWanTest
 
             var nwkkey = new byte[16] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
             var appkey = new byte[16] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-                
+
 
             LoRaPayloadData lora = new LoRaPayloadData(MType.ConfirmedDataUp, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
             lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
@@ -215,7 +223,9 @@ namespace LoRaWanTest
             var joinRequestInput = Encoding.Default.GetBytes(jsonUplink);
             byte[] physicalUpstreamPyld = new byte[12];
             physicalUpstreamPyld[0] = 2;
-            LoRaMessageWrapper joinRequestMessage = new LoRaMessageWrapper(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
+            List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
+
+            LoRaMessageWrapper joinRequestMessage = new LoRaMessageWrapper(rxpk[0]);
 
             var joinReq = (LoRaPayloadJoinRequest)joinRequestMessage.LoRaPayloadMessage;
             joinReq.DevAddr = new byte[4]
@@ -255,13 +265,11 @@ namespace LoRaWanTest
         }
 
         [Fact]
-        public void test()
+        public void TestMultipleRxpks()
         {
-
-         
-
-            string jsonUplink = @"{ ""rxpk"":[
- 	            {
+            //create multiple Rxpk message
+            string jsonUplink = @"{""rxpk"":[
+	{
 		            ""time"":""2013-03-31T16:21:17.528002Z"",
  		            ""tmst"":3512348611,
  		            ""chan"":2,
@@ -274,12 +282,72 @@ namespace LoRaWanTest
  		            ""rssi"":-35,
  		            ""lsnr"":5.1,
  		            ""size"":32,
- 		            ""data"":""IBMeputKQRfOUiGYyaskCt4=""
-                }]}";
-            var joinRequestInput = Encoding.Default.GetBytes(jsonUplink);
-            LoRaMessageWrapper joinRequestMessage = new LoRaMessageWrapper(joinRequestInput.Concat(joinRequestInput).ToArray());
+ 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
+                }, {
+               ""time"":""2013-03-31T16:21:17.528002Z"",
+                ""tmst"":3512348611,
+                ""chan"":2,
+                ""rfch"":0,
+                ""freq"":866.349812,
+                ""stat"":1,
+                ""modu"":""LORA"",
+                ""datr"":""SF7BW125"",
+                ""codr"":""4/6"",
+                ""rssi"":-35,
+                ""lsnr"":5.1,
+                ""size"":32,
+                ""data"":""QAQDAgGAAQABppRkJhXWw7WC""
+                 },{
+		            ""time"":""2013-03-31T16:21:17.528002Z"",
+ 		            ""tmst"":3512348611,
+ 		            ""chan"":2,
+ 		            ""rfch"":0,
+ 		            ""freq"":866.349812,
+ 		            ""stat"":1,
+ 		            ""modu"":""LORA"",
+ 		            ""datr"":""SF7BW125"",
+ 		            ""codr"":""4/6"",
+ 		            ""rssi"":-35,
+ 		            ""lsnr"":5.1,
+ 		            ""size"":32,
+ 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
+                }
+]}";
+            var multiRxpkInput = Encoding.Default.GetBytes(jsonUplink);
+            byte[] physicalUpstreamPyld = new byte[12];
+            physicalUpstreamPyld[0] = 2;
+            List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
+            List<LoRaMessageWrapper> rxpkMessages = new List<LoRaMessageWrapper>();
+            foreach (var rxpkmessage in rxpk)
+            {
+                rxpkMessages.Add(new LoRaMessageWrapper(rxpkmessage));
+            }
+            Assert.Equal(rxpkMessages.Count, 3);
+            testRxpk(rxpk[0]);
+            testRxpk(rxpk[2]);
+
+              LoRaMessageWrapper jsonUplinkUnconfirmedMessage = new LoRaMessageWrapper(rxpk[1]);
+            Assert.Equal(LoRaMessageType.UnconfirmedDataUp, jsonUplinkUnconfirmedMessage.LoRaMessageType);
+
+            LoRaPayloadData loRaPayloadUplinkObj = (LoRaPayloadData)jsonUplinkUnconfirmedMessage.LoRaPayloadMessage;
+
+
+            Assert.True(loRaPayloadUplinkObj.Fcnt.Span.SequenceEqual(new byte[2] { 1, 0 }));
+
+
+            Assert.True(loRaPayloadUplinkObj.DevAddr.Span.SequenceEqual(new byte[4] { 1, 2, 3, 4 }));
+            byte[] LoRaPayloadUplinkNwkKey = new byte[16] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+
+
+            Assert.True(loRaPayloadUplinkObj.CheckMic(ConversionHelper.ByteArrayToString(LoRaPayloadUplinkNwkKey)));
+
+            byte[] LoRaPayloadUplinkAppKey = new byte[16] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+            var key = ConversionHelper.ByteArrayToString(LoRaPayloadUplinkAppKey);
+            Assert.Equal("hello", Encoding.ASCII.GetString((loRaPayloadUplinkObj.PerformEncryption(key))));
 
         }
+
+
 
     }
 }
