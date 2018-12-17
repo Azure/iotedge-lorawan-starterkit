@@ -59,14 +59,11 @@ namespace LoRaWan.NetworkServer
             byte[] udpMsgForPktForwarder = new byte[0];
             string devAddr = ConversionHelper.ByteArrayToString(loraMessage.LoRaPayloadMessage.DevAddr.ToArray());
             Message c2dMsg = null;
-            Cache.TryGetRequestValue(devAddr, out ConcurrentDictionary<string,LoraDeviceInfo> loraDeviceInfoCacheList);
-            LoraDeviceInfo loraDeviceInfo =null;
-
-            if (loraDeviceInfoCacheList != null)
+            LoraDeviceInfo loraDeviceInfo = null;
+            if (Cache.TryGetRequestValue(devAddr, out ConcurrentDictionary<string,LoraDeviceInfo> loraDeviceInfoCacheList))
             {
                 loraDeviceInfo = loraDeviceInfoCacheList.Values.FirstOrDefault(x => 
-                x.NwkSKey!=null?loraMessage.CheckMic(x.NwkSKey):false);
-        
+                x.NwkSKey!=null?loraMessage.CheckMic(x.NwkSKey):false);     
             }
             if (loraDeviceInfo == null)
             {
@@ -502,10 +499,9 @@ namespace LoRaWan.NetworkServer
             string devNonce = ConversionHelper.ByteArrayToString(joinReq.DevNonce.ToArray());
             Logger.Log(devEui, $"join request received", Logger.LoggingLevel.Info);
             //checking if this devnonce was already processed or the deveui was already refused
-            Cache.TryGetJoinRequestValue(devEui, out LoraDeviceInfo joinLoraDeviceInfo);
             //check if join request is valid. 
             //we have a join request in the cache
-            if (joinLoraDeviceInfo != null)
+            if (Cache.TryGetJoinRequestValue(devEui, out LoraDeviceInfo joinLoraDeviceInfo))
             {
            
                 //is our device but the join was not valid
