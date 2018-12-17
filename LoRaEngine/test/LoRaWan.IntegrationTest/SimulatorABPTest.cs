@@ -89,7 +89,7 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        [Fact]
+        //[Fact]
         public async Task Single_OTAA_Simulated_Device()
         {
             const int MessageCount = 5;
@@ -124,7 +124,7 @@ namespace LoRaWan.IntegrationTest
         }
 
 
-        [Fact]
+        //[Fact]
         public async Task Simulated_Http_Based_Decoder_Scenario()
         {
             var device = this.TestFixture.Device20_Simulated_HttpBasedDecoder;

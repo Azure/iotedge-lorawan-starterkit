@@ -39,7 +39,7 @@ namespace LoRaWanNetworkServer.Test
             var response = await httpClient.GetAsync("https://mytest.test.com/api/Function1?code=aaabbbb");
             Assert.False(response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal("Version mismatch (expected: 2018-12-16-preview, function version: ), ensure you have the latest version deployed", response.ReasonPhrase);
+            Assert.Equal("Version mismatch (expected: 2018-12-16-preview, function version: 0.2 or earlier), ensure you have the latest version deployed", response.ReasonPhrase);
             Assert.Equal("https://mytest.test.com/api/Function1?code=aaabbbb&api-version=2018-12-16-preview", this.fakeRequestedUri.ToString());
         }
 

@@ -79,9 +79,7 @@ jobs:
   # Run unit tests
   - script: |
       mkdir $(Build.SourcesDirectory)\results
-      dotnet test --logger trx ./LoRaEngine/test/LoRaWanNetworkServer.Test/*.csproj
-      dotnet test --logger trx ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaToolsTest/*.csproj
-      dotnet test --logger trx ./LoRaEngine/test/LoraKeysManagerFacade.Test/*.csproj
+      dotnet test --logger trx ./LoRaEngine/test/LoRaWanNetworkServer.Test/*.csproj &&  dotnet test --logger trx ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaToolsTest/*.csproj && dotnet test --logger trx ./LoRaEngine/test/LoraKeysManagerFacade.Test/*.csproj
     displayName: Run unit tests    
   
   # Quick test runner test
