@@ -227,7 +227,10 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_ABP_Device_With_Same_DevAddr()
         {
+
+
             const int MESSAGES_COUNT = 2;
+            Log($"[INFO] ** Starting {nameof(Test_ABP_Confirmed_And_Unconfirmed_Message)} using devices {this.TestFixture.Device16_ABP.DeviceID} and {this.TestFixture.Device17_ABP.DeviceID} **");
 
             await SendABPMessages(MESSAGES_COUNT, this.TestFixture.Device16_ABP);
             await SendABPMessages(MESSAGES_COUNT, this.TestFixture.Device17_ABP);
@@ -236,7 +239,6 @@ namespace LoRaWan.IntegrationTest
 
         private async Task SendABPMessages(int MESSAGES_COUNT, TestDeviceInfo device)
         {
-            Log($"[INFO] ** Starting {nameof(Test_ABP_Confirmed_And_Unconfirmed_Message)} using device {device.DeviceID} **");
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);

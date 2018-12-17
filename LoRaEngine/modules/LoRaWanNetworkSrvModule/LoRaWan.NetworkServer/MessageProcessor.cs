@@ -65,7 +65,7 @@ namespace LoRaWan.NetworkServer
             if (loraDeviceInfoCacheList != null)
             {
                 loraDeviceInfo = loraDeviceInfoCacheList.Values.FirstOrDefault(x => 
-                x.NwkSKey!=null?loraMessage.CheckMic(x.NwkSKey):false==true);
+                x.NwkSKey!=null?loraMessage.CheckMic(x.NwkSKey):false);
         
             }
             if (loraDeviceInfo == null)
@@ -77,7 +77,7 @@ namespace LoRaWan.NetworkServer
                         Logger.Log(loraDeviceInfo.DevEUI, $"processing message, device not in cache", Logger.LoggingLevel.Info);
                         if (loraDeviceInfo.IsOurDevice)
                     {
-                        createRequestCache(devAddr, loraDeviceInfo);
+                        Cache.AddRequestToCache(devAddr, loraDeviceInfo);
                     }
                 } 
                
@@ -486,19 +486,9 @@ namespace LoRaWan.NetworkServer
             {
                 Logger.Log(devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
             }
-
-
-
-
-            Logger.Log(loraDeviceInfo!=null?loraDeviceInfo.DevEUI:devAddr, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
+            Logger.Log(loraDeviceInfo?.DevEUI ?? devAddr, $"processing time: {DateTime.UtcNow - startTimeProcessing}", Logger.LoggingLevel.Info);
 
             return udpMsgForPktForwarder;
-        }
-
-        private static void createRequestCache(string devAddr, LoraDeviceInfo loraDeviceInfo)
-        {
-    
-           Cache.AddRequestToCache(devAddr,loraDeviceInfo);        
         }
 
         private async Task<byte[]> ProcessJoinRequest(LoRaMessageWrapper loraMessage)
@@ -623,8 +613,8 @@ namespace LoRaWan.NetworkServer
                 udpMsgForPktForwarder = joinAcceptMessage.PhysicalPayload.GetMessage();
 
                 //add to cache for processing normal messages. This awoids one additional call to the server.
-         
-                createRequestCache(joinLoraDeviceInfo.DevAddr, joinLoraDeviceInfo);
+
+                Cache.AddRequestToCache(joinLoraDeviceInfo.DevAddr, joinLoraDeviceInfo);
 
                 Logger.Log(devEui, String.Format("join accept sent with ID {0}",
                     ConversionHelper.ByteArrayToString(loraMessage.PhysicalPayload.token)),

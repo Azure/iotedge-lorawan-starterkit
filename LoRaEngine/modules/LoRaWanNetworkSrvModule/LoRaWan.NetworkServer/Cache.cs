@@ -28,24 +28,31 @@ namespace LoRaWan.NetworkServer
               (devAddr, entry =>
               {
                   entry.SlidingExpiration = new TimeSpan(1, 0, 0, 0);
-                  return new ConcurrentDictionary<string, LoraDeviceInfo>() {};
+                  return new ConcurrentDictionary<string, LoraDeviceInfo>() { };
               });
             concurrentdict.GetOrAdd(deviceInfo.DevEUI, devinf =>
              {
                  return deviceInfo;
              });
 
-               
+
         }
 
 
-
-        public static void TryGetRequestValue(string key, out  ConcurrentDictionary<string,LoraDeviceInfo> loraDeviceInfo)
+        public static bool TryGetRequestValue(string key, out ConcurrentDictionary<string, LoraDeviceInfo> loraDeviceInfo)
         {
-            Cache.MemoryCache.TryGetValue(key, out object loraDeviceInfoCache);
-            loraDeviceInfo = ( ConcurrentDictionary<string,LoraDeviceInfo>)loraDeviceInfoCache;
-        }
 
+            if (Cache.MemoryCache.TryGetValue(key, out object loraDeviceInfoCache))
+            {
+                loraDeviceInfo = (ConcurrentDictionary<string, LoraDeviceInfo>)loraDeviceInfoCache;
+                return true;
+            }
+            else
+            {
+                loraDeviceInfo = null;
+                return false;
+            }
+        }
 
         public static void AddJoinRequestToCache(string devAddr, LoraDeviceInfo loraDeviceInfo)
         {
@@ -56,11 +63,18 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public static void TryGetJoinRequestValue(string key, out LoraDeviceInfo loraDeviceInfo)
+        public static bool TryGetJoinRequestValue(string key, out LoraDeviceInfo loraDeviceInfo)
         {
-            Cache.MemoryCache.TryGetValue(key, out object loraDeviceInfoCache);
-
-            loraDeviceInfo = (LoraDeviceInfo)loraDeviceInfoCache;
+            if (Cache.MemoryCache.TryGetValue(key, out object loraDeviceInfoCache))
+            {
+                loraDeviceInfo = (LoraDeviceInfo)loraDeviceInfoCache;
+                return true;
+            }
+            else
+            {
+                loraDeviceInfo = null;
+                return false;
+            }
         }
     }
 }
