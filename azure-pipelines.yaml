@@ -244,7 +244,7 @@ jobs:
     - full_ci_deploy_arm
     - full_ci_deploy_facade_function
   condition: and(ne(variables['IoTEdgeDeviceARM'], ''), or(succeeded(), eq(variables['RunTestsOnly'], 'true')))
-  timeoutInMinutes: 60 # Raspberry PI is slow, allow taking 60 minutes
+  timeoutInMinutes: 120 # Raspberry PI is slow, allow taking 120 minutes
   pool:    
     name: Default
     demands: Agent.OSArchitecture -equals ARM # Run on pi atm
