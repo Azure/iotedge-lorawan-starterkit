@@ -230,7 +230,7 @@ namespace LoRaWan.IntegrationTest
 
 
             const int MESSAGES_COUNT = 2;
-            Log($"[INFO] ** Starting {nameof(Test_ABP_Confirmed_And_Unconfirmed_Message)} using devices {this.TestFixture.Device16_ABP.DeviceID} and {this.TestFixture.Device17_ABP.DeviceID} **");
+            Log($"[INFO] ** Starting {nameof(Test_ABP_Device_With_Same_DevAddr)} using devices {this.TestFixture.Device16_ABP.DeviceID} and {this.TestFixture.Device17_ABP.DeviceID} **");
 
             await SendABPMessages(MESSAGES_COUNT, this.TestFixture.Device16_ABP);
             await SendABPMessages(MESSAGES_COUNT, this.TestFixture.Device17_ABP);
