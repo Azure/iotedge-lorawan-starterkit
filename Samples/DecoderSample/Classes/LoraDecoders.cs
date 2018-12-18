@@ -5,19 +5,18 @@ namespace SensorDecoderModule.Classes
 {
     internal static class LoraDecoders
     {   
-        private static string DecoderStringValueSensor(byte[] payload, uint fport)
+        private static string DecoderValueSensor(byte[] payload, uint fport)
         {
-            // Convert payload containing a string back to string format
-            var result = Encoding.UTF8.GetString(payload);            
+            // EITHER: Convert a payload containing a string back to string format for further processing
+            var result = Encoding.UTF8.GetString(payload);
+
+            // OR: Convert a payload containing binary data to HEX string for further processing
+            var result_binary = ConversionHelper.ByteArrayToString(payload);
+            
+            // Decode the payload
+
+            // Return a JSON string containing the decoded data
             return JsonConvert.SerializeObject(new { value = result });
         }
-
-        private static string DecoderBinaryValueSensor(byte[] payload, uint fport)
-        {
-            // Convert payload containing binary data to HEX string
-            var hex_string = ConversionHelper.ByteArrayToString(payload);
-            return JsonConvert.SerializeObject(new { value = hex_string });
-        }
-
-    }       
+    }
 }
