@@ -26,7 +26,7 @@ namespace LoRaWan.IntegrationTest
             const int MESSAGES_COUNT = 10;
 
             var device = this.TestFixture.Device4_OTAA;
-            Log($"[INFO] ** Starting {nameof(Test_OTAA_Confirmed_And_Unconfirmed_Message)} using device {device.DeviceID} **");      
+            LogTestStart(device);    
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);

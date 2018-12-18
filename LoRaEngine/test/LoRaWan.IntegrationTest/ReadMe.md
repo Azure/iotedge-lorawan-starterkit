@@ -117,7 +117,7 @@ this.Device13_OTAA = new TestDeviceInfo()
 public async Task Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error()
 {
     var device = this.TestFixture.Device8_ABP;
-    Console.WriteLine($"Starting {nameof(Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error)} using device {device.DeviceID}");
+    LogTestStart(device);
 
     var nwkSKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
     Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
@@ -153,7 +153,6 @@ Example:
 [Collection(Constants.TestCollectionName)] // Set the same collection to ensure execution in serial
 public sealed class MyTest : IntegrationTestBase
 {
-    
     // Constructor receives the IntegrationTestFixture that is a singleton
     public MyTest(IntegrationTestFixture testFixture) : base(testFixture)
     {

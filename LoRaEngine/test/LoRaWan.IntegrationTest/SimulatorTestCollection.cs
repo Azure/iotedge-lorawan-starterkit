@@ -71,7 +71,7 @@ namespace LoRaWan.IntegrationTest
         {
             const int MessageCount = 5;
 
-            var device = this.TestFixture.Device18_ABP;
+            var device = this.TestFixture.Device1001_Simulated_ABP;
             var simulatedDevice = new SimulatedDevice(device);
             var networkServerIPEndpoint = CreateNetworkServerEndpoint();
 
@@ -94,7 +94,7 @@ namespace LoRaWan.IntegrationTest
         {
             const int MessageCount = 5;
 
-            var device = this.TestFixture.Device19_OTAA;
+            var device = this.TestFixture.Device1002_Simulated_OTAA;
             var simulatedDevice = new SimulatedDevice(device);
             var networkServerIPEndpoint = CreateNetworkServerEndpoint();
 
@@ -127,7 +127,7 @@ namespace LoRaWan.IntegrationTest
         //[Fact]
         public async Task Simulated_Http_Based_Decoder_Scenario()
         {
-            var device = this.TestFixture.Device20_Simulated_HttpBasedDecoder;
+            var device = this.TestFixture.Device1003_Simulated_HttpBasedDecoder;
             var simulatedDevice = new SimulatedDevice(device);
             var networkServerIPEndpoint = CreateNetworkServerEndpoint();
 

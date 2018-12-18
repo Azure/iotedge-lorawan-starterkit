@@ -21,7 +21,7 @@ namespace LoRaWan.IntegrationTest
             const int MESSAGES_COUNT = 10;
 
             var device = this.TestFixture.Device5_ABP;
-            Log($"[INFO] ** Starting {nameof(Test_ABP_Confirmed_And_Unconfirmed_Message)} using device {device.DeviceID} **");      
+            LogTestStart(device);    
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
@@ -86,7 +86,7 @@ namespace LoRaWan.IntegrationTest
         public async Task Test_ABP_Wrong_DevAddr_Is_Ignored()
         {
             var device = this.TestFixture.Device6_ABP;
-            Log($"[INFO] ** Starting {nameof(Test_ABP_Wrong_DevAddr_Is_Ignored)} using device {device.DeviceID} **");      
+            LogTestStart(device);
 
             var devAddrToUse = "05060708";
             Assert.NotEqual(devAddrToUse, device.DevAddr);
@@ -136,7 +136,7 @@ namespace LoRaWan.IntegrationTest
         public async Task Test_ABP_Mismatch_NwkSKey_And_AppSKey_Fails_Mic_Validation()
         {
             var device = this.TestFixture.Device7_ABP;
-            Log($"[INFO] ** Starting {nameof(Test_ABP_Mismatch_NwkSKey_And_AppSKey_Fails_Mic_Validation)} using device {device.DeviceID} **");      
+            LogTestStart(device);
 
             var appSKeyToUse = "000102030405060708090A0B0C0D0E0F";
             var nwkSKeyToUse = "01020304050607080910111213141516";
@@ -184,7 +184,7 @@ namespace LoRaWan.IntegrationTest
         public async Task Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error()
         {
             var device = this.TestFixture.Device8_ABP;
-            Log($"[INFO] ** Starting {nameof(Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error)} using device {device.DeviceID} **");      
+            LogTestStart(device);     
 
             var nwkSKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
             Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
@@ -227,10 +227,8 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_ABP_Device_With_Same_DevAddr()
         {
-
-
             const int MESSAGES_COUNT = 2;
-            Log($"[INFO] ** Starting {nameof(Test_ABP_Device_With_Same_DevAddr)} using devices {this.TestFixture.Device16_ABP.DeviceID} and {this.TestFixture.Device17_ABP.DeviceID} **");
+            LogTestStart(new TestDeviceInfo[] { this.TestFixture.Device16_ABP, this.TestFixture.Device17_ABP});
 
             await SendABPMessages(MESSAGES_COUNT, this.TestFixture.Device16_ABP);
             await SendABPMessages(MESSAGES_COUNT, this.TestFixture.Device17_ABP);

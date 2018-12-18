@@ -21,7 +21,7 @@ namespace LoRaWan.IntegrationTest
         public async Task SensorDecoder_HttpBased_ValueSensorDecoder_DecodesPayload()
         {
             var device = this.TestFixture.Device11_OTAA;
-            Log($"[INFO] ** Starting {nameof(SensorDecoder_HttpBased_ValueSensorDecoder_DecodesPayload)} using device {device.DeviceID} **");      
+            LogTestStart(device);    
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -54,7 +54,7 @@ namespace LoRaWan.IntegrationTest
         public async Task SensorDecoder_ReflectionBased_ValueSensorDecoder_DecodesPayload()
         {
             var device = this.TestFixture.Device12_OTAA;
-            Log($"[INFO] ** Starting {nameof(SensorDecoder_HttpBased_ValueSensorDecoder_DecodesPayload)} using device {device.DeviceID} **");      
+            LogTestStart(device);      
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);

@@ -22,6 +22,15 @@ namespace LoRaWan.NetworkServer
 {
     public class MessageProcessor : IDisposable
     {
+        // Defines Cloud to device message property containing fport value
+        const string FPORT_MSG_PROPERTY_KEY = "fport";
+
+        // Fport value reserved for mac commands
+        const byte LORA_FPORT_RESERVED_MAC_MSG = 0;
+
+        // Starting Fport value reserved for future applications
+        const byte LORA_FPORT_RESERVED_FUTURE_START = 224;
+
         private DateTime startTimeProcessing;
         private List<byte[]> fOptsPending = new List<byte[]>();
         private readonly NetworkServerConfiguration configuration;
@@ -228,9 +237,14 @@ namespace LoRaWan.NetworkServer
                     //start checking for new c2d message, we do it even if the fcnt is invalid so we support replying to the ConfirmedDataUp
                     //todo ronnie should we wait up to 900 msec?
                     c2dMsg = await loraDeviceInfo.HubSender.ReceiveAsync(TimeSpan.FromMilliseconds(20));
+                    if (c2dMsg != null && !ValidateCloudToDeviceMessage(loraDeviceInfo, c2dMsg))
+                    {
+                        _ = loraDeviceInfo.HubSender.CompleteAsync(c2dMsg);
+                        c2dMsg = null;
+                    }
+
                     byte[] bytesC2dMsg = null;
                     byte[] fport = null;
-
 
                     //check if we got a c2d message to be added in the ack message and prepare the message
                     if (c2dMsg != null)
@@ -491,6 +505,30 @@ namespace LoRaWan.NetworkServer
 
             return udpMsgForPktForwarder;
         }
+       
+        // Validate cloud to device message
+        private bool ValidateCloudToDeviceMessage(LoraDeviceInfo loraDeviceInfo, Message c2dMessage)
+        {
+            // ensure fport property has been set
+            if (!c2dMessage.Properties.TryGetValueCaseInsensitive(FPORT_MSG_PROPERTY_KEY, out var fportValue))
+            {
+                Logger.Log(loraDeviceInfo.DevEUI, $"missing {FPORT_MSG_PROPERTY_KEY} property in C2D message '{c2dMessage.MessageId}'", Logger.LoggingLevel.Error);
+                return false;
+            }
+
+            if (byte.TryParse(fportValue, out var fport))
+            {
+                // ensure fport follows LoRa specification
+                // 0    => reserved for mac commands
+                // 224+ => reserved for future applications 
+                if (fport != LORA_FPORT_RESERVED_MAC_MSG && fport < LORA_FPORT_RESERVED_FUTURE_START)
+                    return true;
+            }
+
+            Logger.Log(loraDeviceInfo.DevEUI, $"invalid fport '{fportValue}' in C2D message '{c2dMessage.MessageId}'", Logger.LoggingLevel.Error);
+            return false;
+        }
+
 
         private async Task<byte[]> ProcessJoinRequest(LoRaMessageWrapper loraMessage)
         {
