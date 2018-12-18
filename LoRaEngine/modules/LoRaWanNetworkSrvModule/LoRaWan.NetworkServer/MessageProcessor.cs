@@ -242,9 +242,9 @@ namespace LoRaWan.NetworkServer
                         _ = loraDeviceInfo.HubSender.CompleteAsync(c2dMsg);
                         c2dMsg = null;
                     }
+
                     byte[] bytesC2dMsg = null;
                     byte[] fport = null;
-
 
                     //check if we got a c2d message to be added in the ack message and prepare the message
                     if (c2dMsg != null)
@@ -512,7 +512,7 @@ namespace LoRaWan.NetworkServer
             // ensure fport property has been set
             if (!c2dMessage.Properties.TryGetValueCaseInsensitive(FPORT_MSG_PROPERTY_KEY, out var fportValue))
             {
-                Logger.Log(loraDeviceInfo.DevEUI, $"missing {FPORT_MSG_PROPERTY_KEY} property in C2D message '{c2dMessage.MessageId}'", Logger.LoggingLevel.Info);
+                Logger.Log(loraDeviceInfo.DevEUI, $"missing {FPORT_MSG_PROPERTY_KEY} property in C2D message '{c2dMessage.MessageId}'", Logger.LoggingLevel.Error);
                 return false;
             }
 
@@ -525,7 +525,7 @@ namespace LoRaWan.NetworkServer
                     return true;
             }
 
-            Logger.Log(loraDeviceInfo.DevEUI, $"invalid fport '{fportValue}' in C2D message '{c2dMessage.MessageId}'", Logger.LoggingLevel.Info);
+            Logger.Log(loraDeviceInfo.DevEUI, $"invalid fport '{fportValue}' in C2D message '{c2dMessage.MessageId}'", Logger.LoggingLevel.Error);
             return false;
         }
 
