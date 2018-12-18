@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using Newtonsoft.Json;
 
 namespace SensorDecoderModule.Classes
@@ -12,8 +7,16 @@ namespace SensorDecoderModule.Classes
     {   
         private static string DecoderValueSensor(byte[] payload, uint fport)
         {
-            var result = Encoding.UTF8.GetString(payload);            
+            // EITHER: Convert a payload containing a string back to string format for further processing
+            var result = Encoding.UTF8.GetString(payload);
+
+            // OR: Convert a payload containing binary data to HEX string for further processing
+            var result_binary = ConversionHelper.ByteArrayToString(payload);
+            
+            // Decode the payload
+
+            // Return a JSON string containing the decoded data
             return JsonConvert.SerializeObject(new { value = result });
         }
-    }       
+    }
 }
