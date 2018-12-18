@@ -179,7 +179,15 @@ namespace LoRaTools.LoRaMessage
             LoRaPayloadMessage = payload;
             PktFwdPayload = new DownlinkPktFwdMessage(Convert.ToBase64String(LoRaPayloadMessage.GetByteMessage()), datr, rfch, freq, tmst);
             var jsonMsg = JsonConvert.SerializeObject(PktFwdPayload);
-            Logger.Log(ConversionHelper.ByteArrayToString(payload.DevAddr.Span.ToArray()),$"{((MType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+            var devEUI = payload.GetLoRaMessage().DevEUI;
+            if (devEUI.Length != 0)
+            {
+                Logger.Log(ConversionHelper.ByteArrayToString(devEUI.Span.ToArray()), $"{((MType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+            }else
+            {
+                Logger.Log(ConversionHelper.ByteArrayToString(payload.DevAddr.Span.ToArray()), $"{((MType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+            }
+
             var messageBytes = Encoding.Default.GetBytes(jsonMsg);
             PhysicalPayload = new PhysicalPayload(physicalToken, PhysicalIdentifier.PULL_RESP, messageBytes);
         }
