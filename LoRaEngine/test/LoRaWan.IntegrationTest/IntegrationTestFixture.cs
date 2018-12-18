@@ -72,17 +72,25 @@ namespace LoRaWan.IntegrationTest
         public TestDeviceInfo Device15_OTAA { get; private set; }
         // Device16_ABP: used for test on multiple device with same devaddr
         public TestDeviceInfo Device16_ABP { get; private set; }
+
         // Device17_ABP: used for test on multiple device with same devaddr
         public TestDeviceInfo Device17_ABP { get; private set; }
+        
+        // Device18_ABP: used for C2D invalid fport testing
+        public TestDeviceInfo Device18_ABP { get; private set; }        
+        
+        // Device19_ABP: used for C2D invalid fport testing
+        public TestDeviceInfo Device19_ABP { get; private set; }
 
-        // Device18_ABP: used for simulated device
-        public TestDeviceInfo Device18_ABP { get; private set; }
+        // Device1001_Simulated_ABP: used for ABP simulator
+        public TestDeviceInfo Device1001_Simulated_ABP { get; private set; }
 
-        // Device19_OTAA: used for simulated device
-        public TestDeviceInfo Device19_OTAA { get; private set; }
+        // Device1002_Simulated_OTAA: used for simulator
+        public TestDeviceInfo Device1002_Simulated_OTAA { get; private set; }
 
-        // Device20_Simulated_HttpBasedDecoder: used for simulated device testing with http based decoder
-        public TestDeviceInfo Device20_Simulated_HttpBasedDecoder { get; private set; }
+        // Device1003_Simulated_HttpBasedDecoder: used for simulator http based decoding test
+        public TestDeviceInfo Device1003_Simulated_HttpBasedDecoder { get; private set; }
+
 
         List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP { get { return deviceRange1000_ABP; } }
@@ -329,10 +337,40 @@ namespace LoRaWan.IntegrationTest
                 DevAddr = "00000017"
             };
 
-            // Device18_ABP: used for ABP simulator
+            // Device18_ABP: used for C2D invalid fport testing
             this.Device18_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000018",
+                AppEUI = "0000000000000018",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,                                      
+                SensorDecoder = "DecoderValueSensor",  
+                AppSKey = "00000000000000000000000000000018",
+                NwkSKey = "00000000000000000000000000000018",
+                DevAddr = "00000018"
+            };
+
+            // Device19_ABP: used for C2D invalid fport testing
+            this.Device19_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000019",
+                AppEUI = "0000000000000019",                
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,                                      
+                SensorDecoder = "DecoderValueSensor",  
+                AppSKey = "00000000000000000000000000000019",
+                NwkSKey = "00000000000000000000000000000019",
+                DevAddr = "00000019"
+            };
+
+
+            // Simulated devices start at 1000
+
+
+            // Device1001_Simulated_ABP: used for ABP simulator
+            this.Device1001_Simulated_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000001001",
                 AppEUI = "0000000000000018",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
@@ -342,28 +380,29 @@ namespace LoRaWan.IntegrationTest
                 DevAddr="00000018"
             };
 
-            // Device19_OTAA: used for ABP simulator
-            this.Device19_OTAA = new TestDeviceInfo()
+            // Device1002_Simulated_OTAA: used for simulator
+            this.Device1002_Simulated_OTAA = new TestDeviceInfo()
             {
-                DeviceID = "0000000000000019",
-                AppEUI = "0000000000000019",
-                AppKey = "00000000000000000000000000000019",
+                DeviceID = "0000000000001002",
+                AppEUI = "0000000000001002",
+                AppKey = "00000000000000000000000000001002",
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
             }; 
 
-            this.Device20_Simulated_HttpBasedDecoder = new TestDeviceInfo
+            // Device1003_Simulated_HttpBasedDecoder: used for simulator http based decoding test
+            this.Device1003_Simulated_HttpBasedDecoder = new TestDeviceInfo
             {
-                DeviceID = "0000000000000020",
-                AppEUI = "0000000000000020",
-                AppKey = "00000000000000000000000000000020",
+                DeviceID = "0000000000001003",
+                AppEUI = "0000000000001003",
+                AppKey = "00000000000000000000000000001003",
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "http://localhost:8888/api/DecoderValueSensor",
             };
 
-            for (var deviceID=1000; deviceID <= 1010; deviceID++)
+            for (var deviceID=1100; deviceID <= 1110; deviceID++)
             {
                 this.deviceRange1000_ABP.Add(
                     new TestDeviceInfo
@@ -554,7 +593,10 @@ namespace LoRaWan.IntegrationTest
                     {
                         if (!deviceTwin.Properties.Desired.Contains(kv.Key) || (string)deviceTwin.Properties.Desired[kv.Key] != kv.Value)
                         {
-                            TestLogger.Log($"Unexpected value for device {testDevice.DeviceID} twin property {kv.Key}, expecting '{kv.Value}', actual is '{(string)deviceTwin.Properties.Desired[kv.Key]}'");
+                            var existingValue = string.Empty;
+                            if (deviceTwin.Properties.Desired.Contains(kv.Key))
+                                existingValue = deviceTwin.Properties.Desired[kv.Key].ToString();
+                            TestLogger.Log($"Unexpected value for device {testDevice.DeviceID} twin property {kv.Key}, expecting '{kv.Value}', actual is '{existingValue}'");
                             
                             var patch = new Twin();
                             patch.Properties.Desired = new TwinCollection(JsonConvert.SerializeObject(desiredProperties));
@@ -567,5 +609,11 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
+        // Helper method to return TestDeviceInfo by a property name, NOT THE DEVICE ID!!
+        // Usefull when running theories
+        internal TestDeviceInfo GetDeviceByPropertyName(string propertyName)
+        {
+            return (TestDeviceInfo)this.GetType().GetProperty(propertyName).GetValue(this);
+        }        
     }
 }

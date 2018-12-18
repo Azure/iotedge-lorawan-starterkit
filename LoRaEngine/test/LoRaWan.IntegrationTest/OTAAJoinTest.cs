@@ -26,7 +26,7 @@ namespace LoRaWan.IntegrationTest
         public async Task OTAA_Join_With_Valid_Device_Updates_DeviceTwin()
         {   
             var device = this.TestFixture.Device1_OTAA; 
-            Log($"[INFO] ** Starting {nameof(OTAA_Join_With_Valid_Device_Updates_DeviceTwin)} using device {device.DeviceID} **");      
+            LogTestStart(device);     
 
             var twinBeforeJoin = await TestFixture.GetTwinAsync(device.DeviceID);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
@@ -95,7 +95,7 @@ namespace LoRaWan.IntegrationTest
         public async Task OTAA_Join_With_Wrong_DevEUI_Fails()
         {
             var device = this.TestFixture.Device2_OTAA; 
-            Log($"[INFO] ** Starting {nameof(OTAA_Join_With_Wrong_DevEUI_Fails)} using device {device.DeviceID} **");
+            LogTestStart(device);
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -115,7 +115,7 @@ namespace LoRaWan.IntegrationTest
         public async Task OTAA_Join_With_Wrong_AppKey_Fails()
         {
             var device = this.TestFixture.Device3_OTAA; 
-            Log($"[INFO] ** Starting {nameof(OTAA_Join_With_Wrong_AppKey_Fails)} using device {device.DeviceID} **");      
+            LogTestStart(device);     
             var appKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
             Assert.NotEqual(appKeyToUse, device.AppKey);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
@@ -138,7 +138,8 @@ namespace LoRaWan.IntegrationTest
         public async Task OTAA_Join_With_Wrong_AppEUI_Fails()
         {
             var device = this.TestFixture.Device13_OTAA; 
-            Log($"[INFO] ** Starting {nameof(OTAA_Join_With_Wrong_AppEUI_Fails)} using device {device.DeviceID} **");      
+            LogTestStart(device);
+
             var appEUIToUse = "FF7A00000000FCE3";
             Assert.NotEqual(appEUIToUse, device.AppEUI);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
