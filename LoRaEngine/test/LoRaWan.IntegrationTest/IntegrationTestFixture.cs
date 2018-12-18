@@ -70,6 +70,10 @@ namespace LoRaWan.IntegrationTest
 
         // Device15_OTAA: used for test fport C2D
         public TestDeviceInfo Device15_OTAA { get; private set; }
+        // Device16_ABP: used for test on multiple device with same devaddr
+        public TestDeviceInfo Device16_ABP { get; private set; }
+        // Device17_ABP: used for test on multiple device with same devaddr
+        public TestDeviceInfo Device17_ABP { get; private set; }
 
 
         public IntegrationTestFixture()
@@ -286,6 +290,31 @@ namespace LoRaWan.IntegrationTest
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
+            };
+            // Device16_ABP: used for same DevAddr test
+            this.Device16_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000016",
+                AppEUI = "0000000000000016",
+                GatewayID = gatewayID,
+                SensorDecoder = "DecoderValueSensor",
+                IsIoTHubDevice = true,
+                AppSKey = "00000000000000000000000000000016",
+                NwkSKey = "00000000000000000000000000000016",
+                DevAddr = "00000016"
+            };
+
+            // Device17_ABP: used for same DevAddr test
+            this.Device17_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000017",
+                AppEUI = "0000000000000017",
+                GatewayID = gatewayID,
+                SensorDecoder = "DecoderValueSensor",
+                IsIoTHubDevice = true,
+                AppSKey = "00000000000000000000000000000017",
+                NwkSKey = "00000000000000000000000000000017",
+                DevAddr = "00000016"
             };
         }
 
