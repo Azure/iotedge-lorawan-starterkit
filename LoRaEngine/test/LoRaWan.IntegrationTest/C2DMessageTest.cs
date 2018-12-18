@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,11 @@ namespace LoRaWan.IntegrationTest
     [Collection(Constants.TestCollectionName)] // run in serial
     public sealed class C2DMessageTest : IntegrationTestBase
     {
+        const string FportPropertyName = "fport";
+        const string ConfirmedPropertyName = "Confirmed";
+
         static Random random = new Random();
+   
 
         public C2DMessageTest(IntegrationTestFixture testFixture) : base(testFixture)
         {
@@ -70,7 +75,7 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody);
+            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string>{ { FportPropertyName, "1"} });
             Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -175,7 +180,7 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody);
+            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string> { { FportPropertyName, "1"} });
             Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -240,7 +245,7 @@ namespace LoRaWan.IntegrationTest
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device15_OTAA
         [Fact]
-        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_Message()
+        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message()
         {
             var device = this.TestFixture.Device15_OTAA;
             LogTestStart(device);
@@ -276,7 +281,7 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new System.Collections.Generic.Dictionary<string, string>() { { "Fport","2"} });
+            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string>() { { FportPropertyName, "2"} });
             Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -377,7 +382,11 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new System.Collections.Generic.Dictionary<string, string>() { { "Confirmed", "true" } });
+            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string>() 
+            { 
+                { FportPropertyName, "1" },
+                { ConfirmedPropertyName, "true" } 
+            });
             Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -487,7 +496,7 @@ namespace LoRaWan.IntegrationTest
             {
                 MessageId = Guid.NewGuid().ToString(),
             };            
-            c2dMessage.Properties["Fport"] = fport.ToString();
+            c2dMessage.Properties[FportPropertyName] = fport.ToString();
             await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessage);
             Log($"Message {c2dMessageBody} sent to device");
 
