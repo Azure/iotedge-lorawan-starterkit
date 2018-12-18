@@ -17,8 +17,8 @@ variables:
   # Name of service connection for resource group
   azureServiceConnectionName: 'IntegrationTestRG'
 
-  edgeAgentVersion: 1.0.4
-  edgeHubVersion: 1.0.4
+  edgeAgentVersion: 1.0.5
+  edgeHubVersion: 1.0.5
   edgeHubRoute: FROM /* INTO $upstream
 
   # Defines the name of the VSTS agent in ARM architecture
@@ -79,8 +79,7 @@ jobs:
   # Run unit tests
   - script: |
       mkdir $(Build.SourcesDirectory)\results
-      dotnet test --logger trx ./LoRaEngine/test/LoRaWanNetworkServer.Test/*.csproj
-      dotnet test --logger trx ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaToolsTest/*.csproj
+      dotnet test --logger trx ./LoRaEngine/test/LoRaWanNetworkServer.Test/*.csproj &&  dotnet test --logger trx ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaToolsTest/*.csproj && dotnet test --logger trx ./LoRaEngine/test/LoraKeysManagerFacade.Test/*.csproj
     displayName: Run unit tests    
   
   # Quick test runner test

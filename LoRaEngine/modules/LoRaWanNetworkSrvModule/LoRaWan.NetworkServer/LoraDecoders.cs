@@ -17,6 +17,16 @@ namespace LoRaWan.NetworkServer
 {
     class LoraDecoders
     {
+        // Http client used by decoders
+        // Decoder calls don't need proxy since they will never leave the IoT Edge device
+        static Lazy<HttpClient> decodersHttpClient = new Lazy<HttpClient>(() => {
+            HttpClient client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
+            client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
+            return client;
+        });
+
+        
         public static async Task<JObject> DecodeMessage(byte[] payload, uint fport, string SensorDecoder)
         {
             string result;
@@ -81,11 +91,8 @@ namespace LoRaWan.NetworkServer
             string result = "";
 
             try
-            {
-                HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
-                client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
-                HttpResponseMessage response = await client.GetAsync(sensorDecoderModuleUrl);                
+            {                
+                HttpResponseMessage response = await decodersHttpClient.Value.GetAsync(sensorDecoderModuleUrl);                
 
                 if (!response.IsSuccessStatusCode)
                 {

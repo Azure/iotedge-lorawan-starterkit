@@ -4,6 +4,7 @@
 //
 using LoRaTools;
 using LoRaTools.Utils;
+using LoRaWan.Shared;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
@@ -33,7 +34,7 @@ namespace LoRaWan.NetworkServer
         public static UdpServer Create()
         {
             var configuration = NetworkServerConfiguration.CreateFromEnviromentVariables();
-            var loraDeviceInfoManager = new LoraDeviceInfoManager(configuration);
+            var loraDeviceInfoManager = new LoraDeviceInfoManager(configuration, new ServiceFacadeHttpClientProvider(configuration, ApiVersion.LatestVersion));
             return new UdpServer(configuration, loraDeviceInfoManager);
         }
 
@@ -97,20 +98,25 @@ namespace LoRaWan.NetworkServer
                         // Message processing runs in the background
                         MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager);
 
-#pragma warning disable CS4014
-                        Task.Run(async () => {
+                        // do not wait for it to return
+                        _ = Task.Run(async () => {
                             try
                             {
                                 var resultMessage = await messageProcessor.ProcessMessageAsync(receivedResults.Buffer);
                                 if (resultMessage != null && resultMessage.Length > 0)
-                                    await this.UdpSendMessage(resultMessage, receivedResults.RemoteEndPoint.Address.ToString(), pullAckRemoteLoRaAggregatorPort);
+                                {
+                                    var port = pullAckRemoteLoRaAggregatorPort;
+                                    if (port <= 0)
+                                        port = receivedResults.RemoteEndPoint.Port;
+                                    await this.UdpSendMessage(resultMessage, receivedResults.RemoteEndPoint.Address.ToString(), port);
+                                }
                             }
                             catch (Exception ex)
                             {
                                 Logger.Log($"Error processing the message {ex.Message}, {ex.StackTrace}", Logger.LoggingLevel.Error);
                             }
                         });
-#pragma warning restore CS4014
+
                         break;
                     //This is a ack to a transmission we did previously
                     case PhysicalIdentifier.TX_ACK:
