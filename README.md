@@ -33,7 +33,7 @@ However, customers looking for any of the following are expected to prefer a set
 - Experimental support of MAC commands
 - Multi-gateway support
 
-If you want to upgrade a LoRa Gateway running our software 0.2.0-preview to the current 0.3.0-preview, follow [this guide]().
+If you want to upgrade a LoRa Gateway running our software 0.2.0-preview to the current 0.3.0-preview, follow [this guide](#updating-existing-installations-from-020-preview-to-030-preview).
 
 ## Current limitations
 
