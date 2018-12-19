@@ -23,7 +23,7 @@ Notes:
 - The LoRaWan gateway must implement a UDP server on port 1680 to forward the LoRa commands from/to the ```LoRaWan Network Server``` module. In our case it is called ```LoRaWan Packet Forwarder```
 
 3. The LoRaWan Network Server request status for the LoRa devices. The Azure Function ```LoraKeysManagerFacade``` is used to aquire the device identity from IoT Hub.
-4. In the case you're using the demo device with the automatic deployment Azure Resource Manager (ARM) template: the Azure function ```LoraKeysManagerFacade``` will register the device ```47AAC86800430028``` into the Azure IoT Hub for you. Otherwise you need to provision a device yoursefl in IoT Hub: [device provisioning ](/#lora-device-provisioning)
+4. In the case you're using the demo device with the automatic deployment Azure Resource Manager (ARM) template: the Azure function ```LoraKeysManagerFacade``` will register the device ```47AAC86800430028``` into the Azure IoT Hub for you. Otherwise you need to provision a device yoursefl in IoT Hub: [device provisioning ](/README.MD#lora-device-provisioning)
 5. The Azure function ```LoraKeysManagerFacade``` sends back the device indentity to the module
 6. The ```LoRaWan Network Server``` module:
 
