@@ -81,7 +81,7 @@ Now paste it into `Application settings` -> `Connection strings` as `IoTHubConne
 
 Also, add the previously saved `Primary connection string (StackExchange.Redis)` from your Redis Cache to the `Connection strings` of your function. Use type `Custom` again.
 
-![Add Redis Cache Connection string](/Docs/Pictures/FunctionRedisKey.PNG)
+![Add Redis Cache Connection string](/Docs/Pictures/FunctionRedisKey.png)
 
 From the Facade Azure function, extract the `Host key` of type `_master` and save it somewhere. (We will need it in the next step)
 
