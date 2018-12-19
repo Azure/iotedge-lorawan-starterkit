@@ -33,9 +33,23 @@ However, customers looking for any of the following are expected to prefer a set
 - Experimental support of MAC commands
 - Multi-gateway support
 
+## Version 0.3.0 Bugs fixed
+
+- Handle wrong FPort input in C2D messages (#67)
+- Fixed null expection on Ackngoledgements by UDP Server (#56)
+ 
+## Version 0.3.0 New Features
+
+- Updated IoT Edge version to 1.0.5 (#68)
+- Azure Function Versioning (#65)
+- HTTP decoder support (#59, #58, )
+- Multiple devices with same DevAddr support (#61)
+- VSTS managed CI/CD pipeline (#63)
+- Revamped UDP layer for better performance and reliability (#56)
+- Updated Azure Function Facade VS Code support files ([settings.json](/LoRaEngine/LoraKeysManagerFacade/.vscode/settings.json) and [tasks.json]((/LoRaEngine/LoraKeysManagerFacade/.vscode/tasks.json)))
+
 ## Current limitations
 
-- **This version has some breaking changes and is not compatible with the previous one (v0.1.0-preview). We recommend to redeploy your solution from scratch to avoid any issues**
 - Multigateway works but is not fully tested and you need to implement message deduplication after IoT Hub, if multiples gateways are used in the same range of the device we recommend setting the gateway tag "GatewayID" on the device twins with the IoT Edge ID of the preferred gateway for that device.
 - No Class B and C
 - No ADR
@@ -59,8 +73,6 @@ The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/
 Re-deploy the updated version 0.3.0 of the Azure Function Facade as outlined [here](/LoRaEngine#setup-azure-function-facade-and-azure-container-registry).
 
 Make sure the IoT Hub and Redis connection strings are properly configured in the function.
-
-
 
 ## Tested Gateway HW
 
