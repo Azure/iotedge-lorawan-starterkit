@@ -46,6 +46,22 @@ However, customers looking for any of the following are expected to prefer a set
 
 - In addition we generally recommend as read the [Azure IoT Edge trouble shooting guide](https://docs.microsoft.com/en-us/azure/iot-edge/troubleshoot)
 
+## Updating existing installations from 0.2.0 to 0.3.0
+
+### Updating IoT Edge Runtime Containers to Version 1.0.5 ###
+
+We highly recommend running the latest version of the IoT Edge runtime containers on your gateway (Version 1.0.5 at the time of writing). The way that you update the `IoT Edge agent` and `IoT Edge hub` containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment. 
+
+The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-update-iot-edge#update-the-runtime-containers).
+
+### Updating the Azure Function Facade ###
+
+Re-deploy the updated version 0.3.0 of the Azure Function Facade as outlined [here](/LoRaEngine#setup-azure-function-facade-and-azure-container-registry).
+
+Make sure the IoT Hub and Redis connection strings are properly configured in the function.
+
+
+
 ## Tested Gateway HW
 
 - [Seeed Studio LoRa LoRaWAN Gateway - 868MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
