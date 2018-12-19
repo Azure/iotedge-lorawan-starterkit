@@ -63,9 +63,9 @@ The following guide describes the necessary steps to build and deploy the LoRaEn
 
 ### Setup Azure function facade and [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/)
 
-- Deploy the [Azure function](LoraKeysManagerFacade). The best way is to open the  [Azure function folder](LoraKeysManagerFacade) with Visual Studio Code with the [Azure Functions Plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) installed. Now run the command `Azure Functions: Deploy to function app...` and provide the name of the Azure function to deploy to. If prompted, select  environment `C#` and  version `V2`.
+- Build and deploy the [Azure function](LoraKeysManagerFacade). The best way is to open the  [Azure function folder](LoraKeysManagerFacade) with Visual Studio Code with the [Azure Functions Plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) installed. Now run the command `Azure Functions: Deploy to function app...` and provide the name of the Azure function to deploy to. If prompted, select  environment `C#` and  version `V2`.
 
-- If you want to deploy the function from Visual Studio Code with the root project folder `iotedge-lorawan-starterkit` open (of which the Function is a subfolder `/LoRaEngine/LoraKeysManagerFacade`), you need to run the Viusal Studio Command `Azure Functions: Deploy to function app...` and then manually choose the folder `LoraKeysManagerFacade/bin/Release/netstandard2.0/publish`.(Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder).
+- If you want to just deploy the function from Visual Studio Code with the root project folder `iotedge-lorawan-starterkit` open (of which the Function is a subfolder `/LoRaEngine/LoraKeysManagerFacade`), you need to run the Viusal Studio Command `Azure Functions: Deploy to function app...` and then **manually** choose the folder `LoraKeysManagerFacade/bin/Release/netstandard2.0/publish`. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.
 
 - Configure IoT Hub and Redis connection strings in the function:
 

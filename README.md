@@ -70,7 +70,7 @@ The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/
 
 ### Updating the Azure Function Facade ###
 
-Re-deploy the updated version 0.3.0 of the Azure Function Facade as outlined [here](/LoRaEngine#setup-azure-function-facade-and-azure-container-registry).
+Re-deploy the updated version of the Azure Function Facade as outlined [here](/LoRaEngine#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
 
 Make sure the IoT Hub and Redis connection strings are properly configured in the function.
 
