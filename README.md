@@ -33,20 +33,7 @@ However, customers looking for any of the following are expected to prefer a set
 - Experimental support of MAC commands
 - Multi-gateway support
 
-## Version 0.3.0 Bugs fixed
-
-- Handle wrong FPort input in C2D messages (#67)
-- Fixed null expection on Ackngoledgements by UDP Server (#56)
- 
-## Version 0.3.0 New Features
-
-- Updated IoT Edge version to 1.0.5 (#68)
-- Azure Function Versioning (#65)
-- HTTP decoder support (#59, #58, )
-- Multiple devices with same DevAddr support (#61)
-- VSTS managed CI/CD pipeline (#63)
-- Revamped UDP layer for better performance and reliability (#56)
-- Updated Azure Function Facade VS Code support files ([settings.json](/LoRaEngine/LoraKeysManagerFacade/.vscode/settings.json) and [tasks.json]((/LoRaEngine/LoraKeysManagerFacade/.vscode/tasks.json)))
+If you want to upgrade a LoRa Gateway running our software 0.2.0-preview to the current 0.3.0-preview, follow [this guide]().
 
 ## Current limitations
 
@@ -59,20 +46,6 @@ However, customers looking for any of the following are expected to prefer a set
 - The [network server Azure IoT Edge module](/LoRaEngine/modules/LoRaWanNetworkSrvModule) and the [Facade function](/LoRaEngine/LoraKeysManagerFacade) have an API dependency on each other. its generally recommended for the deployments on the same source level.
 
 - In addition we generally recommend as read the [Azure IoT Edge trouble shooting guide](https://docs.microsoft.com/en-us/azure/iot-edge/troubleshoot)
-
-## Updating existing installations from 0.2.0 to 0.3.0
-
-### Updating IoT Edge Runtime Containers to Version 1.0.5 ###
-
-We highly recommend running the latest version of the IoT Edge runtime containers on your gateway (Version 1.0.5 at the time of writing). The way that you update the `IoT Edge agent` and `IoT Edge hub` containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment. 
-
-The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-update-iot-edge#update-the-runtime-containers).
-
-### Updating the Azure Function Facade ###
-
-Re-deploy the updated version of the Azure Function Facade as outlined [here](/LoRaEngine#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
-
-Make sure the IoT Hub and Redis connection strings are properly configured in the function.
 
 ## Tested Gateway HW
 
@@ -166,6 +139,20 @@ By using the `docker ps` command, you should see the Edge containers being deplo
 The template provision an IoT Hub with a [packet forwarder](https://github.com/Lora-net/packet_forwarder) and a network server module already preconfigured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](/Template).
 
 If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in this [submodule](/Docs/LoRaWanPktFwdRAK833USB).
+
+## Updating existing installations from 0.2.0-preview to 0.3.0-preview
+
+### Updating IoT Edge Runtime Containers to Version 1.0.5 ###
+
+We highly recommend running the latest version of the IoT Edge runtime containers on your gateway (Version 1.0.5 at the time of writing). The way that you update the `IoT Edge agent` and `IoT Edge hub` containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment. 
+
+The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-update-iot-edge#update-the-runtime-containers).
+
+### Updating the Azure Function Facade
+
+Re-deploy the updated version of the Azure Function Facade as outlined [here](/LoRaEngine#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+
+Make sure the IoT Hub and Redis connection strings are properly configured in the function.
 
 ## Using a Proxy Server to connect your Concentrator to Azure
 
