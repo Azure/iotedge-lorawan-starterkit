@@ -33,9 +33,12 @@ However, customers looking for any of the following are expected to prefer a set
 - Experimental support of MAC commands
 - Multi-gateway support
 
+## Updating Existing Installations
+
+If you want to update a LoRa Gateway running our software 0.2.0-preview to the current 0.3.0-preview, follow [this guide](#updating-existing-installations-from-020-preview-to-030-preview).
+
 ## Current limitations
 
-- **This version has some breaking changes and is not compatible with the previous one (v0.1.0-preview). We recommend to redeploy your solution from scratch to avoid any issues**
 - Multigateway works but is not fully tested and you need to implement message deduplication after IoT Hub, if multiples gateways are used in the same range of the device we recommend setting the gateway tag "GatewayID" on the device twins with the IoT Edge ID of the preferred gateway for that device.
 - No Class B and C
 - No ADR
@@ -332,6 +335,20 @@ CidType : 6
 ## Cloud to device confirmed message
 
 You can send confirmed cloud to device messages by adding a "Confirmed" property set to true to your cloud to device message (same as above).
+
+## Updating existing installations from 0.2.0-preview to 0.3.0-preview
+
+### Updating IoT Edge Runtime Containers to Version 1.0.5 ###
+
+We highly recommend running the latest version of the IoT Edge runtime containers on your gateway (Version 1.0.5 at the time of writing). The way that you update the `IoT Edge agent` and `IoT Edge hub` containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment. 
+
+The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-update-iot-edge#update-the-runtime-containers).
+
+### Updating the Azure Function Facade
+
+Re-deploy the updated version of the Azure Function Facade as outlined [here](/LoRaEngine#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+
+Make sure the IoT Hub and Redis connection strings are properly configured in the function.
 
 ## License
 
