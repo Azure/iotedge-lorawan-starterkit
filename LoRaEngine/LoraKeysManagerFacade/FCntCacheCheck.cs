@@ -119,9 +119,9 @@ namespace LoraKeysManagerFacade
                                 serverFCnt.FCntDown = newFCntDown;
                                 serverFCnt.GatewayId = gatewayId;
 
-                                CacheFcnt(serverFCnt, redisCache, cacheKey);
-
+                                CacheFcnt(serverFCnt, redisCache, cacheKey);                                
                             }
+
                             //it is a retry message coming up by the same first gateway 
                             else if (clientFCntUp == serverFCnt.FCntUp && gatewayId == serverFCnt.GatewayId)
                             {
