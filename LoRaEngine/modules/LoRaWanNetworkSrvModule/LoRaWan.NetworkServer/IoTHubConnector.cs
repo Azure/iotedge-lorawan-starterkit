@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
               
                 CreateDeviceClient();
 
-                deviceClient.OperationTimeoutInMilliseconds = 5000;
+                deviceClient.OperationTimeoutInMilliseconds = 60000;
 
                 setRetry(true);
 
@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer
 
                     CreateDeviceClient();
 
-                    deviceClient.OperationTimeoutInMilliseconds = 10000;
+                    deviceClient.OperationTimeoutInMilliseconds = 120000;
 
                     setRetry(true);
 
@@ -213,7 +213,7 @@ namespace LoRaWan.NetworkServer
 
                     CreateDeviceClient();
 
-                    deviceClient.OperationTimeoutInMilliseconds = 10000;
+                    deviceClient.OperationTimeoutInMilliseconds = 120000;
 
                     //Enable retry for this send message, off by default              
                     setRetry(true);
@@ -280,7 +280,7 @@ namespace LoRaWan.NetworkServer
             {
                 CreateDeviceClient();
 
-                deviceClient.OperationTimeoutInMilliseconds = 1500;
+                deviceClient.OperationTimeoutInMilliseconds = 30000;
 
                 setRetry(true);
 
@@ -311,7 +311,7 @@ namespace LoRaWan.NetworkServer
             {
                 CreateDeviceClient();
 
-                deviceClient.OperationTimeoutInMilliseconds = 1500;
+                deviceClient.OperationTimeoutInMilliseconds = 30000;
 
                 setRetry(true);
 

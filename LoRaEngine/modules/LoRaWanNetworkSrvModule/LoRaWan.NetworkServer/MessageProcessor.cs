@@ -236,7 +236,7 @@ namespace LoRaWan.NetworkServer
                     }
                     //start checking for new c2d message, we do it even if the fcnt is invalid so we support replying to the ConfirmedDataUp
                     //todo ronnie should we wait up to 900 msec?
-                    c2dMsg = await loraDeviceInfo.HubSender.ReceiveAsync(TimeSpan.FromMilliseconds(20));
+                    c2dMsg = await loraDeviceInfo.HubSender.ReceiveAsync(TimeSpan.FromMilliseconds(500));
                     if (c2dMsg != null && !ValidateCloudToDeviceMessage(loraDeviceInfo, c2dMsg))
                     {
                         _ = loraDeviceInfo.HubSender.CompleteAsync(c2dMsg);
@@ -250,7 +250,7 @@ namespace LoRaWan.NetworkServer
                     if (c2dMsg != null)
                     {
                         ////check if there is another message
-                        var secondC2dMsg = await loraDeviceInfo.HubSender.ReceiveAsync(TimeSpan.FromMilliseconds(20));
+                        var secondC2dMsg = await loraDeviceInfo.HubSender.ReceiveAsync(TimeSpan.FromMilliseconds(40));
                         if (secondC2dMsg != null)
                         {
                             //put it back to the queue for the next pickup
