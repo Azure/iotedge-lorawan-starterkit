@@ -33,7 +33,9 @@ However, customers looking for any of the following are expected to prefer a set
 - Experimental support of MAC commands
 - Multi-gateway support
 
-If you want to upgrade a LoRa Gateway running our software 0.2.0-preview to the current 0.3.0-preview, follow [this guide](#updating-existing-installations-from-020-preview-to-030-preview).
+## Updating Existing Installations
+
+If you want to update a LoRa Gateway running our software 0.2.0-preview to the current 0.3.0-preview, follow [this guide](#updating-existing-installations-from-020-preview-to-030-preview).
 
 ## Current limitations
 
@@ -139,20 +141,6 @@ By using the `docker ps` command, you should see the Edge containers being deplo
 The template provision an IoT Hub with a [packet forwarder](https://github.com/Lora-net/packet_forwarder) and a network server module already preconfigured to work out of the box. As soon as you connect your IoT Edge device in point 4 above, those will be pushed on your device. You can find template definition and Edge deployment specification [here](/Template).
 
 If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in this [submodule](/Docs/LoRaWanPktFwdRAK833USB).
-
-## Updating existing installations from 0.2.0-preview to 0.3.0-preview
-
-### Updating IoT Edge Runtime Containers to Version 1.0.5 ###
-
-We highly recommend running the latest version of the IoT Edge runtime containers on your gateway (Version 1.0.5 at the time of writing). The way that you update the `IoT Edge agent` and `IoT Edge hub` containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment. 
-
-The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-update-iot-edge#update-the-runtime-containers).
-
-### Updating the Azure Function Facade
-
-Re-deploy the updated version of the Azure Function Facade as outlined [here](/LoRaEngine#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
-
-Make sure the IoT Hub and Redis connection strings are properly configured in the function.
 
 ## Using a Proxy Server to connect your Concentrator to Azure
 
@@ -347,6 +335,20 @@ CidType : 6
 ## Cloud to device confirmed message
 
 You can send confirmed cloud to device messages by adding a "Confirmed" property set to true to your cloud to device message (same as above).
+
+## Updating existing installations from 0.2.0-preview to 0.3.0-preview
+
+### Updating IoT Edge Runtime Containers to Version 1.0.5 ###
+
+We highly recommend running the latest version of the IoT Edge runtime containers on your gateway (Version 1.0.5 at the time of writing). The way that you update the `IoT Edge agent` and `IoT Edge hub` containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment. 
+
+The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-update-iot-edge#update-the-runtime-containers).
+
+### Updating the Azure Function Facade
+
+Re-deploy the updated version of the Azure Function Facade as outlined [here](/LoRaEngine#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+
+Make sure the IoT Hub and Redis connection strings are properly configured in the function.
 
 ## License
 

@@ -41,6 +41,8 @@ Another view of the architecture and a more message driven view is the following
 
 The following guide describes the necessary steps to build and deploy the LoRaEngine to an [Azure IoT Edge](https://azure.microsoft.com/en-us/services/iot-edge/) installation on a LoRaWAN antenna gateway.
 
+If you want to update a LoRa Gateway running our software 0.2.0-preview to the current 0.3.0-preview, follow [this guide](/README.md#updating-existing-installations-from-020-preview-to-030-preview)
+
 ### Used Azure services
 
 - [Azure IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
@@ -65,7 +67,7 @@ The following guide describes the necessary steps to build and deploy the LoRaEn
 
 - Build and deploy the [Azure function](LoraKeysManagerFacade). The best way is to open the  [Azure function folder](LoraKeysManagerFacade) with Visual Studio Code with the [Azure Functions Plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) installed. Now run the command `Azure Functions: Deploy to function app...` and provide the name of the Azure function to deploy to. If prompted, select  environment `C#` and  version `V2`.
 
-- If you want to just deploy the function from Visual Studio Code with the root project folder `iotedge-lorawan-starterkit` open (of which the Function is a subfolder `/LoRaEngine/LoraKeysManagerFacade`), you need to run the Viusal Studio Command `Azure Functions: Deploy to function app...` and then **manually** choose the folder `LoraKeysManagerFacade/bin/Release/netstandard2.0/publish`. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.
+- If you want to just deploy the function from Visual Studio Code with the root project folder `iotedge-lorawan-starterkit` open (of which the Function is a subfolder `/LoRaEngine/LoraKeysManagerFacade`), you need to run the Visual Studio Command `Azure Functions: Deploy to function app...` and then **manually** choose the folder `LoraKeysManagerFacade/bin/Release/netstandard2.0/publish`. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.
 
 - Configure IoT Hub and Redis connection strings in the function:
 
