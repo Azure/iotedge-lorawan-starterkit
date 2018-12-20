@@ -794,7 +794,7 @@ namespace LoRaWan.IntegrationTest
         public async Task<bool> setOTAAJoinAsyncWithRetry(_otaa_join_cmd_t command, int timeoutPerTry, int retries)
         {     
             for (var attempt=1; attempt <= retries; ++attempt)
-            {
+            {                
                 TestLogger.Log($"Join attempt #{attempt}/{retries}");
                 if (command == _otaa_join_cmd_t.JOIN) 
                     sendCommand ("AT+JOIN\r\n");
