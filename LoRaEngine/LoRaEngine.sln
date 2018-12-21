@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 15
-VisualStudioVersion = 15.0.27130.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28407.52
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoraKeysManagerFacade", "LoraKeysManagerFacade\LoraKeysManagerFacade.csproj", "{7E3FDAAC-242D-40CD-9782-0A8487FD0070}"
 EndProject
@@ -22,6 +22,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkServer.Test", "test\LoRaWanNetworkServer.Test\LoRaWanNetworkServer.Test.csproj", "{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoraKeysManagerFacade.Test", "test\LoraKeysManagerFacade.Test\LoraKeysManagerFacade.Test.csproj", "{BDC96E16-510C-41DA-A075-4336CB5D58A1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Test.Shared", "test\LoRaWan.Test.Shared\LoRaWan.Test.Shared.csproj", "{727AF443-9B5E-4730-BC04-255F82D87C66}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -103,6 +105,14 @@ Global
 		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Release|x86.ActiveCfg = Release|Any CPU
 		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Release|x86.Build.0 = Release|Any CPU
+		{727AF443-9B5E-4730-BC04-255F82D87C66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{727AF443-9B5E-4730-BC04-255F82D87C66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{727AF443-9B5E-4730-BC04-255F82D87C66}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{727AF443-9B5E-4730-BC04-255F82D87C66}.Debug|x86.Build.0 = Debug|Any CPU
+		{727AF443-9B5E-4730-BC04-255F82D87C66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{727AF443-9B5E-4730-BC04-255F82D87C66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{727AF443-9B5E-4730-BC04-255F82D87C66}.Release|x86.ActiveCfg = Release|Any CPU
+		{727AF443-9B5E-4730-BC04-255F82D87C66}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,6 +122,7 @@ Global
 		{26DF2637-43E0-4FFF-92BD-F4395C88DD50} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{BDC96E16-510C-41DA-A075-4336CB5D58A1} = {A3AF6806-947C-426F-8063-7229B71A4472}
+		{727AF443-9B5E-4730-BC04-255F82D87C66} = {A3AF6806-947C-426F-8063-7229B71A4472}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}

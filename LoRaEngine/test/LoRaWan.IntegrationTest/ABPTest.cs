@@ -1,3 +1,4 @@
+using LoRaWan.Test.Shared;
 using System;
 using System.Threading.Tasks;
 using Xunit;

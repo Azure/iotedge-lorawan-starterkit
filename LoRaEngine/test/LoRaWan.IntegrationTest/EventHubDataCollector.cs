@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using LoRaWan.Test.Shared;
 using Microsoft.Azure.EventHubs;
 
 namespace LoRaWan.IntegrationTest

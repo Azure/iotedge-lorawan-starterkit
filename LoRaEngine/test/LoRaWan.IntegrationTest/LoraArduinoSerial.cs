@@ -28,6 +28,7 @@
   THE SOFTWARE.1  USA
 */
 
+using LoRaWan.Test.Shared;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
