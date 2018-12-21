@@ -23,7 +23,9 @@ All simulated devices has to be created into the ```testconfig.json``` file loca
       "DevNonce": "",
       "Interval": "10",
       "FrmCntUp": "1",
-      "FrmCntDown": "0"
+      "FrmCntDown": "0",
+      "RandomInterval": "1",
+      "GroupRxpk": ""
     },
     {
       "DevAddr": "",
@@ -35,7 +37,9 @@ All simulated devices has to be created into the ```testconfig.json``` file loca
       "DevNonce": "",
       "Interval": "25",
       "FrmCntUp": "0",
-      "FrmCntDown": "0"
+      "FrmCntDown": "0",
+      "RandomInterval": "5",
+      "GroupRxpk": "1"
     }
 ```
 
@@ -44,10 +48,7 @@ The above example shows one ABP device, the first one and one OTAA device, the s
 * ```DevAddr``` which does contains the Dev Address of the device. This address has to be unique for all the devices connected to one gateway.
 * ```AppSKey``` which contains the Application Server Key used to encode the data payload send to the server.
 * ```NwkSkey``` which contains the Network Server Key used to encode the MIC bytes used to verify the integrity of the packet sent from the device to the server.
-* ```Interval``` is the interval in seconds for which the simulated device will send data to the server. This allow to generate messages to the server at various moments.
-* ```FrmCntUp``` the frame number to start with for message going from the device to the gateway. This allow to start the frame counter at any number. Number has to be a uint32 and not larger.
-* ```FrmCntDown``` the frame number to start with for message going from the gateway to the device. This allow to start the frame counter at any number. Number has to be a uint32 and not larger.
-* other fields can be ignore or left empty
+* other LoRa fields can be ignore or left empty
 
 For OTAA devices, mandatory fields are the following:
 
@@ -55,14 +56,22 @@ For OTAA devices, mandatory fields are the following:
 * ```DevEUI``` which does represent a unique device id. Please note that this unique device id **must** be the same device id as in your Azure IoT Hub. For OTAA devices, it is important to have it as a name.
 * ```AppKey`` which is used to code the message sent from the gateway to the device one the request for join has been accepted.
 * ```AppEUI``` which is used by the device to the gateway for the join request.
-* ```Interval``` is the interval in seconds for which the simulated device will send data to the server. This allow to generate messages to the server at various moments.
-* ```FrmCntUp``` the frame number to start with for message going from the device to the gateway. This allow to start the frame counter at any number. Number has to be a uint32 and not larger. For OTAA devices, it should always be 0 but you may want to test various scenarios.
-* ```FrmCntDown``` the frame number to start with for message going from the gateway to the device. This allow to start the frame counter at any number. Number has to be a uint32 and not larger.
-* other fields can be ignore or left empty. For OTAA devices, it should always be 0 but you may want to test various scenarios.
 * Optional field: ```DevNonce``` which is normally a random number used for the join request from the device to the gateway.
-* other fields can be ignore or left empty
+* other LoRa fields can be ignore or left empty.
 
-**Note**: all the string representation are hexadecimal representations of bytes in bigendian except for ```Interval```, ```FrmCntUp``` and ```FrmCntDown``` which are decimal numbers.
+Common mandatory fields:
+
+* ```Interval``` is the interval in seconds for which the simulated device will send data to the server. This allow to generate messages to the server at various moments.
+
+Common optional fields, they can be left empty or not present:
+
+* ```RandomInterval``` add/remove seconds in a random way to the original ```Interval``` one.
+* ```FrmCntUp``` the frame number to start with for message going from the device to the gateway. This allow to start the frame counter at any number. Number has to be a uint32 and not larger. For OTAA devices, it should always be 0 but you may want to test various scenarios.
+* ```FrmCntDown``` the frame number to start with for message going from the gateway to the device. This allow to start the frame counter at any number. Number has to be a uint32 and not larger. For OTAA devices, it should always be 0 but you may want to test various scenarios.
+* ```GroupRxpk``` is used to send at the same time, as an array multiple xrpk at the same time.
+
+
+**Note**: all the string representation are hexadecimal representations of bytes in bigendian except for ```Interval```, ```RandomInterval```, ```GroupRxpk```, ```FrmCntUp``` and ```FrmCntDown``` which are decimal numbers.
 
 Please note you'll have to create the devices and have the right Device Twin information as well. Here is an example of those 2 devices with the desired properties. You will see as well the reported ones as they've been reporting as well their usage.
 
@@ -108,12 +117,12 @@ then to the debug tab:
 
 and add the following environment variables:
 
-* TEST_DEBUG: true
 * IOTEDGE_IOTHUBHOSTNAME: XXX.azure-devices.net where XXX is your IoT Hub registry name
 * FACADE_AUTH_CODE: key. Where key is the secret key to access the function used to gather the device information like twins, get their own secret key to realize posting operation in Azure IoT Hub
 * FACADE_SERVER_URL: https://XXX.azurewebsites.net/api where XXX is the name of your function. If you want as well to bebug the functions, you can do it. See full documentation [here](/LoRaEngine/README.md) if needed.
-* LOG_LEVEL: 0 to get a full log view or any other level to get less information
+* NET_SRV_LOG_LEVEL: 0 to get a full log view or any other level to get less information
 * ENABLE_GATEWAY: false this will allow to directly post the data from the devices to Azure IoT Hub. If you have a gateway, you'll need to specify true and adjust other environment variable. See full documentation [here](/LoRaEngine/README.md) if needed.
+* NET_SRV_LOGTO_HUB: false. So you won't log the data into Azure IoT Hub
 
 ### Setting up the LoRaSimulator
 
