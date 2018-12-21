@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using LoRaTools;
 using LoRaTools.LoRaMessage;
 using LoRaTools.LoRaPhysical;
+using LoRaWan.Test.Shared;
 using Xunit;
 
 namespace LoRaWan.IntegrationTest
@@ -124,7 +125,8 @@ namespace LoRaWan.IntegrationTest
         }
 
 
-        //[Fact]
+        
+        [Fact(Skip = "simulated")]
         public async Task Simulated_Http_Based_Decoder_Scenario()
         {
             var device = this.TestFixture.Device1003_Simulated_HttpBasedDecoder;

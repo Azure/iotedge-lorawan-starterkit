@@ -1,13 +1,24 @@
-
+//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
 using System.Net.NetworkInformation;
 using System.Text;
 using Microsoft.Azure.EventHubs;
 
-namespace LoRaWan.IntegrationTest
+
+namespace LoRaWan.Test.Shared
 {
-    internal static class Utility
+    /// <summary>
+    /// Utility class
+    /// </summary>
+    public static class Utility
     {
-        internal static byte[] GetMacAddress()
+        /// <summary>
+        /// Gets mac adderss
+        /// </summary>
+        /// <returns></returns>
+        public static byte[] GetMacAddress()
         {
             string macAddresses = string.Empty;
 
@@ -25,7 +36,7 @@ namespace LoRaWan.IntegrationTest
         }
 
         // Tries to get device ID from EventData
-        internal static string GetDeviceId(this EventData message)
+        public static string GetDeviceId(this EventData message)
         {
             if (message.SystemProperties.TryGetValue("iothub-connection-device-id", out var deviceId))
             {

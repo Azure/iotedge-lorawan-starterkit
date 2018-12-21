@@ -1,4 +1,8 @@
-﻿using LoRaTools;
+﻿//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+using LoRaTools;
 using LoRaTools.LoRaMessage;
 using LoRaTools.LoRaPhysical;
 using LoRaTools.Utils;
@@ -11,9 +15,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LoRaWan.IntegrationTest
+namespace LoRaWan.Test.Shared
 {
-    class SimulatedDevice
+    /// <summary>
+    /// Defines a simulated device
+    /// </summary>
+    public class SimulatedDevice
     {
         public TestDeviceInfo LoRaDevice { get; internal set; }
         public int FrmCntUp { get; set; }
@@ -46,7 +53,7 @@ namespace LoRaWan.IntegrationTest
                 this.joinFinished = new SemaphoreSlim(0);
         }
 
-        byte[] CreateJoinRequest()
+        public byte[] CreateJoinRequest()
         {
             //create a join request
             byte[] AppEUI = ConversionHelper.StringToByteArray(LoRaDevice.AppEUI);
@@ -77,7 +84,13 @@ namespace LoRaWan.IntegrationTest
             return join.GetByteMessage();
         }
 
-        byte[] CreateUnconfirmedDataUpMessage(string data, byte fport = 1)
+        /// <summary>
+        /// Creates request to send unconfirmed data message
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="fport"></param>
+        /// <returns></returns>
+        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, byte fport = 1)
         {
             byte[] mhbr = new byte[] { 0x40 };
             byte[] devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
@@ -87,7 +100,7 @@ namespace LoRaWan.IntegrationTest
             fCnt[0]++;
             byte[] fopts = null;
             byte[] fPort = new byte[] { fport };           
-            TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
+            //TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
             byte[] payload = Encoding.UTF8.GetBytes(data);
             Array.Reverse(payload);
             // 0 = uplink, 1 = downlink
@@ -98,22 +111,22 @@ namespace LoRaWan.IntegrationTest
             // First encrypt the data
             standardData.PerformEncryption(LoRaDevice.AppSKey); //"0A501524F8EA5FCBF9BDB5AD7D126F75");
             // Now we have the full package, create the MIC
-            standardData.SetMic(LoRaDevice.NwkSKey); //"99D58493D1205B43EFF938F0F66C339E");
+            standardData.SetMic(LoRaDevice.NwkSKey); //"99D58493D1205B43EFF938F0F66C339E");            
 
-            return standardData.GetByteMessage();
-
+            return standardData;
         }
 
         // Sends unconfirmed message
         public async Task SendUnconfirmedMessageAsync(SimulatedPacketForwarder simulatedPacketForwarder, string payload)
         {
             var token = await RandomTokenGenerator.GetTokenAsync();
-            this.LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PUSH_DATA, null);
+            if (this.LastPayload == null)
+                this.LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PUSH_DATA, null);
             var header = this.LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress);
 
             var unconfirmedMessage = this.CreateUnconfirmedDataUpMessage(payload);
-            await simulatedPacketForwarder.SendAsync(header, unconfirmedMessage);
-
+            this.LastPayload = await simulatedPacketForwarder.SendAsync(header, unconfirmedMessage.GetByteMessage());
+            
             TestLogger.Log($"[{this.LoRaDevice.DeviceID}] Unconfirmed data: {BitConverter.ToString(header).Replace("-", "")} {payload}");
 
             //TestLogger.Log($"[{this.LoRaDevice.DevAddr}] Sending data: {BitConverter.ToString(header).Replace("-", "")}{Encoding.UTF8.GetString(gatewayInfo)}");

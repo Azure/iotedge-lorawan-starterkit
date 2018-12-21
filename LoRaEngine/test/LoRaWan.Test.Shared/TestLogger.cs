@@ -1,21 +1,26 @@
-﻿using System;
+﻿//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace LoRaWan.IntegrationTest
+namespace LoRaWan.Test.Shared
 {
     /// <summary>
     /// Helper class enabling logging in Integration Test
     /// When running the tests in Visual Studio Log does not output
     /// </summary>
-    static class TestLogger
+    public static class TestLogger
     {
         /// <summary>
         /// Logs
         /// </summary>
         /// <param name="text"></param>
-        internal static void Log(string text)
+        public static void Log(string text)
         {
           // Log to diagnostics if a debbuger is attached
             if (Debugger.IsAttached)

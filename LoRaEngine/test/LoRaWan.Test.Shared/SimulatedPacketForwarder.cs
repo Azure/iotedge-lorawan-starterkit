@@ -1,4 +1,8 @@
-﻿using LoRaTools;
+﻿//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+using LoRaTools;
 using LoRaTools.LoRaMessage;
 using LoRaTools.LoRaPhysical;
 using Newtonsoft.Json;
@@ -11,7 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LoRaWan.IntegrationTest
+namespace LoRaWan.Test.Shared
 {
     public sealed class SimulatedPacketForwarder : IDisposable
     {
@@ -157,7 +161,7 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        internal async Task SendAsync(byte[] syncHeader, byte[] data)
+        internal async Task<PhysicalPayload> SendAsync(byte[] syncHeader, byte[] data)
         {
             var rxpkgateway = this.CreateMessagePacket(data);
             var msg = "{\"rxpk\":[" + rxpkgateway + "]}";
@@ -166,8 +170,12 @@ namespace LoRaWan.IntegrationTest
             byte[] packetData = new byte[syncHeader.Length + gatewayInfo.Length];
             Array.Copy(syncHeader, packetData, syncHeader.Length);
             Array.Copy(gatewayInfo, 0, packetData, syncHeader.Length, gatewayInfo.Length);
+
+            var physicalPayload = new PhysicalPayload(packetData);
             
             await udpClient.SendAsync(packetData, packetData.Length, networkServerIPEndpoint);
+
+            return physicalPayload;
         }
 
         public async Task StopAsync()

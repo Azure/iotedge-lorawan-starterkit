@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer
 {
@@ -32,6 +33,16 @@ public string AppEUI{ get; set; }
 
         public LoraDeviceInfo()
         {
+        }
+
+        internal Task UpdateTwinAsync(object p)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal object GetTwinProperties()
+        {
+            throw new NotImplementedException();
         }
     }
 
