@@ -34,16 +34,6 @@ public string AppEUI{ get; set; }
         public LoraDeviceInfo()
         {
         }
-
-        internal Task UpdateTwinAsync(object p)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal object GetTwinProperties()
-        {
-            throw new NotImplementedException();
-        }
     }
 
 

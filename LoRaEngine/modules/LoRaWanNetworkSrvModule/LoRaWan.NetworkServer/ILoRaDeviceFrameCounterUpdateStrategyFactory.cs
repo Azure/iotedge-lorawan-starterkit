@@ -23,9 +23,9 @@ namespace LoRaWan.NetworkServer
         private readonly MultiGatewayFrameCounterUpdateStrategy multiGateway;
         private readonly SingleGatewayFrameCounterUpdateStrategy singleGateway;
 
-        public DefaultLoRaDeviceFrameCounterUpdateStrategyFactory()
+        public DefaultLoRaDeviceFrameCounterUpdateStrategyFactory(string gatewayID, LoRaDeviceAPIServiceBase loRaDeviceAPIService)
         {
-            this.multiGateway = new MultiGatewayFrameCounterUpdateStrategy();
+            this.multiGateway = new MultiGatewayFrameCounterUpdateStrategy(gatewayID, loRaDeviceAPIService);
             this.singleGateway = new SingleGatewayFrameCounterUpdateStrategy();
         }
 
@@ -36,24 +36,36 @@ namespace LoRaWan.NetworkServer
 
     public class MultiGatewayFrameCounterUpdateStrategy : ILoRaDeviceFrameCounterUpdateStrategy
     {
-        public Task ResetAsync(ILoRaDevice loraDeviceInfo)
+        private readonly string gatewayID;
+        private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
+
+        public MultiGatewayFrameCounterUpdateStrategy(string gatewayID, LoRaDeviceAPIServiceBase loRaDeviceAPIService)
         {
-            throw new NotImplementedException();
+            this.gatewayID = gatewayID;
+            this.loRaDeviceAPIService = loRaDeviceAPIService;
+        }
+
+        public async Task ResetAsync(ILoRaDevice loraDeviceInfo)
+        {
+            await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loraDeviceInfo.DevEUI);
+            loraDeviceInfo.SetFcntDown(0);
+            loraDeviceInfo.SetFcntUp(0);
         }
 
         public async ValueTask<int> NextFcntDown(ILoRaDevice loraDeviceInfo)
         {
-            var result = await AzureFunctionNextFcntDownAsync(loraDeviceInfo);
+            var result = await this.loRaDeviceAPIService.NextFCntDownAsync(
+                devEUI: loraDeviceInfo.DevEUI, 
+                fcntDown: loraDeviceInfo.FcntDown,
+                fcntUp: loraDeviceInfo.FcntUp,
+                gatewayId: this.gatewayID);
+
             loraDeviceInfo.SetFcntDown(result);
+
             return result;
         }
 
         public Task UpdateAsync(ILoRaDevice loraDeviceInfo)
-        {
-            throw new NotImplementedException();
-        }
-
-        private async Task<int> AzureFunctionNextFcntDownAsync(ILoRaDevice loraDeviceInfo)
         {
             throw new NotImplementedException();
         }

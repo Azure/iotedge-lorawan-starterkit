@@ -18,6 +18,8 @@ namespace LoRaWanNetworkServer.Test
             this.simulatedDevice = simulatedDevice;
         }
 
+        public string DevEUI => this.simulatedDevice.LoRaDevice.DeviceID;
+
         public string GatewayID => this.simulatedDevice.LoRaDevice.GatewayID;
 
         int fcntUp;
@@ -47,6 +49,7 @@ namespace LoRaWanNetworkServer.Test
         }
 
         int fcntDown = 0;
+        public int FcntDown { get { return this.fcntDown; } }
         public int IncrementFcntDown(int value) => Interlocked.Add(ref this.fcntDown, value);
 
         // TODO: fix this
