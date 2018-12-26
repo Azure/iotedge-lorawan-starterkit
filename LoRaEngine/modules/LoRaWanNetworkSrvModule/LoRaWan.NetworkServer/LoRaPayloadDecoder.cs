@@ -9,14 +9,17 @@ namespace LoRaWan.NetworkServer
 {
     public interface ILoRaPayloadDecoder
     {
-        object DecodeAsync(ILoRaDevice loraDeviceInfo, string decryptedPayload);
+        object DecodeAsync(ILoRaDevice loraDeviceInfo, byte[] decryptedPayload);
     }
 
     public class LoRaPayloadDecoder : ILoRaPayloadDecoder
     {
-        public object DecodeAsync(ILoRaDevice loraDeviceInfo, string decryptedPayload)
+        public object DecodeAsync(ILoRaDevice loraDeviceInfo, byte[] decryptedPayload)
         {
-            throw new NotImplementedException();
+            return new
+            {
+                data = LoRaTools.Utils.ConversionHelper.ByteArrayToString(decryptedPayload),
+            };
         }
     }
 }
