@@ -111,7 +111,7 @@ namespace LoRaWanNetworkServer.Test
         }
 
         [Fact]
-        public async Task Unconfirmed_Message_Should_Send_Data_To_IotHub_And_Return_Null()
+        public async Task Unconfirmed_Message_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_Null()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: this.gatewayID));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");

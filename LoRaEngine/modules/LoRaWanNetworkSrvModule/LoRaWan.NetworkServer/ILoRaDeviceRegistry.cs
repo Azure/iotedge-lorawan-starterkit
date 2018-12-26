@@ -14,6 +14,11 @@ namespace LoRaWan.NetworkServer
     {
         string GatewayID { get; }
         int FcntUp { get; }
+
+        int FcntDown { get; }
+
+        string DevEUI { get; }
+
         string AppSKey { get; }
         int? ReceiveDelay1 { get; }
         int? ReceiveDelay2 { get; }
