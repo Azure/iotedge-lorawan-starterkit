@@ -12,25 +12,26 @@ namespace LoRaWan.NetworkServer
 {
     public interface ILoRaDevice
     {
-        string GatewayID { get; set; }
-        UInt32 FcntUp { get; }
-        string AppSKey { get; set; }
-        uint? ReceiveDelay1 { get; }
-        uint? ReveiveDelay2 { get; }
+        string GatewayID { get; }
+        int FcntUp { get; }
+        string AppSKey { get; }
+        int? ReceiveDelay1 { get; }
+        int? ReceiveDelay2 { get; }
         bool AlwaysUseSecondWindow { get; }
 
         bool IsABP();
         bool WasNotJustReadFromCache();
-        UInt32 IncrementFcntDown(UInt32 v);
+        int IncrementFcntDown(int value);
         bool IsABPRelaxedFrameCounter();
-        void SetFcntUp(UInt32 v);
-        void SetFcntDown(UInt32 v);
+        void SetFcntUp(int value);
+        void SetFcntDown(int value);
 
         Task<Message> ReceiveCloudToDeviceAsync(TimeSpan waitTime);
-        object CompleteCloudToDeviceMessageAsync(Message c2dMsg);
-        object AbandonCloudToDeviceMessageAsync(Message additionalMsg);
+        Task CompleteCloudToDeviceMessageAsync(Message c2dMsg);
+        Task AbandonCloudToDeviceMessageAsync(Message additionalMsg);
         Task UpdateTwinAsync(object twinProperties);
         Dictionary<string, object> GetTwinProperties();
+        Task SendEventAsync(Message message);
     }
 
     public interface ILoRaDeviceRegistry

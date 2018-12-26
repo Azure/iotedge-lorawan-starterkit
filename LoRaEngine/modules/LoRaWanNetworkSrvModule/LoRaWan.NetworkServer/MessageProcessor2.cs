@@ -6,9 +6,11 @@
 using LoRaTools.LoRaMessage;
 using LoRaTools.Regions;
 using Microsoft.Azure.Devices.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,16 +27,19 @@ namespace LoRaWan.NetworkServer
     public partial class MessageProcessor2
     {
         private readonly ILoRaDeviceRegistry deviceRegistry;
-        private readonly ILoRaDeviceFrameCounterUpdateStrategy frameCounterUpdateStrategy;
+        private readonly ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory;
         private readonly ILoRaPayloadDecoder payloadDecoder;
+        private readonly string gatewayID;
 
         public MessageProcessor2(
+            string gatewayID,
             ILoRaDeviceRegistry deviceRegistry,
-            ILoRaDeviceFrameCounterUpdateStrategy frameCounterUpdateStrategy,
+            ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory,
             ILoRaPayloadDecoder payloadDecoder)
         {
+            this.gatewayID = gatewayID;
             this.deviceRegistry = deviceRegistry;
-            this.frameCounterUpdateStrategy = frameCounterUpdateStrategy;
+            this.frameCounterUpdateStrategyFactory = frameCounterUpdateStrategyFactory;
             this.payloadDecoder = payloadDecoder;
         }
 
@@ -107,7 +112,7 @@ namespace LoRaWan.NetworkServer
             return (byte)(loRaPayloadData.DevAddr.Span[0] & 0b01111111);
         }
 
-        int WorkaroundGetFcnt(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => MemoryMarshal.Read<int>(loRaPayloadData.Fcnt.Span);
+        int WorkaroundGetFcnt(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => MemoryMarshal.Read<UInt16>(loRaPayloadData.Fcnt.Span);
 
         LoRaMessageType WorkaroundGetMessageType(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData)
         {
@@ -120,13 +125,10 @@ namespace LoRaWan.NetworkServer
         bool WorkaroundIsUpwardAck(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => WorkaroundGetMessageType(loRaPayloadData) == LoRaMessageType.ConfirmedDataUp && loRaPayloadData.GetLoRaMessage().Frmpayload.Length == 0;
 
 
-        //public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessLoRaMessage(Rxpk rxpk)
-        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessLoRaMessage(LoRaTools.LoRaPhysical.Rxpk rxpk)
+        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessLoRaMessage(LoRaTools.LoRaPhysical.Rxpk rxpk) => await ProcessLoRaMessage(rxpk, new LoRaOperationTimeWatcher(RegionFactory.CurrentRegion));
+
+        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessLoRaMessage(LoRaTools.LoRaPhysical.Rxpk rxpk, LoRaOperationTimeWatcher timeWatcher)
         {
-            var timeWatcher = new LoRaOperationTimeWatcher(RegionFactory.CurrentRegion);
-
-            
-
             var loraPayload = WorkaroundGetPayloadData(rxpk);
             var devAddr = loraPayload.DevAddr;
             var netId = loraPayload;
@@ -145,6 +147,11 @@ namespace LoRaWan.NetworkServer
             if (loraDeviceInfo == null)
                 return null;
 
+
+            var frameCounterStrategy = (loraDeviceInfo.GatewayID == this.gatewayID) ?
+                frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy() :
+                frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy();
+            
             // In order to handle a scenario where the network server is restarted and the fcntDown was not yet saved (we save every 10)
             // If device does not have gatewayid this will be handled by the service facade function (NextFCntDown)
             // here or at the deviceRegistry, what is better?
@@ -172,7 +179,7 @@ namespace LoRaWan.NetworkServer
             }
 
 
-            UInt32 fcntDown = 0;
+            int fcntDown = 0;
 
             // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
@@ -184,14 +191,14 @@ namespace LoRaWan.NetworkServer
                 //_ = SaveFcnt(loraDeviceInfo, force: true);
                 //if (loraDeviceInfo.GatewayID == null)
                 //    await ABPFcntCacheReset(loraDeviceInfo);
-                _ = frameCounterUpdateStrategy.ForceUpdateAsync(loraDeviceInfo, 0, 0);                
+                _ = frameCounterStrategy.ResetAsync(loraDeviceInfo);                
             }
 
             // If it is confirmed it require us to update the frame counter down
             // Multiple gateways: in redis, otherwise in device twin
             if (WorkaroundIsConfirmed(loraPayload))
             {
-                fcntDown = await frameCounterUpdateStrategy.NextFcntDown(loraDeviceInfo);
+                fcntDown = await frameCounterStrategy.NextFcntDown(loraDeviceInfo);
                 //fcntDown = NextFcntDown(loraDeviceInfo);
             }
 
@@ -206,7 +213,7 @@ namespace LoRaWan.NetworkServer
                     // This is confirmation from leaf device that he received a C2D confirmed
                     if (!WorkaroundIsUpwardAck(loraPayload))
                     {
-                        var decryptedPayload = loraPayload.GetDecryptedPayload(loraDeviceInfo.AppSKey);
+                        var decryptedPayload = loraPayload.PerformEncryption(loraDeviceInfo.AppSKey);
                         payloadData = payloadDecoder.DecodeAsync(loraDeviceInfo, decryptedPayload);
                     }
 
@@ -215,6 +222,8 @@ namespace LoRaWan.NetworkServer
                     // What is the content of the message
                     // TODO Future: Don't wait if it is an unconfirmed message
                     await SendDeviceEventAsync(loraDeviceInfo, rxpk, payloadData);
+
+                    loraDeviceInfo.SetFcntUp(WorkaroundGetFcnt(loraPayload));
                 }
             }
 
@@ -227,11 +236,11 @@ namespace LoRaWan.NetworkServer
             }
 
             // If it is confirmed and we don't have time to check c2d and send to device we return now
-            if (loraPayload.IsConfirmed() && timeToSecondWindow <= (LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessage + LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage))
+            if (WorkaroundIsConfirmed(loraPayload) && timeToSecondWindow <= (LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessage + LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage))
             {
 
                 //_ = SaveFcnt(loraDeviceInfo, force: false);
-                _ = this.frameCounterUpdateStrategy.UpdateAsync(loraDeviceInfo);
+                _ = frameCounterStrategy.UpdateAsync(loraDeviceInfo);
                 return new LoRaTools.LoRaPhysical.Txpk()
                 {                    
                 };
@@ -249,16 +258,16 @@ namespace LoRaWan.NetworkServer
                 c2dMsg = null;
             }
 
-            var returnPayloadData = new LoRaPayloadData();
+            var resultPayloadData = new LoRaPayloadData();
             //loraPayload.IsConfirmed() ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown);
 
             if (c2dMsg != null)
             {
                 // The message coming from the device was not confirmed, therefore we did not computed the frame count down
                 // Now we need to increment because there is a C2D message to be sent
-                if (!loraPayload.IsConfirmed())
+                if (!WorkaroundIsConfirmed(loraPayload))
                 {
-                    fcntDown = await this.frameCounterUpdateStrategy.NextFcntDown(loraDeviceInfo);
+                    fcntDown = await frameCounterStrategy.NextFcntDown(loraDeviceInfo);
                 }
 
                 timeToSecondWindow = timeWatcher.GetTimeToSecondWindow(loraDeviceInfo);
@@ -267,7 +276,7 @@ namespace LoRaWan.NetworkServer
                     var additionalMsg = await loraDeviceInfo.ReceiveCloudToDeviceAsync(waitTime: timeToSecondWindow - LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessage);
                     if (additionalMsg != null)
                     {
-                        returnPayloadData.FPending = true;
+                        resultPayloadData.FPending = true;
                         _ = loraDeviceInfo.AbandonCloudToDeviceMessageAsync(additionalMsg);
                     }
                 }
@@ -282,10 +291,10 @@ namespace LoRaWan.NetworkServer
 
 
             // No C2D message and request was not confirmed, return nothing
-            if (!loraPayload.IsConfirmed() && c2dMsg == null)
+            if (!WorkaroundIsConfirmed(loraPayload) && c2dMsg == null)
             {
                 //await SaveFnct(loraDeviceInfo, force: false);
-                await frameCounterUpdateStrategy.UpdateAsync(loraDeviceInfo);
+                await frameCounterStrategy.UpdateAsync(loraDeviceInfo);
                 return null;
             }
 
@@ -311,7 +320,7 @@ namespace LoRaWan.NetworkServer
             if (c2dMsg != null)
                 _ = loraDeviceInfo.CompleteCloudToDeviceMessageAsync(c2dMsg);
 
-            _ = this.frameCounterUpdateStrategy.UpdateAsync(loraDeviceInfo);
+            _ = frameCounterStrategy.UpdateAsync(loraDeviceInfo);
             //_ = SaveFcnt(loraDeviceInfo, force: false);
 
             return new LoRaTools.LoRaPhysical.Txpk()
@@ -327,9 +336,18 @@ namespace LoRaWan.NetworkServer
             return true;
         }
 
-        private Task SendDeviceEventAsync(ILoRaDevice loraDeviceInfo, Rxpk rxpk, object payloadData)
+        private async Task SendDeviceEventAsync(ILoRaDevice loraDeviceInfo, LoRaTools.LoRaPhysical.Rxpk rxpk, object payloadData)
         {
-            throw new NotImplementedException();
+            // TODO: check how the data is encapsulated into IoT Hub
+            var messageJson = JsonConvert.SerializeObject(rxpk);
+            
+            var message = new Message(Encoding.UTF8.GetBytes(messageJson))
+            {
+                ContentType = System.Net.Mime.MediaTypeNames.Application.Json,
+                ContentEncoding = Encoding.UTF8.BodyName,
+            };
+
+            await loraDeviceInfo.SendEventAsync(message);
         }
 
 
