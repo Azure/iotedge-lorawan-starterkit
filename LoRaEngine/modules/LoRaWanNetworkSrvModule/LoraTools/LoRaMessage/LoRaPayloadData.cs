@@ -172,10 +172,13 @@ namespace LoRaTools.LoRaMessage
                 (byte)DevAddr.Span[0], Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)(RawMessage.Length - 4)
             };
             var algoinput = block.Concat(RawMessage.Take(RawMessage.Length - 4)).ToArray();
-            byte[] result = new byte[16];
+            //byte[] result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            result = MacUtilities.DoFinal(mac);
-            return Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
+            var result = MacUtilities.DoFinal(mac);
+            
+            // non allocation comparison
+            return Mic.Span.SequenceEqual(result.AsSpan().Slice(0, 4));
+            //return Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
         }
 
         public void SetMic(string nwskey)
@@ -190,11 +193,12 @@ namespace LoRaTools.LoRaMessage
                 (byte)DevAddr.Span[0], Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)byteMsg.Length
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length)).ToArray();
-            byte[] result = new byte[16];
+            //byte[] result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            result = MacUtilities.DoFinal(mac);
-            var res = result.Take(4).ToArray();
-            Array.Copy(result.Take(4).ToArray(), 0, RawMessage, RawMessage.Length - 4, 4);
+            var result = MacUtilities.DoFinal(mac);
+            //var res = result.Take(4).ToArray();
+            //Array.Copy(result.Take(4).ToArray(), 0, RawMessage, RawMessage.Length - 4, 4);
+            Array.Copy(result, 0, RawMessage, RawMessage.Length - 4, 4);
             Mic = new Memory<byte>(RawMessage, RawMessage.Length - 4, 4);
         }
 

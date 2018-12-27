@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
+using System.Collections.Generic;
 using System.Net.NetworkInformation;
 using System.Text;
 using Microsoft.Azure.EventHubs;
@@ -45,5 +46,9 @@ namespace LoRaWan.Test.Shared
 
             return string.Empty;
         }
+
+
+        // Creates a IList from a single object
+        public static IReadOnlyList<T> AsList<T>(this T value) => new T[] { value };
     }
 }

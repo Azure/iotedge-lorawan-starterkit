@@ -10,6 +10,17 @@ namespace LoRaWan.NetworkServer
         public string DevEUI;
         public string PrimaryKey;
 
+        public IoTHubDeviceInfo()
+        {          
+        }
+
+        public IoTHubDeviceInfo(string devAddr, string devEUI, string primaryKey)
+        {
+            DevAddr = devAddr;
+            DevEUI = devEUI;
+            PrimaryKey = primaryKey;
+        }
+
 
     }
 }
