@@ -50,6 +50,9 @@ namespace LoRaWanNetworkServer.Test
 
         int fcntDown = 0;
         public int FcntDown { get { return this.fcntDown; } }
+
+        public string NwkSKey => this.simulatedDevice.LoRaDevice.NwkSKey;
+
         public int IncrementFcntDown(int value) => Interlocked.Add(ref this.fcntDown, value);
 
         // TODO: fix this

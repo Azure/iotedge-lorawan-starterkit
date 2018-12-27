@@ -20,6 +20,7 @@ namespace LoRaWan.NetworkServer
         string DevEUI { get; }
 
         string AppSKey { get; }
+        string NwkSKey { get; }
         int? ReceiveDelay1 { get; }
         int? ReceiveDelay2 { get; }
         bool AlwaysUseSecondWindow { get; }

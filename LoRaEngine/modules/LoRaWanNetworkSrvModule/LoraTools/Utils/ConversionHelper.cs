@@ -6,6 +6,8 @@ namespace LoRaTools.Utils
 {
     public  static class ConversionHelper
     {
+        const string HexAlphabet = "0123456789ABCDEF";
+
         /// <summary>
         /// Method enabling to convert a hex string to a byte array.
         /// </summary>
@@ -20,10 +22,24 @@ namespace LoRaTools.Utils
             return bytes;
         }
 
-        public static string ByteArrayToString(byte[] bytes)
+        public static string ByteArrayToString(ReadOnlyMemory<byte> bytes)
+        {
+            var byteSpan = bytes.Span;
+            var result = new StringBuilder(bytes.Length * 2);
+            
+
+            for (var i=0; i < bytes.Length; i++)
+            {
+                result.Append(HexAlphabet[(int)(byteSpan[i] >> 4)]);
+                result.Append(HexAlphabet[(int)(byteSpan[i] & 0xF)]);
+            }
+
+            return result.ToString();
+        }
+
+        static string ByteArrayToString(byte[] bytes)
         {
             StringBuilder Result = new StringBuilder(bytes.Length * 2);
-            string HexAlphabet = "0123456789ABCDEF";
 
             foreach (byte B in bytes)
             {
