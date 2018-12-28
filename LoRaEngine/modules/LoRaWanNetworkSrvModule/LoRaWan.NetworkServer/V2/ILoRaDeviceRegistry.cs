@@ -8,8 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace LoRaWan.NetworkServer
+namespace LoRaWan.NetworkServer.V2
 {
+    /*
     public interface ILoRaDevice
     {
         string GatewayID { get; }
@@ -38,7 +39,9 @@ namespace LoRaWan.NetworkServer
         Task UpdateTwinAsync(object twinProperties);
         Dictionary<string, object> GetTwinProperties();
         Task SendEventAsync(Message message);
+        Task InitializeAsync();
     }
+    */
 
     public interface ILoRaDeviceRegistry
     {
@@ -53,6 +56,6 @@ namespace LoRaWan.NetworkServer
         // 4. if (loraDeviceInfo.IsABP() && loraDeviceInfo.GatewayID != null && loraDeviceInfo was not read from cache)  device.FcntDown += 10;
 
 
-        Task<ILoRaDevice> GetDeviceForPayloadAsync(LoRaTools.LoRaMessage.LoRaPayloadData loraPayload);
+        Task<LoRaDevice> GetDeviceForPayloadAsync(LoRaTools.LoRaMessage.LoRaPayloadData loraPayload);
     }
 }

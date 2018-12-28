@@ -6,13 +6,14 @@
 using System;
 using System.Threading.Tasks;
 
-namespace LoRaWan.NetworkServer
+namespace LoRaWan.NetworkServer.V2
 {
     public interface ILoRaDeviceFrameCounterUpdateStrategy
     {
-        Task ResetAsync(ILoRaDevice loraDeviceInfo);
-        ValueTask<int> NextFcntDown(ILoRaDevice loraDeviceInfo);
-        Task UpdateAsync(ILoRaDevice loraDeviceInfo);
+        Task ResetAsync(LoRaDevice loraDeviceInfo);
+        ValueTask<int> NextFcntDown(LoRaDevice loraDeviceInfo);
+        Task UpdateAsync(LoRaDevice loraDeviceInfo);
+        void InitializeDeviceFrameCount(LoRaDevice loraDevice);
     }
 
 }

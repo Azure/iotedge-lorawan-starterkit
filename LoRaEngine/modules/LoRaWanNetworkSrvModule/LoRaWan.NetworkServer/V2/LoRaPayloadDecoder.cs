@@ -5,16 +5,16 @@
 
 using System;
 
-namespace LoRaWan.NetworkServer
+namespace LoRaWan.NetworkServer.V2
 {
     public interface ILoRaPayloadDecoder
     {
-        object DecodeAsync(ILoRaDevice loraDeviceInfo, byte[] decryptedPayload);
+        object DecodeAsync(LoRaDevice loraDeviceInfo, byte[] decryptedPayload);
     }
 
     public class LoRaPayloadDecoder : ILoRaPayloadDecoder
     {
-        public object DecodeAsync(ILoRaDevice loraDeviceInfo, byte[] decryptedPayload)
+        public object DecodeAsync(LoRaDevice loraDeviceInfo, byte[] decryptedPayload)
         {
             return new
             {

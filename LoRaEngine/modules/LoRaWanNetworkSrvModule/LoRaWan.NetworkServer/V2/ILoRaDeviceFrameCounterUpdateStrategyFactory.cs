@@ -6,7 +6,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace LoRaWan.NetworkServer
+namespace LoRaWan.NetworkServer.V2
 {
     public interface ILoRaDeviceFrameCounterUpdateStrategyFactory
     {
@@ -45,19 +45,19 @@ namespace LoRaWan.NetworkServer
             this.loRaDeviceAPIService = loRaDeviceAPIService;
         }
 
-        public async Task ResetAsync(ILoRaDevice loraDeviceInfo)
+        public async Task ResetAsync(LoRaDevice loraDeviceInfo)
         {
             await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loraDeviceInfo.DevEUI);
             loraDeviceInfo.SetFcntDown(0);
             loraDeviceInfo.SetFcntUp(0);
         }
 
-        public async ValueTask<int> NextFcntDown(ILoRaDevice loraDeviceInfo)
+        public async ValueTask<int> NextFcntDown(LoRaDevice loraDeviceInfo)
         {
             var result = await this.loRaDeviceAPIService.NextFCntDownAsync(
                 devEUI: loraDeviceInfo.DevEUI, 
-                fcntDown: loraDeviceInfo.FcntDown,
-                fcntUp: loraDeviceInfo.FcntUp,
+                fcntDown: loraDeviceInfo.FCntDown,
+                fcntUp: loraDeviceInfo.FCntUp,
                 gatewayId: this.gatewayID);
 
             loraDeviceInfo.SetFcntDown(result);
@@ -65,9 +65,14 @@ namespace LoRaWan.NetworkServer
             return result;
         }
 
-        public Task UpdateAsync(ILoRaDevice loraDeviceInfo)
+        public Task UpdateAsync(LoRaDevice loraDeviceInfo)
         {
             throw new NotImplementedException();
+        }
+
+        public void InitializeDeviceFrameCount(LoRaDevice loRaDevice)
+        {
+
         }
     }
 
@@ -77,33 +82,43 @@ namespace LoRaWan.NetworkServer
         {
         }
 
-        public async Task ResetAsync(ILoRaDevice loraDeviceInfo)
+        public async Task ResetAsync(LoRaDevice loraDevice)
         {
-            loraDeviceInfo.SetFcntUp(0);
-            loraDeviceInfo.SetFcntDown(0);
-            await InternalUpdateAsync(loraDeviceInfo, force: true);
+            loraDevice.SetFcntUp(0);
+            loraDevice.SetFcntDown(0);
+            await InternalUpdateAsync(loraDevice, force: true);
         }
 
-        public ValueTask<int> NextFcntDown(ILoRaDevice loraDeviceInfo)
+        public ValueTask<int> NextFcntDown(LoRaDevice loraDevice)
         {
-            return new ValueTask<int>(loraDeviceInfo.IncrementFcntDown(1));
+            return new ValueTask<int>(loraDevice.IncrementFcntDown(1));
         }
 
 
 
-        public Task UpdateAsync(ILoRaDevice loraDeviceInfo) => InternalUpdateAsync(loraDeviceInfo, force: false);
+        public Task UpdateAsync(LoRaDevice loraDevice) => InternalUpdateAsync(loraDevice, force: false);
 
-        private async Task InternalUpdateAsync(ILoRaDevice loraDeviceInfo, bool force)
+        private async Task InternalUpdateAsync(LoRaDevice loraDevice, bool force)
         {
-            if (loraDeviceInfo.FcntUp % 10 == 0 || force)
+            if (loraDevice.FCntUp % 10 == 0 || force)
             {
-                await loraDeviceInfo.UpdateTwinAsync(loraDeviceInfo.GetTwinProperties());
+                await loraDevice.UpdateTwinAsync();
             }
         }
 
-        private void UpdateFcntDown(ILoRaDevice loraDeviceInfo)
+        private void UpdateFcntDown(LoRaDevice loraDevice)
         {
-            loraDeviceInfo.IncrementFcntDown(1);
+            loraDevice.IncrementFcntDown(1);
+        }
+
+
+        public void InitializeDeviceFrameCount(LoRaDevice loRaDevice)
+        {
+            // In order to handle a scenario where the network server is restarted and the fcntDown was not yet saved (we save every 10)
+            // If device does not have gatewayid this will be handled by the service facade function (NextFCntDown)
+            // here or at the deviceRegistry, what is better?
+            if (loRaDevice.IsABP)
+                loRaDevice.IncrementFcntDown(10);
         }
     }
 }

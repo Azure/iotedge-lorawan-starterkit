@@ -2,8 +2,10 @@
 using LoRaTools.LoRaPhysical;
 using LoRaTools.Regions;
 using LoRaWan.NetworkServer;
+using LoRaWan.NetworkServer.V2;
 using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices.Client;
+using Microsoft.Azure.Devices.Shared;
 using Moq;
 using System;
 using System.Threading.Tasks;
@@ -95,7 +97,7 @@ namespace LoRaWanNetworkServer.Test
                 .ReturnsAsync(() => null);
 
             // Send to message processor
-            var messageProcessor = new MessageProcessor2(
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
                 this.gatewayID,
                 deviceRegistry.Object,
                 this.frameCounterUpdateStrategyFactory.Object,
@@ -119,26 +121,24 @@ namespace LoRaWanNetworkServer.Test
             // Create Rxpk
             var rxpk = CreateRxpk(payload);
 
-            var loraDevice = new Mock<TestLoRaDeviceAdapter>(simulatedDevice)
-            {
-                CallBase = true,
-            };
+            var loraDeviceClient = new Mock<ILoRaDeviceClient>();
+            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
-            loraDevice.Setup(x => x.SendEventAsync(It.IsNotNull<Message>()))
+            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
                 .Returns(Task.FromResult(0));
 
             var deviceRegistry = new Mock<ILoRaDeviceRegistry>();
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
             deviceRegistry.Setup(x => x.GetDeviceForPayloadAsync(It.IsAny<LoRaTools.LoRaMessage.LoRaPayloadData>()))
-                .ReturnsAsync(() => loraDevice.Object);
+                .ReturnsAsync(() => loraDevice);
 
             // Setup frame counter strategy
             this.frameCounterUpdateStrategyFactory.Setup(x => x.GetSingleGatewayStrategy())
                 .Returns(this.frameCounterUpdateStrategy.Object);
 
             // Send to message processor
-            var messageProcessor = new MessageProcessor2(
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
                 this.gatewayID,
                 deviceRegistry.Object,
                 this.frameCounterUpdateStrategyFactory.Object,
@@ -150,7 +150,7 @@ namespace LoRaWanNetworkServer.Test
 
             // Expectations
             // 1. Message was sent to IoT Hub
-            loraDevice.VerifyAll();
+            loraDeviceClient.VerifyAll();
 
             // 2. Single gateway frame counter strategy was used
             this.frameCounterUpdateStrategyFactory.VerifyAll();
@@ -159,7 +159,7 @@ namespace LoRaWanNetworkServer.Test
             Assert.Null(actual);
 
             // 4. Frame counter up was incremented
-            Assert.Equal(1, loraDevice.Object.FcntUp);
+            Assert.Equal(1, loraDevice.FCntUp);
         }
     }
 }
