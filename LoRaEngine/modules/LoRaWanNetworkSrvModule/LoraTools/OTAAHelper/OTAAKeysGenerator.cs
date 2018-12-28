@@ -50,6 +50,37 @@ namespace LoRaTools
             return ConversionHelper.ByteArrayToString(key);
         }
 
+        //type NwkSKey = 0x01 , AppSKey = 0x02
+        //don't work with CFLIST atm
+        public static string calculateKey(byte[] type, byte[] appnonce, byte[] netid, ReadOnlyMemory<byte> devnonce, byte[] appKey)
+        {
+            Aes aes = new AesManaged();
+            aes.Key = appKey;
+
+            aes.Mode = CipherMode.ECB;
+            aes.Padding = PaddingMode.None;
+            var pt = new byte[type.Length + appnonce.Length + netid.Length + devnonce.Length + 7];
+            var destIndex = 0;
+            Array.Copy(type, 0, pt, destIndex, type.Length);
+
+            destIndex += type.Length;
+            Array.Copy(appnonce, 0, pt, destIndex, appnonce.Length);
+
+            destIndex += appnonce.Length;
+            Array.Copy(netid, 0, pt, destIndex, netid.Length);
+
+            destIndex += netid.Length;
+            devnonce.CopyTo(new Memory<byte>(pt, destIndex, devnonce.Length));
+
+            aes.IV = new byte[16];
+            ICryptoTransform cipher;
+            cipher = aes.CreateEncryptor();
+
+
+            var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
+            return ConversionHelper.ByteArrayToString(key);
+        }
+
         public static string  getAppNonce()
         {
             Random rnd = new Random();

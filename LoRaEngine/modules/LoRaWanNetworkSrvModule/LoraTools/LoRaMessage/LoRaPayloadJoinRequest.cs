@@ -45,7 +45,7 @@ namespace LoRaTools.LoRaMessage
         }
 
         public override bool CheckMic(string appKey)
-        {           
+        {
             return Mic.ToArray().SequenceEqual(PerformMic(appKey));
         }
 

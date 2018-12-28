@@ -100,10 +100,12 @@ namespace LoRaWan.NetworkServer.V2
 
         public async Task<Twin> GetTwinAsync() => await this.loRaDeviceClient.GetTwinAsync();
 
-        public async Task UpdateTwinAsync()
+        public async Task SaveFrameCountChangesAsync()
         {
-            var properties = new Dictionary<string, object>();
-            await this.loRaDeviceClient.UpdateReportedPropertiesAsync(properties);
+            var reportedProperties = new TwinCollection();
+            reportedProperties[TwinProperty.FCntDown] = this.FCntDown;
+            reportedProperties[TwinProperty.FCntUp] = this.FCntUp;
+            await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
         }
 
         public int IncrementFcntDown(int value) => Interlocked.Add(ref fcntDown, value);
@@ -120,7 +122,46 @@ namespace LoRaWan.NetworkServer.V2
 
 
         public async Task AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => await this.loRaDeviceClient.AbandonAsync(cloudToDeviceMessage);
-       
+
+
+        /// <summary>
+        /// Updates device on the server after a join succeeded
+        /// </summary>
+        /// <param name="devAddr"></param>
+        /// <param name="nwkSKey"></param>
+        /// <param name="appSKey"></param>
+        /// <param name="appNonce"></param>
+        /// <param name="devNonce"></param>
+        /// <param name="netID"></param>
+        /// <returns></returns>
+        internal async Task<bool> UpdateAfterJoinAsync(string devAddr, string nwkSKey, string appSKey, string appNonce, string devNonce, string netID)
+        {
+            var reportedProperties = new TwinCollection();
+            reportedProperties[TwinProperty.AppSKey] = appSKey;
+            reportedProperties[TwinProperty.NwkSKey] = nwkSKey;
+            reportedProperties[TwinProperty.DevAddr] = devAddr;
+            reportedProperties[TwinProperty.FCntDown] = 0;
+            reportedProperties[TwinProperty.FCntUp] = 0;
+            reportedProperties[TwinProperty.DevEUI] = this.DevEUI;
+            reportedProperties[TwinProperty.NetID] = netID;
+            reportedProperties[TwinProperty.DevNonce] = devNonce;
+
+            var succeeded = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+            if (succeeded)
+            {
+
+                this.DevAddr = devAddr;
+                this.NwkSKey = nwkSKey;
+                this.AppSKey = appSKey;
+                this.AppNonce = appNonce;
+                this.DevNonce = devNonce;
+                this.NetId = netID;
+                this.SetFcntDown(0);
+                this.SetFcntUp(0);
+            }
+
+            return succeeded;
+        }
     }
 
 

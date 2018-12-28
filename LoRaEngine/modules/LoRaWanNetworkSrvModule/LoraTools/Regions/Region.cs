@@ -11,8 +11,8 @@ namespace LoRaTools.Regions
 
     public class Region
     {
-        static Region eu;
-        static Region us;
+        static readonly Region eu;
+        static readonly Region us;
 
         static Region()
         {

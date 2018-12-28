@@ -15,12 +15,10 @@ namespace LoRaWan.NetworkServer.V2
     public class LoRaDeviceFactory : ILoRaDeviceFactory
     {
         private readonly NetworkServerConfiguration configuration;
-        private readonly ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory;
 
-        public LoRaDeviceFactory(NetworkServerConfiguration configuration, ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory)
+        public LoRaDeviceFactory(NetworkServerConfiguration configuration)
         {
             this.configuration = configuration;
-            this.frameCounterUpdateStrategyFactory = frameCounterUpdateStrategyFactory;
         }
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
@@ -120,13 +118,6 @@ namespace LoRaWan.NetworkServer.V2
                 Logger.Log(loraDevice.DevEUI, $"done getting twins", Logger.LoggingLevel.Info);
 
             }
-
-            var isMultiGateway = !string.Equals(configuration.GatewayID, loraDevice.GatewayID);
-            var frameCounterStrategy = isMultiGateway ?
-                this.frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy() :
-                this.frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy();
-
-            frameCounterStrategy.InitializeDeviceFrameCount(loraDevice);
         }
     }
 }

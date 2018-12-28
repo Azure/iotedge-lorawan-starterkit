@@ -19,10 +19,18 @@ namespace LoRaWan.NetworkServer.V2
         private readonly string devEUI;
         private DeviceClient deviceClient;
 
+        // TODO: verify if those are thread safe and can be static
+        NoRetry noRetryPolicy;
+        ExponentialBackoff exponentialBackoff;
+
         public LoRaDeviceClient(string devEUI, DeviceClient deviceClient)
         {
             this.devEUI = devEUI;
             this.deviceClient = deviceClient;
+
+            this.noRetryPolicy = new NoRetry();
+            this.exponentialBackoff = new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
+
             SetRetry(false);
         }
 
@@ -33,7 +41,7 @@ namespace LoRaWan.NetworkServer.V2
             {
                 if (deviceClient != null)
                 {
-                    deviceClient.SetRetryPolicy(new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100)));
+                    deviceClient.SetRetryPolicy(this.exponentialBackoff);
                     //Logger.Log(DevEUI, $"retry is on", Logger.LoggingLevel.Full);
                 }
             }
@@ -41,7 +49,7 @@ namespace LoRaWan.NetworkServer.V2
             {
                 if (deviceClient != null)
                 {
-                    deviceClient.SetRetryPolicy(new NoRetry());
+                    deviceClient.SetRetryPolicy(this.noRetryPolicy);
                     //Logger.Log(DevEUI, $"retry is off", Logger.LoggingLevel.Full);
                 }
             }
@@ -61,8 +69,6 @@ namespace LoRaWan.NetworkServer.V2
 
                 Logger.Log(this.devEUI, $"done getting device twins", Logger.LoggingLevel.Full);
 
-                SetRetry(false);
-
                 return twins;
 
             }
@@ -71,11 +77,15 @@ namespace LoRaWan.NetworkServer.V2
                 Logger.Log(this.devEUI, $"Could not retrieve device twins with error: {ex.Message}", Logger.LoggingLevel.Error);
                 return null;
             }
+            finally
+            {
+                SetRetry(false);
+            }
             
         }
 
 
-        public async Task UpdateReportedPropertiesAsync(Dictionary<string, object> values)
+        public async Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties)
         {
             try
             {
@@ -84,31 +94,25 @@ namespace LoRaWan.NetworkServer.V2
 
                 SetRetry(true);
 
-                var logMessage = new StringBuilder();
-                var reportedProperties = new TwinCollection();
-                foreach (var kv in values)
-                {
-                    if (logMessage.Length > 0)
-                        logMessage.Append(',');
-                    logMessage.Append(kv.Key).Append(':').Append(kv.Value ?? "null");
-                    reportedProperties[kv.Key] = kv.Value;
-                }
-
-                var finalLogMessage = logMessage.ToString();
-                Logger.Log(this.devEUI, $"updating twins {finalLogMessage}", Logger.LoggingLevel.Full);
+                var reportedPropertiesJson = reportedProperties.ToJson(Newtonsoft.Json.Formatting.None);
+                Logger.Log(this.devEUI, $"updating twins {reportedPropertiesJson}", Logger.LoggingLevel.Full);
 
                 await deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
 
-                Logger.Log(this.devEUI, $"twins updated {finalLogMessage}", Logger.LoggingLevel.Full);
+                Logger.Log(this.devEUI, $"twins updated {reportedPropertiesJson}", Logger.LoggingLevel.Full);
 
-                SetRetry(false);
+                return true;
 
             }
             catch (Exception ex)
             {
                 Logger.Log(this.devEUI, $"could not update twins with error: {ex.Message}", Logger.LoggingLevel.Error);
+                return false;
             }
-
+            finally
+            {
+                SetRetry(false);
+            }
 
         }
 
@@ -141,8 +145,6 @@ namespace LoRaWan.NetworkServer.V2
 
                     Logger.Log(this.devEUI, $"sent message {messageBody} to hub", Logger.LoggingLevel.Full);
 
-                    //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device                    
-                    SetRetry(false);
                 }
                 catch (Exception ex)
                 {
@@ -151,6 +153,11 @@ namespace LoRaWan.NetworkServer.V2
 
                     Logger.Log(this.devEUI, $"could not send message to IoTHub/Edge with error: {ex.Message}", Logger.LoggingLevel.Error);
                    
+                }
+                finally
+                {
+                    //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device                    
+                    SetRetry(false);
                 }
 
             }
@@ -170,8 +177,6 @@ namespace LoRaWan.NetworkServer.V2
 
                 Logger.Log(this.devEUI, $"done checking c2d message", Logger.LoggingLevel.Full);
 
-                SetRetry(false);
-
                 return msg;
 
             }
@@ -179,6 +184,11 @@ namespace LoRaWan.NetworkServer.V2
             {
                 Logger.Log(this.devEUI, $"Could not retrieve c2d message with error: {ex.Message}", Logger.LoggingLevel.Error);
                 return null;
+            }
+            finally
+            {
+                //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device                    
+                SetRetry(false);
             }
         }
 
@@ -196,18 +206,20 @@ namespace LoRaWan.NetworkServer.V2
 
                 Logger.Log(this.devEUI, $"done completing c2d message", Logger.LoggingLevel.Full);
 
-                SetRetry(false);
-
                 return true;
-
-               
+              
             }
             catch (Exception ex)
             {
                 Logger.Log(this.devEUI, $"could not complete c2d with error: {ex.Message}", Logger.LoggingLevel.Error);
                 return false;
             }
-          
+            finally
+            {
+                //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device                    
+                SetRetry(false);
+            }
+
         }
 
         public async Task<bool> AbandonAsync(Message message)
@@ -225,19 +237,19 @@ namespace LoRaWan.NetworkServer.V2
 
                 Logger.Log(this.devEUI, $"done abandoning c2d message", Logger.LoggingLevel.Full);
 
-                SetRetry(false);
-
                 return true;
-
-
             }
             catch (Exception ex)
             {
                 Logger.Log(this.devEUI, $"could not abandon c2d with error: {ex.Message}", Logger.LoggingLevel.Error);
                 return false;
-
             }
-                   
+            finally
+            {
+                //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device                    
+                SetRetry(false);
+            }
+
         }
 
         public void Dispose()

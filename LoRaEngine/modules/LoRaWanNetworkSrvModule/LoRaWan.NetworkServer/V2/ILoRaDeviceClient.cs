@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer.V2
     {
         Task<Twin> GetTwinAsync();
         Task SendEventAsync(string messageBody, Dictionary<string, string> properties);
-        Task UpdateReportedPropertiesAsync(Dictionary<string, object> values);
+        Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties);
         Task<Message> ReceiveAsync(TimeSpan timeout);
         Task<bool> CompleteAsync(Message cloudToDeviceMessage);
         Task<bool> AbandonAsync(Message cloudToDeviceMessage);

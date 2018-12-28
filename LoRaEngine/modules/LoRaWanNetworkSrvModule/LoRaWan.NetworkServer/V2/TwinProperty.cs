@@ -19,5 +19,7 @@ namespace LoRaWan.NetworkServer.V2
         public const string SensorDecoder = "SensorDecoder";
         public const string FCntUp = "FCntUp";
         public const string FCntDown = "FCntDown";
+        public const string DevEUI = "DevEUI";
+        public const string NetID = "NetID";
     }
 }
