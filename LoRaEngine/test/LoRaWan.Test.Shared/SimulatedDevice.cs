@@ -53,7 +53,7 @@ namespace LoRaWan.Test.Shared
                 this.joinFinished = new SemaphoreSlim(0);
         }
 
-        public byte[] CreateJoinRequest()
+        public LoRaPayloadJoinRequest CreateJoinRequest()
         {
             //create a join request
             byte[] AppEUI = ConversionHelper.StringToByteArray(LoRaDevice.AppEUI);
@@ -80,8 +80,8 @@ namespace LoRaWan.Test.Shared
             TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {BitConverter.ToString(devNonce).Replace("-","")} / {this.DevNonce}");
             var join = new LoRaPayloadJoinRequest(AppEUI, DevEUI, devNonce);
             join.SetMic(this.LoRaDevice.AppKey);
-            
-            return join.GetByteMessage();
+
+            return join;
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace LoRaWan.Test.Shared
                 }
             });
 
-            await packetForwarder.SendAsync(header, joinRequest);
+            await packetForwarder.SendAsync(header, joinRequest.GetByteMessage());
             TestLogger.Log($"[{this.LoRaDevice.DeviceID}] Join request: {BitConverter.ToString(header).Replace("-", "")}");
 
             return await joinCompleted.WaitAsync(timeoutInMs);

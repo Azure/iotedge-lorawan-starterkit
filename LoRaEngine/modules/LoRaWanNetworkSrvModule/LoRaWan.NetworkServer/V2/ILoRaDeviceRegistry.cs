@@ -10,39 +10,6 @@ using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer.V2
 {
-    /*
-    public interface ILoRaDevice
-    {
-        string GatewayID { get; }
-        int FcntUp { get; }
-
-        int FcntDown { get; }
-
-        string DevEUI { get; }
-
-        string AppSKey { get; }
-        string NwkSKey { get; }
-        int? ReceiveDelay1 { get; }
-        int? ReceiveDelay2 { get; }
-        bool AlwaysUseSecondWindow { get; }
-
-        bool IsABP();
-        bool WasNotJustReadFromCache();
-        int IncrementFcntDown(int value);
-        bool IsABPRelaxedFrameCounter();
-        void SetFcntUp(int value);
-        void SetFcntDown(int value);
-
-        Task<Message> ReceiveCloudToDeviceAsync(TimeSpan waitTime);
-        Task CompleteCloudToDeviceMessageAsync(Message c2dMsg);
-        Task AbandonCloudToDeviceMessageAsync(Message additionalMsg);
-        Task UpdateTwinAsync(object twinProperties);
-        Dictionary<string, object> GetTwinProperties();
-        Task SendEventAsync(Message message);
-        Task InitializeAsync();
-    }
-    */
-
     public interface ILoRaDeviceRegistry
     {
         // Going to search devices in
@@ -57,5 +24,28 @@ namespace LoRaWan.NetworkServer.V2
 
 
         Task<LoRaDevice> GetDeviceForPayloadAsync(LoRaTools.LoRaMessage.LoRaPayloadData loraPayload);
+
+
+        /// <summary>
+        /// Gets devices that matches an OTAA join request
+        /// </summary>
+        /// <param name="devEUI"></param>
+        /// <param name="appEUI"></param>
+        /// <param name="devNonce"></param>
+        /// <returns></returns>
+        Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, string appEUI, string devNonce);
+
+        /// <summary>
+        /// Updates device after a succesfull join request
+        /// </summary>
+        /// <param name="loRaDevice"></param>
+        void UpdateDeviceAfterJoin(LoRaDevice loRaDevice);
+
+
+        /// <summary>
+        /// Registers a <see cref="ILoRaDeviceInitializer"/>
+        /// </summary>
+        /// <param name="initializer"></param>
+        void RegisterDeviceInitializer(ILoRaDeviceInitializer initializer);
     }
 }

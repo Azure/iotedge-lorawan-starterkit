@@ -18,12 +18,12 @@ namespace LoRaTools.Regions
         static public bool TryResolveRegion(Rxpk _rxpk)
         {
             //EU863-870
-            if (_rxpk.freq < 870 && _rxpk.freq > 863)
+            if (rxpk.freq < 870 && rxpk.freq > 863)
             {
                 CurrentRegion =  CreateEU868Region();
                 return true;
             }//US902-928
-            else if(_rxpk.freq<=928 && _rxpk.freq >= 902)
+            else if(rxpk.freq<=928 && rxpk.freq >= 902)
             {
                 CurrentRegion = CreateUS915Region();
                 return true;

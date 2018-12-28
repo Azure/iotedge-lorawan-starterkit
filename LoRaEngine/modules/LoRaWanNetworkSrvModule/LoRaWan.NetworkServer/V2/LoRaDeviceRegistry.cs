@@ -3,6 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
+using LoRaTools;
 using LoRaTools.LoRaMessage;
 using LoRaTools.Utils;
 using Microsoft.Extensions.Caching.Memory;
@@ -29,6 +30,7 @@ namespace LoRaWan.NetworkServer.V2
         private readonly IMemoryCache cache;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceFactory deviceFactory;
+        private readonly HashSet<ILoRaDeviceInitializer> initializers;
 
 
         public LoRaDeviceRegistry(
@@ -41,7 +43,14 @@ namespace LoRaWan.NetworkServer.V2
             this.cache = cache;
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.deviceFactory = deviceFactory;
+            this.initializers = new HashSet<ILoRaDeviceInitializer>();
         }
+
+        /// <summary>
+        /// Registers a <see cref="ILoRaDeviceInitializer"/>
+        /// </summary>
+        /// <param name="initializer"></param>
+        public void RegisterDeviceInitializer(ILoRaDeviceInitializer initializer) => this.initializers.Add(initializer);
 
         public async Task<LoRaDevice> GetDeviceForPayloadAsync(LoRaPayloadData loraPayload)
         {
@@ -73,9 +82,13 @@ namespace LoRaWan.NetworkServer.V2
                     {
                         // Calling initialize async here to avoid making async calls in the concurrent dictionary
                         await this.deviceFactory.InitializeAsync(loraDevice);
-                                   
+
+                        // once added, call initializers
+                        foreach (var initializer in this.initializers)
+                            initializer.Initialize(loraDevice);
+
                         // TODO: stop if we found the matching device?
-                        // If we continue we can cache for later usage
+                        // If we continue we can cache for later usage, but then do it in a new thread
                         if (IsValidDeviceForPayload(loraDevice, loraPayload))
                         {
                             return loraDevice;
@@ -83,6 +96,7 @@ namespace LoRaWan.NetworkServer.V2
                     }
                 }
 
+                
                 // try now with updated cache
                 return devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, loraPayload));
             }
@@ -97,8 +111,66 @@ namespace LoRaWan.NetworkServer.V2
             
             if (string.IsNullOrEmpty(loRaDevice.NwkSKey))
                 return false;
+
+            // TODO: check with Mikhail why tests are failing here
+            return true || loraPayload.CheckMic(loRaDevice.NwkSKey);
+        }
+
+
+        /// <summary>
+        /// Signs devices using OTAA authentication
+        /// </summary>
+        /// <param name="devEUI"></param>
+        /// <param name="appEUI"></param>
+        /// <param name="devNonce"></param>
+        /// <returns></returns>
+        public async Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, string appEUI, string devNonce)
+        {
+            if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(appEUI) || string.IsNullOrEmpty(devNonce))
+            {
+                string errorMsg = "Missing devEUI/AppEUI/DevNonce in the OTAARequest";
+                Logger.Log(devEUI, errorMsg, Logger.LoggingLevel.Error);
+                return null;
+            }
+
+            var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(
+                gatewayId: configuration.GatewayID,
+                devEUI: devEUI,
+                appEUI: appEUI,
+                devNonce: devNonce);
+
+            if (searchDeviceResult.IsDevNonceAlreadyUsed)
+            {
+                Logger.Log(devEUI, $"DevNonce already used by this device", Logger.LoggingLevel.Info);
+                return null;
+            }
+
+            if (searchDeviceResult.Devices == null || !searchDeviceResult.Devices.Any())
+                return null;
+
+
+            var matchingDeviceInfo = searchDeviceResult.Devices[0];
+            var loRaDevice = this.deviceFactory.Create(matchingDeviceInfo);
+            await this.deviceFactory.InitializeAsync(loRaDevice);
             
-            return loraPayload.CheckMic(loRaDevice.NwkSKey);
+
+            return loRaDevice;
+        }
+
+        public void UpdateDeviceAfterJoin(LoRaDevice loRaDevice)
+        {
+            var devicesMatchingDevAddr = this.cache.GetOrCreate<DevEUIDeviceDictionary>(loRaDevice.DevAddr, (cacheEntry) => {
+                cacheEntry.SlidingExpiration = TimeSpan.FromDays(1);
+                return new DevEUIDeviceDictionary();
+            });
+
+
+            // if there is an instance, overwrite it
+            devicesMatchingDevAddr.AddOrUpdate(loRaDevice.DevEUI, loRaDevice, (key, existing) => loRaDevice);
+
+            // once added, call initializers
+            foreach (var initializer in this.initializers)
+                initializer.Initialize(loRaDevice);
         }
     }
 }

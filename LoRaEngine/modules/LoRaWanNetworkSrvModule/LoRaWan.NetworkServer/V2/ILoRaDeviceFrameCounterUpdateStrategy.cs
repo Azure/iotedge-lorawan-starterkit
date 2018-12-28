@@ -13,7 +13,6 @@ namespace LoRaWan.NetworkServer.V2
         Task ResetAsync(LoRaDevice loraDeviceInfo);
         ValueTask<int> NextFcntDown(LoRaDevice loraDeviceInfo);
         Task UpdateAsync(LoRaDevice loraDeviceInfo);
-        void InitializeDeviceFrameCount(LoRaDevice loraDevice);
     }
 
 }

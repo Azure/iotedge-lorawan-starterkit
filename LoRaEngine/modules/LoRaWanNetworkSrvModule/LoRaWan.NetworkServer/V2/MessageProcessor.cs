@@ -3,6 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
+using LoRaTools;
 using LoRaTools.LoRaMessage;
 using LoRaTools.Regions;
 using Microsoft.Azure.Devices.Client;
@@ -26,21 +27,26 @@ namespace LoRaWan.NetworkServer.V2
     /// </remarks>
     public class MessageProcessor
     {
+        private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory;
         private readonly ILoRaPayloadDecoder payloadDecoder;
-        private readonly string gatewayID;
+        volatile private Region loraRegion;
 
         public MessageProcessor(
-            string gatewayID,
+            NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry deviceRegistry,
             ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory,
             ILoRaPayloadDecoder payloadDecoder)
         {
-            this.gatewayID = gatewayID;
+            this.configuration = configuration;
             this.deviceRegistry = deviceRegistry;
             this.frameCounterUpdateStrategyFactory = frameCounterUpdateStrategyFactory;
             this.payloadDecoder = payloadDecoder;
+
+            // Register frame counter initializer
+            // It will take care of seeding ABP devices created here for single gateway scenarios
+            this.deviceRegistry.RegisterDeviceInitializer(new FrameCounterLoRaDeviceInitializer(configuration.GatewayID, frameCounterUpdateStrategyFactory));
         }
 
 
@@ -78,7 +84,7 @@ namespace LoRaWan.NetworkServer.V2
             IEnumerable GetMacCommands() => null;
 
             public bool IsConfirmed() => false;
-            
+
             public bool FPending { get; internal set; }
 
             internal bool IsUpwardAck()
@@ -100,6 +106,13 @@ namespace LoRaWan.NetworkServer.V2
 
 
         }
+
+        LoRaTools.LoRaMessage.LoRaPayloadJoinRequest WorkaroundGetPayloadJoinRequest(LoRaTools.LoRaPhysical.Rxpk rxpk)
+        {
+            byte[] convertedInputMessage = Convert.FromBase64String(rxpk.data);
+            return new LoRaTools.LoRaMessage.LoRaPayloadJoinRequest(convertedInputMessage);
+        }
+
 
         LoRaTools.LoRaMessage.LoRaPayloadData WorkaroundGetPayloadData(LoRaTools.LoRaPhysical.Rxpk rxpk)
         {
@@ -125,10 +138,13 @@ namespace LoRaWan.NetworkServer.V2
         bool WorkaroundIsUpwardAck(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => WorkaroundGetMessageType(loRaPayloadData) == LoRaMessageType.ConfirmedDataUp && loRaPayloadData.GetLoRaMessage().Frmpayload.Length == 0;
 
 
-        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessLoRaMessage(LoRaTools.LoRaPhysical.Rxpk rxpk) => await ProcessLoRaMessage(rxpk, new LoRaOperationTimeWatcher(RegionFactory.CurrentRegion));
-
-        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessLoRaMessage(LoRaTools.LoRaPhysical.Rxpk rxpk, LoRaOperationTimeWatcher timeWatcher)
+        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessLoRaMessage(LoRaTools.LoRaPhysical.Rxpk rxpk)
         {
+            if (this.loraRegion == null)
+                this.loraRegion = RegionFactory.Create(rxpk);
+
+            var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion);
+        
             var loraPayload = WorkaroundGetPayloadData(rxpk);
             var devAddr = loraPayload.DevAddr;
             var netId = loraPayload;
@@ -147,11 +163,12 @@ namespace LoRaWan.NetworkServer.V2
             if (loraDeviceInfo == null)
                 return null;
 
-
-            var frameCounterStrategy = (loraDeviceInfo.GatewayID == this.gatewayID) ?
+            var frameCounterStrategy = (loraDeviceInfo.GatewayID == configuration.GatewayID) ?
                 frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy() :
                 frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy();
-     
+
+
+
             // Reply attack or confirmed reply
 
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
@@ -184,7 +201,7 @@ namespace LoRaWan.NetworkServer.V2
                 //_ = SaveFcnt(loraDeviceInfo, force: true);
                 //if (loraDeviceInfo.GatewayID == null)
                 //    await ABPFcntCacheReset(loraDeviceInfo);
-                _ = frameCounterStrategy.ResetAsync(loraDeviceInfo);                
+                _ = frameCounterStrategy.ResetAsync(loraDeviceInfo);
             }
 
             // If it is confirmed it require us to update the frame counter down
@@ -235,7 +252,7 @@ namespace LoRaWan.NetworkServer.V2
                 //_ = SaveFcnt(loraDeviceInfo, force: false);
                 _ = frameCounterStrategy.UpdateAsync(loraDeviceInfo);
                 return new LoRaTools.LoRaPhysical.Txpk()
-                {                    
+                {
                 };
             }
 
@@ -318,10 +335,10 @@ namespace LoRaWan.NetworkServer.V2
 
             return new LoRaTools.LoRaPhysical.Txpk()
             {
-               
+
 
             };
-           // return Txpk.Create(downReceiveWindow, payloadToDevice, loraDeviceInfo.NwkSKey);
+            // return Txpk.Create(downReceiveWindow, payloadToDevice, loraDeviceInfo.NwkSKey);
         }
 
         private bool ValidateCloudToDeviceMessage(LoRaDevice loraDeviceInfo, Message cloudToDeviceMsg)
@@ -341,6 +358,152 @@ namespace LoRaWan.NetworkServer.V2
         bool IsValidNetId(byte netid)
         {
             return true;
+        }
+
+
+        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessJoinRequest(LoRaTools.LoRaPhysical.Rxpk rxpk)
+        {
+            if (this.loraRegion == null)
+                this.loraRegion = RegionFactory.Create(rxpk);
+
+            var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion);
+
+            var joinReq = WorkaroundGetPayloadJoinRequest(rxpk);
+
+            byte[] udpMsgForPktForwarder = new Byte[0];
+
+            joinReq.DevEUI.Span.Reverse();
+            joinReq.AppEUI.Span.Reverse();
+            var devEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinReq.DevEUI);
+            var devNonce = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinReq.DevNonce);
+            Logger.Log(devEUI, $"join request received", Logger.LoggingLevel.Info);
+
+            var appEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinReq.AppEUI);
+
+            var loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEUI, appEUI, devNonce);
+            if (loRaDevice == null)
+                return null;
+
+            if (!joinReq.CheckMic(loRaDevice.AppKey))
+            {
+                Logger.Log(devEUI, $"join request MIC invalid", Logger.LoggingLevel.Info);
+            }
+
+            if (loRaDevice.AppEUI != appEUI)
+            {
+                string errorMsg = $"AppEUI for OTAA does not match for device";
+                Logger.Log(devEUI, errorMsg, Logger.LoggingLevel.Error);
+                return null;
+            }
+
+            //Make sure that is a new request and not a replay         
+            if (!string.IsNullOrEmpty(loRaDevice.DevNonce) && loRaDevice.DevNonce == devNonce)
+            {
+
+                string errorMsg = $"DevNonce already used by this device";
+                Logger.Log(devEUI, errorMsg, Logger.LoggingLevel.Info);
+                loRaDevice.IsJoinValid = false;
+                return null;
+            }
+
+
+            //Check that the device is joining through the linked gateway and not another
+
+            if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(loRaDevice.GatewayID, configuration.GatewayID))
+            {
+                Logger.Log(devEUI, $"trying to join not through its linked gateway, ignoring join request", Logger.LoggingLevel.Info);
+                loRaDevice.IsJoinValid = false;
+                return null;
+            }
+
+            var netId = new byte[3] { 0, 0, 1 };
+            var appNonce = OTAAKeysGenerator.getAppNonce();
+            var appNonceBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(appNonce);
+            var appKeyBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(loRaDevice.AppKey);
+            var appSKey = OTAAKeysGenerator.calculateKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
+            var nwkSKey = OTAAKeysGenerator.calculateKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
+            var devAddr = OTAAKeysGenerator.getDevAddr(netId);
+
+            if (!timeWatcher.InTimeForJoinAccept())
+            {
+                // in this case it's too late, we need to break and avoid saving twins
+                Logger.Log(devEUI, $"processing of the join request took too long, sending no message", Logger.LoggingLevel.Info);
+                return null;
+            }
+
+
+            var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(devAddr, nwkSKey, appSKey, appNonce, devNonce, LoRaTools.Utils.ConversionHelper.ByteArrayToString(netId));
+            if (!deviceUpdateSucceeded)
+            {
+                Logger.Log(devEUI, $"join request could not save twins, join refused", Logger.LoggingLevel.Error);
+                return null;
+            }
+
+
+            Array.Reverse(netId);
+            Array.Reverse(appNonceBytes);
+            var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept();
+            
+                ////NETID 0 / 1 is default test 
+                //LoRaTools.Utils.ConversionHelper.ByteArrayToString(netId),
+                ////todo add app key management
+                //loRaDevice.AppKey,
+                ////todo add device address management
+                //devAddr,
+                //appNonce,
+                //new byte[] { 0 },
+                //new byte[] { 0 },
+                //null
+                //);
+
+            var datr = this.loraRegion.GetDownstreamDR(rxpk);
+            uint rfch = rxpk.rfch;
+            double freq = this.loraRegion.GetDownstreamChannel(rxpk);
+            //set tmst for the normal case
+            long tmst = rxpk.tmst + this.loraRegion.join_accept_delay1 * 1000000;
+
+
+            // in this case the second join windows must be used
+            var timeToFirstWindow = timeWatcher.GetTimeToJoinAcceptFirstWindow();
+            if (timeToFirstWindow < LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage)
+            {
+                Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", Logger.LoggingLevel.Info);
+                tmst = rxpk.tmst + this.loraRegion.join_accept_delay2 * 1000000;
+                if (string.IsNullOrEmpty(configuration.Rx2DataRate))
+                {
+                    Logger.Log(devEUI, $"using standard second receive windows for join request", Logger.LoggingLevel.Info);
+                    //using EU fix DR for RX2
+                    freq = this.loraRegion.RX2DefaultReceiveWindows.frequency;
+                    datr = this.loraRegion.DRtoConfiguration[RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
+                }
+                //if specific twins are set, specify second channel to be as specified
+                else
+                {
+                    Logger.Log(devEUI, $"using custom  second receive windows for join request", Logger.LoggingLevel.Info);
+                    freq = configuration.Rx2DataFrequency;
+                    datr = configuration.Rx2DataRate;
+                }
+            }
+
+            this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice);
+
+            // create txpk with join lora accept
+            //var joinAccept = new LoRaPayloadJoinAccept();
+            var result = new LoRaTools.LoRaPhysical.Txpk()
+            {
+
+            };
+
+            //Logger.Log(devEui, String.Format("join accept sent with ID {0}",
+            //    ConversionHelper.ByteArrayToString(loraMessage.PhysicalPayload.token)),
+            //    Logger.LoggingLevel.Full);
+
+            //Logger.Log(devEui, $"join request refused", Logger.LoggingLevel.Info);
+
+            Logger.Log(devEUI, $"processing time: {timeWatcher.GetElapsedTime()}", Logger.LoggingLevel.Info);
+
+
+            return result;
         }
     }
 }
