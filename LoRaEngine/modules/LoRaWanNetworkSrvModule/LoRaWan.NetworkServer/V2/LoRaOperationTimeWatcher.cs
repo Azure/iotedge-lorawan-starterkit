@@ -6,7 +6,7 @@
 using LoRaTools.Regions;
 using System;
 
-namespace LoRaWan.NetworkServer
+namespace LoRaWan.NetworkServer.V2
 {
     public class LoRaOperationTimeWatcher
     {
@@ -32,7 +32,7 @@ namespace LoRaWan.NetworkServer
         /// Gets the time to second window
         /// </summary>
         /// <returns></returns>
-        public TimeSpan GetTimeToSecondWindow(ILoRaDevice loRaDevice)
+        public TimeSpan GetTimeToSecondWindow(LoRaDevice loRaDevice)
         {
             var timePassed = (DateTimeOffset.UtcNow - this.startTime);
             var receiveDelay1 = loRaDevice.ReceiveDelay1 ?? (int)this.loraRegion.receive_delay1;
@@ -40,14 +40,14 @@ namespace LoRaWan.NetworkServer
             return TimeSpan.FromSeconds(receiveDelay1 + receiveDelay2).Subtract(timePassed);
         }
 
-        internal bool InTimeForFirstWindow(ILoRaDevice loraDeviceInfo)
+        internal bool InTimeForFirstWindow(LoRaDevice loraDeviceInfo)
         {
             var timePassed = (DateTimeOffset.UtcNow - this.startTime);
             var receiveDelay1 = loraDeviceInfo.ReceiveDelay1 ?? (int)this.loraRegion.receive_delay1;
             return timePassed.TotalSeconds < receiveDelay1;
         }
 
-        internal bool InTimeForSecondWindow(ILoRaDevice loraDeviceInfo)
+        internal bool InTimeForSecondWindow(LoRaDevice loraDeviceInfo)
         {
             var timePassed = (DateTimeOffset.UtcNow - this.startTime);
             var receiveDelay1 = loraDeviceInfo.ReceiveDelay1 ?? (int)this.loraRegion.receive_delay1;

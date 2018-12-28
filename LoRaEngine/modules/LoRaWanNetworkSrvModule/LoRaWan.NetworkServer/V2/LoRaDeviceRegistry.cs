@@ -12,23 +12,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace LoRaWan.NetworkServer
+namespace LoRaWan.NetworkServer.V2
 {
-
-    public interface ILoRaDeviceFactory
-    {
-        // Creates and initializes a new lora device
-        ILoRaDevice Create(IoTHubDeviceInfo deviceInfo);
-
-    }
-
     /// <summary>
     /// LoRa device registry
     /// </summary>
     public class LoRaDeviceRegistry : ILoRaDeviceRegistry
     {
         // Dictionary of ILoRaDevices where key is DevEUI
-        public class DevEUIDeviceDictionary : ConcurrentDictionary<string, ILoRaDevice>
+        public class DevEUIDeviceDictionary : ConcurrentDictionary<string, LoRaDevice>
         {
 
         }
@@ -37,6 +29,7 @@ namespace LoRaWan.NetworkServer
         private readonly IMemoryCache cache;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceFactory deviceFactory;
+
 
         public LoRaDeviceRegistry(
             NetworkServerConfiguration configuration, 
@@ -50,7 +43,7 @@ namespace LoRaWan.NetworkServer
             this.deviceFactory = deviceFactory;
         }
 
-        public async Task<ILoRaDevice> GetDeviceForPayloadAsync(LoRaPayloadData loraPayload)
+        public async Task<LoRaDevice> GetDeviceForPayloadAsync(LoRaPayloadData loraPayload)
         {
             var devAddr = ConversionHelper.ByteArrayToString(loraPayload.DevAddr.ToArray());
             var devicesMatchingDevAddr = this.cache.GetOrCreate<DevEUIDeviceDictionary>(devAddr, (cacheEntry) => {
@@ -75,7 +68,19 @@ namespace LoRaWan.NetworkServer
             {
                 foreach (var foundDevice in searchDeviceResult.Devices)
                 {
-                    devicesMatchingDevAddr.TryAdd(foundDevice.DevEUI, this.deviceFactory.Create(foundDevice));
+                    var loraDevice = this.deviceFactory.Create(foundDevice);
+                    if (devicesMatchingDevAddr.TryAdd(foundDevice.DevEUI, loraDevice))
+                    {
+                        // Calling initialize async here to avoid making async calls in the concurrent dictionary
+                        await this.deviceFactory.InitializeAsync(loraDevice);
+                                   
+                        // TODO: stop if we found the matching device?
+                        // If we continue we can cache for later usage
+                        if (IsValidDeviceForPayload(loraDevice, loraPayload))
+                        {
+                            return loraDevice;
+                        }
+                    }
                 }
 
                 // try now with updated cache
@@ -85,7 +90,7 @@ namespace LoRaWan.NetworkServer
             return null;
         }
 
-        private bool IsValidDeviceForPayload(ILoRaDevice loRaDevice, LoRaPayloadData loraPayload)
+        private bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload)
         {
             if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(configuration.GatewayID, loRaDevice.GatewayID, StringComparison.InvariantCultureIgnoreCase))
                 return false;

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LoRaWan.NetworkServer
+namespace LoRaWan.NetworkServer.V2
 {
     /// <summary>
     /// Results of a <see cref="LoRaDeviceAPIServiceBase.SearchDevicesAsync"/> call

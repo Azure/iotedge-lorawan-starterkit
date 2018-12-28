@@ -1,5 +1,6 @@
 ﻿using LoRaTools.LoRaMessage;
 using LoRaWan.NetworkServer;
+using LoRaWan.NetworkServer.V2;
 using LoRaWan.Test.Shared;
 using Microsoft.Extensions.Caching.Memory;
 using Moq;
@@ -57,7 +58,7 @@ namespace LoRaWanNetworkServer.Test
                 .ReturnsAsync(new SearchDevicesResult(iotHubDeviceInfo.AsList()));
 
 
-            var createdLoraDevice = new TestLoRaDeviceAdapter(simulatedDevice);
+            var createdLoraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, null);
             loraDeviceFactoryMock.Setup(x => x.Create(iotHubDeviceInfo))
                 .Returns(createdLoraDevice);
                
@@ -90,8 +91,7 @@ namespace LoRaWanNetworkServer.Test
             apiService.Setup(x => x.SearchDevicesAsync(this.configuration.GatewayID, It.IsNotNull<string>(), null, null, null))
                 .ReturnsAsync(new SearchDevicesResult(iotHubDeviceInfo.AsList()));
 
-
-            var createdLoraDevice = new TestLoRaDeviceAdapter(cachedSimulatedDevice);
+            var createdLoraDevice = TestUtils.CreateFromSimulatedDevice(cachedSimulatedDevice, null);
             loraDeviceFactoryMock.Setup(x => x.Create(iotHubDeviceInfo))
                 .Returns(createdLoraDevice);
                
@@ -101,10 +101,10 @@ namespace LoRaWanNetworkServer.Test
             Assert.Null(actual);
             
             // Device was searched by DevAddr
-            apiService.Verify();
+            apiService.VerifyAll();
 
             // Device was created by factory
-            loraDeviceFactoryMock.Verify();
+            loraDeviceFactoryMock.VerifyAll();
         }
     }
 }
