@@ -408,8 +408,7 @@ namespace LoRaWan.NetworkServer.V2
 
 
             //Check that the device is joining through the linked gateway and not another
-
-            if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(loRaDevice.GatewayID, configuration.GatewayID))
+            if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(loRaDevice.GatewayID, configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase))
             {
                 Logger.Log(devEUI, $"trying to join not through its linked gateway, ignoring join request", Logger.LoggingLevel.Info);
                 loRaDevice.IsJoinValid = false;
