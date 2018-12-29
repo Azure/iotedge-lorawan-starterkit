@@ -46,7 +46,7 @@ namespace LoRaWanNetworkServer.Test
 
 
         [Fact]
-        public async Task When_Device_Is_Not_In_Cache_And_Found_In_Api_Should_Return_It()
+        public async Task When_Device_Is_Not_In_Cache_And_Found_In_Api_Should_Cache_And_Return_It()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
