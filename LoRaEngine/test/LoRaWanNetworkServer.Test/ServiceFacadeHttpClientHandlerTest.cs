@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace LoRaWanNetworkServer.Test
+namespace LoRaWan.NetworkServer.Test
 {
     public class ServiceFacadeHttpClientHandlerTest
     {

@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer.V2
             return timePassed.TotalSeconds < receiveDelay1;
         }
 
-        internal bool InTimeForSecondWindow(LoRaDevice loraDeviceInfo)
+        public bool InTimeForSecondWindow(LoRaDevice loraDeviceInfo)
         {
             var timePassed = (DateTimeOffset.UtcNow - this.startTime);
             var receiveDelay1 = loraDeviceInfo.ReceiveDelay1 ?? (int)this.loraRegion.receive_delay1;
@@ -59,7 +59,7 @@ namespace LoRaWan.NetworkServer.V2
         /// Calculate if there is still time to send join accept response
         /// </summary>
         /// <returns></returns>
-        internal bool InTimeForJoinAccept()
+        public bool InTimeForJoinAccept()
         {
             var timePassed = (DateTimeOffset.UtcNow - this.startTime);
             return timePassed < TimeSpan.FromSeconds(this.loraRegion.join_accept_delay2);
@@ -69,10 +69,10 @@ namespace LoRaWan.NetworkServer.V2
         /// Calculates the time remaining to response in first join accept window
         /// </summary>
         /// <returns></returns>
-        internal TimeSpan GetTimeToJoinAcceptFirstWindow()
+        public TimeSpan GetTimeToJoinAcceptFirstWindow()
         {
             var timePassed = (DateTimeOffset.UtcNow - this.startTime);
-            return timePassed - TimeSpan.FromSeconds(this.loraRegion.join_accept_delay1);
+            return TimeSpan.FromSeconds(this.loraRegion.join_accept_delay1) - timePassed;
         }
 
         /// <summary>

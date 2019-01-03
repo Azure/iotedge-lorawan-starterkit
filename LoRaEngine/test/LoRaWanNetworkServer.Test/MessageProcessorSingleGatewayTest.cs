@@ -11,7 +11,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace LoRaWanNetworkServer.Test
+namespace LoRaWan.NetworkServer.Test
 {
     /// <summary>
     /// Single gateway message processor tests

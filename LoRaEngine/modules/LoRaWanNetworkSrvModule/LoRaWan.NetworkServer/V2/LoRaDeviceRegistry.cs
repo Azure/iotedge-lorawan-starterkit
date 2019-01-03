@@ -7,10 +7,12 @@ using LoRaTools;
 using LoRaTools.LoRaMessage;
 using LoRaTools.Utils;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer.V2
@@ -27,7 +29,9 @@ namespace LoRaWan.NetworkServer.V2
         }
 
         private readonly NetworkServerConfiguration configuration;
-        private readonly IMemoryCache cache;
+        private volatile IMemoryCache cache;
+        private CancellationTokenSource resetCacheToken;
+        
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceFactory deviceFactory;
         private readonly HashSet<ILoRaDeviceInitializer> initializers;
@@ -40,6 +44,7 @@ namespace LoRaWan.NetworkServer.V2
             ILoRaDeviceFactory deviceFactory)
         {
             this.configuration = configuration;
+            this.resetCacheToken = new CancellationTokenSource();
             this.cache = cache;
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.deviceFactory = deviceFactory;
@@ -56,7 +61,8 @@ namespace LoRaWan.NetworkServer.V2
         {
             var devAddr = ConversionHelper.ByteArrayToString(loraPayload.DevAddr.ToArray());
             var devicesMatchingDevAddr = this.cache.GetOrCreate<DevEUIDeviceDictionary>(devAddr, (cacheEntry) => {
-                cacheEntry.SlidingExpiration = TimeSpan.FromDays(1); 
+                cacheEntry.SlidingExpiration = TimeSpan.FromDays(1);
+                cacheEntry.ExpirationTokens.Add(new CancellationChangeToken(this.resetCacheToken.Token));
                 return new DevEUIDeviceDictionary();
             });
 
@@ -161,16 +167,31 @@ namespace LoRaWan.NetworkServer.V2
         {
             var devicesMatchingDevAddr = this.cache.GetOrCreate<DevEUIDeviceDictionary>(loRaDevice.DevAddr, (cacheEntry) => {
                 cacheEntry.SlidingExpiration = TimeSpan.FromDays(1);
+                cacheEntry.ExpirationTokens.Add(new CancellationChangeToken(this.resetCacheToken.Token));
                 return new DevEUIDeviceDictionary();
             });
 
 
-            // if there is an instance, overwrite it
+            // if there is an instance, overwrite it            
             devicesMatchingDevAddr.AddOrUpdate(loRaDevice.DevEUI, loRaDevice, (key, existing) => loRaDevice);
 
             // once added, call initializers
             foreach (var initializer in this.initializers)
                 initializer.Initialize(loRaDevice);
+        }
+
+        /// <summary>
+        /// <inheritdoc />
+        /// </summary>
+        public void ResetDeviceCache()
+        {
+            if (resetCacheToken != null && !resetCacheToken.IsCancellationRequested && resetCacheToken.Token.CanBeCanceled)
+            {
+                resetCacheToken.Cancel();
+                resetCacheToken.Dispose();
+            }
+
+            resetCacheToken = new CancellationTokenSource();
         }
     }
 }

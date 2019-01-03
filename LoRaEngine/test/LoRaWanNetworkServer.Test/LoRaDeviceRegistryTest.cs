@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace LoRaWanNetworkServer.Test
+namespace LoRaWan.NetworkServer.Test
 {
     public class LoRaDeviceRegistryTest
     {

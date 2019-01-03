@@ -47,5 +47,10 @@ namespace LoRaWan.NetworkServer.V2
         /// </summary>
         /// <param name="initializer"></param>
         void RegisterDeviceInitializer(ILoRaDeviceInitializer initializer);
+
+        /// <summary>
+        /// Resets the device cache
+        /// </summary>
+        void ResetDeviceCache();
     }
 }
