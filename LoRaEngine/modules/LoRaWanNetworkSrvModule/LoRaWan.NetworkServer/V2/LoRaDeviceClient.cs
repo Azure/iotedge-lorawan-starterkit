@@ -57,7 +57,7 @@ namespace LoRaWan.NetworkServer.V2
         {
             try
             {
-                deviceClient.OperationTimeoutInMilliseconds = 1500;
+                deviceClient.OperationTimeoutInMilliseconds = 60000;
 
                 SetRetry(true);
 

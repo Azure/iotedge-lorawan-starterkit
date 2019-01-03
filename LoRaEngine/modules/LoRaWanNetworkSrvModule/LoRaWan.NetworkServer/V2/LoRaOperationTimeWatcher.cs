@@ -11,6 +11,10 @@ namespace LoRaWan.NetworkServer.V2
     public class LoRaOperationTimeWatcher
     {
         DateTimeOffset startTime;
+
+        // Gets start time
+        public DateTimeOffset Start => this.startTime;
+
         Region loraRegion;
 
 
