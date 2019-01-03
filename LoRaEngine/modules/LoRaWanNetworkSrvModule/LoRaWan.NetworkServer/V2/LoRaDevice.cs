@@ -42,8 +42,8 @@ namespace LoRaWan.NetworkServer.V2
         public string SensorDecoder { get; set; }
         public int? ReceiveDelay1 { get; internal set; }
         public int? ReceiveDelay2 { get; internal set; }
-        public bool IsABPRelaxedFrameCounter { get; internal set; }
-        public bool AlwaysUseSecondWindow { get; internal set; }
+        public bool IsABPRelaxedFrameCounter { get; internal set; } = true;
+        public bool AlwaysUseSecondWindow { get; internal set; } = false;
 
         public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClient loRaDeviceClient)
         {

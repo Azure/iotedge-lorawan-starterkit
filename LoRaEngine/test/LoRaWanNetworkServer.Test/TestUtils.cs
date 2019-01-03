@@ -8,7 +8,10 @@ namespace LoRaWan.NetworkServer.Test
 {
     internal static class TestUtils
     {
-        internal static LoRaDevice CreateFromSimulatedDevice(SimulatedDevice simulatedDevice, ILoRaDeviceClient loRaDeviceClient)
+        internal static LoRaDevice CreateFromSimulatedDevice(
+            SimulatedDevice simulatedDevice,
+            ILoRaDeviceClient loRaDeviceClient,
+            bool isABP = true)
         {
             var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, loRaDeviceClient)
             {
@@ -21,6 +24,7 @@ namespace LoRaWan.NetworkServer.Test
             };
             result.SetFcntDown(simulatedDevice.FrmCntDown);
             result.SetFcntUp(simulatedDevice.FrmCntUp);
+            result.IsABP = isABP;
 
             return result;
         }

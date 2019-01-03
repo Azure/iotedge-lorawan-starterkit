@@ -19,7 +19,6 @@ namespace LoRaWan.NetworkServer.Test
     // Tests of the LoRa Operation time watcher
     public class LoRaOperationTimeWatcherTest
     {
-
         [Fact]
         public async Task After_One_Second_Join_First_Window_Should_Be_Greater_Than_3sec()
         {

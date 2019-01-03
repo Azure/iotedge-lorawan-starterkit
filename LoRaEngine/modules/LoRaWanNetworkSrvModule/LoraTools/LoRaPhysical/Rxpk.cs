@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace LoRaTools.LoRaPhysical
 {
@@ -38,6 +39,36 @@ namespace LoRaTools.LoRaPhysical
             {11, -17.5 },
             {12, -20 }
         };
+
+        [JsonExtensionData]
+        public Dictionary<string, object> ExtraData { get; } = new Dictionary<string, object>();
+
+        public Rxpk()
+        {
+            
+        }
+
+        // Copy constructor
+        public Rxpk(Rxpk other)
+        {
+            if (other.ExtraData != null)
+                this.ExtraData = new Dictionary<string, object>(other.ExtraData);
+
+            this.chan = other.chan;
+            this.codr = other.codr;
+            this.data = other.data;
+            this.datr = other.datr;
+            this.freq = other.freq;
+            this.lsnr = other.lsnr;
+            this.modu = other.modu;
+            this.rfch = other.rfch;
+            this.rssi = other.rssi;
+            this.size = other.size;
+            this.stat = other.stat;
+            this.time = other.time;
+            this.tmms = other.tmms;
+            this.tmst = other.tmst;
+        }
 
         /// <summary>
         /// Get the modulation margin for MAC Commands LinkCheck

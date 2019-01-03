@@ -71,7 +71,10 @@ namespace LoRaWan.NetworkServer.V2
             {
                 var matchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, loraPayload));
                 if (matchingDevice != null)
+                {
+                    Logger.Log(devAddr, "device in cache", Logger.LoggingLevel.Info);
                     return matchingDevice;
+                }
             }
 
             // If device was not found, search in the device API, updating local cache
@@ -92,6 +95,10 @@ namespace LoRaWan.NetworkServer.V2
                         // once added, call initializers
                         foreach (var initializer in this.initializers)
                             initializer.Initialize(loraDevice);
+
+                        if (loraDevice.DevEUI != null)
+                            Logger.Log(loraDevice.DevEUI, "device added to cache", Logger.LoggingLevel.Info);
+
 
                         // TODO: stop if we found the matching device?
                         // If we continue we can cache for later usage, but then do it in a new thread
