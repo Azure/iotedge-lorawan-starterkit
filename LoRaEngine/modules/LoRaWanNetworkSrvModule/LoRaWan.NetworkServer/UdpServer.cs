@@ -2,12 +2,15 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
+#define USE_MESSAGE_PROCESSOR_V2
+
 using LoRaTools;
 using LoRaTools.Utils;
 using LoRaWan.Shared;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -18,13 +21,25 @@ using System.Text;
 using System.Threading.Tasks;
 using static LoRaWan.Logger;
 
+
 namespace LoRaWan.NetworkServer
 {
+    /// <summary>
+    /// Defines udp Server communicating with packet forwarder
+    /// </summary>
     public class UdpServer : IDisposable
     {
         const int PORT = 1680;
         private readonly NetworkServerConfiguration configuration;
+
+#if USE_MESSAGE_PROCESSOR_V2
+        private readonly V2.MessageProcessor messageProcessorV2;
+        private readonly V2.LoRaDeviceAPIServiceBase loRaDeviceAPIService;
+        private readonly V2.ILoRaDeviceRegistry loRaDeviceRegistry;
+#else
         private readonly LoraDeviceInfoManager loraDeviceInfoManager;
+#endif
+
         ModuleClient ioTHubModuleClient;
         private int pullAckRemoteLoRaAggregatorPort=0;
 
@@ -34,16 +49,40 @@ namespace LoRaWan.NetworkServer
         public static UdpServer Create()
         {
             var configuration = NetworkServerConfiguration.CreateFromEnviromentVariables();
+#if USE_MESSAGE_PROCESSOR_V2
+            var loRaDeviceFactory = new V2.LoRaDeviceFactory(configuration);
+            var loRaDeviceAPIService = new V2.LoRaDeviceAPIService(configuration, new ServiceFacadeHttpClientProvider(configuration, ApiVersion.LatestVersion));
+            var loRaDeviceRegistry = new V2.LoRaDeviceRegistry(configuration, new MemoryCache(new MemoryCacheOptions()), loRaDeviceAPIService, loRaDeviceFactory);
+            var frameCounterStrategyFactory = new V2.LoRaDeviceFrameCounterUpdateStrategyFactory(configuration.GatewayID, loRaDeviceAPIService);
+            var messageProcessor = new V2.MessageProcessor(configuration, loRaDeviceRegistry, frameCounterStrategyFactory, new V2.LoRaPayloadDecoder());
+            return new UdpServer(configuration, messageProcessor, loRaDeviceAPIService, loRaDeviceRegistry);
+#else
             var loraDeviceInfoManager = new LoraDeviceInfoManager(configuration, new ServiceFacadeHttpClientProvider(configuration, ApiVersion.LatestVersion));
             return new UdpServer(configuration, loraDeviceInfoManager);
+#endif
         }
 
+#if USE_MESSAGE_PROCESSOR_V2
+        // Creates a new instance of UdpServer
+        public UdpServer(NetworkServerConfiguration configuration, 
+            V2.MessageProcessor messageProcessor, 
+            V2.LoRaDeviceAPIServiceBase loRaDeviceAPIService,
+            V2.ILoRaDeviceRegistry loRaDeviceRegistry)
+        {
+            this.configuration = configuration;
+            this.messageProcessorV2 = messageProcessor;
+            this.loRaDeviceAPIService = loRaDeviceAPIService;
+            this.loRaDeviceRegistry = loRaDeviceRegistry;
+        }
+#else
         // Creates a new instance of UdpServer
         public UdpServer(NetworkServerConfiguration configuration, LoraDeviceInfoManager loraDeviceInfoManager)
         {
             this.configuration = configuration;
             this.loraDeviceInfoManager = loraDeviceInfoManager;
         }
+#endif
+
         public async Task RunServer()
         {
             Logger.Log("Starting LoRaWAN Server...", Logger.LoggingLevel.Always);
@@ -96,13 +135,26 @@ namespace LoRaWan.NetworkServer
                         SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PUSH_ACK, receivedResults.RemoteEndPoint);
 
                         // Message processing runs in the background
+#if !USE_MESSAGE_PROCESSOR_V2     
                         MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager);
+#endif
+
 
                         // do not wait for it to return
                         _ = Task.Run(async () => {
                             try
                             {
+#if USE_MESSAGE_PROCESSOR_V2
+                                var txpk = await this.messageProcessorV2.ProcessMessageAsync(receivedResults.Buffer);
+                                byte[] resultMessage = null;
+                                if (txpk != null)
+                                {
+                                    // create bytes from txpk?
+                                    //new PhysicalPayload();
+                                }
+#else
                                 var resultMessage = await messageProcessor.ProcessMessageAsync(receivedResults.Buffer);
+#endif
                                 if (resultMessage != null && resultMessage.Length > 0)
                                 {
                                     var port = pullAckRemoteLoRaAggregatorPort;
@@ -195,8 +247,14 @@ namespace LoRaWan.NetworkServer
 
                     try
                     {
+#if USE_MESSAGE_PROCESSOR_V2
+                        this.loRaDeviceAPIService.SetURL((string)moduleTwinCollection["FacadeServerUrl"]);
+                        Logger.Log($"Facade function url: {this.loRaDeviceAPIService.URL}", Logger.LoggingLevel.Always);
+#else
                         this.loraDeviceInfoManager.FacadeServerUrl = moduleTwinCollection["FacadeServerUrl"];
                         Logger.Log($"Facade function url: {this.loraDeviceInfoManager.FacadeServerUrl}", Logger.LoggingLevel.Always);
+#endif
+
 
                     }
                     catch (ArgumentOutOfRangeException e)
@@ -206,7 +264,11 @@ namespace LoRaWan.NetworkServer
                     }
                     try
                     {
+#if USE_MESSAGE_PROCESSOR_V2
+                        this.loRaDeviceAPIService.SetAuthCode((string)moduleTwinCollection["FacadeAuthCode"]);
+#else
                         this.loraDeviceInfoManager.FacadeAuthCode = moduleTwinCollection["FacadeAuthCode"];
+#endif
                     }
                     catch (ArgumentOutOfRangeException e)
                     {
@@ -234,8 +296,10 @@ namespace LoRaWan.NetworkServer
                         LogToUdpAddress = configuration.LogToUdpAddress,
                     });
 
+#if !USE_MESSAGE_PROCESSOR_V2
                     this.loraDeviceInfoManager.FacadeServerUrl = configuration.FacadeServerUrl;
                     this.loraDeviceInfoManager.FacadeAuthCode = configuration.FacadeAuthCode;
+#endif
                 }
 
 
@@ -251,9 +315,13 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private static Task<MethodResponse> ClearCache(MethodRequest methodRequest, object userContext)
+        private Task<MethodResponse> ClearCache(MethodRequest methodRequest, object userContext)
         {
+#if USE_MESSAGE_PROCESSOR_V2
+            this.loRaDeviceRegistry.ResetDeviceCache();
+#else
             Cache.Clear();
+#endif
 
             Logger.Log("Cache cleared", Logger.LoggingLevel.Info);
 
@@ -267,10 +335,23 @@ namespace LoRaWan.NetworkServer
 
 
                 if (desiredProperties["FacadeServerUrl"] != null)
+                {
+#if USE_MESSAGE_PROCESSOR_V2
+                    this.loRaDeviceAPIService.SetURL((string)desiredProperties["FacadeServerUrl"]);
+#else
                     this.loraDeviceInfoManager.FacadeServerUrl = desiredProperties["FacadeServerUrl"];
+#endif
+                }
+
 
                 if (desiredProperties["FacadeAuthCode"] != null)
+                {
+#if USE_MESSAGE_PROCESSOR_V2
+                    this.loRaDeviceAPIService.SetAuthCode((string)desiredProperties["FacadeAuthCode"]);
+#else
                     this.loraDeviceInfoManager.FacadeAuthCode = desiredProperties["FacadeAuthCode"];
+#endif
+                }
 
                 Logger.Log("Desired property changed", Logger.LoggingLevel.Info);
 
@@ -291,11 +372,30 @@ namespace LoRaWan.NetworkServer
             return Task.CompletedTask;
         }
 
+        #region IDisposable Support
+        private bool disposedValue = false; // To detect redundant calls
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    this.udpClient?.Dispose();
+                    this.udpClient = null;
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
-
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
+        #endregion
     }
 
 }

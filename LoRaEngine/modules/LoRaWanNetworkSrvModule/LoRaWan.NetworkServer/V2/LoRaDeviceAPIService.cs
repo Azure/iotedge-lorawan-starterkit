@@ -1,4 +1,7 @@
-﻿using LoRaWan.Shared;
+﻿//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,60 +11,17 @@ using System.Threading.Tasks;
 namespace LoRaWan.NetworkServer.V2
 {
     /// <summary>
-    /// Results of a <see cref="LoRaDeviceAPIServiceBase.SearchDevicesAsync"/> call
-    /// </summary>
-    public class SearchDevicesResult
-    {
-        /// <summary>
-        /// List of devices that match the criteria
-        /// </summary>
-        public IReadOnlyList<IoTHubDeviceInfo> Devices { get; }
-
-        /// <summary>
-        /// Indicates dev nonce already used
-        /// </summary>
-        public bool IsDevNonceAlreadyUsed { get; set; }
-
-        public SearchDevicesResult()
-        {
-
-        }
-
-        public SearchDevicesResult(IReadOnlyList<IoTHubDeviceInfo> devices)
-        {
-            this.Devices = devices;
-        }
-    }
-
-
-    /// <summary>
-    /// LoRa Device API contract
-    /// </summary>
-    public abstract class LoRaDeviceAPIServiceBase
-    {
-        public abstract Task<ushort> NextFCntDownAsync(string devEUI, int fcntDown, int fcntUp, string gatewayId);
-
-        public abstract Task<bool> ABPFcntCacheResetAsync(string DevEUI);
-
-        public abstract Task<SearchDevicesResult> SearchDevicesAsync(string gatewayId, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null);
-    }
-
-
-    /// <summary>
     /// LoRa Device API Service
     /// </summary>
     public sealed class LoRaDeviceAPIService : LoRaDeviceAPIServiceBase
     {
-        public string facadeServerUrl;
-        public string facadeAuthCode;
         private readonly NetworkServerConfiguration configuration;
         private readonly IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider;
 
         public LoRaDeviceAPIService(NetworkServerConfiguration configuration, IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider)
+            : base(configuration)
         {
             this.configuration = configuration;
-            this.facadeAuthCode = configuration.FacadeAuthCode;
-            this.facadeServerUrl = configuration.FacadeServerUrl;
             this.serviceFacadeHttpClientProvider = serviceFacadeHttpClientProvider;
         }
 
@@ -70,7 +30,7 @@ namespace LoRaWan.NetworkServer.V2
             Logger.Log(devEUI, $"syncing FCntDown for multigateway", Logger.LoggingLevel.Info);
 
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = $"{facadeServerUrl}NextFCntDown?code={facadeAuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}";
+            var url = $"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}";
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
@@ -92,7 +52,7 @@ namespace LoRaWan.NetworkServer.V2
         {
             Logger.Log(devEUI, $"ABP FCnt cache reset for multigateway", Logger.LoggingLevel.Info);
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = $"{facadeServerUrl}NextFCntDown?code={facadeAuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true";
+            var url = $"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true";
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
@@ -110,9 +70,9 @@ namespace LoRaWan.NetworkServer.V2
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = new StringBuilder();
-            url.Append(facadeServerUrl)
+            url.Append(this.URL)
                 .Append("GetDevice?code=")
-                .Append(facadeAuthCode)
+                .Append(this.AuthCode)
                 .Append("&GatewayId=")
                 .Append(gatewayId);
 

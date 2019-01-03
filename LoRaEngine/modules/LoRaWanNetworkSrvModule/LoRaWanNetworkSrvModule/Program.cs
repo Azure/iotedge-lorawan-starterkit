@@ -48,11 +48,8 @@ namespace LoRaWanNetworkSrvModule
         /// </summary>
         static async Task Run()
         {
-           
-               
-                udpServer = UdpServer.Create();
-                await udpServer.RunServer();
-           
+            udpServer = UdpServer.Create();
+            await udpServer.RunServer();           
         }
     }
 }

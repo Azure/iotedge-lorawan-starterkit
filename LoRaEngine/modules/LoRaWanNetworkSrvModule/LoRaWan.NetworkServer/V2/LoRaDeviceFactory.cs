@@ -111,9 +111,9 @@ namespace LoRaWan.NetworkServer.V2
                     loraDevice.SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder];
                 loraDevice.IsOurDevice = true;
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntUp))
-                    loraDevice.SetFcntUp(twin.Properties.Reported[TwinProperty.FCntUp]);
+                    loraDevice.SetFcntUp((int)twin.Properties.Reported[TwinProperty.FCntUp]);
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntDown))
-                    loraDevice.SetFcntDown(twin.Properties.Reported[TwinProperty.FCntDown]);
+                    loraDevice.SetFcntDown((int)twin.Properties.Reported[TwinProperty.FCntDown]);
 
                 Logger.Log(loraDevice.DevEUI, $"done getting twins", Logger.LoggingLevel.Info);
 

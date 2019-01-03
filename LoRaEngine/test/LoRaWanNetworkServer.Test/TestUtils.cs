@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace LoRaWanNetworkServer.Test
+namespace LoRaWan.NetworkServer.Test
 {
     internal static class TestUtils
     {

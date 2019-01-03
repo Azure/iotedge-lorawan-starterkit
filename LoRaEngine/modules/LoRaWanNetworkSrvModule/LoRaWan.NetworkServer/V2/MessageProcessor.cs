@@ -107,36 +107,77 @@ namespace LoRaWan.NetworkServer.V2
 
         }
 
-        LoRaTools.LoRaMessage.LoRaPayloadJoinRequest WorkaroundGetPayloadJoinRequest(LoRaTools.LoRaPhysical.Rxpk rxpk)
+        LoRaTools.LoRaMessage.LoRaPayloadJoinRequest __WorkaroundGetPayloadJoinRequest(LoRaTools.LoRaPhysical.Rxpk rxpk)
         {
             byte[] convertedInputMessage = Convert.FromBase64String(rxpk.data);
             return new LoRaTools.LoRaMessage.LoRaPayloadJoinRequest(convertedInputMessage);
         }
 
 
-        LoRaTools.LoRaMessage.LoRaPayloadData WorkaroundGetPayloadData(LoRaTools.LoRaPhysical.Rxpk rxpk)
+        LoRaTools.LoRaMessage.LoRaPayloadData __WorkaroundGetPayloadData(LoRaTools.LoRaPhysical.Rxpk rxpk)
         {
             byte[] convertedInputMessage = Convert.FromBase64String(rxpk.data);
             return new LoRaTools.LoRaMessage.LoRaPayloadData(convertedInputMessage);
         }
 
-        byte WorkaroundGetNetID(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData)
+        byte __WorkaroundGetNetID(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData)
         {
             return (byte)(loRaPayloadData.DevAddr.Span[0] & 0b01111111);
         }
 
-        int WorkaroundGetFcnt(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => MemoryMarshal.Read<UInt16>(loRaPayloadData.Fcnt.Span);
+        int __WorkaroundGetFcnt(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => MemoryMarshal.Read<UInt16>(loRaPayloadData.Fcnt.Span);
 
-        LoRaMessageType WorkaroundGetMessageType(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData)
+        byte __WorkaroundGetFPort(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData)
+        {
+            byte fportUp = 0;
+            if (loRaPayloadData.Fport.Span.Length > 0)
+            {
+                fportUp = (byte)loRaPayloadData.Fport.Span[0];
+            }
+
+            return fportUp;
+        }
+
+        LoRaMessageType __WorkaroundGetMessageType(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData)
         {
             var messageType = loRaPayloadData.RawMessage[0] >> 5;
             return (LoRaMessageType)messageType;
         }
 
-        bool WorkaroundIsConfirmed(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => WorkaroundGetMessageType(loRaPayloadData) == LoRaMessageType.ConfirmedDataUp;
+        bool __WorkaroundIsConfirmed(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => __WorkaroundGetMessageType(loRaPayloadData) == LoRaMessageType.ConfirmedDataUp;
 
-        bool WorkaroundIsUpwardAck(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => WorkaroundGetMessageType(loRaPayloadData) == LoRaMessageType.ConfirmedDataUp && loRaPayloadData.GetLoRaMessage().Frmpayload.Length == 0;
+        bool __WorkaroundIsUpwardAck(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => __WorkaroundGetMessageType(loRaPayloadData) == LoRaMessageType.ConfirmedDataUp && loRaPayloadData.GetLoRaMessage().Frmpayload.Length == 0;
 
+
+        /// <summary>
+        /// Process a raw message
+        /// </summary>
+        /// <param name="rawMessage"></param>
+        /// <returns></returns>
+        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessMessageAsync(byte[] rawMessage)
+        {
+            var startTimeProcessing = DateTime.UtcNow;
+            LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(rawMessage);
+            if (loraMessage.IsLoRaMessage)
+            {
+                //if (RegionFactory.CurrentRegion == null)
+                //    RegionFactory.Create(loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0]);
+                
+                //join message
+                if (loraMessage.LoRaMessageType == LoRaMessageType.JoinRequest)
+                {
+                    var rxpk = loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0];
+                    return await ProcessJoinRequestAsync(rxpk);
+                }
+                //normal message
+                else if (loraMessage.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
+                {
+                    var rxpk = loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0];
+                    return await ProcessLoRaMessage(rxpk);
+                }
+            }
+            return null;
+        }
 
         public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessLoRaMessage(LoRaTools.LoRaPhysical.Rxpk rxpk)
         {
@@ -145,10 +186,10 @@ namespace LoRaWan.NetworkServer.V2
 
             var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion);
         
-            var loraPayload = WorkaroundGetPayloadData(rxpk);
+            var loraPayload = __WorkaroundGetPayloadData(rxpk);
             var devAddr = loraPayload.DevAddr;
             var netId = loraPayload;
-            if (!IsValidNetId(WorkaroundGetNetID(netId)))
+            if (!IsValidNetId(__WorkaroundGetNetID(netId)))
             {
                 //Log("Invalid netid");
                 return null;
@@ -167,18 +208,15 @@ namespace LoRaWan.NetworkServer.V2
                 frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy() :
                 frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy();
 
-
-
             // Reply attack or confirmed reply
-
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
             // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
             var isConfirmedResubmit = false;
-            if (this.WorkaroundGetFcnt(loraPayload) <= loraDeviceInfo.FCntUp)
+            if (this.__WorkaroundGetFcnt(loraPayload) <= loraDeviceInfo.FCntUp)
             {
                 // Future: Keep track of how many times we acked the confirmed message (4+ times we skip)
                 //if it is confirmed most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub 
-                if (WorkaroundIsConfirmed(loraPayload) && this.WorkaroundGetFcnt(loraPayload) == loraDeviceInfo.FCntUp)
+                if (__WorkaroundIsConfirmed(loraPayload) && this.__WorkaroundGetFcnt(loraPayload) == loraDeviceInfo.FCntUp)
                 {
                     isConfirmedResubmit = true;
                 }
@@ -193,7 +231,7 @@ namespace LoRaWan.NetworkServer.V2
 
             // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
-            if (loraDeviceInfo.IsABP && loraDeviceInfo.IsABPRelaxedFrameCounter && loraDeviceInfo.FCntUp > 0 && WorkaroundGetFcnt(loraPayload) <= 1)
+            if (loraDeviceInfo.IsABP && loraDeviceInfo.IsABPRelaxedFrameCounter && loraDeviceInfo.FCntUp > 0 && __WorkaroundGetFcnt(loraPayload) <= 1)
             {
                 // known problem when device restarts, starts fcnt from zero
                 //loraDeviceInfo.SetFcntUp(0);
@@ -206,7 +244,7 @@ namespace LoRaWan.NetworkServer.V2
 
             // If it is confirmed it require us to update the frame counter down
             // Multiple gateways: in redis, otherwise in device twin
-            if (WorkaroundIsConfirmed(loraPayload))
+            if (__WorkaroundIsConfirmed(loraPayload))
             {
                 fcntDown = await frameCounterStrategy.NextFcntDown(loraDeviceInfo);
                 //fcntDown = NextFcntDown(loraDeviceInfo);
@@ -215,16 +253,16 @@ namespace LoRaWan.NetworkServer.V2
 
             if (!isConfirmedResubmit)
             {
-                var validFcntUp = WorkaroundGetFcnt(loraPayload) > loraDeviceInfo.FCntUp;
+                var validFcntUp = __WorkaroundGetFcnt(loraPayload) > loraDeviceInfo.FCntUp;
                 if (validFcntUp)
                 {
                     object payloadData = null;
                     // if it is an upward acknowledgement from the device it does not have a payload
                     // This is confirmation from leaf device that he received a C2D confirmed
-                    if (!WorkaroundIsUpwardAck(loraPayload))
+                    if (!__WorkaroundIsUpwardAck(loraPayload))
                     {
                         var decryptedPayload = loraPayload.PerformEncryption(loraDeviceInfo.AppSKey);
-                        payloadData = payloadDecoder.DecodeAsync(loraDeviceInfo, decryptedPayload);
+                        payloadData = await payloadDecoder.DecodeMessage(decryptedPayload, __WorkaroundGetFPort(loraPayload), loraDeviceInfo.SensorDecoder);
                     }
 
 
@@ -233,7 +271,7 @@ namespace LoRaWan.NetworkServer.V2
                     // TODO Future: Don't wait if it is an unconfirmed message
                     await SendDeviceEventAsync(loraDeviceInfo, rxpk, payloadData);
 
-                    loraDeviceInfo.SetFcntUp(WorkaroundGetFcnt(loraPayload));
+                    loraDeviceInfo.SetFcntUp(__WorkaroundGetFcnt(loraPayload));
                 }
             }
 
@@ -246,7 +284,7 @@ namespace LoRaWan.NetworkServer.V2
             }
 
             // If it is confirmed and we don't have time to check c2d and send to device we return now
-            if (WorkaroundIsConfirmed(loraPayload) && timeToSecondWindow <= (LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessage + LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage))
+            if (__WorkaroundIsConfirmed(loraPayload) && timeToSecondWindow <= (LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessage + LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage))
             {
 
                 //_ = SaveFcnt(loraDeviceInfo, force: false);
@@ -273,7 +311,7 @@ namespace LoRaWan.NetworkServer.V2
 
             if (cloudToDeviceMessage != null)
             {
-                if (!WorkaroundIsConfirmed(loraPayload))
+                if (!__WorkaroundIsConfirmed(loraPayload))
                 {
                     // The message coming from the device was not confirmed, therefore we did not computed the frame count down
                     // Now we need to increment because there is a C2D message to be sent
@@ -301,7 +339,7 @@ namespace LoRaWan.NetworkServer.V2
 
 
             // No C2D message and request was not confirmed, return nothing
-            if (!WorkaroundIsConfirmed(loraPayload) && cloudToDeviceMessage == null)
+            if (!__WorkaroundIsConfirmed(loraPayload) && cloudToDeviceMessage == null)
             {
                 //await SaveFnct(loraDeviceInfo, force: false);
                 await frameCounterStrategy.UpdateAsync(loraDeviceInfo);
@@ -340,6 +378,7 @@ namespace LoRaWan.NetworkServer.V2
             };
             // return Txpk.Create(downReceiveWindow, payloadToDevice, loraDeviceInfo.NwkSKey);
         }
+        
 
         private bool ValidateCloudToDeviceMessage(LoRaDevice loraDeviceInfo, Message cloudToDeviceMsg)
         {
@@ -361,14 +400,17 @@ namespace LoRaWan.NetworkServer.V2
         }
 
 
-        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessJoinRequest(LoRaTools.LoRaPhysical.Rxpk rxpk)
+        /// <summary>
+        /// Process OTAA join request
+        /// </summary>
+        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessJoinRequestAsync(LoRaTools.LoRaPhysical.Rxpk rxpk)
         {
             if (this.loraRegion == null)
                 this.loraRegion = RegionFactory.Create(rxpk);
 
             var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion);
 
-            var joinReq = WorkaroundGetPayloadJoinRequest(rxpk);
+            var joinReq = __WorkaroundGetPayloadJoinRequest(rxpk);
 
             byte[] udpMsgForPktForwarder = new Byte[0];
 

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace LoRaWanNetworkServer.Test
+namespace LoRaWan.NetworkServer.Test
 {
     public class MessageProcessorJoinTest : MessageProcessorTestBase
     {
@@ -46,7 +46,7 @@ namespace LoRaWanNetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessJoinRequest(rxpk);
+            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
             Assert.Null(actual);
 
             deviceRegistry.VerifyAll();
@@ -97,7 +97,7 @@ namespace LoRaWanNetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessJoinRequest(rxpk);
+            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
             Assert.NotNull(actual);
 
 
@@ -147,7 +147,7 @@ namespace LoRaWanNetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessJoinRequest(rxpk);
+            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
             Assert.Null(actual);
 
 
@@ -196,7 +196,7 @@ namespace LoRaWanNetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessJoinRequest(rxpk);
+            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
             Assert.Null(actual);
 
 
@@ -240,7 +240,7 @@ namespace LoRaWanNetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessJoinRequest(rxpk);
+            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
             Assert.Null(actual);
 
 
