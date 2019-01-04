@@ -116,6 +116,7 @@ namespace LoRaWan.NetworkServer
             while (true)
             {
                 UdpReceiveResult receivedResults = await udpClient.ReceiveAsync();
+                var startTimeProcessing = DateTime.UtcNow;
 
                //Logger.Log($"UDP message received ({receivedResults.Buffer[3]}) from port: {receivedResults.RemoteEndPoint.Port} and IP: {receivedResults.RemoteEndPoint.Address.ToString()}",LoggingLevel.Always);
                  
@@ -145,7 +146,7 @@ namespace LoRaWan.NetworkServer
                             try
                             {
 #if USE_MESSAGE_PROCESSOR_V2
-                                var txpk = await this.messageProcessorV2.ProcessMessageAsync(receivedResults.Buffer);
+                                var txpk = await this.messageProcessorV2.ProcessMessageAsync(receivedResults.Buffer, startTimeProcessing);
                                 byte[] resultMessage = null;
                                 if (txpk != null)
                                 {

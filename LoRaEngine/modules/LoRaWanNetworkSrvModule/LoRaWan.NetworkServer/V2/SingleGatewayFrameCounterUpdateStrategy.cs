@@ -13,11 +13,11 @@ namespace LoRaWan.NetworkServer.V2
         {
         }
 
-        public async Task ResetAsync(LoRaDevice loraDevice)
+        public async Task<bool> ResetAsync(LoRaDevice loraDevice)
         {
             loraDevice.SetFcntUp(0);
             loraDevice.SetFcntDown(0);
-            await InternalUpdateAsync(loraDevice, force: true);
+            return await InternalSaveChangesAsync(loraDevice, force: true);
         }
 
         public ValueTask<int> NextFcntDown(LoRaDevice loraDevice)
@@ -25,16 +25,16 @@ namespace LoRaWan.NetworkServer.V2
             return new ValueTask<int>(loraDevice.IncrementFcntDown(1));
         }
 
+        public Task<bool> SaveChangesAsync(LoRaDevice loraDevice) => InternalSaveChangesAsync(loraDevice, force: false);
 
-
-        public Task UpdateAsync(LoRaDevice loraDevice) => InternalUpdateAsync(loraDevice, force: false);
-
-        private async Task InternalUpdateAsync(LoRaDevice loraDevice, bool force)
+        private async Task<bool> InternalSaveChangesAsync(LoRaDevice loraDevice, bool force)
         {
             if (loraDevice.FCntUp % 10 == 0 || force)
             {
-                await loraDevice.SaveFrameCountChangesAsync();
+                return await loraDevice.SaveFrameCountChangesAsync();
             }
+
+            return true;
         }
 
         private void UpdateFcntDown(LoRaDevice loraDevice)
@@ -42,7 +42,9 @@ namespace LoRaWan.NetworkServer.V2
             loraDevice.IncrementFcntDown(1);
         }
 
-        public void Initialize(LoRaDevice loRaDevice)
+        // Initializes a device instance created
+        // For ABP increment down count by 10 to take into consideration failed save attempts
+        void ILoRaDeviceInitializer.Initialize(LoRaDevice loRaDevice)
         {
             // In order to handle a scenario where the network server is restarted and the fcntDown was not yet saved (we save every 10)
             if (loRaDevice.IsABP)

@@ -34,16 +34,43 @@ namespace LoRaWan.NetworkServer.Test
             // Create Rxpk
             var rxpk = CreateRxpk(payload);
 
-            var deviceRegistry = new Mock<ILoRaDeviceRegistry>();
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
-            deviceRegistry.Setup(x => x.GetDeviceForPayloadAsync(It.IsAny<LoRaTools.LoRaMessage.LoRaPayloadData>()))
+            this.LoRaDeviceRegistry.Setup(x => x.GetDeviceForPayloadAsync(It.IsAny<LoRaTools.LoRaMessage.LoRaPayloadData>()))
                 .ReturnsAsync(() => null);
 
             // Send to message processor
             var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
                 this.ServerConfiguration,
-                deviceRegistry.Object,
+                this.LoRaDeviceRegistry.Object,
+                this.FrameCounterUpdateStrategyFactory.Object,
+                payloadDecoder.Object
+                );
+
+           var actual = await messageProcessor.ProcessLoRaMessageAsync(rxpk);
+
+            // Expectations
+            // 1. Returns null
+            Assert.Null(actual);
+        }
+
+        [Fact]
+        public async Task Unknown_Region_Should_Return_Null()
+        {
+            // Setup
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
+
+            // Create Rxpk
+            var rxpk = CreateRxpk(payload);
+            rxpk.freq = 0;
+            
+            var payloadDecoder = new Mock<ILoRaPayloadDecoder>(MockBehavior.Strict);
+
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
                 payloadDecoder.Object
                 );
@@ -70,20 +97,22 @@ namespace LoRaWan.NetworkServer.Test
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
                 .Returns(Task.FromResult(0));
 
-            var deviceRegistry = new Mock<ILoRaDeviceRegistry>();
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
-            deviceRegistry.Setup(x => x.GetDeviceForPayloadAsync(It.IsAny<LoRaTools.LoRaMessage.LoRaPayloadData>()))
+            this.LoRaDeviceRegistry.Setup(x => x.GetDeviceForPayloadAsync(It.IsAny<LoRaTools.LoRaMessage.LoRaPayloadData>()))
                 .ReturnsAsync(loraDevice);
 
             // Setup frame counter strategy
             this.FrameCounterUpdateStrategyFactory.Setup(x => x.GetSingleGatewayStrategy())
                 .Returns(this.FrameCounterUpdateStrategy.Object);
 
+            // Frame counter will be asked to save changes
+            this.FrameCounterUpdateStrategy.Setup(x => x.SaveChangesAsync(loraDevice)).ReturnsAsync(true);
+
             // Send to message processor
             var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
                 this.ServerConfiguration,
-                deviceRegistry.Object,
+                this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
                 payloadDecoder.Object
                 );
@@ -132,10 +161,9 @@ namespace LoRaWan.NetworkServer.Test
             // Will save the fcnt up/down to zero
             loraDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.Is<TwinCollection>((t) => IsTwinFcntZero(t))));
 
-            var deviceRegistry = new Mock<ILoRaDeviceRegistry>();
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
-            deviceRegistry.Setup(x => x.GetDeviceForPayloadAsync(It.IsAny<LoRaTools.LoRaMessage.LoRaPayloadData>()))
+            this.LoRaDeviceRegistry.Setup(x => x.GetDeviceForPayloadAsync(It.IsAny<LoRaTools.LoRaMessage.LoRaPayloadData>()))
                 .ReturnsAsync(loraDevice);
 
             // Setup frame counter strategy
@@ -145,7 +173,7 @@ namespace LoRaWan.NetworkServer.Test
             // Send to message processor
             var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
                 this.ServerConfiguration,
-                deviceRegistry.Object,
+                this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
                 payloadDecoder.Object
                 );

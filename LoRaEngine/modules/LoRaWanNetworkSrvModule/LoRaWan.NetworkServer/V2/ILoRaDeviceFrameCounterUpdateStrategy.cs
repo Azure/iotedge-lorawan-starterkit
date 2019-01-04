@@ -8,11 +8,19 @@ using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer.V2
 {
+    // Defines a contract to handle device frame counters
+    // A device has 2 frame counters
+    // Up:   messages coming from the device (D2C)
+    // Down: messages going to the device (C2D)
     public interface ILoRaDeviceFrameCounterUpdateStrategy
     {
-        Task ResetAsync(LoRaDevice loraDeviceInfo);
-        ValueTask<int> NextFcntDown(LoRaDevice loraDeviceInfo);
-        Task UpdateAsync(LoRaDevice loraDeviceInfo);
-    }
+        // Resets the frame count
+        Task<bool> ResetAsync(LoRaDevice loRaDevice);
 
+        // Resolves next frame down counter
+        ValueTask<int> NextFcntDown(LoRaDevice loRaDevice);
+
+        // Save changes to the frame counter
+        Task<bool> SaveChangesAsync(LoRaDevice loRaDevice);
+    }
 }
