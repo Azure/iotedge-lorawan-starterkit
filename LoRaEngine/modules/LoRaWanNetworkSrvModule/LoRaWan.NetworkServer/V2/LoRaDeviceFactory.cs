@@ -10,8 +10,6 @@ using Microsoft.Azure.Devices.Client;
 
 namespace LoRaWan.NetworkServer.V2
 {
-   
-
     public class LoRaDeviceFactory : ILoRaDeviceFactory
     {
         private readonly NetworkServerConfiguration configuration;
@@ -74,50 +72,6 @@ namespace LoRaWan.NetworkServer.V2
             }
         }
 
-        public async Task InitializeAsync(LoRaDevice loraDevice)
-        {
-            var twin = await loraDevice.GetTwinAsync();
-
-            if (twin != null)
-            {
-                //ABP Case
-                if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
-                {
-                    loraDevice.AppSKey = twin.Properties.Desired[TwinProperty.AppSKey];
-                    loraDevice.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey];
-                    loraDevice.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr];
-                    loraDevice.IsABP = true;
-                }
-                //OTAA Case
-                else if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
-                {
-                    loraDevice.AppSKey = twin.Properties.Reported[TwinProperty.AppSKey];
-                    loraDevice.NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey];
-                    loraDevice.DevAddr = twin.Properties.Reported[TwinProperty.DevAddr];
-                    loraDevice.DevNonce = twin.Properties.Reported[TwinProperty.DevNonce];
-
-                    //todo check if appkey and appeui is needed in the flow
-                    loraDevice.AppEUI = twin.Properties.Desired[TwinProperty.AppEUI];
-                    loraDevice.AppKey = twin.Properties.Desired[TwinProperty.AppKey];
-                }
-                else
-                {
-                    Logger.Log(loraDevice.DevEUI, $"AppSKey not present neither in Desired or in Reported properties", Logger.LoggingLevel.Error);
-                }
-
-                if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
-                    loraDevice.GatewayID = twin.Properties.Desired[TwinProperty.GatewayID];
-                if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
-                    loraDevice.SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder];
-                loraDevice.IsOurDevice = true;
-                if (twin.Properties.Reported.Contains(TwinProperty.FCntUp))
-                    loraDevice.SetFcntUp((int)twin.Properties.Reported[TwinProperty.FCntUp]);
-                if (twin.Properties.Reported.Contains(TwinProperty.FCntDown))
-                    loraDevice.SetFcntDown((int)twin.Properties.Reported[TwinProperty.FCntDown]);
-
-                Logger.Log(loraDevice.DevEUI, $"done getting twins", Logger.LoggingLevel.Info);
-
-            }
-        }
+        public Task InitializeAsync(LoRaDevice loraDevice) => loraDevice.InitializeAsync();
     }
 }

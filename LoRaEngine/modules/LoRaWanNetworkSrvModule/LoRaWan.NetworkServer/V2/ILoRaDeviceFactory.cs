@@ -12,6 +12,5 @@ namespace LoRaWan.NetworkServer.V2
     {
         // Creates and initializes a new lora device
         LoRaDevice Create(IoTHubDeviceInfo deviceInfo);
-        Task InitializeAsync(LoRaDevice loraDevice);
     }
 }

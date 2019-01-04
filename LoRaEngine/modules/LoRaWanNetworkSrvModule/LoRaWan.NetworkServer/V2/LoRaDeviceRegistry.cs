@@ -86,29 +86,28 @@ namespace LoRaWan.NetworkServer.V2
             {
                 foreach (var foundDevice in searchDeviceResult.Devices)
                 {
-                    var loraDevice = this.deviceFactory.Create(foundDevice);
-                    if (devicesMatchingDevAddr.TryAdd(foundDevice.DevEUI, loraDevice))
+                    var loRaDevice = this.deviceFactory.Create(foundDevice);
+                    if (devicesMatchingDevAddr.TryAdd(foundDevice.DevEUI, loRaDevice))
                     {
                         // Calling initialize async here to avoid making async calls in the concurrent dictionary
-                        await this.deviceFactory.InitializeAsync(loraDevice);
+                        await loRaDevice.InitializeAsync();
 
                         // once added, call initializers
                         foreach (var initializer in this.initializers)
-                            initializer.Initialize(loraDevice);
+                            initializer.Initialize(loRaDevice);
 
-                        if (loraDevice.DevEUI != null)
-                            Logger.Log(loraDevice.DevEUI, "device added to cache", Logger.LoggingLevel.Info);
+                        if (loRaDevice.DevEUI != null)
+                            Logger.Log(loRaDevice.DevEUI, "device added to cache", Logger.LoggingLevel.Info);
 
 
                         // TODO: stop if we found the matching device?
                         // If we continue we can cache for later usage, but then do it in a new thread
-                        if (IsValidDeviceForPayload(loraDevice, loraPayload))
+                        if (IsValidDeviceForPayload(loRaDevice, loraPayload))
                         {
-                            return loraDevice;
+                            return loRaDevice;
                         }
                     }
                 }
-
                 
                 // try now with updated cache
                 return devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, loraPayload));
@@ -164,8 +163,8 @@ namespace LoRaWan.NetworkServer.V2
 
             var matchingDeviceInfo = searchDeviceResult.Devices[0];
             var loRaDevice = this.deviceFactory.Create(matchingDeviceInfo);
-            await this.deviceFactory.InitializeAsync(loRaDevice);
-            
+            if (loRaDevice != null)
+                await loRaDevice.InitializeAsync();            
 
             return loRaDevice;
         }

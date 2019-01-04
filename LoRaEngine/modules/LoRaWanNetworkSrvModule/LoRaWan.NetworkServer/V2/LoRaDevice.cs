@@ -42,16 +42,23 @@ namespace LoRaWan.NetworkServer.V2
         public string SensorDecoder { get; set; }
         public int? ReceiveDelay1 { get; internal set; }
         public int? ReceiveDelay2 { get; internal set; }
-        public bool IsABPRelaxedFrameCounter { get; internal set; } = true;
-        public bool AlwaysUseSecondWindow { get; internal set; } = false;
+        public bool IsABPRelaxedFrameCounter { get; set; } = true;
+        public bool AlwaysUseSecondWindow { get; set; } = false;
+
+        int hasFrameCountChanges;
 
         public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClient loRaDeviceClient)
         {
             DevAddr = devAddr;
             DevEUI = devEUI;
             this.loRaDeviceClient = loRaDeviceClient;
+            this.hasFrameCountChanges = 0;
         }
 
+        /// <summary>
+        /// Initializes the device
+        /// </summary>
+        /// <returns></returns>
         public async Task InitializeAsync()
         {
             var twin = await this.loRaDeviceClient.GetTwinAsync();
@@ -94,25 +101,78 @@ namespace LoRaWan.NetworkServer.V2
                     this.fcntDown = twin.Properties.Reported[TwinProperty.FCntDown];
 
                 Logger.Log(this.DevEUI, $"done getting twins", Logger.LoggingLevel.Info);
-
             }    
         }
 
-        public Task<Twin> GetTwinAsync() => this.loRaDeviceClient.GetTwinAsync();
-
+        /// <summary>
+        /// Saves the frame count changes
+        /// </summary>
+        /// <remarks>
+        /// Changes will be saved only if there are actually changes to be saved
+        /// </remarks>
+        /// <returns></returns>
         public async Task<bool> SaveFrameCountChangesAsync()
         {
-            var reportedProperties = new TwinCollection();
-            reportedProperties[TwinProperty.FCntDown] = this.FCntDown;
-            reportedProperties[TwinProperty.FCntUp] = this.FCntUp;
-            return await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+            if (this.hasFrameCountChanges == 1)
+            {
+                var reportedProperties = new TwinCollection();
+                reportedProperties[TwinProperty.FCntDown] = this.FCntDown;
+                reportedProperties[TwinProperty.FCntUp] = this.FCntUp;
+                var result = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+                if (result)
+                {
+                    AcceptFrameCountChanges();
+                }
+
+                return result;
+            }
+
+            return true;
         }
 
-        public int IncrementFcntDown(int value) => Interlocked.Add(ref fcntDown, value);
+        /// <summary>
+        /// Gets if there are frame count changes pending
+        /// </summary>
+        /// <returns></returns>
+        public bool HasFrameCountChanges => hasFrameCountChanges == 1;
 
-        public void SetFcntUp(int newValue) => Interlocked.Exchange(ref fcntUp, newValue);
+        /// <summary>
+        /// Accept changes to the frame count
+        /// </summary>
+        public void AcceptFrameCountChanges() => Interlocked.Exchange(ref hasFrameCountChanges, 0);
 
-        public void SetFcntDown(int newValue) => Interlocked.Exchange(ref fcntDown, newValue);
+        /// <summary>
+        /// Increments <see cref="FCntDown"/>
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public int IncrementFcntDown(int value)
+        {
+            var result = Interlocked.Add(ref fcntDown, value);
+            Interlocked.Exchange(ref hasFrameCountChanges, 1);
+            return result;
+        }
+
+        /// <summary>
+        /// Sets a new value for <see cref="FCntDown"/>
+        /// </summary>
+        /// <param name="newValue"></param>
+        public void SetFcntDown(int newValue)
+        {
+            var oldValue = Interlocked.Exchange(ref fcntDown, newValue);
+            if (newValue != oldValue)
+                Interlocked.Exchange(ref hasFrameCountChanges, 1);
+        }
+
+
+        public void SetFcntUp(int newValue)
+        {
+            var oldValue = Interlocked.Exchange(ref fcntUp, newValue);
+            if (newValue != oldValue)
+                Interlocked.Exchange(ref hasFrameCountChanges, 1);
+        }
+
+
 
         public Task SendEventAsync(string messageBody, Dictionary<string, string> properties = null) => this.loRaDeviceClient.SendEventAsync(messageBody, properties);
 
@@ -156,11 +216,10 @@ namespace LoRaWan.NetworkServer.V2
                 this.NetId = netID;
                 this.SetFcntDown(0);
                 this.SetFcntUp(0);
+                this.AcceptFrameCountChanges();
             }
 
             return succeeded;
-        }
+        }        
     }
-
-
 }
