@@ -129,7 +129,7 @@ namespace LoRaWan.NetworkServer.Test
             // 3. Return is null (there is nothing to send downstream)
             Assert.Null(actual);
 
-            // 4. Frame counter up was incremented
+            // 4. Frame counter up was updated
             Assert.Equal(1, loraDevice.FCntUp);
         }
 
@@ -190,7 +190,7 @@ namespace LoRaWan.NetworkServer.Test
             // 3. Return is null (there is nothing to send downstream)
             Assert.Null(actual);
 
-            // 4. Frame counter up was incremented
+            // 4. Frame counter up was updated
             Assert.Equal(1, loraDevice.FCntUp);
         }
     }

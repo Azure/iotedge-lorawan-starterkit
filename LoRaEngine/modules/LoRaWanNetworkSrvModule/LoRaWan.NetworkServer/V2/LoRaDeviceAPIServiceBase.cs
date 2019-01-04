@@ -39,6 +39,10 @@ namespace LoRaWan.NetworkServer.V2
         /// <param name="value"></param>
         public void SetAuthCode(string value) => this.AuthCode = value;
 
+        protected LoRaDeviceAPIServiceBase()
+        {
+        }
+
         protected LoRaDeviceAPIServiceBase(NetworkServerConfiguration configuration)
         {
             this.AuthCode = configuration.FacadeAuthCode;

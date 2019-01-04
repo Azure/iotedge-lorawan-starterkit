@@ -37,18 +37,18 @@ namespace LoRaWan.NetworkServer.V2
             return true;
         }
 
-        private void UpdateFcntDown(LoRaDevice loraDevice)
-        {
-            loraDevice.IncrementFcntDown(1);
-        }
-
         // Initializes a device instance created
         // For ABP increment down count by 10 to take into consideration failed save attempts
         void ILoRaDeviceInitializer.Initialize(LoRaDevice loRaDevice)
         {
             // In order to handle a scenario where the network server is restarted and the fcntDown was not yet saved (we save every 10)
             if (loRaDevice.IsABP)
+            {
                 loRaDevice.IncrementFcntDown(10);
+
+                // do not save the changes
+                loRaDevice.AcceptFrameCountChanges();
+            }
         }
     }
 }

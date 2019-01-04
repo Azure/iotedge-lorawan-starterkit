@@ -23,15 +23,10 @@ namespace LoRaWan.NetworkServer.V2
 
         public async Task<bool> ResetAsync(LoRaDevice loRaDevice)
         {
-            if (await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI))
-            {
-                loRaDevice.SetFcntDown(0);
-                loRaDevice.SetFcntUp(0);
+            loRaDevice.SetFcntDown(0);
+            loRaDevice.SetFcntUp(0);
 
-                return true;
-            }
-
-            return false;
+            return await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI);
         }
 
         public async ValueTask<int> NextFcntDown(LoRaDevice loRaDevice)
@@ -41,9 +36,15 @@ namespace LoRaWan.NetworkServer.V2
                 fcntDown: loRaDevice.FCntDown,
                 fcntUp: loRaDevice.FCntUp,
                 gatewayId: this.gatewayID);
-            
+
             if (result > 0)
+            {
                 loRaDevice.SetFcntDown(result);
+            }
+            else
+            {
+                Logger.Log(loRaDevice.DevEUI, $"another gateway has already sent ack or downlink msg", Logger.LoggingLevel.Info);
+            }
 
             return result;
         }
