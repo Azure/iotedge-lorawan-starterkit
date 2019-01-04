@@ -57,18 +57,18 @@ namespace LoRaWan.NetworkServer.V2
             var twin = await this.loRaDeviceClient.GetTwinAsync();
 
             if (twin != null)
-            {
-                //ABP Case
+            {                
                 if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
                 {
+                    //ABP Case
                     this.AppSKey = twin.Properties.Desired[TwinProperty.AppSKey];
                     this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey];
                     this.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr];
                     this.IsABP = true;
-                }
-                //OTAA Case
+                }                
                 else if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
                 {
+                    //OTAA Case
                     this.AppSKey = twin.Properties.Reported[TwinProperty.AppSKey];
                     this.NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey];
                     this.DevAddr = twin.Properties.Reported[TwinProperty.DevAddr];
@@ -98,14 +98,14 @@ namespace LoRaWan.NetworkServer.V2
             }    
         }
 
-        public async Task<Twin> GetTwinAsync() => await this.loRaDeviceClient.GetTwinAsync();
+        public Task<Twin> GetTwinAsync() => this.loRaDeviceClient.GetTwinAsync();
 
-        public async Task SaveFrameCountChangesAsync()
+        public async Task<bool> SaveFrameCountChangesAsync()
         {
             var reportedProperties = new TwinCollection();
             reportedProperties[TwinProperty.FCntDown] = this.FCntDown;
             reportedProperties[TwinProperty.FCntUp] = this.FCntUp;
-            await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+            return await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
         }
 
         public int IncrementFcntDown(int value) => Interlocked.Add(ref fcntDown, value);
@@ -114,14 +114,13 @@ namespace LoRaWan.NetworkServer.V2
 
         public void SetFcntDown(int newValue) => Interlocked.Exchange(ref fcntDown, newValue);
 
-        public async Task SendEventAsync(string messageBody, Dictionary<string, string> properties = null) => await this.loRaDeviceClient.SendEventAsync(messageBody, properties);
+        public Task SendEventAsync(string messageBody, Dictionary<string, string> properties = null) => this.loRaDeviceClient.SendEventAsync(messageBody, properties);
 
-        public async Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => await this.loRaDeviceClient.ReceiveAsync(timeout);
+        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => this.loRaDeviceClient.ReceiveAsync(timeout);
 
-        public async Task CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => await this.loRaDeviceClient.CompleteAsync(cloudToDeviceMessage);
+        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.loRaDeviceClient.CompleteAsync(cloudToDeviceMessage);
 
-
-        public async Task AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => await this.loRaDeviceClient.AbandonAsync(cloudToDeviceMessage);
+        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.loRaDeviceClient.AbandonAsync(cloudToDeviceMessage);
 
 
         /// <summary>
@@ -149,7 +148,6 @@ namespace LoRaWan.NetworkServer.V2
             var succeeded = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
             if (succeeded)
             {
-
                 this.DevAddr = devAddr;
                 this.NwkSKey = nwkSKey;
                 this.AppSKey = appSKey;

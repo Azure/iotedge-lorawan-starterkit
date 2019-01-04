@@ -6,6 +6,7 @@
 using LoRaTools;
 using LoRaTools.LoRaMessage;
 using LoRaTools.Regions;
+using LoRaTools.Utils;
 using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
 using System;
@@ -27,6 +28,15 @@ namespace LoRaWan.NetworkServer.V2
     /// </remarks>
     public class MessageProcessor
     {
+        // Defines Cloud to device message property containing fport value
+        const string FPORT_MSG_PROPERTY_KEY = "fport";
+
+        // Fport value reserved for mac commands
+        const byte LORA_FPORT_RESERVED_MAC_MSG = 0;
+
+        // Starting Fport value reserved for future applications
+        const byte LORA_FPORT_RESERVED_FUTURE_START = 224;
+
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory;
@@ -153,10 +163,10 @@ namespace LoRaWan.NetworkServer.V2
         /// Process a raw message
         /// </summary>
         /// <param name="rawMessage"></param>
+        /// <param name="startTimeProcessing"></param>
         /// <returns></returns>
-        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessMessageAsync(byte[] rawMessage)
+        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessMessageAsync(byte[] rawMessage, DateTime startTimeProcessing)
         {
-            var startTimeProcessing = DateTime.UtcNow;            
             LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(rawMessage);
             if (loraMessage.IsLoRaMessage)
             {
@@ -173,20 +183,32 @@ namespace LoRaWan.NetworkServer.V2
                 else if (loraMessage.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
                 {
                     var rxpk = loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0];
-                    return await ProcessLoRaMessageAsync(rxpk);
+                    return await ProcessLoRaMessageAsync(rxpk, startTimeProcessing);
                 }
             }
             return null;
         }
 
-        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessLoRaMessageAsync(LoRaTools.LoRaPhysical.Rxpk rxpk)
+        // Process LoRa message where the payload is of type LoRaPayloadData
+        public Task<LoRaTools.LoRaPhysical.Txpk> ProcessLoRaMessageAsync(LoRaTools.LoRaPhysical.Rxpk rxpk) => ProcessLoRaMessageAsync(rxpk, DateTime.UtcNow);
+        
+        // Process LoRa message where the payload is of type LoRaPayloadData
+        public async Task<LoRaTools.LoRaPhysical.Txpk> ProcessLoRaMessageAsync(LoRaTools.LoRaPhysical.Rxpk rxpk, DateTime startTime)
         {
-            if (this.loraRegion == null)
-                this.loraRegion = RegionFactory.Create(rxpk);
-
-            var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion);            
             var loraPayload = __WorkaroundGetPayloadData(rxpk);
             var devAddr = loraPayload.DevAddr;
+
+            if (this.loraRegion == null)
+            {
+                this.loraRegion = RegionFactory.Create(rxpk);
+                if (this.loraRegion == null)
+                {
+                    Logger.Log(LoRaTools.Utils.ConversionHelper.ByteArrayToString(devAddr), "invalid/unsupported region, current supported regions are (eu and us)", Logger.LoggingLevel.Info);
+                    return null;
+                }
+            }
+
+            var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion, startTime);            
 
             using (var processLogger = new ProcessLogger(timeWatcher, devAddr))
             {
@@ -314,7 +336,7 @@ namespace LoRaWan.NetworkServer.V2
                 var timeToSecondWindow = timeWatcher.GetTimeToSecondWindow(loRaDevice);
                 if (timeToSecondWindow < LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage)
                 {
-                    _ = frameCounterStrategy.UpdateAsync(loRaDevice);
+                    _ = frameCounterStrategy.SaveChangesAsync(loRaDevice);
                     return null;
                 }
 
@@ -323,7 +345,7 @@ namespace LoRaWan.NetworkServer.V2
                 {
 
                     //_ = SaveFcnt(loraDeviceInfo, force: false);
-                    _ = frameCounterStrategy.UpdateAsync(loRaDevice);                    
+                    _ = frameCounterStrategy.SaveChangesAsync(loRaDevice);                    
                     return new LoRaTools.LoRaPhysical.Txpk()
                     {
                     };
@@ -377,7 +399,7 @@ namespace LoRaWan.NetworkServer.V2
                 if (!__WorkaroundIsConfirmed(loraPayload) && cloudToDeviceMessage == null)
                 {
                     //await SaveFnct(loraDeviceInfo, force: false);
-                    await frameCounterStrategy.UpdateAsync(loRaDevice);                    
+                    await frameCounterStrategy.SaveChangesAsync(loRaDevice);                    
                     return null;
                 }
 
@@ -403,7 +425,7 @@ namespace LoRaWan.NetworkServer.V2
                 if (cloudToDeviceMessage != null)
                     _ = loRaDevice.CompleteCloudToDeviceMessageAsync(cloudToDeviceMessage);
 
-                _ = frameCounterStrategy.UpdateAsync(loRaDevice);
+                _ = frameCounterStrategy.SaveChangesAsync(loRaDevice);
                 //_ = SaveFcnt(loraDeviceInfo, force: false);
                     
                 return new LoRaTools.LoRaPhysical.Txpk()
@@ -415,9 +437,26 @@ namespace LoRaWan.NetworkServer.V2
             }
         }
         
-        private bool ValidateCloudToDeviceMessage(LoRaDevice loraDeviceInfo, Message cloudToDeviceMsg)
+        private bool ValidateCloudToDeviceMessage(LoRaDevice loRaDevice, Message cloudToDeviceMsg)
         {
-            return true;
+            // ensure fport property has been set
+            if (!cloudToDeviceMsg.Properties.TryGetValueCaseInsensitive(FPORT_MSG_PROPERTY_KEY, out var fportValue))
+            {
+                Logger.Log(loRaDevice.DevEUI, $"missing {FPORT_MSG_PROPERTY_KEY} property in C2D message '{cloudToDeviceMsg.MessageId}'", Logger.LoggingLevel.Error);
+                return false;
+            }
+
+            if (byte.TryParse(fportValue, out var fport))
+            {
+                // ensure fport follows LoRa specification
+                // 0    => reserved for mac commands
+                // 224+ => reserved for future applications 
+                if (fport != LORA_FPORT_RESERVED_MAC_MSG && fport < LORA_FPORT_RESERVED_FUTURE_START)
+                    return true;
+            }
+
+            Logger.Log(loRaDevice.DevEUI, $"invalid fport '{fportValue}' in C2D message '{cloudToDeviceMsg.MessageId}'", Logger.LoggingLevel.Error);
+            return false;
         }
 
         // Sends device telemetry data to IoT Hub

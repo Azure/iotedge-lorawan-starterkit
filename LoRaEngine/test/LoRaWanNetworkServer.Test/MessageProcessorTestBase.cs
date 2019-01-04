@@ -25,6 +25,9 @@ namespace LoRaWan.NetworkServer.Test
 
         protected Mock<ILoRaDeviceFrameCounterUpdateStrategyFactory> FrameCounterUpdateStrategyFactory { get => frameCounterUpdateStrategyFactory; }
 
+        private readonly Mock<ILoRaDeviceRegistry> loRaDeviceRegistry;
+        protected Mock<ILoRaDeviceRegistry> LoRaDeviceRegistry => loRaDeviceRegistry;
+
         public MessageProcessorTestBase()
         {
             this.startTime = DateTimeOffset.UtcNow.Ticks;
@@ -47,8 +50,10 @@ namespace LoRaWan.NetworkServer.Test
                 GatewayID = "testGateway",
             };
 
-            this.frameCounterUpdateStrategy = new Mock<ILoRaDeviceFrameCounterUpdateStrategy>();
-            this.frameCounterUpdateStrategyFactory = new Mock<ILoRaDeviceFrameCounterUpdateStrategyFactory>();
+            this.frameCounterUpdateStrategy = new Mock<ILoRaDeviceFrameCounterUpdateStrategy>(MockBehavior.Strict);
+            this.frameCounterUpdateStrategyFactory = new Mock<ILoRaDeviceFrameCounterUpdateStrategyFactory>(MockBehavior.Strict);
+            this.loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
+            this.loRaDeviceRegistry.Setup(x => x.RegisterDeviceInitializer(It.IsNotNull<ILoRaDeviceInitializer>()));
         }
 
 

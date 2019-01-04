@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer.V2
 {
+    // Frame counter strategy for multi gateway scenarios
+    // Frame Down counters is resolved by calling the LoRa device API. Only a single caller will received a valid frame counter (> 0)
     public class MultiGatewayFrameCounterUpdateStrategy : ILoRaDeviceFrameCounterUpdateStrategy
     {
         private readonly string gatewayID;
@@ -19,29 +21,41 @@ namespace LoRaWan.NetworkServer.V2
             this.loRaDeviceAPIService = loRaDeviceAPIService;
         }
 
-        public async Task ResetAsync(LoRaDevice loraDeviceInfo)
+        public async Task<bool> ResetAsync(LoRaDevice loRaDevice)
         {
-            await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loraDeviceInfo.DevEUI);
-            loraDeviceInfo.SetFcntDown(0);
-            loraDeviceInfo.SetFcntUp(0);
+            if (await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI))
+            {
+                loRaDevice.SetFcntDown(0);
+                loRaDevice.SetFcntUp(0);
+
+                return true;
+            }
+
+            return false;
         }
 
-        public async ValueTask<int> NextFcntDown(LoRaDevice loraDeviceInfo)
+        public async ValueTask<int> NextFcntDown(LoRaDevice loRaDevice)
         {
             var result = await this.loRaDeviceAPIService.NextFCntDownAsync(
-                devEUI: loraDeviceInfo.DevEUI, 
-                fcntDown: loraDeviceInfo.FCntDown,
-                fcntUp: loraDeviceInfo.FCntUp,
+                devEUI: loRaDevice.DevEUI, 
+                fcntDown: loRaDevice.FCntDown,
+                fcntUp: loRaDevice.FCntUp,
                 gatewayId: this.gatewayID);
-
-            loraDeviceInfo.SetFcntDown(result);
+            
+            if (result > 0)
+                loRaDevice.SetFcntDown(result);
 
             return result;
         }
 
-        public Task UpdateAsync(LoRaDevice loraDeviceInfo)
-        {
-            throw new NotImplementedException();
+        public async Task<bool> SaveChangesAsync(LoRaDevice loRaDevice)
+        {            
+            if (loRaDevice.FCntUp % 10 == 0)
+            {
+                return await loRaDevice.SaveFrameCountChangesAsync();
+            }
+
+            return true;
         }
     }
 }
