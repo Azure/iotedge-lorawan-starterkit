@@ -174,6 +174,7 @@ namespace LoRaWan.NetworkServer.Test
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: "a_different_one"));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
+            Assert.True(payload.CheckMic(simulatedDevice.LoRaDevice.NwkSKey));
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "");
