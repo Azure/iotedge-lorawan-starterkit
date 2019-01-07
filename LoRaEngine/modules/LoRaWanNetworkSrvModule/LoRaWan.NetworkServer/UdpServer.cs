@@ -113,23 +113,19 @@ namespace LoRaWan.NetworkServer
                         break;
                     //This is a PUSH_DATA (upstream message).
                     case PhysicalIdentifier.PUSH_DATA:
-
                         SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PUSH_ACK, receivedResults.RemoteEndPoint);
-
                         // Message processing runs in the background
-
 #pragma warning disable CS4014
                         Task.Run(async () =>
                         {
                             List<Rxpk> messageRxpks = Rxpk.CreateRxpk(receivedResults.Buffer);
-                            if (messageRxpks != null)
+                            if (messageRxpks != null  )
                             {
-                                if (messageRxpks.Count == 1)
+                                if (messageRxpks.Count == 1 )
                                 {
                                      await ProcessRxpkAsync(receivedResults.RemoteEndPoint.Address.ToString(), messageRxpks[0], startTimeProcessing);
                                 }
-                                else {
-                                    
+                                else if(messageRxpks.Count > 1) {                    
                                    for (int i = 0; i< messageRxpks.Count-1;i++)
                                     {
                                          ProcessRxpkAsync(receivedResults.RemoteEndPoint.Address.ToString(), messageRxpks[i], startTimeProcessing);
@@ -166,9 +162,7 @@ namespace LoRaWan.NetworkServer
 
 
             }
-        }
-
-  
+        } 
         private async Task ProcessRxpkAsync(String remoteIp, Rxpk rxpk, DateTime startTimeProcessing)
         {
             try

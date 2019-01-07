@@ -36,34 +36,37 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly LoraDeviceInfoManager loraDeviceInfoManager;
 
-        public MessageProcessor(NetworkServerConfiguration configuration, LoraDeviceInfoManager loraDeviceInfoManager,DateTime start)
+        public MessageProcessor(NetworkServerConfiguration configuration, LoraDeviceInfoManager loraDeviceInfoManager, DateTime start)
         {
             startTimeProcessing = start;
             this.configuration = configuration;
             this.loraDeviceInfoManager = loraDeviceInfoManager;
         }
-        
+
 
         public async Task<DownlinkPktFwdMessage> ProcessMessageAsync(Rxpk rxpk)
         {
-            
+
             LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(rxpk);
- 
-                if (RegionFactory.CurrentRegion == null)
-                    RegionFactory.Create(rxpk);
-                //join message
-                if (loraMessage.LoRaMessageType == LoRaMessageType.JoinRequest)
-                {
-                    return await ProcessJoinRequest(loraMessage);
-                }
-                //normal message
-                else if (loraMessage.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
-                {
-                    return await ProcessLoraMessage(loraMessage);
-                }
-                return null;
+
+            if (RegionFactory.CurrentRegion == null)
+            {
+                if (!RegionFactory.TryResolveRegion(rxpk))
+                    return null;
+            }
+            //join message
+            if (loraMessage.LoRaMessageType == LoRaMessageType.JoinRequest)
+            {
+                return await ProcessJoinRequest(loraMessage);
+            }
+            //normal message
+            else if (loraMessage.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
+            {
+                return await ProcessLoraMessage(loraMessage);
+            }
+            return null;
         }
-        
+
         private async Task<DownlinkPktFwdMessage> ProcessLoraMessage(LoRaMessageWrapper loraMessage)
         {
             bool validFrameCounter = false;
@@ -71,24 +74,24 @@ namespace LoRaWan.NetworkServer
             string devAddr = ConversionHelper.ByteArrayToString(loraMessage.LoRaPayloadMessage.DevAddr.ToArray());
             Message c2dMsg = null;
             LoraDeviceInfo loraDeviceInfo = null;
-            if (Cache.TryGetRequestValue(devAddr, out ConcurrentDictionary<string,LoraDeviceInfo> loraDeviceInfoCacheList))
+            if (Cache.TryGetRequestValue(devAddr, out ConcurrentDictionary<string, LoraDeviceInfo> loraDeviceInfoCacheList))
             {
-                loraDeviceInfo = loraDeviceInfoCacheList.Values.FirstOrDefault(x => 
-                x.NwkSKey!=null?loraMessage.CheckMic(x.NwkSKey):false);     
+                loraDeviceInfo = loraDeviceInfoCacheList.Values.FirstOrDefault(x =>
+                x.NwkSKey != null ? loraMessage.CheckMic(x.NwkSKey) : false);
             }
             if (loraDeviceInfo == null)
             {
                 loraDeviceInfo = await this.loraDeviceInfoManager.GetLoraDeviceInfoAsync(devAddr, this.configuration.GatewayID, loraMessage);
-                if (loraDeviceInfo != null&&loraDeviceInfo.DevEUI!=null)
+                if (loraDeviceInfo != null && loraDeviceInfo.DevEUI != null)
                 {
                     if (loraDeviceInfo.DevEUI != null)
                         Logger.Log(loraDeviceInfo.DevEUI, $"processing message, device not in cache", Logger.LoggingLevel.Info);
-                        if (loraDeviceInfo.IsOurDevice)
+                    if (loraDeviceInfo.IsOurDevice)
                     {
                         Cache.AddRequestToCache(devAddr, loraDeviceInfo);
                     }
-                } 
-               
+                }
+
             }
             else
             {
@@ -509,7 +512,7 @@ namespace LoRaWan.NetworkServer
 
             return downLinkMessage;
         }
-       
+
         // Validate cloud to device message
         private bool ValidateCloudToDeviceMessage(LoraDeviceInfo loraDeviceInfo, Message c2dMessage)
         {
@@ -548,7 +551,7 @@ namespace LoRaWan.NetworkServer
             //we have a join request in the cache
             if (Cache.TryGetJoinRequestValue(devEui, out LoraDeviceInfo joinLoraDeviceInfo))
             {
-           
+
                 //is our device but the join was not valid
                 if (!joinLoraDeviceInfo.IsJoinValid)
                 {
@@ -649,14 +652,14 @@ namespace LoRaWan.NetworkServer
                         datr = configuration.Rx2DataRate;
                     }
                 }
-                LoRaMessageWrapper joinAcceptMessage = new LoRaMessageWrapper(loRaPayloadJoinAccept, LoRaMessageType.JoinAccept,  datr, 0, freq, tmst);
+                LoRaMessageWrapper joinAcceptMessage = new LoRaMessageWrapper(loRaPayloadJoinAccept, LoRaMessageType.JoinAccept, datr, 0, freq, tmst);
                 var jsonMsg = JsonConvert.SerializeObject(joinAcceptMessage.PktFwdPayload);
 
                 downlinkMessage = (DownlinkPktFwdMessage)joinAcceptMessage.PktFwdPayload;
 
                 //add to cache for processing normal messages. This awoids one additional call to the server.
                 Cache.AddRequestToCache(joinLoraDeviceInfo.DevAddr, joinLoraDeviceInfo);
-         
+
             }
             else
             {
