@@ -791,7 +791,7 @@ namespace LoRaWan.IntegrationTest
 
         }
 
-        public async Task<bool> setOTAAJoinAsyncWithRetry(_otaa_join_cmd_t command, int timeoutPerTry, int retries, int delayBetweenRetries = 5000)
+        public async Task<bool> setOTAAJoinAsyncWithRetry(_otaa_join_cmd_t command, int timeoutPerTry, int retries)
         {     
             for (var attempt=1; attempt <= retries; ++attempt)
             {
@@ -818,7 +818,7 @@ namespace LoRaWan.IntegrationTest
                     await Task.Delay(50);       
                 }
 
-                await Task.Delay(delayBetweenRetries);
+                await Task.Delay(timeoutPerTry);
 
                 // check serial log again before sending another request
                 if (ReceivedSerial((s) => s.StartsWith("+JOIN: Network joined", StringComparison.Ordinal)))                
