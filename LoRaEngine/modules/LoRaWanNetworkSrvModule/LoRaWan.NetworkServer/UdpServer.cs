@@ -18,6 +18,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using static LoRaWan.Logger;
 
@@ -44,6 +45,26 @@ namespace LoRaWan.NetworkServer
         private int pullAckRemoteLoRaAggregatorPort=0;
 
         UdpClient udpClient;
+
+
+#if USE_MESSAGE_PROCESSOR_V2
+        SemaphoreSlim randomLock = new SemaphoreSlim(1);
+        Random random = new Random();
+        private async Task<byte[]> GetTokenAsync()
+        {
+            try
+            {
+                await randomLock.WaitAsync();
+                byte[] token = new byte[2];
+                random.NextBytes(token);
+                return token;
+            }
+            finally
+            {
+                randomLock.Release();
+            }
+        }
+#endif
 
         // Creates a new instance of UdpServer
         public static UdpServer Create()
@@ -146,12 +167,19 @@ namespace LoRaWan.NetworkServer
                             try
                             {
 #if USE_MESSAGE_PROCESSOR_V2
-                                var txpk = await this.messageProcessorV2.ProcessMessageAsync(receivedResults.Buffer, startTimeProcessing);
+                                var downstreamMessage = await this.messageProcessorV2.ProcessMessageAsync(receivedResults.Buffer, startTimeProcessing);
                                 byte[] resultMessage = null;
-                                if (txpk != null)
+                                if (downstreamMessage != null)
                                 {
-                                    // create bytes from txpk?
-                                    //new PhysicalPayload();
+                                    var jsonMsg = JsonConvert.SerializeObject(downstreamMessage);
+                                    var messageByte = Encoding.UTF8.GetBytes(jsonMsg);
+                                    var token = await GetTokenAsync();
+                                    var pyld = new PhysicalPayload(token, PhysicalIdentifier.PULL_RESP, messageByte);
+                                    await this.UdpSendMessage(pyld.GetMessage(), receivedResults.RemoteEndPoint.Address.ToString(), pullAckRemoteLoRaAggregatorPort);
+                                    Logger.Log("UDP", String.Format("message sent with ID {0}",
+                                        ConversionHelper.ByteArrayToString(token)),
+                                        Logger.LoggingLevel.Full);
+               
                                 }
 #else
                                 var resultMessage = await messageProcessor.ProcessMessageAsync(receivedResults.Buffer);

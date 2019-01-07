@@ -212,6 +212,23 @@ namespace LoRaTools.LoRaMessage
             var retValue = LoRaPayloadMessage.PerformEncryption(appSkey);
             return retValue;
         }
+
+
+        public LoRaMessageWrapper(LoRaPayload payload, LoRaMessageType type, string datr, uint rfch, double freq, long tmst)
+        {
+            LoRaPayloadMessage = payload;
+            PktFwdPayload = new DownlinkPktFwdMessage(Convert.ToBase64String(LoRaPayloadMessage.GetByteMessage()), datr, rfch, freq, tmst);
+            var jsonMsg = JsonConvert.SerializeObject(PktFwdPayload);
+            var devEUI = payload.GetLoRaMessage().DevEUI;
+            if (devEUI.Length != 0)
+            {
+                Logger.Log(ConversionHelper.ByteArrayToString(devEUI.Span.ToArray()), $"{((MType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+            }else
+            {
+                Logger.Log(ConversionHelper.ByteArrayToString(payload.DevAddr.Span.ToArray()), $"{((MType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+            }
+
+        }
     }
 
 
