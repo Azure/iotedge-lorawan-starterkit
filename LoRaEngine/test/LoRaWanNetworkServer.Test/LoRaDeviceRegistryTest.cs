@@ -134,7 +134,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
 
-        [Fact(Skip = "Skip until mic validation is fixed")]
+        [Fact]
         public async Task When_Device_Is_Not_In_Cache_And_Found_In_Api_Does_Not_Match_Mic_Should_Return_Null()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
@@ -149,9 +149,12 @@ namespace LoRaWan.NetworkServer.Test
             apiService.Setup(x => x.SearchDevicesAsync(this.serverConfiguration.GatewayID, It.IsNotNull<string>(), null, null, null))
                 .ReturnsAsync(new SearchDevicesResult(iotHubDeviceInfo.AsList()));
 
-            var createdLoraDevice = TestUtils.CreateFromSimulatedDevice(cachedSimulatedDevice, null);
+            var createdLoraDevice = TestUtils.CreateFromSimulatedDevice(cachedSimulatedDevice, this.loRaDeviceClient.Object);
             loraDeviceFactoryMock.Setup(x => x.Create(iotHubDeviceInfo))
                 .Returns(createdLoraDevice);
+
+            // Will get device twin
+            loRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(new Twin());
                
             var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, loraDeviceFactoryMock.Object);
 
@@ -198,7 +201,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
 
-        [Fact(Skip = "Skip until mic validation is fixed")]
+        [Fact]
         public async Task When_Multiple_Devices_With_Same_DevAddr_Are_Cached_Should_Find_Matching_By_Mic()
         {
             var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: serverConfiguration.GatewayID));
@@ -206,7 +209,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: serverConfiguration.GatewayID));
             simulatedDevice2.LoRaDevice.DeviceID = "00000002";
-            simulatedDevice2.LoRaDevice.NwkSKey = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
+            simulatedDevice2.LoRaDevice.NwkSKey = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
             var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice2, null);
 
             var existingCache = new LoRaDeviceRegistry.DevEUIDeviceDictionary();
@@ -233,7 +236,7 @@ namespace LoRaWan.NetworkServer.Test
 
 
 
-        [Fact(Skip="Skip until mic validation is fixed")]
+        [Fact]
         public async Task When_Multiple_Devices_With_Same_DevAddr_Are_Returned_From_API_Should_Return_Matching_By_Mic()
         {
             var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: serverConfiguration.GatewayID));
@@ -241,7 +244,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: serverConfiguration.GatewayID));
             simulatedDevice2.LoRaDevice.DeviceID = "00000002";
-            simulatedDevice2.LoRaDevice.NwkSKey = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
+            simulatedDevice2.LoRaDevice.NwkSKey = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
             var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice2, this.loRaDeviceClient.Object);
 
             var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
