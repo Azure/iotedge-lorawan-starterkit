@@ -125,7 +125,7 @@ namespace LoRaWan.NetworkServer.V2
                 return false;
 
             // TODO: check with Mikhail why tests are failing here
-            return true || loraPayload.CheckMic(loRaDevice.NwkSKey);
+            return loraPayload.CheckMic(loRaDevice.NwkSKey);
         }
 
 
