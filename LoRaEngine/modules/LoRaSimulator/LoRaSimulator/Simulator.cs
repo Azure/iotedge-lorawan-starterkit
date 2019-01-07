@@ -14,6 +14,7 @@ using LoRaTools.LoRaMessage;
 using System.Threading;
 using System.Linq;
 using System.Diagnostics;
+using LoRaTools.LoRaPhysical;
 
 namespace LoRaSimulator
 {
@@ -236,14 +237,9 @@ namespace LoRaSimulator
                                     else if (identifier == PhysicalIdentifier.PULL_RESP)
                                     {
                                         // we asked something, we get an answer
-                                        LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(receivedResults.Buffer, true, dev.LoRaDevice.AppKey);
-                                        if (!loraMessage.IsLoRaMessage)
-                                        {
-                                            // udpMsgForPktForwarder = ProcessNonLoraMessage(loraMessage);
-                                            Logger.Log(device, $"Received a non LoRa message", Logger.LoggingLevel.Error);
-                                        }
-                                        else
-                                        {
+                                        var txpk=Txpk.CreateTxpk(receivedResults.Buffer, dev.LoRaDevice.AppKey);
+                                        LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(txpk, dev.LoRaDevice.AppKey);
+                                    
                                             // Check if the device is not joined, then it is maybe the answer
                                             if ((loraMessage.LoRaMessageType == LoRaMessageType.JoinAccept) && (dev.LoRaDevice.DevAddr == ""))
                                             {
@@ -268,7 +264,7 @@ namespace LoRaSimulator
                                                 //Array.Reverse(devAdd);
                                                 dev.LoRaDevice.DevAddr = BitConverter.ToString(devAdd.ToArray()).Replace("-", "");
                                             }
-                                        }
+                                        
                                     }
                                 }
                         }
