@@ -163,22 +163,21 @@ namespace LoRaTools.LoRaMessage
         /// <returns>if the Mic is valid or not</returns>
         public override bool CheckMic(string nwskey)
         {
+            var byteMsg= this.GetByteMessage();
+ 
             IMac mac = MacUtilities.GetMac("AESCMAC");
             KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
             mac.Init(key);
             byte[] block =
-                {
-                0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, (byte)DevAddr.Span[3], (byte)DevAddr.Span[2], (byte)DevAddr.Span[1],
-                (byte)DevAddr.Span[0], Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)(RawMessage.Length - 4)
+            {
+            0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, (byte)DevAddr.Span[3], (byte)DevAddr.Span[2], (byte)DevAddr.Span[1],
+            (byte)DevAddr.Span[0], Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)(byteMsg.Length - 4)
             };
-            var algoinput = block.Concat(RawMessage.Take(RawMessage.Length - 4)).ToArray();
-            //byte[] result = new byte[16];
+            var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
+            byte[] result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            var result = MacUtilities.DoFinal(mac);
-            
-            // non allocation comparison
-            return Mic.Span.SequenceEqual(result.AsSpan().Slice(0, 4));
-            //return Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
+            result = MacUtilities.DoFinal(mac);
+            return Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
         }
 
         public void SetMic(string nwskey)

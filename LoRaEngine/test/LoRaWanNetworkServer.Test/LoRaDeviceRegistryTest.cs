@@ -192,6 +192,7 @@ namespace LoRaWan.NetworkServer.Test
             var standardData = new LoRaPayloadData((LoRaPayloadData.MType)mhbr[0], devAddr, fCtrl, fCnt, fopts, fPort, payload, direction);
             // Need to create Fops. If not, then MIC won't be correct
             standardData.Fopts = new byte[0];
+            standardData.GetByteMessage();
             // First encrypt the data
             standardData.PerformEncryption(appSKey);
             // Now we have the full package, create the MIC

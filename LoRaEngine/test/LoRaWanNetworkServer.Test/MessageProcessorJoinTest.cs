@@ -4,6 +4,7 @@ using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices.Shared;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -56,6 +57,8 @@ namespace LoRaWan.NetworkServer.Test
         public async Task When_Device_Is_Found_In_Api_Should_Update_Twin_And_Return()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: ServerConfiguration.GatewayID));
+            simulatedDevice.LoRaDevice.NwkSKey = string.Empty;
+            simulatedDevice.LoRaDevice.AppSKey = string.Empty;
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
 
@@ -98,16 +101,32 @@ namespace LoRaWan.NetworkServer.Test
 
             var pktFwdMessage = actual.GetPktFwdMessage();
             Assert.NotNull(pktFwdMessage.Txpk);
-            var joinAccept = new LoRaPayloadJoinAccept(LoRaTools.Utils.ConversionHelper.StringToByteArray(pktFwdMessage.Txpk.data), loRaDevice.AppKey);
-           
+            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(pktFwdMessage.Txpk.data), loRaDevice.AppKey);
+            Assert.Equal(joinAccept.DevAddr.ToArray(), ByteArray(loRaDevice.DevAddr).ToArray());
+            
+            // Device properties were set with the computes values of the join operation
+            Assert.Equal(joinAccept.AppNonce.ToArray(), ReversedByteArray(loRaDevice.AppNonce).ToArray());
+            Assert.NotEmpty(loRaDevice.NwkSKey);
+            Assert.NotEmpty(loRaDevice.AppSKey);
 
             // Device frame counts were reset
             Assert.Equal(0, loRaDevice.FCntDown);
             Assert.Equal(0, loRaDevice.FCntUp);
+            Assert.False(loRaDevice.HasFrameCountChanges);
 
             // Twin property were updated
             loRaDeviceClient.VerifyAll();          
         }
+
+        private Memory<byte> ReversedByteArray(string value) 
+        {
+            var array = LoRaTools.Utils.ConversionHelper.StringToByteArray(value);
+            
+            Array.Reverse(array);
+            return array;
+        }
+
+        Memory<byte> ByteArray(string value) =>  LoRaTools.Utils.ConversionHelper.StringToByteArray(value);
 
 
         [Fact]
@@ -145,7 +164,6 @@ namespace LoRaWan.NetworkServer.Test
 
             var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
             Assert.Null(actual);
-
 
             // Device frame counts were not modified
             Assert.Equal(10, loRaDevice.FCntDown);
