@@ -168,6 +168,37 @@ namespace LoRaWan.NetworkServer.Test
             loraDeviceFactoryMock.VerifyAll();
         }
 
+        [Fact]
+        public void Simulated_LoRaPayload_Payload_Mic_Should_Succeeded()
+        {
+            var devAddrText = "00000001";
+            var appSKey = "00000000000000000000000000000001";
+            var nwkSKey = "00000000000000000000000000000001";
+            byte fport = 1;
+            var data = "1234";
+            byte[] mhbr = new byte[] { 0x40 };
+            byte[] devAddr = LoRaTools.Utils.ConversionHelper.StringToByteArray(devAddrText);
+            Array.Reverse(devAddr);
+            byte[] fCtrl = new byte[] { 0x80 };
+
+            byte[] fCnt = new byte[2];
+            fCnt[0]++;
+            byte[] fopts = null;
+            byte[] fPort = new byte[] { fport };           
+
+            byte[] payload = Encoding.UTF8.GetBytes(data);
+            Array.Reverse(payload);
+            int direction = 0;
+            var standardData = new LoRaPayloadData((LoRaPayloadData.MType)mhbr[0], devAddr, fCtrl, fCnt, fopts, fPort, payload, direction);
+            // Need to create Fops. If not, then MIC won't be correct
+            standardData.Fopts = new byte[0];
+            // First encrypt the data
+            standardData.PerformEncryption(appSKey); //"0A501524F8EA5FCBF9BDB5AD7D126F75");
+            // Now we have the full package, create the MIC
+            standardData.SetMic(nwkSKey); //"99D58493D1205B43EFF938F0F66C339E");            
+
+            Assert.True(standardData.CheckMic(nwkSKey));
+        }
 
         [Fact]
         public async Task When_Device_Is_Not_In_Cache_And_Found_In_Api_Does_Not_Match_Gateway_Should_Return_Null()

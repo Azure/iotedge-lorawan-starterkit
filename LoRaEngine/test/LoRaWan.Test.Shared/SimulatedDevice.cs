@@ -105,7 +105,7 @@ namespace LoRaWan.Test.Shared
             Array.Reverse(payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            LoRaPayloadData standardData = new LoRaPayloadData((LoRaPayloadData.MType)mhbr[0], devAddr, fCtrl, fCnt, fopts, fPort, payload, direction);
+            var standardData = new LoRaPayloadData((LoRaPayloadData.MType)mhbr[0], devAddr, fCtrl, fCnt, fopts, fPort, payload, direction);
             // Need to create Fops. If not, then MIC won't be correct
             standardData.Fopts = new byte[0];
             // First encrypt the data
