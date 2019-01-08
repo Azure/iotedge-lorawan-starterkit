@@ -91,7 +91,6 @@ namespace LoRaWan.Test.Shared
         /// <returns></returns>
         public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, byte fport = 1)
         {
-            byte[] mhbr = new byte[] { 0x40 };
             byte[] devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
             byte[] fCtrl = new byte[] { 0x80 };
@@ -104,7 +103,38 @@ namespace LoRaWan.Test.Shared
             Array.Reverse(payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            var standardData = new LoRaPayloadData((LoRaPayloadData.MType)mhbr[0], devAddr, fCtrl, fCnt, fopts, fPort, payload, direction);
+            var standardData = new LoRaPayloadData(LoRaPayloadData.MType.UnconfirmedDataUp, devAddr, fCtrl, fCnt, fopts, fPort, payload, direction);
+            // Need to create Fops. If not, then MIC won't be correct
+            standardData.Fopts = new byte[0];
+            // First encrypt the data
+            standardData.PerformEncryption(LoRaDevice.AppSKey); //"0A501524F8EA5FCBF9BDB5AD7D126F75");
+            // Now we have the full package, create the MIC
+            standardData.SetMic(LoRaDevice.NwkSKey); //"99D58493D1205B43EFF938F0F66C339E");            
+
+            return standardData;
+        }
+
+        /// <summary>
+        /// Creates request to send unconfirmed data message
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="fport"></param>
+        /// <returns></returns>
+        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, byte fport = 1)
+        {
+            byte[] devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
+            Array.Reverse(devAddr);
+            byte[] fCtrl = new byte[] { 0x80 };
+            // byte[] _FCnt = new byte[] { 0x00, 0x00 };
+            fCnt[0]++;
+            byte[] fopts = null;
+            byte[] fPort = new byte[] { fport };           
+            //TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
+            byte[] payload = Encoding.UTF8.GetBytes(data);
+            Array.Reverse(payload);
+            // 0 = uplink, 1 = downlink
+            int direction = 0;
+            var standardData = new LoRaPayloadData(LoRaPayloadData.MType.ConfirmedDataUp, devAddr, fCtrl, fCnt, fopts, fPort, payload, direction);
             // Need to create Fops. If not, then MIC won't be correct
             standardData.Fopts = new byte[0];
             // First encrypt the data

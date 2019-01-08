@@ -157,7 +157,7 @@ namespace LoRaWan.NetworkServer.V2
 
         bool __WorkaroundIsConfirmed(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => __WorkaroundGetMessageType(loRaPayloadData) == LoRaMessageType.ConfirmedDataUp;
 
-        bool __WorkaroundIsUpwardAck(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => __WorkaroundGetMessageType(loRaPayloadData) == LoRaMessageType.ConfirmedDataUp && loRaPayloadData.GetLoRaMessage().Frmpayload.Length == 0;
+        bool __WorkaroundIsUpwardAck(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => __WorkaroundGetMessageType(loRaPayloadData) == LoRaMessageType.ConfirmedDataUp && loRaPayloadData.Frmpayload.Length == 0;
 
 
         /// <summary>

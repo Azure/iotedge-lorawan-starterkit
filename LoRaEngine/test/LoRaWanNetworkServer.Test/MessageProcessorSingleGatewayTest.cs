@@ -133,6 +133,123 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(1, loraDevice.FCntUp);
         }
 
+        [Fact]
+        public async Task OTAA_Confirmed_Message_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_DownstreamMessage()
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID));
+            var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234");
+
+            // Create Rxpk
+            var rxpk = CreateRxpk(payload);
+
+            var loraDeviceClient = new Mock<ILoRaDeviceClient>();
+            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object, isABP: false);
+
+            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
+                .Returns(Task.FromResult(0));
+
+            var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
+
+            this.LoRaDeviceRegistry.Setup(x => x.GetDeviceForPayloadAsync(It.IsAny<LoRaTools.LoRaMessage.LoRaPayloadData>()))
+                .ReturnsAsync(loraDevice);
+
+            // Setup frame counter strategy
+            this.FrameCounterUpdateStrategyFactory.Setup(x => x.GetSingleGatewayStrategy())
+                .Returns(new SingleGatewayFrameCounterUpdateStrategy());
+
+            // Frame counter will be asked to save changes
+            this.FrameCounterUpdateStrategy.Setup(x => x.SaveChangesAsync(loraDevice)).ReturnsAsync(true);
+
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                this.LoRaDeviceRegistry.Object,
+                this.FrameCounterUpdateStrategyFactory.Object,
+                payloadDecoder.Object
+                );
+
+            var actual = await messageProcessor.ProcessLoRaMessageAsync(rxpk);
+
+            // Expectations
+            // 1. Message was sent to IoT Hub
+            loraDeviceClient.VerifyAll();
+
+            // 2. Single gateway frame counter strategy was used
+            this.FrameCounterUpdateStrategyFactory.VerifyAll();
+
+            // 3. Return is downstream message
+            Assert.NotNull(actual);
+            Assert.IsType<DownlinkPktFwdMessage>(actual);
+            var downlinkMessage = (DownlinkPktFwdMessage)actual;
+            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.txpk.data));
+            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+
+            
+
+            // 4. Frame counter up was updated
+            Assert.Equal(1, loraDevice.FCntUp);
+
+            // 5. Frame counter down remains unchanged
+            Assert.Equal(1, loraDevice.FCntDown);
+        }
+
+        [Fact]
+        public async Task OTAA_Confirmed_Message_With_Fcnt9_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_DownstreamMessage()
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID));
+            var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234");
+
+            // Create Rxpk
+            var rxpk = CreateRxpk(payload);
+
+            var loraDeviceClient = new Mock<ILoRaDeviceClient>();
+            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object, isABP: false);
+
+            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
+                .Returns(Task.FromResult(0));
+
+            var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
+
+            this.LoRaDeviceRegistry.Setup(x => x.GetDeviceForPayloadAsync(It.IsAny<LoRaTools.LoRaMessage.LoRaPayloadData>()))
+                .ReturnsAsync(loraDevice);
+
+            // Setup frame counter strategy
+            this.FrameCounterUpdateStrategyFactory.Setup(x => x.GetSingleGatewayStrategy())
+                .Returns(new SingleGatewayFrameCounterUpdateStrategy());
+
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                this.LoRaDeviceRegistry.Object,
+                this.FrameCounterUpdateStrategyFactory.Object,
+                payloadDecoder.Object
+                );
+
+            var actual = await messageProcessor.ProcessLoRaMessageAsync(rxpk);
+
+            // Expectations
+            // 1. Message was sent to IoT Hub
+            loraDeviceClient.VerifyAll();
+
+            // 2. Single gateway frame counter strategy was used
+            this.FrameCounterUpdateStrategyFactory.VerifyAll();
+
+            // 3. Return is downstream message
+            Assert.NotNull(actual);
+            Assert.IsType<DownlinkPktFwdMessage>(actual);
+            var downlinkMessage = (DownlinkPktFwdMessage)actual;
+            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.txpk.data));
+            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+
+            
+
+            // 4. Frame counter up was updated
+            Assert.Equal(1, loraDevice.FCntUp);
+
+            // 5. Frame counter down remains unchanged
+            Assert.Equal(1, loraDevice.FCntDown);
+        }
+
 
         bool IsTwinFcntZero(TwinCollection t) => (int)t[TwinProperty.FCntDown] == 0 && (int)t[TwinProperty.FCntUp] == 0;
 
