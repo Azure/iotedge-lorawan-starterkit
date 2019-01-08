@@ -345,14 +345,14 @@ namespace LoRaWan.NetworkServer.V2
                     // If it is confirmed and we don't have time to check c2d and send to device we return now
                     if (requiresConfirmation && timeToSecondWindow <= (LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessage + LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage))
                     {
-
                         return __WorkaroundCreateConfirmMessage(
                             null,
                             loRaDevice,
                             rxpk,
                             loraPayload,
                             timeWatcher,
-                            devAddr
+                            devAddr,
+                            fpending: false
                         );
                     }
 
@@ -365,6 +365,8 @@ namespace LoRaWan.NetworkServer.V2
                     var resultPayloadData = new LoRaPayloadData();
                     //loraPayload.IsConfirmed() ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown);
 
+                    // Flag indicating if there is another C2D message waiting
+                    var fpending = false;
                     if (cloudToDeviceMessage != null)
                     {
                         if (!requiresConfirmation)
@@ -382,7 +384,7 @@ namespace LoRaWan.NetworkServer.V2
                             var additionalMsg = await GetAndValidateCloudToDeviceMessageAsync(loRaDevice, timeToSecondWindow - LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessage);
                             if (additionalMsg != null)
                             {
-                                resultPayloadData.FPending = true;
+                                fpending = true;
                                 _ = loRaDevice.AbandonCloudToDeviceMessageAsync(additionalMsg);
                             }
                         }
@@ -408,34 +410,29 @@ namespace LoRaWan.NetworkServer.V2
                     // we got here:
                     // a) was a confirm request
                     // b) we have a c2d message
-                    //if (rxpk.IsConfirmed())
-                    //    txpk.SetAsAcknoledgement();
-                    var receiveWindowToUse = timeWatcher.ResolveReceiveWindowToUse(loRaDevice);
-                    if (receiveWindowToUse == 0)
-                    {
-                        // TODO: abandon cloud?
-                        if (cloudToDeviceMessage != null)
-                            _ = loRaDevice.AbandonCloudToDeviceMessageAsync(cloudToDeviceMessage);
-
-                        // no time to send response...
-                        return null;
-                    }
-
-                    if (cloudToDeviceMessage != null)
-                        _ = loRaDevice.CompleteCloudToDeviceMessageAsync(cloudToDeviceMessage);
-
-                    //_ = SaveFcnt(loraDeviceInfo, force: false);
-
-                    
-                    //check if the c2d message has a mac command
-                    return __WorkaroundCreateConfirmMessage(
+                    var confirmDownstream = __WorkaroundCreateConfirmMessage(
                         cloudToDeviceMessage,
                         loRaDevice,
                         rxpk,
                         loraPayload,
                         timeWatcher,
-                        devAddr
+                        devAddr,
+                        fpending
                     );
+
+                    if (cloudToDeviceMessage != null)
+                    {
+                        if (confirmDownstream == null)
+                        {
+                            _ = loRaDevice.AbandonCloudToDeviceMessageAsync(cloudToDeviceMessage);
+                        }
+                        else
+                        {
+                            _ = loRaDevice.CompleteCloudToDeviceMessageAsync(cloudToDeviceMessage);
+                        }
+                    }
+
+                    return confirmDownstream;             
                 }
             }
         }
@@ -446,7 +443,8 @@ namespace LoRaWan.NetworkServer.V2
             LoRaTools.LoRaPhysical.Rxpk rxpk,
             LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData, 
             LoRaOperationTimeWatcher timeWatcher,
-            ReadOnlyMemory<byte> payloadDevAddr)
+            ReadOnlyMemory<byte> payloadDevAddr,
+            bool fpending)
         {
 
             //default fport
@@ -504,10 +502,11 @@ namespace LoRaWan.NetworkServer.V2
                 Array.Reverse(bytesC2dMsg);
             }
 
-            if (requestForConfirmedResponse)
+            if (requestForConfirmedResponse || fpending)
             {
                 fctrl[0] += (int)FctrlEnum.FpendingOrClassB;
             }
+            
             // if (macbytes != null && linkCheckCmdResponse != null)
             //     macbytes = macbytes.Concat(linkCheckCmdResponse).ToArray();
 
