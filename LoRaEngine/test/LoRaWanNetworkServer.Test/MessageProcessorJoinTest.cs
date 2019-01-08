@@ -1,4 +1,5 @@
-﻿using LoRaWan.NetworkServer.V2;
+﻿using LoRaTools.LoRaMessage;
+using LoRaWan.NetworkServer.V2;
 using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices.Shared;
 using Moq;
@@ -95,6 +96,10 @@ namespace LoRaWan.NetworkServer.Test
             var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
             Assert.NotNull(actual);
 
+            var pktFwdMessage = actual.GetPktFwdMessage();
+            Assert.NotNull(pktFwdMessage.Txpk);
+            var joinAccept = new LoRaPayloadJoinAccept(LoRaTools.Utils.ConversionHelper.StringToByteArray(pktFwdMessage.Txpk.data), loRaDevice.AppKey);
+           
 
             // Device frame counts were reset
             Assert.Equal(0, loRaDevice.FCntDown);
