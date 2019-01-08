@@ -16,6 +16,7 @@ namespace LoRaTools.LoRaMessage
     /// <summary>
     /// The Message adapter class is a class enabling to get the internals from a Join accept/request or data payload.
     /// </summary>
+    [Obsolete("This method is planned to be deprecated in the next versions. Please use LoRaPayload instead.")]
     public class LoRaMessageAdapter
     {
         public LoRaMessageAdapterEnum LoRaMessageAdapterEnum { get; set; }

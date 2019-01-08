@@ -4,6 +4,7 @@ using System.Text;
 
 namespace LoRaTools.LoRaPhysical
 {
+    [Obsolete("This class will be faded out in the next versions, please use DownlinkPktFwdMessage or UplinkPktFwdMessage instead.")]
     public class PktFwdMessageAdapter
     {
         public List<Rxpk> Rxpks { get; set; }
@@ -71,6 +72,11 @@ namespace LoRaTools.LoRaPhysical
     {
         public List<Rxpk> rxpk = new List<Rxpk>();
 
+        public UplinkPktFwdMessage(Rxpk rxpkInput){
+            rxpk= new List<Rxpk>(){
+                rxpkInput
+            };
+        }
         public override PktFwdMessageAdapter GetPktFwdMessage()
         {
             PktFwdMessageAdapter pktFwdMessageAdapter = new PktFwdMessageAdapter();

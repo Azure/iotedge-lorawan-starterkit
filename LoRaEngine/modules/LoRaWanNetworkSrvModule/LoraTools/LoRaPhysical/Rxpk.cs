@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LoRaWan;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -51,6 +53,38 @@ namespace LoRaTools.LoRaPhysical
             if (margin < 0)
                 margin = 0;
             return margin;
+        }
+
+        /// <summary>
+        /// Method to create a Rxpk object from a byte array.
+        /// This is typically used for an upstream communication.
+        /// </summary>
+        /// <param name="inputMessage">Input byte array</param>
+        /// <returns>List of rxpk or null if no Rxpk was found</returns>
+        public static List<Rxpk> CreateRxpk(byte[] inputMessage)
+        {
+            PhysicalPayload PhysicalPayload = new PhysicalPayload(inputMessage);
+            if (PhysicalPayload.message != null)
+            {
+                var payload = Encoding.UTF8.GetString(PhysicalPayload.message);
+                if (!payload.StartsWith("{\"stat"))
+                {
+                    Logger.Log($"Physical dataUp {payload}", Logger.LoggingLevel.Full);
+                    var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
+                    if (payloadObject != null)
+                    {
+                        if (payloadObject.rxpk != null)
+                        {
+                            return payloadObject.rxpk;
+                        }
+                    }
+                }
+                else
+                {
+                    Logger.Log($"Statistic: {payload}", Logger.LoggingLevel.Full);
+                }
+            }
+            return new List<Rxpk>();
         }
     }
 

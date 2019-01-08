@@ -1,5 +1,6 @@
 ﻿using LoRaTools.LoRaPhysical;
 using LoRaTools.Utils;
+using LoRaWan;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,20 +15,27 @@ namespace LoRaTools.Regions
             get; set;
         }
 
-        static public void Create(Rxpk _rxpk)
+        static public bool TryResolveRegion(Rxpk _rxpk)
         {
             //EU863-870
             if (_rxpk.freq < 870 && _rxpk.freq > 863)
             {
-                CurrentRegion =  CreateEURegion();
+                CurrentRegion =  CreateEU868Region();
+                return true;
             }//US902-928
             else if(_rxpk.freq<=928 && _rxpk.freq >= 902)
             {
-                CurrentRegion = CreateUSRegion();
+                CurrentRegion = CreateUS915Region();
+                return true;
+            }
+            else
+            {
+                Logger.Log("RegionFactory", "The current frequency plan is not supported. Currently only EU868 and US915 frequency bands are supported.", Logger.LoggingLevel.Error);
+                return false;
             }
         }
 
-        static Region CreateEURegion()
+        static Region CreateEU868Region()
         {
             Region r = new Region(
                 RegionEnum.EU,
@@ -42,7 +50,6 @@ namespace LoRaTools.Regions
                  64,
                  32,
                  (min : 1, max:3)
-
                 );
             r.DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
             r.DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
@@ -74,7 +81,7 @@ namespace LoRaTools.Regions
             return r;
         }
 
-        static Region CreateUSRegion()
+        static Region CreateUS915Region()
         {
             Region r = new Region(
                 RegionEnum.US,

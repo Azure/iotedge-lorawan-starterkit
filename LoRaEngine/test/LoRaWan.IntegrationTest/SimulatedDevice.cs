@@ -1,5 +1,6 @@
 ﻿using LoRaTools;
 using LoRaTools.LoRaMessage;
+using LoRaTools.LoRaPhysical;
 using LoRaTools.Utils;
 using LoRaWan;
 using Newtonsoft.Json;
@@ -131,8 +132,9 @@ namespace LoRaWan.IntegrationTest
             var joinRequest = this.CreateJoinRequest();
             var joinCompleted = new SemaphoreSlim(0);
             packetForwarder.SubscribeOnce(token, PhysicalIdentifier.PULL_RESP, (response) => {
+                var txpk=  Txpk.CreateTxpk(response, this.LoRaDevice.AppKey);
                 // handle join
-                var loraMessage = new LoRaMessageWrapper(response, true, this.LoRaDevice.AppKey);
+                var loraMessage = new LoRaMessageWrapper(txpk, this.LoRaDevice.AppKey);
                 if (loraMessage.LoRaMessageType == LoRaMessageType.JoinAccept)
                 {
                     this.HandleJoinAccept(loraMessage);
