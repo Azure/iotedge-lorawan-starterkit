@@ -169,7 +169,7 @@ namespace LoRaWan.NetworkServer
             {
                 MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager,  startTimeProcessing);
                 var downstreamMessage = await messageProcessor.ProcessMessageAsync(rxpk);
-                if (downstreamMessage != null)
+                if (downstreamMessage?.txpk != null)
                 {
                     var jsonMsg = JsonConvert.SerializeObject(downstreamMessage);
                     var messageByte = Encoding.UTF8.GetBytes(jsonMsg);
