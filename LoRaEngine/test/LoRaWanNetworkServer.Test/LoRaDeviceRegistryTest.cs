@@ -193,9 +193,9 @@ namespace LoRaWan.NetworkServer.Test
             // Need to create Fops. If not, then MIC won't be correct
             standardData.Fopts = new byte[0];
             // First encrypt the data
-            standardData.PerformEncryption(appSKey); //"0A501524F8EA5FCBF9BDB5AD7D126F75");
+            standardData.PerformEncryption(appSKey);
             // Now we have the full package, create the MIC
-            standardData.SetMic(nwkSKey); //"99D58493D1205B43EFF938F0F66C339E");            
+            standardData.SetMic(nwkSKey);         
 
             Assert.True(standardData.CheckMic(nwkSKey));
         }
