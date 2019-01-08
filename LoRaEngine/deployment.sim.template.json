@@ -129,6 +129,9 @@
               },
               "SIMULATOR_PORT": {
                 "value": "$SIMULATOR_PORT"
+              },
+              "PKT_FWD_SPI_DEV":{
+                "value":"$SPI_DEV"
               }
             },
             "version": "1.0",

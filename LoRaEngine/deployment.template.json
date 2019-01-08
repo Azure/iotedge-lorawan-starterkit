@@ -122,7 +122,10 @@
               },
               "REGION": {
                 "value": "$REGION"
-              }
+              },
+              "SPI_DEV":{
+               "value":"$PKT_FWD_SPI_DEV"
+             }
             },
             "version": "1.0",
             "status": "running",

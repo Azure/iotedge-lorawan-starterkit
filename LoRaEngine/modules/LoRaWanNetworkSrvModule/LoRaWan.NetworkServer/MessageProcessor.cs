@@ -635,21 +635,27 @@ namespace LoRaWan.NetworkServer
                 //in this case the second join windows must be used
                 if ((DateTime.UtcNow - startTimeProcessing) > TimeSpan.FromMilliseconds(RegionFactory.CurrentRegion.join_accept_delay1 * 1000 - 100))
                 {
-                    Logger.Log(devEui, $"processing of the join request took too long, using second join accept receive window", Logger.LoggingLevel.Info);
-                    tmst = loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0].tmst + RegionFactory.CurrentRegion.join_accept_delay2 * 1000000;
-                    if (string.IsNullOrEmpty(configuration.Rx2DataRate))
-                    {
-                        Logger.Log(devEui, $"using standard second receive windows for join request", Logger.LoggingLevel.Info);
-                        //using EU fix DR for RX2
-                        freq = RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.frequency;
-                        datr = RegionFactory.CurrentRegion.DRtoConfiguration[RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
+                    if((DateTime.UtcNow - startTimeProcessing).Seconds>=RegionFactory.CurrentRegion.join_accept_delay2){
+                        Logger.Log(devEui, $"Processing time took {DateTime.UtcNow - startTimeProcessing}.Too long for current receive windows, not sending a join accept", Logger.LoggingLevel.Info);
+                        return null;
                     }
-                    //if specific twins are set, specify second channel to be as specified
-                    else
-                    {
-                        Logger.Log(devEui, $"using custom  second receive windows for join request", Logger.LoggingLevel.Info);
-                        freq = configuration.Rx2DataFrequency;
-                        datr = configuration.Rx2DataRate;
+                    else{
+                        Logger.Log(devEui, $"processing of the join request took too long, using second join accept receive window", Logger.LoggingLevel.Info);
+                        tmst = loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0].tmst + RegionFactory.CurrentRegion.join_accept_delay2 * 1000000;
+                        if (string.IsNullOrEmpty(configuration.Rx2DataRate))
+                        {
+                            Logger.Log(devEui, $"using standard second receive windows for join request", Logger.LoggingLevel.Info);
+                            //using EU fix DR for RX2
+                            freq = RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.frequency;
+                            datr = RegionFactory.CurrentRegion.DRtoConfiguration[RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
+                        }
+                        //if specific twins are set, specify second channel to be as specified
+                        else
+                        {
+                            Logger.Log(devEui, $"using custom  second receive windows for join request", Logger.LoggingLevel.Info);
+                            freq = configuration.Rx2DataFrequency;
+                            datr = configuration.Rx2DataRate;
+                        }
                     }
                 }
                 LoRaMessageWrapper joinAcceptMessage = new LoRaMessageWrapper(loRaPayloadJoinAccept, LoRaMessageType.JoinAccept, datr, 0, freq, tmst);
@@ -659,7 +665,9 @@ namespace LoRaWan.NetworkServer
 
                 //add to cache for processing normal messages. This awoids one additional call to the server.
                 Cache.AddRequestToCache(joinLoraDeviceInfo.DevAddr, joinLoraDeviceInfo);
-
+                Logger.Log(devEui, String.Format("join accept sent with ID {0}",	
+                    ConversionHelper.ByteArrayToString(((LoRaPayloadJoinAccept)joinAcceptMessage.LoRaPayloadMessage).AppNonce.Span.ToArray())),	
+                    Logger.LoggingLevel.Info);
             }
             else
             {
