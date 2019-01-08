@@ -92,11 +92,22 @@ namespace LoRaTools.LoRaMessage
 
         public enum MType
         {
+            // Request sent by device to join
             JoinRequest,
+
+            // Response to a join request sent to device
             JoinAccept=32,
+
+            // Device to cloud message, no confirmation expected
             UnconfirmedDataUp=64,
+
+            // Cloud to device message, no confirmation expected
             UnconfirmedDataDown=96,
+
+            // Device to cloud message, confirmation required
             ConfirmedDataUp=128,
+
+            // Cloud to device message, confirmation required
             ConfirmedDataDown=160
 
         }
