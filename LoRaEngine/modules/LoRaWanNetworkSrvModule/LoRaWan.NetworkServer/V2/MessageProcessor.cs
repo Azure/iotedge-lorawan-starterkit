@@ -232,7 +232,8 @@ namespace LoRaWan.NetworkServer.V2
                 // Add context to logger
                 processLogger.SetDevEUI(loRaDevice.DevEUI);
 
-                var frameCounterStrategy = (loRaDevice.GatewayID == configuration.GatewayID) ?
+                var isMultiGateway = string.Equals(loRaDevice.GatewayID, configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
+                var frameCounterStrategy = isMultiGateway ?
                     frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy() :
                     frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy();
 
@@ -359,7 +360,6 @@ namespace LoRaWan.NetworkServer.V2
                     // ReceiveAsync has a longer timeout
                     // But we wait less that the timeout (available time before 2nd window)
                     // if message is received after timeout, keep it in loraDeviceInfo and return the next call
-                    timeToSecondWindow = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice);
                     var cloudToDeviceMessage = await GetAndValidateCloudToDeviceMessageAsync(loRaDevice, timeToSecondWindow - LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessage);
 
                     var resultPayloadData = new LoRaPayloadData();

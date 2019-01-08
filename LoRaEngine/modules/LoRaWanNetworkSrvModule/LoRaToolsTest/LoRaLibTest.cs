@@ -179,6 +179,7 @@ namespace LoRaWanTest
             };
             Assert.Equal(testEncrypt, lora.Frmpayload.ToArray());
             lora.SetMic(ConversionHelper.ByteArrayToString(nwkkey));
+            lora.CheckMic(ConversionHelper.ByteArrayToString(nwkkey));
             byte[] testMic = new byte[4]
             {
                 181, 106, 14, 117
