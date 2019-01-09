@@ -68,6 +68,11 @@ namespace LoRaWan.NetworkServer
         // Gets/sets udp port to send logs
         public int LogToUdpPort { get; set; } = 6000;
 
+        // Gets/sets Protocol that the leaf device impersonation uses to talk to IoTHub
+        // Allowed: Mqtt_Tcp_Only, Amqp_Tcp_Only
+        // Default: Mqtt_Tcp_Only
+        public string LeafDeviceProtocol { get; set; } = "Mqtt_Tcp_Only";
+
         // Creates a new instance of NetworkServerConfiguration
         public NetworkServerConfiguration()
         {    
@@ -98,6 +103,7 @@ namespace LoRaWan.NetworkServer
             config.LogToUdp = envVars.GetEnvVar("LOG_TO_UDP", config.LogToUdp);
             config.LogToUdpAddress = envVars.GetEnvVar("LOG_TO_UDP_ADDRESS", string.Empty);
             config.LogToUdpPort = envVars.GetEnvVar("LOG_TO_UDP_PORT", config.LogToUdpPort);
+            config.LeafDeviceProtocol = envVars.GetEnvVar("LEAF_DEVICE_PROTOCOL", config.LeafDeviceProtocol);
 
             return config;
         }

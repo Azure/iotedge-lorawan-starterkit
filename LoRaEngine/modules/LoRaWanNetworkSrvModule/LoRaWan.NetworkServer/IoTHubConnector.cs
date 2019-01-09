@@ -151,10 +151,17 @@ namespace LoRaWan.NetworkServer
                 {
                     string partConnection = createIoTHubConnectionString();
                     string deviceConnectionStr = $"{partConnection}DeviceId={DevEUI};SharedAccessKey={PrimaryKey}";
-
-                    deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Amqp_Tcp_Only);
-
-                   
+                    
+                    if (configuration.LeafDeviceProtocol.ToUpper() == "AMQP_TCP_ONLY")
+                    {
+                        deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Amqp_Tcp_Only);
+                        Logger.Log(DevEUI, $"device client created using Amqp_Tcp_Only", Logger.LoggingLevel.Info);
+                    }
+                    else
+                    {
+                        deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Mqtt_Tcp_Only);
+                        Logger.Log(DevEUI, $"device client created using Mqtt_Tcp_Only", Logger.LoggingLevel.Info);
+                    }
 
                     //we set the retry only when sending msgs                    
                     setRetry(false);

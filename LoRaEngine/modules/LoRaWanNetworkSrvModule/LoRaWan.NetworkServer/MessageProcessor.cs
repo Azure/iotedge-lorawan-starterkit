@@ -260,7 +260,13 @@ namespace LoRaWan.NetworkServer
                         {
                             //put it back to the queue for the next pickup
                             //todo ronnie check abbandon logic especially in case of mqtt
-                            _ = await loraDeviceInfo.HubSender.AbandonAsync(secondC2dMsg);
+
+                            // Don't call AbandonAsync when Mqtt_Tcp_Only is used.
+                            if(configuration.LeafDeviceProtocol.ToUpper() != "MQTT_TCP_ONLY")
+                            {
+                                _ = await loraDeviceInfo.HubSender.AbandonAsync(secondC2dMsg);
+                            }
+
                             //set the fpending flag so the lora device will call us back for the next message
                             fctrl[0] += (int)FctrlEnum.FpendingOrClassB;
                             Logger.Log(loraDeviceInfo.DevEUI, $"Additional C2D messages waiting, setting FPending to 1", Logger.LoggingLevel.Info);
@@ -439,7 +445,11 @@ namespace LoRaWan.NetworkServer
                             //todo ronnie check abbandon logic especially in case of mqtt
                             if (c2dMsg != null)
                             {
-                                _ = await loraDeviceInfo.HubSender.AbandonAsync(c2dMsg);
+                                // Don't call AbandonAsync when Mqtt_Tcp_Only is used.
+                                if(configuration.LeafDeviceProtocol.ToUpper() != "MQTT_TCP_ONLY")
+                                {
+                                    _ = await loraDeviceInfo.HubSender.AbandonAsync(c2dMsg);
+                                }
                             }
 
                             Logger.Log(loraDeviceInfo.DevEUI, $"too late for down message, sending only ACK to gateway", Logger.LoggingLevel.Info);
