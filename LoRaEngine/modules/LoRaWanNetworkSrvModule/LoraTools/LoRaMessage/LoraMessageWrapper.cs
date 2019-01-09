@@ -125,7 +125,6 @@ namespace LoRaTools.LoRaMessage
             {
                 Logger.Log(ConversionHelper.ByteArrayToString(payload.DevAddr.Span.ToArray()), $"{((MType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
             }
-
         }
 
         /// <summary>
