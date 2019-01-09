@@ -48,8 +48,8 @@ namespace LoRaWan.NetworkServer
         private int pullAckRemoteLoRaAggregatorPort = 0;
         UdpClient udpClient;
 
-        SemaphoreSlim randomLock = new SemaphoreSlim(1);
-        Random random = new Random();
+        readonly SemaphoreSlim randomLock = new SemaphoreSlim(1);
+        readonly Random random = new Random();
         private async Task<byte[]> GetTokenAsync()
         {
             try
@@ -150,32 +150,40 @@ namespace LoRaWan.NetworkServer
                         }
                         SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PULL_ACK, receivedResults.RemoteEndPoint);
                         break;
+
                     //This is a PUSH_DATA (upstream message).
                     case PhysicalIdentifier.PUSH_DATA:
                         SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PUSH_ACK, receivedResults.RemoteEndPoint);
+
                         // Message processing runs in the background
-#pragma warning disable CS4014
-                        Task.Run(async () =>
+                        var remoteEndPointAddress = receivedResults.RemoteEndPoint.Address.ToString();
+                        _ = Task.Run(async () =>
                         {
                             List<Rxpk> messageRxpks = Rxpk.CreateRxpk(receivedResults.Buffer);
-                            if (messageRxpks != null  )
+                            if (messageRxpks != null)
                             {
-                                if (messageRxpks.Count == 1 )
+                                if (messageRxpks.Count == 1)
                                 {
                                      await ProcessRxpkAsync(receivedResults.RemoteEndPoint.Address.ToString(), messageRxpks[0], startTimeProcessing);
                                 }
-                                else if(messageRxpks.Count > 1) {                    
-                                   for (int i = 0; i< messageRxpks.Count-1;i++)
-                                    {
-                                         ProcessRxpkAsync(receivedResults.RemoteEndPoint.Address.ToString(), messageRxpks[i], startTimeProcessing);
-                                    }
-                                    await ProcessRxpkAsync(receivedResults.RemoteEndPoint.Address.ToString(), messageRxpks[messageRxpks.Count-1], startTimeProcessing);
+                                else if (messageRxpks.Count > 1)
+                                {
+                                   Task toWait = null;
+                                   for (int i = 0; i< messageRxpks.Count;i++)
+                                   {
+
+                                        var t = ProcessRxpkAsync(remoteEndPointAddress, messageRxpks[i], startTimeProcessing);
+                                        if (toWait == null)
+                                            toWait = t;
+                                   }
+
+                                   await toWait;
                                 }
                             }
                         });
-#pragma warning restore CS4014
 
                         break;
+
                     //This is a ack to a transmission we did previously
                     case PhysicalIdentifier.TX_ACK:
                         if (receivedResults.Buffer.Length == 12)
@@ -192,21 +200,45 @@ namespace LoRaWan.NetworkServer
                             , LoggingLevel.Error);
                         }
                         break;
+
                     default:
                         Logger.Log("UDP", "Unknown packet type or length being received", LoggingLevel.Error);
                         break;
-
-
                 }
-
-
             }
-        } 
+        }
+
+
+#if USE_MESSAGE_PROCESSOR_V2
+        private async Task ProcessRxpkAsync(String remoteIp, Rxpk rxpk, DateTime startTimeProcessing)
+        {
+            try
+            {                
+                var downstreamMessage = await messageProcessorV2.ProcessMessageAsync(rxpk, startTimeProcessing);
+                if (downstreamMessage?.txpk != null)
+                {
+                    var jsonMsg = JsonConvert.SerializeObject(downstreamMessage);
+                    var messageByte = Encoding.UTF8.GetBytes(jsonMsg);
+                    var token = await GetTokenAsync();
+                    PhysicalPayload pyld = new PhysicalPayload(token, PhysicalIdentifier.PULL_RESP, messageByte);
+                    await this.UdpSendMessage(pyld.GetMessage(), remoteIp, pullAckRemoteLoRaAggregatorPort);
+                    Logger.Log("UDP", String.Format("message sent with ID {0}",
+                        ConversionHelper.ByteArrayToString(token)),
+                        Logger.LoggingLevel.Full);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error processing the message {ex.Message}, {ex.StackTrace}", Logger.LoggingLevel.Error);
+            }
+
+        }
+#else
         private async Task ProcessRxpkAsync(String remoteIp, Rxpk rxpk, DateTime startTimeProcessing)
         {
             try
             {
-                MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager,  startTimeProcessing);
+                MessageProcessor messageProcessor = new MessageProcessor(this.configuration, this.loraDeviceInfoManager, startTimeProcessing);
                 var downstreamMessage = await messageProcessor.ProcessMessageAsync(rxpk);
                 if (downstreamMessage?.txpk != null)
                 {
@@ -226,6 +258,8 @@ namespace LoRaWan.NetworkServer
             }
 
         }
+#endif
+
 
         private void SendAcknowledgementMessage(UdpReceiveResult receivedResults, byte messageType, IPEndPoint remoteEndpoint)
         {
@@ -402,7 +436,7 @@ namespace LoRaWan.NetworkServer
             return Task.CompletedTask;
         }
 
-        #region IDisposable Support
+#region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
@@ -425,7 +459,7 @@ namespace LoRaWan.NetworkServer
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-        #endregion
+#endregion
     }
 
 }

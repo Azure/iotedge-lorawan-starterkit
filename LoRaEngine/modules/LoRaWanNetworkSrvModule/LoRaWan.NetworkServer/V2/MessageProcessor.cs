@@ -12,6 +12,7 @@ using Microsoft.Azure.Devices.Client;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -59,64 +60,7 @@ namespace LoRaWan.NetworkServer.V2
             // It will take care of seeding ABP devices created here for single gateway scenarios
             this.deviceRegistry.RegisterDeviceInitializer(new FrameCounterLoRaDeviceInitializer(configuration.GatewayID, frameCounterUpdateStrategyFactory));
         }
-
-
-        public class PhysicalPayload
-        {
-            public Rxpk[] GetRxpks() => null;
-        }
-
-        public class Rxpk
-        {
-            public LoRaPayload LoRaPayload { get; }
-
-        }
-
-        public class LoRaPayload
-        {
-            public string DevAddr { get; }
-            public UInt16 NetId { get; }
-            public UInt32 FcntUp { get; internal set; }
-
-            public virtual bool CheckMic(string nwksKey)
-            {
-                return true;
-            }
-
-            public string GetDecryptedPayload(string appSKey)
-            {
-                return string.Empty;
-            }
-        }
-
-        //Not a join message
-        public class LoRaPayloadData : LoRaPayload
-        {
-            IEnumerable GetMacCommands() => null;
-
-            public bool IsConfirmed() => false;
-
-            public bool FPending { get; internal set; }
-
-            internal bool IsUpwardAck()
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        //downJoin
-        public class LoRaPayloadJoinAccept : LoRaPayload
-        {
-
-
-        }
-
-        //up join
-        public class LoRaPayloadJoinRequest : LoRaPayload
-        {
-
-
-        }
+       
 
         LoRaTools.LoRaMessage.LoRaPayloadJoinRequest __WorkaroundGetPayloadJoinRequest(LoRaTools.LoRaPhysical.Rxpk rxpk)
         {
@@ -163,50 +107,45 @@ namespace LoRaWan.NetworkServer.V2
         /// <summary>
         /// Process a raw message
         /// </summary>
-        /// <param name="rawMessage"></param>
+        /// <param name="rxpk"></param>
         /// <param name="startTimeProcessing"></param>
         /// <returns></returns>
-        public async Task<LoRaTools.LoRaPhysical.PktFwdMessage> ProcessMessageAsync(byte[] rawMessage, DateTime startTimeProcessing)
+        public async Task<DownlinkPktFwdMessage> ProcessMessageAsync(Rxpk rxpk, DateTime startTimeProcessing)
         {
-            LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(rawMessage);
-            if (loraMessage.IsLoRaMessage)
+            LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(rxpk);
+            
+            //join message
+            if (loraMessage.LoRaMessageType == LoRaMessageType.JoinRequest)
             {
-                //if (RegionFactory.CurrentRegion == null)
-                //    RegionFactory.Create(loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0]);
-                
-                //join message
-                if (loraMessage.LoRaMessageType == LoRaMessageType.JoinRequest)
-                {
-                    var rxpk = loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0];
-                    return await ProcessJoinRequestAsync(rxpk);
-                }
-                //normal message
-                else if (loraMessage.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
-                {
-                    var rxpk = loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0];
-                    return await ProcessLoRaMessageAsync(rxpk, startTimeProcessing);
-                }
+                return await ProcessJoinRequestAsync(rxpk);
             }
+            //normal message
+            else if (loraMessage.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
+            {
+                return await ProcessLoRaMessageAsync(rxpk, startTimeProcessing);
+            }
+            
             return null;
         }
 
         // Process LoRa message where the payload is of type LoRaPayloadData
-        public Task<LoRaTools.LoRaPhysical.PktFwdMessage> ProcessLoRaMessageAsync(LoRaTools.LoRaPhysical.Rxpk rxpk) => ProcessLoRaMessageAsync(rxpk, DateTime.UtcNow);
+        public Task<DownlinkPktFwdMessage> ProcessLoRaMessageAsync(LoRaTools.LoRaPhysical.Rxpk rxpk) => ProcessLoRaMessageAsync(rxpk, DateTime.UtcNow);
         
         // Process LoRa message where the payload is of type LoRaPayloadData
-        public async Task<LoRaTools.LoRaPhysical.PktFwdMessage> ProcessLoRaMessageAsync(LoRaTools.LoRaPhysical.Rxpk rxpk, DateTime startTime)
+        public async Task<DownlinkPktFwdMessage> ProcessLoRaMessageAsync(LoRaTools.LoRaPhysical.Rxpk rxpk, DateTime startTime)
         {
             var loraPayload = __WorkaroundGetPayloadData(rxpk);
             var devAddr = loraPayload.DevAddr;
 
             if (this.loraRegion == null)
             {
-                this.loraRegion = RegionFactory.Create(rxpk);
-                if (this.loraRegion == null)
+                if (!RegionFactory.TryResolveRegion(rxpk))
                 {
                     Logger.Log(LoRaTools.Utils.ConversionHelper.ByteArrayToString(devAddr), "invalid/unsupported region, current supported regions are (eu and us)", Logger.LoggingLevel.Info);
                     return null;
                 }
+
+                this.loraRegion = RegionFactory.CurrentRegion;
             }
 
             var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion, startTime);
@@ -441,7 +380,7 @@ namespace LoRaWan.NetworkServer.V2
             }
         }
 
-        private PktFwdMessage __WorkaroundCreateConfirmMessage(
+        private DownlinkPktFwdMessage __WorkaroundCreateConfirmMessage(
             Message cloudToDeviceMessage, 
             LoRaDevice loraDeviceInfo, 
             LoRaTools.LoRaPhysical.Rxpk rxpk,
@@ -491,7 +430,7 @@ namespace LoRaWan.NetworkServer.V2
                     Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device message with a Fport of " + fPortValue, Logger.LoggingLevel.Info);
 
                 }
-                Logger.Log(loraDeviceInfo.DevEUI, String.Format("Sending a downstream message with ID {0}",
+                Logger.Log(loraDeviceInfo.DevEUI, string.Format("Sending a downstream message with ID {0}",
                     ConversionHelper.ByteArrayToString(rndToken)),
                     Logger.LoggingLevel.Full);
 
@@ -523,8 +462,8 @@ namespace LoRaWan.NetworkServer.V2
                 reversedDevAddr[i] = srcDevAddr[srcDevAddr.Length - (1 + i)];
             }
 
-            var ackLoRaMessage = new LoRaTools.LoRaMessage.LoRaPayloadData(
-                requestForConfirmedResponse ? LoRaTools.LoRaMessage.LoRaPayloadData.MType.ConfirmedDataDown : LoRaTools.LoRaMessage.LoRaPayloadData.MType.UnconfirmedDataDown,
+            var ackLoRaMessage = new LoRaPayloadData(
+                requestForConfirmedResponse ? LoRaPayloadData.MType.ConfirmedDataDown : LoRaTools.LoRaMessage.LoRaPayloadData.MType.UnconfirmedDataDown,
                 //ConversionHelper.StringToByteArray(requestForConfirmedResponse?"A0":"60"),
                 reversedDevAddr,
                 fctrl,
@@ -571,8 +510,8 @@ namespace LoRaWan.NetworkServer.V2
             }
 
 
-            //todo ronnie should check the device twin preference if using confirmed or unconfirmed down
-            LoRaMessageWrapper ackMessage = new LoRaMessageWrapper(ackLoRaMessage, LoRaMessageType.UnconfirmedDataDown, rndToken, datr, 0, freq, tmst);
+            //todo: check the device twin preference if using confirmed or unconfirmed down
+            var ackMessage = new LoRaMessageWrapper(ackLoRaMessage, LoRaMessageType.UnconfirmedDataDown, datr, 0, freq, tmst);
             return (DownlinkPktFwdMessage)ackMessage.PktFwdPayload;
         }
 
@@ -647,10 +586,17 @@ namespace LoRaWan.NetworkServer.V2
         /// <summary>
         /// Process OTAA join request
         /// </summary>
-        public async Task<LoRaTools.LoRaPhysical.PktFwdMessage> ProcessJoinRequestAsync(LoRaTools.LoRaPhysical.Rxpk rxpk)
+        public async Task<DownlinkPktFwdMessage> ProcessJoinRequestAsync(LoRaTools.LoRaPhysical.Rxpk rxpk)
         {
             if (this.loraRegion == null)
-                this.loraRegion = RegionFactory.Create(rxpk);
+            {
+                if (!RegionFactory.TryResolveRegion(rxpk))
+                {
+                    return null;
+                }
+
+                this.loraRegion = RegionFactory.CurrentRegion;
+            }
 
             var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion);
             using (var processLogger = new ProcessLogger(timeWatcher))
@@ -789,7 +735,7 @@ namespace LoRaWan.NetworkServer.V2
 
 
 
-        LoRaTools.LoRaPhysical.PktFwdMessage __WorkaroundCreateJoinAcceptMessage(
+        DownlinkPktFwdMessage __WorkaroundCreateJoinAcceptMessage(
             ReadOnlyMemory<byte> netId,
             string appKey,
             string devAddr,
@@ -813,9 +759,7 @@ namespace LoRaWan.NetworkServer.V2
                     );
 
             var joinAcceptMessage = new LoRaMessageWrapper(loRaPayloadJoinAccept, LoRaMessageType.JoinAccept, datr, 0, freq, tmst);
-            var jsonMsg = JsonConvert.SerializeObject(joinAcceptMessage.PktFwdPayload);
-
-            return joinAcceptMessage.PktFwdPayload;
+            return (DownlinkPktFwdMessage)joinAcceptMessage.PktFwdPayload;
         }
     }
 }

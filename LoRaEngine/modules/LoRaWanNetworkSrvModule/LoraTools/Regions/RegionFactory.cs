@@ -15,7 +15,7 @@ namespace LoRaTools.Regions
             get; set;
         }
 
-        static public bool TryResolveRegion(Rxpk _rxpk)
+        static public bool TryResolveRegion(Rxpk rxpk)
         {
             //EU863-870
             if (rxpk.freq < 870 && rxpk.freq > 863)
@@ -35,7 +35,7 @@ namespace LoRaTools.Regions
             }
         }
 
-        static Region CreateEU868Region()
+        public static Region CreateEU868Region()
         {
             Region r = new Region(
                 RegionEnum.EU,
@@ -81,7 +81,7 @@ namespace LoRaTools.Regions
             return r;
         }
 
-        static Region CreateUS915Region()
+        public static Region CreateUS915Region()
         {
             Region r = new Region(
                 RegionEnum.US,
