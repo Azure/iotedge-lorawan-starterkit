@@ -49,7 +49,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-           var actual = await messageProcessor.ProcessLoRaMessageAsync(rxpk);
+           var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
             // Expectations
             // 1. Returns null
@@ -77,7 +77,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-           var actual = await messageProcessor.ProcessLoRaMessageAsync(rxpk);
+           var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
             // Expectations
             // 1. Returns null
@@ -96,7 +96,7 @@ namespace LoRaWan.NetworkServer.Test
             var loraDeviceClient = new Mock<ILoRaDeviceClient>();
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
-            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
+            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Returns(Task.FromResult(0));
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
@@ -119,7 +119,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessLoRaMessageAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
             // Expectations
             // 1. Message was sent to IoT Hub
@@ -147,7 +147,7 @@ namespace LoRaWan.NetworkServer.Test
             var loraDeviceClient = new Mock<ILoRaDeviceClient>();
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
-            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
+            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Returns(Task.FromResult(0));
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
@@ -170,7 +170,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessLoRaMessageAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
             // Expectations
             // 1. Message was sent to IoT Hub
@@ -185,6 +185,8 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkMessage = (DownlinkPktFwdMessage)actual;
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.txpk.data));
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.True(payloadDataDown.IsConfirmed());
+            Assert.Equal(LoRaMessageType.ConfirmedDataDown, payloadDataDown.MessageType);
 
             
 
@@ -216,7 +218,7 @@ namespace LoRaWan.NetworkServer.Test
             var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
-            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
+            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Returns(Task.FromResult(0));
 
             loraDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
@@ -242,7 +244,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessLoRaMessageAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
             // Expectations
             // 1. Message was sent to IoT Hub
@@ -275,7 +277,7 @@ namespace LoRaWan.NetworkServer.Test
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
-            var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
 
             // Create Rxpk
             var rxpk = CreateRxpk(payload);
@@ -283,7 +285,7 @@ namespace LoRaWan.NetworkServer.Test
             var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
-            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
+            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Returns(Task.FromResult(0));
 
             loraDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
@@ -315,7 +317,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessLoRaMessageAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
             // Expectations
             // 1. Message was sent to IoT Hub
@@ -331,6 +333,8 @@ namespace LoRaWan.NetworkServer.Test
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.txpk.data));
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.False(payloadDataDown.IsConfirmed());
+            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
             
             // 4. Frame counter up was updated
             Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
@@ -366,7 +370,7 @@ namespace LoRaWan.NetworkServer.Test
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
             // Will send the event to IoT Hub
-            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
+            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Returns(Task.FromResult(0));
 
             // will try to get C2D message
@@ -392,7 +396,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessLoRaMessageAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
             // Expectations
             // 1. Message was sent to IoT Hub

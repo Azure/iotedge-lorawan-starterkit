@@ -27,10 +27,10 @@ namespace LoRaWan.NetworkServer.V2
         /// <summary>
         /// Sends a telemetry/event
         /// </summary>
-        /// <param name="messageBody"></param>
+        /// <param name="payload"></param>
         /// <param name="properties"></param>
         /// <returns></returns>
-        Task SendEventAsync(string messageBody, Dictionary<string, string> properties);
+        Task SendEventAsync(object payload, Dictionary<string, string> properties);
 
         /// <summary>
         /// Updates the device reported properties

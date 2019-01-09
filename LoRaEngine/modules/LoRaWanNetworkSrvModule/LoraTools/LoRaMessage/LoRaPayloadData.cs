@@ -7,6 +7,7 @@ using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace LoRaTools.LoRaMessage
@@ -28,6 +29,54 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadData : LoRaPayload
     {
+        /// <summary>
+        /// Gets the LoRa message type
+        /// </summary>
+        public LoRaMessageType MessageType => (LoRaMessageType)(RawMessage[0] >> 5);
+
+
+        /// <summary>
+        /// Gets the LoRa payload fport as value
+        /// </summary>
+        public byte GetFPort()
+        {
+            byte fportUp = 0;
+            if (Fport.Span.Length > 0)
+            {
+                fportUp = (byte)Fport.Span[0];
+            }
+
+            return fportUp;
+        }  
+
+        /// <summary>
+        /// Gets the LoRa payload frame counter
+        /// </summary>
+        public UInt16 GetFcnt() => MemoryMarshal.Read<UInt16>(Fcnt.Span); 
+
+        /// <summary>
+        /// Gets the DevAdd netID
+        /// </summary>
+        public byte GetNetID() => (byte)(DevAddr.Span[0] & 0b01111111);
+        
+
+
+
+        /// <summary>
+        /// Gets if the payload is a confirmation
+        /// </summary>
+        public bool IsConfirmed()
+        {
+            var loRaMessageType = MessageType;
+            return loRaMessageType == LoRaMessageType.ConfirmedDataDown || loRaMessageType == LoRaMessageType.ConfirmedDataUp;
+        }
+
+        /// <summary>
+        /// Indicates if the payload is an confirmation message acknowledgement
+        /// </summary>
+        public bool IsUpwardAck() => Frmpayload.Length == 0 && IsConfirmed();
+
+        
         /// <summary>
         /// Frame control octet
         /// </summary>

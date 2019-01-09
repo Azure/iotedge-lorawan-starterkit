@@ -75,33 +75,13 @@ namespace LoRaWan.NetworkServer.V2
             return new LoRaTools.LoRaMessage.LoRaPayloadData(convertedInputMessage);
         }
 
-        byte __WorkaroundGetNetID(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData)
-        {
-            return (byte)(loRaPayloadData.DevAddr.Span[0] & 0b01111111);
-        }
-
-        int __WorkaroundGetFcnt(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => MemoryMarshal.Read<UInt16>(loRaPayloadData.Fcnt.Span);
-
-        byte __WorkaroundGetFPort(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData)
-        {
-            byte fportUp = 0;
-            if (loRaPayloadData.Fport.Span.Length > 0)
-            {
-                fportUp = (byte)loRaPayloadData.Fport.Span[0];
-            }
-
-            return fportUp;
-        }
-
-        LoRaMessageType __WorkaroundGetMessageType(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData)
-        {
-            var messageType = loRaPayloadData.RawMessage[0] >> 5;
-            return (LoRaMessageType)messageType;
-        }
-
-        bool __WorkaroundIsConfirmed(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => __WorkaroundGetMessageType(loRaPayloadData) == LoRaMessageType.ConfirmedDataUp;
-
-        bool __WorkaroundIsUpwardAck(LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData) => __WorkaroundGetMessageType(loRaPayloadData) == LoRaMessageType.ConfirmedDataUp && loRaPayloadData.Frmpayload.Length == 0;
+        
+        /// <summary>
+        /// Process a raw message
+        /// </summary>
+        /// <param name="rxpk"></param>
+        /// <returns></returns>
+        public Task<DownlinkPktFwdMessage> ProcessMessageAsync(Rxpk rxpk) => ProcessMessageAsync(rxpk, DateTime.UtcNow);
 
 
         /// <summary>
@@ -112,12 +92,22 @@ namespace LoRaWan.NetworkServer.V2
         /// <returns></returns>
         public async Task<DownlinkPktFwdMessage> ProcessMessageAsync(Rxpk rxpk, DateTime startTimeProcessing)
         {
-            LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(rxpk);
+            var loraMessage = new LoRaMessageWrapper(rxpk);
+
+            if (this.loraRegion == null)
+            {
+                if (!RegionFactory.TryResolveRegion(rxpk))
+                {
+                    return null;
+                }
+
+                this.loraRegion = RegionFactory.CurrentRegion;
+            }
             
             //join message
             if (loraMessage.LoRaMessageType == LoRaMessageType.JoinRequest)
             {
-                return await ProcessJoinRequestAsync(rxpk);
+                return await ProcessJoinRequestAsync(rxpk, startTimeProcessing);
             }
             //normal message
             else if (loraMessage.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
@@ -128,30 +118,17 @@ namespace LoRaWan.NetworkServer.V2
             return null;
         }
 
-        // Process LoRa message where the payload is of type LoRaPayloadData
-        public Task<DownlinkPktFwdMessage> ProcessLoRaMessageAsync(LoRaTools.LoRaPhysical.Rxpk rxpk) => ProcessLoRaMessageAsync(rxpk, DateTime.UtcNow);
         
         // Process LoRa message where the payload is of type LoRaPayloadData
-        public async Task<DownlinkPktFwdMessage> ProcessLoRaMessageAsync(LoRaTools.LoRaPhysical.Rxpk rxpk, DateTime startTime)
+        async Task<DownlinkPktFwdMessage> ProcessLoRaMessageAsync(LoRaTools.LoRaPhysical.Rxpk rxpk, DateTime startTime)
         {
             var loraPayload = __WorkaroundGetPayloadData(rxpk);
-            var devAddr = loraPayload.DevAddr;
-
-            if (this.loraRegion == null)
-            {
-                if (!RegionFactory.TryResolveRegion(rxpk))
-                {
-                    Logger.Log(LoRaTools.Utils.ConversionHelper.ByteArrayToString(devAddr), "invalid/unsupported region, current supported regions are (eu and us)", Logger.LoggingLevel.Info);
-                    return null;
-                }
-
-                this.loraRegion = RegionFactory.CurrentRegion;
-            }
+            var devAddr = loraPayload.DevAddr;          
 
             var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion, startTime);
             using (var processLogger = new ProcessLogger(timeWatcher, devAddr))
             {
-                if (!IsValidNetId(__WorkaroundGetNetID(loraPayload)))
+                if (!IsValidNetId(loraPayload.GetNetID()))
                 {
                     //Log("Invalid netid");                    
                     return null;
@@ -171,14 +148,14 @@ namespace LoRaWan.NetworkServer.V2
                 // Add context to logger
                 processLogger.SetDevEUI(loRaDevice.DevEUI);
 
-                var isMultiGateway = string.Equals(loRaDevice.GatewayID, configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
+                var isMultiGateway = !string.Equals(loRaDevice.GatewayID, configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
                 var frameCounterStrategy = isMultiGateway ?
-                    frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy() :
-                    frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy();
+                    frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy() :
+                    frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy();
 
 
-                var payloadFcnt = this.__WorkaroundGetFcnt(loraPayload);
-                var requiresConfirmation = __WorkaroundIsConfirmed(loraPayload);
+                var payloadFcnt = loraPayload.GetFcnt();
+                var requiresConfirmation = loraPayload.IsConfirmed();
 
 
                 using (new LoRaDeviceFrameCounterSession(loRaDevice, frameCounterStrategy))
@@ -189,11 +166,6 @@ namespace LoRaWan.NetworkServer.V2
                     if (loRaDevice.IsABP && loRaDevice.IsABPRelaxedFrameCounter && loRaDevice.FCntUp > 0 && payloadFcnt <= 1)
                     {
                         // known problem when device restarts, starts fcnt from zero
-                        //loraDeviceInfo.SetFcntUp(0);
-                        //loraDeviceInfo.SetFcntDown(0);
-                        //_ = SaveFcnt(loraDeviceInfo, force: true);
-                        //if (loraDeviceInfo.GatewayID == null)
-                        //    await ABPFcntCacheReset(loraDeviceInfo);
                         _ = frameCounterStrategy.ResetAsync(loRaDevice);
                         isRelaxedPayloadFrameCounter = true;
                     }
@@ -209,6 +181,7 @@ namespace LoRaWan.NetworkServer.V2
                         if (requiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
                         {
                             isConfirmedResubmit = true;
+                            Logger.Log(loRaDevice.DevEUI, $"resubmit from confirmed message detected, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", Logger.LoggingLevel.Info);
                         }
                         else
                         {
@@ -245,10 +218,10 @@ namespace LoRaWan.NetworkServer.V2
                             object payloadData = null;
                             // if it is an upward acknowledgement from the device it does not have a payload
                             // This is confirmation from leaf device that he received a C2D confirmed
-                            if (!__WorkaroundIsUpwardAck(loraPayload))
+                            if (!loraPayload.IsUpwardAck())
                             {
                                 var decryptedPayloadData = loraPayload.PerformEncryption(loRaDevice.AppSKey);
-                                var fportUp = __WorkaroundGetFPort(loraPayload);
+                                var fportUp = loraPayload.GetFPort();
 
                                 if (string.IsNullOrEmpty(loRaDevice.SensorDecoder))
                                 {
@@ -304,9 +277,6 @@ namespace LoRaWan.NetworkServer.V2
                     // if message is received after timeout, keep it in loraDeviceInfo and return the next call
                     var cloudToDeviceMessage = await GetAndValidateCloudToDeviceMessageAsync(loRaDevice, timeToSecondWindow - LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessage);
 
-                    //var resultPayloadData = new LoRaPayloadData();
-                    //loraPayload.IsConfirmed() ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown);
-
                     // Flag indicating if there is another C2D message waiting
                     var fpending = false;
                     if (cloudToDeviceMessage != null)
@@ -330,13 +300,6 @@ namespace LoRaWan.NetworkServer.V2
                                 _ = loRaDevice.AbandonCloudToDeviceMessageAsync(additionalMsg);
                             }
                         }
-
-                        // prepare message to device
-                        //returnPayloadData.SetData(c2dMsg.Body, loraDeviceInfo.DevAddr, loraDeviceInfo.AppSKey);
-                        //returnPayloadData.FportDown = (byte)(c2dMsg.Properties["fport"]);
-                        //if (c2dMsg.Properties["confirmed"] == "true")
-                        //    returnPayloadData.SetConfirmed();
-
                     }
 
 
@@ -393,12 +356,12 @@ namespace LoRaWan.NetworkServer.V2
 
             //default fport
             byte[] fctrl = new byte[1] { 0 };
-            if (__WorkaroundIsConfirmed(loRaPayloadData))
+            if (loRaPayloadData.IsConfirmed())
             {
                 fctrl[0] = (int)FctrlEnum.Ack;
             }
             var fport = new byte[1] { 1 };
-            var requestForConfirmedResponse = false;
+            var requiresDeviceConfirmation = false;
             byte[] macbytes = null;
 
             byte[] rndToken = new byte[2];
@@ -418,7 +381,7 @@ namespace LoRaWan.NetworkServer.V2
 
                 if (cloudToDeviceMessage.Properties.TryGetValueCaseInsensitive("confirmed", out var confirmedValue) && confirmedValue.Equals("true", StringComparison.OrdinalIgnoreCase))
                 {
-                    requestForConfirmedResponse = true;
+                    requiresDeviceConfirmation = true;
                     Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device message requesting a confirmation", Logger.LoggingLevel.Info);
 
                 }
@@ -446,7 +409,7 @@ namespace LoRaWan.NetworkServer.V2
                 Array.Reverse(bytesC2dMsg);
             }
 
-            if (requestForConfirmedResponse || fpending)
+            if (requiresDeviceConfirmation || fpending)
             {
                 fctrl[0] += (int)FctrlEnum.FpendingOrClassB;
             }
@@ -462,9 +425,9 @@ namespace LoRaWan.NetworkServer.V2
                 reversedDevAddr[i] = srcDevAddr[srcDevAddr.Length - (1 + i)];
             }
 
+            var msgType = loRaPayloadData.IsConfirmed() ? LoRaPayloadData.MType.ConfirmedDataDown : LoRaPayloadData.MType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
-                requestForConfirmedResponse ? LoRaPayloadData.MType.ConfirmedDataDown : LoRaTools.LoRaMessage.LoRaPayloadData.MType.UnconfirmedDataDown,
-                //ConversionHelper.StringToByteArray(requestForConfirmedResponse?"A0":"60"),
+                msgType,
                 reversedDevAddr,
                 fctrl,
                 BitConverter.GetBytes(fcntDown),
@@ -510,8 +473,9 @@ namespace LoRaWan.NetworkServer.V2
             }
 
 
-            //todo: check the device twin preference if using confirmed or unconfirmed down
-            var ackMessage = new LoRaMessageWrapper(ackLoRaMessage, LoRaMessageType.UnconfirmedDataDown, datr, 0, freq, tmst);
+            //todo: check the device twin preference if using confirmed or unconfirmed down    
+            var loRaMessageType = (msgType == LoRaPayloadData.MType.ConfirmedDataDown) ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
+            var ackMessage = new LoRaMessageWrapper(ackLoRaMessage, loRaMessageType, datr, 0, freq, tmst);
             return (DownlinkPktFwdMessage)ackMessage.PktFwdPayload;
         }
 
@@ -558,22 +522,27 @@ namespace LoRaWan.NetworkServer.V2
         }
 
         // Sends device telemetry data to IoT Hub
-        private async Task SendDeviceEventAsync(LoRaDevice loRaDevice, LoRaTools.LoRaPhysical.Rxpk rxpk, object payloadData, LoRaOperationTimeWatcher timeWatcher)
+        private async Task SendDeviceEventAsync(LoRaDevice loRaDevice, Rxpk rxpk, object payloadData, LoRaOperationTimeWatcher timeWatcher)
         {            
-            var deviceTelemetry = new DeviceTelemetry(rxpk);
+            var deviceTelemetry = new LoRaDeviceTelemetry(rxpk);
             deviceTelemetry.DeviceEUI = loRaDevice.DevEUI;
             deviceTelemetry.GatewayID = this.configuration.GatewayID;
             deviceTelemetry.Edgets = (long)((timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds);
 
             if (payloadData != null)
             {
-                deviceTelemetry.data = JsonConvert.SerializeObject(payloadData, Formatting.None);
+                deviceTelemetry.data = payloadData;
             }
 
-            var messageJson = JsonConvert.SerializeObject(deviceTelemetry, Formatting.None);
-            await loRaDevice.SendEventAsync(messageJson);
+            await loRaDevice.SendEventAsync(deviceTelemetry);
 
-            Logger.Log(loRaDevice.DevEUI, $"message '{deviceTelemetry.data}' sent to hub", Logger.LoggingLevel.Info);
+            var payloadAsRaw = deviceTelemetry.data as string;
+            if (payloadAsRaw == null && deviceTelemetry.data != null)
+            {
+                payloadAsRaw = JsonConvert.SerializeObject(deviceTelemetry.data, Formatting.None);
+            }
+
+            Logger.Log(loRaDevice.DevEUI, $"message '{payloadAsRaw}' sent to hub", Logger.LoggingLevel.Info);
         }
 
 
@@ -586,19 +555,9 @@ namespace LoRaWan.NetworkServer.V2
         /// <summary>
         /// Process OTAA join request
         /// </summary>
-        public async Task<DownlinkPktFwdMessage> ProcessJoinRequestAsync(LoRaTools.LoRaPhysical.Rxpk rxpk)
-        {
-            if (this.loraRegion == null)
-            {
-                if (!RegionFactory.TryResolveRegion(rxpk))
-                {
-                    return null;
-                }
-
-                this.loraRegion = RegionFactory.CurrentRegion;
-            }
-
-            var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion);
+        async Task<DownlinkPktFwdMessage> ProcessJoinRequestAsync(Rxpk rxpk, DateTime startTimeProcessing)
+        {        
+            var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion, startTimeProcessing);
             using (var processLogger = new ProcessLogger(timeWatcher))
             {
                 var joinReq = __WorkaroundGetPayloadJoinRequest(rxpk);
@@ -622,7 +581,7 @@ namespace LoRaWan.NetworkServer.V2
                 if (loRaDevice == null)
                     return null;
 
-                if (!joinReq.CheckMic(loRaDevice.AppKey))
+                if (string.IsNullOrEmpty(loRaDevice.AppKey) || !joinReq.CheckMic(loRaDevice.AppKey))
                 {
                     Logger.Log(devEUI, $"join request MIC invalid", Logger.LoggingLevel.Info);
                 }
@@ -706,6 +665,7 @@ namespace LoRaWan.NetworkServer.V2
                     }
                 }
 
+                loRaDevice.IsOurDevice = true;
                 this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice);
 
                 // Build join accept downlink message

@@ -71,7 +71,5 @@ namespace LoRaWan.NetworkServer.V2
                 throw;
             }
         }
-
-        public Task InitializeAsync(LoRaDevice loraDevice) => loraDevice.InitializeAsync();
     }
 }

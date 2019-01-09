@@ -23,6 +23,7 @@ namespace LoRaTools.LoRaMessage
         RFU,
         Proprietary
     }
+
     /// <summary>
     /// class exposing Physical payload & LoRa Payload Message
     /// </summary>

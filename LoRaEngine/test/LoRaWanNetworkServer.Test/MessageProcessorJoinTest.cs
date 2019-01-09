@@ -1,4 +1,5 @@
 ﻿using LoRaTools.LoRaMessage;
+using LoRaTools.Utils;
 using LoRaWan.NetworkServer.V2;
 using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices.Shared;
@@ -47,10 +48,8 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.Null(actual);
-
-            // TODO: verify what is inside the txpk
         }
 
 
@@ -97,7 +96,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.NotNull(actual);
 
             var pktFwdMessage = actual.GetPktFwdMessage();
@@ -109,6 +108,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(joinAccept.AppNonce.ToArray(), ReversedByteArray(loRaDevice.AppNonce).ToArray());
             Assert.NotEmpty(loRaDevice.NwkSKey);
             Assert.NotEmpty(loRaDevice.AppSKey);
+            Assert.True(loRaDevice.IsOurDevice);
 
             // Device frame counts were reset
             Assert.Equal(0, loRaDevice.FCntDown);
@@ -163,7 +163,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.Null(actual);
 
             // Device frame counts were not modified
@@ -208,7 +208,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.Null(actual);
 
 
@@ -249,7 +249,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.Null(actual);
 
 
@@ -332,9 +332,10 @@ namespace LoRaWan.NetworkServer.Test
                 payloadDecoder.Object
                 );
 
-            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
-            Assert.NotNull(actual);
-            
+            var downlinkMessage = await messageProcessor.ProcessMessageAsync(rxpk);
+            Assert.NotNull(downlinkMessage);
+            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkMessage.txpk.data), simulatedDevice.LoRaDevice.AppKey);
+            Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));            
 
             // check that the device is in cache
             Assert.True(memoryCache.TryGetValue<LoRaDeviceRegistry.DevEUIDeviceDictionary>(afterJoinDevAddr, out var cachedDevices));
@@ -342,6 +343,16 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(afterJoinAppSKey, cachedDevice.AppSKey);
             Assert.Equal(afterJoinNwkSKey, cachedDevice.NwkSKey);
             Assert.Equal(afterJoinDevAddr, cachedDevice.DevAddr);
+            Assert.True(cachedDevice.IsOurDevice);
+            if (deviceGatewayID == null)
+                Assert.Null(cachedDevice.GatewayID);
+            else
+                Assert.Equal(deviceGatewayID, cachedDevice.GatewayID);
+
+            // fcnt is restarted
+            Assert.Equal(0, cachedDevice.FCntUp);
+            Assert.Equal(0, cachedDevice.FCntDown);
+            Assert.False(cachedDevice.HasFrameCountChanges);
         }
     }
 }

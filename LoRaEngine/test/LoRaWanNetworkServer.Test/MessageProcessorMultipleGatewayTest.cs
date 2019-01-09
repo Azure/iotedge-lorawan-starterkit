@@ -35,13 +35,21 @@ namespace LoRaWan.NetworkServer.Test
 
             // Create Rxpk
             var rxpk = CreateRxpk(payload);
-
-            var loraDeviceClient = new Mock<ILoRaDeviceClient>();
-            var loraDevice1 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
-            var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
-
-            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
+        
+            var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            
+            // 2 messages will be sent
+            loraDeviceClient.SetupSequence(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .Returns(Task.FromResult(0))
                 .Returns(Task.FromResult(0));
+
+            // cloud to device messages will be checked twice            
+            loraDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null)
+                .ReturnsAsync((Message)null);            
+
+            var loraDevice1 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
+            var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);            
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -68,7 +76,7 @@ namespace LoRaWan.NetworkServer.Test
                 );
 
             var messageProcessor2 = new LoRaWan.NetworkServer.V2.MessageProcessor(
-                this.ServerConfiguration,
+                new NetworkServerConfiguration() { GatewayID = "test-gateway-2" },
                 this.loRaDeviceRegistry2.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
                 payloadDecoder.Object
@@ -78,15 +86,14 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0, loraDevice1.FCntUp);
             Assert.Equal(0, loraDevice2.FCntUp);
 
-            var t1 = messageProcessor1.ProcessLoRaMessageAsync(rxpk);
-            var t2 = messageProcessor2.ProcessLoRaMessageAsync(rxpk);
+            var t1 = messageProcessor1.ProcessMessageAsync(rxpk);
+            var t2 = messageProcessor2.ProcessMessageAsync(rxpk);
 
             await Task.WhenAll(t1, t2);
 
             // Expectations
             // 1. Message was sent to IoT Hub twice
             loraDeviceClient.VerifyAll();
-            loraDeviceClient.Verify(x => x.SendEventAsync(It.IsAny<string>(), null), Times.Exactly(2));
 
             // 2. Single gateway frame counter strategy was used
             this.FrameCounterUpdateStrategyFactory.VerifyAll();
