@@ -58,7 +58,7 @@ namespace LoRaWan.NetworkServer.V2
         public void RegisterDeviceInitializer(ILoRaDeviceInitializer initializer) => this.initializers.Add(initializer);
 
         public async Task<LoRaDevice> GetDeviceForPayloadAsync(LoRaPayloadData loraPayload)
-        {
+        {            
             var devAddr = ConversionHelper.ByteArrayToString(loraPayload.DevAddr.ToArray());
             var devicesMatchingDevAddr = this.cache.GetOrCreate<DevEUIDeviceDictionary>(devAddr, (cacheEntry) => {
                 cacheEntry.SlidingExpiration = TimeSpan.FromDays(1);
@@ -72,15 +72,21 @@ namespace LoRaWan.NetworkServer.V2
                 var matchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, loraPayload));
                 if (matchingDevice != null)
                 {
-                    Logger.Log(devAddr, "device in cache", Logger.LoggingLevel.Info);
-                    return matchingDevice;
-                }
+                    if (matchingDevice.IsOurDevice)
+                    {
+                        Logger.Log(devAddr, "device in cache", Logger.LoggingLevel.Info);
+                        return matchingDevice;
+                    }
+                    else
+                    {
+                        Logger.Log(matchingDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
+                        return null;
+                    }
+                }                
             }
 
             // If device was not found, search in the device API, updating local cache
-            var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(
-                gatewayId: this.configuration.GatewayID,
-                devAddr: devAddr);
+            var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(devAddr: devAddr);
 
             if (searchDeviceResult.Devices != null)
             {
@@ -91,6 +97,7 @@ namespace LoRaWan.NetworkServer.V2
                     {
                         // Calling initialize async here to avoid making async calls in the concurrent dictionary
                         await loRaDevice.InitializeAsync();
+                        loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
 
                         // once added, call initializers
                         foreach (var initializer in this.initializers)
@@ -104,23 +111,33 @@ namespace LoRaWan.NetworkServer.V2
                         // If we continue we can cache for later usage, but then do it in a new thread
                         if (IsValidDeviceForPayload(loRaDevice, loraPayload))
                         {
+                            if (!loRaDevice.IsOurDevice)
+                            {
+                                Logger.Log(loRaDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
+                                return null;
+                            }
+                            
                             return loRaDevice;
                         }
                     }
                 }
                 
                 // try now with updated cache
-                return devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, loraPayload));
+                var matchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, loraPayload));
+                if (matchingDevice != null && !matchingDevice.IsOurDevice)
+                {
+                    Logger.Log(matchingDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
+                    return null;
+                }
+
+                return matchingDevice;
             }
 
             return null;
         }
 
         private bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload)
-        {
-            if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(configuration.GatewayID, loRaDevice.GatewayID, StringComparison.InvariantCultureIgnoreCase))
-                return false;
-            
+        {            
             if (string.IsNullOrEmpty(loRaDevice.NwkSKey))
                 return false;
 

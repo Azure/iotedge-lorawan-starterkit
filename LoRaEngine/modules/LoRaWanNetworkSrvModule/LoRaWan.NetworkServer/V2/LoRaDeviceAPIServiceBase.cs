@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer.V2
 
         public abstract Task<bool> ABPFcntCacheResetAsync(string DevEUI);
 
-        public abstract Task<SearchDevicesResult> SearchDevicesAsync(string gatewayId, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null);
+        public abstract Task<SearchDevicesResult> SearchDevicesAsync(string gatewayId = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null);
 
         /// <summary>
         /// Sets the new URL value

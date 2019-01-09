@@ -246,6 +246,7 @@ namespace LoRaWan.NetworkServer.V2
                 {
                     // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
                     // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
+                    var isRelaxedPayloadFrameCounter = false;
                     if (loRaDevice.IsABP && loRaDevice.IsABPRelaxedFrameCounter && loRaDevice.FCntUp > 0 && payloadFcnt <= 1)
                     {
                         // known problem when device restarts, starts fcnt from zero
@@ -255,13 +256,14 @@ namespace LoRaWan.NetworkServer.V2
                         //if (loraDeviceInfo.GatewayID == null)
                         //    await ABPFcntCacheReset(loraDeviceInfo);
                         _ = frameCounterStrategy.ResetAsync(loRaDevice);
+                        isRelaxedPayloadFrameCounter = true;
                     }
 
                     // Reply attack or confirmed reply
                     // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
                     // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
                     var isConfirmedResubmit = false;
-                    if (payloadFcnt <= loRaDevice.FCntUp)
+                    if (!isRelaxedPayloadFrameCounter && payloadFcnt <= loRaDevice.FCntUp)
                     {
                         // Future: Keep track of how many times we acked the confirmed message (4+ times we skip)
                         //if it is confirmed most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub 
@@ -296,7 +298,7 @@ namespace LoRaWan.NetworkServer.V2
 
                     if (!isConfirmedResubmit)
                     {
-                        var validFcntUp = payloadFcnt > loRaDevice.FCntUp;
+                        var validFcntUp = isRelaxedPayloadFrameCounter || (payloadFcnt > loRaDevice.FCntUp);
                         if (validFcntUp)
                         {
                             Logger.Log(loRaDevice.DevEUI, $"valid frame counter, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", Logger.LoggingLevel.Info);
@@ -353,7 +355,8 @@ namespace LoRaWan.NetworkServer.V2
                             loraPayload,
                             timeWatcher,
                             devAddr,
-                            fpending: false
+                            false, /* fpending */
+                            fcntDown
                         );
                     }
 
@@ -362,7 +365,7 @@ namespace LoRaWan.NetworkServer.V2
                     // if message is received after timeout, keep it in loraDeviceInfo and return the next call
                     var cloudToDeviceMessage = await GetAndValidateCloudToDeviceMessageAsync(loRaDevice, timeToSecondWindow - LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessage);
 
-                    var resultPayloadData = new LoRaPayloadData();
+                    //var resultPayloadData = new LoRaPayloadData();
                     //loraPayload.IsConfirmed() ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown);
 
                     // Flag indicating if there is another C2D message waiting
@@ -417,7 +420,8 @@ namespace LoRaWan.NetworkServer.V2
                         loraPayload,
                         timeWatcher,
                         devAddr,
-                        fpending
+                        fpending,
+                        fcntDown
                     );
 
                     if (cloudToDeviceMessage != null)
@@ -444,7 +448,8 @@ namespace LoRaWan.NetworkServer.V2
             LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData, 
             LoRaOperationTimeWatcher timeWatcher,
             ReadOnlyMemory<byte> payloadDevAddr,
-            bool fpending)
+            bool fpending,
+            int fcntDown)
         {
 
             //default fport
@@ -523,7 +528,7 @@ namespace LoRaWan.NetworkServer.V2
                 //ConversionHelper.StringToByteArray(requestForConfirmedResponse?"A0":"60"),
                 reversedDevAddr,
                 fctrl,
-                BitConverter.GetBytes(loraDeviceInfo.FCntDown),
+                BitConverter.GetBytes(fcntDown),
                 macbytes,
                 fport,
                 bytesC2dMsg,

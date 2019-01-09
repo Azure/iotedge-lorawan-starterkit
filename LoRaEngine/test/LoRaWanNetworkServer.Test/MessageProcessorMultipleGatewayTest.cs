@@ -31,14 +31,14 @@ namespace LoRaWan.NetworkServer.Test
         public async Task Multi_OTAA_Unconfirmed_Message_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_Null()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
 
             // Create Rxpk
             var rxpk = CreateRxpk(payload);
 
             var loraDeviceClient = new Mock<ILoRaDeviceClient>();
-            var loraDevice1 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object, isABP: false);
-            var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object, isABP: false);
+            var loraDevice1 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
+            var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
                 .Returns(Task.FromResult(0));
