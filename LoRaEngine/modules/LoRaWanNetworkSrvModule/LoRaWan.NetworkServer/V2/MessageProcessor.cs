@@ -704,6 +704,7 @@ namespace LoRaWan.NetworkServer.V2
                 {
                     Logger.Log(devEUI, $"trying to join not through its linked gateway, ignoring join request", Logger.LoggingLevel.Info);
                     loRaDevice.IsJoinValid = false;
+                    loRaDevice.IsOurDevice = false;
                     return null;
                 }
 

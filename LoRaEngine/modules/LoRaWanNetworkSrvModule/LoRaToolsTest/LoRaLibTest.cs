@@ -33,6 +33,7 @@ namespace LoRaWanTest
             byte[] DevAddr = new byte[4]{
                 2,3,25,128
             };
+            
             var netId = ConversionHelper.ByteArrayToString(NetId);
             LoRaPayloadJoinAccept joinAccept = new LoRaPayloadJoinAccept(netId, "00112233445566778899AABBCCDDEEFF", DevAddr, AppNonce, new byte[] { 0 }, new byte[] { 0 },null);
             Console.WriteLine(BitConverter.ToString(joinAccept.GetByteMessage()));
@@ -46,6 +47,48 @@ namespace LoRaWanTest
             var msg = ConversionHelper.ByteArrayToString(joinAcceptMessage.LoRaPayloadMessage.GetByteMessage());
             Assert.Equal("20493EEB51FBA2116F810EDB3742975142", msg);
 
+        }
+
+        [Fact]
+        public void JoinRequest_Should_Succeed_Mic_Check()
+        {
+            var appEUIText = "0005100000000004";
+            var appEUIBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(appEUIText);
+
+            var devEUIText = "0005100000000004";
+            var devEUIBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(devEUIText);
+
+            var devNonceText = "ABCD";
+            var devNonceBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(devNonceText);
+
+            var appKey = "00000000000000000005100000000004";
+
+            var joinRequest = new LoRaPayloadJoinRequest(appEUIBytes, devEUIBytes, devNonceBytes);
+            joinRequest.SetMic(appKey);
+            Assert.True(joinRequest.CheckMic(appKey));
+
+            
+
+            var rxpk = new LoRaTools.LoRaPhysical.Rxpk()
+            {
+                chan = 7,
+                rfch = 1,
+                freq = 903.700000,
+                stat = 1,
+                modu = "LORA",
+                datr = "SF10BW125",
+                codr = "4/5",
+                rssi = -17,
+                lsnr = 12.0f
+            };
+
+            var data = joinRequest.GetByteMessage();
+            rxpk.data = Convert.ToBase64String(data);
+            rxpk.size = (uint)data.Length;
+
+            byte[] decodedJoinRequestBytes = Convert.FromBase64String(rxpk.data);
+            var decodedJoinRequest = new LoRaTools.LoRaMessage.LoRaPayloadJoinRequest(decodedJoinRequestBytes);
+            Assert.True(decodedJoinRequest.CheckMic(appKey));
         }
 
 
@@ -191,6 +234,9 @@ namespace LoRaWanTest
             //TODO
 
         }
+
+
+        
 
         [Fact]
         public void TestKeys()

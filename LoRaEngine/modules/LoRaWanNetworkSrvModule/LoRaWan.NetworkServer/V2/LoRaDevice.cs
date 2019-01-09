@@ -80,21 +80,16 @@ namespace LoRaWan.NetworkServer.V2
                     this.NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey];
                     this.DevAddr = twin.Properties.Reported[TwinProperty.DevAddr];
                     this.DevNonce = twin.Properties.Reported[TwinProperty.DevNonce];
+                }                
 
-                    //todo check if appkey and appeui is needed in the flow
+                if (twin.Properties.Desired.Contains(TwinProperty.AppEUI))
                     this.AppEUI = twin.Properties.Desired[TwinProperty.AppEUI];
+                if (twin.Properties.Desired.Contains(TwinProperty.AppKey))
                     this.AppKey = twin.Properties.Desired[TwinProperty.AppKey];
-                }
-                else
-                {
-                    Logger.Log(this.DevEUI, $"AppSKey not present neither in Desired or in Reported properties", Logger.LoggingLevel.Error);
-                }
-
                 if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
                     this.GatewayID = twin.Properties.Desired[TwinProperty.GatewayID];
                 if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
                     this.SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder];
-                this.IsOurDevice = true;
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntUp))
                     this.fcntUp = twin.Properties.Reported[TwinProperty.FCntUp];
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntDown))

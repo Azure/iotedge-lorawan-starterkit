@@ -12,6 +12,8 @@ namespace LoRaWan.NetworkServer.Test
 {
     public class MessageProcessorTestBase
     {
+        protected const string ServerGatewayID = "test-gateway";
+
         private long startTime;
         private readonly Rxpk rxpk;
         private readonly byte[] macAddress;
@@ -47,7 +49,7 @@ namespace LoRaWan.NetworkServer.Test
             this.macAddress = Utility.GetMacAddress();
             this.serverConfiguration = new NetworkServerConfiguration
             {
-                GatewayID = "testGateway",
+                GatewayID = ServerGatewayID,
             };
 
             this.frameCounterUpdateStrategy = new Mock<ILoRaDeviceFrameCounterUpdateStrategy>(MockBehavior.Strict);

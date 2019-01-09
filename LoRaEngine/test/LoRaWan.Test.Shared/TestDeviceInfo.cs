@@ -133,8 +133,8 @@ namespace LoRaWan.Test.Shared
             var result = new TestDeviceInfo
             {
                 DeviceID = deviceID.ToString(padding16),
-                AppEUI = padding16,
-                AppKey = padding32,
+                AppEUI = deviceID.ToString(padding16),
+                AppKey = deviceID.ToString(padding32),
                 GatewayID = gatewayID,
                 SensorDecoder = sensorDecoder,                
             };
