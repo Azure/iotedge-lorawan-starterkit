@@ -76,6 +76,9 @@ namespace LoRaWan.Test.Shared
             var join = new LoRaPayloadJoinRequest(AppEUI, DevEUI, devNonce);
             join.SetMic(this.LoRaDevice.AppKey);
 
+            if (!join.CheckMic(this.LoRaDevice.AppKey))
+                throw new Exception("Join mic failed");
+                
             return join;
         }
 

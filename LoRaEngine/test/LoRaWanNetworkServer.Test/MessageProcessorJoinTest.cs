@@ -2,6 +2,7 @@
 using LoRaWan.NetworkServer.V2;
 using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices.Shared;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -255,6 +256,92 @@ namespace LoRaWan.NetworkServer.Test
             // Device frame counts did not changed
             Assert.Equal(10, loRaDevice.FCntDown);
             Assert.Equal(20, loRaDevice.FCntUp);
+        }
+
+
+        [Theory]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID)]
+        [InlineData(null)]
+        public async Task When_Getting_Device_Information_From_Twin_Returns_JoinAccept(string deviceGatewayID)
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
+            var joinRequest = simulatedDevice.CreateJoinRequest();
+
+            // Create Rxpk
+            var rxpk = CreateRxpk(joinRequest);
+
+            var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
+
+            var devNonce = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequest.DevNonce);
+            var devAddr = string.Empty;
+            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var appEUI = simulatedDevice.LoRaDevice.AppEUI;
+
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+
+            // Device twin will be queried
+            var twin = new Twin();
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            twin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
+            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
+            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
+            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            loRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(twin);
+
+            // Device twin will be updated
+            string afterJoinAppSKey = null;
+            string afterJoinNwkSKey = null;
+            string afterJoinDevAddr = null;
+            loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .Callback<TwinCollection>((updatedTwin) => {
+                    afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey];
+                    afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey];
+                    afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
+                })
+                .ReturnsAsync(true);
+            
+
+            // Lora device api will be search by devices with matching deveui,
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+            loRaDeviceApi.Setup(x => x.SearchDevicesAsync(ServerConfiguration.GatewayID, null, devEUI, appEUI, devNonce))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));            
+
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
+
+
+            // Setup frame counter strategy for FrameCounterLoRaDeviceInitializer
+            if (deviceGatewayID == null)
+            {
+                this.FrameCounterUpdateStrategyFactory.Setup(x => x.GetMultiGatewayStrategy())
+                    .Returns(FrameCounterUpdateStrategy.Object);
+            }
+            else
+            {
+                this.FrameCounterUpdateStrategyFactory.Setup(x => x.GetSingleGatewayStrategy())
+                    .Returns(FrameCounterUpdateStrategy.Object);
+            }
+
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyFactory.Object,
+                payloadDecoder.Object
+                );
+
+            var actual = await messageProcessor.ProcessJoinRequestAsync(rxpk);
+            Assert.NotNull(actual);
+            
+
+            // check that the device is in cache
+            Assert.True(memoryCache.TryGetValue<LoRaDeviceRegistry.DevEUIDeviceDictionary>(afterJoinDevAddr, out var cachedDevices));
+            Assert.True(cachedDevices.TryGetValue(devEUI, out var cachedDevice));
+            Assert.Equal(afterJoinAppSKey, cachedDevice.AppSKey);
+            Assert.Equal(afterJoinNwkSKey, cachedDevice.NwkSKey);
+            Assert.Equal(afterJoinDevAddr, cachedDevice.DevAddr);
         }
     }
 }
