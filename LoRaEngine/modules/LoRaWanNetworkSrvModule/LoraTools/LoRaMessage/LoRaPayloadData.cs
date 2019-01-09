@@ -63,7 +63,7 @@ namespace LoRaTools.LoRaMessage
 
 
         /// <summary>
-        /// Gets if the payload is a confirmation
+        /// Gets if the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp)
         /// </summary>
         public bool IsConfirmed()
         {

@@ -22,10 +22,13 @@ namespace LoRaWan.NetworkServer.V2
         NoRetry noRetryPolicy;
         ExponentialBackoff exponentialBackoff;
 
+        // Maximum time waited to receive a message async
+        const int MaxReceiveMessageTimeoutInMs = 400;
+
         public LoRaDeviceClient(string devEUI, DeviceClient deviceClient)
         {
             this.devEUI = devEUI;
-            this.deviceClient = deviceClient;
+            this.deviceClient = deviceClient;            
 
             this.noRetryPolicy = new NoRetry();
             this.exponentialBackoff = new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
@@ -169,9 +172,12 @@ namespace LoRaWan.NetworkServer.V2
             {
                 deviceClient.OperationTimeoutInMilliseconds = 1500;
 
-                SetRetry(true);
+                SetRetry(true);                
 
-                Logger.Log(this.devEUI, $"checking c2d message", Logger.LoggingLevel.Full);
+                if (timeout.TotalMilliseconds > MaxReceiveMessageTimeoutInMs)
+                    timeout = TimeSpan.FromMilliseconds(MaxReceiveMessageTimeoutInMs);
+
+                Logger.Log(this.devEUI, $"checking c2d message for {timeout}", Logger.LoggingLevel.Full);
 
                 Message msg = await deviceClient.ReceiveAsync(timeout);
 

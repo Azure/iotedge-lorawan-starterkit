@@ -181,7 +181,12 @@ namespace LoRaWan.NetworkServer.V2
             var matchingDeviceInfo = searchDeviceResult.Devices[0];
             var loRaDevice = this.deviceFactory.Create(matchingDeviceInfo);
             if (loRaDevice != null)
-                await loRaDevice.InitializeAsync();            
+            {
+                Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", Logger.LoggingLevel.Info);
+                await loRaDevice.InitializeAsync();
+                Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
+            }
+
 
             return loRaDevice;
         }

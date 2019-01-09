@@ -185,8 +185,8 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkMessage = (DownlinkPktFwdMessage)actual;
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.txpk.data));
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-            Assert.True(payloadDataDown.IsConfirmed());
-            Assert.Equal(LoRaMessageType.ConfirmedDataDown, payloadDataDown.MessageType);
+            Assert.False(payloadDataDown.IsConfirmed());
+            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
 
             
 

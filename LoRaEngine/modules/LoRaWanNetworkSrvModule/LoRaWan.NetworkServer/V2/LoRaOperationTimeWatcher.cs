@@ -37,6 +37,12 @@ namespace LoRaWan.NetworkServer.V2
         /// </summary>
         public static TimeSpan ExpectedTimeToCheckCloudToDeviceMessage => TimeSpan.FromMilliseconds(200);
 
+        /// <summary>
+        /// Returns the expected time required to check for cloud to device messages and package a response
+        /// 400ms
+        /// </summary>
+        public static TimeSpan ExpectedTimeToCheckCloudToDeviceMessagePackageAndSendMessage => TimeSpan.FromMilliseconds(400);
+
         public LoRaOperationTimeWatcher(Region loraRegion) : this(loraRegion, DateTimeOffset.UtcNow)
         {
         }
@@ -54,9 +60,8 @@ namespace LoRaWan.NetworkServer.V2
         public TimeSpan GetRemainingTimeToReceiveSecondWindow(LoRaDevice loRaDevice)
         {
             var timePassed = (DateTimeOffset.UtcNow - this.startTime);
-            var receiveDelay1 = loRaDevice.ReceiveDelay1 ?? (int)this.loraRegion.receive_delay1;
             var receiveDelay2 = loRaDevice.ReceiveDelay2 ?? (int)this.loraRegion.receive_delay2;
-            return TimeSpan.FromSeconds(receiveDelay1 + receiveDelay2).Subtract(timePassed);
+            return TimeSpan.FromSeconds(receiveDelay2).Subtract(timePassed);
         }
 
         bool InTimeForReceiveFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed)
@@ -67,9 +72,8 @@ namespace LoRaWan.NetworkServer.V2
 
         bool InTimeForReceiveSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed)
         {
-            var receiveDelay1 = loRaDevice.ReceiveDelay1 ?? (int)this.loraRegion.receive_delay1;
             var receiveDelay2 = loRaDevice.ReceiveDelay2 ?? (int)this.loraRegion.receive_delay2;
-            return elapsed.TotalSeconds < (receiveDelay1 + receiveDelay2);
+            return elapsed.TotalSeconds < (receiveDelay2);
         }
 
         /// <summary>
