@@ -66,15 +66,19 @@ namespace LoRaWan.NetworkServer.V2
       
 
 
-        public override async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayId, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null)
+        public override async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayId = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = new StringBuilder();
             url.Append(this.URL)
                 .Append("GetDevice?code=")
-                .Append(this.AuthCode)
-                .Append("&GatewayId=")
-                .Append(gatewayId);
+                .Append(this.AuthCode);
+
+            if (!string.IsNullOrEmpty(gatewayId))
+            {   
+                url.Append("&GatewayId=")
+                    .Append(gatewayId);
+            }
 
             if (!string.IsNullOrEmpty(devAddr))
             {

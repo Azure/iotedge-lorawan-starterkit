@@ -26,7 +26,6 @@ namespace LoRaWan.Test.Shared
         public int FrmCntUp { get; set; }
         public int FrmCntDown { get; set; }
 
-        private byte[] fCnt = new byte[2];
         public PhysicalPayload LastPayload { get; set; }
         public string DevNonce { get; private set; }
         public bool IsJoined => !string.IsNullOrEmpty(LoRaDevice.DevAddr);
@@ -43,11 +42,7 @@ namespace LoRaWan.Test.Shared
 
             FrmCntDown = frmCntDown;
             FrmCntUp = frmCntUp;
-        
-            //can store 32 bit but only 16 are sent
-            var fcnt32 = BitConverter.GetBytes(FrmCntDown);
-            fCnt[0] = fcnt32[0];
-            fCnt[1] = fcnt32[1];
+    
 
             if (!this.IsJoined)
                 this.joinFinished = new SemaphoreSlim(0);
@@ -90,13 +85,15 @@ namespace LoRaWan.Test.Shared
         /// <param name="data"></param>
         /// <param name="fport"></param>
         /// <returns></returns>
-        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, byte fport = 1)
+        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, int? fcnt = null, byte fport = 1)
         {
             byte[] devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
             byte[] fCtrl = new byte[] { 0x80 };
-            // byte[] _FCnt = new byte[] { 0x00, 0x00 };
-            fCnt[0]++;
+
+            fcnt = fcnt ?? this.FrmCntUp + 1;
+            var fcntBytes = BitConverter.GetBytes(fcnt.Value);
+
             byte[] fopts = null;
             byte[] fPort = new byte[] { fport };           
             //TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
@@ -104,7 +101,7 @@ namespace LoRaWan.Test.Shared
             Array.Reverse(payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            var standardData = new LoRaPayloadData(LoRaPayloadData.MType.UnconfirmedDataUp, devAddr, fCtrl, fCnt, fopts, fPort, payload, direction);
+            var standardData = new LoRaPayloadData(LoRaPayloadData.MType.UnconfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
             // Need to create Fops. If not, then MIC won't be correct
             standardData.Fopts = new byte[0];
             // First encrypt the data
@@ -121,13 +118,15 @@ namespace LoRaWan.Test.Shared
         /// <param name="data"></param>
         /// <param name="fport"></param>
         /// <returns></returns>
-        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, byte fport = 1)
+        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, int? fcnt = null, byte fport = 1)
         {
             byte[] devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
             byte[] fCtrl = new byte[] { 0x80 };
-            // byte[] _FCnt = new byte[] { 0x00, 0x00 };
-            fCnt[0]++;
+            
+            fcnt = fcnt ?? this.FrmCntUp + 1;
+            var fcntBytes = BitConverter.GetBytes(fcnt.Value);
+
             byte[] fopts = null;
             byte[] fPort = new byte[] { fport };           
             //TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
@@ -135,7 +134,7 @@ namespace LoRaWan.Test.Shared
             Array.Reverse(payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            var standardData = new LoRaPayloadData(LoRaPayloadData.MType.ConfirmedDataUp, devAddr, fCtrl, fCnt, fopts, fPort, payload, direction);
+            var standardData = new LoRaPayloadData(LoRaPayloadData.MType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
             // Need to create Fops. If not, then MIC won't be correct
             standardData.Fopts = new byte[0];
             // First encrypt the data

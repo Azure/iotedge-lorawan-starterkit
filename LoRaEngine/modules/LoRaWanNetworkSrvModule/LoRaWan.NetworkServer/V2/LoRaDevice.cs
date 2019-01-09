@@ -18,7 +18,8 @@ namespace LoRaWan.NetworkServer.V2
     {
         public string DevAddr { get; set; }
 
-        public bool IsABP { get; set; }
+        //public bool IsABP { get; set; }
+        public bool IsABP => string.IsNullOrEmpty(this.AppEUI);
 
         public string DevEUI { get; set; }
         public string AppKey { get; set; }
@@ -71,7 +72,6 @@ namespace LoRaWan.NetworkServer.V2
                     this.AppSKey = twin.Properties.Desired[TwinProperty.AppSKey];
                     this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey];
                     this.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr];
-                    this.IsABP = true;
                 }                
                 else if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
                 {

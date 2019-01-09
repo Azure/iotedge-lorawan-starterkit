@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
     public class MessageProcessor : IDisposable
     {
         // Defines Cloud to device message property containing fport value
-        const string FPORT_MSG_PROPERTY_KEY = "fport";
+        public const string FPORT_MSG_PROPERTY_KEY = "fport";
 
         // Fport value reserved for mac commands
         const byte LORA_FPORT_RESERVED_MAC_MSG = 0;

@@ -8,6 +8,8 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 using Moq;
 using System;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -92,7 +94,7 @@ namespace LoRaWan.NetworkServer.Test
             var rxpk = CreateRxpk(payload);
 
             var loraDeviceClient = new Mock<ILoRaDeviceClient>();
-            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object, isABP: false);
+            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
                 .Returns(Task.FromResult(0));
@@ -143,7 +145,7 @@ namespace LoRaWan.NetworkServer.Test
             var rxpk = CreateRxpk(payload);
 
             var loraDeviceClient = new Mock<ILoRaDeviceClient>();
-            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object, isABP: false);
+            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
                 .Returns(Task.FromResult(0));
@@ -189,24 +191,112 @@ namespace LoRaWan.NetworkServer.Test
             // 4. Frame counter up was updated
             Assert.Equal(1, loraDevice.FCntUp);
 
-            // 5. Frame counter down remains unchanged
+            // 5. Frame counter down was incremented
             Assert.Equal(1, loraDevice.FCntDown);
+            Assert.Equal(1, MemoryMarshal.Read<UInt16>(payloadDataDown.Fcnt.Span));
+
         }
 
         [Fact]
-        public async Task OTAA_Confirmed_Message_With_Fcnt9_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_DownstreamMessage()
+        public async Task OTAA_Unconfirmed_Message_With_FcntUp_10_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_Null()
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID));
-            var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234");
+            const int PayloadFcnt = 10;
+            const int InitialDeviceFcntUp = 9;
+            const int InitialDeviceFcntDown = 20;
+
+            var simulatedDevice = new SimulatedDevice(
+                TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
+                frmCntUp: InitialDeviceFcntUp,
+                frmCntDown: InitialDeviceFcntDown);
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
 
             // Create Rxpk
             var rxpk = CreateRxpk(payload);
 
-            var loraDeviceClient = new Mock<ILoRaDeviceClient>();
-            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object, isABP: false);
+            var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
                 .Returns(Task.FromResult(0));
+
+            loraDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .ReturnsAsync(true);
+
+            loraDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
+
+            this.LoRaDeviceRegistry.Setup(x => x.GetDeviceForPayloadAsync(It.IsAny<LoRaTools.LoRaMessage.LoRaPayloadData>()))
+                .ReturnsAsync(loraDevice);
+
+            // Setup frame counter strategy
+            this.FrameCounterUpdateStrategyFactory.Setup(x => x.GetSingleGatewayStrategy())
+                .Returns(new SingleGatewayFrameCounterUpdateStrategy());
+
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                this.LoRaDeviceRegistry.Object,
+                this.FrameCounterUpdateStrategyFactory.Object,
+                payloadDecoder.Object
+                );
+
+            var actual = await messageProcessor.ProcessLoRaMessageAsync(rxpk);
+
+            // Expectations
+            // 1. Message was sent to IoT Hub
+            loraDeviceClient.VerifyAll();
+
+            // 2. Single gateway frame counter strategy was used
+            this.FrameCounterUpdateStrategyFactory.VerifyAll();
+
+            // 3. Return nothing
+            Assert.Null(actual);
+           
+            // 4. Frame counter up was updated
+            Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
+
+            // 5. Frame counter down is not changed
+            Assert.Equal(InitialDeviceFcntDown, loraDevice.FCntDown);
+
+            // 6. Frame count has no pending changes
+            Assert.False(loraDevice.HasFrameCountChanges);
+        }
+
+        [Fact]
+        public async Task OTAA_Unconfirmed_With_Cloud_To_Device_Message_Returns_Downstream_Message()
+        {
+            const int PayloadFcnt = 10;
+            const int InitialDeviceFcntUp = 9;
+            const int InitialDeviceFcntDown = 20;
+
+            var simulatedDevice = new SimulatedDevice(
+                TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
+                frmCntUp: InitialDeviceFcntUp,
+                frmCntDown: InitialDeviceFcntDown);
+            var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
+
+            // Create Rxpk
+            var rxpk = CreateRxpk(payload);
+
+            var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
+
+            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
+                .Returns(Task.FromResult(0));
+
+            loraDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .ReturnsAsync(true);
+
+            var cloudToDeviceMessage = new Message(Encoding.UTF8.GetBytes("c2d"));
+            cloudToDeviceMessage.Properties[MessageProcessor.FPORT_MSG_PROPERTY_KEY] = "1";
+            loraDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                .ReturnsAsync(cloudToDeviceMessage)
+                .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
+
+            loraDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+                .ReturnsAsync(true);
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -239,15 +329,18 @@ namespace LoRaWan.NetworkServer.Test
             Assert.IsType<DownlinkPktFwdMessage>(actual);
             var downlinkMessage = (DownlinkPktFwdMessage)actual;
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.txpk.data));
+            payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-
             
-
             // 4. Frame counter up was updated
-            Assert.Equal(1, loraDevice.FCntUp);
+            Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
 
-            // 5. Frame counter down remains unchanged
-            Assert.Equal(1, loraDevice.FCntDown);
+            // 5. Frame counter down is updated
+            Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
+            Assert.Equal(InitialDeviceFcntDown + 1, MemoryMarshal.Read<UInt16>(payloadDataDown.Fcnt.Span));
+
+            // 6. Frame count has no pending changes
+            Assert.False(loraDevice.HasFrameCountChanges);
         }
 
 
@@ -259,21 +352,25 @@ namespace LoRaWan.NetworkServer.Test
         public async Task When_ABP_Device_With_Relaxed_FrameCounter_Has_FCntUP_Zero_Or_One_Should_Reset_Counter_And_Process_Message(int payloadFCnt)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID));
-            simulatedDevice.FrmCntDown = 0;
-            simulatedDevice.FrmCntUp = payloadFCnt;
+
             // generate payload with frame count 0 or 1
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFCnt);
+
+            simulatedDevice.FrmCntDown = 0;
             simulatedDevice.FrmCntUp = 10;
 
             // Create Rxpk
             var rxpk = CreateRxpk(payload);
 
-            var loraDeviceClient = new Mock<ILoRaDeviceClient>();
-            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object, isABP: true);
+            var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
             // Will send the event to IoT Hub
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<string>(), null))
                 .Returns(Task.FromResult(0));
+
+            // will try to get C2D message
+            loraDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>())).ReturnsAsync((Message)null);
 
             // Will save the fcnt up/down to zero
             loraDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.Is<TwinCollection>((t) => IsTwinFcntZero(t))));
@@ -308,7 +405,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Null(actual);
 
             // 4. Frame counter up was updated
-            Assert.Equal(1, loraDevice.FCntUp);
+            Assert.Equal(payloadFCnt, loraDevice.FCntUp);
         }
     }
 }

@@ -10,8 +10,7 @@ namespace LoRaWan.NetworkServer.Test
     {
         internal static LoRaDevice CreateFromSimulatedDevice(
             SimulatedDevice simulatedDevice,
-            ILoRaDeviceClient loRaDeviceClient,
-            bool isABP = true)
+            ILoRaDeviceClient loRaDeviceClient)
         {
             var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, loRaDeviceClient)
             {
@@ -20,11 +19,11 @@ namespace LoRaWan.NetworkServer.Test
                 SensorDecoder = simulatedDevice.LoRaDevice.SensorDecoder,
                 AppSKey = simulatedDevice.LoRaDevice.AppSKey,
                 NwkSKey = simulatedDevice.LoRaDevice.NwkSKey,
-                GatewayID = simulatedDevice.LoRaDevice.GatewayID
+                GatewayID = simulatedDevice.LoRaDevice.GatewayID,
+                IsOurDevice = true,
             };
             result.SetFcntDown(simulatedDevice.FrmCntDown);
             result.SetFcntUp(simulatedDevice.FrmCntUp);
-            result.IsABP = isABP;
 
             return result;
         }
