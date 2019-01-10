@@ -119,7 +119,8 @@ jobs:
     EDGE_AGENT_VERSION: $(edgeAgentVersion)
     EDGE_HUB_VERSION: $(edgeHubVersion)
     EDGEHUB_OPTIMIZEFORPERFORMANCE: false
-    EDGEHUB_MQTTSETTINGS_ENABLED: true
+    EDGEHUB_AMQPSETTINGS_ENABLED: true
+    EDGEHUB_MQTTSETTINGS_ENABLED: false
     EDGEHUB_HTTPSETTINGS_ENABLED: false
     EDGEHUB_ROUTE: $(edgeHubRoute)
     # LoRaWan Modules
@@ -129,6 +130,7 @@ jobs:
     NET_SRV_IOTEDGE_TIMEOUT: 0
     NET_SRV_VERSION: "" # Network Server module version
     NET_SRV_LOG_TO_UDP_ADDRESS: AzureDevOpsAgent # Hostname of container where AzureDevOpsAgent will be running for Udp logging sink
+    NET_SRV_LEAF_DEVICE_PROTOCOL: Amqp_Tcp_Only # or Amqp_Tcp_Only
     PKT_FWD_VERSION: "" # Packet Forward module version
     VSTS_AGENT: "$(vstsAgentARM)"
     # Defines image version to use in case in ARM architecture
@@ -155,7 +157,8 @@ jobs:
     EDGE_AGENT_VERSION: $(edgeAgentVersion)
     EDGE_HUB_VERSION: $(edgeHubVersion)
     EDGEHUB_OPTIMIZEFORPERFORMANCE: false
-    EDGEHUB_MQTTSETTINGS_ENABLED: true
+    EDGEHUB_AMQPSETTINGS_ENABLED: true
+    EDGEHUB_MQTTSETTINGS_ENABLED: false
     EDGEHUB_HTTPSETTINGS_ENABLED: false
     EDGEHUB_ROUTE: $(edgeHubRoute)
     # LoRaWan Modules
@@ -164,9 +167,9 @@ jobs:
     NET_SRV_LOGTO_HUB: false
     NET_SRV_IOTEDGE_TIMEOUT: 0
     NET_SRV_VERSION: "" # Network Server module version
-    PKT_FWD_VERSION: "" # Packet Forward module version
     NET_SRV_LOG_TO_UDP_ADDRESS: AzureDevOpsAgent # Hostname of container where AzureDevOpsAgent will be running for Udp logging sink
-
+    NET_SRV_LEAF_DEVICE_PROTOCOL: Amqp_Tcp_Only # or Amqp_Tcp_Only
+    PKT_FWD_VERSION: "" # Packet Forward module version
     VSTS_AGENT: "$(vstsAgentAMD)"
     # Defines image version to use in case in AMD architecture
     DEVOPS_AGENT_IMAGE: "$(CONTAINER_REGISTRY_ADDRESS)/azuredevopsagent:$(DEVOPS_AGENT_IMAGE_VERSION)-amd64"

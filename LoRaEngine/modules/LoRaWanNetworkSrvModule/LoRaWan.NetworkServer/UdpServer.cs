@@ -204,7 +204,16 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                ITransportSettings transportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+                ITransportSettings transportSettings;
+                
+                if (configuration.LeafDeviceProtocol.ToUpper() == "AMQP_TCP_ONLY")
+                {
+                    transportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+                }
+                else
+                {
+                    transportSettings = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
+                }
 
                 ITransportSettings[] settings = { transportSettings };
 

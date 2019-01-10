@@ -52,6 +52,9 @@
               "OptimizeForPerformance": {
                 "value": "$EDGEHUB_OPTIMIZEFORPERFORMANCE"
               },
+              "amqpSettings__enabled": {
+                "value": "$EDGEHUB_AMQPSETTINGS_ENABLED"
+              },
               "mqttSettings__enabled": {
                 "value": "$EDGEHUB_MQTTSETTINGS_ENABLED"
               },
