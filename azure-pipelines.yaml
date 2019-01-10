@@ -119,7 +119,7 @@ jobs:
     EDGE_AGENT_VERSION: $(edgeAgentVersion)
     EDGE_HUB_VERSION: $(edgeHubVersion)
     EDGEHUB_OPTIMIZEFORPERFORMANCE: false
-    EDGEHUB_MQTTSETTINGS_ENABLED: false
+    EDGEHUB_MQTTSETTINGS_ENABLED: true
     EDGEHUB_HTTPSETTINGS_ENABLED: false
     EDGEHUB_ROUTE: $(edgeHubRoute)
     # LoRaWan Modules
@@ -155,7 +155,7 @@ jobs:
     EDGE_AGENT_VERSION: $(edgeAgentVersion)
     EDGE_HUB_VERSION: $(edgeHubVersion)
     EDGEHUB_OPTIMIZEFORPERFORMANCE: false
-    EDGEHUB_MQTTSETTINGS_ENABLED: false
+    EDGEHUB_MQTTSETTINGS_ENABLED: true
     EDGEHUB_HTTPSETTINGS_ENABLED: false
     EDGEHUB_ROUTE: $(edgeHubRoute)
     # LoRaWan Modules

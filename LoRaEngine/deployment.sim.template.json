@@ -95,6 +95,9 @@
               },
               "IOTEDGE_TIMEOUT": {
                 "value": "$NET_SRV_IOTEDGE_TIMEOUT"
+              },
+              "LEAF_DEVICE_PROTOCOL": {
+                "value": "$NET_SRV_LEAF_DEVICE_PROTOCOL"
               }
             },
             "status": "running",
