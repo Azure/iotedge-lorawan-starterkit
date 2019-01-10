@@ -83,8 +83,9 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Theory]
-        [InlineData(2000)]
-        [InlineData(2950)]
+        [InlineData(1000)]
+        [InlineData(1001)]
+        [InlineData(1950)]
         public void When_In_Time_For_Second_Window_Should_Resolve_Window_2(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
