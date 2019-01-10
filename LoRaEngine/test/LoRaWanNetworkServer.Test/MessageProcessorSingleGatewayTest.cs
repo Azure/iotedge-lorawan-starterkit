@@ -186,7 +186,7 @@ namespace LoRaWan.NetworkServer.Test
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.txpk.data));
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed());
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
+            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
             
 
@@ -334,7 +334,7 @@ namespace LoRaWan.NetworkServer.Test
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed());
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.MessageType);
+            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
             
             // 4. Frame counter up was updated
             Assert.Equal(PayloadFcnt, loraDevice.FCntUp);

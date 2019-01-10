@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LoRaTools.Regions;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -37,6 +38,7 @@ namespace LoRaTools.LoRaPhysical
 
         }
 
+        [Obsolete("This constructor will be faded out at message processor refactory")]
         public DownlinkPktFwdMessage(string data, string datr = "SF12BW125", uint rfch = 0, double freq = 869.525000, long tmst = 0)
         {
             var byteData = Convert.FromBase64String(data);
@@ -57,6 +59,34 @@ namespace LoRaTools.LoRaPhysical
 
             };
         }
+
+        /// <summary>
+        /// This method is used in case of a response to a upstream message.
+        /// </summary>
+        /// <param name="upstreamMessage">Rxpk received for upstream msg.</param>
+        /// <param name="LoraMessage">the serialized LoRa Message.</param>
+        /// <returns>DownlinkPktFwdMessage object ready to be sent</returns>
+        public DownlinkPktFwdMessage(byte[] LoRaData, Rxpk upstreamRxpk , long tmst = 0)
+        {          
+            txpk = new Txpk()
+            {
+                imme = tmst == 0 ? true : false,
+                tmst = tmst,
+                data = Convert.ToBase64String(LoRaData),
+                size = (uint)LoRaData.Length,
+                freq = RegionFactory.CurrentRegion.GetDownstreamChannel(upstreamRxpk),
+                //TODO check this,
+                rfch = upstreamRxpk.rfch,
+                modu = "LORA",
+                datr = RegionFactory.CurrentRegion.GetDownstreamDR(upstreamRxpk),
+                codr = "4/5",
+                //TODO put 14 for EU
+                powe = 14,
+                ipol = true
+
+            };
+        }
+
 
         public override PktFwdMessageAdapter GetPktFwdMessage()
         {

@@ -20,6 +20,12 @@ namespace LoRaTools.LoRaPhysical
         public uint powe;
         public bool ipol;
 
+        /// <summary>
+        /// This method is used as part of Simulated device for testing purposes
+        /// </summary>
+        /// <param name="inputMessage">The Input Message bytes</param>
+        /// <param name="appKey">The appKey</param>
+        /// <returns></returns>
         public static Txpk CreateTxpk(byte[] inputMessage, string appKey)
         {
             PhysicalPayload PhysicalPayload = new PhysicalPayload(inputMessage, true);
@@ -41,6 +47,8 @@ namespace LoRaTools.LoRaPhysical
             }
             return null;
         }
-    }
+
+
+        }
 
 }

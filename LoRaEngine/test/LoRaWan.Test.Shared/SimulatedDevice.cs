@@ -104,7 +104,7 @@ namespace LoRaWan.Test.Shared
             Array.Reverse(payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            var standardData = new LoRaPayloadData(LoRaPayloadData.MType.UnconfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
+            var standardData = new LoRaPayloadData(LoRaMessageType.UnconfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
             // Need to create Fops. If not, then MIC won't be correct
             standardData.Fopts = new byte[0];
             // First encrypt the data
@@ -137,7 +137,7 @@ namespace LoRaWan.Test.Shared
             Array.Reverse(payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            var standardData = new LoRaPayloadData(LoRaPayloadData.MType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
+            var standardData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
             // Need to create Fops. If not, then MIC won't be correct
             standardData.Fopts = new byte[0];
             // First encrypt the data
