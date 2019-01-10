@@ -107,6 +107,11 @@ namespace LoRaWan.NetworkServer
         {
             Logger.Log("Starting LoRaWAN Server...", Logger.LoggingLevel.Always);
 
+#if USE_MESSAGE_PROCESSOR_V2            
+            Logger.Log("Using experimental message processor v2", Logger.LoggingLevel.Always);
+#endif
+
+
             await InitCallBack();
 
             await RunUdpListener();
