@@ -270,7 +270,7 @@ namespace LoRaWan.NetworkServer.V2
                     // If it is confirmed and we don't have time to check c2d and send to device we return now
                     if (requiresConfirmation && timeToSecondWindow <= (LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessagePackageAndSendMessage))
                     {
-                        return __WorkaroundCreateConfirmMessage(
+                        return __WorkaroundCreateDownlinkMessage(
                             null,
                             loRaDevice,
                             rxpk,
@@ -331,7 +331,7 @@ namespace LoRaWan.NetworkServer.V2
                     // we got here:
                     // a) was a confirm request
                     // b) we have a c2d message
-                    var confirmDownstream = __WorkaroundCreateConfirmMessage(
+                    var confirmDownstream = __WorkaroundCreateDownlinkMessage(
                         cloudToDeviceMessage,
                         loRaDevice,
                         rxpk,
@@ -359,11 +359,11 @@ namespace LoRaWan.NetworkServer.V2
             }
         }
 
-        private DownlinkPktFwdMessage __WorkaroundCreateConfirmMessage(
+        private DownlinkPktFwdMessage __WorkaroundCreateDownlinkMessage(
             Message cloudToDeviceMessage, 
             LoRaDevice loraDeviceInfo, 
-            LoRaTools.LoRaPhysical.Rxpk rxpk,
-            LoRaTools.LoRaMessage.LoRaPayloadData loRaPayloadData, 
+            Rxpk rxpk,
+            LoRaPayloadData loRaPayloadData, 
             LoRaOperationTimeWatcher timeWatcher,
             ReadOnlyMemory<byte> payloadDevAddr,
             bool fpending,
@@ -372,20 +372,21 @@ namespace LoRaWan.NetworkServer.V2
 
             //default fport
             byte fctrl = 0;
-            if (loRaPayloadData.IsConfirmed())
+            if (loRaPayloadData.MessageType == LoRaMessageType.ConfirmedDataUp)
             {
+                // Confirm receiving message to device                            
                 fctrl = (byte)FctrlEnum.Ack;
             }
 
-            byte[] fport = null;
-            var requiresDeviceConfirmation = false;
+            byte? fport = null;
+            var requiresDeviceAcknowlegement = false;
             byte[] macbytes = null;
 
             byte[] rndToken = new byte[2];
             Random rnd = new Random();
             rnd.NextBytes(rndToken);
 
-            byte[] bytesC2dMsg = null;
+            byte[] frmPayload = null;
 
             if (cloudToDeviceMessage != null)
             {
@@ -398,16 +399,14 @@ namespace LoRaWan.NetworkServer.V2
 
                 if (cloudToDeviceMessage.Properties.TryGetValueCaseInsensitive("confirmed", out var confirmedValue) && confirmedValue.Equals("true", StringComparison.OrdinalIgnoreCase))
                 {
-                    requiresDeviceConfirmation = true;
+                    requiresDeviceAcknowlegement = true;
                     Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device message requesting a confirmation", Logger.LoggingLevel.Info);
 
                 }
                 if (cloudToDeviceMessage.Properties.TryGetValueCaseInsensitive("fport", out var fPortValue))
                 {
-                    int fportint = int.Parse(fPortValue);
-
-                    fport = new byte[1] { (byte)fportint };
-                    Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device message with a Fport of " + fPortValue, Logger.LoggingLevel.Info);
+                    fport = byte.Parse(fPortValue);
+                    Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device message with a Fport of " + fport.Value, Logger.LoggingLevel.Info);
 
                 }
                 Logger.Log(loraDeviceInfo.DevEUI, string.Format("Sending a downstream message with ID {0}",
@@ -415,19 +414,18 @@ namespace LoRaWan.NetworkServer.V2
                     Logger.LoggingLevel.Full);
 
 
-                bytesC2dMsg = cloudToDeviceMessage?.GetBytes();
+                frmPayload = cloudToDeviceMessage?.GetBytes();
             
-                Logger.Log(loraDeviceInfo.DevEUI, $"C2D message: {Encoding.UTF8.GetString(bytesC2dMsg)}", Logger.LoggingLevel.Info);
+                Logger.Log(loraDeviceInfo.DevEUI, $"C2D message: {Encoding.UTF8.GetString(frmPayload)}", Logger.LoggingLevel.Info);
                 
                 //cut to the max payload of lora for any EU datarate
-                if (bytesC2dMsg.Length > 51)
-                    Array.Resize(ref bytesC2dMsg, 51);
+                if (frmPayload.Length > 51)
+                    Array.Resize(ref frmPayload, 51);
 
-                Array.Reverse(bytesC2dMsg);
+                Array.Reverse(frmPayload);
             }
             
-            //if (requiresDeviceConfirmation || fpending)
-            if (loRaPayloadData.MessageType == LoRaMessageType.ConfirmedDataUp || requiresDeviceConfirmation)
+            if (fpending)
             {
                 fctrl |= (int)FctrlEnum.FpendingOrClassB;
             }
@@ -443,15 +441,15 @@ namespace LoRaWan.NetworkServer.V2
                 reversedDevAddr[i] = srcDevAddr[srcDevAddr.Length - (1 + i)];
             }
 
-            var msgType = requiresDeviceConfirmation ? LoRaPayloadData.MType.ConfirmedDataDown : LoRaPayloadData.MType.UnconfirmedDataDown;
+            var msgType = requiresDeviceAcknowlegement ? LoRaPayloadData.MType.ConfirmedDataDown : LoRaPayloadData.MType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
                 reversedDevAddr,
                 new byte[] { fctrl },
                 BitConverter.GetBytes(fcntDown),
                 macbytes,
-                fport,
-                bytesC2dMsg,
+                fport.HasValue ? new byte[] { fport.Value } : null,
+                frmPayload,
                 1);
 
             ackLoRaMessage.PerformEncryption(loraDeviceInfo.AppSKey);
