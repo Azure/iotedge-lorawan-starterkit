@@ -1,5 +1,6 @@
 ﻿using LoRaTools.LoRaMessage;
 using LoRaTools.LoRaPhysical;
+using LoRaTools.Regions;
 using LoRaWan.NetworkServer;
 using LoRaWan.NetworkServer.V2;
 using LoRaWan.Test.Shared;
@@ -15,7 +16,7 @@ namespace LoRaWan.NetworkServer.Test
         protected const string ServerGatewayID = "test-gateway";
 
         private long startTime;
-        private readonly Rxpk rxpk;
+
         private readonly byte[] macAddress;
         private NetworkServerConfiguration serverConfiguration;
         private readonly Mock<ILoRaDeviceFrameCounterUpdateStrategy> frameCounterUpdateStrategy;
@@ -33,18 +34,6 @@ namespace LoRaWan.NetworkServer.Test
         public MessageProcessorTestBase()
         {
             this.startTime = DateTimeOffset.UtcNow.Ticks;
-            this.rxpk = new Rxpk()
-            {
-                chan = 7,
-                rfch = 1,
-                freq = 903.700000,
-                stat = 1,
-                modu = "LORA",
-                datr = "SF10BW125",
-                codr = "4/5",
-                rssi = -17,
-                lsnr = 12.0f
-            };
 
             this.macAddress = Utility.GetMacAddress();
             this.serverConfiguration = new NetworkServerConfiguration
@@ -65,7 +54,7 @@ namespace LoRaWan.NetworkServer.Test
             {
                 chan = 7,
                 rfch = 1,
-                freq = 903.700000,
+                freq = 868.3,
                 stat = 1,
                 modu = "LORA",
                 datr = "SF10BW125",

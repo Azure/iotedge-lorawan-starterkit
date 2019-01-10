@@ -85,10 +85,11 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Fact]
-        public async Task OTAA_Unconfirmed_Message_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_Null()
+        public async Task ABP_Unconfirmed_Message_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_Null()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID));
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 10);
+            simulatedDevice.FrmCntUp = 9;
 
             // Create Rxpk
             var rxpk = CreateRxpk(payload);
@@ -132,7 +133,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Null(actual);
 
             // 4. Frame counter up was updated
-            Assert.Equal(1, loraDevice.FCntUp);
+            Assert.Equal(10, loraDevice.FCntUp);
         }
 
         [Fact]
