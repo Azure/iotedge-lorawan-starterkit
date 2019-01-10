@@ -66,7 +66,7 @@ namespace LoRaTools.LoRaPhysical
         /// <param name="upstreamMessage">Rxpk received for upstream msg.</param>
         /// <param name="LoraMessage">the serialized LoRa Message.</param>
         /// <returns>DownlinkPktFwdMessage object ready to be sent</returns>
-        public DownlinkPktFwdMessage(byte[] LoRaData, Rxpk upstreamRxpk , long tmst = 0)
+        public DownlinkPktFwdMessage(byte[] LoRaData, Rxpk upstreamRxpk , string datr, double freq, long tmst = 0)
         {          
             txpk = new Txpk()
             {
@@ -74,13 +74,13 @@ namespace LoRaTools.LoRaPhysical
                 tmst = tmst,
                 data = Convert.ToBase64String(LoRaData),
                 size = (uint)LoRaData.Length,
-                freq = RegionFactory.CurrentRegion.GetDownstreamChannel(upstreamRxpk),
+                freq = freq,
                 //TODO check this,
-                rfch = upstreamRxpk.rfch,
-                modu = "LORA",
-                datr = RegionFactory.CurrentRegion.GetDownstreamDR(upstreamRxpk),
-                codr = "4/5",
-                //TODO put 14 for EU
+                rfch = upstreamRxpk.rfch, // can I copy from upstream?
+                modu = upstreamRxpk.modu, // can I copy from upstream?
+                datr = datr,
+                codr = upstreamRxpk.codr, // can I copy from upstream?
+                //TODO put 14 for EU               
                 powe = 14,
                 ipol = true
 

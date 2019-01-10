@@ -197,11 +197,11 @@ namespace LoRaTools.LoRaMessage
 
         }
 
-        public DownlinkPktFwdMessage Serialize(Rxpk rxpk, string appSKey, string nwkSKey, long tmst,string devEUI)
+        public DownlinkPktFwdMessage Serialize(Rxpk rxpk, string appSKey, string nwkSKey, string datr, double freq, long tmst,string devEUI)
         {
             PerformEncryption(appSKey);
             SetMic(nwkSKey);
-            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), rxpk, tmst);
+            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), rxpk, datr, freq, tmst);
             if (Logger.LoggerLevel < Logger.LoggingLevel.Info)
             {
                 var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
