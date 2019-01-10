@@ -1,5 +1,7 @@
-﻿using LoRaTools.Utils;
+﻿using LoRaTools.LoRaPhysical;
+using LoRaTools.Utils;
 using LoRaWan;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -29,10 +31,7 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadData : LoRaPayload
     {
-        /// <summary>
-        /// Gets the LoRa message type
-        /// </summary>
-        public LoRaMessageType MessageType => (LoRaMessageType)(RawMessage[0] >> 5);
+
 
 
         /// <summary>
@@ -67,8 +66,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public bool IsConfirmed()
         {
-            var loRaMessageType = MessageType;
-            return loRaMessageType == LoRaMessageType.ConfirmedDataDown || loRaMessageType == LoRaMessageType.ConfirmedDataUp;
+            return this.LoRaMessageType == LoRaMessageType.ConfirmedDataDown || this.LoRaMessageType == LoRaMessageType.ConfirmedDataUp;
         }
 
         /// <summary>
@@ -120,6 +118,9 @@ namespace LoRaTools.LoRaMessage
             // address correct but inversed
             Array.Reverse(addrbytes);
             this.DevAddr = addrbytes;
+            this.LoRaMessageType = (LoRaMessageType)RawMessage[0];
+
+            Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // Fctrl Frame Control Octet
             this.Fctrl = new Memory<byte>(inputMessage,5,1);
             int foptsSize = this.Fctrl.Span[0] & 0x0f;
@@ -139,29 +140,8 @@ namespace LoRaTools.LoRaMessage
             this.Frmpayload = new Memory<byte>(inputMessage,8+fportLength+foptsSize, inputMessage.Length - 8- fportLength - 4 - foptsSize);
         }
 
-        public enum MType
-        {
-            // Request sent by device to join
-            JoinRequest,
 
-            // Response to a join request sent to device
-            JoinAccept=32,
-
-            // Device to cloud message, no confirmation expected
-            UnconfirmedDataUp=64,
-
-            // Cloud to device message, no confirmation expected
-            UnconfirmedDataDown=96,
-
-            // Device to cloud message, confirmation required
-            ConfirmedDataUp=128,
-
-            // Cloud to device message, confirmation required
-            ConfirmedDataDown=160
-
-        }
-
-        public LoRaPayloadData(MType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, byte[] fOpts, byte[] fPort, byte[] frmPayload, int direction) : base()
+        public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, byte[] fOpts, byte[] fPort, byte[] frmPayload, int direction) 
         {
             int fOptsLen = fOpts == null ? 0 : fOpts.Length;
             int frmPayloadLen = frmPayload == null ? 0 : frmPayload.Length;
@@ -171,6 +151,7 @@ namespace LoRaTools.LoRaMessage
             RawMessage = new byte[1 + macPyldSize + 4];
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
             RawMessage[0] = (byte)mhdr;
+            this.LoRaMessageType = mhdr;
            // Array.Copy(mhdr, 0, RawMessage, 0, 1);
             Array.Reverse(devAddr);
             DevAddr = new Memory<byte>(RawMessage, 1, 4);
@@ -214,6 +195,28 @@ namespace LoRaTools.LoRaMessage
                 Frmpayload.Span.Reverse();
             Direction = direction;
 
+        }
+
+        public DownlinkPktFwdMessage Serialize(Rxpk rxpk, string appSKey, string nwkSKey, long tmst,string devEUI)
+        {
+            PerformEncryption(appSKey);
+            SetMic(nwkSKey);
+            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), rxpk, tmst);
+            if (Logger.LoggerLevel < Logger.LoggingLevel.Info)
+            {
+                var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
+
+                if (devEUI.Length != 0)
+                {
+                    Logger.Log(devEUI, $"{((LoRaMessageType)(Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                }
+                else
+                {
+                    Logger.Log(ConversionHelper.ByteArrayToString(this.DevAddr.Span.ToArray()), $"{((LoRaMessageType)(Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                }
+            }
+
+            return downlinkPktFwdMessage;
         }
 
         /// <summary>

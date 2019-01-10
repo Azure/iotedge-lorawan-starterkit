@@ -12,18 +12,29 @@ using static LoRaTools.LoRaMessage.LoRaPayloadData;
 
 namespace LoRaTools.LoRaMessage
 {
-    public enum LoRaMessageType
+    public enum LoRaMessageType:byte
     {
+        // Request sent by device to join
         JoinRequest,
-        JoinAccept,
-        UnconfirmedDataUp,
-        UnconfirmedDataDown,
-        ConfirmedDataUp,
-        ConfirmedDataDown,
-        RFU,
-        Proprietary
+
+        // Response to a join request sent to device
+        JoinAccept = 32,
+
+        // Device to cloud message, no confirmation expected
+        UnconfirmedDataUp = 64,
+
+        // Cloud to device message, no confirmation expected
+        UnconfirmedDataDown = 96,
+
+        // Device to cloud message, confirmation required
+        ConfirmedDataUp = 128,
+
+        // Cloud to device message, confirmation required
+        ConfirmedDataDown = 160
     }
 
+
+    [Obsolete("This class will be faded out at message processor refactory.")]
     /// <summary>
     /// class exposing Physical payload & LoRa Payload Message
     /// </summary>
@@ -121,10 +132,10 @@ namespace LoRaTools.LoRaMessage
             var devEUI = payload.GetLoRaMessage().DevEUI;
             if (devEUI.Length != 0)
             {
-                Logger.Log(ConversionHelper.ByteArrayToString(devEUI.Span.ToArray()), $"{((MType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                Logger.Log(ConversionHelper.ByteArrayToString(devEUI.Span.ToArray()), $"{((LoRaMessageType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
             }else
             {
-                Logger.Log(ConversionHelper.ByteArrayToString(payload.DevAddr.Span.ToArray()), $"{((MType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                Logger.Log(ConversionHelper.ByteArrayToString(payload.DevAddr.Span.ToArray()), $"{((LoRaMessageType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
             }
         }
 

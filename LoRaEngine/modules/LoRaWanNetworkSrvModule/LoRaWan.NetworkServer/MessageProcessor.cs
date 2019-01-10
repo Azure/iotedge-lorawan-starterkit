@@ -393,7 +393,7 @@ namespace LoRaWan.NetworkServer
                             if (macbytes != null && linkCheckCmdResponse != null)
                                 macbytes = macbytes.Concat(linkCheckCmdResponse).ToArray();
                             LoRaPayloadData ackLoRaMessage = new LoRaPayloadData(
-                                requestForConfirmedResponse ? MType.ConfirmedDataDown : MType.UnconfirmedDataDown,
+                                requestForConfirmedResponse ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown,
                                 //ConversionHelper.StringToByteArray(requestForConfirmedResponse?"A0":"60"),
                                 devAddrCorrect,
                                 fctrl,
@@ -465,7 +465,7 @@ namespace LoRaWan.NetworkServer
                         byte[] fctrl2 = new byte[1] { 0 };
 
                         Array.Reverse(devAddrCorrect);
-                        LoRaPayloadData macReply = new LoRaPayloadData(MType.ConfirmedDataDown,
+                        LoRaPayloadData macReply = new LoRaPayloadData(LoRaMessageType.ConfirmedDataDown,
                             devAddrCorrect,
                             fctrl2,
                             BitConverter.GetBytes(loraDeviceInfo.FCntDown),

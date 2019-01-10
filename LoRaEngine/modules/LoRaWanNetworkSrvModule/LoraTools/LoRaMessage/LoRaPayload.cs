@@ -1,12 +1,11 @@
-﻿using LoRaTools.Utils;
+﻿using LoRaTools.LoRaPhysical;
+using LoRaTools.Utils;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace LoRaTools.LoRaMessage
 {
@@ -23,6 +22,8 @@ namespace LoRaTools.LoRaMessage
             NwkSKey = 1,
             AppSKey = 2,
         }
+
+        public LoRaMessageType LoRaMessageType { get; set; }
 
         /// <summary>
         /// raw byte of the message
@@ -51,10 +52,10 @@ namespace LoRaTools.LoRaMessage
         /// <param name="inputMessage"></param>
         public LoRaPayload(byte[] inputMessage)
         {
-            RawMessage = inputMessage;       
-            Mhdr = new Memory<byte>(RawMessage,0,1);
+            RawMessage = inputMessage;
+            Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // MIC 4 last bytes
-            this.Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4,4);
+            this.Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4, 4);
         }
 
         /// <summary>
@@ -110,7 +111,7 @@ namespace LoRaTools.LoRaMessage
             Mic = result.Take(4).ToArray();
             return Mic.ToArray();
         }
-        
+
         /// <summary>
         /// Calculate the Netwok and Application Server Key used to encrypt data and compute MIC
         /// </summary>
@@ -139,5 +140,39 @@ namespace LoRaTools.LoRaMessage
             return key;
         }
 
+        public static bool TryCreateLoRaPayload(Rxpk rxpk, out LoRaPayload loRaPayloadMessage)
+        {
+
+            byte[] convertedInputMessage = Convert.FromBase64String(rxpk.data);
+            var messageType = convertedInputMessage[0];
+            //LoRaMessageType = (LoRaMessageType)messageType;
+
+
+            if (messageType == (int)LoRaMessageType.UnconfirmedDataUp)
+            {
+                loRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
+
+            }
+            else if (messageType == (int)LoRaMessageType.ConfirmedDataUp)
+            {
+                loRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
+            }
+            else if (messageType == (int)LoRaMessageType.JoinRequest)
+            {
+                loRaPayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
+            }
+            else
+            {
+                loRaPayloadMessage = null;
+                return false;
+            }
+
+            loRaPayloadMessage.LoRaMessageType = (LoRaMessageType)messageType;
+            return true;
+        }
+
     }
 }
+
+    
+

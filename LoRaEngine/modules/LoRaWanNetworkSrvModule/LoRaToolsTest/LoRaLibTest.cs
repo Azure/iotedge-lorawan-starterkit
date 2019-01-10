@@ -39,14 +39,13 @@ namespace LoRaWanTest
             var netId = ConversionHelper.ByteArrayToString(NetId);
             LoRaPayloadJoinAccept joinAccept = new LoRaPayloadJoinAccept(netId, "00112233445566778899AABBCCDDEEFF", DevAddr, AppNonce, new byte[] { 0 }, new byte[] { 0 }, null);
             Console.WriteLine(BitConverter.ToString(joinAccept.GetByteMessage()));
-            LoRaMessageWrapper joinAcceptMessage = new LoRaMessageWrapper(joinAccept, LoRaMessageType.JoinAccept);
+            
             byte[] joinAcceptMic = new byte[4]{
                 67, 72, 91, 188
                 };
 
-            Assert.True((((LoRaPayloadJoinAccept)joinAcceptMessage.LoRaPayloadMessage).Mic.ToArray().SequenceEqual(joinAcceptMic)));
-
-            var msg = ConversionHelper.ByteArrayToString(joinAcceptMessage.LoRaPayloadMessage.GetByteMessage());
+            Assert.True(joinAccept.Mic.ToArray().SequenceEqual(joinAcceptMic));    
+            var msg = ConversionHelper.ByteArrayToString(joinAccept.GetByteMessage());
             Assert.Equal("20493EEB51FBA2116F810EDB3742975142", msg);
 
         }
@@ -123,10 +122,11 @@ namespace LoRaWanTest
 
         private static void testRxpk(Rxpk rxpk)
         {
-            LoRaMessageWrapper joinRequestMessage = new LoRaMessageWrapper(rxpk);
+            Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk, out LoRaPayload loRaPayload));
+            Assert.Equal(LoRaMessageType.JoinRequest, loRaPayload.LoRaMessageType);
+            LoRaPayloadJoinRequest joinRequestMessage = (LoRaPayloadJoinRequest)loRaPayload;
 
-            if (joinRequestMessage.LoRaMessageType != LoRaMessageType.JoinRequest)
-                Console.WriteLine("Join Request type was not parsed correclty");
+
             byte[] joinRequestAppKey = new byte[16]
             { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
             var joinRequestBool = joinRequestMessage.CheckMic(ConversionHelper.ByteArrayToString(joinRequestAppKey));
@@ -146,9 +146,9 @@ namespace LoRaWanTest
             Array.Reverse(joinRequestAppEui);
             Array.Reverse(joinRequestDevEUI);
             Array.Reverse(joinRequestDevNonce);
-            Assert.True(joinRequestMessage.LoRaPayloadMessage.GetLoRaMessage().AppEUI.ToArray().SequenceEqual(joinRequestAppEui));
-            Assert.True(joinRequestMessage.LoRaPayloadMessage.GetLoRaMessage().DevEUI.ToArray().SequenceEqual(joinRequestDevEUI));
-            Assert.True(joinRequestMessage.LoRaPayloadMessage.GetLoRaMessage().DevNonce.ToArray().SequenceEqual(joinRequestDevNonce));
+            Assert.True(joinRequestMessage.AppEUI.ToArray().SequenceEqual(joinRequestAppEui));
+            Assert.True(joinRequestMessage.DevEUI.ToArray().SequenceEqual(joinRequestDevEUI));
+            Assert.True(joinRequestMessage.DevNonce.ToArray().SequenceEqual(joinRequestDevNonce));
         }
 
         [Fact]
@@ -176,12 +176,11 @@ namespace LoRaWanTest
 
             var jsonUplinkUnconfirmedDataUpBytes = Encoding.Default.GetBytes(jsonUplinkUnconfirmedDataUp);
             List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(jsonUplinkUnconfirmedDataUpBytes).ToArray());
-            LoRaMessageWrapper jsonUplinkUnconfirmedMessage = new LoRaMessageWrapper(rxpk[0]);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataUp, jsonUplinkUnconfirmedMessage.LoRaMessageType);
+            Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk[0], out LoRaPayload loRaPayload));
 
-            LoRaPayloadData loRaPayloadUplinkObj = (LoRaPayloadData)jsonUplinkUnconfirmedMessage.LoRaPayloadMessage;
-
-
+            Assert.Equal(LoRaMessageType.UnconfirmedDataUp, loRaPayload.LoRaMessageType);
+  
+            LoRaPayloadData loRaPayloadUplinkObj = (LoRaPayloadData)loRaPayload;
             Assert.True(loRaPayloadUplinkObj.Fcnt.Span.SequenceEqual(new byte[2] { 1, 0 }));
 
 
@@ -222,7 +221,7 @@ namespace LoRaWanTest
             var appkey = new byte[16] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
 
-            LoRaPayloadData lora = new LoRaPayloadData(MType.ConfirmedDataUp, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
+            LoRaPayloadData lora = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
             lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
             byte[] testEncrypt = new byte[4]
             {
@@ -271,10 +270,9 @@ namespace LoRaWanTest
             byte[] physicalUpstreamPyld = new byte[12];
             physicalUpstreamPyld[0] = 2;
             List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
-
-            LoRaMessageWrapper joinRequestMessage = new LoRaMessageWrapper(rxpk[0]);
-
-            var joinReq = (LoRaPayloadJoinRequest)joinRequestMessage.LoRaPayloadMessage;
+            Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk[0], out LoRaPayload loRaPayload));
+            Assert.Equal(LoRaMessageType.JoinRequest,loRaPayload.LoRaMessageType);
+            var joinReq = (LoRaPayloadJoinRequest)loRaPayload;
             joinReq.DevAddr = new byte[4]
             {
                 4,3,2,1
@@ -364,20 +362,15 @@ namespace LoRaWanTest
             byte[] physicalUpstreamPyld = new byte[12];
             physicalUpstreamPyld[0] = 2;
             List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
-            List<LoRaMessageWrapper> rxpkMessages = new List<LoRaMessageWrapper>();
-            foreach (var rxpkmessage in rxpk)
-            {
-                rxpkMessages.Add(new LoRaMessageWrapper(rxpkmessage));
-            }
-            Assert.Equal(rxpkMessages.Count, 3);
+           
+            Assert.Equal(3,rxpk.Count);
             testRxpk(rxpk[0]);
             testRxpk(rxpk[2]);
 
-              LoRaMessageWrapper jsonUplinkUnconfirmedMessage = new LoRaMessageWrapper(rxpk[1]);
+            Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk[1], out LoRaPayload jsonUplinkUnconfirmedMessage));
             Assert.Equal(LoRaMessageType.UnconfirmedDataUp, jsonUplinkUnconfirmedMessage.LoRaMessageType);
 
-            LoRaPayloadData loRaPayloadUplinkObj = (LoRaPayloadData)jsonUplinkUnconfirmedMessage.LoRaPayloadMessage;
-
+            LoRaPayloadData loRaPayloadUplinkObj = (LoRaPayloadData)jsonUplinkUnconfirmedMessage;
 
             Assert.True(loRaPayloadUplinkObj.Fcnt.Span.SequenceEqual(new byte[2] { 1, 0 }));
 
