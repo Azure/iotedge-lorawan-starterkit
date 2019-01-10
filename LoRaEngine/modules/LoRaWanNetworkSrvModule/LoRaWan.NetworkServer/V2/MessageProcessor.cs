@@ -60,20 +60,6 @@ namespace LoRaWan.NetworkServer.V2
             // It will take care of seeding ABP devices created here for single gateway scenarios
             this.deviceRegistry.RegisterDeviceInitializer(new FrameCounterLoRaDeviceInitializer(configuration.GatewayID, frameCounterUpdateStrategyFactory));
         }
-       
-
-        LoRaTools.LoRaMessage.LoRaPayloadJoinRequest __WorkaroundGetPayloadJoinRequest(LoRaTools.LoRaPhysical.Rxpk rxpk)
-        {
-            byte[] convertedInputMessage = Convert.FromBase64String(rxpk.data);
-            return new LoRaTools.LoRaMessage.LoRaPayloadJoinRequest(convertedInputMessage);
-        }
-
-
-        LoRaTools.LoRaMessage.LoRaPayloadData __WorkaroundGetPayloadData(LoRaTools.LoRaPhysical.Rxpk rxpk)
-        {
-            byte[] convertedInputMessage = Convert.FromBase64String(rxpk.data);
-            return new LoRaTools.LoRaMessage.LoRaPayloadData(convertedInputMessage);
-        }
 
         
         /// <summary>
@@ -92,30 +78,31 @@ namespace LoRaWan.NetworkServer.V2
         /// <returns></returns>
         public async Task<DownlinkPktFwdMessage> ProcessMessageAsync(Rxpk rxpk, DateTime startTimeProcessing)
         {
-            if(!LoRaPayload.TryCreateLoRaPayload(rxpk, out LoRaPayload loraMessage))
+            if (!LoRaPayload.TryCreateLoRaPayload(rxpk, out LoRaPayload loRaPayload))
             {
                 Logger.Log("There was a problem in decoding the Rxpk", Logger.LoggingLevel.Error);
+                return null;
             }
 
             if (this.loraRegion == null)
             {
                 if (!RegionFactory.TryResolveRegion(rxpk))
                 {
+                    // log is generated in Region factory
+                    // move here once V2 goes GA
                     return null;
                 }
 
                 this.loraRegion = RegionFactory.CurrentRegion;
             }
             
-            //join message
-            if (loraMessage.LoRaMessageType == LoRaMessageType.JoinRequest)
+            if (loRaPayload.LoRaMessageType == LoRaMessageType.JoinRequest)
             {
-                return await ProcessJoinRequestAsync(rxpk, (LoRaPayloadJoinRequest)loraMessage, startTimeProcessing);
+                return await ProcessJoinRequestAsync(rxpk, (LoRaPayloadJoinRequest)loRaPayload, startTimeProcessing);
             }
-            //normal message
-            else if (loraMessage.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
+            else if (loRaPayload.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loRaPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
             {
-                return await ProcessLoRaMessageAsync(rxpk, (LoRaPayloadData)loraMessage, startTimeProcessing);
+                return await ProcessLoRaMessageAsync(rxpk, (LoRaPayloadData)loRaPayload, startTimeProcessing);
             }
             
             return null;
@@ -136,7 +123,6 @@ namespace LoRaWan.NetworkServer.V2
                     return null;
                 }
 
-
                 // Find device that matches:
                 // - devAddr
                 // - mic check (requires: loraDeviceInfo.NwkSKey or loraDeviceInfo.AppKey, rxpk.LoraPayload.Mic)
@@ -144,6 +130,7 @@ namespace LoRaWan.NetworkServer.V2
                 var loRaDevice = await deviceRegistry.GetDeviceForPayloadAsync(loraPayload);
                 if (loRaDevice == null)
                 {
+                    Logger.Log(ConversionHelper.ByteArrayToString(devAddr), $"device is not from our network, ignoring message", Logger.LoggingLevel.Info);
                     return null;
                 }
 
@@ -155,17 +142,15 @@ namespace LoRaWan.NetworkServer.V2
                     frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy() :
                     frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy();
 
-
                 var payloadFcnt = loraPayload.GetFcnt();
                 var requiresConfirmation = loraPayload.IsConfirmed();
-
 
                 using (new LoRaDeviceFrameCounterSession(loRaDevice, frameCounterStrategy))
                 {
                     // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
                     // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
                     var isRelaxedPayloadFrameCounter = false;
-                    if (loRaDevice.IsABP && loRaDevice.IsABPRelaxedFrameCounter && loRaDevice.FCntUp > 0 && payloadFcnt <= 1)
+                    if (loRaDevice.IsABP && loRaDevice.IsABPRelaxedFrameCounter && loRaDevice.FCntUp >= 0 && payloadFcnt <= 1)
                     {
                         // known problem when device restarts, starts fcnt from zero
                         _ = frameCounterStrategy.ResetAsync(loRaDevice);
@@ -187,10 +172,10 @@ namespace LoRaWan.NetworkServer.V2
                         }
                         else
                         {
+                            Logger.Log(loRaDevice.DevEUI, $"invalid frame counter, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", Logger.LoggingLevel.Info);
                             return null;
                         }
                     }
-
 
                     var fcntDown = 0;
                     // If it is confirmed it require us to update the frame counter down
@@ -272,14 +257,14 @@ namespace LoRaWan.NetworkServer.V2
                     // If it is confirmed and we don't have time to check c2d and send to device we return now
                     if (requiresConfirmation && timeToSecondWindow <= (LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessagePackageAndSendMessage))
                     {
-                        return __WorkaroundCreateDownlinkMessage(
+                        return CreateDownlinkMessage(
                             null,
                             loRaDevice,
                             rxpk,
                             loraPayload,
                             timeWatcher,
                             devAddr,
-                            false, /* fpending */
+                            false, // fpending
                             (ushort)fcntDown
                         );
                     }
@@ -333,7 +318,7 @@ namespace LoRaWan.NetworkServer.V2
                     // we got here:
                     // a) was a confirm request
                     // b) we have a c2d message
-                    var confirmDownstream = __WorkaroundCreateDownlinkMessage(
+                    var confirmDownstream = CreateDownlinkMessage(
                         cloudToDeviceMessage,
                         loRaDevice,
                         rxpk,
@@ -361,7 +346,10 @@ namespace LoRaWan.NetworkServer.V2
             }
         }
 
-        private DownlinkPktFwdMessage __WorkaroundCreateDownlinkMessage(
+        /// <summary>
+        /// Creates downlink message with ack for confirmation or cloud to device message
+        /// </summary>
+        DownlinkPktFwdMessage CreateDownlinkMessage(
             Message cloudToDeviceMessage, 
             LoRaDevice loraDeviceInfo, 
             Rxpk rxpk,
@@ -689,7 +677,7 @@ namespace LoRaWan.NetworkServer.V2
                 Array.Reverse(netId);
                 Array.Reverse(appNonceBytes);
 
-                return __WorkaroundCreateJoinAcceptDownlinkMessage(
+                return CreateJoinAcceptDownlinkMessage(
                     //NETID 0 / 1 is default test 
                     netId: netId,
                     //todo add app key management
@@ -708,7 +696,10 @@ namespace LoRaWan.NetworkServer.V2
 
 
 
-        DownlinkPktFwdMessage __WorkaroundCreateJoinAcceptDownlinkMessage(
+        /// <summary>
+        /// Creates downlink message for join accept
+        /// </summary>
+        DownlinkPktFwdMessage CreateJoinAcceptDownlinkMessage(
             ReadOnlyMemory<byte> netId,
             string appKey,
             string devAddr,

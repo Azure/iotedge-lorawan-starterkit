@@ -17,10 +17,9 @@ namespace LoRaWan.NetworkServer.V2
     public class LoRaDevice
     {
         public string DevAddr { get; set; }
-
-        //public bool IsABP { get; set; }
-        public bool IsABP => string.IsNullOrEmpty(this.AppEUI);
-
+        
+        // Gets if a device is activated by personalization
+        public bool IsABP => string.IsNullOrEmpty(this.AppKey);
         public string DevEUI { get; set; }
         public string AppKey { get; set; }
         public string AppEUI { get; set; }
