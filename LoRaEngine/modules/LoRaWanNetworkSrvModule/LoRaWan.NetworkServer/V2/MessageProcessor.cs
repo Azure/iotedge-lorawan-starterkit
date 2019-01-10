@@ -241,7 +241,7 @@ namespace LoRaWan.NetworkServer.V2
                                 else
                                 {
                                     Logger.Log(loRaDevice.DevEUI, $"decoding with: {loRaDevice.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Full);
-                                    payloadData = await payloadDecoder.DecodeMessage(decryptedPayloadData, fportUp, loRaDevice.SensorDecoder);
+                                    payloadData = await payloadDecoder.DecodeMessageAsync(decryptedPayloadData, fportUp, loRaDevice.SensorDecoder);
                                 }
                             }
 
@@ -585,7 +585,6 @@ namespace LoRaWan.NetworkServer.V2
                 // set context to logger
                 processLogger.SetDevEUI(devEUI);
 
-
                 var devNonce = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinReq.DevNonce);
                 Logger.Log(devEUI, $"join request received", Logger.LoggingLevel.Info);
 
@@ -595,7 +594,13 @@ namespace LoRaWan.NetworkServer.V2
                 if (loRaDevice == null)
                     return null;
 
-                if (string.IsNullOrEmpty(loRaDevice.AppKey) || !joinReq.CheckMic(loRaDevice.AppKey))
+                if (string.IsNullOrEmpty(loRaDevice.AppKey))
+                {
+                    Logger.Log(loRaDevice.DevEUI, "missing AppKey for OTAA for device", Logger.LoggingLevel.Error);
+                    return null;
+                }
+
+                if (!joinReq.CheckMic(loRaDevice.AppKey))
                 {
                     Logger.Log(devEUI, $"join request MIC invalid", Logger.LoggingLevel.Info);
                 }
@@ -610,8 +615,7 @@ namespace LoRaWan.NetworkServer.V2
                 //Make sure that is a new request and not a replay         
                 if (!string.IsNullOrEmpty(loRaDevice.DevNonce) && loRaDevice.DevNonce == devNonce)
                 {
-                    string errorMsg = $"DevNonce already used by this device";
-                    Logger.Log(devEUI, errorMsg, Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, "DevNonce already used by this device", Logger.LoggingLevel.Info);
                     loRaDevice.IsJoinValid = false;
                     return null;
                 }
@@ -687,7 +691,7 @@ namespace LoRaWan.NetworkServer.V2
                 Array.Reverse(netId);
                 Array.Reverse(appNonceBytes);
 
-                return __WorkaroundCreateJoinAcceptMessage(
+                return __WorkaroundCreateJoinAcceptDownlinkMessage(
                     //NETID 0 / 1 is default test 
                     netId: netId,
                     //todo add app key management
@@ -699,18 +703,12 @@ namespace LoRaWan.NetworkServer.V2
                     freq: freq,
                     tmst: tmst
                     );
-
-                //Logger.Log(devEui, String.Format("join accept sent with ID {0}",
-                //    ConversionHelper.ByteArrayToString(loraMessage.PhysicalPayload.token)),
-                //    Logger.LoggingLevel.Full);
-
-                //Logger.Log(devEui, $"join request refused", Logger.LoggingLevel.Info);
             }
         }
 
 
 
-        DownlinkPktFwdMessage __WorkaroundCreateJoinAcceptMessage(
+        DownlinkPktFwdMessage __WorkaroundCreateJoinAcceptDownlinkMessage(
             ReadOnlyMemory<byte> netId,
             string appKey,
             string devAddr,

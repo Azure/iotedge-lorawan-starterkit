@@ -169,7 +169,7 @@ namespace LoRaWan.NetworkServer.V2
 
 
 
-        public Task SendEventAsync(object payload, Dictionary<string, string> properties = null) => this.loRaDeviceClient.SendEventAsync(payload, properties);
+        public Task SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => this.loRaDeviceClient.SendEventAsync(telemetry, properties);
 
         public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => this.loRaDeviceClient.ReceiveAsync(timeout);
 

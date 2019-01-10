@@ -31,8 +31,10 @@ namespace LoRaWan.NetworkServer.V2
         
        
 
-        public async Task<JObject> DecodeMessage(byte[] payload, byte fport, string sensorDecoder)
+        public async ValueTask<JObject> DecodeMessageAsync(byte[] payload, byte fport, string sensorDecoder)
         {
+            sensorDecoder = sensorDecoder ?? string.Empty;
+
             string result;
             var base64Payload = Convert.ToBase64String(payload);
 
@@ -40,7 +42,7 @@ namespace LoRaWan.NetworkServer.V2
             if (!sensorDecoder.Contains("http://"))
             {
                 Type decoderType = typeof(LoRaPayloadDecoder);
-                MethodInfo toInvoke = decoderType.GetMethod(sensorDecoder, BindingFlags.Static | BindingFlags.NonPublic);
+                MethodInfo toInvoke = decoderType.GetMethod(sensorDecoder, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
 
                 if (toInvoke != null)
                 {

@@ -162,6 +162,8 @@ namespace LoRaWan.NetworkServer.V2
                 return null;
             }
 
+            Logger.Log(devEUI, $"querying the registry for device key", Logger.LoggingLevel.Info);
+
             var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(
                 gatewayId: configuration.GatewayID,
                 devEUI: devEUI,

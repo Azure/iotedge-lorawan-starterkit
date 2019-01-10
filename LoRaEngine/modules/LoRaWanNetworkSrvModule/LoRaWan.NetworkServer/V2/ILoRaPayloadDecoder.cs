@@ -17,6 +17,6 @@ namespace LoRaWan.NetworkServer.V2
         /// <param name="fport">FPort used</param>
         /// <param name="sensorDecoder">Decoder configured in the device</param>
         /// <returns></returns>
-        Task<JObject> DecodeMessage(byte[] payload, byte fport, string sensorDecoder);
+        ValueTask<JObject> DecodeMessageAsync(byte[] payload, byte fport, string sensorDecoder);
     }
 }

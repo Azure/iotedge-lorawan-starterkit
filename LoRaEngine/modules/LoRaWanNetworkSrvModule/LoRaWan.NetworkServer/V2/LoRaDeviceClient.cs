@@ -118,10 +118,10 @@ namespace LoRaWan.NetworkServer.V2
 
         }
 
-        public async Task SendEventAsync(object payload, Dictionary<string, string> properties)
+        public async Task SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties)
         {
 
-            if (payload != null)
+            if (telemetry != null)
             {
                 try
                 {
@@ -130,7 +130,7 @@ namespace LoRaWan.NetworkServer.V2
                     //Enable retry for this send message, off by default              
                     SetRetry(true);
 
-                    var messageJson = JsonConvert.SerializeObject(payload, Formatting.None);
+                    var messageJson = JsonConvert.SerializeObject(telemetry, Formatting.None);
                     var message = new Message(Encoding.UTF8.GetBytes(messageJson));
 
                     Logger.Log(this.devEUI, $"sending message {messageJson} to hub", Logger.LoggingLevel.Full);
