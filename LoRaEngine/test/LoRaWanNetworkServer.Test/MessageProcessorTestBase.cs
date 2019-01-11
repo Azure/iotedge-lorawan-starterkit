@@ -39,6 +39,8 @@ namespace LoRaWan.NetworkServer.Test
             this.serverConfiguration = new NetworkServerConfiguration
             {
                 GatewayID = ServerGatewayID,
+                LogToConsole = true,
+                LogLevel = (int)Logger.LoggingLevel.Full,
             };
 
             this.frameCounterUpdateStrategy = new Mock<ILoRaDeviceFrameCounterUpdateStrategy>(MockBehavior.Strict);

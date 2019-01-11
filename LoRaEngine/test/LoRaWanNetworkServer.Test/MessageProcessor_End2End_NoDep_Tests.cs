@@ -129,7 +129,7 @@ namespace LoRaWan.NetworkServer.Test
             simulatedDevice.LoRaDevice.DevAddr = afterJoinDevAddr;
 
             // sends unconfirmed message
-            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("100", fcnt: 1);
             var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(CreateRxpk(unconfirmedMessagePayload));
             Assert.Null(unconfirmedMessageResult);
 
@@ -142,7 +142,7 @@ namespace LoRaWan.NetworkServer.Test
 
 
             // sends confirmed message
-            var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("5678", fcnt: 2);
+            var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: 2);
             var confirmedMessageRxpk = CreateRxpk(confirmedMessagePayload);
             var confirmedMessage = await messageProcessor.ProcessMessageAsync(confirmedMessageRxpk);
             Assert.NotNull(confirmedMessage);

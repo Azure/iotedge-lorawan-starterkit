@@ -233,7 +233,7 @@ namespace LoRaTools.LoRaMessage
             CalculateMic(appKey, algoinput);
             PerformEncryption(appKey);
 
-            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), rxpk, datr, freq, tmst);
+            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
             if (Logger.LoggerLevel < Logger.LoggingLevel.Info)
             {
                 var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);

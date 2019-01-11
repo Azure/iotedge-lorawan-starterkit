@@ -63,27 +63,25 @@ namespace LoRaTools.LoRaPhysical
         /// <summary>
         /// This method is used in case of a response to a upstream message.
         /// </summary>
-        /// <param name="upstreamMessage">Rxpk received for upstream msg.</param>
         /// <param name="LoraMessage">the serialized LoRa Message.</param>
         /// <returns>DownlinkPktFwdMessage object ready to be sent</returns>
-        public DownlinkPktFwdMessage(byte[] LoRaData, Rxpk upstreamRxpk , string datr, double freq, long tmst = 0)
+        public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, long tmst = 0)
         {          
             txpk = new Txpk()
             {
                 imme = tmst == 0 ? true : false,
                 tmst = tmst,
-                data = Convert.ToBase64String(LoRaData),
-                size = (uint)LoRaData.Length,
+                data = Convert.ToBase64String(loRaData),
+                size = (uint)loRaData.Length,
                 freq = freq,
                 //TODO check this,
-                rfch = upstreamRxpk.rfch, // can I copy from upstream?
-                modu = upstreamRxpk.modu, // can I copy from upstream?
+                rfch = 0,
+                modu = "LORA",
                 datr = datr,
-                codr = upstreamRxpk.codr, // can I copy from upstream?
+                codr = "4/5",
                 //TODO put 14 for EU               
                 powe = 14,
                 ipol = true
-
             };
         }
 
@@ -107,6 +105,32 @@ namespace LoRaTools.LoRaPhysical
                 rxpkInput
             };
         }
+
+
+        /// <summary>
+        /// This method is used in case of a request to a upstream message.
+        /// </summary>
+        /// <param name="LoraMessage">the serialized LoRa Message.</param>
+        /// <returns>UplinkPktFwdMessage object ready to be sent</returns>
+        public UplinkPktFwdMessage(byte[] loRaData, string datr, double freq, uint tmst = 0)
+        {
+            // This is a new ctor, must be validated by MIK
+            rxpk = new List<Rxpk>() {
+                new Rxpk()
+                {                   
+                    tmst = tmst,
+                    data = Convert.ToBase64String(loRaData),
+                    size = (uint)loRaData.Length,
+                    freq = freq,
+                    //TODO check this,
+                    rfch = 1,
+                    modu = "LORA",
+                    datr = datr,
+                    codr = "4/5"
+                }
+            };            
+        }
+
         public override PktFwdMessageAdapter GetPktFwdMessage()
         {
             PktFwdMessageAdapter pktFwdMessageAdapter = new PktFwdMessageAdapter();
