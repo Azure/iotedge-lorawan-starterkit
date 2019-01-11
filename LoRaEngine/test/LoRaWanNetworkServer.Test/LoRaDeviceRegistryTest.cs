@@ -90,7 +90,7 @@ namespace LoRaWan.NetworkServer.Test
             loraDeviceFactoryMock.Verify();
 
             // ensure device is in cache
-            var cachedItem = this.cache.Get<LoRaDeviceRegistry.DevEUIDeviceDictionary>(createdLoraDevice.DevAddr);
+            var cachedItem = target.InternalGetCachedDevicesForDevAddr(createdLoraDevice.DevAddr);
             Assert.NotNull(cachedItem);
             Assert.Single(cachedItem);
             Assert.True(cachedItem.TryGetValue(createdLoraDevice.DevEUI, out var actualCachedLoRaDevice));
@@ -219,8 +219,8 @@ namespace LoRaWan.NetworkServer.Test
             var loraDevice1 = TestUtils.CreateFromSimulatedDevice(simulatedDevice1, null);
             loraDevice1.IsOurDevice = false;
 
-            var existingCache = new LoRaDeviceRegistry.DevEUIDeviceDictionary();
-            this.cache.Set<LoRaDeviceRegistry.DevEUIDeviceDictionary>(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
+            var existingCache = new DevEUIToLoRaDeviceDictionary();
+            this.cache.Set<DevEUIToLoRaDeviceDictionary>(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
             existingCache.TryAdd(loraDevice1.DevEUI, loraDevice1);
 
             var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
@@ -253,8 +253,8 @@ namespace LoRaWan.NetworkServer.Test
             simulatedDevice2.LoRaDevice.NwkSKey = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
             var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice2, null);
 
-            var existingCache = new LoRaDeviceRegistry.DevEUIDeviceDictionary();
-            this.cache.Set<LoRaDeviceRegistry.DevEUIDeviceDictionary>(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
+            var existingCache = new DevEUIToLoRaDeviceDictionary();
+            this.cache.Set<DevEUIToLoRaDeviceDictionary>(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
             existingCache.TryAdd(loraDevice1.DevEUI, loraDevice1);
             existingCache.TryAdd(loraDevice2.DevEUI, loraDevice2);
 
@@ -326,17 +326,17 @@ namespace LoRaWan.NetworkServer.Test
             loraDeviceFactoryMock.VerifyAll();
 
             // Both devices are in cache
-            var cachedItem = this.cache.Get<LoRaDeviceRegistry.DevEUIDeviceDictionary>(devAddr);
-            Assert.NotNull(cachedItem);
-            Assert.Equal(2, cachedItem.Count); // 2 devices with same devAddr exist in cache
+            var devicesByDevAddrDictionary = target.InternalGetCachedDevicesForDevAddr(devAddr);
+            Assert.NotNull(devicesByDevAddrDictionary);
+            Assert.Equal(2, devicesByDevAddrDictionary.Count); // 2 devices with same devAddr exist in cache
 
             // find device 1
-            Assert.True(cachedItem.TryGetValue(loraDevice1.DevEUI, out var actualCachedLoRaDevice1));
+            Assert.True(devicesByDevAddrDictionary.TryGetValue(loraDevice1.DevEUI, out var actualCachedLoRaDevice1));
             Assert.Same(loraDevice1, actualCachedLoRaDevice1);
             Assert.True(loraDevice1.IsOurDevice);
 
             // find device 2
-            Assert.True(cachedItem.TryGetValue(loraDevice2.DevEUI, out var actualCachedLoRaDevice2));
+            Assert.True(devicesByDevAddrDictionary.TryGetValue(loraDevice2.DevEUI, out var actualCachedLoRaDevice2));
             Assert.Same(loraDevice2, actualCachedLoRaDevice2);
             Assert.True(loraDevice2.IsOurDevice);
         }
@@ -416,10 +416,8 @@ namespace LoRaWan.NetworkServer.Test
 
             // device is in cache
             Assert.Equal(1, this.cache.Count);
-            var cachedObject = this.cache.Get(LoRaTools.Utils.ConversionHelper.ByteArrayToString(payload.DevAddr));
-            Assert.NotNull(cachedObject);
-            Assert.IsType<LoRaDeviceRegistry.DevEUIDeviceDictionary>(cachedObject);
-            var devAddrDictionary = (LoRaDeviceRegistry.DevEUIDeviceDictionary)cachedObject;
+            var devAddrDictionary = target.InternalGetCachedDevicesForDevAddr(LoRaTools.Utils.ConversionHelper.ByteArrayToString(payload.DevAddr));
+            Assert.NotNull(devAddrDictionary);
             Assert.True(devAddrDictionary.TryGetValue(createdLoraDevice.DevEUI, out var cachedLoRaDevice));
             Assert.False(cachedLoRaDevice.IsOurDevice);
         }

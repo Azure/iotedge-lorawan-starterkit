@@ -22,12 +22,6 @@ namespace LoRaWan.NetworkServer.V2
     /// </summary>
     public class LoRaDeviceRegistry : ILoRaDeviceRegistry
     {
-        // Dictionary of ILoRaDevices where key is DevEUI
-        public class DevEUIDeviceDictionary : ConcurrentDictionary<string, LoRaDevice>
-        {
-
-        }
-
         private readonly NetworkServerConfiguration configuration;
         private volatile IMemoryCache cache;
         private CancellationTokenSource resetCacheToken;
@@ -57,14 +51,33 @@ namespace LoRaWan.NetworkServer.V2
         /// <param name="initializer"></param>
         public void RegisterDeviceInitializer(ILoRaDeviceInitializer initializer) => this.initializers.Add(initializer);
 
+
+        /// <summary>
+        /// Gets a <see cref="DevEUIToLoRaDeviceDictionary"/> containing a list of devices given a <paramref name="devAddr"/>
+        /// </summary>
+        /// <remarks>
+        /// This method is internal in order to allow test assembly to used it!
+        /// </remarks>
+        /// <param name="devAddr"></param>
+        /// <returns></returns>
+        internal DevEUIToLoRaDeviceDictionary InternalGetCachedDevicesForDevAddr(string devAddr)
+        {
+            return this.cache.GetOrCreate<DevEUIToLoRaDeviceDictionary>(devAddr, (cacheEntry) => {
+                cacheEntry.SlidingExpiration = TimeSpan.FromDays(1);
+                cacheEntry.ExpirationTokens.Add(new CancellationChangeToken(this.resetCacheToken.Token));
+                return new DevEUIToLoRaDeviceDictionary();
+            });
+        }
+
+        /// <summary>
+        /// Finds a device based on the <see cref="LoRaPayloadData"/>
+        /// </summary>
+        /// <param name="loraPayload"></param>
+        /// <returns></returns>
         public async Task<LoRaDevice> GetDeviceForPayloadAsync(LoRaPayloadData loraPayload)
         {            
             var devAddr = ConversionHelper.ByteArrayToString(loraPayload.DevAddr.ToArray());
-            var devicesMatchingDevAddr = this.cache.GetOrCreate<DevEUIDeviceDictionary>(devAddr, (cacheEntry) => {
-                cacheEntry.SlidingExpiration = TimeSpan.FromDays(1);
-                cacheEntry.ExpirationTokens.Add(new CancellationChangeToken(this.resetCacheToken.Token));
-                return new DevEUIDeviceDictionary();
-            });
+            var devicesMatchingDevAddr = this.InternalGetCachedDevicesForDevAddr(devAddr);
 
             // If already in cache, return quickly
             if (devicesMatchingDevAddr.Count > 0)
@@ -87,7 +100,6 @@ namespace LoRaWan.NetworkServer.V2
 
             // If device was not found, search in the device API, updating local cache
             var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(devAddr: devAddr);
-
             if (searchDeviceResult.Devices != null)
             {
                 foreach (var foundDevice in searchDeviceResult.Devices)
@@ -136,12 +148,18 @@ namespace LoRaWan.NetworkServer.V2
             return null;
         }
 
+        /// <summary>
+        /// Checks whether a <see cref="LoRaDevice"/> is valid for a <see cref="LoRaPayloadData"/>
+        /// It validates that the device has a <see cref="LoRaDevice.NwkSKey"/> and mic check
+        /// </summary>
+        /// <param name="loRaDevice"></param>
+        /// <param name="loraPayload"></param>
+        /// <returns></returns>
         private bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload)
         {            
             if (string.IsNullOrEmpty(loRaDevice.NwkSKey))
                 return false;
 
-            // TODO: check with Mikhail why tests are failing here
             return loraPayload.CheckMic(loRaDevice.NwkSKey);
         }
 
@@ -162,6 +180,12 @@ namespace LoRaWan.NetworkServer.V2
                 return null;
             }
 
+            if (this.TryGetFromPendingJoinRequests(devEUI, out var cachedDevice))
+            {
+                Logger.Log(devEUI, $"using device from a previous failed join attempt", Logger.LoggingLevel.Info);
+                return cachedDevice;
+            }
+
             Logger.Log(devEUI, $"querying the registry for device key", Logger.LoggingLevel.Info);
 
             var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(
@@ -179,7 +203,6 @@ namespace LoRaWan.NetworkServer.V2
             if (searchDeviceResult.Devices == null || !searchDeviceResult.Devices.Any())
                 return null;
 
-
             var matchingDeviceInfo = searchDeviceResult.Devices[0];
             var loRaDevice = this.deviceFactory.Create(matchingDeviceInfo);
             if (loRaDevice != null)
@@ -187,18 +210,46 @@ namespace LoRaWan.NetworkServer.V2
                 Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", Logger.LoggingLevel.Info);
                 await loRaDevice.InitializeAsync();
                 Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
+
+                AddToPendingJoinRequests(loRaDevice);
             }
-
-
+            
             return loRaDevice;
         }
 
+        string GetPendingJoinRequestCacheKey(string devEUI) => string.Concat("pending_join:", devEUI);
+
+        /// <summary>
+        /// Adds <paramref name="loRaDevice"/> to in-memory list of device that are trying to join
+        /// This can save a get device twin call
+        /// </summary>
+        /// <param name="loRaDevice"></param>
+        private void AddToPendingJoinRequests(LoRaDevice loRaDevice) => this.cache.Set(GetPendingJoinRequestCacheKey(loRaDevice.DevEUI), loRaDevice, TimeSpan.FromMinutes(3));
+
+        /// <summary>
+        /// Removes a device from list of devices that are trying to login
+        /// </summary>
+        /// <param name="loRaDevice"></param>
+        private void RemoveFromPendingJoinRequests(LoRaDevice loRaDevice) => this.cache.Remove(GetPendingJoinRequestCacheKey(loRaDevice.DevEUI));
+
+        /// <summary>
+        /// Tries to get a device from the list of pending login devices
+        /// </summary>
+        /// <param name="devEUI"></param>
+        /// <param name="loRaDevice"></param>
+        /// <returns></returns>
+        bool TryGetFromPendingJoinRequests(string devEUI, out LoRaDevice loRaDevice) => this.cache.TryGetValue<LoRaDevice>(GetPendingJoinRequestCacheKey(devEUI), out loRaDevice);
+        
+        /// <summary>
+        /// Updates a device after a successful login
+        /// </summary>
+        /// <param name="loRaDevice"></param>
         public void UpdateDeviceAfterJoin(LoRaDevice loRaDevice)
         {
-            var devicesMatchingDevAddr = this.cache.GetOrCreate<DevEUIDeviceDictionary>(loRaDevice.DevAddr, (cacheEntry) => {
+            var devicesMatchingDevAddr = this.cache.GetOrCreate<DevEUIToLoRaDeviceDictionary>(loRaDevice.DevAddr, (cacheEntry) => {
                 cacheEntry.SlidingExpiration = TimeSpan.FromDays(1);
                 cacheEntry.ExpirationTokens.Add(new CancellationChangeToken(this.resetCacheToken.Token));
-                return new DevEUIDeviceDictionary();
+                return new DevEUIToLoRaDeviceDictionary();
             });
 
 
@@ -208,7 +259,11 @@ namespace LoRaWan.NetworkServer.V2
             // once added, call initializers
             foreach (var initializer in this.initializers)
                 initializer.Initialize(loRaDevice);
+
+            RemoveFromPendingJoinRequests(loRaDevice);
         }
+
+        
 
         /// <summary>
         /// <inheritdoc />

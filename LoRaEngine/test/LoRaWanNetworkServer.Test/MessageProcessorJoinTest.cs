@@ -338,7 +338,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));            
 
             // check that the device is in cache
-            Assert.True(memoryCache.TryGetValue<LoRaDeviceRegistry.DevEUIDeviceDictionary>(afterJoinDevAddr, out var cachedDevices));
+            Assert.True(memoryCache.TryGetValue<DevEUIToLoRaDeviceDictionary>(afterJoinDevAddr, out var cachedDevices));
             Assert.True(cachedDevices.TryGetValue(devEUI, out var cachedDevice));
             Assert.Equal(afterJoinAppSKey, cachedDevice.AppSKey);
             Assert.Equal(afterJoinNwkSKey, cachedDevice.NwkSKey);

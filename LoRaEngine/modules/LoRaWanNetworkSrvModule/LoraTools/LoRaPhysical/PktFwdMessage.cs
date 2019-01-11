@@ -98,10 +98,17 @@ namespace LoRaTools.LoRaPhysical
     /// </summary>
     public class UplinkPktFwdMessage : PktFwdMessage
     {
-        public List<Rxpk> rxpk = new List<Rxpk>();
+        public List<Rxpk> rxpk;
 
-        public UplinkPktFwdMessage(Rxpk rxpkInput){
-            rxpk= new List<Rxpk>(){
+        public UplinkPktFwdMessage()
+        {
+            rxpk = new List<Rxpk>();
+        }
+
+        public UplinkPktFwdMessage(Rxpk rxpkInput)
+        {
+            rxpk = new List<Rxpk>()
+            {
                 rxpkInput
             };
         }
@@ -115,7 +122,8 @@ namespace LoRaTools.LoRaPhysical
         public UplinkPktFwdMessage(byte[] loRaData, string datr, double freq, uint tmst = 0)
         {
             // This is a new ctor, must be validated by MIK
-            rxpk = new List<Rxpk>() {
+            rxpk = new List<Rxpk>() 
+            {
                 new Rxpk()
                 {                   
                     tmst = tmst,
