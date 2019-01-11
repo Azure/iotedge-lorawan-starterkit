@@ -13,8 +13,8 @@ namespace LoRaWan.NetworkServer
     {
         public string DevAddr { get; set; }
         public string DevEUI{ get; set; }
-    public string AppKey{ get; set; }
-public string AppEUI{ get; set; }
+        public string AppKey{ get; set; }
+        public string AppEUI{ get; set; }
         public string NwkSKey { get; set; }
         public string AppSKey { get; set; }
         public string PrimaryKey { get; set; }
@@ -28,7 +28,7 @@ public string AppEUI{ get; set; }
         public UInt16 FCntDown;
         public string GatewayID { get; set; }
         public string SensorDecoder { get; set; }
-
+        public string LastConfirmedMessageId { get; set; }
 
         public LoraDeviceInfo()
         {
