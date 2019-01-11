@@ -22,7 +22,7 @@ This guide helps you to execute and author integration tests on your local envir
 * LoRaWan solution up and running (IoT Edge Device, IoT Hub, LoRa Keys Azure Function, Redis, etc.)
 * Seeeduino LoRaWan device (leaf test device) connected via USB to a computer where the LoRaWan.IntegrationTest will run.
 * Module LoRaWanNetworkSrvModule logging configured with following environment variables:
-  * LOG_LEVEL: 1 or 2 (preferred)
+  * LOG_LEVEL: 1
   * LOG_TO_UDP: true
   * LOG_TO_UDP_ADDRESS: development machine IP address (ensure IoT Edge machine can ping it)
 * Integration test configuration (in file `appsettings.local.json`) has UDP logging enabled `"UdpLog": "true"`

@@ -104,6 +104,9 @@
               },
               "LEAF_DEVICE_PROTOCOL": {
                 "value": "$NET_SRV_LEAF_DEVICE_PROTOCOL"
+              },
+              "ENABLE_GATEWAY": {
+                "value": "$NET_SRV_ENABLE_GATEWAY"
               }
             },
             "status": "running",
