@@ -593,15 +593,14 @@ namespace LoRaWan.NetworkServer.V2
 
                 if (loRaDevice.AppEUI != appEUI)
                 {
-                    string errorMsg = $"AppEUI for OTAA does not match for device";
-                    Logger.Log(devEUI, errorMsg, Logger.LoggingLevel.Error);
+                    Logger.Log(devEUI, "join refused: AppEUI for OTAA does not match for device", Logger.LoggingLevel.Error);
                     return null;
                 }
 
                 //Make sure that is a new request and not a replay         
                 if (!string.IsNullOrEmpty(loRaDevice.DevNonce) && loRaDevice.DevNonce == devNonce)
                 {
-                    Logger.Log(devEUI, "DevNonce already used by this device", Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, "join refused: DevNonce already used by this device", Logger.LoggingLevel.Info);
                     loRaDevice.IsJoinValid = false;
                     return null;
                 }
@@ -610,7 +609,7 @@ namespace LoRaWan.NetworkServer.V2
                 //Check that the device is joining through the linked gateway and not another
                 if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(loRaDevice.GatewayID, configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Logger.Log(devEUI, $"trying to join not through its linked gateway, ignoring join request", Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, $"join refused: trying to join not through its linked gateway, ignoring join request", Logger.LoggingLevel.Info);
                     loRaDevice.IsJoinValid = false;
                     loRaDevice.IsOurDevice = false;
                     return null;
@@ -627,7 +626,7 @@ namespace LoRaWan.NetworkServer.V2
                 if (!timeWatcher.InTimeForJoinAccept())
                 {
                     // in this case it's too late, we need to break and avoid saving twins
-                    Logger.Log(devEUI, $"processing of the join request took too long, sending no message", Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", Logger.LoggingLevel.Info);
                     return null;
                 }
 
@@ -637,7 +636,7 @@ namespace LoRaWan.NetworkServer.V2
 
                 if (!deviceUpdateSucceeded)
                 {
-                    Logger.Log(devEUI, $"join request could not save twins, join refused", Logger.LoggingLevel.Error);
+                    Logger.Log(devEUI, $"join refused: join request could not save twins", Logger.LoggingLevel.Error);
                     return null;
                 }
 
@@ -676,6 +675,8 @@ namespace LoRaWan.NetworkServer.V2
                 // Build join accept downlink message
                 Array.Reverse(netId);
                 Array.Reverse(appNonceBytes);
+
+
 
                 return CreateJoinAcceptDownlinkMessage(
                     //NETID 0 / 1 is default test 

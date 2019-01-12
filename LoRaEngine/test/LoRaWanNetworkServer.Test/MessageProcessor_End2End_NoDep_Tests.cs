@@ -694,5 +694,76 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0, loRaDevice.FCntDown);
             Assert.False(loRaDevice.HasFrameCountChanges);
         }
+
+
+        [Theory]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID)]
+        //[InlineData(null)]
+        public async Task When_Join_Device_Has_Wrong_AppEUI_Should_Return_Null(string deviceGatewayID)
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
+            var joinRequest1 = simulatedDevice.CreateJoinRequest();
+
+            // Create Rxpk
+            var joinRequestRxpk1 = CreateRxpk(joinRequest1);
+
+            var joinRequestDevNonce1 = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequest1.DevNonce);
+            var devAddr = string.Empty;
+            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var appEUI = simulatedDevice.LoRaDevice.AppEUI;
+
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+
+            // Device twin will be queried
+            var twin = new Twin();
+            twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            twin.Properties.Desired[TwinProperty.AppEUI] = "012345678901234567890123456789FF";
+            twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
+            twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
+            twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            loRaDeviceClient.Setup(x => x.GetTwinAsync())
+                .Callback(() =>
+                {
+                    Thread.Sleep(TimeSpan.FromSeconds(7));
+                })
+                .ReturnsAsync(twin);
+
+            // Device twin will be updated
+            string afterJoinAppSKey = null;
+            string afterJoinNwkSKey = null;
+            string afterJoinDevAddr = null;
+            loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .Callback<TwinCollection>((updatedTwin) => {
+                    afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey];
+                    afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey];
+                    afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
+                })
+                .ReturnsAsync(true);
+
+            // Lora device api will be search by devices with matching deveui,
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+            loRaDeviceApi.Setup(x => x.SearchDevicesAsync(ServerConfiguration.GatewayID, null, devEUI, appEUI, joinRequestDevNonce1))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
+
+            // using factory to create mock of 
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
+
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                frameCounterUpdateStrategyFactory,
+                new LoRaPayloadDecoder()
+                );
+
+            // 1st join request
+            // Should fail
+            var joinRequestDownlinkMessage1 = await messageProcessor.ProcessMessageAsync(joinRequestRxpk1);
+            Assert.Null(joinRequestDownlinkMessage1);
+        }
     }
 }
