@@ -105,9 +105,10 @@ namespace LoRaWan.NetworkServer.V2
                 foreach (var foundDevice in searchDeviceResult.Devices)
                 {
                     var loRaDevice = this.deviceFactory.Create(foundDevice);
-                    if (devicesMatchingDevAddr.TryAdd(foundDevice.DevEUI, loRaDevice))
+                    if (loRaDevice != null && devicesMatchingDevAddr.TryAdd(loRaDevice.DevEUI, loRaDevice))
                     {
                         // Calling initialize async here to avoid making async calls in the concurrent dictionary
+                        // Since only one device will be added, we guarantee that initialization only happens once
                         await loRaDevice.InitializeAsync();
                         loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
 

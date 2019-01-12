@@ -13,25 +13,25 @@ namespace LoRaWan.NetworkServer.V2
         {
         }
 
-        public async Task<bool> ResetAsync(LoRaDevice loraDevice)
+        public async Task<bool> ResetAsync(LoRaDevice loRaDevice)
         {
-            loraDevice.SetFcntUp(0);
-            loraDevice.SetFcntDown(0);
-            return await InternalSaveChangesAsync(loraDevice, force: true);
+            loRaDevice.SetFcntUp(0);
+            loRaDevice.SetFcntDown(0);
+            return await InternalSaveChangesAsync(loRaDevice, force: true);
         }
 
-        public ValueTask<int> NextFcntDown(LoRaDevice loraDevice)
+        public ValueTask<int> NextFcntDown(LoRaDevice loRaDevice)
         {
-            return new ValueTask<int>(loraDevice.IncrementFcntDown(1));
+            return new ValueTask<int>(loRaDevice.IncrementFcntDown(1));
         }
 
-        public Task<bool> SaveChangesAsync(LoRaDevice loraDevice) => InternalSaveChangesAsync(loraDevice, force: false);
+        public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => InternalSaveChangesAsync(loRaDevice, force: false);
 
-        private async Task<bool> InternalSaveChangesAsync(LoRaDevice loraDevice, bool force)
+        private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {
-            if (loraDevice.FCntUp % 10 == 0 || force)
+            if (loRaDevice.FCntUp % 10 == 0 || force)
             {
-                return await loraDevice.SaveFrameCountChangesAsync();
+                return await loRaDevice.SaveFrameCountChangesAsync();
             }
 
             return true;
@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer.V2
                 loRaDevice.IncrementFcntDown(10);
 
                 // do not save the changes
-                loRaDevice.AcceptFrameCountChanges();
+                //loRaDevice.AcceptFrameCountChanges();
             }
         }
     }

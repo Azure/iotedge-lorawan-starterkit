@@ -110,12 +110,17 @@ namespace LoRaWan.NetworkServer.V2
             if (this.hasFrameCountChanges == 1)
             {
                 var reportedProperties = new TwinCollection();
-                reportedProperties[TwinProperty.FCntDown] = this.FCntDown;
-                reportedProperties[TwinProperty.FCntUp] = this.FCntUp;
+                var savedFcntDown = this.FCntDown;
+                var savedFcntUp = this.FCntUp;
+                reportedProperties[TwinProperty.FCntDown] = savedFcntDown;
+                reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
                 var result = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
                 if (result)
                 {
-                    AcceptFrameCountChanges();
+                    if (savedFcntUp == this.FCntUp && savedFcntDown == this.FCntDown)
+                    {
+                        AcceptFrameCountChanges();
+                    }
                 }
 
                 return result;

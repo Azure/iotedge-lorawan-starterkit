@@ -26,9 +26,11 @@ namespace LoRaWan.NetworkServer.Test
 
 
         [Theory]
-        [InlineData(MessageProcessorTestBase.ServerGatewayID)]
-        [InlineData(null)]
-        public async Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID)
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, 200, 50)]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, 0, 0)]
+        [InlineData(null, 200, 50)]
+        [InlineData(null, 0, 0)]
+        public async Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, int initialFcntUp, int initialFcntDown)
         {         
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
@@ -50,6 +52,8 @@ namespace LoRaWan.NetworkServer.Test
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            twin.Properties.Reported[TwinProperty.FCntUp] = initialFcntUp;
+            twin.Properties.Reported[TwinProperty.FCntDown] = initialFcntDown;
             loRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(twin);
 
             // Device twin will be updated
@@ -165,13 +169,384 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(loRaDevice.HasFrameCountChanges);
         }
 
+        [Theory]
+        [InlineData(null, 0, null, null)]
+        [InlineData(null, 0, 1, 1)]
+        [InlineData(null, 0, 100, 20)]
+        [InlineData(null, 1, null, null)]
+        [InlineData(null, 1, 1, 1)]
+        [InlineData(null, 1, 100, 20)]
+        public async Task MultiGateway_ABP_New_Loaded_Device_With_Fcnt_1_Or_0_Should_Reset_Fcnt_And_Send_To_IotHub(
+            string twinGatewayID, 
+            int payloadFcntUp, 
+            int? deviceTwinFcntUp, 
+            int? deviceTwinFcntDown)
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: null));
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
 
+            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
+
+            // message will be sent
+            LoRaDeviceTelemetry loRaDeviceTelemetry = null;
+            loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
+                .Returns(Task.FromResult(0));
+
+            // C2D message will be checked
+            loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            // twin will be loaded
+            var initialTwin = new Twin();
+            initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            initialTwin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
+            initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
+            initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey;
+            initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey;
+            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr;
+            if (twinGatewayID != null)
+                initialTwin.Properties.Desired[TwinProperty.GatewayID] = twinGatewayID;
+            initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            if (deviceTwinFcntDown.HasValue)
+                initialTwin.Properties.Reported[TwinProperty.FCntDown] = deviceTwinFcntDown.Value;
+            if (deviceTwinFcntUp.HasValue)
+                initialTwin.Properties.Reported[TwinProperty.FCntUp] = deviceTwinFcntUp.Value;
+
+            loRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(initialTwin);
+
+            // twin will be updated with new fcnt
+            int? fcntUpSavedInTwin = null;
+            int? fcntDownSavedInTwin = null;
+
+            var shouldSaveTwin = (deviceTwinFcntDown ?? 0) != 0 || (deviceTwinFcntUp ?? 0) != 0;
+            if (shouldSaveTwin)
+            {
+                loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                    .Callback<TwinCollection>((t) =>
+                    {
+                        fcntUpSavedInTwin = (int)t[TwinProperty.FCntUp];
+                        fcntDownSavedInTwin = (int)t[TwinProperty.FCntDown];
+                    })
+                    .ReturnsAsync(true);
+            }
+
+   
+            
+            // Lora device api
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+
+            // multi gateway will reset the fcnt
+            if (shouldSaveTwin)
+            {
+                loRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI))
+                    .ReturnsAsync(true);
+            }
+            
+            // device api will be searched for payload
+            loRaDeviceApi.Setup(x => x.SearchDevicesAsync(null, devAddr, null, null, null))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
+
+            // using factory to create mock of 
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
+
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                frameCounterUpdateStrategyFactory,
+                new LoRaPayloadDecoder()
+                );
+
+            // sends unconfirmed message
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello", fcnt: payloadFcntUp);
+            var rxpk = CreateRxpk(unconfirmedMessagePayload);
+            var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
+            Assert.Null(unconfirmedMessageResult);
+
+            // Ensure that a telemetry was sent
+            Assert.NotNull(loRaDeviceTelemetry);
+            //Assert.Equal(msgPayload, loRaDeviceTelemetry.data);
+
+            // Ensure that the device twins were saved
+            if (shouldSaveTwin)
+            {
+                Assert.NotNull(fcntDownSavedInTwin);
+                Assert.NotNull(fcntUpSavedInTwin);
+                Assert.Equal(0, fcntDownSavedInTwin.Value);
+                Assert.Equal(0, fcntUpSavedInTwin.Value);
+            }
+
+            // verify that the device in device registry has correct properties and frame counters
+            var devicesForDevAddr = deviceRegistry.InternalGetCachedDevicesForDevAddr(devAddr);
+            Assert.Single(devicesForDevAddr);
+            Assert.True(devicesForDevAddr.TryGetValue(devEUI, out var loRaDevice));
+            Assert.Equal(devAddr, loRaDevice.DevAddr);
+            Assert.Equal(devEUI, loRaDevice.DevEUI);
+            Assert.True(loRaDevice.IsABP);
+            Assert.Equal(payloadFcntUp, loRaDevice.FCntUp);
+            Assert.Equal(0, loRaDevice.FCntDown);
+            if (payloadFcntUp == 0)
+                Assert.False(loRaDevice.HasFrameCountChanges); // no changes
+            else
+                Assert.True(loRaDevice.HasFrameCountChanges); // should have changes!
+
+            loRaDeviceClient.Verify();
+            loRaDeviceApi.Verify();
+        }
+
+        [Theory]
+        [InlineData(ServerGatewayID, 0, 0, 0)]
+        [InlineData(ServerGatewayID, 0, 1, 1)]
+        [InlineData(ServerGatewayID, 0, 100, 20)]
+        [InlineData(ServerGatewayID, 1, 0, 0)]
+        [InlineData(ServerGatewayID, 1, 1, 1)]
+        [InlineData(ServerGatewayID, 1, 100, 20)]
+        [InlineData(null, 0, 0, 0)]
+        [InlineData(null, 0, 1, 1)]
+        [InlineData(null, 0, 100, 20)]
+        [InlineData(null, 1, 0, 0)]
+        [InlineData(null, 1, 1, 1)]
+        [InlineData(null, 1, 100, 20)]
+        public async Task ABP_Cached_Device_With_Fcnt_1_Or_0_Should_Reset_Fcnt_And_Send_To_IotHub(
+            string deviceGatewayID,
+            int payloadFcntUp,
+            int deviceInitialFcntUp,
+            int deviceInitialFcntDown)
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
+            simulatedDevice.FrmCntDown = deviceInitialFcntDown;
+            simulatedDevice.FrmCntUp = deviceInitialFcntUp;
+
+            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
+
+            // message will be sent
+            LoRaDeviceTelemetry loRaDeviceTelemetry = null;
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
+                .Returns(Task.FromResult(0));
+
+            // C2D message will be checked
+            loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            // twin will be updated with new fcnt
+            int? fcntUpSavedInTwin = null;
+            int? fcntDownSavedInTwin = null;
+
+            // twin should be saved only if not starting at 0, 0
+            var shouldSaveTwin = deviceInitialFcntDown != 0 || deviceInitialFcntUp != 0;
+            if (shouldSaveTwin)
+            {
+                // Twin will be saved
+                loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                    .Callback<TwinCollection>((t) =>
+                    {
+                        fcntUpSavedInTwin = (int)t[TwinProperty.FCntUp];
+                        fcntDownSavedInTwin = (int)t[TwinProperty.FCntDown];
+                    })
+                    .ReturnsAsync(true);
+            }
+
+
+            // Lora device api
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+
+            // using factory to create mock of 
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var cachedDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
+
+            var devEUIDeviceDict = new DevEUIToLoRaDeviceDictionary();
+            devEUIDeviceDict.TryAdd(devEUI, cachedDevice);
+            memoryCache.Set(devAddr, devEUIDeviceDict);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
+
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                frameCounterUpdateStrategyFactory,
+                new LoRaPayloadDecoder()
+                );
+
+            // sends unconfirmed message
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello", fcnt: payloadFcntUp);
+            var rxpk = CreateRxpk(unconfirmedMessagePayload);
+            var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
+            Assert.Null(unconfirmedMessageResult);
+
+            // Ensure that a telemetry was sent
+            Assert.NotNull(loRaDeviceTelemetry);
+            //Assert.Equal(msgPayload, loRaDeviceTelemetry.data);
+
+            // Ensure that the device twins were saved 
+            if (shouldSaveTwin)
+            {
+                Assert.NotNull(fcntDownSavedInTwin);
+                Assert.NotNull(fcntUpSavedInTwin);
+                Assert.Equal(0, fcntDownSavedInTwin.Value); // fcntDown will be set to zero
+                Assert.Equal(0, fcntUpSavedInTwin.Value); // fcntUp will be set to zero
+            }
+
+            // verify that the device in device registry has correct properties and frame counters
+            var devicesForDevAddr = deviceRegistry.InternalGetCachedDevicesForDevAddr(devAddr);
+            Assert.Single(devicesForDevAddr);
+            Assert.True(devicesForDevAddr.TryGetValue(devEUI, out var loRaDevice));
+            Assert.Equal(devAddr, loRaDevice.DevAddr);
+            Assert.Equal(devEUI, loRaDevice.DevEUI);
+            Assert.True(loRaDevice.IsABP);
+            Assert.Equal(payloadFcntUp, loRaDevice.FCntUp);
+            Assert.Equal(0, loRaDevice.FCntDown); // fctn down will always be set to zero
+            if (payloadFcntUp == 0)
+                Assert.False(loRaDevice.HasFrameCountChanges); // no changes
+            else
+                Assert.True(loRaDevice.HasFrameCountChanges); // there are pending changes (fcntUp 0 => 1)
+
+            loRaDeviceClient.Verify();
+            loRaDeviceApi.Verify();
+
+            // will update api in multi gateway scenario
+            if (string.IsNullOrEmpty(deviceGatewayID))
+            {
+                loRaDeviceApi.Verify(x => x.ABPFcntCacheResetAsync(devEUI), Times.Exactly(1));
+            }
+        }
+
+        [Theory]
+        [InlineData(0, null, null)]
+        [InlineData(0, 1, 1)]
+        [InlineData(0, 100, 20)]
+        [InlineData(1, null, null)]
+        [InlineData(1, 1, 1)]
+        [InlineData(1, 100, 20)]
+        public async Task SingleGateway_ABP_New_Loaded_Device_With_Fcnt_1_Or_0_Should_Reset_Fcnt_And_Send_To_IotHub(
+            int payloadFcntUp, 
+            int? deviceTwinFcntUp, 
+            int? deviceTwinFcntDown)
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));            
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+
+            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
+
+            // message will be sent
+            LoRaDeviceTelemetry loRaDeviceTelemetry = null;
+            loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
+                .Returns(Task.FromResult(0));
+
+            // C2D message will be checked
+            loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            // twin will be loaded
+            var initialTwin = new Twin();
+            initialTwin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
+            initialTwin.Properties.Desired[TwinProperty.AppEUI] = simulatedDevice.LoRaDevice.AppEUI;
+            initialTwin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
+            initialTwin.Properties.Desired[TwinProperty.NwkSKey] = simulatedDevice.LoRaDevice.NwkSKey;
+            initialTwin.Properties.Desired[TwinProperty.AppSKey] = simulatedDevice.LoRaDevice.AppSKey;
+            initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr;
+            initialTwin.Properties.Desired[TwinProperty.GatewayID] = this.ServerConfiguration.GatewayID;            
+            initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
+            if (deviceTwinFcntDown.HasValue)
+                initialTwin.Properties.Reported[TwinProperty.FCntDown] = deviceTwinFcntDown.Value;
+            if (deviceTwinFcntUp.HasValue)  
+                initialTwin.Properties.Reported[TwinProperty.FCntUp] = deviceTwinFcntUp.Value;
+            
+            loRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(initialTwin);
+
+            // twin will be updated with new fcnt
+            int? fcntUpSavedInTwin = null;
+            int? fcntDownSavedInTwin = null;
+
+            // Twin will be save (0, 0) only if it was not 0, 0
+            loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .Callback<TwinCollection>((t) =>
+                {
+                    fcntUpSavedInTwin = (int)t[TwinProperty.FCntUp];
+                    fcntDownSavedInTwin = (int)t[TwinProperty.FCntDown];
+                })
+                .ReturnsAsync(true);
+            
+       
+            // Lora device api
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+
+            // device api will be searched for payload
+            loRaDeviceApi.Setup(x => x.SearchDevicesAsync(null, devAddr, null, null, null))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
+            
+            
+            // using factory to create mock of 
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
+
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                frameCounterUpdateStrategyFactory,
+                new LoRaPayloadDecoder()
+                );            
+
+            // sends unconfirmed message
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello", fcnt: payloadFcntUp);
+            var rxpk = CreateRxpk(unconfirmedMessagePayload);
+            var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
+            Assert.Null(unconfirmedMessageResult);
+
+            // Ensure that a telemetry was sent
+            Assert.NotNull(loRaDeviceTelemetry);
+            //Assert.Equal(msgPayload, loRaDeviceTelemetry.data);
+
+            // Ensure that the device twins were saved 
+            Assert.NotNull(fcntDownSavedInTwin);
+            Assert.NotNull(fcntUpSavedInTwin);
+            Assert.Equal(0, fcntDownSavedInTwin.Value);
+            Assert.Equal(0, fcntUpSavedInTwin.Value);
+
+            // verify that the device in device registry has correct properties and frame counters
+            var devicesForDevAddr = deviceRegistry.InternalGetCachedDevicesForDevAddr(devAddr);
+            Assert.Single(devicesForDevAddr);
+            Assert.True(devicesForDevAddr.TryGetValue(devEUI, out var loRaDevice));
+            Assert.Equal(devAddr, loRaDevice.DevAddr);
+            Assert.Equal(devEUI, loRaDevice.DevEUI);
+            Assert.True(loRaDevice.IsABP);
+            Assert.Equal(payloadFcntUp, loRaDevice.FCntUp);
+            Assert.Equal(0, loRaDevice.FCntDown);
+            if (payloadFcntUp == 0)
+                Assert.False(loRaDevice.HasFrameCountChanges); // no changes
+            else
+                Assert.True(loRaDevice.HasFrameCountChanges); // there are pending changes (fcntUp 0 => 1)
+            
+            loRaDeviceClient.Verify();
+            loRaDeviceApi.Verify();
+        }
 
 
         [Theory]
         [InlineData(MessageProcessorTestBase.ServerGatewayID, "1234", "")]
         [InlineData(null, "hello world", null)]
-        public async Task Unconfirmed_With_No_Decoder_Sends_Raw_Payload(string deviceGatewayID, string msgPayload, string sensorDecoder)
+        public async Task ABP_Unconfirmed_With_No_Decoder_Sends_Raw_Payload(string deviceGatewayID, string msgPayload, string sensorDecoder)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));            
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);

@@ -23,10 +23,14 @@ namespace LoRaWan.NetworkServer.V2
 
         public async Task<bool> ResetAsync(LoRaDevice loRaDevice)
         {
-            loRaDevice.SetFcntDown(0);
             loRaDevice.SetFcntUp(0);
+            loRaDevice.SetFcntDown(0);
+            if (await InternalSaveChangesAsync(loRaDevice, force: true))
+            {
+                return await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI);  
+            }
 
-            return await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI);
+            return false;
         }
 
         public async ValueTask<int> NextFcntDown(LoRaDevice loRaDevice)
@@ -49,9 +53,11 @@ namespace LoRaWan.NetworkServer.V2
             return result;
         }
 
-        public async Task<bool> SaveChangesAsync(LoRaDevice loRaDevice)
-        {            
-            if (loRaDevice.FCntUp % 10 == 0)
+        public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => InternalSaveChangesAsync(loRaDevice, force: false);
+
+        private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
+        {
+            if (loRaDevice.FCntUp % 10 == 0 || force)
             {
                 return await loRaDevice.SaveFrameCountChangesAsync();
             }
