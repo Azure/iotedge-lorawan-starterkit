@@ -589,6 +589,8 @@ namespace LoRaWan.NetworkServer.V2
                 if (!joinReq.CheckMic(loRaDevice.AppKey))
                 {
                     Logger.Log(devEUI, $"join request MIC invalid", Logger.LoggingLevel.Info);
+                    //Logger.Log(devEUI, "join refused: invalid MIC", Logger.LoggingLevel.Error);
+                    //return null;
                 }
 
                 if (loRaDevice.AppEUI != appEUI)
@@ -597,7 +599,7 @@ namespace LoRaWan.NetworkServer.V2
                     return null;
                 }
 
-                //Make sure that is a new request and not a replay         
+                // Make sure that is a new request and not a replay         
                 if (!string.IsNullOrEmpty(loRaDevice.DevNonce) && loRaDevice.DevNonce == devNonce)
                 {
                     Logger.Log(devEUI, "join refused: DevNonce already used by this device", Logger.LoggingLevel.Info);
