@@ -56,19 +56,13 @@ namespace LoRaTools.LoRaMessage
 
         private byte[] PerformMic(string appKey)
         {
+            var byteMsg = this.GetByteMessage();
             IMac mac = MacUtilities.GetMac("AESCMAC");
 
             KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(appKey));
             mac.Init(key);
-            var newDevEUI = DevEUI.ToArray();
-            Array.Reverse(newDevEUI);
-
-            var newAppEUI = AppEUI.ToArray();
-            Array.Reverse(newAppEUI);
-            var algoinput = Mhdr.ToArray().Concat(newAppEUI).Concat(newDevEUI).Concat(DevNonce.ToArray()).ToArray();
-            byte[] result = new byte[19];
-            mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            result = MacUtilities.DoFinal(mac);
+            mac.BlockUpdate(byteMsg, 0, 19);
+            var result = MacUtilities.DoFinal(mac);
             var resStr = BitConverter.ToString(result);
             return result.Take(4).ToArray();
         }
@@ -78,12 +72,23 @@ namespace LoRaTools.LoRaMessage
             throw new NotImplementedException("The payload is not encrypted in case of a join message");
         }
 
+        void ReverseAddRange(List<byte> list, ReadOnlyMemory<byte> src)
+        {
+            var span = src.Span;
+            for (var i=src.Length-1; i >= 0; --i)
+            {
+                list.Add(span[i]);
+            }
+        }
+
         public override byte[] GetByteMessage()
         {
             List<byte> messageArray = new List<byte>();
             messageArray.AddRange(Mhdr.ToArray());
-            messageArray.AddRange(AppEUI.ToArray());
-            messageArray.AddRange(DevEUI.ToArray());
+            ReverseAddRange(messageArray, AppEUI);
+            ReverseAddRange(messageArray, DevEUI);
+            //messageArray.AddRange(AppEUI.ToArray());
+            //messageArray.AddRange(DevEUI.ToArray());
             messageArray.AddRange(DevNonce.ToArray());
             if (!Mic.Span.IsEmpty)
             {

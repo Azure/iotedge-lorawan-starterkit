@@ -563,10 +563,16 @@ namespace LoRaWan.NetworkServer.V2
             {
 
                 byte[] udpMsgForPktForwarder = new Byte[0];
-
+                
                 joinReq.DevEUI.Span.Reverse();
                 joinReq.AppEUI.Span.Reverse();
                 var devEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinReq.DevEUI);
+                var appEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinReq.AppEUI);
+                
+                // var reversedDevEUICopy = ReverseCopyArray(joinReq.DevEUI);
+                // var reversedAppEUICopy = ReverseCopyArray(joinReq.AppEUI);
+                // var devEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(reversedDevEUICopy);
+                // var appEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(reversedAppEUICopy);
 
                 // set context to logger
                 processLogger.SetDevEUI(devEUI);
@@ -574,7 +580,7 @@ namespace LoRaWan.NetworkServer.V2
                 var devNonce = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinReq.DevNonce);
                 Logger.Log(devEUI, $"join request received", Logger.LoggingLevel.Info);
 
-                var appEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinReq.AppEUI);
+                
 
                 var loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEUI, appEUI, devNonce);
                 if (loRaDevice == null)
@@ -588,9 +594,9 @@ namespace LoRaWan.NetworkServer.V2
 
                 if (!joinReq.CheckMic(loRaDevice.AppKey))
                 {
-                    Logger.Log(devEUI, $"join request MIC invalid", Logger.LoggingLevel.Info);
-                    //Logger.Log(devEUI, "join refused: invalid MIC", Logger.LoggingLevel.Error);
-                    //return null;
+                    //Logger.Log(devEUI, $"join request MIC invalid", Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, "join refused: invalid MIC", Logger.LoggingLevel.Error);
+                    return null;
                 }
 
                 if (loRaDevice.AppEUI != appEUI)
@@ -695,6 +701,22 @@ namespace LoRaWan.NetworkServer.V2
                     devEUI: devEUI
                     );
             }
+        }
+
+        /// <summary>
+        /// Creates a reversed copy of an byte array
+        /// </summary>
+        /// <param name="srcArray"></param>
+        /// <returns></returns>
+        private byte[] ReverseCopyArray(ReadOnlyMemory<byte> srcArray)
+        {
+            var srcArraySpan = srcArray.Span;
+            var res = new byte[srcArray.Length];
+            var srcIndex = 0;
+            for (var i = res.Length-1; i >= 0; i--, srcIndex++)
+                res[i] = srcArraySpan[srcIndex];
+
+            return res;
         }
 
 

@@ -754,7 +754,8 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceApi.Verify();
         }
 
-        [Theory(Skip = "Join mic check is not working with simulated devices")]
+        //[Theory(Skip = "Join mic check is not working with simulated devices")]
+        [Theory]
         [InlineData(MessageProcessorTestBase.ServerGatewayID)]
         [InlineData(null)]
         public async Task Join_Device_Has_Mismatching_AppKey_Should_Return_Null(string deviceGatewayID)
@@ -809,6 +810,90 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Never);
 
             loRaDeviceClient.Verify();
+            loRaDeviceApi.Verify();
+        }
+
+
+        [Theory]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, 21)]
+        [InlineData(null, 21)]
+        [InlineData(null, 30)]
+        public async Task When_ConfirmedUp_Message_With_Same_Fcnt_Should_Return_Ack_And_Not_Send_To_Hub(string deviceGatewayID, int expectedFcntDown)
+        {
+            const int initialFcntUp = 100;
+            const int initialFcntDown = 20;
+
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
+            simulatedDevice.FrmCntUp = initialFcntUp;
+            simulatedDevice.FrmCntDown = initialFcntDown;
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
+
+            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+
+            // C2D message will be checked
+            loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            // Lora device api
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+
+            // in multigateway scenario the device api will be called to resolve fcntDown
+            if (string.IsNullOrEmpty(deviceGatewayID))
+            {
+                loRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, 20, 100, ServerConfiguration.GatewayID))
+                    .ReturnsAsync((ushort)expectedFcntDown);
+            }
+
+            // using factory to create mock of 
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            // add device to cache already
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var dictionary = new DevEUIToLoRaDeviceDictionary();
+            dictionary[loRaDevice.DevEUI] = loRaDevice;
+            memoryCache.Set<DevEUIToLoRaDeviceDictionary>(loRaDevice.DevAddr, dictionary);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
+
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                frameCounterUpdateStrategyFactory,
+                new LoRaPayloadDecoder()
+                );
+
+            // sends confirmed message
+            var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("repeat", fcnt: 100);
+            var rxpk = CreateRxpk(confirmedMessagePayload);
+            var confirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
+            
+            // ack should be received
+            Assert.NotNull(confirmedMessageResult);
+            Assert.NotNull(confirmedMessageResult.txpk);
+
+
+            // validates txpk according to eu region
+            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(rxpk), confirmedMessageResult.txpk.freq);
+            Assert.Equal("4/5", confirmedMessageResult.txpk.codr);
+            Assert.False(confirmedMessageResult.txpk.imme);
+            Assert.True(confirmedMessageResult.txpk.ipol);
+            Assert.Equal("LORA", confirmedMessageResult.txpk.modu);
+
+            // Expected changes to fcnt:
+            // FcntDown => expectedFcntDown
+            Assert.Equal(initialFcntUp, loRaDevice.FCntUp);
+            Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);            
+            Assert.True(loRaDevice.HasFrameCountChanges);
+
+
+            // message should not be sent to iot hub
+            loRaDeviceClient.Verify(x => x.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()), Times.Never);
+            loRaDeviceClient.Verify();
+
             loRaDeviceApi.Verify();
         }
     }

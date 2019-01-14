@@ -36,6 +36,7 @@ namespace LoRaTools.Utils
 
             return result.ToString();
         }
+        
 
         static string ByteArrayToString(byte[] bytes)
         {
