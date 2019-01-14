@@ -51,10 +51,10 @@ namespace LoRaWan.Test.Shared
         public LoRaPayloadJoinRequest CreateJoinRequest()
         {
             //create a join request
-            byte[] AppEUI = ConversionHelper.StringToByteArray(LoRaDevice.AppEUI);
-            Array.Reverse(AppEUI);
-            byte[] DevEUI = ConversionHelper.StringToByteArray(LoRaDevice.DeviceID);
-            Array.Reverse(DevEUI);
+            //byte[] AppEUI = ConversionHelper.StringToByteArray(LoRaDevice.AppEUI);
+            //Array.Reverse(AppEUI);
+            //byte[] DevEUI = ConversionHelper.StringToByteArray(LoRaDevice.DeviceID);
+            //Array.Reverse(DevEUI);
 
             byte[] devNonce = new byte[2];
             if ((string.IsNullOrEmpty(this.DevNonce)) || (!isFirstJoinRequest))
@@ -73,11 +73,7 @@ namespace LoRaWan.Test.Shared
             }
 
             TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {BitConverter.ToString(devNonce).Replace("-","")} / {this.DevNonce}");
-            var join = new LoRaPayloadJoinRequest(AppEUI, DevEUI, devNonce);
-            join.SetMic(this.LoRaDevice.AppKey);
-
-            if (!join.CheckMic(this.LoRaDevice.AppKey))
-                throw new Exception("Join mic failed");
+            var join = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, devNonce);
                 
             return join;
         }

@@ -68,7 +68,7 @@ namespace LoRaWan.NetworkServer.Test
             loRaDevice.SetFcntUp(20);
 
             // Create Rxpk
-            var rxpk = CreateRxpk(joinRequest);
+            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -268,7 +268,7 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var rxpk = CreateRxpk(joinRequest);
+            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 

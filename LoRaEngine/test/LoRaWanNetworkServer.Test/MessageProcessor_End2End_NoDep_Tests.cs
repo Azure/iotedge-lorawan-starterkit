@@ -36,7 +36,8 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var joinRxpk = CreateRxpk(joinRequest);
+            var joinRxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
+            
 
             var devNonce = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequest.DevNonce);
             var devAddr = string.Empty;
@@ -608,7 +609,7 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest1 = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var joinRequestRxpk1 = CreateRxpk(joinRequest1);
+            var joinRequestRxpk1 = joinRequest1.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
 
             var joinRequestDevNonce1 = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequest1.DevNonce);
             var devAddr = string.Empty;
@@ -670,7 +671,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // 2nd attempt
             var joinRequest2 = simulatedDevice.CreateJoinRequest();
-            var joinRequestRxpk2 = CreateRxpk(joinRequest2);
+            var joinRequestRxpk2 = joinRequest2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
             var joinRequestDevNonce2 = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequest2.DevNonce);
             var joinRequestDownlinkMessage2 = await messageProcessor.ProcessMessageAsync(joinRequestRxpk2);
             Assert.NotNull(joinRequestDownlinkMessage2);

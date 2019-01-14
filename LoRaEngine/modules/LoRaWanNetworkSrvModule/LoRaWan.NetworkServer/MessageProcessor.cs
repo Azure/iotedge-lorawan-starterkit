@@ -541,10 +541,11 @@ namespace LoRaWan.NetworkServer
 
             DownlinkPktFwdMessage downlinkMessage = new DownlinkPktFwdMessage();
             var joinReq = (LoRaPayloadJoinRequest)loraMessage.LoRaPayloadMessage;
-            joinReq.DevEUI.Span.Reverse();
-            joinReq.AppEUI.Span.Reverse();
-            string devEui = ConversionHelper.ByteArrayToString(joinReq.DevEUI.ToArray());
+            
+            var devEui = joinReq.GetDevEUIAsString();
+            var appEUI = joinReq.GetAppEUIAsString();           
             string devNonce = ConversionHelper.ByteArrayToString(joinReq.DevNonce.ToArray());
+            
             Logger.Log(devEui, $"join request received", Logger.LoggingLevel.Info);
             //checking if this devnonce was already processed or the deveui was already refused
             //check if join request is valid. 

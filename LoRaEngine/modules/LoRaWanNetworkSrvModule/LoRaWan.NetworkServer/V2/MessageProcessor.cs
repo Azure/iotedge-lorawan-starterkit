@@ -563,17 +563,10 @@ namespace LoRaWan.NetworkServer.V2
             {
 
                 byte[] udpMsgForPktForwarder = new Byte[0];
+                                
+                var devEUI = joinReq.GetDevEUIAsString();
+                var appEUI = joinReq.GetAppEUIAsString();
                 
-                joinReq.DevEUI.Span.Reverse();
-                joinReq.AppEUI.Span.Reverse();
-                var devEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinReq.DevEUI);
-                var appEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinReq.AppEUI);
-                
-                // var reversedDevEUICopy = ReverseCopyArray(joinReq.DevEUI);
-                // var reversedAppEUICopy = ReverseCopyArray(joinReq.AppEUI);
-                // var devEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(reversedDevEUICopy);
-                // var appEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(reversedAppEUICopy);
-
                 // set context to logger
                 processLogger.SetDevEUI(devEUI);
 

@@ -13,6 +13,7 @@ using static LoRaTools.LoRaMessage.LoRaPayload;
 using static LoRaTools.LoRaMessage.LoRaPayloadData;
 using LoRaTools.LoRaPhysical;
 using System.Collections.Generic;
+using LoRaTools.Regions;
 
 namespace LoRaWanTest
 {
@@ -54,21 +55,22 @@ namespace LoRaWanTest
         public void JoinRequest_Should_Succeed_Mic_Check()
         {
             var appEUIText = "0005100000000004";
-            var appEUIBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(appEUIText);
+            var appEUIBytes = ConversionHelper.StringToByteArray(appEUIText);
 
             var devEUIText = "0005100000000004";
-            var devEUIBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(devEUIText);
+            var devEUIBytes = ConversionHelper.StringToByteArray(devEUIText);
 
             var devNonceText = "ABCD";
-            var devNonceBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(devNonceText);
+            var devNonceBytes = ConversionHelper.StringToByteArray(devNonceText);
 
             var appKey = "00000000000000000005100000000004";
 
-            var joinRequest = new LoRaPayloadJoinRequest(appEUIBytes, devEUIBytes, devNonceBytes);
+            var joinRequest = new LoRaPayloadJoinRequest(appEUIText, devEUIText, devNonceBytes);
             joinRequest.SetMic(appKey);
             Assert.True(joinRequest.CheckMic(appKey));
+            Assert.True(joinRequest.CheckMic(appKey)); // ensure multiple calls work!
 
-            
+
 
             var rxpk = new LoRaTools.LoRaPhysical.Rxpk()
             {
@@ -418,6 +420,25 @@ namespace LoRaWanTest
             Assert.Equal(data, Encoding.UTF8.GetString(parsedPayloadBytes));
         }
 
+
+        [Theory]
+        [InlineData("FBE5100000000004", "FBE5100000000004", "FBE51000000000000000000000000004")]
+        public void When_Creating_Join_Request_From_Bytes_Should_Pass_Mic_Check(
+            string appEUI,
+            string devEUI,
+            string appKey
+            )
+        {
+            var rawJoinRequestBytes = new byte[] { 0,4,0,0,0,0,16,229,251,4,0,0,0,0,16,229,251,254,228,147,93,188,238 };
+            var messageType = rawJoinRequestBytes[0];
+            Assert.Equal((int)LoRaMessageType.JoinRequest, messageType);
+            var joinRequest = new LoRaPayloadJoinRequest(rawJoinRequestBytes);
+            Assert.NotNull(joinRequest);
+            Assert.Equal(appEUI, joinRequest.GetAppEUIAsString());
+            Assert.Equal(devEUI, joinRequest.GetDevEUIAsString());
+            Assert.True(joinRequest.CheckMic(appKey));            
+        }
+
         // When creating a join request using simulated devices, rebuilding it should pass the mic check
         [Theory]
         [InlineData("000000000000AABB", "0000000000001111", "00000000000000000000000000002222", "5060")]
@@ -431,45 +452,25 @@ namespace LoRaWanTest
             var wrongAppKeyText = "00000000000000000000000000003333";
 
             //create a join request
-            byte[] appEUI = ConversionHelper.StringToByteArray(appEUIText);
-            Array.Reverse(appEUI);
-            byte[] devEUI = ConversionHelper.StringToByteArray(devEUIText);
-            Array.Reverse(devEUI);
-
             var devNonce = ConversionHelper.StringToByteArray(devNonceText);
             Array.Reverse(devNonce);
 
-            var join = new LoRaPayloadJoinRequest(appEUI, devEUI, devNonce);
-            join.SetMic(appKeyText);
+            var join = new LoRaPayloadJoinRequest(appEUIText, devEUIText, devNonce);
+            Assert.Equal(appEUIText, join.GetAppEUIAsString());
+            Assert.Equal(devEUIText, join.GetDevEUIAsString());
+            var uplinkMessage = join.SerializeUplink(appKeyText);
 
             Assert.False(join.CheckMic(wrongAppKeyText), "Mic check with wrong appKey should not pass");
-            Assert.True(join.CheckMic(appKeyText), "Mic check should work after setting it");               
+            Assert.True(join.CheckMic(appKeyText), "Mic check should work after setting it");
 
-            // Create rxpk with join request
-            var rxpk = new Rxpk()
-            {
-                chan = 7,
-                rfch = 1,
-                freq = 868.3,
-                stat = 1,
-                modu = "LORA",
-                datr = "SF10BW125",
-                codr = "4/5",
-                rssi = -17,
-                lsnr = 12.0f
-            };
-
-            var data = join.GetByteMessage();
-            rxpk.data = Convert.ToBase64String(data);
-            rxpk.size = (uint)data.Length;        
-            rxpk.tmst = 0;
-
+            var rxpk = uplinkMessage.rxpk[0];
 
             Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk, out LoRaPayload parsedLoRaPayload));
             Assert.IsType<LoRaPayloadJoinRequest>(parsedLoRaPayload);
             var parsedLoRaJoinRequest = (LoRaPayloadJoinRequest)parsedLoRaPayload;
-            Assert.False(parsedLoRaJoinRequest.CheckMic(wrongAppKeyText), "Parsed join request should not pass mic check with wrong appKey");
+
             Assert.True(parsedLoRaPayload.CheckMic(appKeyText), "Parsed join request should pass mic check with correct appKey");
+            Assert.False(parsedLoRaJoinRequest.CheckMic(wrongAppKeyText), "Parsed join request should not pass mic check with wrong appKey");
         }
 
         [Fact]

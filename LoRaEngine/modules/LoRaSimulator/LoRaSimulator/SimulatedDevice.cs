@@ -61,10 +61,9 @@ namespace LoRaSimulator
         public byte[] GetJoinRequest()
         {
             //create a join request
-            byte[] AppEUI = LoRaDevice.GetAppEUI();
-            Array.Reverse(AppEUI);
-            byte[] DevEUI = LoRaDevice.GetDevEUI();
-            Array.Reverse(DevEUI);
+            var AppEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(LoRaDevice.GetAppEUI());
+            var DevEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(LoRaDevice.GetDevEUI());
+            
 
             byte[] DevNonce = new byte[2];
             if ((LoRaDevice.DevNonce == "") || (!isFirstJoinRequest))

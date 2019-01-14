@@ -36,7 +36,22 @@ namespace LoRaTools.Utils
 
             return result.ToString();
         }
-        
+
+        public static string ReverseByteArrayToString(ReadOnlyMemory<byte> bytes)
+        {
+            var byteSpan = bytes.Span;
+            var result = new StringBuilder(bytes.Length * 2);
+
+
+            for (var i = bytes.Length - 1; i >= 0; --i)
+            {
+                result.Append(HexAlphabet[(int)(byteSpan[i] >> 4)]);
+                result.Append(HexAlphabet[(int)(byteSpan[i] & 0xF)]);
+            }
+
+            return result.ToString();
+        }
+
 
         static string ByteArrayToString(byte[] bytes)
         {
