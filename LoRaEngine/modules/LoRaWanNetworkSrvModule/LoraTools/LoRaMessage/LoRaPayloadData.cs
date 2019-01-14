@@ -138,6 +138,7 @@ namespace LoRaTools.LoRaMessage
             this.Fport = new Memory<byte>(inputMessage,8+foptsSize,fportLength) ;
             // frmpayload
             this.Frmpayload = new Memory<byte>(inputMessage,8+fportLength+foptsSize, inputMessage.Length - 8- fportLength - 4 - foptsSize);
+            this.Mic = new Memory<byte>(inputMessage,inputMessage.Length-4,4);
         }
 
 
@@ -286,7 +287,6 @@ namespace LoRaTools.LoRaMessage
             {
                 AesEngine aesEngine = new AesEngine();
                 byte[] tmp = ConversionHelper.StringToByteArray(appSkey);
-
                 aesEngine.Init(true, new KeyParameter(tmp));
 
                 byte[] aBlock =
@@ -331,6 +331,7 @@ namespace LoRaTools.LoRaMessage
             }
         }
 
+     
         public override byte[] GetByteMessage()
         {
             List<byte> messageArray = new List<byte>();
