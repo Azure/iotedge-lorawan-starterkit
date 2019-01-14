@@ -551,7 +551,6 @@ namespace LoRaWan.NetworkServer
             //we have a join request in the cache
             if (Cache.TryGetJoinRequestValue(devEui, out LoraDeviceInfo joinLoraDeviceInfo))
             {
-
                 //is our device but the join was not valid
                 if (!joinLoraDeviceInfo.IsJoinValid)
                 {
@@ -579,6 +578,7 @@ namespace LoRaWan.NetworkServer
                 if (!loraMessage.LoRaPayloadMessage.CheckMic(joinLoraDeviceInfo.AppKey))
                 {
                     Logger.Log(devEui, $"join request MIC invalid", Logger.LoggingLevel.Info);
+                    return null;
                 }
                 //join request resets the frame counters
                 joinLoraDeviceInfo.FCntUp = 0;
@@ -635,7 +635,14 @@ namespace LoRaWan.NetworkServer
                 //in this case the second join windows must be used
                 if ((DateTime.UtcNow - startTimeProcessing) > TimeSpan.FromMilliseconds(RegionFactory.CurrentRegion.join_accept_delay1 * 1000 - 100))
                 {
-                    Logger.Log(devEui, $"processing of the join request took too long, using second join accept receive window", Logger.LoggingLevel.Info);
+                    if ((DateTime.UtcNow - startTimeProcessing).Seconds >= RegionFactory.CurrentRegion.join_accept_delay2)
+                    {
+                        Logger.Log(devEui, $"Processing time took {DateTime.UtcNow - startTimeProcessing}." +
+                            $"Too long for current receive windows, not sending a join accept",
+                            Logger.LoggingLevel.Info);
+                        return null;
+                    }
+                        Logger.Log(devEui, $"processing of the join request took too long, using second join accept receive window", Logger.LoggingLevel.Info);
                     tmst = loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0].tmst + RegionFactory.CurrentRegion.join_accept_delay2 * 1000000;
                     if (string.IsNullOrEmpty(configuration.Rx2DataRate))
                     {
@@ -659,7 +666,9 @@ namespace LoRaWan.NetworkServer
 
                 //add to cache for processing normal messages. This awoids one additional call to the server.
                 Cache.AddRequestToCache(joinLoraDeviceInfo.DevAddr, joinLoraDeviceInfo);
-
+                Logger.Log(devEui, String.Format("join accept sent with ID {0}",
+                    ConversionHelper.ByteArrayToString(((LoRaPayloadJoinAccept)joinAcceptMessage.LoRaPayloadMessage).AppNonce.Span.ToArray())),
+                    Logger.LoggingLevel.Info);
             }
             else
             {
