@@ -342,8 +342,6 @@ namespace LoRaWanTest
             standardData.PerformEncryption(appSKeyText);
             // Now we have the full package, create the MIC
             standardData.SetMic(nwkSKeyText); //"99D58493D1205B43EFF938F0F66C339E");         
-
-
             var rxpk = new Rxpk()
             {
                 chan = 7,
@@ -380,7 +378,7 @@ namespace LoRaWanTest
 
         // This test will validate if creating payloads will work, using new approach
         // LoRaPayloadData (UnconfirmedDataUp) -> SerializeUplink -> Uplink.Rxpk[0] -> LoRaPayloadData -> check properties
-        [Theory(Skip="MIK needs to look at this first")]
+        [Theory]
         [InlineData("1234")]
         [InlineData("hello world")]
         public void When_Creating_Rxpk_Recreating_Payload_Should_Match_Source_Values(string data)
@@ -389,7 +387,7 @@ namespace LoRaWanTest
             var appSKeyText = "00000060000000600000006000000060";
             var nwkSKeyText = "00000060000000600000006000000060";
 
-            var fcnt = 12;
+            UInt16 fcnt = 12;
             byte[] devAddr = ConversionHelper.StringToByteArray(devAddrText);
             Array.Reverse(devAddr);
             byte[] fCtrl = new byte[] { 0x80 };
@@ -407,8 +405,6 @@ namespace LoRaWanTest
 
             var uplinkMsg = devicePayloadData.SerializeUplink(appSKeyText, nwkSKeyText, datr, freq, 0);
 
-
-
             // Now try to recreate LoRaPayloadData from rxpk
             Assert.True(LoRaPayload.TryCreateLoRaPayload(uplinkMsg.rxpk[0], out LoRaPayload parsedLoRaPayload));
             Assert.Equal(LoRaMessageType.UnconfirmedDataUp, parsedLoRaPayload.LoRaMessageType);
@@ -417,9 +413,8 @@ namespace LoRaWanTest
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
             Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
-
             // How to get the payload back?
-            var parsedPayloadBytes = parsedLoRaPayload.PerformEncryption(appSKeyText);
+            var parsedPayloadBytes = parsedLoRaPayloadData.PerformEncryption(appSKeyText);
             Assert.Equal(data, Encoding.UTF8.GetString(parsedPayloadBytes));
         }
 
