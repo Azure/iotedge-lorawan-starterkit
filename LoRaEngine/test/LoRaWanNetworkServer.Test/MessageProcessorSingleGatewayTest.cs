@@ -34,7 +34,7 @@ namespace LoRaWan.NetworkServer.Test
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
 
             // Create Rxpk
-            var rxpk = CreateRxpk(payload);
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -64,7 +64,7 @@ namespace LoRaWan.NetworkServer.Test
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
 
             // Create Rxpk
-            var rxpk = CreateRxpk(payload);
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
             rxpk.freq = 0;
             
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>(MockBehavior.Strict);
@@ -92,7 +92,7 @@ namespace LoRaWan.NetworkServer.Test
             simulatedDevice.FrmCntUp = 9;
 
             // Create Rxpk
-            var rxpk = CreateRxpk(payload);
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
 
             var loraDeviceClient = new Mock<ILoRaDeviceClient>();
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
@@ -143,7 +143,7 @@ namespace LoRaWan.NetworkServer.Test
             var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234");
 
             // Create Rxpk
-            var rxpk = CreateRxpk(payload);
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
 
             var loraDeviceClient = new Mock<ILoRaDeviceClient>();
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
@@ -214,7 +214,7 @@ namespace LoRaWan.NetworkServer.Test
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
 
             // Create Rxpk
-            var rxpk = CreateRxpk(payload);
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
 
             var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
@@ -281,7 +281,7 @@ namespace LoRaWan.NetworkServer.Test
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
 
             // Create Rxpk
-            var rxpk = CreateRxpk(payload);
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
 
             var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
@@ -365,7 +365,7 @@ namespace LoRaWan.NetworkServer.Test
             simulatedDevice.FrmCntUp = 10;
 
             // Create Rxpk
-            var rxpk = CreateRxpk(payload);
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
 
             var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);

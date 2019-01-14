@@ -50,35 +50,35 @@ namespace LoRaWan.NetworkServer.Test
         }
 
 
-        protected Rxpk CreateRxpk(LoRaPayload loraPayload)
-        {
-            var rxpk = new Rxpk()
-            {
-                chan = 7,
-                rfch = 1,
-                freq = 868.3,
-                stat = 1,
-                modu = "LORA",
-                datr = "SF10BW125",
-                codr = "4/5",
-                rssi = -17,
-                lsnr = 12.0f
-            };
+        //protected Rxpk CreateRxpk(LoRaPayload loraPayload)
+        //{
+        //    var rxpk = new Rxpk()
+        //    {
+        //        chan = 7,
+        //        rfch = 1,
+        //        freq = 868.3,
+        //        stat = 1,
+        //        modu = "LORA",
+        //        datr = "SF10BW125",
+        //        codr = "4/5",
+        //        rssi = -17,
+        //        lsnr = 12.0f
+        //    };
 
-            var data = loraPayload.GetByteMessage();
-            rxpk.data = Convert.ToBase64String(data);
-            rxpk.size = (uint)data.Length;
-            // tmst it is time in micro seconds
-            var now = DateTimeOffset.UtcNow;
-            var tmst = (now.UtcTicks - this.startTime) / (TimeSpan.TicksPerMillisecond / 1000);
-            if (tmst >= UInt32.MaxValue)
-            {
-                tmst = tmst - UInt32.MaxValue;
-                this.startTime = now.UtcTicks - tmst;
-            }
-            rxpk.tmst = Convert.ToUInt32(tmst);
+        //    var data = loraPayload.GetByteMessage();
+        //    rxpk.data = Convert.ToBase64String(data);
+        //    rxpk.size = (uint)data.Length;
+        //    // tmst it is time in micro seconds
+        //    var now = DateTimeOffset.UtcNow;
+        //    var tmst = (now.UtcTicks - this.startTime) / (TimeSpan.TicksPerMillisecond / 1000);
+        //    if (tmst >= UInt32.MaxValue)
+        //    {
+        //        tmst = tmst - UInt32.MaxValue;
+        //        this.startTime = now.UtcTicks - tmst;
+        //    }
+        //    rxpk.tmst = Convert.ToUInt32(tmst);
 
-            return rxpk;
-        }
+        //    return rxpk;
+        //}
     }
 }

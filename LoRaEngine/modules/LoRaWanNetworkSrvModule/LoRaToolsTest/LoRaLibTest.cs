@@ -311,73 +311,6 @@ namespace LoRaWanTest
             );
         }
 
-
-        // This test will validate if creating payloads will work
-        // LoRaPayloadData (UnconfirmedDataUp) -> Rxpk -> LoRaPayloadData -> check properties
-        [Theory(Skip="MIK needs to look at this first")]
-        [InlineData("1234")]
-        [InlineData("hello world")]
-        public void When_Creating_Rxpk_Recreating_Payload_Should_Match_Source_Values_Old_Way(string data)
-        {
-            var devAddrText = "00000060";
-            var appSKeyText = "00000060000000600000006000000060";
-            var nwkSKeyText = "00000060000000600000006000000060";
-
-            byte[] devAddr = ConversionHelper.StringToByteArray(devAddrText);
-            Array.Reverse(devAddr);
-            byte[] fCtrl = new byte[] { 0x80 };
-
-            var fcnt = 12;
-            var fcntBytes = BitConverter.GetBytes(fcnt);
-
-            byte[] fopts = null;
-            byte[] fPort = new byte[] { 1 };            
-            byte[] payload = Encoding.UTF8.GetBytes(data);
-            Array.Reverse(payload);
-
-            // 0 = uplink, 1 = downlink
-            int direction = 0;
-            var standardData = new LoRaPayloadData(LoRaMessageType.UnconfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
-            // Need to create Fops. If not, then MIC won't be correct
-            standardData.Fopts = new byte[0];
-            // First encrypt the data
-            standardData.PerformEncryption(appSKeyText);
-            // Now we have the full package, create the MIC
-            standardData.SetMic(nwkSKeyText); //"99D58493D1205B43EFF938F0F66C339E");         
-            var rxpk = new Rxpk()
-            {
-                chan = 7,
-                rfch = 1,
-                freq = 868.3,
-                stat = 1,
-                modu = "LORA",
-                datr = "SF10BW125",
-                codr = "4/5",
-                rssi = -17,
-                lsnr = 12.0f
-            };
-
-            var loraPayloadAsBytes = standardData.GetByteMessage();
-            rxpk.data = Convert.ToBase64String(loraPayloadAsBytes);
-            rxpk.size = (uint)loraPayloadAsBytes.Length;
-
-
-            // Now try to recreate LoRaPayloadData from rxpk
-            Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk, out LoRaPayload parsedLoRaPayload));
-            Assert.Equal(LoRaMessageType.UnconfirmedDataUp, parsedLoRaPayload.LoRaMessageType);
-            Assert.IsType<LoRaPayloadData>(parsedLoRaPayload);
-            var parsedLoRaPayloadData = (LoRaPayloadData)parsedLoRaPayload;
-            Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
-            Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
-
-            // How to get the payload back?
-            var parsedPayloadBytes = parsedLoRaPayload.PerformEncryption(appSKeyText);
-            Assert.Equal(data, Encoding.UTF8.GetString(parsedPayloadBytes));
-
-
-        }
-
         // This test will validate if creating payloads will work, using new approach
         // LoRaPayloadData (UnconfirmedDataUp) -> SerializeUplink -> Uplink.Rxpk[0] -> LoRaPayloadData -> check properties
         [Theory]
@@ -416,8 +349,10 @@ namespace LoRaWanTest
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
             Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
             // How to get the payload back?
-            var parsedPayloadBytes = parsedLoRaPayloadData.PerformEncryption(appSKeyText);
+            Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
+            var parsedPayloadBytes = parsedLoRaPayloadData.GetDecryptedPayload(appSKeyText);
             Assert.Equal(data, Encoding.UTF8.GetString(parsedPayloadBytes));
+            Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
         }
 
 

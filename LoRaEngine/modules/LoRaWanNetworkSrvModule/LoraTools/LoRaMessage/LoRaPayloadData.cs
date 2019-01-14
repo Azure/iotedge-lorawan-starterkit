@@ -199,7 +199,7 @@ namespace LoRaTools.LoRaMessage
         }
 
 
-        public UplinkPktFwdMessage SerializeUplink(string appSKey, string nwkSKey, string datr, double freq, uint tmst)
+        public UplinkPktFwdMessage SerializeUplink(string appSKey, string nwkSKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0)
         {
             PerformEncryption(appSKey);
             SetMic(nwkSKey);
@@ -246,6 +246,7 @@ namespace LoRaTools.LoRaMessage
             (byte)DevAddr.Span[0], Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)(byteMsg.Length - 4)
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
+            System.Diagnostics.Debug.WriteLine($"[LoraPayloadData] Mic checked with input: {string.Join(',', algoinput)}");
             byte[] result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);
@@ -264,6 +265,8 @@ namespace LoRaTools.LoRaMessage
                 (byte)DevAddr.Span[0], Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)byteMsg.Length
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length)).ToArray();
+            System.Diagnostics.Debug.WriteLine($"[LoraPayloadData] Mic set with input    : {string.Join(',', algoinput)}");
+
             //byte[] result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             var result = MacUtilities.DoFinal(mac);
@@ -278,10 +281,15 @@ namespace LoRaTools.LoRaMessage
             this.DevAddr.Span.Reverse();
         }
 
+
         /// <summary>
-        /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py
+        /// Decrypts the payload value, without changing the <see cref="RawMessage"/>
         /// </summary>
-        public override byte[] PerformEncryption(string appSkey)
+        /// <remarks>
+        /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py</remarks>
+        /// <param name="appSKey"></param>
+        /// <returns></returns>
+        public byte[] GetDecryptedPayload(string appSkey)
         {
             if (!Frmpayload.Span.IsEmpty)
             {
@@ -322,6 +330,22 @@ namespace LoRaTools.LoRaMessage
                         decrypted[bufferIndex + i] = (byte)(Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
                     }
                 }
+                return decrypted;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        ///  Replaces the <see cref="Frmpayload"/>, encrypting the values
+        /// </summary>
+        public override byte[] PerformEncryption(string appSkey)
+        {
+            if (!Frmpayload.Span.IsEmpty)
+            {
+                var decrypted = this.GetDecryptedPayload(appSkey);
                 Array.Copy(decrypted, 0, RawMessage, RawMessage.Length-4-decrypted.Length , decrypted.Length);
                 return decrypted;
             }

@@ -39,6 +39,7 @@ namespace LoRaWan.NetworkServer.Test
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
+            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             apiService.Setup(x => x.SearchDevicesAsync(null, It.IsNotNull<string>(), null, null, null))
@@ -60,6 +61,7 @@ namespace LoRaWan.NetworkServer.Test
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
+            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "");
@@ -106,6 +108,7 @@ namespace LoRaWan.NetworkServer.Test
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
+            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "");
@@ -151,7 +154,8 @@ namespace LoRaWan.NetworkServer.Test
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
-            
+            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
+
             var cachedSimulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             cachedSimulatedDevice.LoRaDevice.NwkSKey = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"; // make different than the payload
             cachedSimulatedDevice.LoRaDevice.DeviceID = "0000000000000002";
@@ -185,7 +189,7 @@ namespace LoRaWan.NetworkServer.Test
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: "a_different_one"));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
-            Assert.True(payload.CheckMic(simulatedDevice.LoRaDevice.NwkSKey));
+            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "");
@@ -224,6 +228,7 @@ namespace LoRaWan.NetworkServer.Test
             existingCache.TryAdd(loraDevice1.DevEUI, loraDevice1);
 
             var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
+            payload.SerializeUplink(simulatedDevice1.AppSKey, simulatedDevice1.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
        
@@ -259,6 +264,7 @@ namespace LoRaWan.NetworkServer.Test
             existingCache.TryAdd(loraDevice2.DevEUI, loraDevice2);
 
             var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
+            payload.SerializeUplink(simulatedDevice1.AppSKey, simulatedDevice1.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
        
@@ -292,6 +298,7 @@ namespace LoRaWan.NetworkServer.Test
             var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice2, this.loRaDeviceClient.Object);
 
             var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
+            payload.SerializeUplink(simulatedDevice1.AppSKey, simulatedDevice1.NwkSKey);
             var devAddr = loraDevice1.DevAddr;
 
             // devices will be initialized
@@ -349,6 +356,7 @@ namespace LoRaWan.NetworkServer.Test
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
+            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "");

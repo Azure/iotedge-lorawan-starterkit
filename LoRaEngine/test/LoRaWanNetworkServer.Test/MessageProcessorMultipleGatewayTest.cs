@@ -34,8 +34,8 @@ namespace LoRaWan.NetworkServer.Test
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
 
             // Create Rxpk
-            var rxpk = CreateRxpk(payload);
-        
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+
             var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             
             // 2 messages will be sent

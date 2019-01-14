@@ -142,29 +142,23 @@ namespace LoRaTools.LoRaMessage
 
         public static bool TryCreateLoRaPayload(Rxpk rxpk, out LoRaPayload loRaPayloadMessage)
         {
-
             byte[] convertedInputMessage = Convert.FromBase64String(rxpk.data);
             var messageType = convertedInputMessage[0];
-            //LoRaMessageType = (LoRaMessageType)messageType;
 
+            switch (messageType)
+            {
+                case (int)LoRaMessageType.UnconfirmedDataUp:
+                case (int)LoRaMessageType.ConfirmedDataUp:
+                    loRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
+                    break;
 
-            if (messageType == (int)LoRaMessageType.UnconfirmedDataUp)
-            {
-                loRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
+                case (int)LoRaMessageType.JoinRequest:
+                    loRaPayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
+                    break;
 
-            }
-            else if (messageType == (int)LoRaMessageType.ConfirmedDataUp)
-            {
-                loRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
-            }
-            else if (messageType == (int)LoRaMessageType.JoinRequest)
-            {
-                loRaPayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
-            }
-            else
-            {
-                loRaPayloadMessage = null;
-                return false;
+                default:
+                    loRaPayloadMessage = null;
+                    return false;
             }
 
             loRaPayloadMessage.LoRaMessageType = (LoRaMessageType)messageType;

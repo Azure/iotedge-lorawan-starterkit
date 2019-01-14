@@ -210,7 +210,7 @@ namespace LoRaWan.NetworkServer.V2
                                 byte[] decryptedPayloadData = null;
                                 try
                                 {
-                                    decryptedPayloadData = loraPayload.PerformEncryption(loRaDevice.AppSKey);
+                                    decryptedPayloadData = loraPayload.GetDecryptedPayload(loRaDevice.AppSKey);
                                 }
                                 catch (Exception ex)
                                 {
