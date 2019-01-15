@@ -41,8 +41,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN); 
 
             // Sends 10x unconfirmed messages            
-            //for (var i=0; i < MESSAGES_COUNT; ++i)
-            for (var i=0; i < 3; ++i)
+            for (var i=0; i < MESSAGES_COUNT; ++i)            
             {
                 Console.WriteLine($"Starting sending OTTA unconfirmed message {i+1}/{MESSAGES_COUNT}");
                 this.TestFixture.ClearLogs();
