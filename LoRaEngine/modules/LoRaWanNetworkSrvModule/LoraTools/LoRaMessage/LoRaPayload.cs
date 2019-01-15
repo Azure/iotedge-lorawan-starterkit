@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 
 namespace LoRaTools.LoRaMessage
 {
+    public enum LoRaPayloadKeyType { NwkSkey=1, AppSKey=2}
     /// <summary>
     /// The LoRaPayloadWrapper class wraps all the information any LoRa message share in common
     /// </summary>
@@ -17,11 +18,8 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Used when calculating the Network and App SKey
         /// </summary>
-        public enum KeyType
-        {
-            NwkSKey = 1,
-            AppSKey = 2,
-        }
+        public LoRaPayloadKeyType KeyType;
+
 
         public LoRaMessageType LoRaMessageType { get; set; }
 
@@ -121,7 +119,7 @@ namespace LoRaTools.LoRaMessage
         /// <param name="devnonce"></param>
         /// <param name="appKey"></param>
         /// <returns></returns>
-        public byte[] CalculateKey(KeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
+        public byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
             byte[] type = new byte[1];
             type[0] = (byte)keyType;
@@ -164,6 +162,8 @@ namespace LoRaTools.LoRaMessage
             loRaPayloadMessage.LoRaMessageType = (LoRaMessageType)messageType;
             return true;
         }
+
+        public abstract DownlinkPktFwdMessage Serialize( string appKey,string nwkKey, string datr, double freq, long tmst, string devEUI);
 
     }
 }

@@ -108,7 +108,7 @@ namespace LoRaTools.LoRaMessage
             /// 4 = Confirmed Data up
             /// 5 = Confirmed Data down
             /// 6 = Rejoin Request</param>
-            public LoRaMessageWrapper(Txpk txpk,string AppKey)
+            public LoRaMessageWrapper(Txpk txpk,string appKey)
         {
             if (txpk.data != null)
             {
@@ -117,7 +117,7 @@ namespace LoRaTools.LoRaMessage
                 LoRaMessageType = (LoRaMessageType)messageType;
                 if (messageType == (int)LoRaMessageType.JoinAccept)
                 {
-                    LoRaPayloadMessage = new LoRaPayloadJoinAccept(convertedInputMessage, AppKey);
+                    LoRaPayloadMessage = new LoRaPayloadJoinAccept(convertedInputMessage, appKey);
                 }
             }
         }

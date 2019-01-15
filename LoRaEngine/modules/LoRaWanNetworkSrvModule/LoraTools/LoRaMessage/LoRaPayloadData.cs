@@ -107,7 +107,10 @@ namespace LoRaTools.LoRaMessage
             return macHolder;
         }
 
-        /// <param name="inputMessage"></param>
+        /// <summary>
+        /// Upstream Constructor (decode a LoRa Message from existing array of bytes)
+        /// </summary>
+        /// <param name="inputMessage">the upstream Constructor</param>
         public LoRaPayloadData(byte[] inputMessage) : base(inputMessage)
         {
             // in this case the payload is not downlink of our type
@@ -142,6 +145,17 @@ namespace LoRaTools.LoRaMessage
         }
 
 
+        /// <summary>
+        /// Downstream Constructor (build a LoRa Message)
+        /// </summary>
+        /// <param name="mhdr"></param>
+        /// <param name="devAddr"></param>
+        /// <param name="fctrl"></param>
+        /// <param name="fcnt"></param>
+        /// <param name="fOpts"></param>
+        /// <param name="fPort"></param>
+        /// <param name="frmPayload"></param>
+        /// <param name="direction"></param>
         public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, byte[] fOpts, byte[] fPort, byte[] frmPayload, int direction) 
         {
             int fOptsLen = fOpts == null ? 0 : fOpts.Length;
@@ -198,15 +212,31 @@ namespace LoRaTools.LoRaMessage
 
         }
 
-
+        /// <summary>
+        /// Serialize a message to be sent upstream.
+        /// </summary>
+        /// <param name="appSKey"></param>
+        /// <param name="nwkSKey"></param>
+        /// <param name="datr"></param>
+        /// <param name="freq"></param>
+        /// <param name="tmst"></param>
+        /// <returns></returns>
         public UplinkPktFwdMessage SerializeUplink(string appSKey, string nwkSKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0)
         {
             PerformEncryption(appSKey);
             SetMic(nwkSKey);
             return new UplinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
         }
-
-        public DownlinkPktFwdMessage Serialize(Rxpk rxpk, string appSKey, string nwkSKey, string datr, double freq, long tmst,string devEUI)
+        /// Serialize a message to be sent downlink on the wire.
+        /// </summary>
+        /// <param name="appSKey">the app key used for encryption</param>
+        /// <param name="nwkSKey">the nwk key used for encryption</param>
+        /// <param name="datr">the calculated datarate</param>
+        /// <param name="freq">The frequency at which to be sent</param>
+        /// <param name="tmst">time stamp</param>
+        /// <param name="devEUI">the device EUI</param>
+        /// <returns>the Downlink message</returns>
+        public override DownlinkPktFwdMessage Serialize(string appSKey,string nwkSKey, string datr, double freq, long tmst,string devEUI)
         {
             PerformEncryption(appSKey);
             SetMic(nwkSKey);
@@ -214,7 +244,7 @@ namespace LoRaTools.LoRaMessage
             if (Logger.LoggerLevel < Logger.LoggingLevel.Info)
             {
                 var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
-
+               
                 if (devEUI.Length != 0)
                 {
                     Logger.Log(devEUI, $"{((LoRaMessageType)(Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
@@ -355,7 +385,7 @@ namespace LoRaTools.LoRaMessage
             }
         }
 
-     
+        [Obsolete("This method is planned to be deprecated in the next versions. Please use LoRaPayload instead.")]
         public override byte[] GetByteMessage()
         {
             List<byte> messageArray = new List<byte>();

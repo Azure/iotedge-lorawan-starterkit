@@ -192,9 +192,9 @@ namespace LoRaWan.Test.Shared
             var devNonce = ConversionHelper.StringToByteArray(this.DevNonce);
             Array.Reverse(devNonce);
             var deviceAppKey = ConversionHelper.StringToByteArray(this.LoRaDevice.AppKey);
-            var appSKey = payload.CalculateKey(LoRaPayload.KeyType.AppSKey, appNonce, netid, devNonce, deviceAppKey);
+            var appSKey = payload.CalculateKey(LoRaPayloadKeyType.AppSKey, appNonce, netid, devNonce, deviceAppKey);
             this.LoRaDevice.AppSKey = BitConverter.ToString(appSKey).Replace("-", "");
-            var nwkSKey = payload.CalculateKey(LoRaPayload.KeyType.NwkSKey, appNonce, netid, devNonce, deviceAppKey);
+            var nwkSKey = payload.CalculateKey(LoRaPayloadKeyType.AppSKey, appNonce, netid, devNonce, deviceAppKey);
             this.LoRaDevice.NwkSKey = BitConverter.ToString(nwkSKey).Replace("-", "");
             this.NetId = BitConverter.ToString(netid).Replace("-", "");
             this.AppNonce = BitConverter.ToString(appNonce).Replace("-", "");
