@@ -156,8 +156,10 @@ namespace LoRaTools.LoRaMessage
         /// <returns>a boolean telling if the MIC is valid or not</returns>
         public byte[] DecryptPayload(string appSkey)
         {
-            var retValue = LoRaPayloadMessage.PerformEncryption(appSkey);
-            return retValue;
+            if (LoRaPayloadMessage is LoRaPayloadData loRaPayloadData)
+                return loRaPayloadData.GetDecryptedPayload(appSkey);
+
+            return LoRaPayloadMessage.PerformEncryption(appSkey);
         }
     }
 }

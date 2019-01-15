@@ -246,7 +246,7 @@ namespace LoRaTools.LoRaMessage
             (byte)DevAddr.Span[0], Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)(byteMsg.Length - 4)
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
-            System.Diagnostics.Debug.WriteLine($"[LoraPayloadData] Mic checked with input: {string.Join(',', algoinput)}");
+
             byte[] result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);
@@ -265,7 +265,6 @@ namespace LoRaTools.LoRaMessage
                 (byte)DevAddr.Span[0], Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)byteMsg.Length
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length)).ToArray();
-            System.Diagnostics.Debug.WriteLine($"[LoraPayloadData] Mic set with input    : {string.Join(',', algoinput)}");
 
             //byte[] result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);

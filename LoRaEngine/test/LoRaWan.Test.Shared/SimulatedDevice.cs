@@ -88,20 +88,18 @@ namespace LoRaWan.Test.Shared
             byte[] fCtrl = new byte[] { 0x80 };
 
             fcnt = fcnt ?? this.FrmCntUp + 1;
-            var fcntBytes = BitConverter.GetBytes(fcnt.Value);
+            var fcntBytes = BitConverter.GetBytes((UInt16)fcnt.Value);
 
-            byte[] fopts = null;
+            byte[] fopts = new byte[0];
             byte[] fPort = new byte[] { fport };           
             //TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
             byte[] payload = Encoding.UTF8.GetBytes(data);
             Array.Reverse(payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            var standardData = new LoRaPayloadData(LoRaMessageType.UnconfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
-            // Need to create Fops. If not, then MIC won't be correct
-            standardData.Fopts = new byte[0];
-           
-            return standardData;
+
+            var payloadData = new LoRaPayloadData(LoRaMessageType.UnconfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
+            return payloadData;
         }
 
         /// <summary>
@@ -117,20 +115,18 @@ namespace LoRaWan.Test.Shared
             byte[] fCtrl = new byte[] { 0x80 };
             
             fcnt = fcnt ?? this.FrmCntUp + 1;
-            var fcntBytes = BitConverter.GetBytes(fcnt.Value);
+            var fcntBytes = BitConverter.GetBytes((UInt16)fcnt.Value);
 
-            byte[] fopts = null;
+            byte[] fopts = new byte[0];
             byte[] fPort = new byte[] { fport };           
-            //TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
             byte[] payload = Encoding.UTF8.GetBytes(data);
             Array.Reverse(payload);
+
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            var standardData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
-            // Need to create Fops. If not, then MIC won't be correct
-            standardData.Fopts = new byte[0];
-        
-            return standardData;
+            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
+
+            return payloadData;
         }
 
         // Sends unconfirmed message

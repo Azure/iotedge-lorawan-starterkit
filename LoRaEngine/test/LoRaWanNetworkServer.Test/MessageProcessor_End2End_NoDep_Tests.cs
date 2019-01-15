@@ -7,8 +7,10 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Caching.Memory;
 using Moq;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -546,7 +548,9 @@ namespace LoRaWan.NetworkServer.Test
 
         [Theory]
         [InlineData(MessageProcessorTestBase.ServerGatewayID, "1234", "")]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, "hello world", null)]
         [InlineData(null, "hello world", null)]
+        [InlineData(null, "1234", "")]
         public async Task ABP_Unconfirmed_With_No_Decoder_Sends_Raw_Payload(string deviceGatewayID, string msgPayload, string sensorDecoder)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));            
@@ -591,12 +595,76 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.LoRaDevice.AppSKey, simulatedDevice.LoRaDevice.NwkSKey).rxpk[0];
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            //Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk, out var parsedPayload));
+            //Assert.Equal(msgPayload,  Encoding.UTF8.GetString(((LoRaPayloadData)parsedPayload).GetDecryptedPayload(simulatedDevice.AppSKey)));
+
             var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.Null(unconfirmedMessageResult);
             
             Assert.NotNull(loRaDeviceTelemetry);
-            //Assert.Equal(msgPayload, loRaDeviceTelemetry.data);
+            Assert.IsType<string>(loRaDeviceTelemetry.data);
+            var expectedPayloadContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(msgPayload));
+            Assert.Equal(expectedPayloadContent, loRaDeviceTelemetry.data);
+        }
+
+
+        [Theory]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, "1234")]
+        [InlineData(null, "1234")]
+        public async Task ABP_Unconfirmed_With_Value_Decoder_Sends_Decoded_Numeric_Payload(string deviceGatewayID, string msgPayload)
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
+            loRaDevice.SensorDecoder = "DecoderValueSensor";
+
+            // message will be sent
+            LoRaDeviceTelemetry loRaDeviceTelemetry = null;
+            loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
+                .Returns(Task.FromResult(0));
+
+            // C2D message will be checked
+            loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            // Lora device api
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+
+
+            // using factory to create mock of 
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            // add device to cache already
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var dictionary = new DevEUIToLoRaDeviceDictionary();
+            dictionary[loRaDevice.DevEUI] = loRaDevice;
+            memoryCache.Set<DevEUIToLoRaDeviceDictionary>(loRaDevice.DevAddr, dictionary);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
+
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                frameCounterUpdateStrategyFactory,
+                new LoRaPayloadDecoder()
+                );
+
+            // sends unconfirmed message
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+ 
+            var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
+            Assert.Null(unconfirmedMessageResult);
+
+            Assert.NotNull(loRaDeviceTelemetry);
+            Assert.IsType<JObject>(loRaDeviceTelemetry.data);
+            var telemetryData = (JObject)loRaDeviceTelemetry.data;
+            Assert.Equal(msgPayload, telemetryData["value"].ToString());
         }
 
 
