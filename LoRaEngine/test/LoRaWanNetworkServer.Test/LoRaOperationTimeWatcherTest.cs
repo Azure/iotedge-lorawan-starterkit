@@ -60,6 +60,7 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         [InlineData(0)]
         [InlineData(950)]
+        [InlineData(1790)]
         public void When_In_Time_For_First_Window_But_Device_Wants_Always_Seconds_Should_Resolve_Window_2(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
@@ -73,7 +74,7 @@ namespace LoRaWan.NetworkServer.Test
 
         [Theory]
         [InlineData(0)]
-        [InlineData(950)]
+        [InlineData(790)]
         public void When_In_Time_For_First_Window_Should_Resolve_Window_1(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
@@ -85,7 +86,7 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         [InlineData(1000)]
         [InlineData(1001)]
-        [InlineData(1950)]
+        [InlineData(1790)]
         public void When_In_Time_For_Second_Window_Should_Resolve_Window_2(int delayInMs)
         {
             var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
@@ -94,10 +95,13 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(2, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
-        [Fact]
-        public void When_Missed_Both_Windows_Should_Resolve_Window_0()
+        [Theory]
+        [InlineData(1801)]
+        [InlineData(2000)]
+        [InlineData(4000)]
+        public void When_Missed_Both_Windows_Should_Resolve_Window_0(int delayInMs)
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(4)));
+            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null);
 
             Assert.Equal(0, target.ResolveReceiveWindowToUse(loRaDevice));

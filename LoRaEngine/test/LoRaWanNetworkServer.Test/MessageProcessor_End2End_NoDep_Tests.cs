@@ -63,11 +63,15 @@ namespace LoRaWan.NetworkServer.Test
             string afterJoinAppSKey = null;
             string afterJoinNwkSKey = null;
             string afterJoinDevAddr = null;
+            int afterJoinFcntDown = -1;
+            int afterJoinFcntUp = -1;
             loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .Callback<TwinCollection>((updatedTwin) => {
                     afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey];
                     afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey];
                     afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
+                    afterJoinFcntDown = updatedTwin[TwinProperty.FCntDown];
+                    afterJoinFcntUp = updatedTwin[TwinProperty.FCntUp];
                 })
                 .ReturnsAsync(true);
 
@@ -121,12 +125,15 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(afterJoinAppSKey, loRaDevice.AppSKey);
             Assert.Equal(afterJoinNwkSKey, loRaDevice.NwkSKey);
             Assert.Equal(afterJoinDevAddr, loRaDevice.DevAddr);
+
             if (deviceGatewayID == null)
                 Assert.Null(loRaDevice.GatewayID);
             else
                 Assert.Equal(deviceGatewayID, loRaDevice.GatewayID);
-            
+
             // fcnt is restarted
+            Assert.Equal(0, afterJoinFcntDown);
+            Assert.Equal(0, afterJoinFcntUp);
             Assert.Equal(0, loRaDevice.FCntUp);
             Assert.Equal(0, loRaDevice.FCntDown);
             Assert.False(loRaDevice.HasFrameCountChanges);
