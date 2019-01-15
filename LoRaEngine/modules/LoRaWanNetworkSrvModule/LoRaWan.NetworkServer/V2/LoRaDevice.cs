@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
+using Newtonsoft.Json;
 
 namespace LoRaWan.NetworkServer.V2
 {
-
     public class LoRaDevice
     {
         public string DevAddr { get; set; }
@@ -27,10 +27,9 @@ namespace LoRaWan.NetworkServer.V2
         public string AppSKey { get; set; }
         public string AppNonce { get; set; }
         public string DevNonce { get; set; }
-        public string NetId { get; set; }
+        public string NetID { get; set; }
         public bool IsOurDevice = false;
-        public bool IsJoinValid = false;
-        
+      
         int fcntUp;
         public int FCntUp => this.fcntUp;
 
@@ -40,8 +39,8 @@ namespace LoRaWan.NetworkServer.V2
 
         public string GatewayID { get; set; }
         public string SensorDecoder { get; set; }
-        public int? ReceiveDelay1 { get; internal set; }
-        public int? ReceiveDelay2 { get; internal set; }
+        public int? ReceiveDelay1 { get; set; }
+        public int? ReceiveDelay2 { get; set; }
         public bool IsABPRelaxedFrameCounter { get; set; } = true;
         public bool AlwaysUseSecondWindow { get; set; } = false;
 
@@ -56,7 +55,8 @@ namespace LoRaWan.NetworkServer.V2
         }
 
         /// <summary>
-        /// Initializes the device
+        /// Initializes the device from twin properties
+        /// Throws InvalidLoRaDeviceException if the device does contain require properties
         /// </summary>
         /// <returns></returns>
         public async Task InitializeAsync()
@@ -64,27 +64,57 @@ namespace LoRaWan.NetworkServer.V2
             var twin = await this.loRaDeviceClient.GetTwinAsync();
 
             if (twin != null)
-            {                
+            {              
+                // ABP requires the property AppSKey, AppNwkSKey, DevAddr to be present  
                 if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
                 {
                     //ABP Case
                     this.AppSKey = twin.Properties.Desired[TwinProperty.AppSKey];
+                    
+                    if (!twin.Properties.Desired.Contains(TwinProperty.NwkSKey))
+                        throw new InvalidLoRaDeviceException("Missing NwkSKey for ABP device");
+                                    
+                    
+                    if (!twin.Properties.Desired.Contains(TwinProperty.DevAddr))
+                        throw new InvalidLoRaDeviceException("Missing DevAddr for ABP device");
+
                     this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey];
                     this.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr];
+                    this.IsOurDevice = true;
                 }                
-                else if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
+                else
                 {
-                    //OTAA Case
-                    this.AppSKey = twin.Properties.Reported[TwinProperty.AppSKey];
-                    this.NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey];
-                    this.DevAddr = twin.Properties.Reported[TwinProperty.DevAddr];
-                    this.DevNonce = twin.Properties.Reported[TwinProperty.DevNonce];
+                    // OTAA                                        
+                    if (!twin.Properties.Desired.Contains(TwinProperty.AppKey))
+                    {
+                        throw new InvalidLoRaDeviceException("Missing AppKey for OTAA device");
+                    }
+                    this.AppKey = twin.Properties.Desired[TwinProperty.AppKey];
+
+                    if (!twin.Properties.Desired.Contains(TwinProperty.AppEUI))
+                    {
+                        throw new InvalidLoRaDeviceException("Missing AppEUI for OTAA device");
+                    }
+                    this.AppEUI = twin.Properties.Desired[TwinProperty.AppEUI];
+
+
+                    // Check for already joined OTAA device properties
+                    if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
+                        this.DevAddr = twin.Properties.Reported[TwinProperty.DevAddr];
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
+                        this.AppSKey = twin.Properties.Reported[TwinProperty.AppSKey];
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.NwkSKey))
+                        this.NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey];
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.NetID))
+                        this.NetID = twin.Properties.Reported[TwinProperty.NetID];
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
+                        this.DevNonce = twin.Properties.Reported[TwinProperty.DevNonce];                    
                 }                
 
-                if (twin.Properties.Desired.Contains(TwinProperty.AppEUI))
-                    this.AppEUI = twin.Properties.Desired[TwinProperty.AppEUI];
-                if (twin.Properties.Desired.Contains(TwinProperty.AppKey))
-                    this.AppKey = twin.Properties.Desired[TwinProperty.AppKey];
                 if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
                     this.GatewayID = twin.Properties.Desired[TwinProperty.GatewayID];
                 if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
@@ -93,8 +123,6 @@ namespace LoRaWan.NetworkServer.V2
                     this.fcntUp = twin.Properties.Reported[TwinProperty.FCntUp];
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntDown))
                     this.fcntDown = twin.Properties.Reported[TwinProperty.FCntDown];
-
-                Logger.Log(this.DevEUI, $"done getting twins", Logger.LoggingLevel.Info);
             }    
         }
 
@@ -212,7 +240,7 @@ namespace LoRaWan.NetworkServer.V2
                 this.AppSKey = appSKey;
                 this.AppNonce = appNonce;
                 this.DevNonce = devNonce;
-                this.NetId = netID;
+                this.NetID = netID;
                 this.SetFcntDown(0);
                 this.SetFcntUp(0);
                 this.AcceptFrameCountChanges();

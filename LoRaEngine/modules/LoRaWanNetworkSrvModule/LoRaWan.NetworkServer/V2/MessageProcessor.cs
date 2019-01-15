@@ -251,6 +251,11 @@ namespace LoRaWan.NetworkServer.V2
                     var timeToSecondWindow = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice);
                     if (timeToSecondWindow < LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage)
                     {
+                        if (requiresConfirmation)
+                        {
+                            Logger.Log(loRaDevice.DevEUI, $"too late for down message ({timeWatcher.GetElapsedTime()}), sending only ACK to gateway", Logger.LoggingLevel.Info);
+                        }
+
                         return null;
                     }
 
@@ -581,20 +586,19 @@ namespace LoRaWan.NetworkServer.V2
 
                 if (string.IsNullOrEmpty(loRaDevice.AppKey))
                 {
-                    Logger.Log(loRaDevice.DevEUI, "missing AppKey for OTAA for device", Logger.LoggingLevel.Error);
+                    Logger.Log(loRaDevice.DevEUI, "join refused: missing AppKey for OTAA device", Logger.LoggingLevel.Error);
                     return null;
                 }
 
                 if (!joinReq.CheckMic(loRaDevice.AppKey))
                 {
-                    //Logger.Log(devEUI, $"join request MIC invalid", Logger.LoggingLevel.Info);
                     Logger.Log(devEUI, "join refused: invalid MIC", Logger.LoggingLevel.Error);
                     return null;
                 }
 
                 if (loRaDevice.AppEUI != appEUI)
                 {
-                    Logger.Log(devEUI, "join refused: AppEUI for OTAA does not match for device", Logger.LoggingLevel.Error);
+                    Logger.Log(devEUI, "join refused: AppEUI for OTAA does not match device", Logger.LoggingLevel.Error);
                     return null;
                 }
 
@@ -602,7 +606,7 @@ namespace LoRaWan.NetworkServer.V2
                 if (!string.IsNullOrEmpty(loRaDevice.DevNonce) && loRaDevice.DevNonce == devNonce)
                 {
                     Logger.Log(devEUI, "join refused: DevNonce already used by this device", Logger.LoggingLevel.Info);
-                    loRaDevice.IsJoinValid = false;
+                    loRaDevice.IsOurDevice = false;
                     return null;
                 }
 
@@ -611,7 +615,6 @@ namespace LoRaWan.NetworkServer.V2
                 if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(loRaDevice.GatewayID, configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase))
                 {
                     Logger.Log(devEUI, $"join refused: trying to join not through its linked gateway, ignoring join request", Logger.LoggingLevel.Info);
-                    loRaDevice.IsJoinValid = false;
                     loRaDevice.IsOurDevice = false;
                     return null;
                 }

@@ -75,7 +75,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // device will be initialized
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
-                .ReturnsAsync(new Twin());
+                .ReturnsAsync(simulatedDevice.CreateABPTwin());
 
 
             var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, loraDeviceFactoryMock.Object);
@@ -122,7 +122,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // device will be initialized
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
-                .ReturnsAsync(new Twin());
+                .ReturnsAsync(simulatedDevice.CreateABPTwin());
 
             var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, loraDeviceFactoryMock.Object);
 
@@ -290,20 +290,24 @@ namespace LoRaWan.NetworkServer.Test
         public async Task When_Multiple_Devices_With_Same_DevAddr_Are_Returned_From_API_Should_Return_Matching_By_Mic(string deviceGatewayID)
         {
             var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
-            var loraDevice1 = TestUtils.CreateFromSimulatedDevice(simulatedDevice1, this.loRaDeviceClient.Object);
+
+            var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
+            payload.SerializeUplink(simulatedDevice1.AppSKey, simulatedDevice1.NwkSKey);
+
+            var loRaDeviceClient1 = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            loRaDeviceClient1.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(simulatedDevice1.CreateABPTwin());
+
+            var loraDevice1 = TestUtils.CreateFromSimulatedDevice(simulatedDevice1, loRaDeviceClient1.Object);
+            var devAddr = loraDevice1.DevAddr;
 
             var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             simulatedDevice2.LoRaDevice.DeviceID = "00000002";
             simulatedDevice2.LoRaDevice.NwkSKey = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
-            var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice2, this.loRaDeviceClient.Object);
-
-            var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
-            payload.SerializeUplink(simulatedDevice1.AppSKey, simulatedDevice1.NwkSKey);
-            var devAddr = loraDevice1.DevAddr;
-
-            // devices will be initialized
-            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
-                .ReturnsAsync(new Twin());
+            var loRaDeviceClient2 = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            loRaDeviceClient2.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(simulatedDevice2.CreateABPTwin());
+            var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice2, loRaDeviceClient2.Object);
 
             // Api service: search devices async
             var iotHubDeviceInfo1 = new IoTHubDeviceInfo(devAddr, loraDevice1.DevEUI, "");
@@ -346,6 +350,9 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(devicesByDevAddrDictionary.TryGetValue(loraDevice2.DevEUI, out var actualCachedLoRaDevice2));
             Assert.Same(loraDevice2, actualCachedLoRaDevice2);
             Assert.True(loraDevice2.IsOurDevice);
+
+            loRaDeviceClient1.Verify();
+            loRaDeviceClient2.Verify();
         }
 
 
@@ -369,7 +376,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // device will be initialized
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
-                .ReturnsAsync(new Twin());
+                .ReturnsAsync(simulatedDevice.CreateABPTwin());
 
 
             var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, loraDeviceFactoryMock.Object);
@@ -403,7 +410,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // device will be initialized
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
-                .ReturnsAsync(new Twin());
+                .ReturnsAsync(simulatedDevice.CreateABPTwin());
 
 
             var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, loraDeviceFactoryMock.Object);

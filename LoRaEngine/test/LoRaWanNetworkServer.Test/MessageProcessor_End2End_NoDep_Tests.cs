@@ -757,6 +757,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Single(devicesForDevAddr); // should have the single device
             Assert.True(devicesForDevAddr.TryGetValue(devEUI, out var loRaDevice));
 
+            Assert.Equal(simulatedDevice.AppKey, loRaDevice.AppKey);
+            Assert.Equal(simulatedDevice.AppEUI, loRaDevice.AppEUI);
             Assert.Equal(afterJoinAppSKey, loRaDevice.AppSKey);
             Assert.Equal(afterJoinNwkSKey, loRaDevice.NwkSKey);
             Assert.Equal(afterJoinDevAddr, loRaDevice.DevAddr);
@@ -770,6 +772,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0, loRaDevice.FCntDown);
             Assert.False(loRaDevice.HasFrameCountChanges);
         }
+
+
 
 
         [Theory]
@@ -830,7 +834,6 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceApi.Verify();
         }
 
-        //[Theory(Skip = "Join mic check is not working with simulated devices")]
         [Theory]
         [InlineData(MessageProcessorTestBase.ServerGatewayID)]
         [InlineData(null)]

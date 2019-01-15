@@ -87,7 +87,7 @@ namespace LoRaWan.NetworkServer.V2
                 {
                     if (matchingDevice.IsOurDevice)
                     {
-                        Logger.Log(devAddr, "device in cache", Logger.LoggingLevel.Info);
+                        Logger.Log(matchingDevice.DevEUI, "device in cache", Logger.LoggingLevel.Info);
                         return matchingDevice;
                     }
                     else
@@ -107,30 +107,41 @@ namespace LoRaWan.NetworkServer.V2
                     var loRaDevice = this.deviceFactory.Create(foundDevice);
                     if (loRaDevice != null && devicesMatchingDevAddr.TryAdd(loRaDevice.DevEUI, loRaDevice))
                     {
-                        // Calling initialize async here to avoid making async calls in the concurrent dictionary
-                        // Since only one device will be added, we guarantee that initialization only happens once
-                        await loRaDevice.InitializeAsync();
-                        loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
-
-                        // once added, call initializers
-                        foreach (var initializer in this.initializers)
-                            initializer.Initialize(loRaDevice);
-
-                        if (loRaDevice.DevEUI != null)
-                            Logger.Log(loRaDevice.DevEUI, "device added to cache", Logger.LoggingLevel.Info);
-
-
-                        // TODO: stop if we found the matching device?
-                        // If we continue we can cache for later usage, but then do it in a new thread
-                        if (IsValidDeviceForPayload(loRaDevice, loraPayload))
+                        try
                         {
-                            if (!loRaDevice.IsOurDevice)
+                            // Calling initialize async here to avoid making async calls in the concurrent dictionary
+                            // Since only one device will be added, we guarantee that initialization only happens once
+                            await loRaDevice.InitializeAsync();
+                            loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
+
+                            // once added, call initializers
+                            foreach (var initializer in this.initializers)
+                                initializer.Initialize(loRaDevice);
+
+                            if (loRaDevice.DevEUI != null)
+                                Logger.Log(loRaDevice.DevEUI, "device added to cache", Logger.LoggingLevel.Info);
+
+
+                            // TODO: stop if we found the matching device?
+                            // If we continue we can cache for later usage, but then do it in a new thread
+                            if (IsValidDeviceForPayload(loRaDevice, loraPayload))
                             {
-                                Logger.Log(loRaDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
-                                return null;
+                                if (!loRaDevice.IsOurDevice)
+                                {
+                                    Logger.Log(loRaDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
+                                    return null;
+                                }
+                                
+                                return loRaDevice;
                             }
-                            
-                            return loRaDevice;
+                        }
+                        catch (Exception ex)
+                        {
+                            // problem initializing the device (get twin timeout, etc)
+                            // remove it from the cache
+                            Logger.Log(loRaDevice.DevEUI ?? devAddr, $"Error initializing device {loRaDevice.DevEUI}. {ex.Message}", Logger.LoggingLevel.Error);
+
+                            devicesMatchingDevAddr.TryRemove(loRaDevice.DevEUI, out _);
                         }
                     }
                 }
@@ -208,11 +219,20 @@ namespace LoRaWan.NetworkServer.V2
             var loRaDevice = this.deviceFactory.Create(matchingDeviceInfo);
             if (loRaDevice != null)
             {
-                Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", Logger.LoggingLevel.Info);
-                await loRaDevice.InitializeAsync();
-                Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
+                try
+                {
+                    Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", Logger.LoggingLevel.Info);
+                    await loRaDevice.InitializeAsync();
+                    Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
 
-                AddToPendingJoinRequests(loRaDevice);
+                    AddToPendingJoinRequests(loRaDevice);
+                }
+                catch (Exception ex)
+                {
+                    // problem initializing the device (get twin timeout, etc)
+                    // remove it from the cache
+                    Logger.Log(loRaDevice.DevEUI, $"Error initializing OTAA device {loRaDevice.DevEUI}. {ex.Message}", Logger.LoggingLevel.Error);                           
+                }
             }
             
             return loRaDevice;
