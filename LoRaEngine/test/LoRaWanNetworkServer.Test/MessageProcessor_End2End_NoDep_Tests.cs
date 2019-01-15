@@ -965,5 +965,92 @@ namespace LoRaWan.NetworkServer.Test
 
             loRaDeviceApi.Verify();
         }
+
+        /// <summary>
+        /// This tests the multi gateway scenario where a 2nd gateway cannot find the joined device because IoT Hub twin has not yet been updated
+        /// It device api will not find it, only once the device registry finds it the message will be sent to IoT Hub
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task When_Second_Gateway_Does_Not_Find_Device_Should_Keep_Trying_On_Subsequent_Requests()
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1));
+            const string devAddr = "00AABBCC";
+            const string nwkSKey = "00000000000000000000000000000002";
+            const string appSKey = "00000000000000000000000000000001";
+            var devEUI = simulatedDevice.DevEUI;
+
+            simulatedDevice.SetupJoin(appSKey, nwkSKey, devAddr);
+
+            var updatedTwin = TestUtils.CreateTwin(desired: new Dictionary<string, object>
+            {
+                { TwinProperty.AppEUI, simulatedDevice.AppEUI },
+                { TwinProperty.SensorDecoder, nameof(LoRaPayloadDecoder.DecoderValueSensor) },
+            },
+            reported: new Dictionary<string, object>
+            {
+                { TwinProperty.AppSKey, appSKey },
+                { TwinProperty.NwkSKey, nwkSKey },
+                { TwinProperty.DevAddr, devAddr },
+                { TwinProperty.DevNonce, "ABCD" },
+            });
+
+            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+
+            // Twin will be loaded once
+            deviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(updatedTwin);
+
+            // Will check received messages once
+            deviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>())).ReturnsAsync((Message)null);
+
+            // Will send the 3 unconfirmed message
+            deviceClient.Setup(x => x.SendEventAsync(
+                It.Is<LoRaDeviceTelemetry>(t => ((JObject)t.data)["value"].ToString() == "3"), It.IsAny<Dictionary<string, string>>()))
+                .Returns(Task.FromResult(0));               
+
+
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+
+            // Will try to find the iot device based on dev addr            
+            loRaDeviceApi.SetupSequence(x => x.SearchDevicesAsync(null, devAddr, null, null, null))
+                .ReturnsAsync(new SearchDevicesResult())
+                .ReturnsAsync(new SearchDevicesResult())
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
+
+            var deviceRegistry = new LoRaDeviceRegistry(
+                this.ServerConfiguration, 
+                new MemoryCache(new MemoryCacheOptions()), 
+                loRaDeviceApi.Object,
+                new TestLoRaDeviceFactory(deviceClient.Object));
+
+
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+               this.ServerConfiguration,
+               deviceRegistry,
+               new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object),
+               new LoRaPayloadDecoder()
+               );
+
+
+            // Unconfirmed message #1 should fail
+            var unconfirmedRxpk1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1)
+                .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            Assert.Null(await messageProcessor.ProcessMessageAsync(unconfirmedRxpk1));
+
+            // Unconfirmed message #2 should fail
+            var unconfirmedRxpk2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2)
+                .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            Assert.Null(await messageProcessor.ProcessMessageAsync(unconfirmedRxpk2));
+
+            // Unconfirmed message #3 should succeed
+            var unconfirmedRxpk3 = simulatedDevice.CreateUnconfirmedDataUpMessage("3", fcnt: 3)
+                .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            Assert.Null(await messageProcessor.ProcessMessageAsync(unconfirmedRxpk3));
+
+            deviceClient.Verify();
+            loRaDeviceApi.Verify();
+        }
+
     }
 }

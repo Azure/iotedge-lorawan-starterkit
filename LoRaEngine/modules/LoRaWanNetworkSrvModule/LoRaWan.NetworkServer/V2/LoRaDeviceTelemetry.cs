@@ -4,6 +4,7 @@
 //
 
 using System.Collections.Generic;
+using LoRaTools.LoRaMessage;
 using LoRaTools.LoRaPhysical;
 using Newtonsoft.Json;
 
@@ -14,7 +15,7 @@ namespace LoRaWan.NetworkServer.V2
     {
         public string time;
         public uint tmms;
-        public uint tmst;
+        public uint tmst;        
         public double freq;
         public uint chan;
         public uint rfch;
@@ -26,6 +27,8 @@ namespace LoRaWan.NetworkServer.V2
         public float lsnr;
         public uint size;
         public object data;
+        public byte port;
+        public ushort fcnt;        
 
         [JsonProperty("eui")]
         public string DeviceEUI;
@@ -44,7 +47,7 @@ namespace LoRaWan.NetworkServer.V2
         {    
         }        
 
-        public LoRaDeviceTelemetry(Rxpk rxpk)
+        public LoRaDeviceTelemetry(Rxpk rxpk, LoRaPayloadData loRaPayloadData)
         {         
             if (rxpk.ExtraData != null)
                 this.ExtraData = new Dictionary<string, object>(rxpk.ExtraData);
@@ -62,7 +65,9 @@ namespace LoRaWan.NetworkServer.V2
             this.stat = rxpk.stat;
             this.time = rxpk.time;
             this.tmms = rxpk.tmms;
-            this.tmst = rxpk.tmst;        
+            this.tmst = rxpk.tmst;      
+            this.fcnt = loRaPayloadData.GetFcnt();
+            this.port = loRaPayloadData.GetFPort();
         }
     }
 }

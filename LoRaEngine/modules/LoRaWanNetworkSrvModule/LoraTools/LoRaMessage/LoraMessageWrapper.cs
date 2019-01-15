@@ -63,7 +63,7 @@ namespace LoRaTools.LoRaMessage
         {
             PktFwdPayload = new UplinkPktFwdMessage(rxpk);
             byte[] convertedInputMessage = Convert.FromBase64String(rxpk.data);
-            var messageType = convertedInputMessage[0] >> 5;
+            var messageType = convertedInputMessage[0];
             LoRaMessageType = (LoRaMessageType)messageType;
             // Uplink Message
             if (messageType == (int)LoRaMessageType.UnconfirmedDataUp)

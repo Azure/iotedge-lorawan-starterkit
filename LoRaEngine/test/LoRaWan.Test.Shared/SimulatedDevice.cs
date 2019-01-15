@@ -33,8 +33,10 @@ namespace LoRaWan.Test.Shared
         public string AppNonce { get; internal set; }
         public string AppSKey => LoRaDevice.AppSKey;
         public string NwkSKey => LoRaDevice.NwkSKey;
-
         public string AppKey => LoRaDevice.AppKey;
+        public string AppEUI => LoRaDevice.AppEUI;
+        public string DevAddr => LoRaDevice.DevAddr;
+        public string DevEUI => LoRaDevice.DeviceID;
 
         SemaphoreSlim joinFinished;
 
@@ -197,6 +199,19 @@ namespace LoRaWan.Test.Shared
             var devAdd = payload.DevAddr;
             //Array.Reverse(devAdd);
             this.LoRaDevice.DevAddr = BitConverter.ToString(devAdd.ToArray()).Replace("-", "");
+        }
+
+        /// <summary>
+        /// Setups the join properties
+        /// </summary>
+        /// <param name="appSKey"></param>
+        /// <param name="nwkSKey"></param>
+        /// <param name="devAddr"></param>
+        public void SetupJoin(string appSKey, string nwkSKey, string devAddr)
+        {
+            this.LoRaDevice.AppSKey = appSKey;
+            this.LoRaDevice.NwkSKey = nwkSKey;
+            this.LoRaDevice.DevAddr = devAddr;
         }
     }
 }
