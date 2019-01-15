@@ -236,7 +236,7 @@ namespace LoRaTools.LoRaMessage
         /// <param name="tmst">time stamp</param>
         /// <param name="devEUI">the device EUI</param>
         /// <returns>the Downlink message</returns>
-        public override DownlinkPktFwdMessage Serialize(string appSKey,string nwkSKey, string datr, double freq, long tmst,string devEUI)
+        public  DownlinkPktFwdMessage Serialize(string appSKey,string nwkSKey, string datr, double freq, long tmst,string devEUI)
         {
             PerformEncryption(appSKey);
             SetMic(nwkSKey);

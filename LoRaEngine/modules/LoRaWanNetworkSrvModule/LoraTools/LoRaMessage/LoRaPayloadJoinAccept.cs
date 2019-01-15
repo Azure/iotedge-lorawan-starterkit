@@ -224,7 +224,7 @@ namespace LoRaTools.LoRaMessage
             throw new NotImplementedException();
         }
 
-        public override DownlinkPktFwdMessage Serialize( string appKey, string nwkKey,string datr, double freq, long tmst, string devEUI)
+        public  DownlinkPktFwdMessage Serialize( string appKey,string datr, double freq, long tmst, string devEUI)
         {
             var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
             if (!CfList.Span.IsEmpty)

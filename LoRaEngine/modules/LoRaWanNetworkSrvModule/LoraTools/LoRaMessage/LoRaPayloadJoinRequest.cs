@@ -130,9 +130,5 @@ namespace LoRaTools.LoRaMessage
             return new UplinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
         }
 
-        public override DownlinkPktFwdMessage Serialize(string appKey, string nwkKey, string datr, double freq, long tmst, string devEUI)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

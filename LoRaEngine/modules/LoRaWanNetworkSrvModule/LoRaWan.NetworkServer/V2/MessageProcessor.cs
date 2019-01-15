@@ -741,7 +741,7 @@ namespace LoRaWan.NetworkServer.V2
                     );
 
   
-            return loRaPayloadJoinAccept.Serialize(appKey,"", datr, freq, tmst, devEUI);
+            return loRaPayloadJoinAccept.Serialize(appKey, datr, freq, tmst, devEUI);
 
         }
     }

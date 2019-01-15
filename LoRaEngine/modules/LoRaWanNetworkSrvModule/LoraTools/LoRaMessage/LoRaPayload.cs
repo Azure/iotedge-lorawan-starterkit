@@ -163,7 +163,6 @@ namespace LoRaTools.LoRaMessage
             return true;
         }
 
-        public abstract DownlinkPktFwdMessage Serialize( string appKey,string nwkKey, string datr, double freq, long tmst, string devEUI);
 
     }
 }
