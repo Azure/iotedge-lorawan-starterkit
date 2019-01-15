@@ -254,9 +254,9 @@ namespace LoRaSimulator
                                                 Array.Reverse(appNonce);
                                                 var devNonce = dev.LoRaDevice.GetDevNonce();
                                                 Array.Reverse(devNonce);
-                                                var appSKey = payload.CalculateKey(LoRaPayload.KeyType.AppSKey, appNonce, netid, devNonce, dev.LoRaDevice.GetAppKey());
+                                                var appSKey = payload.CalculateKey(LoRaPayloadKeyType.AppSKey, appNonce, netid, devNonce, dev.LoRaDevice.GetAppKey());
                                                 dev.LoRaDevice.AppSKey = BitConverter.ToString(appSKey).Replace("-", "");
-                                                var nwkSKey = payload.CalculateKey(LoRaPayload.KeyType.NwkSKey, appNonce, netid, devNonce, dev.LoRaDevice.GetAppKey());
+                                                var nwkSKey = payload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netid, devNonce, dev.LoRaDevice.GetAppKey());
                                                 dev.LoRaDevice.NwkSKey = BitConverter.ToString(nwkSKey).Replace("-", "");
                                                 dev.LoRaDevice.NetId = BitConverter.ToString(netid).Replace("-", "");
                                                 dev.LoRaDevice.AppNonce = BitConverter.ToString(appNonce).Replace("-", "");
