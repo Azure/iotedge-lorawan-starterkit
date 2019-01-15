@@ -507,7 +507,7 @@ namespace LoRaWan.NetworkServer.V2
         // Sends device telemetry data to IoT Hub
         private async Task SendDeviceEventAsync(LoRaDevice loRaDevice, Rxpk rxpk, object payloadData, LoRaPayloadData loRaPayloadData, LoRaOperationTimeWatcher timeWatcher)
         {            
-            var deviceTelemetry = new LoRaDeviceTelemetry(rxpk);
+            var deviceTelemetry = new LoRaDeviceTelemetry(rxpk, loRaPayloadData);
             deviceTelemetry.DeviceEUI = loRaDevice.DevEUI;
             deviceTelemetry.GatewayID = this.configuration.GatewayID;
             deviceTelemetry.Edgets = (long)((timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds);

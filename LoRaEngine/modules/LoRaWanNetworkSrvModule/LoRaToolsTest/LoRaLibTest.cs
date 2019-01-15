@@ -314,9 +314,11 @@ namespace LoRaWanTest
         // This test will validate if creating payloads will work, using new approach
         // LoRaPayloadData (UnconfirmedDataUp) -> SerializeUplink -> Uplink.Rxpk[0] -> LoRaPayloadData -> check properties
         [Theory]
-        [InlineData("1234")]
-        [InlineData("hello world")]
-        public void When_Creating_Rxpk_Recreating_Payload_Should_Match_Source_Values(string data)
+        [InlineData(LoRaMessageType.UnconfirmedDataUp, "1234")]
+        [InlineData(LoRaMessageType.UnconfirmedDataUp, "hello world")]
+        [InlineData(LoRaMessageType.ConfirmedDataUp, "1234")]
+        [InlineData(LoRaMessageType.ConfirmedDataUp, "hello world")]
+        public void When_Creating_Rxpk_Recreating_Payload_Should_Match_Source_Values(LoRaMessageType loRaMessageType, string data)
         {
             var devAddrText = "00000060";
             var appSKeyText = "00000060000000600000006000000060";
@@ -333,7 +335,11 @@ namespace LoRaWanTest
             Array.Reverse(payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            var devicePayloadData = new LoRaPayloadData(LoRaMessageType.UnconfirmedDataUp, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
+            var devicePayloadData = new LoRaPayloadData(loRaMessageType, devAddr, fCtrl, fcntBytes, fopts, fPort, payload, direction);
+
+            Assert.Equal(12, devicePayloadData.GetFcnt());
+            Assert.Equal(0, devicePayloadData.Direction);
+            Assert.Equal(1, devicePayloadData.GetFPort());
 
             var datr = "SF10BW125";
             var freq = 868.3;
@@ -342,17 +348,33 @@ namespace LoRaWanTest
 
             // Now try to recreate LoRaPayloadData from rxpk
             Assert.True(LoRaPayload.TryCreateLoRaPayload(uplinkMsg.rxpk[0], out LoRaPayload parsedLoRaPayload));
-            Assert.Equal(LoRaMessageType.UnconfirmedDataUp, parsedLoRaPayload.LoRaMessageType);
+            Assert.Equal(loRaMessageType, parsedLoRaPayload.LoRaMessageType);
             Assert.IsType<LoRaPayloadData>(parsedLoRaPayload);
             var parsedLoRaPayloadData = (LoRaPayloadData)parsedLoRaPayload;
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
             Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
-            // How to get the payload back?
+
+            // Ensure that mic check and getting payload back works
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
             var parsedPayloadBytes = parsedLoRaPayloadData.GetDecryptedPayload(appSKeyText);
             Assert.Equal(data, Encoding.UTF8.GetString(parsedPayloadBytes));
+
+
+            // checking mic and getting payload should not change the payload properties
+            Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
+            Assert.Equal(0, parsedLoRaPayloadData.Direction);
+            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+
+            // checking mic should not break getting the payload
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
+            var parsedPayloadBytes2 = parsedLoRaPayloadData.GetDecryptedPayload(appSKeyText);
+            Assert.Equal(data, Encoding.UTF8.GetString(parsedPayloadBytes2));
+
+            // checking mic and getting payload should not change the payload properties
+            Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
+            Assert.Equal(0, parsedLoRaPayloadData.Direction);
+            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
         }
 
 

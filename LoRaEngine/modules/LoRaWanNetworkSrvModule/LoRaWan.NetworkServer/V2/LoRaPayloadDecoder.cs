@@ -42,7 +42,7 @@ namespace LoRaWan.NetworkServer.V2
             if (!sensorDecoder.Contains("http://"))
             {
                 Type decoderType = typeof(LoRaPayloadDecoder);
-                MethodInfo toInvoke = decoderType.GetMethod(sensorDecoder, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
+                MethodInfo toInvoke = decoderType.GetMethod(sensorDecoder, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
 
                 if (toInvoke != null)
                 {
@@ -91,7 +91,7 @@ namespace LoRaWan.NetworkServer.V2
 
         }
 
-        private async Task<string> CallSensorDecoderModule(string sensorDecoderModuleUrl, byte[] payload)
+        async Task<string> CallSensorDecoderModule(string sensorDecoderModuleUrl, byte[] payload)
         {
             var base64Payload = Convert.ToBase64String(payload);
             string result = "";
@@ -137,7 +137,7 @@ namespace LoRaWan.NetworkServer.V2
         /// <param name="payload"></param>
         /// <param name="fport"></param>
         /// <returns></returns>
-        private static string DecoderValueSensor(byte[] payload, uint fport)
+        public static string DecoderValueSensor(byte[] payload, uint fport)
         {
             var result = Encoding.UTF8.GetString(payload);
             return $"{{ \"value\":{result} }}";

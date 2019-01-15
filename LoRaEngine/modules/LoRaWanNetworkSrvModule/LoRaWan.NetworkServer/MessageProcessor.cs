@@ -572,7 +572,7 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            joinLoraDeviceInfo = await this.loraDeviceInfoManager.PerformOTAAAsync(this.configuration.GatewayID, devEui, ConversionHelper.ByteArrayToString(joinReq.AppEUI.ToArray()), devNonce, joinLoraDeviceInfo);
+            joinLoraDeviceInfo = await this.loraDeviceInfoManager.PerformOTAAAsync(this.configuration.GatewayID, devEui, joinReq.GetAppEUIAsString(), devNonce, joinLoraDeviceInfo);
 
 
             if (joinLoraDeviceInfo != null && joinLoraDeviceInfo.IsJoinValid)
