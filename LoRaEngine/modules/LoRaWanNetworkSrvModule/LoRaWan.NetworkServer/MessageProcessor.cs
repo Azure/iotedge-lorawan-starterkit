@@ -141,42 +141,50 @@ namespace LoRaWan.NetworkServer
                         dynamic fullPayload = JObject.FromObject(rxPk);
                         string jsonDataPayload = "";
                         uint fportUp = 0;
-                        bool isAckFromDevice = false;
+
                         if (loraMessage.LoRaPayloadMessage.GetLoRaMessage().Fport.Span.Length > 0)
                         {
                             fportUp = (uint)loraMessage.LoRaPayloadMessage.GetLoRaMessage().Fport.Span[0];
                         }
-                        else // this is an acknowledgment sent from the device
-                        {
-                            isAckFromDevice = true;
-                            fullPayload.deviceAck = true;
-                        }
+
                         fullPayload.port = fportUp;
                         fullPayload.fcnt = fcntup;
-
-                        // ACK from device or no decoder set in LoRa Device Twin. Simply return decryptedMessage
-                        if (isAckFromDevice || String.IsNullOrEmpty(loraDeviceInfo.SensorDecoder))
-                        {
-                            if (String.IsNullOrEmpty(loraDeviceInfo.SensorDecoder))
-                            {
-                                Logger.Log(loraDeviceInfo.DevEUI, $"no decoder set in device twin. port: {fportUp}", Logger.LoggingLevel.Full);
-                            }
-
-                            jsonDataPayload = Convert.ToBase64String(decryptedMessage);
-                            fullPayload.data = jsonDataPayload;
-                        }
-                        // Decoder is set in LoRa Device Twin. Send decrpytedMessage (payload) and fportUp (fPort) to decoder.
-                        else
-                        {
-                            Logger.Log(loraDeviceInfo.DevEUI, $"decoding with: {loraDeviceInfo.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Full);
-                            fullPayload.data = await LoraDecoders.DecodeMessage(decryptedMessage, fportUp, loraDeviceInfo.SensorDecoder);
-                        }
-
+                        List<KeyValuePair<String, String>> messageProperties = new List<KeyValuePair<String, String>>();
                         fullPayload.eui = loraDeviceInfo.DevEUI;
                         fullPayload.gatewayid = this.configuration.GatewayID;
                         //Edge timestamp
                         fullPayload.edgets = (long)((startTimeProcessing - new DateTime(1970, 1, 1)).TotalMilliseconds);
-                        List<KeyValuePair<String, String>> messageProperties = new List<KeyValuePair<String, String>>();
+
+                        //In case of ack message
+                        if ((loraMessage.LoRaPayloadMessage.GetLoRaMessage().Fctrl.Span[0] & (byte)FctrlEnum.Ack) == 32)
+                        {
+                            Logger.Log(loraDeviceInfo.DevEUI, String.Concat($"C2D Message ack received",
+                                loraDeviceInfo.LastConfirmedC2DMessageID != "C2DMsgId" ? $" for message id {loraDeviceInfo.LastConfirmedC2DMessageID}" : ""),
+                                Logger.LoggingLevel.Info);
+                            messageProperties.Add(new KeyValuePair<string, string>("C2DMsgConfirmed", loraDeviceInfo.LastConfirmedC2DMessageID != "C2DMsgId" ?
+                            loraDeviceInfo.LastConfirmedC2DMessageID : "C2D Msg Confirmation"));
+                            fullPayload.deviceAck = true;
+                            loraDeviceInfo.LastConfirmedC2DMessageID = null;
+                   
+                        }
+
+                        if (decryptedMessage != null)
+                        {
+                            // No decoder set in LoRa Device Twin. Simply return decryptedMessage
+                            if (String.IsNullOrEmpty(loraDeviceInfo.SensorDecoder))
+                            {
+                                Logger.Log(loraDeviceInfo.DevEUI, $"no decoder set in device twin. port: {fportUp}", Logger.LoggingLevel.Full);
+                                jsonDataPayload = Convert.ToBase64String(decryptedMessage);
+                                fullPayload.data = jsonDataPayload;
+                            }
+                            // Decoder is set in LoRa Device Twin. Send decrpytedMessage (payload) and fportUp (fPort) to decoder.
+                            else
+                            {
+                                Logger.Log(loraDeviceInfo.DevEUI, $"decoding with: {loraDeviceInfo.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Full);
+                                fullPayload.data = await LoraDecoders.DecodeMessage(decryptedMessage, fportUp, loraDeviceInfo.SensorDecoder);
+                            }
+                        }
+
 
                         //Parsing MacCommands and add them as property of the message to be sent to the IoT Hub.
                         var macCommand = ((LoRaPayloadData)loraMessage.LoRaPayloadMessage).GetMacCommands();
@@ -194,24 +202,17 @@ namespace LoRaWan.NetworkServer
                         }
                         string iotHubMsg = fullPayload.ToString(Newtonsoft.Json.Formatting.None);
                         await loraDeviceInfo.HubSender.SendMessageAsync(iotHubMsg, messageProperties);
+                        var fullPayloadAsString = string.Empty;
+                        if (fullPayload.data is JValue jvalue)
+                        {
+                            fullPayloadAsString = jvalue.ToString();
+                        }
+                        else if (fullPayload.data is JObject jobject)
+                        {
+                            fullPayloadAsString = jobject.ToString(Formatting.None);
+                        }
+                        Logger.Log(loraDeviceInfo.DevEUI, $"message '{fullPayloadAsString}' sent to hub", Logger.LoggingLevel.Info);
 
-                        if (isAckFromDevice)
-                        {
-                            Logger.Log(loraDeviceInfo.DevEUI, $"ack from device sent to hub", Logger.LoggingLevel.Info);
-                        }
-                        else
-                        {
-                            var fullPayloadAsString = string.Empty;
-                            if (fullPayload.data is JValue jvalue)
-                            {
-                                fullPayloadAsString = jvalue.ToString();
-                            }
-                            else if (fullPayload.data is JObject jobject)
-                            {
-                                fullPayloadAsString = jobject.ToString(Formatting.None);
-                            }
-                            Logger.Log(loraDeviceInfo.DevEUI, $"message '{fullPayloadAsString}' sent to hub", Logger.LoggingLevel.Info);
-                        }
                         loraDeviceInfo.FCntUp = fcntup;
                     }
                     else
@@ -220,11 +221,13 @@ namespace LoRaWan.NetworkServer
                         Logger.Log(loraDeviceInfo.DevEUI, $"invalid frame counter, msg: {fcntup} server: {loraDeviceInfo.FCntUp}", Logger.LoggingLevel.Info);
                     }
                     byte[] fctrl = new byte[1] { 0 };
+                    if (loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
+                        fctrl[0] = (int)FctrlEnum.Ack;
 
                     //we lock as fast as possible and get the down fcnt for multi gateway support for confirmed message
                     if (loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp && String.IsNullOrEmpty(loraDeviceInfo.GatewayID))
                     {
-                        fctrl[0] = (int)FctrlEnum.Ack;
+
                         ushort newFCntDown = await this.loraDeviceInfoManager.NextFCntDown(loraDeviceInfo.DevEUI, loraDeviceInfo.FCntDown, fcntup, this.configuration.GatewayID);
                         //ok to send down ack or msg
                         if (newFCntDown > 0)
@@ -244,6 +247,7 @@ namespace LoRaWan.NetworkServer
                     c2dMsg = await loraDeviceInfo.HubSender.ReceiveAsync(TimeSpan.FromMilliseconds(500));
                     if (c2dMsg != null && !ValidateCloudToDeviceMessage(loraDeviceInfo, c2dMsg))
                     {
+
                         _ = loraDeviceInfo.HubSender.CompleteAsync(c2dMsg);
                         c2dMsg = null;
                     }
@@ -254,6 +258,8 @@ namespace LoRaWan.NetworkServer
                     //check if we got a c2d message to be added in the ack message and prepare the message
                     if (c2dMsg != null)
                     {
+                        loraDeviceInfo.LastConfirmedC2DMessageID = c2dMsg.MessageId ?? "C2DMsgId";
+
                         ////check if there is another message
                         var secondC2dMsg = await loraDeviceInfo.HubSender.ReceiveAsync(TimeSpan.FromMilliseconds(40));
                         if (secondC2dMsg != null)
@@ -284,8 +290,7 @@ namespace LoRaWan.NetworkServer
                     //if confirmation or cloud to device msg send down the message
                     if (loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp || c2dMsg != null)
                     {
-                        if (loraMessage.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
-                            fctrl[0] += (int)FctrlEnum.Ack;
+
 
                         //check if we are not too late for the second receive windows
                         if ((DateTime.UtcNow - startTimeProcessing) <= TimeSpan.FromMilliseconds(RegionFactory.CurrentRegion.receive_delay2 * 1000 - 100))
@@ -642,7 +647,7 @@ namespace LoRaWan.NetworkServer
                             Logger.LoggingLevel.Info);
                         return null;
                     }
-                        Logger.Log(devEui, $"processing of the join request took too long, using second join accept receive window", Logger.LoggingLevel.Info);
+                    Logger.Log(devEui, $"processing of the join request took too long, using second join accept receive window", Logger.LoggingLevel.Info);
                     tmst = loraMessage.PktFwdPayload.GetPktFwdMessage().Rxpks[0].tmst + RegionFactory.CurrentRegion.join_accept_delay2 * 1000000;
                     if (string.IsNullOrEmpty(configuration.Rx2DataRate))
                     {
