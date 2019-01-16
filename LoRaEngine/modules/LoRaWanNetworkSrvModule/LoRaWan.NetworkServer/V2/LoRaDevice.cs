@@ -29,7 +29,9 @@ namespace LoRaWan.NetworkServer.V2
         public string DevNonce { get; set; }
         public string NetID { get; set; }
         public bool IsOurDevice = false;
-      
+        public string LastConfirmedC2DMessageID { get; set; }
+
+
         int fcntUp;
         public int FCntUp => this.fcntUp;
 

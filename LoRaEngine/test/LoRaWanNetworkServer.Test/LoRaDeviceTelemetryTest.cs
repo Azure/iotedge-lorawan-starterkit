@@ -15,12 +15,13 @@ namespace LoRaWan.NetworkServer.Test
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: fcnt, fport: fport);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
-            
+            var decodedValue = new { value=1};
 
-            var target = new LoRaDeviceTelemetry(rxpk, payload);
+            var target = new LoRaDeviceTelemetry(rxpk, payload,decodedValue);
             Assert.Equal(rxpk.chan, target.chan);
             Assert.Equal(rxpk.codr, target.codr);
-            Assert.Equal(rxpk.data, target.data);
+            Assert.Equal(rxpk.data, target.rawdata);
+            Assert.Equal(decodedValue, target.data);
             Assert.Equal(rxpk.datr, target.datr);
             Assert.Equal(rxpk.freq, target.freq);
             Assert.Equal(rxpk.lsnr, target.lsnr);

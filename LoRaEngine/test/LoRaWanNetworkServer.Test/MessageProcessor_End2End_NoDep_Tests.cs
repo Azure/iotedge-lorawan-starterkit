@@ -1121,6 +1121,64 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceApi.Verify();
         }
 
+        [Theory]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, null)]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, "test")]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, "test","idtest")]
+        public async Task When_Ack_Message_Received_Should_Be_In_Msg_Properties(string deviceGatewayID,string data,string msgId=null)
+        {
+            const int initialFcntUp = 100;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
+            simulatedDevice.FrmCntUp = initialFcntUp;
+            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data,fctrl:(byte)FctrlEnum.Ack);
+            var ackRxpk=ackMessage.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
+            if (msgId != null)
+                loRaDevice.LastConfirmedC2DMessageID = msgId;
+
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var dictionary = new DevEUIToLoRaDeviceDictionary();
+            dictionary[loRaDevice.DevEUI] = loRaDevice;
+            memoryCache.Set<DevEUIToLoRaDeviceDictionary>(loRaDevice.DevAddr, dictionary);
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+            // using factory to create mock of 
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
+            loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()))
+                .Callback<LoRaDeviceTelemetry,Dictionary<string,string>>((t, d) =>
+                {
+
+                    Assert.NotNull(d);
+                    Assert.True(d.ContainsKey(LoRaWan.NetworkServer.V2.MessageProcessor.C2D_MSG_PROPERTY_VALUE_NAME));
+
+                    if (msgId == null)
+                        Assert.True(d.ContainsValue(LoRaWan.NetworkServer.V2.MessageProcessor.C2D_MSG_ID_PLACEHOLDER));
+                    else
+                        Assert.True(d.ContainsValue(msgId));
+                })
+                .Returns(Task.FromResult(true));
+      
+            // C2D message will be checked
+            loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+               this.ServerConfiguration,
+               deviceRegistry,
+               frameCounterUpdateStrategyFactory,
+               new LoRaPayloadDecoder()
+               );
+            var ackTxpk = await messageProcessor.ProcessMessageAsync(ackRxpk);
+            Assert.Null(ackTxpk);
+            Assert.True(deviceRegistry.InternalGetCachedDevicesForDevAddr(loRaDevice.DevAddr).TryGetValue(loRaDevice.DevEUI, out var loRaDeviceInfo));
+            
+            Assert.Equal(loRaDeviceInfo.FCntUp, simulatedDevice.FrmCntUp+1);
+
+
+        }
 
         [Theory]
         [InlineData(MessageProcessorTestBase.ServerGatewayID, 21)]

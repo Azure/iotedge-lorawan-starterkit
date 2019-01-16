@@ -72,8 +72,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Indicates if the payload is an confirmation message acknowledgement
         /// </summary>
-        public bool IsUpwardAck() => Frmpayload.Length == 0 && IsConfirmed();
-
+        public bool IsUpwardAck() => (this.Fctrl.Span[0] & (byte)FctrlEnum.Ack) == 32;
         
         /// <summary>
         /// Frame control octet
