@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer.V2
             return await InternalSaveChangesAsync(loRaDevice, force: true);
         }
 
-        public ValueTask<int> NextFcntDown(LoRaDevice loRaDevice)
+        public ValueTask<int> NextFcntDown(LoRaDevice loRaDevice, int messageFcnt)
         {
             return new ValueTask<int>(loRaDevice.IncrementFcntDown(1));
         }

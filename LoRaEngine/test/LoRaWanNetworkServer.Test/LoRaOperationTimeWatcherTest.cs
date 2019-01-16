@@ -3,16 +3,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 using LoRaTools.Regions;
-using LoRaWan.NetworkServer;
 using LoRaWan.NetworkServer.V2;
-using LoRaWan.Shared;
 using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace LoRaWan.NetworkServer.Test
@@ -105,6 +97,46 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice = new LoRaDevice("31312", "312321321", null);
 
             Assert.Equal(0, target.ResolveReceiveWindowToUse(loRaDevice));
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1000)]
+        [InlineData(2000)]
+        [InlineData(3000)]
+        [InlineData(4000)]
+        [InlineData(4790)]
+        public void When_In_Time_For_Join_Accept_First_Window_Should_Resolve_Window_1(int delayInMs)
+        {
+            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var loRaDevice = new LoRaDevice("31312", "312321321", null);
+
+            Assert.Equal(1, target.ResolveJoinAcceptWindowToUse(loRaDevice));
+        }
+
+
+        [Theory]
+        [InlineData(4900)]
+        [InlineData(5000)]
+        [InlineData(5790)]
+        public void When_In_Time_For_Join_Accept_Second_Window_Should_Resolve_Window_2(int delayInMs)
+        {
+            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var loRaDevice = new LoRaDevice("31312", "312321321", null);
+
+            Assert.Equal(2, target.ResolveJoinAcceptWindowToUse(loRaDevice));
+        }
+
+        [Theory]
+        [InlineData(6000)]
+        [InlineData(7000)]
+        [InlineData(8000)]
+        public void When_Out_Of_Time_For_Join_Accept_Second_Window_Should_Resolve_Window_0(int delayInMs)
+        {
+            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var loRaDevice = new LoRaDevice("31312", "312321321", null);
+
+            Assert.Equal(0, target.ResolveJoinAcceptWindowToUse(loRaDevice));
         }
     }
 }

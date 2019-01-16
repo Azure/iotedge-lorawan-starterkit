@@ -163,6 +163,7 @@ namespace LoRaWan.NetworkServer.V2
                     var isConfirmedResubmit = false;
                     if (!isRelaxedPayloadFrameCounter && payloadFcnt <= loRaDevice.FCntUp)
                     {
+                        // TODO: have a maximum retry (3)
                         // Future: Keep track of how many times we acked the confirmed message (4+ times we skip)
                         //if it is confirmed most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub 
                         if (requiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
@@ -181,14 +182,18 @@ namespace LoRaWan.NetworkServer.V2
                     // If it is confirmed it require us to update the frame counter down
                     // Multiple gateways: in redis, otherwise in device twin
                     if (requiresConfirmation)
-                    {
-                        // TODO: have a maximum retry (3)
-                        fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice);
+                    {                        
+                        fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, payloadFcnt);
 
                         // Failed to update the fcnt down
                         // In multi gateway scenarios it means the another gateway was faster than using, can stop now
                         if (fcntDown <= 0)
                         {
+                            // update our fcntup anyway
+                            loRaDevice.SetFcntUp(payloadFcnt);
+
+                            Logger.Log(loRaDevice.DevEUI, "another gateway has already sent ack or downlink msg", Logger.LoggingLevel.Info);
+
                             return null;
                         }
 
@@ -279,38 +284,56 @@ namespace LoRaWan.NetworkServer.V2
                     // But we wait less that the timeout (available time before 2nd window)
                     // if message is received after timeout, keep it in loraDeviceInfo and return the next call
                     var cloudToDeviceReceiveTimeout = timeToSecondWindow - (LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessagePackageAndSendMessage);
-                    var cloudToDeviceMessage = await loRaDevice.ReceiveCloudToDeviceAsync(cloudToDeviceReceiveTimeout);
-                    if (cloudToDeviceMessage != null && !ValidateCloudToDeviceMessage(loRaDevice, cloudToDeviceMessage))
-                    {
-                        _ = loRaDevice.CompleteCloudToDeviceMessageAsync(cloudToDeviceMessage);
-                        cloudToDeviceMessage = null;
-                    }
-
                     // Flag indicating if there is another C2D message waiting
                     var fpending = false;
-                    if (cloudToDeviceMessage != null)
+                    // Contains the Cloud to message we need to send
+                    Message cloudToDeviceMessage = null;                    
+                    if (cloudToDeviceReceiveTimeout > TimeSpan.Zero)
                     {
-                        if (!requiresConfirmation)
+                        cloudToDeviceMessage = await loRaDevice.ReceiveCloudToDeviceAsync(cloudToDeviceReceiveTimeout);
+                        if (cloudToDeviceMessage != null && !ValidateCloudToDeviceMessage(loRaDevice, cloudToDeviceMessage))
                         {
-                            // The message coming from the device was not confirmed, therefore we did not computed the frame count down
-                            // Now we need to increment because there is a C2D message to be sent
-                            fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice);
-
-                            requiresConfirmation = true;
+                            _ = loRaDevice.CompleteCloudToDeviceMessageAsync(cloudToDeviceMessage);
+                            cloudToDeviceMessage = null;
                         }
 
-                        timeToSecondWindow = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice);
-                        if (timeToSecondWindow > LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessagePackageAndSendMessage)
+                        if (cloudToDeviceMessage != null)
                         {
-                            var additionalMsg = await loRaDevice.ReceiveCloudToDeviceAsync(timeToSecondWindow - LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessagePackageAndSendMessage);
-                            if (additionalMsg != null)
+                            if (!requiresConfirmation)
                             {
-                                fpending = true;
-                                _ = loRaDevice.AbandonCloudToDeviceMessageAsync(additionalMsg);
+                                // The message coming from the device was not confirmed, therefore we did not computed the frame count down
+                                // Now we need to increment because there is a C2D message to be sent
+                                fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, payloadFcnt);
+
+                                if (fcntDown == 0)
+                                {
+                                    // We did not get a valid frame count down, therefore we should not process the message
+                                    _ = loRaDevice.AbandonCloudToDeviceMessageAsync(cloudToDeviceMessage);
+
+                                    cloudToDeviceMessage = null;
+                                }
+                                else
+                                {
+                                    requiresConfirmation = true;
+                                }                            
+                            }
+                            
+                            // Checking again because the fcntdown resolution could have failed, causing us to drop the message
+                            if (cloudToDeviceMessage != null)
+                            {
+                                timeToSecondWindow = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice);
+                                if (timeToSecondWindow > LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessagePackageAndSendMessage)
+                                {
+                                    var additionalMsg = await loRaDevice.ReceiveCloudToDeviceAsync(timeToSecondWindow - LoRaOperationTimeWatcher.ExpectedTimeToCheckCloudToDeviceMessagePackageAndSendMessage);
+                                    if (additionalMsg != null)
+                                    {
+                                        fpending = true;
+                                        _ = loRaDevice.AbandonCloudToDeviceMessageAsync(additionalMsg);
+                                    }
+                                }
                             }
                         }
                     }
-
 
                     // No C2D message and request was not confirmed, return nothing
                     if (!requiresConfirmation)
@@ -446,9 +469,7 @@ namespace LoRaWan.NetworkServer.V2
                 macbytes,
                 fport.HasValue ? new byte[] { fport.Value } : null,
                 frmPayload,
-                1);
-
-           
+                1);           
 
             var receiveWindow = timeWatcher.ResolveReceiveWindowToUse(loraDeviceInfo);
             if (receiveWindow == 0)
@@ -485,7 +506,7 @@ namespace LoRaWan.NetworkServer.V2
 
             //todo: check the device twin preference if using confirmed or unconfirmed down    
             var loRaMessageType = (msgType == LoRaMessageType.ConfirmedDataDown) ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
-            return ackLoRaMessage.Serialize(loraDeviceInfo.AppSKey,loraDeviceInfo.NwkSKey, datr, freq, tmst,loraDeviceInfo.DevEUI);
+            return ackLoRaMessage.Serialize(loraDeviceInfo.AppSKey,loraDeviceInfo.NwkSKey, datr, freq, rxpk.rfch, tmst, loraDeviceInfo.DevEUI);
         }        
 
         private bool ValidateCloudToDeviceMessage(LoRaDevice loRaDevice, Message cloudToDeviceMsg)
@@ -592,17 +613,17 @@ namespace LoRaWan.NetworkServer.V2
                     return null;
                 }
 
-                if (!joinReq.CheckMic(loRaDevice.AppKey))
-                {
-                    Logger.Log(devEUI, "join refused: invalid MIC", Logger.LoggingLevel.Error);
-                    return null;
-                }
-
                 if (loRaDevice.AppEUI != appEUI)
                 {
                     Logger.Log(devEUI, "join refused: AppEUI for OTAA does not match device", Logger.LoggingLevel.Error);
                     return null;
                 }
+
+                if (!joinReq.CheckMic(loRaDevice.AppKey))
+                {
+                    Logger.Log(devEUI, "join refused: invalid MIC", Logger.LoggingLevel.Error);
+                    return null;
+                }                
 
                 // Make sure that is a new request and not a replay         
                 if (!string.IsNullOrEmpty(loRaDevice.DevNonce) && loRaDevice.DevNonce == devNonce)
@@ -646,16 +667,25 @@ namespace LoRaWan.NetworkServer.V2
                     return null;
                 }
 
-                var datr = this.loraRegion.GetDownstreamDR(rxpk);
-                uint rfch = rxpk.rfch;
-                double freq = this.loraRegion.GetDownstreamChannel(rxpk);
-                //set tmst for the normal case
-                long tmst = rxpk.tmst + this.loraRegion.join_accept_delay1 * 1000000;
+                var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse(loRaDevice);
+                if (windowToUse == 0)
+                {
+                    Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", Logger.LoggingLevel.Info);
+                    return null;
+                }
 
-
-                // in this case the second join windows must be used
-                var timeToFirstWindow = timeWatcher.GetRemainingTimeToJoinAcceptFirstWindow();
-                if (timeToFirstWindow < LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage)
+                double freq = 0;
+                string datr = null;
+                uint tmst = 0;
+                if (windowToUse == 1)
+                {
+                    datr = this.loraRegion.GetDownstreamDR(rxpk);
+                    freq = this.loraRegion.GetDownstreamChannel(rxpk);
+                    
+                    //set tmst for the normal case
+                    tmst = rxpk.tmst + this.loraRegion.join_accept_delay1 * 1000000;
+                }
+                else
                 {
                     Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", Logger.LoggingLevel.Info);
                     tmst = rxpk.tmst + this.loraRegion.join_accept_delay2 * 1000000;
@@ -682,8 +712,6 @@ namespace LoRaWan.NetworkServer.V2
                 Array.Reverse(netId);
                 Array.Reverse(appNonceBytes);
 
-
-
                 return CreateJoinAcceptDownlinkMessage(
                     //NETID 0 / 1 is default test 
                     netId: netId,
@@ -696,8 +724,7 @@ namespace LoRaWan.NetworkServer.V2
                     freq: freq,
                     tmst: tmst,
                     rxpk: rxpk,
-                    devEUI: devEUI
-                    );
+                    devEUI: devEUI);
             }
         }
 
@@ -746,7 +773,7 @@ namespace LoRaWan.NetworkServer.V2
                     );
 
   
-            return loRaPayloadJoinAccept.Serialize(appKey, datr, freq, tmst, devEUI);
+            return loRaPayloadJoinAccept.Serialize(appKey, datr, freq, rxpk.rfch, tmst, devEUI);
 
         }
     }

@@ -235,12 +235,13 @@ namespace LoRaTools.LoRaMessage
         /// <param name="freq">The frequency at which to be sent</param>
         /// <param name="tmst">time stamp</param>
         /// <param name="devEUI">the device EUI</param>
+        /// <param name="rfch">Concentrator "RF chain" used for RX. Copy from rxpk</param>
         /// <returns>the Downlink message</returns>
-        public  DownlinkPktFwdMessage Serialize(string appSKey,string nwkSKey, string datr, double freq, long tmst,string devEUI)
+        public DownlinkPktFwdMessage Serialize(string appSKey,string nwkSKey, string datr, double freq, uint rfch, long tmst,string devEUI)
         {
             PerformEncryption(appSKey);
             SetMic(nwkSKey);
-            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
+            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, rfch, tmst);
             if (Logger.LoggerLevel < Logger.LoggingLevel.Info)
             {
                 var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);

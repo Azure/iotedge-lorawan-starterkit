@@ -33,12 +33,12 @@ namespace LoRaWan.NetworkServer.V2
             return false;
         }
 
-        public async ValueTask<int> NextFcntDown(LoRaDevice loRaDevice)
+        public async ValueTask<int> NextFcntDown(LoRaDevice loRaDevice, int messageFcnt)
         {
             var result = await this.loRaDeviceAPIService.NextFCntDownAsync(
                 devEUI: loRaDevice.DevEUI, 
                 fcntDown: loRaDevice.FCntDown,
-                fcntUp: loRaDevice.FCntUp,
+                fcntUp: messageFcnt,
                 gatewayId: this.gatewayID);
 
             if (result > 0)
