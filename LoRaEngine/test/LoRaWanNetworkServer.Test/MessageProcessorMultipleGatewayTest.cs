@@ -40,8 +40,8 @@ namespace LoRaWan.NetworkServer.Test
             
             // 2 messages will be sent
             loraDeviceClient.SetupSequence(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Returns(Task.FromResult(0))
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true)
+                .ReturnsAsync(true);
 
             // cloud to device messages will be checked twice            
             loraDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))

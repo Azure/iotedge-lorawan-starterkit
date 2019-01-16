@@ -118,9 +118,8 @@ namespace LoRaWan.NetworkServer.V2
 
         }
 
-        public async Task SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties)
+        public async Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties)
         {
-
             if (telemetry != null)
             {
                 try
@@ -148,12 +147,11 @@ namespace LoRaWan.NetworkServer.V2
 
                     Logger.Log(this.devEUI, $"sent message {messageJson} to hub", Logger.LoggingLevel.Full);
 
+                    return true;
+
                 }
                 catch (Exception ex)
-                {
-                    //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device                    
-                     SetRetry(false);
-
+                {                    
                     Logger.Log(this.devEUI, $"could not send message to IoTHub/Edge with error: {ex.Message}", Logger.LoggingLevel.Error);
                    
                 }
@@ -162,8 +160,9 @@ namespace LoRaWan.NetworkServer.V2
                     //disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device                    
                     SetRetry(false);
                 }
-
             }
+
+            return false;
         }
 
         public async Task<Message> ReceiveAsync(TimeSpan timeout)

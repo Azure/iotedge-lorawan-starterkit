@@ -77,7 +77,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // message will be sent
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true);
 
             // C2D message will be checked
             loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
@@ -202,7 +202,7 @@ namespace LoRaWan.NetworkServer.Test
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true);
 
             // C2D message will be checked
             loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
@@ -342,7 +342,7 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true);
 
             // C2D message will be checked
             loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
@@ -457,7 +457,7 @@ namespace LoRaWan.NetworkServer.Test
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true);
 
             // C2D message will be checked
             loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
@@ -569,7 +569,7 @@ namespace LoRaWan.NetworkServer.Test
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true);
 
             // C2D message will be checked
             loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
@@ -630,7 +630,7 @@ namespace LoRaWan.NetworkServer.Test
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true);
 
             // C2D message will be checked
             loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
@@ -1017,7 +1017,7 @@ namespace LoRaWan.NetworkServer.Test
             // Will send the 3 unconfirmed message
             deviceClient.Setup(x => x.SendEventAsync(
                 It.Is<LoRaDeviceTelemetry>(t => ((JObject)t.data)["value"].ToString() == "3"), It.IsAny<Dictionary<string, string>>()))
-                .Returns(Task.FromResult(0));               
+                .ReturnsAsync(true);
 
 
             var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);

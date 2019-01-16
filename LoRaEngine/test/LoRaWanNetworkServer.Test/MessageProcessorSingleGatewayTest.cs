@@ -98,7 +98,7 @@ namespace LoRaWan.NetworkServer.Test
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true);
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -149,7 +149,7 @@ namespace LoRaWan.NetworkServer.Test
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true);
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -220,7 +220,7 @@ namespace LoRaWan.NetworkServer.Test
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true);
 
             loraDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .ReturnsAsync(true);
@@ -287,7 +287,7 @@ namespace LoRaWan.NetworkServer.Test
             var loraDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true);
 
             loraDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .ReturnsAsync(true);
@@ -372,7 +372,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // Will send the event to IoT Hub
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Returns(Task.FromResult(0));
+                .ReturnsAsync(true);
 
             // will try to get C2D message
             loraDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>())).ReturnsAsync((Message)null);

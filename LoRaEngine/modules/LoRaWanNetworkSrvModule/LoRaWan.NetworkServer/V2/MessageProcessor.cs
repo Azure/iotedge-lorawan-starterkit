@@ -182,6 +182,7 @@ namespace LoRaWan.NetworkServer.V2
                     // Multiple gateways: in redis, otherwise in device twin
                     if (requiresConfirmation)
                     {
+                        // TODO: have a maximum retry (3)
                         fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice);
 
                         // Failed to update the fcnt down
@@ -191,7 +192,7 @@ namespace LoRaWan.NetworkServer.V2
                             return null;
                         }
 
-                        Logger.Log(loRaDevice.DevEUI, $"down frame counter: {loRaDevice.FCntDown}", Logger.LoggingLevel.Info);
+                        Logger.Log(loRaDevice.DevEUI, $"down frame counter: {loRaDevice.FCntDown}", Logger.LoggingLevel.Info);                        
                     }
 
 
@@ -540,15 +541,16 @@ namespace LoRaWan.NetworkServer.V2
                 }
             }
 
-            await loRaDevice.SendEventAsync(deviceTelemetry, eventProperties);
-
-            var payloadAsRaw = deviceTelemetry.data as string;
-            if (payloadAsRaw == null && deviceTelemetry.data != null)
+            if (await loRaDevice.SendEventAsync(deviceTelemetry, eventProperties))
             {
-                payloadAsRaw = JsonConvert.SerializeObject(deviceTelemetry.data, Formatting.None);
-            }
+                var payloadAsRaw = deviceTelemetry.data as string;
+                if (payloadAsRaw == null && deviceTelemetry.data != null)
+                {
+                    payloadAsRaw = JsonConvert.SerializeObject(deviceTelemetry.data, Formatting.None);
+                }
 
-            Logger.Log(loRaDevice.DevEUI, $"message '{payloadAsRaw}' sent to hub", Logger.LoggingLevel.Info);
+                Logger.Log(loRaDevice.DevEUI, $"message '{payloadAsRaw}' sent to hub", Logger.LoggingLevel.Info);
+            }
         }
 
 

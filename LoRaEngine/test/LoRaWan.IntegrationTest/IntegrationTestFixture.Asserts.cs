@@ -84,7 +84,7 @@ namespace LoRaWan.IntegrationTest
             if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
                 return;
 
-            await this.AssertNetworkServerModuleLogExistsAsync((input) => logMessageStart.StartsWith(logMessageStart), new SearchLogOptions(logMessageStart));
+            await this.AssertNetworkServerModuleLogExistsAsync((input) => input.StartsWith(logMessageStart), new SearchLogOptions(logMessageStart));
         }
 
         public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options = null)
