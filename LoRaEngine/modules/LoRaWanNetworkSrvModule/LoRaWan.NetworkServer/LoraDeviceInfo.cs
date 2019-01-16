@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
         public UInt16 FCntDown;
         public string GatewayID { get; set; }
         public string SensorDecoder { get; set; }
-        public string LastConfirmedMessageId { get; set; }
+        public string LastConfirmedC2DMessageID { get; set; }
 
         public LoraDeviceInfo()
         {

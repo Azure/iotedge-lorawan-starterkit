@@ -159,32 +159,30 @@ namespace LoRaWan.NetworkServer
                         if ((loraMessage.LoRaPayloadMessage.GetLoRaMessage().Fctrl.Span[0] & (byte)FctrlEnum.Ack) == 32)
                         {
                             Logger.Log(loraDeviceInfo.DevEUI, String.Concat($"C2D Message ack received",
-                                loraDeviceInfo.LastConfirmedMessageId != "C2DMsgId" ? $" for message id {loraDeviceInfo.LastConfirmedMessageId}" : ""),
-                                Logger.LoggingLevel.Error);
-                            messageProperties.Add(new KeyValuePair<string, string>("C2DMsgConfirmed", loraDeviceInfo.LastConfirmedMessageId != "C2DMsgId" ?
-                            loraDeviceInfo.LastConfirmedMessageId : "C2D Msg Confirmation"));
+                                loraDeviceInfo.LastConfirmedC2DMessageID != "C2DMsgId" ? $" for message id {loraDeviceInfo.LastConfirmedC2DMessageID}" : ""),
+                                Logger.LoggingLevel.Info);
+                            messageProperties.Add(new KeyValuePair<string, string>("C2DMsgConfirmed", loraDeviceInfo.LastConfirmedC2DMessageID != "C2DMsgId" ?
+                            loraDeviceInfo.LastConfirmedC2DMessageID : "C2D Msg Confirmation"));
                             fullPayload.deviceAck = true;
-                            loraDeviceInfo.LastConfirmedMessageId = null;
-                            if(decryptedMessage== null)
-                            {
-                                string iotHubAckMsg = fullPayload.ToString(Newtonsoft.Json.Formatting.None);
-                                await loraDeviceInfo.HubSender.SendMessageAsync(iotHubAckMsg, messageProperties);
-                                return null;
-                            }
+                            loraDeviceInfo.LastConfirmedC2DMessageID = null;
+                   
                         }
 
-                        // No decoder set in LoRa Device Twin. Simply return decryptedMessage
-                        if (String.IsNullOrEmpty(loraDeviceInfo.SensorDecoder))
+                        if (decryptedMessage != null)
                         {
-                            Logger.Log(loraDeviceInfo.DevEUI, $"no decoder set in device twin. port: {fportUp}", Logger.LoggingLevel.Full);
-                            jsonDataPayload = Convert.ToBase64String(decryptedMessage);
-                            fullPayload.data = jsonDataPayload;
-                        }
-                        // Decoder is set in LoRa Device Twin. Send decrpytedMessage (payload) and fportUp (fPort) to decoder.
-                        else
-                        {
-                            Logger.Log(loraDeviceInfo.DevEUI, $"decoding with: {loraDeviceInfo.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Full);
-                            fullPayload.data = await LoraDecoders.DecodeMessage(decryptedMessage, fportUp, loraDeviceInfo.SensorDecoder);
+                            // No decoder set in LoRa Device Twin. Simply return decryptedMessage
+                            if (String.IsNullOrEmpty(loraDeviceInfo.SensorDecoder))
+                            {
+                                Logger.Log(loraDeviceInfo.DevEUI, $"no decoder set in device twin. port: {fportUp}", Logger.LoggingLevel.Full);
+                                jsonDataPayload = Convert.ToBase64String(decryptedMessage);
+                                fullPayload.data = jsonDataPayload;
+                            }
+                            // Decoder is set in LoRa Device Twin. Send decrpytedMessage (payload) and fportUp (fPort) to decoder.
+                            else
+                            {
+                                Logger.Log(loraDeviceInfo.DevEUI, $"decoding with: {loraDeviceInfo.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Full);
+                                fullPayload.data = await LoraDecoders.DecodeMessage(decryptedMessage, fportUp, loraDeviceInfo.SensorDecoder);
+                            }
                         }
 
 
@@ -260,7 +258,7 @@ namespace LoRaWan.NetworkServer
                     //check if we got a c2d message to be added in the ack message and prepare the message
                     if (c2dMsg != null)
                     {
-                        loraDeviceInfo.LastConfirmedMessageId = c2dMsg.MessageId ?? "C2DMsgId";
+                        loraDeviceInfo.LastConfirmedC2DMessageID = c2dMsg.MessageId ?? "C2DMsgId";
 
                         ////check if there is another message
                         var secondC2dMsg = await loraDeviceInfo.HubSender.ReceiveAsync(TimeSpan.FromMilliseconds(40));
