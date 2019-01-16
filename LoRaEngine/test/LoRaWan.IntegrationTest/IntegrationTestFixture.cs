@@ -493,7 +493,9 @@ namespace LoRaWan.IntegrationTest
             return await GetRegistryManager().GetTwinAsync(deviceId);            
         }
 
-        internal async Task SendCloudToDeviceMessage(string deviceId, string messageText, Dictionary<String,String> messageProperties=null)
+        internal Task SendCloudToDeviceMessage(string deviceId, string messageText, Dictionary<String,String> messageProperties=null) => SendCloudToDeviceMessage(deviceId, null, messageText, messageProperties);
+
+        internal async Task SendCloudToDeviceMessage(string deviceId, string messageId, string messageText, Dictionary<String,String> messageProperties=null)
         {
             var msg = new Message(Encoding.UTF8.GetBytes(messageText));
             if (messageProperties != null)
@@ -503,6 +505,12 @@ namespace LoRaWan.IntegrationTest
                     msg.Properties.Add(messageProperty.Key, messageProperty.Value);
                 }
             }
+
+            if (!string.IsNullOrEmpty(messageId))
+            {
+                msg.MessageId = messageId;
+            }
+
             await SendCloudToDeviceMessage(deviceId, msg);
         }
 

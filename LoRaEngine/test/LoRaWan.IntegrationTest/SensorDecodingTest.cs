@@ -43,7 +43,7 @@ namespace LoRaWan.IntegrationTest
             await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
             // Find "0000000000000011: message '{"value":1234}' sent to hub" in network server logs
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":1234}}' sent to hub");
+            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":\"1234\"}}' sent to hub");
 
             this.TestFixture.ClearLogs();
         }

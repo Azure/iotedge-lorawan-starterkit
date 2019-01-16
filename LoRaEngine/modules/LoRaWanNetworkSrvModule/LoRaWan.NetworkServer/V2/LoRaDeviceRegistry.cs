@@ -82,7 +82,7 @@ namespace LoRaWan.NetworkServer.V2
             // If already in cache, return quickly
             if (devicesMatchingDevAddr.Count > 0)
             {
-                var matchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, loraPayload));
+                var matchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, loraPayload, logError: false));
                 if (matchingDevice != null)
                 {
                     if (matchingDevice.IsOurDevice)
@@ -111,28 +111,36 @@ namespace LoRaWan.NetworkServer.V2
                         {
                             // Calling initialize async here to avoid making async calls in the concurrent dictionary
                             // Since only one device will be added, we guarantee that initialization only happens once
-                            await loRaDevice.InitializeAsync();
-                            loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
-
-                            // once added, call initializers
-                            foreach (var initializer in this.initializers)
-                                initializer.Initialize(loRaDevice);
-
-                            if (loRaDevice.DevEUI != null)
-                                Logger.Log(loRaDevice.DevEUI, "device added to cache", Logger.LoggingLevel.Info);
-
-
-                            // TODO: stop if we found the matching device?
-                            // If we continue we can cache for later usage, but then do it in a new thread
-                            if (IsValidDeviceForPayload(loRaDevice, loraPayload))
+                            if (await loRaDevice.InitializeAsync())
                             {
-                                if (!loRaDevice.IsOurDevice)
+                                loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
+
+                                // once added, call initializers
+                                foreach (var initializer in this.initializers)
+                                    initializer.Initialize(loRaDevice);
+
+                                if (loRaDevice.DevEUI != null)
+                                    Logger.Log(loRaDevice.DevEUI, "device added to cache", Logger.LoggingLevel.Info);
+
+
+                                // TODO: stop if we found the matching device?
+                                // If we continue we can cache for later usage, but then do it in a new thread
+                                if (IsValidDeviceForPayload(loRaDevice, loraPayload, logError: false))
                                 {
-                                    Logger.Log(loRaDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
-                                    return null;
+                                    if (!loRaDevice.IsOurDevice)
+                                    {
+                                        Logger.Log(loRaDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
+                                        return null;
+                                    }
+                                    
+                                    return loRaDevice;
                                 }
-                                
-                                return loRaDevice;
+                            }
+                            else
+                            {
+                                // could not initialize device
+                                // remove it from cache since it does not have required properties
+                                devicesMatchingDevAddr.TryRemove(loRaDevice.DevEUI, out _);
                             }
                         }
                         catch (Exception ex)
@@ -147,7 +155,7 @@ namespace LoRaWan.NetworkServer.V2
                 }
                 
                 // try now with updated cache
-                var matchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, loraPayload));
+                var matchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, loraPayload, logError: true));
                 if (matchingDevice != null && !matchingDevice.IsOurDevice)
                 {
                     Logger.Log(matchingDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
@@ -166,13 +174,20 @@ namespace LoRaWan.NetworkServer.V2
         /// </summary>
         /// <param name="loRaDevice"></param>
         /// <param name="loraPayload"></param>
+        /// <param name="logError">Indicates if error should be log if mic check fails</param>
         /// <returns></returns>
-        private bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload)
+        private bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool logError)
         {            
             if (string.IsNullOrEmpty(loRaDevice.NwkSKey))
                 return false;
 
-            return loraPayload.CheckMic(loRaDevice.NwkSKey);
+            var checkMicResult = loraPayload.CheckMic(loRaDevice.NwkSKey);
+            if (!checkMicResult && logError)
+            {
+                Logger.Log(loRaDevice.DevEUI, $"with devAddr {loRaDevice.DevAddr} check MIC failed", Logger.LoggingLevel.Full);
+            }
+
+            return checkMicResult;
         }
 
 
@@ -187,18 +202,17 @@ namespace LoRaWan.NetworkServer.V2
         {
             if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(appEUI) || string.IsNullOrEmpty(devNonce))
             {
-                string errorMsg = "Missing devEUI/AppEUI/DevNonce in the OTAARequest";
-                Logger.Log(devEUI, errorMsg, Logger.LoggingLevel.Error);
+                Logger.Log(devEUI, "join refused: missing devEUI/AppEUI/DevNonce in request", Logger.LoggingLevel.Error);
                 return null;
             }
 
             if (this.TryGetFromPendingJoinRequests(devEUI, out var cachedDevice))
             {
-                Logger.Log(devEUI, $"using device from a previous failed join attempt", Logger.LoggingLevel.Info);
+                Logger.Log(devEUI, "using device from a previous failed join attempt", Logger.LoggingLevel.Full);
                 return cachedDevice;
             }
 
-            Logger.Log(devEUI, $"querying the registry for device key", Logger.LoggingLevel.Info);
+            Logger.Log(devEUI, "querying the registry for device key", Logger.LoggingLevel.Info);
 
             var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(
                 gatewayId: configuration.GatewayID,
@@ -208,12 +222,15 @@ namespace LoRaWan.NetworkServer.V2
 
             if (searchDeviceResult.IsDevNonceAlreadyUsed)
             {
-                Logger.Log(devEUI, $"DevNonce already used by this device", Logger.LoggingLevel.Info);
+                Logger.Log(devEUI, $"join refused: DevNonce already used by this device", Logger.LoggingLevel.Info);
                 return null;
             }
 
             if (searchDeviceResult.Devices == null || !searchDeviceResult.Devices.Any())
+            {
+                Logger.Log(devEUI, "join refused: no devices found matching join request", Logger.LoggingLevel.Info);
                 return null;
+            }
 
             var matchingDeviceInfo = searchDeviceResult.Devices[0];
             var loRaDevice = this.deviceFactory.Create(matchingDeviceInfo);
@@ -231,7 +248,9 @@ namespace LoRaWan.NetworkServer.V2
                 {
                     // problem initializing the device (get twin timeout, etc)
                     // remove it from the cache
-                    Logger.Log(loRaDevice.DevEUI, $"Error initializing OTAA device {loRaDevice.DevEUI}. {ex.Message}", Logger.LoggingLevel.Error);                           
+                    Logger.Log(loRaDevice.DevEUI, $"join refused: error initializing OTAA device. {ex.Message}", Logger.LoggingLevel.Error);
+                    
+                    loRaDevice = null;
                 }
             }
             

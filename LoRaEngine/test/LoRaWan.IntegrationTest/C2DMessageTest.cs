@@ -382,7 +382,8 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string>() 
+            var msgId = Guid.NewGuid().ToString();
+            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, msgId, c2dMessageBody, new Dictionary<string, string>() 
             { 
                 { FportPropertyName, "1" },
                 { ConfirmedPropertyName, "true" } 
@@ -392,9 +393,10 @@ namespace LoRaWan.IntegrationTest
             var foundC2DMessage = false;
             var foundReceivePacket = false;
             var expectedRxSerial = $"+MSG: PORT: 1; RX: \"{ToHexString(c2dMessageBody)}\"";
-            var expectedUDPMessage = device.DevAddr + $"\": ConfirmedDataDown";
+            var expectedUDPMessageV1 = $"{device.DevAddr}: ConfirmedDataDown";
+            var expectedUDPMessageV2 = $"{device.DeviceID}: C2D message: {c2dMessageBody}, id: {msgId}, fport: 1, confirmed: True";
             Log($"Expected C2D received log is: {expectedRxSerial}");
-            Log($"Expected UDP log starting with: {expectedUDPMessage}");
+            Log($"Expected UDP log starting with: {expectedUDPMessageV1} or {expectedUDPMessageV2}");
 
             // Sends 8x confirmed messages, stopping if C2D message is found
             for (var i = 3; i <= 10; ++i)
@@ -406,18 +408,15 @@ namespace LoRaWan.IntegrationTest
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DevAddr}: ConfirmedDataDown");
 
                 // check if c2d message was found
-                // 0000000000000009: C2D message: 58
-                var c2dLogMessage = $"{device.DeviceID}: C2D message: {c2dMessageBody}";
                 var searchResults = await this.TestFixture.SearchNetworkServerModuleAsync(
                     (messageBody) => {
-                        return messageBody.StartsWith(c2dLogMessage);
+                        return messageBody.StartsWith(expectedUDPMessageV1) || messageBody.StartsWith(expectedUDPMessageV2);
                     },
                     new SearchLogOptions
                     {
-                        Description = c2dLogMessage,
+                        Description = $"{expectedUDPMessageV1} or {expectedUDPMessageV2}",
                         MaxAttempts = 1
                     });
 
@@ -443,7 +442,7 @@ namespace LoRaWan.IntegrationTest
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
 
-            Assert.True(foundC2DMessage, $"Did not find '{device.DeviceID}: C2D message: {c2dMessageBody}' in logs");
+            Assert.True(foundC2DMessage, $"Did not find {expectedUDPMessageV1} or {expectedUDPMessageV2} in logs");
 
             // checks if log arrived
             if (!foundReceivePacket)

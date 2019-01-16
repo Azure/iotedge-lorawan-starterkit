@@ -59,7 +59,7 @@ namespace LoRaWan.NetworkServer.V2
         /// Throws InvalidLoRaDeviceException if the device does contain require properties
         /// </summary>
         /// <returns></returns>
-        public async Task InitializeAsync()
+        public async Task<bool> InitializeAsync()
         {
             var twin = await this.loRaDeviceClient.GetTwinAsync();
 
@@ -123,7 +123,11 @@ namespace LoRaWan.NetworkServer.V2
                     this.fcntUp = twin.Properties.Reported[TwinProperty.FCntUp];
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntDown))
                     this.fcntDown = twin.Properties.Reported[TwinProperty.FCntDown];
+
+                return true;
             }    
+
+            return false;
         }
 
         /// <summary>

@@ -162,7 +162,7 @@
           "sensordecodermodule": {
             "type": "docker",
             "settings": {
-              "image": "fbeltrao/decodersample:1.0",
+              "image": "fbeltrao/decodersample:2.0",
               "createOptions": {}
             },
             "status": "running",

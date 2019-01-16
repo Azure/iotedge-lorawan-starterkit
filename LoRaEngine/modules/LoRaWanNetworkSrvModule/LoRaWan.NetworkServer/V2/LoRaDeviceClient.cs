@@ -205,18 +205,18 @@ namespace LoRaWan.NetworkServer.V2
 
                 SetRetry(true);
 
-                Logger.Log(this.devEUI, $"completing c2d message", Logger.LoggingLevel.Full);
+                Logger.Log(this.devEUI, $"completing c2d message, id: {message.MessageId ?? "undefined"}", Logger.LoggingLevel.Full);
 
                 await deviceClient.CompleteAsync(message);
 
-                Logger.Log(this.devEUI, $"done completing c2d message", Logger.LoggingLevel.Full);
+                Logger.Log(this.devEUI, $"done completing c2d message, id: {message.MessageId ?? "undefined"}", Logger.LoggingLevel.Full);
 
                 return true;
               
             }
             catch (Exception ex)
             {
-                Logger.Log(this.devEUI, $"could not complete c2d with error: {ex.Message}", Logger.LoggingLevel.Error);
+                Logger.Log(this.devEUI, $"could not complete c2d message (id: {message.MessageId ?? "undefined"}) with error: {ex.Message}", Logger.LoggingLevel.Error);
                 return false;
             }
             finally
@@ -236,17 +236,17 @@ namespace LoRaWan.NetworkServer.V2
 
                 SetRetry(true);
 
-                Logger.Log(this.devEUI, $"abandoning c2d message", Logger.LoggingLevel.Full);
+                Logger.Log(this.devEUI, $"abandoning c2d message, id: {message.MessageId ?? "undefined"}", Logger.LoggingLevel.Full);
 
                 await deviceClient.AbandonAsync(message);
 
-                Logger.Log(this.devEUI, $"done abandoning c2d message", Logger.LoggingLevel.Full);
+                Logger.Log(this.devEUI, $"done abandoning c2d message, id: {message.MessageId ?? "undefined"}", Logger.LoggingLevel.Full);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.Log(this.devEUI, $"could not abandon c2d with error: {ex.Message}", Logger.LoggingLevel.Error);
+                Logger.Log(this.devEUI, $"could not abandon c2d message (id: {message.MessageId ?? "undefined"}) with error: {ex.Message}", Logger.LoggingLevel.Error);
                 return false;
             }
             finally

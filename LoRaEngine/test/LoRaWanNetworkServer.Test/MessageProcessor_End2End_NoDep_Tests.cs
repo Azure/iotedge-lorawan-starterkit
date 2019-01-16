@@ -1497,5 +1497,91 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceClient.Verify();
             loRaDeviceApi.Verify();
         }
+
+
+        /// <summary>
+        /// Verifies that if the update twin takes too long that no join accepts are sent
+        /// </summary>
+        /// <param name="deviceGatewayID"></param>
+        /// <returns></returns>
+        [Theory]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID)]
+        [InlineData(null)]
+        public async Task ABP_When_Getting_Twin_Fails_Should_Work_On_Retry(string deviceGatewayID)
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));           
+            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var appEUI = simulatedDevice.LoRaDevice.AppEUI;
+            var devAddr = simulatedDevice.DevAddr;
+
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+
+            // Device twin will be queried
+            var twin = simulatedDevice.CreateABPTwin();
+            loRaDeviceClient.SetupSequence(x => x.GetTwinAsync())
+                .ReturnsAsync((Twin)null)
+                .ReturnsAsync(twin);
+
+            // 1 message will be sent
+            loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()))
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) =>
+                 {
+                    Assert.Equal(2, t.fcnt);
+                    Assert.Equal("2", ((JObject)t.data)["value"].ToString());
+                 })
+                 .ReturnsAsync(true);
+
+            // will check for c2d msg
+            loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+            
+            // Lora device api will be search by devices with matching deveui,
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+            loRaDeviceApi.Setup(x => x.SearchDevicesAsync(null, devAddr, null, null, null))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
+
+            // using factory to create mock of 
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
+
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                frameCounterUpdateStrategyFactory,
+                new LoRaPayloadDecoder()
+                );
+
+            // send 1st unconfirmed message, get twin will fail
+            var unconfirmedMessage1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
+            var unconfirmedMessage1Rxpk = unconfirmedMessage1.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var unconfirmedMessageResult1 = await messageProcessor.ProcessMessageAsync(unconfirmedMessage1Rxpk);
+            Assert.Null(unconfirmedMessageResult1);
+
+            var devicesInCache = deviceRegistry.InternalGetCachedDevicesForDevAddr(devAddr);
+            Assert.Empty(devicesInCache);
+
+
+            // sends 2nd unconfirmed message, now get twin will work
+            var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2);
+            var unconfirmedMessage2Rxpk = unconfirmedMessage2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var unconfirmedMessageResult2 = await messageProcessor.ProcessMessageAsync(unconfirmedMessage2Rxpk);
+            Assert.Null(unconfirmedMessageResult2);
+
+            devicesInCache = deviceRegistry.InternalGetCachedDevicesForDevAddr(devAddr);
+            Assert.Single(devicesInCache);
+            Assert.True(devicesInCache.TryGetValue(devEUI, out var loRaDevice));
+            Assert.Equal(simulatedDevice.NwkSKey, loRaDevice.NwkSKey);
+            Assert.Equal(simulatedDevice.AppSKey, loRaDevice.AppSKey);
+            Assert.Equal(devAddr, loRaDevice.DevAddr);
+            Assert.Equal(2, loRaDevice.FCntUp);
+
+            loRaDeviceClient.Verify();
+            loRaDeviceApi.Verify();
+
+        }
     }
 }

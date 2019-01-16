@@ -20,6 +20,6 @@ namespace LoRaWan.NetworkServer.V2
         public const string FCntUp = "FCntUp";
         public const string FCntDown = "FCntDown";
         public const string DevEUI = "DevEUI";
-        public const string NetID = "NetID";
+        public const string NetID = "NetId"; // Must be NetId to be backward compatible
     }
 }

@@ -422,23 +422,21 @@ namespace LoRaWan.NetworkServer.V2
                 if (cloudToDeviceMessage.Properties.TryGetValueCaseInsensitive("confirmed", out var confirmedValue) && confirmedValue.Equals("true", StringComparison.OrdinalIgnoreCase))
                 {
                     requiresDeviceAcknowlegement = true;
-                    Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device message requesting a confirmation", Logger.LoggingLevel.Info);
 
                 }
                 if (cloudToDeviceMessage.Properties.TryGetValueCaseInsensitive("fport", out var fPortValue))
                 {
                     fport = byte.Parse(fPortValue);
-                    Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device message with a Fport of " + fport.Value, Logger.LoggingLevel.Info);
-
                 }
+
                 Logger.Log(loraDeviceInfo.DevEUI, string.Format("Sending a downstream message with ID {0}",
                     ConversionHelper.ByteArrayToString(rndToken)),
                     Logger.LoggingLevel.Full);
 
 
                 frmPayload = cloudToDeviceMessage?.GetBytes();
-            
-                Logger.Log(loraDeviceInfo.DevEUI, $"C2D message: {Encoding.UTF8.GetString(frmPayload)}", Logger.LoggingLevel.Info);
+                                            
+                Logger.Log(loraDeviceInfo.DevEUI, $"C2D message: {Encoding.UTF8.GetString(frmPayload)}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport}, confirmed: {requiresDeviceAcknowlegement}, cidType: {cidTypeValue}", Logger.LoggingLevel.Info);
                 
                 //cut to the max payload of lora for any EU datarate
                 if (frmPayload.Length > 51)
