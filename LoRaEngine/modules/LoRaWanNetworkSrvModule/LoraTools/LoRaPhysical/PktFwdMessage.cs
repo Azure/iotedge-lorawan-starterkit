@@ -64,7 +64,7 @@ namespace LoRaTools.LoRaPhysical
         /// This method is used in case of a response to a upstream message.
         /// </summary>
         /// <returns>DownlinkPktFwdMessage object ready to be sent</returns>
-        public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, uint rfch, long tmst = 0)
+        public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, long tmst = 0)
         {          
             txpk = new Txpk()
             {
@@ -73,7 +73,7 @@ namespace LoRaTools.LoRaPhysical
                 data = Convert.ToBase64String(loRaData),
                 size = (uint)loRaData.Length,
                 freq = freq,
-                rfch = rfch,
+                rfch = 0,
                 modu = "LORA",
                 datr = datr,
                 codr = "4/5",

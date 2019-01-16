@@ -224,7 +224,7 @@ namespace LoRaTools.LoRaMessage
             throw new NotImplementedException();
         }
 
-        public  DownlinkPktFwdMessage Serialize( string appKey,string datr, double freq, uint rfch, long tmst, string devEUI)
+        public  DownlinkPktFwdMessage Serialize( string appKey,string datr, double freq, long tmst, string devEUI)
         {
             var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
             if (!CfList.Span.IsEmpty)
@@ -233,7 +233,7 @@ namespace LoRaTools.LoRaMessage
             CalculateMic(appKey, algoinput);
             PerformEncryption(appKey);
 
-            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, rfch, tmst);
+            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
             if (Logger.LoggerLevel < Logger.LoggingLevel.Info)
             {
                 var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);

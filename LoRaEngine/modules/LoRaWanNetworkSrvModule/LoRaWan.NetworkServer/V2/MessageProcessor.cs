@@ -506,7 +506,7 @@ namespace LoRaWan.NetworkServer.V2
 
             //todo: check the device twin preference if using confirmed or unconfirmed down    
             var loRaMessageType = (msgType == LoRaMessageType.ConfirmedDataDown) ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
-            return ackLoRaMessage.Serialize(loraDeviceInfo.AppSKey,loraDeviceInfo.NwkSKey, datr, freq, rxpk.rfch, tmst, loraDeviceInfo.DevEUI);
+            return ackLoRaMessage.Serialize(loraDeviceInfo.AppSKey,loraDeviceInfo.NwkSKey, datr, freq, tmst, loraDeviceInfo.DevEUI);
         }        
 
         private bool ValidateCloudToDeviceMessage(LoRaDevice loRaDevice, Message cloudToDeviceMsg)
@@ -773,7 +773,7 @@ namespace LoRaWan.NetworkServer.V2
                     );
 
   
-            return loRaPayloadJoinAccept.Serialize(appKey, datr, freq, rxpk.rfch, tmst, devEUI);
+            return loRaPayloadJoinAccept.Serialize(appKey, datr, freq, tmst, devEUI);
 
         }
     }

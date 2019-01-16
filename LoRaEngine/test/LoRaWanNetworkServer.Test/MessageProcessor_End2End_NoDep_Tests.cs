@@ -1146,7 +1146,7 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         [InlineData(MessageProcessorTestBase.ServerGatewayID, 1)]
         [InlineData(MessageProcessorTestBase.ServerGatewayID, 0)]
-        public async Task ABP_Confirmed_Message_Should_Use_Same_Rchf_From_Rxpk(string deviceGatewayID, uint rfch)
+        public async Task ABP_Confirmed_Message_Should_Use_Rchf_0(string deviceGatewayID, uint rfch)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             simulatedDevice.FrmCntDown = 20;
@@ -1197,7 +1197,7 @@ namespace LoRaWan.NetworkServer.Test
             rxpk.rfch = rfch;
             var confirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.NotNull(confirmedMessageResult);
-            Assert.Equal(rfch, confirmedMessageResult.txpk.rfch);
+            Assert.Equal((uint)0, confirmedMessageResult.txpk.rfch);
             Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(rxpk), confirmedMessageResult.txpk.freq);
             Assert.Equal("4/5", confirmedMessageResult.txpk.codr);
             Assert.False(confirmedMessageResult.txpk.imme);
@@ -1221,7 +1221,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(MessageProcessorTestBase.ServerGatewayID, 0)]
         [InlineData(null, 1)]
         [InlineData(null, 0)]
-        public async Task OTAA_Join_Should_Use_Same_Rchf_From_Rxpk(string deviceGatewayID, uint rfch)
+        public async Task OTAA_Join_Should_Use_Rchf_0(string deviceGatewayID, uint rfch)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
@@ -1275,7 +1275,7 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkJoinAcceptMessage = await messageProcessor.ProcessMessageAsync(joinRxpk);
             Assert.NotNull(downlinkJoinAcceptMessage);
             // validates txpk according to eu region
-            Assert.Equal(rfch, downlinkJoinAcceptMessage.txpk.rfch);
+            Assert.Equal((uint)0, downlinkJoinAcceptMessage.txpk.rfch);
             Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(joinRxpk), downlinkJoinAcceptMessage.txpk.freq);
             Assert.Equal("4/5", downlinkJoinAcceptMessage.txpk.codr);
             Assert.False(downlinkJoinAcceptMessage.txpk.imme);
