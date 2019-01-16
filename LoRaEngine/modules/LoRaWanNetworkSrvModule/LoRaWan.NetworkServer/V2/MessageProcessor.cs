@@ -315,6 +315,9 @@ namespace LoRaWan.NetworkServer.V2
                                 else
                                 {
                                     requiresConfirmation = true;
+
+                                    Logger.Log(loRaDevice.DevEUI, $"down frame counter: {loRaDevice.FCntDown}", Logger.LoggingLevel.Info);                        
+
                                 }                            
                             }
                             
