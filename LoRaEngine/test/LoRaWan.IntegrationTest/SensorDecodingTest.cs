@@ -8,6 +8,7 @@ namespace LoRaWan.IntegrationTest
 {
     // Tests sensor decoding test (http, reflection)
     [Collection(Constants.TestCollectionName)] // run in serial
+    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public class SensorDecodingTest: IntegrationTestBase
     {
         public SensorDecodingTest(IntegrationTestFixture testFixture) : base(testFixture)

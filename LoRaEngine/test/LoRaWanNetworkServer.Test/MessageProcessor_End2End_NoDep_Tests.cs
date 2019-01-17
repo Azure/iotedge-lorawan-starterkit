@@ -177,6 +177,9 @@ namespace LoRaWan.NetworkServer.Test
 
             // Frame change flag will be set, only saving every 10 messages
             Assert.True(loRaDevice.HasFrameCountChanges);
+
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
         [Theory]
@@ -307,8 +310,8 @@ namespace LoRaWan.NetworkServer.Test
             else
                 Assert.True(loRaDevice.HasFrameCountChanges); // should have changes!
 
-            loRaDeviceClient.Verify();
-            loRaDeviceApi.Verify();
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
         [Theory]
@@ -424,15 +427,15 @@ namespace LoRaWan.NetworkServer.Test
                 Assert.False(loRaDevice.HasFrameCountChanges); // no changes
             else
                 Assert.True(loRaDevice.HasFrameCountChanges); // there are pending changes (fcntUp 0 => 1)
-
-            loRaDeviceClient.Verify();
-            loRaDeviceApi.Verify();
-
+            
             // will update api in multi gateway scenario
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
                 loRaDeviceApi.Verify(x => x.ABPFcntCacheResetAsync(devEUI), Times.Exactly(1));
             }
+
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
         [Theory]
@@ -548,8 +551,8 @@ namespace LoRaWan.NetworkServer.Test
             else
                 Assert.True(loRaDevice.HasFrameCountChanges); // there are pending changes (fcntUp 0 => 1)
             
-            loRaDeviceClient.Verify();
-            loRaDeviceApi.Verify();
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
 
@@ -613,6 +616,9 @@ namespace LoRaWan.NetworkServer.Test
             Assert.IsType<string>(loRaDeviceTelemetry.data);
             var expectedPayloadContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(msgPayload));
             Assert.Equal(expectedPayloadContent, loRaDeviceTelemetry.data);
+
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
 
@@ -889,6 +895,9 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0, loRaDevice.FCntUp);
             Assert.Equal(0, loRaDevice.FCntDown);
             Assert.False(loRaDevice.HasFrameCountChanges);
+
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
         /// <summary>
@@ -998,8 +1007,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(afterJoin2NwkSKey, loRaDevice.NwkSKey);
             Assert.Equal(afterJoin2AppSKey, loRaDevice.AppSKey);
 
-            loRaDeviceClient.Verify();
-            loRaDeviceApi.Verify();
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
 
@@ -1059,8 +1068,8 @@ namespace LoRaWan.NetworkServer.Test
 
             loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Never);
 
-            loRaDeviceClient.Verify();
-            loRaDeviceApi.Verify();
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
         [Theory]
@@ -1116,9 +1125,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Null(joinRequestDownlinkMessage);
 
             loRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Never);
-
-            loRaDeviceClient.Verify();
-            loRaDeviceApi.Verify();
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
 
@@ -1200,9 +1208,8 @@ namespace LoRaWan.NetworkServer.Test
 
             // message should not be sent to iot hub
             loRaDeviceClient.Verify(x => x.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()), Times.Never);
-            loRaDeviceClient.Verify();
-
-            loRaDeviceApi.Verify();
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
         /// <summary>
@@ -1221,18 +1228,20 @@ namespace LoRaWan.NetworkServer.Test
 
             simulatedDevice.SetupJoin(appSKey, nwkSKey, devAddr);
 
-            var updatedTwin = TestUtils.CreateTwin(desired: new Dictionary<string, object>
-            {
-                { TwinProperty.AppEUI, simulatedDevice.AppEUI },
-                { TwinProperty.SensorDecoder, nameof(LoRaPayloadDecoder.DecoderValueSensor) },
-            },
-            reported: new Dictionary<string, object>
-            {
-                { TwinProperty.AppSKey, appSKey },
-                { TwinProperty.NwkSKey, nwkSKey },
-                { TwinProperty.DevAddr, devAddr },
-                { TwinProperty.DevNonce, "ABCD" },
-            });
+            var updatedTwin = TestUtils.CreateTwin(
+                desired: new Dictionary<string, object>
+                {
+                    { TwinProperty.AppEUI, simulatedDevice.AppEUI },
+                    { TwinProperty.AppKey, simulatedDevice.AppKey },
+                    { TwinProperty.SensorDecoder, nameof(LoRaPayloadDecoder.DecoderValueSensor) },
+                },
+                reported: new Dictionary<string, object>
+                {
+                    { TwinProperty.AppSKey, appSKey },
+                    { TwinProperty.NwkSKey, nwkSKey },
+                    { TwinProperty.DevAddr, devAddr },
+                    { TwinProperty.DevNonce, "ABCD" },
+                });
 
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
 
@@ -1244,8 +1253,14 @@ namespace LoRaWan.NetworkServer.Test
             deviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>())).ReturnsAsync((Message)null);
 
             // Will send the 3 unconfirmed message
-            deviceClient.Setup(x => x.SendEventAsync(
-                It.Is<LoRaDeviceTelemetry>(t => ((JObject)t.data)["value"].ToString() == "3"), It.IsAny<Dictionary<string, string>>()))
+            deviceClient.Setup(x => x.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()))
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
+                {
+                    Assert.NotNull(t.data);
+                    Assert.IsType<JObject>(t.data);
+                    Assert.Equal("3", ((JObject)t.data)["value"].ToString());
+
+                })
                 .ReturnsAsync(true);
 
 
@@ -1287,8 +1302,8 @@ namespace LoRaWan.NetworkServer.Test
                 .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
             Assert.Null(await messageProcessor.ProcessMessageAsync(unconfirmedRxpk3));
 
-            deviceClient.Verify();
-            loRaDeviceApi.Verify();
+            deviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
 
@@ -1362,8 +1377,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(confirmedMessageResult.txpk.ipol);
             Assert.Equal("LORA", confirmedMessageResult.txpk.modu);
 
-            loRaDeviceClient.Verify();
-            loRaDeviceApi.Verify();            
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();            
         }
 
 
@@ -1438,7 +1453,10 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal("4/5", downlinkJoinAcceptMessage.txpk.codr);
             Assert.False(downlinkJoinAcceptMessage.txpk.imme);
             Assert.True(downlinkJoinAcceptMessage.txpk.ipol);
-            Assert.Equal("LORA", downlinkJoinAcceptMessage.txpk.modu);            
+            Assert.Equal("LORA", downlinkJoinAcceptMessage.txpk.modu);
+
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
         [Theory]
@@ -1497,8 +1515,8 @@ namespace LoRaWan.NetworkServer.Test
 
             loRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsAny<TimeSpan>()), Times.Never());
             
-            loRaDeviceClient.Verify();
-            loRaDeviceApi.Verify();
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
 
@@ -1581,8 +1599,8 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsAny<TimeSpan>()), Times.Once());
             loRaDeviceClient.Verify(x => x.AbandonAsync(It.IsAny<Message>()), Times.Once());
 
-            loRaDeviceClient.Verify();
-            loRaDeviceApi.Verify();
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
 
@@ -1652,8 +1670,8 @@ namespace LoRaWan.NetworkServer.Test
             // There should changes
             Assert.True(loRaDevice.HasFrameCountChanges);
 
-            loRaDeviceClient.Verify();
-            loRaDeviceApi.Verify();
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
 
 
@@ -1737,8 +1755,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(devAddr, loRaDevice.DevAddr);
             Assert.Equal(2, loRaDevice.FCntUp);
 
-            loRaDeviceClient.Verify();
-            loRaDeviceApi.Verify();
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
 
         }
     }

@@ -10,6 +10,7 @@ namespace LoRaWan.IntegrationTest
 {
     // Tests Cloud to Device messages
     [Collection(Constants.TestCollectionName)] // run in serial
+    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class C2DMessageTest : IntegrationTestBase
     {
         const string FportPropertyName = "fport";

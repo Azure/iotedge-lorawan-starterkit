@@ -7,6 +7,7 @@ namespace LoRaWan.IntegrationTest
 {
     // Tests ABP requests
     [Collection(Constants.TestCollectionName)] // run in serial
+    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class ABPTest : IntegrationTestBase
     {
         public ABPTest(IntegrationTestFixture testFixture) : base(testFixture)

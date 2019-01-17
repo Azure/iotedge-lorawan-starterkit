@@ -13,6 +13,7 @@ namespace LoRaWan.IntegrationTest
     // - AppEUI: application identifier
     // - AppKey: a AES-128 key
     [Collection(Constants.TestCollectionName)] // run in serial
+    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class OTAAJoinTest : IntegrationTestBase
     {
 

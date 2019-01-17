@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Null(actual);
 
             // Device was searched by DevAddr
-            apiService.Verify();
+            apiService.VerifyAll();
         }
 
 
@@ -86,10 +86,10 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(actual.IsOurDevice);
 
             // Device was searched by DevAddr
-            apiService.Verify();
+            apiService.VerifyAll();
 
             // Device was created by factory
-            loraDeviceFactoryMock.Verify();
+            loraDeviceFactoryMock.VerifyAll();
 
             // ensure device is in cache
             var cachedItem = target.InternalGetCachedDevicesForDevAddr(createdLoraDevice.DevAddr);
@@ -137,10 +137,10 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(actual.IsOurDevice);
 
             // Device was searched by DevAddr
-            apiService.Verify();
+            apiService.VerifyAll();
 
             // Device was created by factory
-            loraDeviceFactoryMock.Verify();
+            loraDeviceFactoryMock.VerifyAll();
 
             // initializer was called
             initializer.VerifyAll();
@@ -351,8 +351,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Same(loraDevice2, actualCachedLoRaDevice2);
             Assert.True(loraDevice2.IsOurDevice);
 
-            loRaDeviceClient1.Verify();
-            loRaDeviceClient2.Verify();
+            loRaDeviceClient1.VerifyAll();
+            loRaDeviceClient2.VerifyAll();
         }
 
 
@@ -387,10 +387,10 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(actual.IsOurDevice);
 
             // Device was searched by DevAddr
-            apiService.Verify();
+            apiService.VerifyAll();
 
             // Device was created by factory
-            loraDeviceFactoryMock.Verify();
+            loraDeviceFactoryMock.VerifyAll();
         }
 
         [Fact]
@@ -424,10 +424,10 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Null(actual2);
 
             // Device was searched by DevAddr
-            apiService.Verify();
+            apiService.VerifyAll();
 
             // Device was created by factory
-            loraDeviceFactoryMock.Verify();
+            loraDeviceFactoryMock.VerifyAll();
 
             // device is in cache
             Assert.Equal(1, this.cache.Count);

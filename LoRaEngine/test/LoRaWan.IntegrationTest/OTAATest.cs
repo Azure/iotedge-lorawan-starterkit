@@ -8,6 +8,7 @@ namespace LoRaWan.IntegrationTest
 {
     // Tests OTAA requests
     [Collection(Constants.TestCollectionName)] // run in serial
+    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class OTAATest : IntegrationTestBase
     {
 
