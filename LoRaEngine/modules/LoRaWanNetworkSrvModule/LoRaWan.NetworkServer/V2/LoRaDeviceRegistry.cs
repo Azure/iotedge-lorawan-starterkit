@@ -206,12 +206,6 @@ namespace LoRaWan.NetworkServer.V2
                 return null;
             }
 
-            if (this.TryGetFromPendingJoinRequests(devEUI, out var cachedDevice))
-            {
-                Logger.Log(devEUI, "using device from a previous failed join attempt", Logger.LoggingLevel.Full);
-                return cachedDevice;
-            }
-
             Logger.Log(devEUI, "querying the registry for device key", Logger.LoggingLevel.Info);
 
             var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(
@@ -239,10 +233,12 @@ namespace LoRaWan.NetworkServer.V2
                 try
                 {
                     Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", Logger.LoggingLevel.Info);
-                    await loRaDevice.InitializeAsync();
-                    Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
-
-                    AddToPendingJoinRequests(loRaDevice);
+                    if (await loRaDevice.InitializeAsync())
+                    {
+                        //AddToPendingJoinRequests(loRaDevice);
+                        Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
+                    }
+                        
                 }
                 catch (Exception ex)
                 {
@@ -257,29 +253,6 @@ namespace LoRaWan.NetworkServer.V2
             return loRaDevice;
         }
 
-        string GetPendingJoinRequestCacheKey(string devEUI) => string.Concat("pending_join:", devEUI);
-
-        /// <summary>
-        /// Adds <paramref name="loRaDevice"/> to in-memory list of device that are trying to join
-        /// This can save a get device twin call
-        /// </summary>
-        /// <param name="loRaDevice"></param>
-        private void AddToPendingJoinRequests(LoRaDevice loRaDevice) => this.cache.Set(GetPendingJoinRequestCacheKey(loRaDevice.DevEUI), loRaDevice, TimeSpan.FromMinutes(3));
-
-        /// <summary>
-        /// Removes a device from list of devices that are trying to login
-        /// </summary>
-        /// <param name="loRaDevice"></param>
-        private void RemoveFromPendingJoinRequests(LoRaDevice loRaDevice) => this.cache.Remove(GetPendingJoinRequestCacheKey(loRaDevice.DevEUI));
-
-        /// <summary>
-        /// Tries to get a device from the list of pending login devices
-        /// </summary>
-        /// <param name="devEUI"></param>
-        /// <param name="loRaDevice"></param>
-        /// <returns></returns>
-        bool TryGetFromPendingJoinRequests(string devEUI, out LoRaDevice loRaDevice) => this.cache.TryGetValue<LoRaDevice>(GetPendingJoinRequestCacheKey(devEUI), out loRaDevice);
-        
         /// <summary>
         /// Updates a device after a successful login
         /// </summary>
@@ -299,8 +272,6 @@ namespace LoRaWan.NetworkServer.V2
             // once added, call initializers
             foreach (var initializer in this.initializers)
                 initializer.Initialize(loRaDevice);
-
-            RemoveFromPendingJoinRequests(loRaDevice);
         }
 
         
