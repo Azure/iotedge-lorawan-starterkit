@@ -7,6 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -31,6 +32,47 @@ namespace LoRaWan.NetworkServer.Test
             this.cache = new MemoryCache(new MemoryCacheOptions());
             this.loraDeviceFactoryMock = new Mock<ILoRaDeviceFactory>(MockBehavior.Strict);
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+        }
+
+
+
+        [Fact]
+        public async Task GetDeviceForPayloadAsync_When_Device_Api_Throws_Error_Should_Return_Null()
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
+            payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
+
+            var apiService = new Mock<LoRaDeviceAPIServiceBase>();
+            apiService.Setup(x => x.SearchDevicesAsync(null, It.IsNotNull<string>(), null, null, null))
+                .Throws(new Exception());
+                var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, loraDeviceFactoryMock.Object);
+
+            var actual = await target.GetDeviceForPayloadAsync(payload);
+            Assert.Null(actual);
+
+            // Device was searched by DevAddr
+            apiService.VerifyAll();
+        }
+
+
+        [Fact]
+        public async Task GetDeviceForJoinRequestAsync_When_Device_Api_Throws_Error_Should_Return_Null()
+        {
+            const string devEUI = "0000000000000001";
+            const string appEUI = "0000000000000001";
+            const string devNonce = "0001";
+
+            var apiService = new Mock<LoRaDeviceAPIServiceBase>();
+            apiService.Setup(x => x.SearchDevicesAsync(this.serverConfiguration.GatewayID, null, devEUI, appEUI, devNonce))
+                .Throws(new Exception());
+            var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, loraDeviceFactoryMock.Object);
+
+            var actual = await target.GetDeviceForJoinRequestAsync(devEUI, appEUI, devNonce);
+            Assert.Null(actual);
+
+            // Device was searched by DevAddr
+            apiService.VerifyAll();
         }
 
 
@@ -435,6 +477,54 @@ namespace LoRaWan.NetworkServer.Test
             Assert.NotNull(devAddrDictionary);
             Assert.True(devAddrDictionary.TryGetValue(createdLoraDevice.DevEUI, out var cachedLoRaDevice));
             Assert.False(cachedLoRaDevice.IsOurDevice);
+        }
+
+
+        [Theory]
+        [InlineData(ServerGatewayID)]
+        [InlineData(null)]
+        public async Task When_Cache_Clear_Is_Called_Should_Removed_Cached_Devices(string deviceGatewayID)
+        {
+            const int deviceCount = 10;
+            var foundDeviceList = new HashSet<LoRaDevice>();
+
+            var apiService = new Mock<LoRaDeviceAPIServiceBase>();
+            var deviceFactory = new TestLoRaDeviceFactory(this.loRaDeviceClient.Object);
+            var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, deviceFactory);
+
+            var getTwinMockSequence = this.loRaDeviceClient.SetupSequence(x => x.GetTwinAsync());
+
+            for (var deviceID = 1; deviceID <= deviceCount; ++deviceID)
+            {
+                var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice((uint)deviceID, gatewayID: deviceGatewayID));
+                var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");                
+                payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey); // force mic creation
+                
+                var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, "");
+                apiService.Setup(x => x.SearchDevicesAsync(null, simulatedDevice.DevAddr, null, null, null))
+                    .ReturnsAsync(new SearchDevicesResult(iotHubDeviceInfo.AsList()));
+
+                // device will be initialized
+                getTwinMockSequence.ReturnsAsync(simulatedDevice.CreateABPTwin());
+
+                var actual = await target.GetDeviceForPayloadAsync(payload);
+                Assert.NotNull(actual);
+                foundDeviceList.Add(actual);
+            }
+
+            Assert.Equal(deviceCount, foundDeviceList.Count);
+
+            // Device was searched by DevAddr
+            apiService.VerifyAll();
+
+            // Device was created by factory
+            loraDeviceFactoryMock.VerifyAll();
+
+            // ensure all devices are in cache
+            Assert.Equal(deviceCount, foundDeviceList.Count(x => target.InternalGetCachedDevicesForDevAddr(x.DevAddr).Count == 1));
+
+            target.ResetDeviceCache();
+            Assert.False(foundDeviceList.Any(x => target.InternalGetCachedDevicesForDevAddr(x.DevAddr).Count > 0), "Should not find devices again");
         }
     }
 }

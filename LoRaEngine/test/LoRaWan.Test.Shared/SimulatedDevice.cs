@@ -77,6 +77,9 @@ namespace LoRaWan.Test.Shared
             return join;
         }
 
+
+        public UplinkPktFwdMessage CreateUnconfirmedMessageUplink(string data, int? fcnt = null, byte fport = 1, byte fctrl = 0x80) => CreateUnconfirmedDataUpMessage(data, fcnt, fport, fctrl).SerializeUplink(AppSKey, NwkSKey);
+
         /// <summary>
         /// Creates request to send unconfirmed data message
         /// </summary>

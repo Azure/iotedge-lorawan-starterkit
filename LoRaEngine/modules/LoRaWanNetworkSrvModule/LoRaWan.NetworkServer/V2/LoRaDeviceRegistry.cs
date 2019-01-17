@@ -101,8 +101,18 @@ namespace LoRaWan.NetworkServer.V2
             // If device was not found, search in the device API, updating local cache
             Logger.Log(devAddr, "querying the registry for device", Logger.LoggingLevel.Info);
 
-            var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(devAddr: devAddr);
-            if (searchDeviceResult.Devices != null)
+            SearchDevicesResult searchDeviceResult = null;
+            try
+            {
+                searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(devAddr: devAddr);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(devAddr, $"Error searching device for payload. {ex.Message}", Logger.LoggingLevel.Error);
+                return null;
+            }
+            
+            if (searchDeviceResult?.Devices != null)
             {
                 foreach (var foundDevice in searchDeviceResult.Devices)
                 {
@@ -122,7 +132,7 @@ namespace LoRaWan.NetworkServer.V2
                                     initializer.Initialize(loRaDevice);
 
                                 if (loRaDevice.DevEUI != null)
-                                    Logger.Log(loRaDevice.DevEUI, "device added to cache", Logger.LoggingLevel.Info);
+                                    Logger.Log(loRaDevice.DevEUI, "device added to cache", Logger.LoggingLevel.Full);
 
 
                                 // TODO: stop if we found the matching device?
@@ -194,11 +204,11 @@ namespace LoRaWan.NetworkServer.V2
 
 
         /// <summary>
-        /// Signs devices using OTAA authentication
+        /// Searchs for devices that match the join request
         /// </summary>
         /// <param name="devEUI"></param>
         /// <param name="appEUI"></param>
-        /// <param name="devNonce"></param>
+        /// <param name="devNonce"></param>        
         /// <returns></returns>
         public async Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, string appEUI, string devNonce)
         {
@@ -210,49 +220,57 @@ namespace LoRaWan.NetworkServer.V2
 
             Logger.Log(devEUI, "querying the registry for OTTA device", Logger.LoggingLevel.Info);
 
-            var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(
-                gatewayId: configuration.GatewayID,
-                devEUI: devEUI,
-                appEUI: appEUI,
-                devNonce: devNonce);
-
-            if (searchDeviceResult.IsDevNonceAlreadyUsed)
+            try
             {
-                Logger.Log(devEUI, $"join refused: DevNonce already used by this device", Logger.LoggingLevel.Info);
-                return null;
-            }
+                var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(
+                    gatewayId: configuration.GatewayID,
+                    devEUI: devEUI,
+                    appEUI: appEUI,
+                    devNonce: devNonce);
 
-            if (searchDeviceResult.Devices == null || !searchDeviceResult.Devices.Any())
-            {
-                Logger.Log(devEUI, "join refused: no devices found matching join request", Logger.LoggingLevel.Info);
-                return null;
-            }
-
-            var matchingDeviceInfo = searchDeviceResult.Devices[0];
-            var loRaDevice = this.deviceFactory.Create(matchingDeviceInfo);
-            if (loRaDevice != null)
-            {
-                try
+                if (searchDeviceResult.IsDevNonceAlreadyUsed)
                 {
-                    Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", Logger.LoggingLevel.Info);
-                    if (await loRaDevice.InitializeAsync())
+                    Logger.Log(devEUI, $"join refused: DevNonce already used by this device", Logger.LoggingLevel.Info);
+                    return null;
+                }
+
+                if (searchDeviceResult.Devices == null || !searchDeviceResult.Devices.Any())
+                {
+                    Logger.Log(devEUI, "join refused: no devices found matching join request", Logger.LoggingLevel.Info);
+                    return null;
+                }
+
+                var matchingDeviceInfo = searchDeviceResult.Devices[0];
+                var loRaDevice = this.deviceFactory.Create(matchingDeviceInfo);
+                if (loRaDevice != null)
+                {
+                    try
                     {
-                        //AddToPendingJoinRequests(loRaDevice);
-                        Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
+                        Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", Logger.LoggingLevel.Info);
+                        if (await loRaDevice.InitializeAsync())
+                        {
+                            //AddToPendingJoinRequests(loRaDevice);
+                            Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
+                        }
+
                     }
-                        
+                    catch (Exception ex)
+                    {
+                        // problem initializing the device (get twin timeout, etc)
+                        // remove it from the cache
+                        Logger.Log(loRaDevice.DevEUI, $"join refused: error initializing OTAA device. {ex.Message}", Logger.LoggingLevel.Error);
+
+                        loRaDevice = null;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    // problem initializing the device (get twin timeout, etc)
-                    // remove it from the cache
-                    Logger.Log(loRaDevice.DevEUI, $"join refused: error initializing OTAA device. {ex.Message}", Logger.LoggingLevel.Error);
-                    
-                    loRaDevice = null;
-                }
+
+                return loRaDevice;
             }
-            
-            return loRaDevice;
+            catch (Exception ex)
+            {
+                Logger.Log(devEUI, $"failed to get join devices from api. {ex.Message}", Logger.LoggingLevel.Error);
+                return null;
+            }
         }
 
         /// <summary>
@@ -275,21 +293,22 @@ namespace LoRaWan.NetworkServer.V2
             foreach (var initializer in this.initializers)
                 initializer.Initialize(loRaDevice);
         }
-
-        
-
+       
         /// <summary>
         /// <inheritdoc />
         /// </summary>
         public void ResetDeviceCache()
         {
-            if (resetCacheToken != null && !resetCacheToken.IsCancellationRequested && resetCacheToken.Token.CanBeCanceled)
-            {
-                resetCacheToken.Cancel();
-                resetCacheToken.Dispose();
-            }
-
+            var oldResetCacheToken = resetCacheToken;
             resetCacheToken = new CancellationTokenSource();
+
+            if (oldResetCacheToken != null && !oldResetCacheToken.IsCancellationRequested && oldResetCacheToken.Token.CanBeCanceled)
+            {
+                oldResetCacheToken.Cancel();
+                oldResetCacheToken.Dispose();
+
+                Logger.Log("device cache cleared", Logger.LoggingLevel.Info);
+            }            
         }
     }
 }
