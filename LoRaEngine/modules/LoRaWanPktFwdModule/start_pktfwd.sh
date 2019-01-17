@@ -25,12 +25,15 @@ if [[ $arch != *"arm"* ]]; then
         ./lora_pkt_fwd_spidev2
     else
         if [ "$SPI_DEV" == "2" ]; then
+            echo "Using SPI dev 2 from environment variables" 
             ./lora_pkt_fwd_spidev2
-    else 
-        if [ "$SPI_DEV" == "1" ]; then
-            ./lora_pkt_fwd_spidev1
-        else
-            echo "SPI_DEV variables not valid in a x86 architecture. Please select a valid value (1 or 2)."
+        else 
+            if [ "$SPI_DEV" == "1" ]; then
+                echo "Using SPI dev 1 from environment variables"
+                ./lora_pkt_fwd_spidev1
+            else
+                echo "SPI_DEV variables not valid in a x86 architecture. Please select a valid value (1 or 2)."
+            fi
         fi
     fi
 else
