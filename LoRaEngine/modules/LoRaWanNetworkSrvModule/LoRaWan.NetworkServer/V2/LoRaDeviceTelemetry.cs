@@ -28,7 +28,8 @@ namespace LoRaWan.NetworkServer.V2
         public uint size;
         public object data;
         public byte port;
-        public ushort fcnt;        
+        public ushort fcnt;
+        public string rawdata;
 
         [JsonProperty("eui")]
         public string DeviceEUI;
@@ -47,14 +48,15 @@ namespace LoRaWan.NetworkServer.V2
         {    
         }        
 
-        public LoRaDeviceTelemetry(Rxpk rxpk, LoRaPayloadData loRaPayloadData)
+        public LoRaDeviceTelemetry(Rxpk rxpk, LoRaPayloadData loRaPayloadData, object payloadData)
         {         
             if (rxpk.ExtraData != null)
                 this.ExtraData = new Dictionary<string, object>(rxpk.ExtraData);
 
             this.chan = rxpk.chan;
             this.codr = rxpk.codr;
-            this.data = rxpk.data;
+            this.data = payloadData;
+            this.rawdata = rxpk.data;
             this.datr = rxpk.datr;
             this.freq = rxpk.freq;
             this.lsnr = rxpk.lsnr;

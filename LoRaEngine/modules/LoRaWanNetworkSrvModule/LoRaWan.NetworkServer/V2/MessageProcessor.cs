@@ -39,6 +39,12 @@ namespace LoRaWan.NetworkServer.V2
         // Starting Fport value reserved for future applications
         const byte LORA_FPORT_RESERVED_FUTURE_START = 224;
 
+        // Default value of a C2D message id if missing from the message
+        internal const string C2D_MSG_ID_PLACEHOLDER = "ConfirmationC2DMessageWithNoId";
+
+        // Name of the upstream message property reporint a confirmed message
+        internal const string C2D_MSG_PROPERTY_VALUE_NAME ="C2DMsgConfirmed";
+
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory;
@@ -209,9 +215,12 @@ namespace LoRaWan.NetworkServer.V2
                             Logger.Log(loRaDevice.DevEUI, $"valid frame counter, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", Logger.LoggingLevel.Info);
 
                             object payloadData = null;
+
+                        
                             // if it is an upward acknowledgement from the device it does not have a payload
                             // This is confirmation from leaf device that he received a C2D confirmed
-                            if (!loraPayload.IsUpwardAck())
+                            //if a message payload is null we don't try to decrypt it.
+                            if (loraPayload.Frmpayload.Length != 0)
                             {
                                 byte[] decryptedPayloadData = null;
                                 try
@@ -237,6 +246,7 @@ namespace LoRaWan.NetworkServer.V2
                                     payloadData = await payloadDecoder.DecodeMessageAsync(decryptedPayloadData, fportUp, loRaDevice.SensorDecoder);
                                 }
                             }
+                  
 
 
                             // What do we need to send an UpAck to IoT Hub?
@@ -422,6 +432,7 @@ namespace LoRaWan.NetworkServer.V2
                 if (cloudToDeviceMessage.Properties.TryGetValueCaseInsensitive("confirmed", out var confirmedValue) && confirmedValue.Equals("true", StringComparison.OrdinalIgnoreCase))
                 {
                     requiresDeviceAcknowlegement = true;
+                    loraDeviceInfo.LastConfirmedC2DMessageID = cloudToDeviceMessage.MessageId ?? C2D_MSG_ID_PLACEHOLDER;
 
                 }
                 if (cloudToDeviceMessage.Properties.TryGetValueCaseInsensitive("fport", out var fPortValue))
@@ -533,23 +544,30 @@ namespace LoRaWan.NetworkServer.V2
         }
 
         // Sends device telemetry data to IoT Hub
-        private async Task SendDeviceEventAsync(LoRaDevice loRaDevice, Rxpk rxpk, object payloadData, LoRaPayloadData loRaPayloadData, LoRaOperationTimeWatcher timeWatcher)
+        private async Task SendDeviceEventAsync(LoRaDevice loRaDevice, Rxpk rxpk, object decodedValue, LoRaPayloadData loRaPayloadData, LoRaOperationTimeWatcher timeWatcher)
         {            
-            var deviceTelemetry = new LoRaDeviceTelemetry(rxpk, loRaPayloadData);
+            var deviceTelemetry = new LoRaDeviceTelemetry(rxpk, loRaPayloadData, decodedValue);
             deviceTelemetry.DeviceEUI = loRaDevice.DevEUI;
             deviceTelemetry.GatewayID = this.configuration.GatewayID;
             deviceTelemetry.Edgets = (long)((timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds);
 
-            if (payloadData != null)
-            {
-                deviceTelemetry.data = payloadData;
-            }
-
             Dictionary<string, string> eventProperties = null;
+            if (loRaPayloadData.IsUpwardAck())
+            {
+                eventProperties = new Dictionary<string, string>();
+                Logger.Log(loRaDevice.DevEUI, String.Concat($"Message ack received",
+                                 loRaDevice.LastConfirmedC2DMessageID != null? 
+                                 $" for C2D message id {loRaDevice.LastConfirmedC2DMessageID}" : ""),
+                                 Logger.LoggingLevel.Info);
+                eventProperties.Add(C2D_MSG_PROPERTY_VALUE_NAME, 
+                    loRaDevice.LastConfirmedC2DMessageID ??
+                     C2D_MSG_ID_PLACEHOLDER);
+                loRaDevice.LastConfirmedC2DMessageID = null;
+            }
             var macCommand = loRaPayloadData.GetMacCommands();
             if (macCommand.macCommand.Count > 0)
             {
-                eventProperties = new Dictionary<string, string>();
+                eventProperties = eventProperties ?? new Dictionary<string, string>();
 
                 for (int i = 0; i < macCommand.macCommand.Count; i++)
                 {                    

@@ -174,6 +174,48 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceClient.VerifyAll();
         }
 
+        [Fact]
+        public async Task When_Mic_Check_Fails_Join_Process_Should_Fail()
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: ServerConfiguration.GatewayID));
+            var joinRequest = simulatedDevice.CreateJoinRequest();
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>();
+            var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
+            loRaDevice.SetFcntDown(10);
+            loRaDevice.SetFcntUp(20);
+
+            var wrongAppKey = "00000000030000000000000000030000";
+            // Create Rxpk
+            var rxpk = joinRequest.SerializeUplink(wrongAppKey).rxpk[0];
+
+            var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
+
+            var devNonce = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequest.DevNonce);
+            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var appEUI = simulatedDevice.LoRaDevice.AppEUI;
+
+            this.LoRaDeviceRegistry.Setup(x => x.GetDeviceForJoinRequestAsync(devEUI, appEUI, devNonce))
+                .ReturnsAsync(() => loRaDevice);
+
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                this.LoRaDeviceRegistry.Object,
+                this.FrameCounterUpdateStrategyFactory.Object,
+                payloadDecoder.Object
+                );
+
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
+            Assert.Null(actual);
+
+            // Device frame counts were not modified
+            Assert.Equal(10, loRaDevice.FCntDown);
+            Assert.Equal(20, loRaDevice.FCntUp);
+
+            // Twin property were updated
+            loRaDeviceClient.VerifyAll();
+        }
+
 
         [Fact]
         public async Task When_Device_AppEUI_Does_Not_Match_Should_Return_Null()

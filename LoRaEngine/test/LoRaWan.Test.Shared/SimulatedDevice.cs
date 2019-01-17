@@ -83,20 +83,23 @@ namespace LoRaWan.Test.Shared
         /// <param name="data"></param>
         /// <param name="fport"></param>
         /// <returns></returns>
-        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, int? fcnt = null, byte fport = 1)
+        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, int? fcnt = null, byte fport = 1, byte fctrl=0x80)
         {
             byte[] devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
-            byte[] fCtrl = new byte[] { 0x80 };
-
+            byte[] fCtrl = new byte[] { fctrl };
             fcnt = fcnt ?? this.FrmCntUp + 1;
             var fcntBytes = BitConverter.GetBytes((UInt16)fcnt.Value);
 
             byte[] fopts = new byte[0];
-            byte[] fPort = new byte[] { fport };           
+            byte[] fPort = new byte[] { fport };
             //TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
-            byte[] payload = Encoding.UTF8.GetBytes(data);
-            Array.Reverse(payload);
+            byte[] payload = null;
+            if (data != null)
+            {
+                payload = Encoding.UTF8.GetBytes(data);
+                Array.Reverse(payload);
+            }
             // 0 = uplink, 1 = downlink
             int direction = 0;
 
