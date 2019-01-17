@@ -87,7 +87,7 @@ namespace LoRaWan.NetworkServer.V2
                 {
                     if (matchingDevice.IsOurDevice)
                     {
-                        Logger.Log(matchingDevice.DevEUI, "device in cache", Logger.LoggingLevel.Info);
+                        Logger.Log(matchingDevice.DevEUI, "device in cache", Logger.LoggingLevel.Full);
                         return matchingDevice;
                     }
                     else
@@ -99,6 +99,8 @@ namespace LoRaWan.NetworkServer.V2
             }
 
             // If device was not found, search in the device API, updating local cache
+            Logger.Log(devAddr, "querying the registry for device", Logger.LoggingLevel.Info);
+
             var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(devAddr: devAddr);
             if (searchDeviceResult.Devices != null)
             {
@@ -206,7 +208,7 @@ namespace LoRaWan.NetworkServer.V2
                 return null;
             }
 
-            Logger.Log(devEUI, "querying the registry for device key", Logger.LoggingLevel.Info);
+            Logger.Log(devEUI, "querying the registry for OTTA device", Logger.LoggingLevel.Info);
 
             var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(
                 gatewayId: configuration.GatewayID,

@@ -1,3 +1,8 @@
+//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+
 using System;
 using System.Collections.Generic;
 
@@ -86,25 +91,25 @@ namespace LoRaWan.Test.Shared
         /// <returns></returns>
         public static TestDeviceInfo CreateABPDevice(UInt32 deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor")
         {
-            var padding8 =  "00000000";
-            var padding16 = "0000000000000000";
-            var padding32 = "00000000000000000000000000000000";
+            var value8 =  deviceID.ToString("00000000");
+            var value16 = deviceID.ToString("0000000000000000");
+            var value32 = deviceID.ToString("00000000000000000000000000000000");
 
             if (!string.IsNullOrEmpty(prefix))
             {
-                padding8 = string.Concat(prefix, padding8.Substring(prefix.Length));
-                padding16 = string.Concat(prefix, padding16.Substring(prefix.Length));
-                padding32 = string.Concat(prefix, padding32.Substring(prefix.Length));
+                value8 = string.Concat(prefix, value8.Substring(prefix.Length));
+                value16 = string.Concat(prefix, value16.Substring(prefix.Length));
+                value32 = string.Concat(prefix, value32.Substring(prefix.Length));
             }
 
             var result = new TestDeviceInfo
             {
-                DeviceID = deviceID.ToString(padding16),
+                DeviceID = value16,
                 GatewayID = gatewayID,
                 SensorDecoder = sensorDecoder,
-                AppSKey = deviceID.ToString(padding32),
-                NwkSKey = deviceID.ToString(padding32),
-                DevAddr = deviceID.ToString(padding8),
+                AppSKey = value32,
+                NwkSKey = value32,
+                DevAddr = value8,
             };
 
             return result;
@@ -121,20 +126,20 @@ namespace LoRaWan.Test.Shared
         /// <returns></returns>
         public static TestDeviceInfo CreateOTAADevice(UInt32 deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor")
         {
-            var padding16 = "0000000000000000";
-            var padding32 = "00000000000000000000000000000000";
+            var value16 = deviceID.ToString("0000000000000000");
+            var value32 = deviceID.ToString("00000000000000000000000000000000");
 
             if (!string.IsNullOrEmpty(prefix))
             {
-                padding16 = string.Concat(prefix, padding16.Substring(prefix.Length));
-                padding32 = string.Concat(prefix, padding32.Substring(prefix.Length));
+                value16 = string.Concat(prefix, value16.Substring(prefix.Length));
+                value32 = string.Concat(prefix, value32.Substring(prefix.Length));
             }
 
             var result = new TestDeviceInfo
             {
-                DeviceID = deviceID.ToString(padding16),
-                AppEUI = deviceID.ToString(padding16),
-                AppKey = deviceID.ToString(padding32),               
+                DeviceID = value16,
+                AppEUI = value16,
+                AppKey = value32,               
                 GatewayID = gatewayID,
                 SensorDecoder = sensorDecoder,                
             };
