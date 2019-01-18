@@ -36,11 +36,15 @@ namespace LoRaWan.NetworkServer.Test
 
 
         [Theory]
-        [InlineData(MessageProcessorTestBase.ServerGatewayID, 200, 50)]
-        [InlineData(MessageProcessorTestBase.ServerGatewayID, 0, 0)]
-        [InlineData(null, 200, 50)]
-        [InlineData(null, 0, 0)]
-        public async Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, int initialFcntUp, int initialFcntDown)
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, 200, 50, 0)]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, 200, 50, 17)]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, 0, 0, 0)]        
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, 0, 0, 27)]
+        [InlineData(null, 200, 50, 0)]
+        [InlineData(null, 200, 50, 37)]
+        [InlineData(null, 0, 0, 0)]
+        [InlineData(null, 0, 0, 47)]
+        public async Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, int initialFcntUp, int initialFcntDown, int startingPayloadFcnt)
         {         
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
@@ -84,7 +88,9 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true);
 
             // message will be sent
+            var sentTelemetry = new List<LoRaDeviceTelemetry>();
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => sentTelemetry.Add(t))
                 .ReturnsAsync(true);
 
             // C2D message will be checked
@@ -100,7 +106,7 @@ namespace LoRaWan.NetworkServer.Test
             // multi gateway will request a next frame count down from the lora device api, prepare it
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
-                loRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, 0, 2, ServerConfiguration.GatewayID))
+                loRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, 0, startingPayloadFcnt + 1, ServerConfiguration.GatewayID))
                     .ReturnsAsync((ushort)1);
             }
 
@@ -151,26 +157,31 @@ namespace LoRaWan.NetworkServer.Test
             simulatedDevice.LoRaDevice.NwkSKey = afterJoinNwkSKey;
             simulatedDevice.LoRaDevice.DevAddr = afterJoinDevAddr;
 
-            // sends unconfirmed message
-            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("100", fcnt: 1);
+            // sends unconfirmed message            
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("100", fcnt: startingPayloadFcnt);
             var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0]);
             Assert.Null(unconfirmedMessageResult);
 
             // fcnt up was updated
-            Assert.Equal(1, loRaDevice.FCntUp);
+            Assert.Equal(startingPayloadFcnt, loRaDevice.FCntUp);
             Assert.Equal(0, loRaDevice.FCntDown);
 
-            // Frame change flag will be set, only saving every 10 messages
-            Assert.True(loRaDevice.HasFrameCountChanges);
-
+            if (startingPayloadFcnt != 0)
+            {
+                // Frame change flag will be set, only saving every 10 messages
+                Assert.True(loRaDevice.HasFrameCountChanges);
+            }
+            Assert.Single(sentTelemetry);
 
             // sends confirmed message
-            var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: 2);
+            var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
             var confirmedMessageRxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
             var confirmedMessage = await messageProcessor.ProcessMessageAsync(confirmedMessageRxpk);
             Assert.NotNull(confirmedMessage);
             Assert.NotNull(confirmedMessage.txpk);
-           
+            Assert.Equal(2, sentTelemetry.Count);
+
+
 
             // validates txpk according to eu region
             Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(confirmedMessageRxpk), confirmedMessage.txpk.freq);
@@ -180,11 +191,19 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal("LORA", confirmedMessage.txpk.modu);
 
             // fcnt up was updated
-            Assert.Equal(2, loRaDevice.FCntUp);
+            Assert.Equal(startingPayloadFcnt + 1, loRaDevice.FCntUp);
             Assert.Equal(1, loRaDevice.FCntDown);
 
             // Frame change flag will be set, only saving every 10 messages
             Assert.True(loRaDevice.HasFrameCountChanges);
+
+
+            // C2D message will be checked twice
+            loRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()), Times.Exactly(2));
+
+            // has telemetry with both fcnt
+            Assert.Single(sentTelemetry, (t) => t.fcnt == startingPayloadFcnt);
+            Assert.Single(sentTelemetry, (t) => t.fcnt == (startingPayloadFcnt + 1));
 
             loRaDeviceClient.VerifyAll();
             loRaDeviceApi.VerifyAll();

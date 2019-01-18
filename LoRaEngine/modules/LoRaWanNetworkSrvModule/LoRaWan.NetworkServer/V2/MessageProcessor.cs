@@ -155,19 +155,30 @@ namespace LoRaWan.NetworkServer.V2
                 {
                     // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
                     // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
-                    var isRelaxedPayloadFrameCounter = false;
-                    if (loRaDevice.IsABP && loRaDevice.IsABPRelaxedFrameCounter && loRaDevice.FCntUp >= 0 && payloadFcnt <= 1)
+                    var isFrameCounterFromNewlyStartedDevice = false;
+                    if (payloadFcnt <= 1)
                     {
-                        // known problem when device restarts, starts fcnt from zero
-                        _ = frameCounterStrategy.ResetAsync(loRaDevice);
-                        isRelaxedPayloadFrameCounter = true;
+                        if (loRaDevice.IsABP)
+                        {
+                            if (loRaDevice.IsABPRelaxedFrameCounter && loRaDevice.FCntUp >= 0 && payloadFcnt <= 1)
+                            {
+                                // known problem when device restarts, starts fcnt from zero
+                                _ = frameCounterStrategy.ResetAsync(loRaDevice);
+                                isFrameCounterFromNewlyStartedDevice = true;
+                            }
+                        }
+                        else if (loRaDevice.FCntUp == payloadFcnt && payloadFcnt == 0)
+                        {
+                            // Some devices start with frame count 0
+                            isFrameCounterFromNewlyStartedDevice = true;
+                        }
                     }
 
                     // Reply attack or confirmed reply
                     // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
                     // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
                     var isConfirmedResubmit = false;
-                    if (!isRelaxedPayloadFrameCounter && payloadFcnt <= loRaDevice.FCntUp)
+                    if (!isFrameCounterFromNewlyStartedDevice && payloadFcnt <= loRaDevice.FCntUp)
                     {
                         // TODO: have a maximum retry (3)
                         // Future: Keep track of how many times we acked the confirmed message (4+ times we skip)
@@ -209,7 +220,7 @@ namespace LoRaWan.NetworkServer.V2
 
                     if (!isConfirmedResubmit)
                     {
-                        var validFcntUp = isRelaxedPayloadFrameCounter || (payloadFcnt > loRaDevice.FCntUp);
+                        var validFcntUp = isFrameCounterFromNewlyStartedDevice || (payloadFcnt > loRaDevice.FCntUp);
                         if (validFcntUp)
                         {
                             Logger.Log(loRaDevice.DevEUI, $"valid frame counter, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", Logger.LoggingLevel.Info);
