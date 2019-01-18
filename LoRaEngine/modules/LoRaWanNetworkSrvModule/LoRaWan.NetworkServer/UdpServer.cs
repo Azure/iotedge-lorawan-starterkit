@@ -40,7 +40,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
 
         ModuleClient ioTHubModuleClient;
-        private int pullAckRemoteLoRaAggregatorPort = 0;
+        private volatile int pullAckRemoteLoRaAggregatorPort = 0;
         UdpClient udpClient;
 
         readonly SemaphoreSlim randomLock = new SemaphoreSlim(1);
@@ -204,10 +204,19 @@ namespace LoRaWan.NetworkServer
                     var messageByte = Encoding.UTF8.GetBytes(jsonMsg);
                     var token = await GetTokenAsync();
                     PhysicalPayload pyld = new PhysicalPayload(token, PhysicalIdentifier.PULL_RESP, messageByte);
-                    await this.UdpSendMessage(pyld.GetMessage(), remoteIp, pullAckRemoteLoRaAggregatorPort);
-                    Logger.Log("UDP", String.Format("message sent with ID {0}",
-                        ConversionHelper.ByteArrayToString(token)),
-                        Logger.LoggingLevel.Info);
+                    if (pullAckRemoteLoRaAggregatorPort != 0)
+                    {
+                        await this.UdpSendMessage(pyld.GetMessage(), remoteIp, pullAckRemoteLoRaAggregatorPort);
+                        Logger.Log("UDP", String.Format("message sent with ID {0}",
+                            ConversionHelper.ByteArrayToString(token)),
+                            Logger.LoggingLevel.Info);
+                    }
+                    else
+                    {
+                        Logger.Log("UDP", 
+                            "Waiting for first pull_ack message from the packet forwarder. The received message was discarded as the network server is still starting.",
+                            Logger.LoggingLevel.Error);
+                    }
                 }
             }
             catch (Exception ex)
