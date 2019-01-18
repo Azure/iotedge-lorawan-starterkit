@@ -345,7 +345,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // Lora device api will be search by devices with matching deveui,
             var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            loRaDeviceApi.Setup(x => x.SearchDevicesAsync(ServerConfiguration.GatewayID, null, devEUI, appEUI, devNonce))
+            loRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, appEUI, devNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));            
 
             var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);

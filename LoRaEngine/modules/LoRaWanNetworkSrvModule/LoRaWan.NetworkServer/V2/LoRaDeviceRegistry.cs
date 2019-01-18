@@ -104,7 +104,7 @@ namespace LoRaWan.NetworkServer.V2
             SearchDevicesResult searchDeviceResult = null;
             try
             {
-                searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(devAddr: devAddr);
+                searchDeviceResult = await this.loRaDeviceAPIService.SearchByDevAddrAsync(devAddr);
             }
             catch (Exception ex)
             {
@@ -222,8 +222,8 @@ namespace LoRaWan.NetworkServer.V2
 
             try
             {
-                var searchDeviceResult = await this.loRaDeviceAPIService.SearchDevicesAsync(
-                    gatewayId: configuration.GatewayID,
+                var searchDeviceResult = await this.loRaDeviceAPIService.SearchAndLockForJoinAsync(
+                    gatewayID: configuration.GatewayID,
                     devEUI: devEUI,
                     appEUI: appEUI,
                     devNonce: devNonce);

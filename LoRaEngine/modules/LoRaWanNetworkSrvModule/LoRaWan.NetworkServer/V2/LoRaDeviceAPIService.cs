@@ -63,10 +63,26 @@ namespace LoRaWan.NetworkServer.V2
             return true;
         }
 
-      
+
+        /// <inheritdoc />
+        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string appEUI, string devNonce)
+            => SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, appEUI: appEUI, devNonce: devNonce);
+
+        /// <inheritdoc />
+        public sealed override Task<SearchDevicesResult> SearchByDevAddrAsync(string devAddr)
+            => SearchDevicesAsync(devAddr: devAddr);
 
 
-        public override async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayId = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null)
+        /// <summary>
+        /// Helper method that calls the API GetDevice method
+        /// </summary>
+        /// <param name="gatewayID"></param>
+        /// <param name="devAddr"></param>
+        /// <param name="devEUI"></param>
+        /// <param name="appEUI"></param>
+        /// <param name="devNonce"></param>
+        /// <returns></returns>
+        async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = new StringBuilder();
@@ -74,10 +90,10 @@ namespace LoRaWan.NetworkServer.V2
                 .Append("GetDevice?code=")
                 .Append(this.AuthCode);
 
-            if (!string.IsNullOrEmpty(gatewayId))
+            if (!string.IsNullOrEmpty(gatewayID))
             {   
                 url.Append("&GatewayId=")
-                    .Append(gatewayId);
+                    .Append(gatewayID);
             }
 
             if (!string.IsNullOrEmpty(devAddr))

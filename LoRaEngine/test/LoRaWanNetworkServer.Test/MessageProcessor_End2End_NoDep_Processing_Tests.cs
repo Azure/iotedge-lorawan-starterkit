@@ -111,7 +111,7 @@ namespace LoRaWan.NetworkServer.Test
             }
             
             // device api will be searched for payload
-            loRaDeviceApi.Setup(x => x.SearchDevicesAsync(null, devAddr, null, null, null))
+            loRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
 
             // using factory to create mock of 
@@ -354,7 +354,7 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
 
             // device api will be searched for payload
-            loRaDeviceApi.Setup(x => x.SearchDevicesAsync(null, devAddr, null, null, null))
+            loRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
             
             
@@ -732,7 +732,7 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
 
             // Will try to find the iot device based on dev addr            
-            loRaDeviceApi.SetupSequence(x => x.SearchDevicesAsync(null, devAddr, null, null, null))
+            loRaDeviceApi.SetupSequence(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult())
                 .ReturnsAsync(new SearchDevicesResult())
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
@@ -1101,7 +1101,7 @@ namespace LoRaWan.NetworkServer.Test
             
             // Lora device api will be search by devices with matching deveui,
             var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            loRaDeviceApi.Setup(x => x.SearchDevicesAsync(null, devAddr, null, null, null))
+            loRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
             // using factory to create mock of 
@@ -1191,7 +1191,7 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
 
             // will search for the device twice
-            loRaDeviceApi.Setup(x => x.SearchDevicesAsync(null, loRaDevice.DevAddr, null, null, null))
+            loRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(loRaDevice.DevAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(loRaDevice.DevAddr, loRaDevice.DevEUI, "aaa").AsList()));
 
             // using factory to create mock of 

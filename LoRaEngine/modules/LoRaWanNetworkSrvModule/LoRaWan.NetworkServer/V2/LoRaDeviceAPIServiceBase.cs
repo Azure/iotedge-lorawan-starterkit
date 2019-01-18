@@ -25,7 +25,24 @@ namespace LoRaWan.NetworkServer.V2
 
         public abstract Task<bool> ABPFcntCacheResetAsync(string DevEUI);
 
-        public abstract Task<SearchDevicesResult> SearchDevicesAsync(string gatewayId = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null);
+        //public abstract Task<SearchDevicesResult> SearchDevicesAsync(string gatewayId = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null);
+        /// <summary>
+        /// Searchs devices based on devAddr
+        /// </summary>
+        /// <param name="devAddr"></param>
+        /// <returns></returns>
+        public abstract Task<SearchDevicesResult> SearchByDevAddrAsync(string devAddr);
+
+
+        /// <summary>
+        /// Search and locks device for join request
+        /// </summary>
+        /// <param name="gatewayID"></param>
+        /// <param name="devEUI"></param>
+        /// <param name="appEUI"></param>
+        /// <param name="devNonce"></param>
+        /// <returns></returns>
+        public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string appEUI, string devNonce);
 
         /// <summary>
         /// Sets the new URL value
