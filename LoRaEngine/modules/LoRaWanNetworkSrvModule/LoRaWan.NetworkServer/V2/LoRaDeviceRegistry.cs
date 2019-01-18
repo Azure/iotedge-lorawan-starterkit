@@ -22,6 +22,8 @@ namespace LoRaWan.NetworkServer.V2
     /// </summary>
     public class LoRaDeviceRegistry : ILoRaDeviceRegistry
     {
+        // Caches a device making join for 2 minute
+        const int INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES = 2;
         private readonly NetworkServerConfiguration configuration;
         private volatile IMemoryCache cache;
         private CancellationTokenSource resetCacheToken;
@@ -202,6 +204,20 @@ namespace LoRaWan.NetworkServer.V2
             return checkMicResult;
         }
 
+        // Creates cache key for join device loader: "joinloader:{devEUI}"
+        string GetJoinDeviceLoaderCacheKey(string devEUI) => string.Concat("joinloader:", devEUI);
+
+        // Removes join device loader from cache
+        void RemoveJoinDeviceLoader(string devEUI) => this.cache.Remove(GetJoinDeviceLoaderCacheKey(devEUI));
+
+        // Gets or adds a join device loader to the memory cache
+        JoinDeviceLoader GetOrAddJoinDeviceLoader(IoTHubDeviceInfo ioTHubDeviceInfo)
+        {
+            return this.cache.GetOrCreate(GetJoinDeviceLoaderCacheKey(ioTHubDeviceInfo.DevEUI), (entry) => {
+                entry.SlidingExpiration = TimeSpan.FromMinutes(INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES);
+                return new JoinDeviceLoader(ioTHubDeviceInfo, this.deviceFactory);
+            });
+        }
 
         /// <summary>
         /// Searchs for devices that match the join request
@@ -211,6 +227,58 @@ namespace LoRaWan.NetworkServer.V2
         /// <param name="devNonce"></param>        
         /// <returns></returns>
         public async Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, string appEUI, string devNonce)
+        {
+            if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(appEUI) || string.IsNullOrEmpty(devNonce))
+            {
+                Logger.Log(devEUI, "join refused: missing devEUI/AppEUI/DevNonce in request", Logger.LoggingLevel.Error);
+                return null;
+            }
+
+            Logger.Log(devEUI, "querying the registry for OTTA device", Logger.LoggingLevel.Info);
+
+            try
+            {
+                var searchDeviceResult = await this.loRaDeviceAPIService.SearchAndLockForJoinAsync(
+                    gatewayID: configuration.GatewayID,
+                    devEUI: devEUI,
+                    appEUI: appEUI,
+                    devNonce: devNonce);
+
+                if (searchDeviceResult.IsDevNonceAlreadyUsed)
+                {
+                    Logger.Log(devEUI, $"join refused: DevNonce already used by this device", Logger.LoggingLevel.Info);
+                    return null;
+                }
+
+                if (searchDeviceResult.Devices?.Count == 0)
+                {
+                    Logger.Log(devEUI, "join refused: no devices found matching join request", Logger.LoggingLevel.Info);
+                    return null;
+                }
+
+                var matchingDeviceInfo = searchDeviceResult.Devices[0];
+                var loader = GetOrAddJoinDeviceLoader(matchingDeviceInfo);
+                var loRaDevice = await loader.WaitComplete();
+                if (!loader.CanCache)
+                    RemoveJoinDeviceLoader(devEUI);
+
+                return loRaDevice;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(devEUI, $"failed to get join devices from api. {ex.Message}", Logger.LoggingLevel.Error);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Searchs for devices that match the join request
+        /// </summary>
+        /// <param name="devEUI"></param>
+        /// <param name="appEUI"></param>
+        /// <param name="devNonce"></param>        
+        /// <returns></returns>
+        public async Task<LoRaDevice> GetDeviceForJoinRequestAsyncOld(string devEUI, string appEUI, string devNonce)
         {
             if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(appEUI) || string.IsNullOrEmpty(devNonce))
             {
@@ -288,6 +356,10 @@ namespace LoRaWan.NetworkServer.V2
 
             // if there is an instance, overwrite it            
             devicesMatchingDevAddr.AddOrUpdate(loRaDevice.DevEUI, loRaDevice, (key, existing) => loRaDevice);
+
+            // don't remove from pending joins because the device can try again if there was
+            // a problem in the transmission
+            //TryRemoveJoinDeviceLoader(loRaDevice.DevEUI);
 
             // once added, call initializers
             foreach (var initializer in this.initializers)

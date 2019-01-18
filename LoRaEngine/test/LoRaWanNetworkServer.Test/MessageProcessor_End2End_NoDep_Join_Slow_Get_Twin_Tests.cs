@@ -45,15 +45,10 @@ namespace LoRaWan.NetworkServer.Test
             twin.Properties.Desired[TwinProperty.AppKey] = simulatedDevice.LoRaDevice.AppKey;
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
-            loRaDeviceClient.SetupSequence(x => x.GetTwinAsync())
+            loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .Returns(async () =>
                 {
                     await Task.Delay(TimeSpan.FromSeconds(7));
-                    return twin;
-                })
-                .Returns(async () =>
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(0.1));
                     return twin;
                 });
 
@@ -127,6 +122,12 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0, loRaDevice.FCntUp);
             Assert.Equal(0, loRaDevice.FCntDown);
             Assert.False(loRaDevice.HasFrameCountChanges);
+
+            // searching the device should happen twice
+            loRaDeviceApi.Verify(x => x.SearchAndLockForJoinAsync(ServerGatewayID, devEUI, appEUI, It.IsNotNull<string>()), Times.Exactly(2));
+
+            // getting the device twin should happens once
+            loRaDeviceClient.Verify(x => x.GetTwinAsync(), Times.Once());
 
             loRaDeviceClient.VerifyAll();
             loRaDeviceApi.VerifyAll();

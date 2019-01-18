@@ -34,11 +34,11 @@ if [ "$1" != "" ]; then
 fi
 
 # Starts with tests the can fail quick (pktforwarder is down, or something in this scenario)
-declare -a testsToRun=('OTAAJoinTest'
-                       'ABPTest' 
-                       'C2DMessageTest' 
-                       'OTAATest'
-                       'SensorDecodingTest')
+declare -a testsToRun=('LoRaWan.IntegrationTest.OTAAJoinTest'
+                       'LoRaWan.IntegrationTest.ABPTest' 
+                       'LoRaWan.IntegrationTest.C2DMessageTest' 
+                       'LoRaWan.IntegrationTest.OTAATest'
+                       'LoRaWan.IntegrationTest.SensorDecodingTest')
 
 testCount=${#testsToRun[@]}
 

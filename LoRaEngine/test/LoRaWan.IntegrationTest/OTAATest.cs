@@ -101,8 +101,6 @@ namespace LoRaWan.IntegrationTest
                 await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
-
-
             }
         }
     }

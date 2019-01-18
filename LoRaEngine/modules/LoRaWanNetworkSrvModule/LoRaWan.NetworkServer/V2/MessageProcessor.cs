@@ -628,7 +628,7 @@ namespace LoRaWan.NetworkServer.V2
                 // set context to logger
                 processLogger.SetDevEUI(devEUI);
 
-                var devNonce = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinReq.DevNonce);
+                var devNonce = joinReq.GetDevNonceAsString();
                 Logger.Log(devEUI, $"join request received", Logger.LoggingLevel.Info);
 
                 

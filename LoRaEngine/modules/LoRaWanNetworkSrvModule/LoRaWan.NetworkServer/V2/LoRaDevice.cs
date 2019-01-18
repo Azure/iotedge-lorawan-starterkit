@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 
 namespace LoRaWan.NetworkServer.V2
 {
-    public class LoRaDevice
+    public sealed class LoRaDevice : IDisposable
     {
         public string DevAddr { get; set; }
         
@@ -253,6 +253,12 @@ namespace LoRaWan.NetworkServer.V2
             }
 
             return succeeded;
-        }        
+        }
+
+        public void Dispose()
+        {
+            this.loRaDeviceClient?.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 }

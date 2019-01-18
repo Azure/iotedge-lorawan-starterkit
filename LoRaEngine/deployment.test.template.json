@@ -57,6 +57,9 @@
               },
               "httpSettings__enabled": {
                 "value": "$EDGEHUB_HTTPSETTINGS_ENABLED"
+              },
+              "LORA_BUILD_ID": {
+                "value": "$BUILD_BUILDID"
               }
             }
           }

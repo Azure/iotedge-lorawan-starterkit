@@ -13,6 +13,9 @@ using Newtonsoft.Json;
 namespace LoRaWan.NetworkServer.V2
 {
 
+    /// <summary>
+    /// Interface between IoT Hub and device
+    /// </summary>
     public sealed class LoRaDeviceClient : ILoRaDeviceClient
     {
         private readonly string devEUI;
@@ -95,13 +98,18 @@ namespace LoRaWan.NetworkServer.V2
                 deviceClient.OperationTimeoutInMilliseconds = 120000;
 
                 SetRetry(true);
-
-                var reportedPropertiesJson = reportedProperties.ToJson(Newtonsoft.Json.Formatting.None);
-                Logger.Log(this.devEUI, $"updating twins {reportedPropertiesJson}", Logger.LoggingLevel.Full);
+                
+                string reportedPropertiesJson = string.Empty;
+                if (Logger.LoggerLevel == Logger.LoggingLevel.Full)
+                {
+                    reportedPropertiesJson = reportedProperties.ToJson(Newtonsoft.Json.Formatting.None);
+                    Logger.Log(this.devEUI, $"updating twins {reportedPropertiesJson}", Logger.LoggingLevel.Full);
+                }
 
                 await deviceClient.UpdateReportedPropertiesAsync(reportedProperties);
 
-                Logger.Log(this.devEUI, $"twins updated {reportedPropertiesJson}", Logger.LoggingLevel.Full);
+                if (Logger.LoggerLevel == Logger.LoggingLevel.Full)
+                    Logger.Log(this.devEUI, $"twins updated {reportedPropertiesJson}", Logger.LoggingLevel.Full);
 
                 return true;
 
@@ -180,7 +188,13 @@ namespace LoRaWan.NetworkServer.V2
 
                 Message msg = await deviceClient.ReceiveAsync(timeout);
 
-                Logger.Log(this.devEUI, $"done checking c2d message", Logger.LoggingLevel.Full);
+                if (Logger.LoggerLevel >= Logger.LoggingLevel.Full)
+                {
+                    if (msg == null)
+                        Logger.Log(this.devEUI, "done checking c2d message, found no message", Logger.LoggingLevel.Full);
+                    else
+                        Logger.Log(this.devEUI, $"done checking c2d message, found message id: {msg.MessageId ?? "undefined"}", Logger.LoggingLevel.Full);
+                }
 
                 return msg;
 

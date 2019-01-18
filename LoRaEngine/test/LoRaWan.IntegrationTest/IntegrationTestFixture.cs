@@ -88,6 +88,9 @@ namespace LoRaWan.IntegrationTest
         // Device19_ABP: used for C2D invalid fport testing
         public TestDeviceInfo Device19_ABP { get; private set; }
 
+        // Device20_OTAA: used for OTAA confirmed & unconfirmed messaging
+        public TestDeviceInfo Device20_OTAA { get; private set; }
+
         // Device1001_Simulated_ABP: used for ABP simulator
         public TestDeviceInfo Device1001_Simulated_ABP { get; private set; }
 
@@ -368,6 +371,17 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = "00000000000000000000000000000019",
                 DevAddr = "00000019"
             };
+
+            // Device20_OTAA: used for join and rejoin test
+            this.Device20_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000020",
+                AppEUI = "0000000000000020",
+                AppKey = "00000000000000000000000000000020",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,                                      
+                SensorDecoder = "DecoderValueSensor",                           
+            };  
 
 
             // Simulated devices start at 1000

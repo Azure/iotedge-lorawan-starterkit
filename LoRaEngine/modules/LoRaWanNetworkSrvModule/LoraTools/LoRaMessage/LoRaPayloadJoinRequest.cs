@@ -34,6 +34,12 @@ namespace LoRaTools.LoRaMessage
         /// <returns></returns>
         public string GetAppEUIAsString() => ConversionHelper.ReverseByteArrayToString(this.AppEUI);
 
+        /// <summary>
+        /// Gets the value <see cref="DevNonce"/> as <see cref="string"/>
+        /// </summary>
+        /// <returns></returns>
+        public string GetDevNonceAsString() => ConversionHelper.ByteArrayToString(DevNonce);
+
         public LoRaPayloadJoinRequest(byte[] inputMessage) : base(inputMessage)
         {
             Mhdr = new Memory<byte>(inputMessage, 0, 1);
@@ -130,5 +136,6 @@ namespace LoRaTools.LoRaMessage
             return new UplinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
         }
 
+        
     }
 }
