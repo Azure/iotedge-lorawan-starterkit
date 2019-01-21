@@ -118,9 +118,10 @@ namespace LoRaWan.NetworkServer
             var timeWatcher = new LoRaOperationTimeWatcher(this.loraRegion, startTime);
             using (var processLogger = new ProcessLogger(timeWatcher, devAddr))
             {
-                if (!IsValidNetId(loraPayload.GetNetID()))
+                if (!IsValidNetId(loraPayload.GetDevAddrNetID(), configuration.NetId))
                 {
-                    //Log("Invalid netid");                    
+                     Logger.Log(ConversionHelper.ByteArrayToString(devAddr),
+                        $"device is using another network id, ignoring this message", Logger.LoggingLevel.Info);
                     return null;
                 }
 
@@ -600,9 +601,15 @@ namespace LoRaWan.NetworkServer
         }
 
 
-        bool IsValidNetId(byte netid)
+        bool IsValidNetId(byte devAddrNwkid, uint netId)
         {
-            return true;
+            var netIdBytes = BitConverter.GetBytes(netId);
+            devAddrNwkid = (byte)(devAddrNwkid >> 1);
+            byte netIdToCompare = (byte)(netIdBytes[0] & 0b01111111);
+            if (devAddrNwkid.Equals(netIdToCompare))
+                return true;
+            else
+                return false;
         }
 
 
@@ -667,13 +674,18 @@ namespace LoRaWan.NetworkServer
                     return null;
                 }
 
-                var netId = new byte[3] { 0, 0, 1 };
-                var appNonce = OTAAKeysGenerator.getAppNonce();
+                var netIdBytes = BitConverter.GetBytes(configuration.NetId);
+                var netId = new byte[3]{
+                    netIdBytes[0],
+                    netIdBytes[1],
+                    netIdBytes[2]
+                };
+                var appNonce = OTAAKeysGenerator.GetAppNonce();
                 var appNonceBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(appNonce);
                 var appKeyBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(loRaDevice.AppKey);
-                var appSKey = OTAAKeysGenerator.calculateKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
-                var nwkSKey = OTAAKeysGenerator.calculateKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
-                var devAddr = OTAAKeysGenerator.getDevAddr(netId);
+                var appSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
+                var nwkSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
+                var devAddr = OTAAKeysGenerator.GetNwkId(netId);
 
                 if (!timeWatcher.InTimeForJoinAccept())
                 {

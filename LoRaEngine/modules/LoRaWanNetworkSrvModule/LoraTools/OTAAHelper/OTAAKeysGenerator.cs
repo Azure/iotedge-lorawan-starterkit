@@ -11,25 +11,21 @@ namespace LoRaTools
     public class OTAAKeysGenerator
     {
 
-
-
-
-        public static string getDevAddr(Byte[] netId)
+        public static string GetNwkId(Byte[] netId)
         {
-            int nwkPart = (netId[2] << 1);
+            int nwkPart = (netId[0] << 1);
 
             byte[] devAddr = new byte[4];
             Random rnd = new Random();
             rnd.NextBytes(devAddr);
-            //loosing a bit
-            devAddr[0] = (byte)nwkPart;
-
+            //loosing a bit      
+            devAddr[0] = (byte)((nwkPart&0b11111110)|(devAddr[0]&0b00000001));
             return ConversionHelper.ByteArrayToString(devAddr);
         }
 
         //type NwkSKey = 0x01 , AppSKey = 0x02
         //don't work with CFLIST atm
-        public static string calculateKey(byte[] type, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
+        public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
 
 
@@ -52,7 +48,7 @@ namespace LoRaTools
 
         //type NwkSKey = 0x01 , AppSKey = 0x02
         //don't work with CFLIST atm
-        public static string calculateKey(byte[] type, byte[] appnonce, byte[] netid, ReadOnlyMemory<byte> devnonce, byte[] appKey)
+        public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, ReadOnlyMemory<byte> devnonce, byte[] appKey)
         {
             Aes aes = new AesManaged();
             aes.Key = appKey;
@@ -81,7 +77,7 @@ namespace LoRaTools
             return ConversionHelper.ByteArrayToString(key);
         }
 
-        public static string  getAppNonce()
+        public static string  GetAppNonce()
         {
             Random rnd = new Random();
             byte[] appNonce = new byte[3];

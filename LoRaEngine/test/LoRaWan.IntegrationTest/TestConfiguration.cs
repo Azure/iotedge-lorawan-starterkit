@@ -45,6 +45,9 @@ namespace LoRaWan.IntegrationTest
 
         // Gets/sets network server udp log port
         public int UdpLogPort { get; set; } = 6000;
+
+        // Gets/sets gateway NetId
+        public uint NetId { get; set; } = 1;
     }
 
 }
