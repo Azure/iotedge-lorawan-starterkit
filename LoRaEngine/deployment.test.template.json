@@ -58,6 +58,9 @@
               "httpSettings__enabled": {
                 "value": "$EDGEHUB_HTTPSETTINGS_ENABLED"
               },
+              "TwinManagerVersion": {
+                "value": "v2"
+              },
               "LORA_BUILD_ID": {
                 "value": "$BUILD_BUILDID"
               }
