@@ -12,17 +12,29 @@ using static LoRaTools.LoRaMessage.LoRaPayloadData;
 
 namespace LoRaTools.LoRaMessage
 {
-    public enum LoRaMessageType
+    public enum LoRaMessageType:byte
     {
+        // Request sent by device to join
         JoinRequest,
-        JoinAccept,
-        UnconfirmedDataUp,
-        UnconfirmedDataDown,
-        ConfirmedDataUp,
-        ConfirmedDataDown,
-        RFU,
-        Proprietary
+
+        // Response to a join request sent to device
+        JoinAccept = 32,
+
+        // Device to cloud message, no confirmation expected
+        UnconfirmedDataUp = 64,
+
+        // Cloud to device message, no confirmation expected
+        UnconfirmedDataDown = 96,
+
+        // Device to cloud message, confirmation required
+        ConfirmedDataUp = 128,
+
+        // Cloud to device message, confirmation required
+        ConfirmedDataDown = 160
     }
+
+
+    [Obsolete("This class will be faded out at message processor refactory.")]
     /// <summary>
     /// class exposing Physical payload & LoRa Payload Message
     /// </summary>
@@ -51,7 +63,7 @@ namespace LoRaTools.LoRaMessage
         {
             PktFwdPayload = new UplinkPktFwdMessage(rxpk);
             byte[] convertedInputMessage = Convert.FromBase64String(rxpk.data);
-            var messageType = convertedInputMessage[0] >> 5;
+            var messageType = convertedInputMessage[0];
             LoRaMessageType = (LoRaMessageType)messageType;
             // Uplink Message
             if (messageType == (int)LoRaMessageType.UnconfirmedDataUp)
@@ -96,7 +108,7 @@ namespace LoRaTools.LoRaMessage
             /// 4 = Confirmed Data up
             /// 5 = Confirmed Data down
             /// 6 = Rejoin Request</param>
-            public LoRaMessageWrapper(Txpk txpk,string AppKey)
+            public LoRaMessageWrapper(Txpk txpk,string appKey)
         {
             if (txpk.data != null)
             {
@@ -105,7 +117,7 @@ namespace LoRaTools.LoRaMessage
                 LoRaMessageType = (LoRaMessageType)messageType;
                 if (messageType == (int)LoRaMessageType.JoinAccept)
                 {
-                    LoRaPayloadMessage = new LoRaPayloadJoinAccept(convertedInputMessage, AppKey);
+                    LoRaPayloadMessage = new LoRaPayloadJoinAccept(convertedInputMessage, appKey);
                 }
             }
         }
@@ -120,12 +132,11 @@ namespace LoRaTools.LoRaMessage
             var devEUI = payload.GetLoRaMessage().DevEUI;
             if (devEUI.Length != 0)
             {
-                Logger.Log(ConversionHelper.ByteArrayToString(devEUI.Span.ToArray()), $"{((MType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                Logger.Log(ConversionHelper.ByteArrayToString(devEUI.Span.ToArray()), $"{((LoRaMessageType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
             }else
             {
-                Logger.Log(ConversionHelper.ByteArrayToString(payload.DevAddr.Span.ToArray()), $"{((MType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                Logger.Log(ConversionHelper.ByteArrayToString(payload.DevAddr.Span.ToArray()), $"{((LoRaMessageType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
             }
-
         }
 
         /// <summary>
@@ -145,10 +156,10 @@ namespace LoRaTools.LoRaMessage
         /// <returns>a boolean telling if the MIC is valid or not</returns>
         public byte[] DecryptPayload(string appSkey)
         {
-            var retValue = LoRaPayloadMessage.PerformEncryption(appSkey);
-            return retValue;
+            if (LoRaPayloadMessage is LoRaPayloadData loRaPayloadData)
+                return loRaPayloadData.GetDecryptedPayload(appSkey);
+
+            return LoRaPayloadMessage.PerformEncryption(appSkey);
         }
     }
-
-
 }

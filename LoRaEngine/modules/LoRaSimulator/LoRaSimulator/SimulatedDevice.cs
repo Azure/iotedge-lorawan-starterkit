@@ -61,10 +61,9 @@ namespace LoRaSimulator
         public byte[] GetJoinRequest()
         {
             //create a join request
-            byte[] AppEUI = LoRaDevice.GetAppEUI();
-            Array.Reverse(AppEUI);
-            byte[] DevEUI = LoRaDevice.GetDevEUI();
-            Array.Reverse(DevEUI);
+            var AppEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(LoRaDevice.GetAppEUI());
+            var DevEUI = LoRaTools.Utils.ConversionHelper.ByteArrayToString(LoRaDevice.GetDevEUI());
+            
 
             byte[] DevNonce = new byte[2];
             if ((LoRaDevice.DevNonce == "") || (!isFirstJoinRequest))
@@ -108,7 +107,7 @@ namespace LoRaSimulator
             Array.Reverse(_payload);
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            LoRaPayloadData standardData = new LoRaPayloadData((LoRaPayloadData.MType)_mhbr[0], _devAddr, _FCtrl, _FCnt, _Fopts, _FPort, _payload, direction);
+            LoRaPayloadData standardData = new LoRaPayloadData((LoRaMessageType)_mhbr[0], _devAddr, _FCtrl, _FCnt, _Fopts, _FPort, _payload, direction);
             // Need to create Fops. If not, then MIC won't be correct
             standardData.Fopts = new byte[0];
             // First encrypt the data

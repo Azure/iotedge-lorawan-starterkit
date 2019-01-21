@@ -1,5 +1,7 @@
-﻿using LoRaTools.Utils;
+﻿using LoRaTools.LoRaPhysical;
+using LoRaTools.Utils;
 using LoRaWan;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -7,6 +9,7 @@ using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace LoRaTools.LoRaMessage
@@ -28,6 +31,49 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadData : LoRaPayload
     {
+
+
+
+        /// <summary>
+        /// Gets the LoRa payload fport as value
+        /// </summary>
+        public byte GetFPort()
+        {
+            byte fportUp = 0;
+            if (Fport.Span.Length > 0)
+            {
+                fportUp = (byte)Fport.Span[0];
+            }
+
+            return fportUp;
+        }  
+
+        /// <summary>
+        /// Gets the LoRa payload frame counter
+        /// </summary>
+        public UInt16 GetFcnt() => MemoryMarshal.Read<UInt16>(Fcnt.Span); 
+
+        /// <summary>
+        /// Gets the DevAdd netID
+        /// </summary>
+        public byte GetNetID() => (byte)(DevAddr.Span[0] & 0b01111111);
+        
+
+
+
+        /// <summary>
+        /// Gets if the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp)
+        /// </summary>
+        public bool IsConfirmed()
+        {
+            return this.LoRaMessageType == LoRaMessageType.ConfirmedDataDown || this.LoRaMessageType == LoRaMessageType.ConfirmedDataUp;
+        }
+
+        /// <summary>
+        /// Indicates if the payload is an confirmation message acknowledgement
+        /// </summary>
+        public bool IsUpwardAck() => (this.Fctrl.Span[0] & (byte)FctrlEnum.Ack) == 32;
+        
         /// <summary>
         /// Frame control octet
         /// </summary>
@@ -60,7 +106,10 @@ namespace LoRaTools.LoRaMessage
             return macHolder;
         }
 
-        /// <param name="inputMessage"></param>
+        /// <summary>
+        /// Upstream Constructor (decode a LoRa Message from existing array of bytes)
+        /// </summary>
+        /// <param name="inputMessage">the upstream Constructor</param>
         public LoRaPayloadData(byte[] inputMessage) : base(inputMessage)
         {
             // in this case the payload is not downlink of our type
@@ -71,6 +120,9 @@ namespace LoRaTools.LoRaMessage
             // address correct but inversed
             Array.Reverse(addrbytes);
             this.DevAddr = addrbytes;
+            this.LoRaMessageType = (LoRaMessageType)RawMessage[0];
+
+            Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // Fctrl Frame Control Octet
             this.Fctrl = new Memory<byte>(inputMessage,5,1);
             int foptsSize = this.Fctrl.Span[0] & 0x0f;
@@ -88,20 +140,22 @@ namespace LoRaTools.LoRaMessage
             this.Fport = new Memory<byte>(inputMessage,8+foptsSize,fportLength) ;
             // frmpayload
             this.Frmpayload = new Memory<byte>(inputMessage,8+fportLength+foptsSize, inputMessage.Length - 8- fportLength - 4 - foptsSize);
+            this.Mic = new Memory<byte>(inputMessage,inputMessage.Length-4,4);
         }
 
-        public enum MType
-        {
-            JoinRequest,
-            JoinAccept=32,
-            UnconfirmedDataUp=64,
-            UnconfirmedDataDown=96,
-            ConfirmedDataUp=128,
-            ConfirmedDataDown=160
 
-        }
-
-        public LoRaPayloadData(MType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, byte[] fOpts, byte[] fPort, byte[] frmPayload, int direction) : base()
+        /// <summary>
+        /// Downstream Constructor (build a LoRa Message)
+        /// </summary>
+        /// <param name="mhdr"></param>
+        /// <param name="devAddr"></param>
+        /// <param name="fctrl"></param>
+        /// <param name="fcnt"></param>
+        /// <param name="fOpts"></param>
+        /// <param name="fPort"></param>
+        /// <param name="frmPayload"></param>
+        /// <param name="direction"></param>
+        public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, byte[] fOpts, byte[] fPort, byte[] frmPayload, int direction) 
         {
             int fOptsLen = fOpts == null ? 0 : fOpts.Length;
             int frmPayloadLen = frmPayload == null ? 0 : frmPayload.Length;
@@ -111,6 +165,7 @@ namespace LoRaTools.LoRaMessage
             RawMessage = new byte[1 + macPyldSize + 4];
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
             RawMessage[0] = (byte)mhdr;
+            this.LoRaMessageType = mhdr;
            // Array.Copy(mhdr, 0, RawMessage, 0, 1);
             Array.Reverse(devAddr);
             DevAddr = new Memory<byte>(RawMessage, 1, 4);
@@ -157,21 +212,70 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
+        /// Serialize a message to be sent upstream.
+        /// </summary>
+        /// <param name="appSKey"></param>
+        /// <param name="nwkSKey"></param>
+        /// <param name="datr"></param>
+        /// <param name="freq"></param>
+        /// <param name="tmst"></param>
+        /// <returns></returns>
+        public UplinkPktFwdMessage SerializeUplink(string appSKey, string nwkSKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0)
+        {
+            PerformEncryption(appSKey);
+            SetMic(nwkSKey);
+            return new UplinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
+        }
+        /// Serialize a message to be sent downlink on the wire.
+        /// </summary>
+        /// <param name="appSKey">the app key used for encryption</param>
+        /// <param name="nwkSKey">the nwk key used for encryption</param>
+        /// <param name="datr">the calculated datarate</param>
+        /// <param name="freq">The frequency at which to be sent</param>
+        /// <param name="tmst">time stamp</param>
+        /// <param name="devEUI">the device EUI</param>
+        /// <returns>the Downlink message</returns>
+        public DownlinkPktFwdMessage Serialize(string appSKey,string nwkSKey, string datr, double freq, long tmst,string devEUI)
+        {
+            PerformEncryption(appSKey);
+            SetMic(nwkSKey);
+            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
+            if (Logger.LoggerLevel < Logger.LoggingLevel.Info)
+            {
+                var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
+               
+                if (devEUI.Length != 0)
+                {
+                    Logger.Log(devEUI, $"{((LoRaMessageType)(Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                }
+                else
+                {
+                    Logger.Log(ConversionHelper.ByteArrayToString(this.DevAddr.Span.ToArray()), $"{((LoRaMessageType)(Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                }
+            }
+
+            return downlinkPktFwdMessage;
+        }
+
+        /// <summary>
         /// Method to check if the mic is valid
         /// </summary>
         /// <param name="nwskey">the network security key</param>
         /// <returns>if the Mic is valid or not</returns>
         public override bool CheckMic(string nwskey)
         {
+            var byteMsg= this.GetByteMessage();
+ 
             IMac mac = MacUtilities.GetMac("AESCMAC");
             KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
             mac.Init(key);
             byte[] block =
-                {
-                0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, (byte)DevAddr.Span[3], (byte)DevAddr.Span[2], (byte)DevAddr.Span[1],
-                (byte)DevAddr.Span[0], Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)(RawMessage.Length - 4)
+            {
+            0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, (byte)DevAddr.Span[3], (byte)DevAddr.Span[2], (byte)DevAddr.Span[1],
+            (byte)DevAddr.Span[0], Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)(byteMsg.Length - 4)
             };
-            var algoinput = block.Concat(RawMessage.Take(RawMessage.Length - 4)).ToArray();
+            var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
+
             byte[] result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);
@@ -190,11 +294,13 @@ namespace LoRaTools.LoRaMessage
                 (byte)DevAddr.Span[0], Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)byteMsg.Length
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length)).ToArray();
-            byte[] result = new byte[16];
+
+            //byte[] result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            result = MacUtilities.DoFinal(mac);
-            var res = result.Take(4).ToArray();
-            Array.Copy(result.Take(4).ToArray(), 0, RawMessage, RawMessage.Length - 4, 4);
+            var result = MacUtilities.DoFinal(mac);
+            //var res = result.Take(4).ToArray();
+            //Array.Copy(result.Take(4).ToArray(), 0, RawMessage, RawMessage.Length - 4, 4);
+            Array.Copy(result, 0, RawMessage, RawMessage.Length - 4, 4);
             Mic = new Memory<byte>(RawMessage, RawMessage.Length - 4, 4);
         }
 
@@ -203,16 +309,20 @@ namespace LoRaTools.LoRaMessage
             this.DevAddr.Span.Reverse();
         }
 
+
         /// <summary>
-        /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py
+        /// Decrypts the payload value, without changing the <see cref="RawMessage"/>
         /// </summary>
-        public override byte[] PerformEncryption(string appSkey)
+        /// <remarks>
+        /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py</remarks>
+        /// <param name="appSKey"></param>
+        /// <returns></returns>
+        public byte[] GetDecryptedPayload(string appSkey)
         {
             if (!Frmpayload.Span.IsEmpty)
             {
                 AesEngine aesEngine = new AesEngine();
                 byte[] tmp = ConversionHelper.StringToByteArray(appSkey);
-
                 aesEngine.Init(true, new KeyParameter(tmp));
 
                 byte[] aBlock =
@@ -248,6 +358,22 @@ namespace LoRaTools.LoRaMessage
                         decrypted[bufferIndex + i] = (byte)(Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
                     }
                 }
+                return decrypted;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        ///  Replaces the <see cref="Frmpayload"/>, encrypting the values
+        /// </summary>
+        public override byte[] PerformEncryption(string appSkey)
+        {
+            if (!Frmpayload.Span.IsEmpty)
+            {
+                var decrypted = this.GetDecryptedPayload(appSkey);
                 Array.Copy(decrypted, 0, RawMessage, RawMessage.Length-4-decrypted.Length , decrypted.Length);
                 return decrypted;
             }
@@ -257,6 +383,7 @@ namespace LoRaTools.LoRaMessage
             }
         }
 
+        [Obsolete("This method is planned to be deprecated in the next versions. Please use LoRaPayload instead.")]
         public override byte[] GetByteMessage()
         {
             List<byte> messageArray = new List<byte>();

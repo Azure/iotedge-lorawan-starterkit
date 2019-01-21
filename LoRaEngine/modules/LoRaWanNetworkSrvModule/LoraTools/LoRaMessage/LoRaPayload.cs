@@ -1,15 +1,15 @@
-﻿using LoRaTools.Utils;
+﻿using LoRaTools.LoRaPhysical;
+using LoRaTools.Utils;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace LoRaTools.LoRaMessage
 {
+    public enum LoRaPayloadKeyType { NwkSkey=1, AppSKey=2}
     /// <summary>
     /// The LoRaPayloadWrapper class wraps all the information any LoRa message share in common
     /// </summary>
@@ -18,11 +18,10 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Used when calculating the Network and App SKey
         /// </summary>
-        public enum KeyType
-        {
-            NwkSKey = 1,
-            AppSKey = 2,
-        }
+        public LoRaPayloadKeyType KeyType;
+
+
+        public LoRaMessageType LoRaMessageType { get; set; }
 
         /// <summary>
         /// raw byte of the message
@@ -51,10 +50,10 @@ namespace LoRaTools.LoRaMessage
         /// <param name="inputMessage"></param>
         public LoRaPayload(byte[] inputMessage)
         {
-            RawMessage = inputMessage;       
-            Mhdr = new Memory<byte>(RawMessage,0,1);
+            RawMessage = inputMessage;
+            Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // MIC 4 last bytes
-            this.Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4,4);
+            this.Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4, 4);
         }
 
         /// <summary>
@@ -110,7 +109,7 @@ namespace LoRaTools.LoRaMessage
             Mic = result.Take(4).ToArray();
             return Mic.ToArray();
         }
-        
+
         /// <summary>
         /// Calculate the Netwok and Application Server Key used to encrypt data and compute MIC
         /// </summary>
@@ -120,7 +119,7 @@ namespace LoRaTools.LoRaMessage
         /// <param name="devnonce"></param>
         /// <param name="appKey"></param>
         /// <returns></returns>
-        public byte[] CalculateKey(KeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
+        public byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
             byte[] type = new byte[1];
             type[0] = (byte)keyType;
@@ -139,5 +138,34 @@ namespace LoRaTools.LoRaMessage
             return key;
         }
 
+        public static bool TryCreateLoRaPayload(Rxpk rxpk, out LoRaPayload loRaPayloadMessage)
+        {
+            byte[] convertedInputMessage = Convert.FromBase64String(rxpk.data);
+            var messageType = convertedInputMessage[0];
+
+            switch (messageType)
+            {
+                case (int)LoRaMessageType.UnconfirmedDataUp:
+                case (int)LoRaMessageType.ConfirmedDataUp:
+                    loRaPayloadMessage = new LoRaPayloadData(convertedInputMessage);
+                    break;
+
+                case (int)LoRaMessageType.JoinRequest:
+                    loRaPayloadMessage = new LoRaPayloadJoinRequest(convertedInputMessage);
+                    break;
+
+                default:
+                    loRaPayloadMessage = null;
+                    return false;
+            }
+
+            loRaPayloadMessage.LoRaMessageType = (LoRaMessageType)messageType;
+            return true;
+        }
+
+
     }
 }
+
+    
+

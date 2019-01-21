@@ -1,3 +1,4 @@
+using LoRaWan.Test.Shared;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -6,6 +7,7 @@ namespace LoRaWan.IntegrationTest
 {
     // Tests ABP requests
     [Collection(Constants.TestCollectionName)] // run in serial
+    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class ABPTest : IntegrationTestBase
     {
         public ABPTest(IntegrationTestFixture testFixture) : base(testFixture)
@@ -105,7 +107,9 @@ namespace LoRaWan.IntegrationTest
             await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
             // 05060708: device is not our device, ignore message
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{devAddrToUse}: device is not our device, ignore message");
+            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
+                $"{devAddrToUse}: device is not our device, ignore message",
+                $"{devAddrToUse}: device is not from our network, ignoring message");
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -122,7 +126,9 @@ namespace LoRaWan.IntegrationTest
             Assert.DoesNotContain("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
             // 05060708: device is not our device, ignore message
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{devAddrToUse}: device is not our device, ignore message");
+            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
+                $"{devAddrToUse}: device is not our device, ignore message",
+                $"{devAddrToUse}: device is not from our network, ignoring message");
 
         }
 
@@ -159,7 +165,7 @@ namespace LoRaWan.IntegrationTest
             //await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.lora.SerialLogs);
        
             // 0000000000000005: with devAddr 0028B1B0 check MIC failed. Device will be ignored from now on
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
+            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -171,8 +177,8 @@ namespace LoRaWan.IntegrationTest
 
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
-            // 0000000000000005: with devAddr 0028B1B0 check MIC failed. Device will be ignored from now on
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
+            // 0000000000000005: with devAddr 0028B1B0 check MIC failed
+            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");            
 
             // wait until arduino stops trying to send confirmed msg
             await this.ArduinoDevice.WaitForIdleAsync();
@@ -203,7 +209,7 @@ namespace LoRaWan.IntegrationTest
             await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
             // 0000000000000008: with devAddr 0028B1B3 check MIC failed. Device will be ignored from now on
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed. Device will be ignored from now on");
+            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
 
     
             this.TestFixture.ClearLogs();

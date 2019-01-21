@@ -1,4 +1,7 @@
-﻿using LoRaTools.Utils;
+﻿using LoRaTools.LoRaPhysical;
+using LoRaTools.Utils;
+using LoRaWan;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Parameters;
 using System;
@@ -44,6 +47,43 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public Memory<byte> Fcnt { get; set; }
 
+        public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, byte[] rxDelay, byte[] cfList)
+        {
+            int cfListLength = cfList == null ? 0 : cfList.Length;
+            RawMessage = new byte[1 + 12 + cfListLength];
+            Mhdr = new Memory<byte>(RawMessage, 0, 1);
+            Array.Copy(new byte[] { 32 }, 0, RawMessage, 0, 1);
+            AppNonce = new Memory<byte>(RawMessage, 1, 3);
+            Array.Copy(appNonce, 0, RawMessage, 1, 3);
+            NetID = new Memory<byte>(RawMessage, 4, 3);
+            Array.Copy(ConversionHelper.StringToByteArray(netId), 0, RawMessage, 4, 3);
+            DevAddr = new Memory<byte>(RawMessage, 7, 4);
+            Array.Copy(devAddr, 0, RawMessage, 7, 4);
+            DlSettings = new Memory<byte>(RawMessage, 11, 1);
+            Array.Copy(dlSettings, 0, RawMessage, 11, 1);
+            RxDelay = new Memory<byte>(RawMessage, 12, 1);
+            Array.Copy(rxDelay, 0, RawMessage, 12, 1);
+            // set payload Wrapper fields
+            if (cfListLength > 0)
+            {
+                CfList = new Memory<byte>(RawMessage, 13, cfListLength);
+                Array.Copy(cfList, 0, RawMessage, 13, cfListLength);
+            }
+            // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
+            Fcnt = BitConverter.GetBytes(0x01);
+            if (BitConverter.IsLittleEndian)
+            {
+                AppNonce.Span.Reverse();
+                NetID.Span.Reverse();
+                DevAddr.Span.Reverse();
+            }
+            var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
+            if (!CfList.Span.IsEmpty)
+                algoinput = algoinput.Concat(CfList.ToArray()).ToArray();
+
+           
+        }
+        [Obsolete("To be discontinued as part of messageProcessor refactor")]
         public LoRaPayloadJoinAccept(string netId, string appKey, byte[] devAddr, byte[] appNonce, byte[] dlSettings, byte[] rxDelay, byte[] cfList)
         {
             int cfListLength = cfList == null ? 0 : cfList.Length;
@@ -184,6 +224,31 @@ namespace LoRaTools.LoRaMessage
             throw new NotImplementedException();
         }
 
+        public  DownlinkPktFwdMessage Serialize( string appKey,string datr, double freq, long tmst, string devEUI)
+        {
+            var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
+            if (!CfList.Span.IsEmpty)
+                algoinput = algoinput.Concat(CfList.ToArray()).ToArray();
 
+            CalculateMic(appKey, algoinput);
+            PerformEncryption(appKey);
+
+            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
+            if (Logger.LoggerLevel < Logger.LoggingLevel.Info)
+            {
+                var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
+
+                if (devEUI.Length != 0)
+                {
+                    Logger.Log(devEUI, $"{((LoRaMessageType)(Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                }
+                else
+                {
+                    Logger.Log(ConversionHelper.ByteArrayToString(this.DevAddr.Span.ToArray()), $"{((LoRaMessageType)(Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                }
+            }
+
+            return downlinkPktFwdMessage;
+        }
     }
-}
+    }

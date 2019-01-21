@@ -1,6 +1,5 @@
 ﻿using LoRaWan;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -38,6 +37,9 @@ namespace LoRaTools.LoRaPhysical
             {11, -17.5 },
             {12, -20 }
         };
+
+        [JsonExtensionData]
+        public Dictionary<string, object> ExtraData { get; } = new Dictionary<string, object>();        
 
         /// <summary>
         /// Get the modulation margin for MAC Commands LinkCheck

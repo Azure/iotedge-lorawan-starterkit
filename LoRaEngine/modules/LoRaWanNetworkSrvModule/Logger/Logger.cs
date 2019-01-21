@@ -13,7 +13,7 @@ namespace LoRaWan
         const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
 
         public enum LoggingLevel : int { Always=0, Full, Info, Error };
-
+        public static LoggingLevel LoggerLevel => (LoggingLevel)configuration.LogLevel;
         static LoggerConfiguration configuration = new LoggerConfiguration();
         static volatile UdpClient udpClient;
         static IPEndPoint udpEndpoint;

@@ -1,8 +1,14 @@
+//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Azure.EventHubs;
@@ -81,6 +87,9 @@ namespace LoRaWan.IntegrationTest
         
         // Device19_ABP: used for C2D invalid fport testing
         public TestDeviceInfo Device19_ABP { get; private set; }
+
+        // Device20_OTAA: used for OTAA confirmed & unconfirmed messaging
+        public TestDeviceInfo Device20_OTAA { get; private set; }
 
         // Device1001_Simulated_ABP: used for ABP simulator
         public TestDeviceInfo Device1001_Simulated_ABP { get; private set; }
@@ -363,6 +372,17 @@ namespace LoRaWan.IntegrationTest
                 DevAddr = "00000019"
             };
 
+            // Device20_OTAA: used for join and rejoin test
+            this.Device20_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000020",
+                AppEUI = "0000000000000020",
+                AppKey = "00000000000000000000000000000020",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,                                      
+                SensorDecoder = "DecoderValueSensor",                           
+            };  
+
 
             // Simulated devices start at 1000
 
@@ -492,7 +512,9 @@ namespace LoRaWan.IntegrationTest
             return await GetRegistryManager().GetTwinAsync(deviceId);            
         }
 
-        internal async Task SendCloudToDeviceMessage(string deviceId, string messageText, Dictionary<String,String> messageProperties=null)
+        internal Task SendCloudToDeviceMessage(string deviceId, string messageText, Dictionary<String,String> messageProperties=null) => SendCloudToDeviceMessage(deviceId, null, messageText, messageProperties);
+
+        internal async Task SendCloudToDeviceMessage(string deviceId, string messageId, string messageText, Dictionary<String,String> messageProperties=null)
         {
             var msg = new Message(Encoding.UTF8.GetBytes(messageText));
             if (messageProperties != null)
@@ -502,6 +524,12 @@ namespace LoRaWan.IntegrationTest
                     msg.Properties.Add(messageProperty.Key, messageProperty.Value);
                 }
             }
+
+            if (!string.IsNullOrEmpty(messageId))
+            {
+                msg.MessageId = messageId;
+            }
+
             await SendCloudToDeviceMessage(deviceId, msg);
         }
 

@@ -1,4 +1,5 @@
 ﻿using LoRaTools.LoRaPhysical;
+using LoRaTools.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,110 @@ namespace LoRaTools.Regions
 
     public class Region
     {
+        static readonly Region eu;
+        static readonly Region us;
+
+        static Region()
+        {
+            #region EU region
+            eu = new Region(
+                RegionEnum.EU,
+                0x34,
+                 ConversionHelper.StringToByteArray("C194C1"),
+                 (frequency: 869.525, datr: 0),
+                 1,
+                 2,
+                 5,
+                 6,
+                 16384,
+                 64,
+                 32,
+                 (min: 1, max: 3)
+
+                );
+            eu.DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
+            eu.DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
+            eu.DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 59));
+            eu.DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 123));
+            eu.DRtoConfiguration.Add(4, (configuration: "SF8BW125", maxPyldSize: 230));
+            eu.DRtoConfiguration.Add(5, (configuration: "SF7BW125", maxPyldSize: 230));
+            eu.DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 230));
+            eu.DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 230)); //USED FOR GFSK
+
+            eu.TXPowertoMaxEIRP.Add(0, "16");
+            eu.TXPowertoMaxEIRP.Add(1, "2");
+            eu.TXPowertoMaxEIRP.Add(2, "4");
+            eu.TXPowertoMaxEIRP.Add(3, "6");
+            eu.TXPowertoMaxEIRP.Add(4, "8");
+            eu.TXPowertoMaxEIRP.Add(5, "10");
+            eu.TXPowertoMaxEIRP.Add(6, "12");
+            eu.TXPowertoMaxEIRP.Add(7, "14");
+
+            eu.RX1DROffsetTable = new int[8, 6]{
+            { 0,0,0,0,0,0},
+            { 1,0,0,0,0,0},
+            { 2,1,0,0,0,0},
+            { 3,2,1,0,0,0},
+            { 4,3,2,1,0,0},
+            { 5,4,3,2,1,0},
+            { 6,5,4,3,2,1},
+            { 7,6,5,4,3,2} };
+            #endregion
+
+            #region US region
+            us = new Region(
+                RegionEnum.US,
+                0x34,
+                 null, //no GFSK in US Band
+                 (frequency: 923.3, datr: 8),
+                 1,
+                 2,
+                 5,
+                 6,
+                 16384,
+                 64,
+                 32,
+                 (min: 1, max: 3)
+
+                );
+            us.DRtoConfiguration.Add(0, (configuration: "SF10BW125", maxPyldSize: 19));
+            us.DRtoConfiguration.Add(1, (configuration: "SF9BW125", maxPyldSize: 61));
+            us.DRtoConfiguration.Add(2, (configuration: "SF8BW125", maxPyldSize: 133));
+            us.DRtoConfiguration.Add(3, (configuration: "SF7BW125", maxPyldSize: 250));
+            us.DRtoConfiguration.Add(4, (configuration: "SF8BW500", maxPyldSize: 250));
+            us.DRtoConfiguration.Add(8, (configuration: "SF12BW500", maxPyldSize: 61));
+            us.DRtoConfiguration.Add(9, (configuration: "SF11BW500", maxPyldSize: 137));
+            us.DRtoConfiguration.Add(10, (configuration: "SF10BW500", maxPyldSize: 250));
+            us.DRtoConfiguration.Add(11, (configuration: "SF9BW500", maxPyldSize: 250));
+            us.DRtoConfiguration.Add(12, (configuration: "SF8BW500", maxPyldSize: 250));
+            us.DRtoConfiguration.Add(13, (configuration: "SF7BW500", maxPyldSize: 250));
+
+            for (uint i = 0; i < 15; i++)
+            {
+                us.TXPowertoMaxEIRP.Add(i, (30 - i).ToString());
+            }
+
+
+            us.RX1DROffsetTable = new int[5, 4]{
+            { 10,9,8,8},
+            { 11,10,9,8},
+            { 12,11,10,9},
+            { 13,12,11,10},
+            { 13,13,12,11},
+            };
+            #endregion
+        }
+
+        /// <summary>
+        /// Gets European region
+        /// </summary>
+        public static Region EU => eu;
+
+        /// <summary>
+        /// Gets North American region
+        /// </summary>
+        public static Region US => us;
+
         public RegionEnum RegionEnum { get; set; }
         public byte LoRaSyncWord { get; private set; }
         public byte[] GFSKSyncWord { get; private set; }

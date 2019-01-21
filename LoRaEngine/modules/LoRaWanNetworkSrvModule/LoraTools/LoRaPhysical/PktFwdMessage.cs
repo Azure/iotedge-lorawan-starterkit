@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LoRaTools.Regions;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -37,6 +38,7 @@ namespace LoRaTools.LoRaPhysical
 
         }
 
+        [Obsolete("This constructor will be faded out at message processor refactory")]
         public DownlinkPktFwdMessage(string data, string datr = "SF12BW125", uint rfch = 0, double freq = 869.525000, long tmst = 0)
         {
             var byteData = Convert.FromBase64String(data);
@@ -58,6 +60,30 @@ namespace LoRaTools.LoRaPhysical
             };
         }
 
+        /// <summary>
+        /// This method is used in case of a response to a upstream message.
+        /// </summary>
+        /// <returns>DownlinkPktFwdMessage object ready to be sent</returns>
+        public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, long tmst = 0)
+        {          
+            txpk = new Txpk()
+            {
+                imme = tmst == 0 ? true : false,
+                tmst = tmst,
+                data = Convert.ToBase64String(loRaData),
+                size = (uint)loRaData.Length,
+                freq = freq,
+                rfch = 0,
+                modu = "LORA",
+                datr = datr,
+                codr = "4/5",
+                //TODO put 14 for EU               
+                powe = 14,
+                ipol = true
+            };
+        }
+
+
         public override PktFwdMessageAdapter GetPktFwdMessage()
         {
             PktFwdMessageAdapter pktFwdMessageAdapter = new PktFwdMessageAdapter();
@@ -70,13 +96,47 @@ namespace LoRaTools.LoRaPhysical
     /// </summary>
     public class UplinkPktFwdMessage : PktFwdMessage
     {
-        public List<Rxpk> rxpk = new List<Rxpk>();
+        public List<Rxpk> rxpk;
 
-        public UplinkPktFwdMessage(Rxpk rxpkInput){
-            rxpk= new List<Rxpk>(){
+        public UplinkPktFwdMessage()
+        {
+            rxpk = new List<Rxpk>();
+        }
+
+        public UplinkPktFwdMessage(Rxpk rxpkInput)
+        {
+            rxpk = new List<Rxpk>()
+            {
                 rxpkInput
             };
         }
+
+
+        /// <summary>
+        /// This method is used in case of a request to a upstream message.
+        /// </summary>
+        /// <param name="LoraMessage">the serialized LoRa Message.</param>
+        /// <returns>UplinkPktFwdMessage object ready to be sent</returns>
+        public UplinkPktFwdMessage(byte[] loRaData, string datr, double freq, uint tmst = 0)
+        {
+            // This is a new ctor, must be validated by MIK
+            rxpk = new List<Rxpk>() 
+            {
+                new Rxpk()
+                {                   
+                    tmst = tmst,
+                    data = Convert.ToBase64String(loRaData),
+                    size = (uint)loRaData.Length,
+                    freq = freq,
+                    //TODO check this,
+                    rfch = 1,
+                    modu = "LORA",
+                    datr = datr,
+                    codr = "4/5"
+                }
+            };            
+        }
+
         public override PktFwdMessageAdapter GetPktFwdMessage()
         {
             PktFwdMessageAdapter pktFwdMessageAdapter = new PktFwdMessageAdapter();

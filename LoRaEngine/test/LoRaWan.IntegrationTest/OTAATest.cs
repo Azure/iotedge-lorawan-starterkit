@@ -8,6 +8,7 @@ namespace LoRaWan.IntegrationTest
 {
     // Tests OTAA requests
     [Collection(Constants.TestCollectionName)] // run in serial
+    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class OTAATest : IntegrationTestBase
     {
 
@@ -41,7 +42,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN); 
 
             // Sends 10x unconfirmed messages            
-            for (var i=0; i < MESSAGES_COUNT; ++i)
+            for (var i=0; i < MESSAGES_COUNT; ++i)            
             {
                 Console.WriteLine($"Starting sending OTTA unconfirmed message {i+1}/{MESSAGES_COUNT}");
                 this.TestFixture.ClearLogs();
@@ -100,8 +101,6 @@ namespace LoRaWan.IntegrationTest
                 await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
-
-
             }
         }
     }

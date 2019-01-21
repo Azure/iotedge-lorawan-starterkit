@@ -10,12 +10,14 @@ using System.Threading.Tasks;
 using LoRaTools;
 using LoRaTools.LoRaMessage;
 using LoRaTools.LoRaPhysical;
+using LoRaWan.Test.Shared;
 using Xunit;
 
 namespace LoRaWan.IntegrationTest
 {
     // Tests ABP requests
     [Collection(Constants.TestCollectionName)] // run in serial
+    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class SimulatorTestCollection : IntegrationTestBase
     {
         private readonly TimeSpan intervalBetweenMessages;
@@ -124,7 +126,8 @@ namespace LoRaWan.IntegrationTest
         }
 
 
-        //[Fact]
+        
+        [Fact(Skip = "simulated")]
         public async Task Simulated_Http_Based_Decoder_Scenario()
         {
             var device = this.TestFixture.Device1003_Simulated_HttpBasedDecoder;
