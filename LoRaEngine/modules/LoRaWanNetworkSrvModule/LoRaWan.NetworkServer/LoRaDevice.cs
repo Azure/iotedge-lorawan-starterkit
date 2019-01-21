@@ -12,7 +12,7 @@ using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 using Newtonsoft.Json;
 
-namespace LoRaWan.NetworkServer.V2
+namespace LoRaWan.NetworkServer
 {
     public sealed class LoRaDevice : IDisposable
     {

@@ -6,7 +6,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace LoRaWan.NetworkServer.V2
+namespace LoRaWan.NetworkServer
 {
     /// <summary>
     /// Loads devices for join requests

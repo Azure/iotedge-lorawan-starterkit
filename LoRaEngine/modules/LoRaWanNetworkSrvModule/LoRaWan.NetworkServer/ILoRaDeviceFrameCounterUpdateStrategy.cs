@@ -6,7 +6,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace LoRaWan.NetworkServer.V2
+namespace LoRaWan.NetworkServer
 {
     // Defines a contract to handle device frame counters
     // A device has 2 frame counters

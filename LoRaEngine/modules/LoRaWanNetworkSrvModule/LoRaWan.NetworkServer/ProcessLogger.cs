@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace LoRaWan.NetworkServer.V2
+namespace LoRaWan.NetworkServer
 {
     // Helper class to log process operations
     internal sealed class ProcessLogger : IDisposable

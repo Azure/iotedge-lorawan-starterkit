@@ -4,26 +4,21 @@
 //
 
 using LoRaTools.LoRaMessage;
-using LoRaTools.LoRaPhysical;
 using LoRaTools.Regions;
 using LoRaTools.Utils;
-using LoRaWan.NetworkServer.V2;
 using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Caching.Memory;
 using Moq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
 
 namespace LoRaWan.NetworkServer.Test
-{    
+{
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Only join tests
     public class MessageProcessor_End2End_NoDep_Join_Tests : MessageProcessorTestBase
@@ -120,7 +115,7 @@ namespace LoRaWan.NetworkServer.Test
             
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 frameCounterUpdateStrategyFactory,
@@ -265,7 +260,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
 
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 frameCounterUpdateStrategyFactory,
@@ -362,7 +357,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
 
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 frameCounterUpdateStrategyFactory,
@@ -420,7 +415,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
 
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 frameCounterUpdateStrategyFactory,
@@ -495,7 +490,7 @@ namespace LoRaWan.NetworkServer.Test
             var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 frameCounterUpdateStrategyFactory,
@@ -557,7 +552,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
 
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 frameCounterUpdateStrategyFactory,

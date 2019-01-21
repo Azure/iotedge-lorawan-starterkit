@@ -1,8 +1,11 @@
-﻿using LoRaTools.LoRaMessage;
+﻿//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+using LoRaTools.LoRaMessage;
 using LoRaTools.LoRaPhysical;
 using LoRaTools.Regions;
 using LoRaWan.NetworkServer;
-using LoRaWan.NetworkServer.V2;
 using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
@@ -68,14 +71,14 @@ namespace LoRaWan.NetworkServer.Test
             this.FrameCounterUpdateStrategy.Setup(x => x.SaveChangesAsync(loraDevice2)).ReturnsAsync(true);
 
             // Send to message processor
-            var messageProcessor1 = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor1 = new MessageProcessor(
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
                 payloadDecoder.Object
                 );
 
-            var messageProcessor2 = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor2 = new MessageProcessor(
                 new NetworkServerConfiguration() { GatewayID = "test-gateway-2" },
                 this.loRaDeviceRegistry2.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,

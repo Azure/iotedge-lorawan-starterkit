@@ -8,7 +8,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 
-namespace LoRaWan.NetworkServer.V2
+namespace LoRaWan.NetworkServer
 {
     public class LoRaDeviceFactory : ILoRaDeviceFactory
     {

@@ -3,7 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 using LoRaTools.Regions;
-using LoRaWan.NetworkServer.V2;
+using LoRaWan.NetworkServer;
 using System;
 using Xunit;
 

@@ -2,13 +2,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
-
-
-
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using LoRaWan.NetworkServer.V2;
+using LoRaWan.NetworkServer;
 using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Shared;
@@ -56,7 +53,7 @@ namespace LoRaWan.NetworkServer.Test
             var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 frameCounterUpdateStrategyFactory,
@@ -172,7 +169,7 @@ namespace LoRaWan.NetworkServer.Test
             var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 frameCounterUpdateStrategyFactory,
@@ -273,7 +270,7 @@ namespace LoRaWan.NetworkServer.Test
             var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 frameCounterUpdateStrategyFactory,

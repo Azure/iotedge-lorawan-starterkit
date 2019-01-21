@@ -1,6 +1,10 @@
-﻿using LoRaTools.LoRaMessage;
+﻿//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+using LoRaTools.LoRaMessage;
 using LoRaTools.Utils;
-using LoRaWan.NetworkServer.V2;
+using LoRaWan.NetworkServer;
 using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Caching.Memory;
@@ -41,7 +45,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(() => null);
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
@@ -89,7 +93,7 @@ namespace LoRaWan.NetworkServer.Test
 
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
@@ -156,7 +160,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(() => loRaDevice);
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
@@ -198,7 +202,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(() => loRaDevice);
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
@@ -243,7 +247,7 @@ namespace LoRaWan.NetworkServer.Test
 
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
@@ -284,7 +288,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(() => loRaDevice);
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
@@ -367,7 +371,7 @@ namespace LoRaWan.NetworkServer.Test
             }
 
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyFactory.Object,
@@ -427,7 +431,7 @@ namespace LoRaWan.NetworkServer.Test
             var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
             
             // Send to message processor
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyFactory.Object,

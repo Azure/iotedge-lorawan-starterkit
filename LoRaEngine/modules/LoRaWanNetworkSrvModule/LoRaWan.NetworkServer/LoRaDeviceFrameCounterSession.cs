@@ -5,7 +5,7 @@
 
 using System;
 
-namespace LoRaWan.NetworkServer.V2
+namespace LoRaWan.NetworkServer
 {
     /// <summary>
     /// <see cref="LoRaDevice"/> frame counter session

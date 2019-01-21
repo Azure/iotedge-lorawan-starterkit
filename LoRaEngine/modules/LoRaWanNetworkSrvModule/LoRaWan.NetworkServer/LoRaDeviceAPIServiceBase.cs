@@ -4,7 +4,7 @@
 //
 using System.Threading.Tasks;
 
-namespace LoRaWan.NetworkServer.V2
+namespace LoRaWan.NetworkServer
 {
     /// <summary>
     /// LoRa Device API contract

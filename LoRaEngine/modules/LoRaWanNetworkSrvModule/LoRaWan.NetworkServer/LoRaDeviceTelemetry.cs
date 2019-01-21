@@ -8,7 +8,7 @@ using LoRaTools.LoRaMessage;
 using LoRaTools.LoRaPhysical;
 using Newtonsoft.Json;
 
-namespace LoRaWan.NetworkServer.V2
+namespace LoRaWan.NetworkServer
 {
     // Represents the device telemetry that will be sent to IoT Hub
     public class LoRaDeviceTelemetry

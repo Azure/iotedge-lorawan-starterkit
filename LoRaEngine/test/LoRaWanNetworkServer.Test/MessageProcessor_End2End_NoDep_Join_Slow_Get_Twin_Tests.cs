@@ -5,7 +5,7 @@
 
 using LoRaTools.LoRaMessage;
 using LoRaTools.Utils;
-using LoRaWan.NetworkServer.V2;
+using LoRaWan.NetworkServer;
 using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices.Shared;
 using Microsoft.Extensions.Caching.Memory;
@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
 
-            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+            var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 frameCounterUpdateStrategyFactory,

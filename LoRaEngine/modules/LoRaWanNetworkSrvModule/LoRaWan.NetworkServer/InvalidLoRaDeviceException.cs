@@ -5,7 +5,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace LoRaWan.NetworkServer.V2
+namespace LoRaWan.NetworkServer
 {
     /// <summary>
     /// Defines a error loading a LoRaDevice

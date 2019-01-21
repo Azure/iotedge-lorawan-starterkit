@@ -6,7 +6,7 @@
 using LoRaTools.Regions;
 using System;
 
-namespace LoRaWan.NetworkServer.V2
+namespace LoRaWan.NetworkServer
 {
     /// <summary>
     /// Timer for LoRa operations

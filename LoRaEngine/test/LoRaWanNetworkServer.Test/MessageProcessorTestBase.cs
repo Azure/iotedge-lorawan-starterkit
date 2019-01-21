@@ -1,8 +1,11 @@
-﻿using LoRaTools.LoRaMessage;
+﻿//
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
+using LoRaTools.LoRaMessage;
 using LoRaTools.LoRaPhysical;
 using LoRaTools.Regions;
 using LoRaWan.NetworkServer;
-using LoRaWan.NetworkServer.V2;
 using LoRaWan.Test.Shared;
 using Moq;
 using System;
