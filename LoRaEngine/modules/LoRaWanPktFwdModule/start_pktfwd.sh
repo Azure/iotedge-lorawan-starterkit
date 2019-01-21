@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#get current pkt fwd region
 if [ -z "$REGION" ]; then
      echo "No region detected in environment variables, defaulting to EU" 
 else
@@ -13,5 +14,28 @@ else
         fi
     fi
 fi
+
 ./reset_lgw.sh start $RESET_PIN
-./lora_pkt_fwd
+
+#get current architecture for the mess processor
+arch="$(uname -m)"
+if [[ $arch != *"arm"* ]]; then
+    if [ -z "$SPI_DEV" ]; then
+        echo "No SPI Dev version detected in environment variables on x86, defaulting to SPI Dev 2" 
+        ./lora_pkt_fwd_spidev2
+    else
+        if [ "$SPI_DEV" == "2" ]; then
+            echo "Using SPI dev 2 from environment variables" 
+            ./lora_pkt_fwd_spidev2
+        else 
+            if [ "$SPI_DEV" == "1" ]; then
+                echo "Using SPI dev 1 from environment variables"
+                ./lora_pkt_fwd_spidev1
+            else
+                echo "SPI_DEV variables not valid in a x86 architecture. Please select a valid value (1 or 2)."
+            fi
+        fi
+    fi
+else
+    ./lora_pkt_fwd
+fi  

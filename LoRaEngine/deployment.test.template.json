@@ -131,6 +131,9 @@
               },
               "REGION": {
                 "value": "$REGION"
+              },
+              "PKT_FWD_SPI_DEV":{
+                "value":"$SPI_DEV"
               }
             },
             "version": "1.0",

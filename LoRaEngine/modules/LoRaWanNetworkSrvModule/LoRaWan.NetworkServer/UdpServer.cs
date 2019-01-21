@@ -207,7 +207,7 @@ namespace LoRaWan.NetworkServer
                     await this.UdpSendMessage(pyld.GetMessage(), remoteIp, pullAckRemoteLoRaAggregatorPort);
                     Logger.Log("UDP", String.Format("message sent with ID {0}",
                         ConversionHelper.ByteArrayToString(token)),
-                        Logger.LoggingLevel.Full);
+                        Logger.LoggingLevel.Info);
                 }
             }
             catch (Exception ex)
