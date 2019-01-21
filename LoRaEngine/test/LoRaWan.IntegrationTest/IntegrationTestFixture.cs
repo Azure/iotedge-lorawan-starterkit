@@ -198,7 +198,6 @@ namespace LoRaWan.IntegrationTest
             this.Device5_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000005",
-                AppEUI = "0000000000000005",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
@@ -211,7 +210,6 @@ namespace LoRaWan.IntegrationTest
             this.Device6_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000006",
-                AppEUI = "0000000000000006",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = false,
@@ -224,7 +222,6 @@ namespace LoRaWan.IntegrationTest
             this.Device7_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000007",
-                AppEUI = "0000000000000007",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
@@ -237,7 +234,6 @@ namespace LoRaWan.IntegrationTest
             this.Device8_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000008",
-                AppEUI = "0000000000000008",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
@@ -324,7 +320,6 @@ namespace LoRaWan.IntegrationTest
             this.Device16_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000016",
-                AppEUI = "0000000000000016",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
@@ -337,7 +332,6 @@ namespace LoRaWan.IntegrationTest
             this.Device17_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000017",
-                AppEUI = "0000000000000017",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
@@ -350,7 +344,6 @@ namespace LoRaWan.IntegrationTest
             this.Device18_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000018",
-                AppEUI = "0000000000000018",
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,                                      
                 SensorDecoder = "DecoderValueSensor",  
@@ -363,7 +356,6 @@ namespace LoRaWan.IntegrationTest
             this.Device19_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000019",
-                AppEUI = "0000000000000019",                
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,                                      
                 SensorDecoder = "DecoderValueSensor",  
@@ -391,7 +383,6 @@ namespace LoRaWan.IntegrationTest
             this.Device1001_Simulated_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000001001",
-                AppEUI = "0000000000000018",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
@@ -428,8 +419,6 @@ namespace LoRaWan.IntegrationTest
                     new TestDeviceInfo
                     {
                         DeviceID = deviceID.ToString("0000000000000000"),
-                        AppEUI = deviceID.ToString("0000000000000000"),
-                        AppKey = deviceID.ToString("00000000000000000000000000000000"),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
