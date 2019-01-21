@@ -206,8 +206,8 @@ namespace LoRaWan.NetworkServer.V2
                         // In multi gateway scenarios it means the another gateway was faster than using, can stop now
                         if (fcntDown <= 0)
                         {
-                            // update our fcntup anyway
-                            loRaDevice.SetFcntUp(payloadFcnt);
+                            // update our fcntup anyway?
+                            //loRaDevice.SetFcntUp(payloadFcnt);
 
                             Logger.Log(loRaDevice.DevEUI, "another gateway has already sent ack or downlink msg", Logger.LoggingLevel.Info);
 

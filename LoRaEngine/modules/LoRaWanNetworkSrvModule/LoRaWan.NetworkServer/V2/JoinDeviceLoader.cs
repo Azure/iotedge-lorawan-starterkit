@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.V2
         }
 
         // Waits until device is created
-        internal Task<LoRaDevice> WaitComplete() => loading;
+        internal Task<LoRaDevice> WaitCompleteAsync() => loading;
 
         async Task<LoRaDevice> LoadAsync()
         {

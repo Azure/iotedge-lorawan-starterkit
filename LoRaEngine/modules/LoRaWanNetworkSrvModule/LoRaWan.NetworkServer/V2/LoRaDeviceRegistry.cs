@@ -258,7 +258,7 @@ namespace LoRaWan.NetworkServer.V2
 
                 var matchingDeviceInfo = searchDeviceResult.Devices[0];
                 var loader = GetOrAddJoinDeviceLoader(matchingDeviceInfo);
-                var loRaDevice = await loader.WaitComplete();
+                var loRaDevice = await loader.WaitCompleteAsync();
                 if (!loader.CanCache)
                     RemoveJoinDeviceLoader(devEUI);
 
@@ -270,76 +270,7 @@ namespace LoRaWan.NetworkServer.V2
                 return null;
             }
         }
-
-        /// <summary>
-        /// Searchs for devices that match the join request
-        /// </summary>
-        /// <param name="devEUI"></param>
-        /// <param name="appEUI"></param>
-        /// <param name="devNonce"></param>        
-        /// <returns></returns>
-        public async Task<LoRaDevice> GetDeviceForJoinRequestAsyncOld(string devEUI, string appEUI, string devNonce)
-        {
-            if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(appEUI) || string.IsNullOrEmpty(devNonce))
-            {
-                Logger.Log(devEUI, "join refused: missing devEUI/AppEUI/DevNonce in request", Logger.LoggingLevel.Error);
-                return null;
-            }
-
-            Logger.Log(devEUI, "querying the registry for OTTA device", Logger.LoggingLevel.Info);
-
-            try
-            {
-                var searchDeviceResult = await this.loRaDeviceAPIService.SearchAndLockForJoinAsync(
-                    gatewayID: configuration.GatewayID,
-                    devEUI: devEUI,
-                    appEUI: appEUI,
-                    devNonce: devNonce);
-
-                if (searchDeviceResult.IsDevNonceAlreadyUsed)
-                {
-                    Logger.Log(devEUI, $"join refused: DevNonce already used by this device", Logger.LoggingLevel.Info);
-                    return null;
-                }
-
-                if (searchDeviceResult.Devices == null || !searchDeviceResult.Devices.Any())
-                {
-                    Logger.Log(devEUI, "join refused: no devices found matching join request", Logger.LoggingLevel.Info);
-                    return null;
-                }
-
-                var matchingDeviceInfo = searchDeviceResult.Devices[0];
-                var loRaDevice = this.deviceFactory.Create(matchingDeviceInfo);
-                if (loRaDevice != null)
-                {
-                    try
-                    {
-                        Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", Logger.LoggingLevel.Info);
-                        if (await loRaDevice.InitializeAsync())
-                        {
-                            //AddToPendingJoinRequests(loRaDevice);
-                            Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
-                        }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        // problem initializing the device (get twin timeout, etc)
-                        // remove it from the cache
-                        Logger.Log(loRaDevice.DevEUI, $"join refused: error initializing OTAA device. {ex.Message}", Logger.LoggingLevel.Error);
-
-                        loRaDevice = null;
-                    }
-                }
-
-                return loRaDevice;
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(devEUI, $"failed to get join devices from api. {ex.Message}", Logger.LoggingLevel.Error);
-                return null;
-            }
-        }
+        
 
         /// <summary>
         /// Updates a device after a successful login

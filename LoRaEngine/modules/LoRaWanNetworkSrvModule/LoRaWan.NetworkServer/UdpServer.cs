@@ -403,7 +403,7 @@ namespace LoRaWan.NetworkServer
             {
 
 
-                if (desiredProperties["FacadeServerUrl"] != null)
+                if (desiredProperties.Contains("FacadeServerUrl"))
                 {
 #if USE_MESSAGE_PROCESSOR_V2
                     this.loRaDeviceAPIService.SetURL((string)desiredProperties["FacadeServerUrl"]);
@@ -413,7 +413,7 @@ namespace LoRaWan.NetworkServer
                 }
 
 
-                if (desiredProperties["FacadeAuthCode"] != null)
+                if (desiredProperties.Contains("FacadeAuthCode"))
                 {
 #if USE_MESSAGE_PROCESSOR_V2
                     this.loRaDeviceAPIService.SetAuthCode((string)desiredProperties["FacadeAuthCode"]);

@@ -128,7 +128,7 @@ namespace LoRaWan.NetworkServer.V2
                 {
                     var badReqResult = await response.Content.ReadAsStringAsync();
 
-                    if (!String.IsNullOrEmpty(badReqResult) && badReqResult == "UsedDevNonce")
+                    if (!string.IsNullOrEmpty(badReqResult) && string.Equals(badReqResult, "UsedDevNonce", StringComparison.InvariantCultureIgnoreCase))
                     {
                         Logger.Log(devEUI ?? string.Empty, $"DevNonce already used by this device", Logger.LoggingLevel.Info);
                         return new SearchDevicesResult
@@ -138,7 +138,7 @@ namespace LoRaWan.NetworkServer.V2
                     }
                 }
                 
-                Logger.Log(devAddr, $"error calling façade api: {response.ReasonPhrase} check the azure function log", Logger.LoggingLevel.Error);
+                Logger.Log(devAddr, $"error calling façade api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", Logger.LoggingLevel.Error);
 
                 // TODO: FBE check if we return null or throw exception
                 return new SearchDevicesResult();

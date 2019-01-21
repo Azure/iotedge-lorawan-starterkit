@@ -44,11 +44,7 @@ namespace LoRaWan.NetworkServer.V2
             if (result > 0)
             {
                 loRaDevice.SetFcntDown(result);
-            }
-            else
-            {
-                Logger.Log(loRaDevice.DevEUI, $"another gateway has already sent ack or downlink msg", Logger.LoggingLevel.Info);
-            }
+            }            
 
             return result;
         }

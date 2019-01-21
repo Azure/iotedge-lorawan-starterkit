@@ -396,5 +396,49 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0, cachedDevice.FCntDown);
             Assert.False(cachedDevice.HasFrameCountChanges);
         }
+
+
+        [Fact]        
+        public async Task When_Api_Returns_DevAlreadyUsed_Should_Return_Null()
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: null));
+            var joinRequest = simulatedDevice.CreateJoinRequest();
+
+            // Create Rxpk
+            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
+
+            var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
+
+            var devNonce = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequest.DevNonce);
+            var devAddr = string.Empty;
+            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+            var appEUI = simulatedDevice.LoRaDevice.AppEUI;
+
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            
+            // Lora device api will be search by devices with matching deveui,
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+            loRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, appEUI, devNonce))
+                .ReturnsAsync(new SearchDevicesResult(){ IsDevNonceAlreadyUsed = true });            
+
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
+            
+            // Send to message processor
+            var messageProcessor = new LoRaWan.NetworkServer.V2.MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyFactory.Object,
+                payloadDecoder.Object
+                );
+
+            var downlinkMessage = await messageProcessor.ProcessMessageAsync(rxpk);
+            Assert.Null(downlinkMessage);
+
+            loRaDeviceApi.VerifyAll();
+            loRaDeviceClient.VerifyAll();
+        }
     }
 }
