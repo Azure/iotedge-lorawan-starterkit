@@ -46,7 +46,7 @@
         "storageAccountType": "Standard_LRS",
         "functionAppName": "[concat(parameters('uniqueSolutionPrefix'), 'function')]",
         "gitUsername": "Azure",
-        "gitRepoUrl": "[concat('https://github.com/',variables('gitUsername'),'/iotedge-lorawan-starterkit.git')]",
+        "functionZipBinary": "https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v0.3.0-preview/function-2018-12-16-preview.zip",
         "gitBranch": "master",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "iotHubOwnerPolicyName": "iothubowner",
@@ -101,19 +101,7 @@
                 "[resourceId('Microsoft.Cache/Redis', variables('redisCacheName'))]"
             ],
             "resources": [
-                {
-                    "apiVersion": "2016-08-01",
-                    "name": "web",
-                    "type": "sourcecontrols",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]"
-                    ],
-                    "properties": {
-                        "repoUrl": "[variables('gitRepoUrl')]",
-                        "branch": "[variables('gitBranch')]",
-                        "IsManualIntegration": true
-                    }
-                }
+               
             ],
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
@@ -160,10 +148,6 @@
                             "value": "6.5.0"
                         },
                         {
-                            "name": "PROJECT",
-                            "value": "LoRaEngine/LoraKeysManagerFacade/LoraKeysManagerFacade.csproj"
-                        },
-                        {
                             "name": "FACADE_HOST_NAME",
                             "value": "[variables('functionAppName')]"
                         },
@@ -178,6 +162,10 @@
                         {
                             "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
                             "value": "[reference(concat('microsoft.insights/components/', variables('appInsightName'))).InstrumentationKey]"
+                        },
+                        {
+                            "name": "WEBSITE_RUN_FROM_ZIP",
+                            "value": "[variables('functionZipBinary')]"
                         }
                     ]
                 }
@@ -188,7 +176,7 @@
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2015-01-01",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/sites/sourcecontrols', variables('functionAppName'),'web')]"
+                "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -225,7 +213,7 @@
             "dependsOn": []
         },
         {
-            "apiVersion": "2015-08-01",
+            "apiVersion": "2018-03-01",
             "name": "[variables('redisCacheName')]",
             "type": "Microsoft.Cache/Redis",
             "location": "[resourceGroup().location]",
