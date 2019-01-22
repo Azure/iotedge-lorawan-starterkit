@@ -84,13 +84,15 @@ namespace LoRaWan.IntegrationTest
 
         // Verifies that ABP using wrong devAddr is ignored when sending messages
         // Uses Device6_ABP
-        [Fact]
-        public async Task Test_ABP_Wrong_DevAddr_Is_Ignored()
+        [Theory]
+        [InlineData("05060708")]
+        [InlineData("02060708")]
+        public async Task Test_ABP_Wrong_DevAddr_Is_Ignored(string devAddrToUse)
         {
             var device = this.TestFixture.Device6_ABP;
             LogTestStart(device);
 
-            var devAddrToUse = "05060708";
+    
             Assert.NotEqual(devAddrToUse, device.DevAddr);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(devAddrToUse, device.DeviceID, null);
@@ -105,11 +107,20 @@ namespace LoRaWan.IntegrationTest
             // After transferPacket: Expectation from serial
             // +MSG: Done                        
             await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
-
-            // 05060708: device is not our device, ignore message
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
-                $"{devAddrToUse}: device is not our device, ignore message",
-                $"{devAddrToUse}: device is not from our network, ignoring message");
+            if (devAddrToUse.StartsWith("02"))
+            {
+                // 02060708: device is not our device, ignore message
+                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
+                    $"{devAddrToUse}: device is not our device, ignore message",
+                    $"{devAddrToUse}: device is not from our network, ignoring message");
+            }
+            else
+            {
+                // 05060708: device is using another network id, ignoring this message
+                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
+                 $"{devAddrToUse}: device is using another network id, ignoring this message"
+             );
+            }
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -125,10 +136,20 @@ namespace LoRaWan.IntegrationTest
             // +CMSG: ACK Received -- should not be there!
             Assert.DoesNotContain("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
-            // 05060708: device is not our device, ignore message
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
-                $"{devAddrToUse}: device is not our device, ignore message",
-                $"{devAddrToUse}: device is not from our network, ignoring message");
+            if (devAddrToUse.StartsWith("02"))
+            {
+                // 02060708: device is not our device, ignore message
+                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
+                    $"{devAddrToUse}: device is not our device, ignore message",
+                    $"{devAddrToUse}: device is not from our network, ignoring message");
+            }
+            else
+            {
+                // 05060708: device is using another network id, ignoring this message
+                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
+                 $"{devAddrToUse}: device is using another network id, ignoring this message"
+             );
+            }
 
         }
 
