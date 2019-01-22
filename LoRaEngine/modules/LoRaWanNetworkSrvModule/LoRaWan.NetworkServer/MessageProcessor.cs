@@ -605,10 +605,8 @@ namespace LoRaWan.NetworkServer
         {
             var netIdBytes = BitConverter.GetBytes(netId);
             devAddrNwkid = (byte)(devAddrNwkid >> 1);
-            if (devAddrNwkid.Equals(netIdBytes[0] & 0b01111111))
-                return true;
-            else
-                return false;
+            return (devAddrNwkid.Equals(netIdBytes[0] & 0b01111111));
+  
         }
 
 
