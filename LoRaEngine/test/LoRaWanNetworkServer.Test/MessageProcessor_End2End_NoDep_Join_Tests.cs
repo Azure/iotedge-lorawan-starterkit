@@ -31,15 +31,15 @@ namespace LoRaWan.NetworkServer.Test
 
 
         [Theory]
-        [InlineData(MessageProcessorTestBase.ServerGatewayID, 200, 50, 0)]
-        [InlineData(MessageProcessorTestBase.ServerGatewayID, 200, 50, 17)]
-        [InlineData(MessageProcessorTestBase.ServerGatewayID, 0, 0, 0)]        
-        [InlineData(MessageProcessorTestBase.ServerGatewayID, 0, 0, 27)]
-        [InlineData(null, 200, 50, 0)]
-        [InlineData(null, 200, 50, 37)]
-        [InlineData(null, 0, 0, 0)]
-        [InlineData(null, 0, 0, 47)]
-        public async Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, int initialFcntUp, int initialFcntDown, int startingPayloadFcnt)
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, 200, 50, 0, 0)]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, 200, 50, 17, 1)]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, 0, 0, 0, 255)]
+        [InlineData(MessageProcessorTestBase.ServerGatewayID, 0, 0, 27, 125)]
+        [InlineData(null, 200, 50, 0, 1000)]
+        [InlineData(null, 200, 50, 37, 28)]
+        [InlineData(null, 0, 0, 0, 23)]
+        [InlineData(null, 0, 0, 47, 10000)]
+        public async Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, int initialFcntUp, int initialFcntDown, int startingPayloadFcnt,uint netId)
         {         
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
@@ -47,14 +47,13 @@ namespace LoRaWan.NetworkServer.Test
             // Create Rxpk
             var joinRxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
             
-
             var devNonce = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequest.DevNonce);
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
             var appEUI = simulatedDevice.LoRaDevice.AppEUI;
 
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-
+            ServerConfiguration.NetId = netId;
             // Device twin will be queried
             var twin = new Twin();
             twin.Properties.Desired[TwinProperty.DevEUI] = devEUI;
@@ -134,7 +133,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(afterJoinAppSKey, loRaDevice.AppSKey);
             Assert.Equal(afterJoinNwkSKey, loRaDevice.NwkSKey);
             Assert.Equal(afterJoinDevAddr, loRaDevice.DevAddr);
-
+            var netIdBytes=BitConverter.GetBytes(netId);           
+            Assert.Equal((uint)(netIdBytes[0]&0b01111111),LoRaTools.Utils.NetIdHelper.GetNwkIdPart(afterJoinDevAddr));
             if (deviceGatewayID == null)
                 Assert.Null(loRaDevice.GatewayID);
             else

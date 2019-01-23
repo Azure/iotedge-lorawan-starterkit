@@ -118,7 +118,7 @@ namespace CreateDeviceFunction
                 await manager.AddDeviceAsync(ABPDevice);
                 Twin ABPTwin = new Twin();
                 ABPTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:''," +
-                "DevAddr:'0028B1B1',SensorDecoder:'DecoderValueSensor'}");
+                "DevAddr:'0228B1B1',SensorDecoder:'DecoderValueSensor'}");
                 var ABPRemoteTwin = await manager.GetTwinAsync(ABPdeviceId);
                 await manager.UpdateTwinAsync(ABPdeviceId, ABPTwin, ABPRemoteTwin.ETag);
             }

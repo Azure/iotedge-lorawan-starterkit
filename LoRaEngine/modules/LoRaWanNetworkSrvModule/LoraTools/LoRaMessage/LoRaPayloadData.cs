@@ -56,7 +56,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets the DevAdd netID
         /// </summary>
-        public byte GetNetID() => (byte)(DevAddr.Span[0] & 0b01111111);
+        public byte GetDevAddrNetID() => (byte)(DevAddr.Span[0] & 0b11111110);
         
 
 

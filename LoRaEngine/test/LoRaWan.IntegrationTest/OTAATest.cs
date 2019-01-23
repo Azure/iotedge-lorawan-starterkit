@@ -44,7 +44,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 10x unconfirmed messages            
             for (var i=0; i < MESSAGES_COUNT; ++i)            
             {
-                Console.WriteLine($"Starting sending OTTA unconfirmed message {i+1}/{MESSAGES_COUNT}");
+                Console.WriteLine($"Starting sending OTAA unconfirmed message {i+1}/{MESSAGES_COUNT}");
                 this.TestFixture.ClearLogs();
 
                 var msg = PayloadGenerator.Next().ToString();

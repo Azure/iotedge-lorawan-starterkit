@@ -4,7 +4,7 @@
 bool confirmed = true;
 //application information, should be similar to what was provisiionned in the device twins
 char * deviceId = "46AAC86800430028";
-char * devAddr = "0028B1B1";
+char * devAddr = "0228B1B1";
 char * appSKey = "2B7E151628AED2A6ABF7158809CF4F3C";
 char * nwkSKey = "3B7E151628AED2A6ABF7158809CF4F3C";
 

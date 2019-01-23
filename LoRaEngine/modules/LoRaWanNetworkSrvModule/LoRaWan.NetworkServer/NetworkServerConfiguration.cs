@@ -68,6 +68,9 @@ namespace LoRaWan.NetworkServer
         // Gets/sets udp port to send logs
         public int LogToUdpPort { get; set; } = 6000;
 
+        // Gets/sets gateway NetId
+        public uint NetId { get; set; } = 1;
+
         // Creates a new instance of NetworkServerConfiguration
         public NetworkServerConfiguration()
         {    
@@ -98,6 +101,7 @@ namespace LoRaWan.NetworkServer
             config.LogToUdp = envVars.GetEnvVar("LOG_TO_UDP", config.LogToUdp);
             config.LogToUdpAddress = envVars.GetEnvVar("LOG_TO_UDP_ADDRESS", string.Empty);
             config.LogToUdpPort = envVars.GetEnvVar("LOG_TO_UDP_PORT", config.LogToUdpPort);
+            config.NetId = envVars.GetEnvVar("NETID", config.NetId);
 
             return config;
         }

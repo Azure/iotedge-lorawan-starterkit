@@ -3,6 +3,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
+using LoRaTools.Utils;
 using System;
 using System.Collections.Generic;
 
@@ -80,7 +81,6 @@ namespace LoRaWan.Test.Shared
             return desiredProperties;
         }
 
-
         /// <summary>
         /// Creates a <see cref="TestDeviceInfo"/> with ABP authentication
         /// </summary>
@@ -89,7 +89,7 @@ namespace LoRaWan.Test.Shared
         /// <param name="gatewayID"></param>
         /// <param name="sensorDecoder"></param>
         /// <returns></returns>
-        public static TestDeviceInfo CreateABPDevice(UInt32 deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor")
+        public static TestDeviceInfo CreateABPDevice(UInt32 deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor",uint netId=1)
         {
             var value8 =  deviceID.ToString("00000000");
             var value16 = deviceID.ToString("0000000000000000");
@@ -102,6 +102,7 @@ namespace LoRaWan.Test.Shared
                 value32 = string.Concat(prefix, value32.Substring(prefix.Length));
             }
 
+            var devAddrValue = NetIdHelper.SetNwkIdPart(value8,netId);
             var result = new TestDeviceInfo
             {
                 DeviceID = value16,
@@ -109,7 +110,7 @@ namespace LoRaWan.Test.Shared
                 SensorDecoder = sensorDecoder,
                 AppSKey = value32,
                 NwkSKey = value32,
-                DevAddr = value8,
+                DevAddr = devAddrValue,
             };
 
             return result;
