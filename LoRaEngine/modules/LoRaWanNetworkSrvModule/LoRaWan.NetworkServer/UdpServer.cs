@@ -215,7 +215,7 @@ namespace LoRaWan.NetworkServer
                     {
                         Logger.Log("UDP", 
                             "Waiting for first pull_ack message from the packet forwarder. The received message was discarded as the network server is still starting.",
-                            Logger.LoggingLevel.Error);
+                            Logger.LoggingLevel.Info);
                     }
                 }
             }
