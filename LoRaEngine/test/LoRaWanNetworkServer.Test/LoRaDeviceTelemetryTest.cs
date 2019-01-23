@@ -17,25 +17,25 @@ namespace LoRaWan.NetworkServer.Test
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: fcnt, fport: fport);
-            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var decodedValue = new { value=1 };
 
             var target = new LoRaDeviceTelemetry(rxpk, payload, decodedValue);
-            Assert.Equal(rxpk.chan, target.Chan);
-            Assert.Equal(rxpk.codr, target.Codr);
-            Assert.Equal(rxpk.data, target.Rawdata);
+            Assert.Equal(rxpk.Chan, target.Chan);
+            Assert.Equal(rxpk.Codr, target.Codr);
+            Assert.Equal(rxpk.Data, target.Rawdata);
             Assert.Equal(decodedValue, target.Data);
-            Assert.Equal(rxpk.datr, target.Datr);
-            Assert.Equal(rxpk.freq, target.Freq);
-            Assert.Equal(rxpk.lsnr, target.Lsnr);
-            Assert.Equal(rxpk.modu, target.Modu);
-            Assert.Equal(rxpk.rfch, target.Rfch);
-            Assert.Equal(rxpk.rssi, target.Rssi);
-            Assert.Equal(rxpk.size, target.Size);
-            Assert.Equal(rxpk.stat, target.Stat);
-            Assert.Equal(rxpk.time, target.Time);
-            Assert.Equal(rxpk.tmms, target.Tmms);
-            Assert.Equal(rxpk.tmst, target.Tmst);
+            Assert.Equal(rxpk.Datr, target.Datr);
+            Assert.Equal(rxpk.Freq, target.Freq);
+            Assert.Equal(rxpk.Lsnr, target.Lsnr);
+            Assert.Equal(rxpk.Modu, target.Modu);
+            Assert.Equal(rxpk.Rfch, target.Rfch);
+            Assert.Equal(rxpk.Rssi, target.Rssi);
+            Assert.Equal(rxpk.Size, target.Size);
+            Assert.Equal(rxpk.Stat, target.Stat);
+            Assert.Equal(rxpk.Time, target.Time);
+            Assert.Equal(rxpk.Tmms, target.Tmms);
+            Assert.Equal(rxpk.Tmst, target.Tmst);
             Assert.Equal(payload.GetFcnt(), target.Fcnt);
             Assert.Equal(payload.GetFPort(), target.Port);
         }

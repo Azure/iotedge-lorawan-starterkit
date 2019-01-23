@@ -1,57 +1,86 @@
-﻿using LoRaWan;
-using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.LoRaPhysical
 {
+    using System.Collections.Generic;
+    using System.Text;
+    using LoRaWan;
+    using Newtonsoft.Json;
+
     public class Rxpk
     {
-        public string time;
-        public uint tmms;
-        public uint tmst;
-        public double freq; //868
-        public uint chan;
-        public uint rfch;
-        public int stat;
-        public string modu;
-        public string datr;
-        public string codr;
-        public int rssi;
-        public float lsnr;
-        public uint size;
-        public string data;
+        [JsonProperty("time")]
+        public string Time { get; set; }
+
+        [JsonProperty("tmms")]
+        public uint Tmms { get; set; }
+
+        [JsonProperty("tmst")]
+        public uint Tmst { get; set; }
+
+        [JsonProperty("freq")]
+        public double Freq { get; set; }
+
+        [JsonProperty("chan")]
+        public uint Chan { get; set; }
+
+        [JsonProperty("rfch")]
+        public uint Rfch { get; set; }
+
+        [JsonProperty("stat")]
+        public int Stat { get; set; }
+
+        [JsonProperty("modu")]
+        public string Modu { get; set; }
+
+        [JsonProperty("datr")]
+        public string Datr { get; set; }
+
+        [JsonProperty("codr")]
+        public string Codr { get; set; }
+
+        [JsonProperty("rssi")]
+        public int Rssi { get; set; }
+
+        [JsonProperty("lsnr")]
+        public float Lsnr { get; set; }
+
+        [JsonProperty("size")]
+        public uint Size { get; set; }
+
+        [JsonProperty("data")]
+        public string Data { get; set; }
 
         /// <summary>
         /// Required Signal-to-noise ratio to demodulate a LoRa signal given a spread Factor
         /// Spreading Factor -> Required SNR
         /// taken from https://www.semtech.com/uploads/documents/DS_SX1276-7-8-9_W_APP_V5.pdf
         /// </summary>
-        private Dictionary<int, double> SpreadFactorToSNR = new Dictionary<int, double>()
+        private readonly Dictionary<int, double> spreadFactorToSNR = new Dictionary<int, double>()
          {
             { 6,  -5 },
             { 7, -7.5 },
-            {8,  -10 },
-            {9, -12.5 },
-            {10, -15 },
-            {11, -17.5 },
-            {12, -20 }
+            { 8,  -10 },
+            { 9, -12.5 },
+            { 10, -15 },
+            { 11, -17.5 },
+            { 12, -20 }
         };
 
         [JsonExtensionData]
-        public Dictionary<string, object> ExtraData { get; } = new Dictionary<string, object>();        
+        public Dictionary<string, object> ExtraData { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Get the modulation margin for MAC Commands LinkCheck
         /// </summary>
         /// <param name="input">the input physical rxpk from the packet</param>
-        /// <returns></returns>
         public uint GetModulationMargin()
         {
-            //required SNR:
-            var requiredSNR = SpreadFactorToSNR[int.Parse(datr.Substring(datr.IndexOf("SF") + 2, datr.IndexOf("BW") - 1 - datr.IndexOf("SF") + 2))];
-            //get the minimum
-            uint margin = (uint)(lsnr - requiredSNR);
+            // required SNR:
+            var requiredSNR = this.spreadFactorToSNR[int.Parse(this.Datr.Substring(this.Datr.IndexOf("SF") + 2, this.Datr.IndexOf("BW") - 1 - this.Datr.IndexOf("SF") + 2))];
+            // get the minimum
+            uint margin = (uint)(this.Lsnr - requiredSNR);
             if (margin < 0)
                 margin = 0;
             return margin;
@@ -65,19 +94,19 @@ namespace LoRaTools.LoRaPhysical
         /// <returns>List of rxpk or null if no Rxpk was found</returns>
         public static List<Rxpk> CreateRxpk(byte[] inputMessage)
         {
-            PhysicalPayload PhysicalPayload = new PhysicalPayload(inputMessage);
-            if (PhysicalPayload.message != null)
+            PhysicalPayload physicalPayload = new PhysicalPayload(inputMessage);
+            if (physicalPayload.Message != null)
             {
-                var payload = Encoding.UTF8.GetString(PhysicalPayload.message);
+                var payload = Encoding.UTF8.GetString(physicalPayload.Message);
                 if (!payload.StartsWith("{\"stat"))
                 {
                     Logger.Log($"Physical dataUp {payload}", Logger.LoggingLevel.Full);
                     var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
                     if (payloadObject != null)
                     {
-                        if (payloadObject.rxpk != null)
+                        if (payloadObject.Rxpk != null)
                         {
-                            return payloadObject.rxpk;
+                            return payloadObject.Rxpk;
                         }
                     }
                 }
@@ -86,8 +115,8 @@ namespace LoRaTools.LoRaPhysical
                     Logger.Log($"Statistic: {payload}", Logger.LoggingLevel.Full);
                 }
             }
+
             return new List<Rxpk>();
         }
     }
-
 }

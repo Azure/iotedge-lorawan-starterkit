@@ -111,7 +111,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello", fcnt: payloadFcntUp);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.Null(unconfirmedMessageResult);
 
@@ -234,7 +234,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello", fcnt: payloadFcntUp);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.Null(unconfirmedMessageResult);
 
@@ -313,7 +313,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
 
             var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.Null(unconfirmedMessageResult);
@@ -381,7 +381,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
 
             var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.Null(unconfirmedMessageResult);
@@ -448,7 +448,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
 
             var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.Null(unconfirmedMessageResult);
@@ -472,7 +472,7 @@ namespace LoRaWan.NetworkServer.Test
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             simulatedDevice.FrmCntUp = initialFcntUp;
             var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fctrl: (byte)FctrlEnum.Ack);
-            var ackRxpk = ackMessage.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var ackRxpk = ackMessage.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
             if (msgId != null)
@@ -570,19 +570,19 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("repeat", fcnt: 100);
-            var rxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var rxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var confirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
 
             // ack should be received
             Assert.NotNull(confirmedMessageResult);
-            Assert.NotNull(confirmedMessageResult.txpk);
+            Assert.NotNull(confirmedMessageResult.Txpk);
 
             // validates txpk according to eu region
-            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(rxpk), confirmedMessageResult.txpk.freq);
-            Assert.Equal("4/5", confirmedMessageResult.txpk.codr);
-            Assert.False(confirmedMessageResult.txpk.imme);
-            Assert.True(confirmedMessageResult.txpk.ipol);
-            Assert.Equal("LORA", confirmedMessageResult.txpk.modu);
+            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(rxpk), confirmedMessageResult.Txpk.Freq);
+            Assert.Equal("4/5", confirmedMessageResult.Txpk.Codr);
+            Assert.False(confirmedMessageResult.Txpk.Imme);
+            Assert.True(confirmedMessageResult.Txpk.Ipol);
+            Assert.Equal("LORA", confirmedMessageResult.Txpk.Modu);
 
             // Expected changes to fcnt:
             // FcntDown => expectedFcntDown
@@ -667,17 +667,17 @@ namespace LoRaWan.NetworkServer.Test
 
             // Unconfirmed message #1 should fail
             var unconfirmedRxpk1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1)
-                .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+                .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             Assert.Null(await messageProcessor.ProcessMessageAsync(unconfirmedRxpk1));
 
             // Unconfirmed message #2 should fail
             var unconfirmedRxpk2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2)
-                .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+                .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             Assert.Null(await messageProcessor.ProcessMessageAsync(unconfirmedRxpk2));
 
             // Unconfirmed message #3 should succeed
             var unconfirmedRxpk3 = simulatedDevice.CreateUnconfirmedDataUpMessage("3", fcnt: 3)
-                .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+                .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             Assert.Null(await messageProcessor.ProcessMessageAsync(unconfirmedRxpk3));
 
             deviceClient.VerifyAll();
@@ -737,16 +737,16 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("1234");
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
-            rxpk.rfch = rfch;
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+            rxpk.Rfch = rfch;
             var confirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.NotNull(confirmedMessageResult);
-            Assert.Equal(0U, confirmedMessageResult.txpk.rfch);
-            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(rxpk), confirmedMessageResult.txpk.freq);
-            Assert.Equal("4/5", confirmedMessageResult.txpk.codr);
-            Assert.False(confirmedMessageResult.txpk.imme);
-            Assert.True(confirmedMessageResult.txpk.ipol);
-            Assert.Equal("LORA", confirmedMessageResult.txpk.modu);
+            Assert.Equal(0U, confirmedMessageResult.Txpk.Rfch);
+            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(rxpk), confirmedMessageResult.Txpk.Freq);
+            Assert.Equal("4/5", confirmedMessageResult.Txpk.Codr);
+            Assert.False(confirmedMessageResult.Txpk.Imme);
+            Assert.True(confirmedMessageResult.Txpk.Ipol);
+            Assert.Equal("LORA", confirmedMessageResult.Txpk.Modu);
 
             loRaDeviceClient.VerifyAll();
             loRaDeviceApi.VerifyAll();
@@ -800,7 +800,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello");
-            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.Null(unconfirmedMessageResult);
 
@@ -865,7 +865,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // send 1st unconfirmed message, get twin will fail
             var unconfirmedMessage1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
-            var unconfirmedMessage1Rxpk = unconfirmedMessage1.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var unconfirmedMessage1Rxpk = unconfirmedMessage1.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var unconfirmedMessageResult1 = await messageProcessor.ProcessMessageAsync(unconfirmedMessage1Rxpk);
             Assert.Null(unconfirmedMessageResult1);
 
@@ -874,7 +874,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends 2nd unconfirmed message, now get twin will work
             var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2);
-            var unconfirmedMessage2Rxpk = unconfirmedMessage2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var unconfirmedMessage2Rxpk = unconfirmedMessage2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var unconfirmedMessageResult2 = await messageProcessor.ProcessMessageAsync(unconfirmedMessage2Rxpk);
             Assert.Null(unconfirmedMessageResult2);
 
@@ -907,8 +907,8 @@ namespace LoRaWan.NetworkServer.Test
             const int firstMessageFcnt = 3;
             const int secondMessageFcnt = 4;
             const string wrongNwkSKey = "00000000000000000000000000001234";
-            var unconfirmedMessageWithWrongMic = simulatedDevice.CreateUnconfirmedDataUpMessage("123", fcnt: firstMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, wrongNwkSKey).rxpk[0];
-            var unconfirmedMessageWithCorrectMic = simulatedDevice.CreateUnconfirmedDataUpMessage("456", fcnt: secondMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var unconfirmedMessageWithWrongMic = simulatedDevice.CreateUnconfirmedDataUpMessage("123", fcnt: firstMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, wrongNwkSKey).Rxpk[0];
+            var unconfirmedMessageWithCorrectMic = simulatedDevice.CreateUnconfirmedDataUpMessage("456", fcnt: secondMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
 
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;

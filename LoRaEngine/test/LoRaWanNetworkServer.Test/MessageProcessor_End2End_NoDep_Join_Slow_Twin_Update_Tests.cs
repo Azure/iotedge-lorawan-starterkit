@@ -19,8 +19,6 @@ namespace LoRaWan.NetworkServer.Test
         /// <summary>
         /// Verifies that if the update twin takes too long that no join accepts are sent
         /// </summary>
-        /// <param name="deviceGatewayID"></param>
-        /// <returns></returns>
         [Theory]
         [InlineData(ServerGatewayID)]
         [InlineData(null)]
@@ -31,8 +29,8 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest2 = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var joinRequestRxpk1 = joinRequest1.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
-            var joinRequestRxpk2 = joinRequest2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
+            var joinRequestRxpk1 = joinRequest1.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
+            var joinRequestRxpk2 = joinRequest2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var joinRequestDevNonce1 = joinRequest1.GetDevNonceAsString();
             var joinRequestDevNonce2 = joinRequest2.GetDevNonceAsString();

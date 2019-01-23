@@ -29,7 +29,7 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).rxpk[0];
+            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).Rxpk[0];
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -65,7 +65,7 @@ namespace LoRaWan.NetworkServer.Test
             loRaDevice.SetFcntUp(20);
 
             // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
+            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -95,7 +95,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var pktFwdMessage = actual.GetPktFwdMessage();
             Assert.NotNull(pktFwdMessage.Txpk);
-            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(pktFwdMessage.Txpk.data), loRaDevice.AppKey);
+            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(pktFwdMessage.Txpk.Data), loRaDevice.AppKey);
             Assert.Equal(joinAccept.DevAddr.ToArray(), this.ByteArray(loRaDevice.DevAddr).ToArray());
 
             // Device properties were set with the computes values of the join operation
@@ -135,7 +135,7 @@ namespace LoRaWan.NetworkServer.Test
             loRaDevice.SetFcntUp(20);
 
             // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).rxpk[0];
+            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).Rxpk[0];
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -177,7 +177,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var wrongAppKey = "00000000030000000000000000030000";
             // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(wrongAppKey).rxpk[0];
+            var rxpk = joinRequest.SerializeUplink(wrongAppKey).Rxpk[0];
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -213,7 +213,7 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).rxpk[0];
+            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).Rxpk[0];
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -252,7 +252,7 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).rxpk[0];
+            var rxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).Rxpk[0];
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -291,7 +291,7 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
+            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -355,7 +355,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var downlinkMessage = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.NotNull(downlinkMessage);
-            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkMessage.txpk.data), simulatedDevice.LoRaDevice.AppKey);
+            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
 
             // check that the device is in cache
@@ -383,7 +383,7 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
+            var rxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 

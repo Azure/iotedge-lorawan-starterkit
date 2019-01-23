@@ -33,22 +33,22 @@ namespace LoRaWan.Test.Shared
 
             this.Rxpk = rxpk ?? new Rxpk()
             {
-                chan = 7,
-                rfch = 1,
-                freq = 903.700000,
-                stat = 1,
-                modu = "LORA",
-                datr = "SF10BW125",
-                codr = "4/5",
-                rssi = -17,
-                lsnr = 12.0f
+                Chan = 7,
+                Rfch = 1,
+                Freq = 903.700000,
+                Stat = 1,
+                Modu = "LORA",
+                Datr = "SF10BW125",
+                Codr = "4/5",
+                Rssi = -17,
+                Lsnr = 12.0f
             };
         }
 
         string CreateMessagePacket(byte[] data)
         {
-            this.Rxpk.data = Convert.ToBase64String(data);
-            this.Rxpk.size = (uint)data.Length;
+            this.Rxpk.Data = Convert.ToBase64String(data);
+            this.Rxpk.Size = (uint)data.Length;
             // tmst it is time in micro seconds
             var now = DateTimeOffset.UtcNow;
             var tmst = (now.UtcTicks - this.TimeAtBoot) / (TimeSpan.TicksPerMillisecond / 1000);
@@ -58,7 +58,7 @@ namespace LoRaWan.Test.Shared
                 this.TimeAtBoot = now.UtcTicks - tmst;
             }
 
-            this.Rxpk.tmst = Convert.ToUInt32(tmst);
+            this.Rxpk.Tmst = Convert.ToUInt32(tmst);
 
             return JsonConvert.SerializeObject(this.Rxpk);
         }

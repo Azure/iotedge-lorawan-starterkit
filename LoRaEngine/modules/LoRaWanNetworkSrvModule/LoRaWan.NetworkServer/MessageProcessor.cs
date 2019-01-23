@@ -419,7 +419,7 @@ namespace LoRaWan.NetworkServer
                 {
                     Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device MAC command received", Logger.LoggingLevel.Info);
                     MacCommandHolder macCommandHolder = new MacCommandHolder(Convert.ToByte(cidTypeValue));
-                    macbytes = macCommandHolder.macCommand[0].ToBytes();
+                    macbytes = macCommandHolder.MacCommand[0].ToBytes();
                 }
 
                 if (cloudToDeviceMessage.Properties.TryGetValueCaseInsensitive("confirmed", out var confirmedValue) && confirmedValue.Equals("true", StringComparison.OrdinalIgnoreCase))
@@ -480,7 +480,7 @@ namespace LoRaWan.NetworkServer
             long tmst;
             if (receiveWindow == 2)
             {
-                tmst = rxpk.tmst + this.loraRegion.receive_delay2 * 1000000;
+                tmst = rxpk.Tmst + this.loraRegion.Receive_delay2 * 1000000;
 
                 if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
                 {
@@ -501,7 +501,7 @@ namespace LoRaWan.NetworkServer
             {
                 datr = this.loraRegion.GetDownstreamDR(rxpk);
                 freq = this.loraRegion.GetDownstreamChannel(rxpk);
-                tmst = rxpk.tmst + this.loraRegion.receive_delay1 * 1000000;
+                tmst = rxpk.Tmst + this.loraRegion.Receive_delay1 * 1000000;
             }
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
@@ -551,16 +551,16 @@ namespace LoRaWan.NetworkServer
             }
 
             var macCommand = loRaPayloadData.GetMacCommands();
-            if (macCommand.macCommand.Count > 0)
+            if (macCommand.MacCommand.Count > 0)
             {
                 eventProperties = eventProperties ?? new Dictionary<string, string>();
 
-                for (int i = 0; i < macCommand.macCommand.Count; i++)
+                for (int i = 0; i < macCommand.MacCommand.Count; i++)
                 {
-                    eventProperties[macCommand.macCommand[i].Cid.ToString()] = JsonConvert.SerializeObject(macCommand.macCommand[i], Formatting.None);
+                    eventProperties[macCommand.MacCommand[i].Cid.ToString()] = JsonConvert.SerializeObject(macCommand.MacCommand[i], Formatting.None);
 
                     // in case it is a link check mac, we need to send it downstream.
-                    if (macCommand.macCommand[i].Cid == CidEnum.LinkCheckCmd)
+                    if (macCommand.MacCommand[i].Cid == CidEnum.LinkCheckCmd)
                     {
                         // linkCheckCmdResponse = new LinkCheckCmd(rxPk.GetModulationMargin(), 1).ToBytes();
                     }
@@ -690,12 +690,12 @@ namespace LoRaWan.NetworkServer
                     freq = this.loraRegion.GetDownstreamChannel(rxpk);
 
                     // set tmst for the normal case
-                    tmst = rxpk.tmst + this.loraRegion.join_accept_delay1 * 1000000;
+                    tmst = rxpk.Tmst + this.loraRegion.Join_accept_delay1 * 1000000;
                 }
                 else
                 {
                     Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", Logger.LoggingLevel.Info);
-                    tmst = rxpk.tmst + this.loraRegion.join_accept_delay2 * 1000000;
+                    tmst = rxpk.Tmst + this.loraRegion.Join_accept_delay2 * 1000000;
                     if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
                     {
                         Logger.Log(devEUI, $"using standard second receive windows for join request", Logger.LoggingLevel.Info);

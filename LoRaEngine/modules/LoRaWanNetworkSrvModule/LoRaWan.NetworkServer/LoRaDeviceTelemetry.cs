@@ -83,21 +83,21 @@ namespace LoRaWan.NetworkServer
             if (rxpk.ExtraData != null)
                 this.ExtraData = new Dictionary<string, object>(rxpk.ExtraData);
 
-            this.Chan = rxpk.chan;
-            this.Codr = rxpk.codr;
+            this.Chan = rxpk.Chan;
+            this.Codr = rxpk.Codr;
             this.Data = payloadData;
-            this.Rawdata = rxpk.data;
-            this.Datr = rxpk.datr;
-            this.Freq = rxpk.freq;
-            this.Lsnr = rxpk.lsnr;
-            this.Modu = rxpk.modu;
-            this.Rfch = rxpk.rfch;
-            this.Rssi = rxpk.rssi;
-            this.Size = rxpk.size;
-            this.Stat = rxpk.stat;
-            this.Time = rxpk.time;
-            this.Tmms = rxpk.tmms;
-            this.Tmst = rxpk.tmst;
+            this.Rawdata = rxpk.Data;
+            this.Datr = rxpk.Datr;
+            this.Freq = rxpk.Freq;
+            this.Lsnr = rxpk.Lsnr;
+            this.Modu = rxpk.Modu;
+            this.Rfch = rxpk.Rfch;
+            this.Rssi = rxpk.Rssi;
+            this.Size = rxpk.Size;
+            this.Stat = rxpk.Stat;
+            this.Time = rxpk.Time;
+            this.Tmms = rxpk.Tmms;
+            this.Tmst = rxpk.Tmst;
             this.Fcnt = loRaPayloadData.GetFcnt();
             this.Port = loRaPayloadData.GetFPort();
         }

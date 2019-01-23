@@ -1,6 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>612,618,619,168</WarningsNotAsErrors>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)\stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 

@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest1 = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var joinRequestRxpk1 = joinRequest1.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
+            var joinRequestRxpk1 = joinRequest1.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var joinRequestDevNonce1 = ConversionHelper.ByteArrayToString(joinRequest1.DevNonce);
             var devAddr = string.Empty;
@@ -88,8 +88,8 @@ namespace LoRaWan.NetworkServer.Test
 
             // 2nd attempt
             var joinRequest2 = simulatedDevice.CreateJoinRequest();
-            var joinRequestRxpk2 = joinRequest2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
-            var joinRequestDevNonce2 = ConversionHelper.ByteArrayToString(joinRequest2.DevNonce);
+            var joinRequestRxpk2 = joinRequest2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
+            var joinRequestDevNonce2 = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequest2.DevNonce);
 
             // setup response to this device search
             loRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(this.ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce2))
@@ -97,7 +97,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var joinRequestDownlinkMessage2 = await messageProcessor.ProcessMessageAsync(joinRequestRxpk2);
             Assert.NotNull(joinRequestDownlinkMessage2);
-            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinRequestDownlinkMessage2.txpk.data), simulatedDevice.LoRaDevice.AppKey);
+            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinRequestDownlinkMessage2.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
 
             var devicesForDevAddr = deviceRegistry.InternalGetCachedDevicesForDevAddr(afterJoinDevAddr);
