@@ -1,4 +1,4 @@
-FROM microsoft/dotnet:2.1-runtime-stretch AS base
+FROM microsoft/dotnet:2.1-runtime-stretch-slim AS base
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends unzip procps && \
@@ -10,20 +10,23 @@ RUN curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l ~/vsdbg
 
 
 FROM microsoft/dotnet:2.1-sdk AS build-env
-WORKDIR /app
 
-COPY ./Logger ./Logger
-COPY ./LoRaWan.NetworkServer ./LoRaWan.NetworkServer
-COPY ./LoRaWanNetworkSrvModule ./LoRaWanNetworkSrvModule
-COPY ./LoraTools ./LoraTools
+WORKDIR /build
+COPY ./stylecop.* ./
 
-WORKDIR ./LoRaWanNetworkSrvModule
+WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger ./Logger
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools ./LoraTools
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer ./LoRaWan.NetworkServer
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule ./LoRaWanNetworkSrvModule
+
+WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule
 RUN dotnet restore
 
 RUN dotnet publish -c Debug -o out
 
 FROM base
 WORKDIR /app
-COPY --from=build-env /app/LoRaWanNetworkSrvModule/out/* ./
+COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
 
 ENTRYPOINT ["dotnet", "LoRaWanNetworkSrvModule.dll"]
