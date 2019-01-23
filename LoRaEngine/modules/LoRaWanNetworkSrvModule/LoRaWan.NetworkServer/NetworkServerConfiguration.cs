@@ -1,14 +1,13 @@
-//
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.IO;
+
     // Network server configuration
     public class NetworkServerConfiguration
     {
@@ -21,7 +20,7 @@ namespace LoRaWan.NetworkServer
         // Gets/sets the gateway host name
         public string GatewayHostName { get; set; }
 
-        // Gets/sets if the gateway (edgeHub) is enabled     
+        // Gets/sets if the gateway (edgeHub) is enabled
         public bool EnableGateway { get; set; } = true;
 
         // Gets/sets the gateway identifier
@@ -48,15 +47,15 @@ namespace LoRaWan.NetworkServer
 
         // Gets/sets if logging to console is enabled
         // Default: true
-        public bool LogToConsole { get;  set; } = true;
+        public bool LogToConsole { get; set; } = true;
 
         // Gets/sets the logging level
         // Default: 0 (Always logging)
-        public int LogLevel { get;  set; } = 0;
+        public int LogLevel { get; set; } = 0;
 
         // Gets/sets if logging to IoT Hub is enabled
         // Default: false
-        public bool LogToHub { get;  set; }
+        public bool LogToHub { get; set; }
 
         // Gets/sets if logging to udp is enabled (used for integration tests mainly)
         // Default: false
@@ -73,7 +72,7 @@ namespace LoRaWan.NetworkServer
 
         // Creates a new instance of NetworkServerConfiguration
         public NetworkServerConfiguration()
-        {    
+        {
         }
 
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
@@ -82,15 +81,15 @@ namespace LoRaWan.NetworkServer
             var config = new NetworkServerConfiguration();
 
             // Create case insensitive dictionary from environment variables
-            var envVars = new CaseInsensitiveEnvironmentVariables(Environment.GetEnvironmentVariables());           
+            var envVars = new CaseInsensitiveEnvironmentVariables(Environment.GetEnvironmentVariables());
 
             config.RunningAsIoTEdgeModule = !string.IsNullOrEmpty(envVars.GetEnvVar("IOTEDGE_APIVERSION", string.Empty));
             config.IoTHubHostName = envVars.GetEnvVar("IOTEDGE_IOTHUBHOSTNAME", string.Empty);
             config.GatewayHostName = envVars.GetEnvVar("IOTEDGE_GATEWAYHOSTNAME", string.Empty);
             config.EnableGateway = envVars.GetEnvVar("ENABLE_GATEWAY", config.EnableGateway);
             config.GatewayID = envVars.GetEnvVar("IOTEDGE_DEVICEID", string.Empty);
-            config.HttpsProxy = envVars.GetEnvVar("HTTPS_PROXY", string.Empty);          
-            config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", string.Empty);           
+            config.HttpsProxy = envVars.GetEnvVar("HTTPS_PROXY", string.Empty);
+            config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", string.Empty);
             config.Rx2DataFrequency = envVars.GetEnvVar("RX2_FREQ", config.Rx2DataFrequency);
             config.IoTEdgeTimeout = envVars.GetEnvVar("IOTEDGE_TIMEOUT", config.IoTEdgeTimeout);
             config.FacadeServerUrl = envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty);

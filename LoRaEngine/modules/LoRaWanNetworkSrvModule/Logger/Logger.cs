@@ -1,19 +1,30 @@
-﻿using Microsoft.Azure.Devices.Client;
-using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan
-{ 
+{
+    using System;
+    using System.Net;
+    using System.Net.Sockets;
+    using System.Text;
+    using System.Threading;
+    using Microsoft.Azure.Devices.Client;
+
     public class Logger
     {
         // Interval where we try to estabilish connection to udp logger
         const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
 
-        public enum LoggingLevel : int { Always=0, Full, Info, Error };
+        public enum LoggingLevel : int
+        {
+            Always = 0,
+            Full,
+            Info,
+            Error
+        }
+
         public static LoggingLevel LoggerLevel => (LoggingLevel)configuration.LogLevel;
+
         static LoggerConfiguration configuration = new LoggerConfiguration();
         static volatile UdpClient udpClient;
         static IPEndPoint udpEndpoint;
@@ -28,20 +39,20 @@ namespace LoRaWan
             if (configuration.LogToUdp)
             {
                 InitializeUdpLogger(isRetry: false);
-                
-                
+
                 // If udp client was not created set a timer to retry every x seconds
                 // The listening container might not have started yet (i.e. AzureDevOpsAgent)
                 if (udpClient == null)
                 {
                     // retry in 10 seconds
-                    retryUdpLogInitializationTimer = new Timer((state) =>
-                    {
-                        InitializeUdpLogger(isRetry: true);
-                    },
-                    null,
-                    RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS,
-                    RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS);
+                    retryUdpLogInitializationTimer = new Timer(
+                        (state) =>
+                        {
+                            InitializeUdpLogger(isRetry: true);
+                        },
+                        null,
+                        RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS,
+                        RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS);
                 }
             }
         }
@@ -52,7 +63,7 @@ namespace LoRaWan
         }
 
         public static void Log(string deviceId, string message, LoggingLevel loggingLevel)
-        {            
+        {
             if ((int)loggingLevel >= configuration.LogLevel || loggingLevel == LoggingLevel.Always)
             {
                 var msg = message;
@@ -72,15 +83,14 @@ namespace LoRaWan
                     LogToUdp(msg);
             }
         }
-        
 
         static void LogToConsole(string message)
         {
-            Console.WriteLine(String.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")," ", message));
-        }        
+            Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+        }
 
         static void LogToUdp(string message)
-        {            
+        {
             try
             {
                 var messageInBytes = Encoding.UTF8.GetBytes(message);
@@ -94,7 +104,7 @@ namespace LoRaWan
 
         // Initialize Udp Logger
         // Might be called from a timer while it does not work
-        // Need to make this retries because NetworkServer might become alive 
+        // Need to make this retries because NetworkServer might become alive
         // before listening container is started
         static void InitializeUdpLogger(bool isRetry = false)
         {
@@ -168,5 +178,3 @@ namespace LoRaWan
         }
     }
 }
-
-

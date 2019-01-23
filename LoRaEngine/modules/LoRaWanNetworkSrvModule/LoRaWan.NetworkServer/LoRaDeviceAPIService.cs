@@ -1,15 +1,14 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using System.Threading.Tasks;
+    using Newtonsoft.Json;
+
     /// <summary>
     /// LoRa Device API Service
     /// </summary>
@@ -36,7 +35,6 @@ namespace LoRaWan.NetworkServer
             {
                 Logger.Log(devEUI, $"error calling the NextFCntDown function, check the function log. {response.ReasonPhrase}", Logger.LoggingLevel.Error);
                 return 0;
-
             }
 
             string fcntDownString = await response.Content.ReadAsStringAsync();
@@ -46,7 +44,6 @@ namespace LoRaWan.NetworkServer
 
             return 0;
         }
-
 
         public override async Task<bool> ABPFcntCacheResetAsync(string devEUI)
         {
@@ -63,15 +60,13 @@ namespace LoRaWan.NetworkServer
             return true;
         }
 
-
         /// <inheritdoc />
         public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string appEUI, string devNonce)
-            => SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, appEUI: appEUI, devNonce: devNonce);
+            => this.SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, appEUI: appEUI, devNonce: devNonce);
 
         /// <inheritdoc />
         public sealed override Task<SearchDevicesResult> SearchByDevAddrAsync(string devAddr)
-            => SearchDevicesAsync(devAddr: devAddr);
-
+            => this.SearchDevicesAsync(devAddr: devAddr);
 
         /// <summary>
         /// Helper method that calls the API GetDevice method
@@ -91,7 +86,7 @@ namespace LoRaWan.NetworkServer
                 .Append(this.AuthCode);
 
             if (!string.IsNullOrEmpty(gatewayID))
-            {   
+            {
                 url.Append("&GatewayId=")
                     .Append(gatewayID);
             }
@@ -120,7 +115,6 @@ namespace LoRaWan.NetworkServer
                     .Append(devNonce);
             }
 
-
             var response = await client.GetAsync(url.ToString());
             if (!response.IsSuccessStatusCode)
             {
@@ -137,16 +131,15 @@ namespace LoRaWan.NetworkServer
                         };
                     }
                 }
-                
+
                 Logger.Log(devAddr, $"error calling façade api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", Logger.LoggingLevel.Error);
 
                 // TODO: FBE check if we return null or throw exception
                 return new SearchDevicesResult();
             }
 
-            
             var result = await response.Content.ReadAsStringAsync();
-            var devices = ((List<IoTHubDeviceInfo>)JsonConvert.DeserializeObject(result, typeof(List<IoTHubDeviceInfo>)));
+            var devices = (List<IoTHubDeviceInfo>)JsonConvert.DeserializeObject(result, typeof(List<IoTHubDeviceInfo>));
             return new SearchDevicesResult(devices);
         }
     }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -16,4 +16,13 @@
   <ItemGroup>
     <ProjectReference Include="..\LoRaWan.NetworkServer\LoRaWan.NetworkServer.csproj" />
   </ItemGroup>
+
+  <!-- StyleCop Setup -->
+  <ItemGroup>
+    <AdditionalFiles Include="../../../../stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>../../../../stylecop.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <Import Project="../../../../stylecop.props" />
 </Project>

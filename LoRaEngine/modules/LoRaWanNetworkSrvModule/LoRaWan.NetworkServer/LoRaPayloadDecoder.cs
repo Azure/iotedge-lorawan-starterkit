@@ -1,35 +1,31 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Net.Http;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Net.Http;
+    using System.Reflection;
+    using System.Text;
+    using System.Threading.Tasks;
+    using System.Web;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+
     /// <summary>
     /// LoRa payload decoder
     /// </summary>
-
     public class LoRaPayloadDecoder : ILoRaPayloadDecoder
     {
         // Http client used by decoders
         // Decoder calls don't need proxy since they will never leave the IoT Edge device
-        Lazy<HttpClient> decodersHttpClient = new Lazy<HttpClient>(() => {
+        Lazy<HttpClient> decodersHttpClient = new Lazy<HttpClient>(() =>
+        {
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
             client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
             return client;
         });
-        
-       
 
         public async ValueTask<JObject> DecodeMessageAsync(byte[] payload, byte fport, string sensorDecoder)
         {
@@ -53,6 +49,7 @@ namespace LoRaWan.NetworkServer
                     result = $"{{\"error\": \"No '{sensorDecoder}' decoder found\", \"rawpayload\": \"{base64Payload}\"}}";
                 }
             }
+
             // Call SensorDecoderModule hosted in seperate container ("http://" in SensorDecoder)
             // Format: http://containername/api/decodername
             else
@@ -72,7 +69,7 @@ namespace LoRaWan.NetworkServer
                 toCall = $"{toCall}?fport={fportEncoded}&payload={payloadEncoded}";
 
                 // Call SensorDecoderModule
-                result = await CallSensorDecoderModule(toCall, payload);
+                result = await this.CallSensorDecoderModule(toCall, payload);
             }
 
             JObject resultJson;
@@ -88,17 +85,16 @@ namespace LoRaWan.NetworkServer
             }
 
             return resultJson;
-
         }
 
         async Task<string> CallSensorDecoderModule(string sensorDecoderModuleUrl, byte[] payload)
         {
             var base64Payload = Convert.ToBase64String(payload);
-            string result = "";
+            string result = string.Empty;
 
             try
             {
-                HttpResponseMessage response = await decodersHttpClient.Value.GetAsync(sensorDecoderModuleUrl);
+                HttpResponseMessage response = await this.decodersHttpClient.Value.GetAsync(sensorDecoderModuleUrl);
 
                 if (!response.IsSuccessStatusCode)
                 {

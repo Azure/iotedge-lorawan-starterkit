@@ -1,57 +1,73 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Threading.Tasks.Sources;
-using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Shared;
-using Newtonsoft.Json;
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Threading.Tasks.Sources;
+    using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Shared;
+    using Newtonsoft.Json;
+
     public sealed class LoRaDevice : IDisposable
     {
         public string DevAddr { get; set; }
-        
+
         // Gets if a device is activated by personalization
         public bool IsABP => string.IsNullOrEmpty(this.AppKey);
+
         public string DevEUI { get; set; }
+
         public string AppKey { get; set; }
+
         public string AppEUI { get; set; }
+
         public string NwkSKey { get; set; }
+
         public string AppSKey { get; set; }
+
         public string AppNonce { get; set; }
+
         public string DevNonce { get; set; }
+
         public string NetID { get; set; }
-        public bool IsOurDevice = false;
+
+        public bool IsOurDevice { get; set; }
+
         public string LastConfirmedC2DMessageID { get; set; }
 
-
         int fcntUp;
+
         public int FCntUp => this.fcntUp;
 
         int fcntDown;
+
         public int FCntDown => this.fcntDown;
+
         private readonly ILoRaDeviceClient loRaDeviceClient;
 
         public string GatewayID { get; set; }
+
         public string SensorDecoder { get; set; }
+
         public int? ReceiveDelay1 { get; set; }
+
         public int? ReceiveDelay2 { get; set; }
+
         public bool IsABPRelaxedFrameCounter { get; set; } = true;
+
         public bool AlwaysUseSecondWindow { get; set; } = false;
 
         int hasFrameCountChanges;
 
         public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClient loRaDeviceClient)
         {
-            DevAddr = devAddr;
-            DevEUI = devEUI;
+            this.DevAddr = devAddr;
+            this.DevEUI = devEUI;
             this.loRaDeviceClient = loRaDeviceClient;
             this.hasFrameCountChanges = 0;
         }
@@ -60,45 +76,44 @@ namespace LoRaWan.NetworkServer
         /// Initializes the device from twin properties
         /// Throws InvalidLoRaDeviceException if the device does contain require properties
         /// </summary>
-        /// <returns></returns>
         public async Task<bool> InitializeAsync()
         {
             var twin = await this.loRaDeviceClient.GetTwinAsync();
 
             if (twin != null)
-            {              
-                // ABP requires the property AppSKey, AppNwkSKey, DevAddr to be present  
+            {
+                // ABP requires the property AppSKey, AppNwkSKey, DevAddr to be present
                 if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
                 {
-                    //ABP Case
+                    // ABP Case
                     this.AppSKey = twin.Properties.Desired[TwinProperty.AppSKey];
-                    
+
                     if (!twin.Properties.Desired.Contains(TwinProperty.NwkSKey))
                         throw new InvalidLoRaDeviceException("Missing NwkSKey for ABP device");
-                                    
-                    
+
                     if (!twin.Properties.Desired.Contains(TwinProperty.DevAddr))
                         throw new InvalidLoRaDeviceException("Missing DevAddr for ABP device");
 
                     this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey];
                     this.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr];
                     this.IsOurDevice = true;
-                }                
+                }
                 else
                 {
-                    // OTAA                                        
+                    // OTAA
                     if (!twin.Properties.Desired.Contains(TwinProperty.AppKey))
                     {
                         throw new InvalidLoRaDeviceException("Missing AppKey for OTAA device");
                     }
+
                     this.AppKey = twin.Properties.Desired[TwinProperty.AppKey];
 
                     if (!twin.Properties.Desired.Contains(TwinProperty.AppEUI))
                     {
                         throw new InvalidLoRaDeviceException("Missing AppEUI for OTAA device");
                     }
-                    this.AppEUI = twin.Properties.Desired[TwinProperty.AppEUI];
 
+                    this.AppEUI = twin.Properties.Desired[TwinProperty.AppEUI];
 
                     // Check for already joined OTAA device properties
                     if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
@@ -114,8 +129,8 @@ namespace LoRaWan.NetworkServer
                         this.NetID = twin.Properties.Reported[TwinProperty.NetID];
 
                     if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
-                        this.DevNonce = twin.Properties.Reported[TwinProperty.DevNonce];                    
-                }                
+                        this.DevNonce = twin.Properties.Reported[TwinProperty.DevNonce];
+                }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
                     this.GatewayID = twin.Properties.Desired[TwinProperty.GatewayID];
@@ -127,7 +142,7 @@ namespace LoRaWan.NetworkServer
                     this.fcntDown = twin.Properties.Reported[TwinProperty.FCntDown];
 
                 return true;
-            }    
+            }
 
             return false;
         }
@@ -138,7 +153,6 @@ namespace LoRaWan.NetworkServer
         /// <remarks>
         /// Changes will be saved only if there are actually changes to be saved
         /// </remarks>
-        /// <returns></returns>
         public async Task<bool> SaveFrameCountChangesAsync()
         {
             if (this.hasFrameCountChanges == 1)
@@ -153,7 +167,7 @@ namespace LoRaWan.NetworkServer
                 {
                     if (savedFcntUp == this.FCntUp && savedFcntDown == this.FCntDown)
                     {
-                        AcceptFrameCountChanges();
+                        this.AcceptFrameCountChanges();
                     }
                 }
 
@@ -164,48 +178,41 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Gets if there are frame count changes pending
+        /// Gets a value indicating whether there are pending frame count changes
         /// </summary>
-        /// <returns></returns>
-        public bool HasFrameCountChanges => hasFrameCountChanges == 1;
+        public bool HasFrameCountChanges => this.hasFrameCountChanges == 1;
 
         /// <summary>
         /// Accept changes to the frame count
         /// </summary>
-        public void AcceptFrameCountChanges() => Interlocked.Exchange(ref hasFrameCountChanges, 0);
+        public void AcceptFrameCountChanges() => Interlocked.Exchange(ref this.hasFrameCountChanges, 0);
 
         /// <summary>
         /// Increments <see cref="FCntDown"/>
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
         public int IncrementFcntDown(int value)
         {
-            var result = Interlocked.Add(ref fcntDown, value);
-            Interlocked.Exchange(ref hasFrameCountChanges, 1);
+            var result = Interlocked.Add(ref this.fcntDown, value);
+            Interlocked.Exchange(ref this.hasFrameCountChanges, 1);
             return result;
         }
 
         /// <summary>
         /// Sets a new value for <see cref="FCntDown"/>
         /// </summary>
-        /// <param name="newValue"></param>
         public void SetFcntDown(int newValue)
         {
-            var oldValue = Interlocked.Exchange(ref fcntDown, newValue);
+            var oldValue = Interlocked.Exchange(ref this.fcntDown, newValue);
             if (newValue != oldValue)
-                Interlocked.Exchange(ref hasFrameCountChanges, 1);
+                Interlocked.Exchange(ref this.hasFrameCountChanges, 1);
         }
-
 
         public void SetFcntUp(int newValue)
         {
-            var oldValue = Interlocked.Exchange(ref fcntUp, newValue);
+            var oldValue = Interlocked.Exchange(ref this.fcntUp, newValue);
             if (newValue != oldValue)
-                Interlocked.Exchange(ref hasFrameCountChanges, 1);
+                Interlocked.Exchange(ref this.hasFrameCountChanges, 1);
         }
-
-
 
         public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => this.loRaDeviceClient.SendEventAsync(telemetry, properties);
 
@@ -215,17 +222,9 @@ namespace LoRaWan.NetworkServer
 
         public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.loRaDeviceClient.AbandonAsync(cloudToDeviceMessage);
 
-
         /// <summary>
         /// Updates device on the server after a join succeeded
         /// </summary>
-        /// <param name="devAddr"></param>
-        /// <param name="nwkSKey"></param>
-        /// <param name="appSKey"></param>
-        /// <param name="appNonce"></param>
-        /// <param name="devNonce"></param>
-        /// <param name="netID"></param>
-        /// <returns></returns>
         internal async Task<bool> UpdateAfterJoinAsync(string devAddr, string nwkSKey, string appSKey, string appNonce, string devNonce, string netID)
         {
             var reportedProperties = new TwinCollection();

@@ -1,19 +1,17 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using LoRaWan.Shared;
-using System;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using LoRaWan.Shared;
+
     /// <summary>
     /// <see cref="HttpClientHandler"/> for service facade function API calls.
     /// Adds api-version to request query string and validates response according with <see cref="MinFunctionVersion"/>
@@ -61,10 +59,10 @@ namespace LoRaWan.NetworkServer
             request.RequestUri = new Uri(string.Concat(request.RequestUri.ToString(), string.IsNullOrEmpty(request.RequestUri.Query) ? "?" : "&", ApiVersion.QueryStringParamName, "=", this.minFunctionVersion.Version));
 
             // use next if one was provided (for unit testing)
-            var response = (this.next != null) ? await next(request, cancellationToken) : await base.SendAsync(request, cancellationToken);
+            var response = (this.next != null) ? await this.next(request, cancellationToken) : await base.SendAsync(request, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
-                var functionVersion = GetFunctionVersion(response);
+                var functionVersion = this.GetFunctionVersion(response);
                 if (!functionVersion.SupportsVersion(this.minFunctionVersion))
                 {
                     var msg = $"Version mismatch (expected: {this.minFunctionVersion.Name}, function version: {functionVersion.Name}), ensure you have the latest version deployed";
@@ -72,7 +70,7 @@ namespace LoRaWan.NetworkServer
                     return new HttpResponseMessage(HttpStatusCode.BadRequest)
                     {
                         Content = new StringContent(msg, Encoding.UTF8, "html/text"),
-                        ReasonPhrase = msg,                       
+                        ReasonPhrase = msg,
                     };
                 }
             }

@@ -1,75 +1,105 @@
-//
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using System.Collections.Generic;
-using LoRaTools.LoRaMessage;
-using LoRaTools.LoRaPhysical;
-using Newtonsoft.Json;
 
 namespace LoRaWan.NetworkServer
 {
+    using System.Collections.Generic;
+    using LoRaTools.LoRaMessage;
+    using LoRaTools.LoRaPhysical;
+    using Newtonsoft.Json;
+
     // Represents the device telemetry that will be sent to IoT Hub
     public class LoRaDeviceTelemetry
     {
-        public string time;
-        public uint tmms;
-        public uint tmst;        
-        public double freq;
-        public uint chan;
-        public uint rfch;
-        public int stat;
-        public string modu;
-        public string datr;
-        public string codr;
-        public int rssi;
-        public float lsnr;
-        public uint size;
-        public object data;
-        public byte port;
-        public ushort fcnt;
-        public string rawdata;
+        [JsonProperty("time")]
+        public string Time { get; set; }
+
+        [JsonProperty("tmms")]
+        public uint Tmms { get; set; }
+
+        [JsonProperty("tmst")]
+        public uint Tmst { get; set; }
+
+        [JsonProperty("freq")]
+        public double Freq { get; set; }
+
+        [JsonProperty("chan")]
+        public uint Chan { get; set; }
+
+        [JsonProperty("rfch")]
+        public uint Rfch { get; set; }
+
+        [JsonProperty("stat")]
+        public int Stat { get; set; }
+
+        [JsonProperty("modu")]
+        public string Modu { get; set; }
+
+        [JsonProperty("datr")]
+        public string Datr { get; set; }
+
+        [JsonProperty("codr")]
+        public string Codr { get; set; }
+
+        [JsonProperty("rssi")]
+        public int Rssi { get; set; }
+
+        [JsonProperty("lsnr")]
+        public float Lsnr { get; set; }
+
+        [JsonProperty("size")]
+        public uint Size { get; set; }
+
+        [JsonProperty("data")]
+        public object Data { get; set; }
+
+        [JsonProperty("port")]
+        public byte Port { get; set; }
+
+        [JsonProperty("fcnt")]
+        public ushort Fcnt { get; set; }
+
+        [JsonProperty("rawdata")]
+        public string Rawdata { get; set; }
 
         [JsonProperty("eui")]
-        public string DeviceEUI;
+        public string DeviceEUI { get; set; }
 
         [JsonProperty("gatewayid")]
-        public string GatewayID;
+        public string GatewayID { get; set; }
 
         [JsonProperty("edgets")]
-        public long Edgets;
+        public long Edgets { get; set; }
 
         [JsonExtensionData]
         public Dictionary<string, object> ExtraData { get; } = new Dictionary<string, object>();
 
-
         public LoRaDeviceTelemetry()
-        {    
-        }        
+        {
+        }
 
         public LoRaDeviceTelemetry(Rxpk rxpk, LoRaPayloadData loRaPayloadData, object payloadData)
-        {         
+        {
             if (rxpk.ExtraData != null)
                 this.ExtraData = new Dictionary<string, object>(rxpk.ExtraData);
 
-            this.chan = rxpk.chan;
-            this.codr = rxpk.codr;
-            this.data = payloadData;
-            this.rawdata = rxpk.data;
-            this.datr = rxpk.datr;
-            this.freq = rxpk.freq;
-            this.lsnr = rxpk.lsnr;
-            this.modu = rxpk.modu;
-            this.rfch = rxpk.rfch;
-            this.rssi = rxpk.rssi;
-            this.size = rxpk.size;
-            this.stat = rxpk.stat;
-            this.time = rxpk.time;
-            this.tmms = rxpk.tmms;
-            this.tmst = rxpk.tmst;      
-            this.fcnt = loRaPayloadData.GetFcnt();
-            this.port = loRaPayloadData.GetFPort();
+            this.Chan = rxpk.chan;
+            this.Codr = rxpk.codr;
+            this.Data = payloadData;
+            this.Rawdata = rxpk.data;
+            this.Datr = rxpk.datr;
+            this.Freq = rxpk.freq;
+            this.Lsnr = rxpk.lsnr;
+            this.Modu = rxpk.modu;
+            this.Rfch = rxpk.rfch;
+            this.Rssi = rxpk.rssi;
+            this.Size = rxpk.size;
+            this.Stat = rxpk.stat;
+            this.Time = rxpk.time;
+            this.Tmms = rxpk.tmms;
+            this.Tmst = rxpk.tmst;
+            this.Fcnt = loRaPayloadData.GetFcnt();
+            this.Port = loRaPayloadData.GetFPort();
         }
     }
 }

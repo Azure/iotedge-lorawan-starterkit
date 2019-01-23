@@ -197,8 +197,8 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()), Times.Exactly(2));
 
             // has telemetry with both fcnt
-            Assert.Single(sentTelemetry, (t) => t.fcnt == startingPayloadFcnt);
-            Assert.Single(sentTelemetry, (t) => t.fcnt == (startingPayloadFcnt + 1));
+            Assert.Single(sentTelemetry, (t) => t.Fcnt == startingPayloadFcnt);
+            Assert.Single(sentTelemetry, (t) => t.Fcnt == (startingPayloadFcnt + 1));
 
             loRaDeviceClient.VerifyAll();
             loRaDeviceApi.VerifyAll();

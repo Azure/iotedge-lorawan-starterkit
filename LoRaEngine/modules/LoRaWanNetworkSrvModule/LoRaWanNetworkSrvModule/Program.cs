@@ -1,7 +1,5 @@
-//
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
 namespace LoRaWanNetworkSrvModule
 {
     using System;
@@ -10,13 +8,12 @@ namespace LoRaWanNetworkSrvModule
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
 
-
-    class Program
+    internal class Program
     {
-        static UdpServer udpServer = null;
-        static void Main(string[] args)
+        private static UdpServer udpServer;
+
+        private static void Main(string[] args)
         {
-          
             Run().Wait();
 
             // Wait until the app unloads or is cancelled
@@ -31,7 +28,7 @@ namespace LoRaWanNetworkSrvModule
         /// </summary>
         public static Task WhenCancelled(CancellationToken cancellationToken)
         {
-            if(udpServer != null)
+            if (udpServer != null)
             {
                 udpServer.Dispose();
             }
@@ -41,15 +38,14 @@ namespace LoRaWanNetworkSrvModule
             return tcs.Task;
         }
 
-       
         /// <summary>
         /// Initializes the DeviceClient and sets up the callback to receive
         /// messages containing temperature information
         /// </summary>
-        static async Task Run()
+        private static async Task Run()
         {
             udpServer = UdpServer.Create();
-            await udpServer.RunServer();           
+            await udpServer.RunServer();
         }
     }
 }

@@ -1,13 +1,11 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using Newtonsoft.Json.Linq;
-using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer
 {
+    using System.Threading.Tasks;
+    using Newtonsoft.Json.Linq;
+
     public interface ILoRaPayloadDecoder
     {
         /// <summary>

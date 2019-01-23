@@ -1,11 +1,10 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using System.Collections.Generic;
 
 namespace LoRaWan.NetworkServer
 {
+    using System.Collections.Generic;
+
     /// <summary>
     /// Results of a <see cref="LoRaDeviceAPIServiceBase.SearchDevicesAsync"/> call
     /// </summary>
@@ -23,7 +22,6 @@ namespace LoRaWan.NetworkServer
 
         public SearchDevicesResult()
         {
-
         }
 
         public SearchDevicesResult(IReadOnlyList<IoTHubDeviceInfo> devices)
