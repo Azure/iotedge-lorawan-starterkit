@@ -322,6 +322,29 @@ LOG_TO_CONSOLE false No log info in the docker log
 
 Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanation.
 
+## Cloud to device message 
+
+The solution support sending Cloud to device (C2D) messages to LoRa messages using [standard IoT Hub Sdks](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d). Cloud to device messages require a Fport message property being set or it will be refused (as shown in the figure below from the Azure Portal). 
+
+![C2D portal](/Docs/Pictures/cloudtodevice.png)
+
+The following tools can be used to send cloud to devices messages from Azure :
+
+* [Azure Portal](http://portal.azure.com) -> IoT Hub -> Devices -> message to device
+* [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer)
+* [Visual Studio Code IoT Hub Extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit) 
+
+It is possible to add a 'Confirmed' message property set to true,in order to send the C2D message as ConfirmedDataDown to the LoRa device (as in picture above and below). You can enable additional message tracking options by setting the C2D message id to a value (C2D message ID is automatically populated with the Device Explorer tool used in the image below). 
+
+![C2D portal](/Docs/Pictures/sendC2DConfirmed.png)
+
+As soon as the device acknowledges the message, it will report it in the logs and as a message property named 'C2DMsgConfirmed' on a message upstream (or generate an empty message in case of an empty ack message). The value of the message property will be set to the C2D message id that triggered the response if not null, otherwise to 'C2D Msg Confirmation'. You can find here below a set of picture illustrating the response when the C2D message id was sent to the value '4d3d0cd3-603a-4e00-a441-74aa55f53401'.
+
+
+
+![C2D portal](/Docs/Pictures/receiveC2DConfirmation.png)
+
+
 ## MAC Commands
 
 The Solution has an initial support for MAC Commands. Currently only the command Device Status Command is fully testable. The command will return device status (battery and communication margin). To try it, send a Cloud to Device message on your end device and add the following message properties :
@@ -331,10 +354,6 @@ CidType : 6
 ```
 
 ![MacCommand](/Docs/Pictures/MacCommand.PNG)
-
-## Cloud to device confirmed message
-
-You can send confirmed cloud to device messages by adding a "Confirmed" property set to true to your cloud to device message (same as above).
 
 ## Updating existing installations from 0.2.0-preview to 0.3.0-preview
 
