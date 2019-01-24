@@ -1,16 +1,15 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using LoRaWan.NetworkServer;
-using LoRaWan.Test.Shared;
-using Microsoft.Azure.Devices.Shared;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using LoRaWan.NetworkServer;
+    using LoRaWan.Test.Shared;
+    using Microsoft.Azure.Devices.Shared;
+
     internal static class TestUtils
     {
         internal static LoRaDevice CreateFromSimulatedDevice(
@@ -65,8 +64,7 @@ namespace LoRaWan.NetworkServer.Test
                     { TwinProperty.NwkSKey, simulatedDevice.NwkSKey },
                     { TwinProperty.GatewayID, simulatedDevice.LoRaDevice.GatewayID },
                     { TwinProperty.SensorDecoder, simulatedDevice.LoRaDevice.SensorDecoder },
-                }
-            );
+                });
         }
     }
 }

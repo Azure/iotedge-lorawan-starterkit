@@ -1,22 +1,19 @@
-//
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using System;
-using Xunit;
-using LoRaWan.NetworkServer;
-using System.Collections.Generic;
-
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
+    using System.Collections.Generic;
+    using LoRaWan.NetworkServer;
+    using Xunit;
 
     public class CaseInsensitiveEnvironmentVariablesTest
     {
         [Fact]
         public void Should_Return_Null_If_Not_Found()
         {
-            var variables = new Dictionary<string, string>() {
-                
+            var variables = new Dictionary<string, string>()
+            {
             };
 
             var target = new CaseInsensitiveEnvironmentVariables(variables);
@@ -27,8 +24,8 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void Should_Return_StringEmpty_If_Not_Found()
         {
-            var variables = new Dictionary<string, string>() {
-                
+            var variables = new Dictionary<string, string>()
+            {
             };
 
             var target = new CaseInsensitiveEnvironmentVariables(variables);
@@ -40,7 +37,8 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void Should_Find_String_If_Case_Matches()
         {
-            var variables = new Dictionary<string, string>() {
+            var variables = new Dictionary<string, string>()
+            {
                 { "MYVAR", "VALUE" }
             };
 
@@ -53,7 +51,8 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void Should_Find_String_If_Case_Does_Not_Match()
         {
-            var variables = new Dictionary<string, string>() {
+            var variables = new Dictionary<string, string>()
+            {
                 { "myvar", "VALUE" }
             };
 
@@ -63,11 +62,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal("VALUE", actual);
         }
 
-
         [Fact]
         public void Should_Return_Default_Bool_Value_False_If_Not_Found()
         {
-            var variables = new Dictionary<string, string>() {
+            var variables = new Dictionary<string, string>()
+            {
             };
 
             var target = new CaseInsensitiveEnvironmentVariables(variables);
@@ -100,12 +99,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(actual);
         }
 
-
-
         [Fact]
         public void Should_Find_Bool_If_Case_Matches()
         {
-            var variables = new Dictionary<string, string>() {
+            var variables = new Dictionary<string, string>()
+            {
                 { "MYVAR", "true" }
             };
 
@@ -117,7 +115,8 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void Should_Find_Bool_If_Case_Does_Not_Match()
         {
-            var variables = new Dictionary<string, string>() {
+            var variables = new Dictionary<string, string>()
+            {
                 { "myvar", "true" }
             };
 
@@ -125,7 +124,6 @@ namespace LoRaWan.NetworkServer.Test
             var actual = target.GetEnvVar("MYVAR", false);
             Assert.True(actual);
         }
-
 
         [Fact]
         public void Should_Return_Default_Double_Value_True_If_Not_Found()
@@ -152,12 +150,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(12.0, actual);
         }
 
-
-
         [Fact]
         public void Should_Find_Double_If_Case_Matches()
         {
-            var variables = new Dictionary<string, string>() {
+            var variables = new Dictionary<string, string>()
+            {
                 { "MYVAR", "20" }
             };
 
@@ -169,7 +166,8 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void Should_Find_Double_If_Case_Does_Not_Match()
         {
-            var variables = new Dictionary<string, string>() {
+            var variables = new Dictionary<string, string>()
+            {
                 { "myvar", "89.31" }
             };
 
@@ -203,12 +201,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(12, actual);
         }
 
-
-
         [Fact]
         public void Should_Find_Int_If_Case_Matches()
         {
-            var variables = new Dictionary<string, string>() {
+            var variables = new Dictionary<string, string>()
+            {
                 { "MYVAR", "20" }
             };
 
@@ -220,7 +217,8 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void Should_Find_Int_If_Case_Does_Not_Match()
         {
-            var variables = new Dictionary<string, string>() {
+            var variables = new Dictionary<string, string>()
+            {
                 { "myvar", "8931" }
             };
 
@@ -228,10 +226,6 @@ namespace LoRaWan.NetworkServer.Test
             var actual = target.GetEnvVar("MYVAR", 0);
             Assert.Equal(8931, actual);
         }
-
-
-
-
 
         [Fact]
         public void Should_Return_Default_Uint_Value_True_If_Not_Found()
@@ -258,12 +252,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(12u, actual);
         }
 
-
-
         [Fact]
         public void Should_Find_Uint_If_Case_Matches()
         {
-            var variables = new Dictionary<string, string>() {
+            var variables = new Dictionary<string, string>()
+            {
                 { "MYVAR", "20" }
             };
 
@@ -275,7 +268,8 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void Should_Find_Uint_If_Case_Does_Not_Match()
         {
-            var variables = new Dictionary<string, string>() {
+            var variables = new Dictionary<string, string>()
+            {
                 { "myvar", "8931" }
             };
 
@@ -284,5 +278,4 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(8931u, actual);
         }
     }
-
 }

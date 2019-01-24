@@ -1,21 +1,20 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using LoRaTools.LoRaMessage;
-using LoRaTools.LoRaPhysical;
-using LoRaTools.Regions;
-using LoRaWan.NetworkServer;
-using LoRaWan.Test.Shared;
-using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Shared;
-using Moq;
-using System;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
+    using System.Threading.Tasks;
+    using LoRaTools.LoRaMessage;
+    using LoRaTools.LoRaPhysical;
+    using LoRaTools.Regions;
+    using LoRaWan.NetworkServer;
+    using LoRaWan.Test.Shared;
+    using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Shared;
+    using Moq;
+    using Xunit;
+
     /// <summary>
     /// Multiple gateway message processor tests
     /// </summary>
@@ -28,7 +27,6 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceRegistry2 = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
             this.loRaDeviceRegistry2.Setup(x => x.RegisterDeviceInitializer(It.IsAny<ILoRaDeviceInitializer>()));
         }
-       
 
         [Fact]
         public async Task Multi_OTAA_Unconfirmed_Message_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_Null()
@@ -40,19 +38,19 @@ namespace LoRaWan.NetworkServer.Test
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
 
             var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            
+
             // 2 messages will be sent
             loraDeviceClient.SetupSequence(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true)
                 .ReturnsAsync(true);
 
-            // cloud to device messages will be checked twice            
+            // cloud to device messages will be checked twice
             loraDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null)
-                .ReturnsAsync((Message)null);            
+                .ReturnsAsync((Message)null);
 
             var loraDevice1 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
-            var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);            
+            var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loraDeviceClient.Object);
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -75,15 +73,13 @@ namespace LoRaWan.NetworkServer.Test
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
-                payloadDecoder.Object
-                );
+                payloadDecoder.Object);
 
             var messageProcessor2 = new MessageProcessor(
                 new NetworkServerConfiguration() { GatewayID = "test-gateway-2" },
                 this.loRaDeviceRegistry2.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
-                payloadDecoder.Object
-                );
+                payloadDecoder.Object);
 
             // Starts with fcnt up zero
             Assert.Equal(0, loraDevice1.FCntUp);
@@ -108,6 +104,6 @@ namespace LoRaWan.NetworkServer.Test
             // 4. Frame counter up was updated to 1
             Assert.Equal(1, loraDevice1.FCntUp);
             Assert.Equal(1, loraDevice2.FCntUp);
-        }        
+        }
     }
 }

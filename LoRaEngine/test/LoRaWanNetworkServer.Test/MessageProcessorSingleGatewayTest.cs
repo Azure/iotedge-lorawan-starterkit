@@ -1,23 +1,22 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using LoRaTools.LoRaMessage;
-using LoRaTools.LoRaPhysical;
-using LoRaTools.Regions;
-using LoRaWan.NetworkServer;
-using LoRaWan.Test.Shared;
-using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Shared;
-using Moq;
-using System;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
+    using System.Runtime.InteropServices;
+    using System.Text;
+    using System.Threading.Tasks;
+    using LoRaTools.LoRaMessage;
+    using LoRaTools.LoRaPhysical;
+    using LoRaTools.Regions;
+    using LoRaWan.NetworkServer;
+    using LoRaWan.Test.Shared;
+    using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Shared;
+    using Moq;
+    using Xunit;
+
     /// <summary>
     /// Single gateway message processor tests
     /// </summary>
@@ -25,9 +24,7 @@ namespace LoRaWan.NetworkServer.Test
     {
         public MessageProcessorSingleGatewayTest()
         {
-            
         }
-       
 
         [Fact]
         public async Task Unknown_Device_Should_Return_Null()
@@ -49,10 +46,9 @@ namespace LoRaWan.NetworkServer.Test
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
-                payloadDecoder.Object
-                );
+                payloadDecoder.Object);
 
-           var actual = await messageProcessor.ProcessMessageAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
             // Expectations
             // 1. Returns null
@@ -69,7 +65,7 @@ namespace LoRaWan.NetworkServer.Test
             // Create Rxpk
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
             rxpk.freq = 0;
-            
+
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>(MockBehavior.Strict);
 
             // Send to message processor
@@ -77,10 +73,9 @@ namespace LoRaWan.NetworkServer.Test
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
-                payloadDecoder.Object
-                );
+                payloadDecoder.Object);
 
-           var actual = await messageProcessor.ProcessMessageAsync(rxpk);
+            var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
             // Expectations
             // 1. Returns null
@@ -120,8 +115,7 @@ namespace LoRaWan.NetworkServer.Test
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
-                payloadDecoder.Object
-                );
+                payloadDecoder.Object);
 
             var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
@@ -171,8 +165,7 @@ namespace LoRaWan.NetworkServer.Test
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
-                payloadDecoder.Object
-                );
+                payloadDecoder.Object);
 
             var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
@@ -192,15 +185,12 @@ namespace LoRaWan.NetworkServer.Test
             Assert.False(payloadDataDown.IsConfirmed());
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
-            
-
             // 4. Frame counter up was updated
             Assert.Equal(1, loraDevice.FCntUp);
 
             // 5. Frame counter down was incremented
             Assert.Equal(1, loraDevice.FCntDown);
-            Assert.Equal(1, MemoryMarshal.Read<UInt16>(payloadDataDown.Fcnt.Span));
-
+            Assert.Equal(1, MemoryMarshal.Read<ushort>(payloadDataDown.Fcnt.Span));
         }
 
         [Fact]
@@ -245,8 +235,7 @@ namespace LoRaWan.NetworkServer.Test
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
-                payloadDecoder.Object
-                );
+                payloadDecoder.Object);
 
             var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
@@ -259,7 +248,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // 3. Return nothing
             Assert.Null(actual);
-           
+
             // 4. Frame counter up was updated
             Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
 
@@ -318,8 +307,7 @@ namespace LoRaWan.NetworkServer.Test
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
-                payloadDecoder.Object
-                );
+                payloadDecoder.Object);
 
             var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
@@ -339,18 +327,17 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.False(payloadDataDown.IsConfirmed());
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
-            
+
             // 4. Frame counter up was updated
             Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, MemoryMarshal.Read<UInt16>(payloadDataDown.Fcnt.Span));
+            Assert.Equal(InitialDeviceFcntDown + 1, MemoryMarshal.Read<ushort>(payloadDataDown.Fcnt.Span));
 
             // 6. Frame count has no pending changes
             Assert.False(loraDevice.HasFrameCountChanges);
         }
-
 
         bool IsTwinFcntZero(TwinCollection t) => (int)t[TwinProperty.FCntDown] == 0 && (int)t[TwinProperty.FCntUp] == 0;
 
@@ -381,7 +368,7 @@ namespace LoRaWan.NetworkServer.Test
             loraDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>())).ReturnsAsync((Message)null);
 
             // Will save the fcnt up/down to zero
-            loraDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.Is<TwinCollection>((t) => IsTwinFcntZero(t))));
+            loraDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.Is<TwinCollection>((t) => this.IsTwinFcntZero(t))));
 
             var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
@@ -397,8 +384,7 @@ namespace LoRaWan.NetworkServer.Test
                 this.ServerConfiguration,
                 this.LoRaDeviceRegistry.Object,
                 this.FrameCounterUpdateStrategyFactory.Object,
-                payloadDecoder.Object
-                );
+                payloadDecoder.Object);
 
             var actual = await messageProcessor.ProcessMessageAsync(rxpk);
 
