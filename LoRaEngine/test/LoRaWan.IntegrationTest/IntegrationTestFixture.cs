@@ -91,6 +91,9 @@ namespace LoRaWan.IntegrationTest
         // Device20_OTAA: used for OTAA confirmed & unconfirmed messaging
         public TestDeviceInfo Device20_OTAA { get; private set; }
 
+        // Device21_ABP: Preferred 2nd window
+        public TestDeviceInfo Device21_ABP { get; private set; }
+
         // Device1001_Simulated_ABP: used for ABP simulator
         public TestDeviceInfo Device1001_Simulated_ABP { get; private set; }
 
@@ -367,7 +370,6 @@ namespace LoRaWan.IntegrationTest
             this.Device19_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000000019",
-                AppEUI = "0000000000000019",
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
@@ -385,6 +387,19 @@ namespace LoRaWan.IntegrationTest
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
+            };
+
+            // Device21_ABP: Preferred 2nd window
+            this.Device21_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000021",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+                SensorDecoder = "DecoderValueSensor",
+                AppSKey = "00000000000000000000000000000021",
+                NwkSKey = "00000000000000000000000000000021",
+                DevAddr = "00000021",
+                PreferredWindow = 2,
             };
 
 
@@ -620,7 +635,7 @@ namespace LoRaWan.IntegrationTest
                     var desiredProperties = testDevice.GetDesiredProperties();
                     foreach (var kv in desiredProperties)
                     {
-                        if (!deviceTwin.Properties.Desired.Contains(kv.Key) || (string)deviceTwin.Properties.Desired[kv.Key] != kv.Value)
+                        if (!deviceTwin.Properties.Desired.Contains(kv.Key) || deviceTwin.Properties.Desired[kv.Key].ToString() != kv.Value.ToString())
                         {
                             var existingValue = string.Empty;
                             if (deviceTwin.Properties.Desired.Contains(kv.Key))

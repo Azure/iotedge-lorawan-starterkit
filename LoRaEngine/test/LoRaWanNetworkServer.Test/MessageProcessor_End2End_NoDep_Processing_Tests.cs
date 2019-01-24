@@ -976,5 +976,56 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceApi.VerifyAll();
             loRaDeviceClient.VerifyAll();
         }
+
+        /// <summary>
+        /// Tests that a ABP device without AppSKey should not send message to IoT Hub
+        /// </summary>
+        [Theory]
+        [InlineData(TwinProperty.AppSKey)]
+        [InlineData(TwinProperty.NwkSKey)]
+        [InlineData(TwinProperty.DevAddr)]
+        public async Task ABP_When_AppSKey_Or_NwkSKey_Or_DevAddr_Is_Missing_Should_Not_Send_Message_To_Hub(string missingProperty)
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
+            loRaDevice.SensorDecoder = "DecoderValueSensor";
+
+            // will get the device twin without AppSKey
+            var twin = TestUtils.CreateABPTwin(simulatedDevice);
+            twin.Properties.Desired[missingProperty] = null;
+            loRaDeviceClient.Setup(x => x.GetTwinAsync())
+                    .ReturnsAsync(twin);
+
+            // Lora device api
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+
+            // will search for the device twice
+            loRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(loRaDevice.DevAddr))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(loRaDevice.DevAddr, loRaDevice.DevEUI, "aaa").AsList()));
+
+            // using factory to create mock of
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, new MemoryCache(new MemoryCacheOptions()), loRaDeviceApi.Object, loRaDeviceFactory);
+
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(this.ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+
+            // Send to message processor
+            var messageProcessor = new MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                frameCounterUpdateStrategyFactory,
+                new LoRaPayloadDecoder());
+
+            // message should not be processed
+            Assert.Null(await messageProcessor.ProcessMessageAsync(simulatedDevice.CreateUnconfirmedMessageUplink("1234").Rxpk[0]));
+
+            var devicesByDevAddr = deviceRegistry.InternalGetCachedDevicesForDevAddr(simulatedDevice.DevAddr);
+            Assert.Empty(devicesByDevAddr);
+
+            loRaDeviceApi.VerifyAll();
+            loRaDeviceClient.VerifyAll();
+        }
     }
 }

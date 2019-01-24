@@ -4,13 +4,10 @@
 namespace LoRaWan.NetworkServer.Test
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
+    using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Test.Shared;
+    using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
     using Moq;
 
@@ -33,6 +30,8 @@ namespace LoRaWan.NetworkServer.Test
         private readonly Mock<ILoRaDeviceRegistry> loRaDeviceRegistry;
 
         protected Mock<ILoRaDeviceRegistry> LoRaDeviceRegistry => this.loRaDeviceRegistry;
+
+        protected Task<Message> EmptyAdditionalMessageReceiveAsync => Task.Delay(LoRaOperationTimeWatcher.AdditionalCloudToDeviceMessageAvailableTime).ContinueWith((_) => (Message)null);
 
         public MessageProcessorTestBase()
         {

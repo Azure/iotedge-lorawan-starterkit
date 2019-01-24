@@ -113,10 +113,11 @@ namespace LoRaWan.Test.Shared
             return payloadData;
         }
 
+        public UplinkPktFwdMessage CreateConfirmedMessageUplink(string data, int? fcnt = null, byte fport = 1) => this.CreateConfirmedDataUpMessage(data, fcnt, fport).SerializeUplink(this.AppSKey, this.NwkSKey);
+
         /// <summary>
         /// Creates request to send unconfirmed data message
         /// </summary>
-        /// <returns></returns>
         public LoRaPayloadData CreateConfirmedDataUpMessage(string data, int? fcnt = null, byte fport = 1)
         {
             byte[] devAddr = ConversionHelper.StringToByteArray(this.LoRaDevice.DevAddr);
