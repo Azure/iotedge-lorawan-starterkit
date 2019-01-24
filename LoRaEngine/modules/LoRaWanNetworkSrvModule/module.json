@@ -12,7 +12,7 @@
       }
     },
     "buildOptions": [],
-    "contextPath": "./"
+    "contextPath": "../../../"
   },
   "language": "csharp"
 }

@@ -1,20 +1,19 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using LoRaWan.NetworkServer;
-using LoRaWan.Shared;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Net.Http;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using LoRaWan.NetworkServer;
+    using LoRaWan.Shared;
+    using Xunit;
+
     public class ServiceFacadeHttpClientHandlerTest
     {
         private HttpResponseMessage fakeHttpResponseMessage;
@@ -150,7 +149,6 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal("Version mismatch (expected: 2019-01-30-preview, function version: 2018-01-01-preview), ensure you have the latest version deployed", response.ReasonPhrase);
             Assert.Equal("https://mytest.test.com/api/Function1?code=aaabbbb&api-version=2019-01-30-preview", this.fakeRequestedUri.ToString());
         }
-
 
         [Fact]
         public async Task When_Function_Returns_Error_Does_Not_Check_Version_Compatibility()

@@ -61,11 +61,7 @@ jobs:
   steps:
   # build LoRa Engine
   - script: dotnet build --configuration $(buildConfiguration) ./LoRaEngine/LoRaEngine.sln
-    displayName: Build LoRa Engine        
-
-  # build LoraKeysManagerFacade
-  - script: dotnet build --configuration $(buildConfiguration) ./LoRaEngine/LoraKeysManagerFacade
-    displayName: Build LoraKeysManagerFacade    
+    displayName: Build LoRa Engine
 
   # build C# Samples/DecoderSample
   - script: dotnet build --configuration $(buildConfiguration) ./Samples/DecoderSample

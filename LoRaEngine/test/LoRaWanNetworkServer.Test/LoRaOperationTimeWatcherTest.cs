@@ -1,14 +1,13 @@
-//
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using LoRaTools.Regions;
-using LoRaWan.NetworkServer;
-using System;
-using Xunit;
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
+    using LoRaTools.Regions;
+    using LoRaWan.NetworkServer;
+    using Xunit;
+
     // Tests of the LoRa Operation time watcher
     public class LoRaOperationTimeWatcherTest
     {
@@ -113,7 +112,6 @@ namespace LoRaWan.NetworkServer.Test
 
             Assert.Equal(1, target.ResolveJoinAcceptWindowToUse(loRaDevice));
         }
-
 
         [Theory]
         [InlineData(4900)]

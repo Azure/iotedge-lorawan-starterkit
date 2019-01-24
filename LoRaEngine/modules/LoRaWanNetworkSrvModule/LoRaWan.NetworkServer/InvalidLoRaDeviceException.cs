@@ -1,12 +1,11 @@
-//
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using System;
-using System.Runtime.Serialization;
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Runtime.Serialization;
+
     /// <summary>
     /// Defines a error loading a LoRaDevice
     /// </summary>
@@ -17,15 +16,18 @@ namespace LoRaWan.NetworkServer
         {
         }
 
-        public InvalidLoRaDeviceException(string message) : base(message)
+        public InvalidLoRaDeviceException(string message)
+            : base(message)
         {
         }
 
-        public InvalidLoRaDeviceException(string message, Exception innerException) : base(message, innerException)
+        public InvalidLoRaDeviceException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
 
-        protected InvalidLoRaDeviceException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected InvalidLoRaDeviceException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
     }

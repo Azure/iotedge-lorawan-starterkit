@@ -1,21 +1,18 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using LoRaWan.NetworkServer;
-using LoRaWan.Test.Shared;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Extensions.Caching.Memory;
-using Moq;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Xunit;
-
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using LoRaWan.NetworkServer;
+    using LoRaWan.Test.Shared;
+    using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Caching.Memory;
+    using Moq;
+    using Xunit;
+
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     public class MessageProcessor_End2End_NoDep_Join_Slow_Twin_Update_Tests : MessageProcessorTestBase
     {
@@ -25,7 +22,7 @@ namespace LoRaWan.NetworkServer.Test
         /// <param name="deviceGatewayID"></param>
         /// <returns></returns>
         [Theory]
-        [InlineData(MessageProcessorTestBase.ServerGatewayID)]
+        [InlineData(ServerGatewayID)]
         [InlineData(null)]
         public async Task When_First_Join_Fails_Due_To_Slow_Twin_Update_Retry_Second_Attempt_Should_Succeed(string deviceGatewayID)
         {
@@ -36,7 +33,6 @@ namespace LoRaWan.NetworkServer.Test
             // Create Rxpk
             var joinRequestRxpk1 = joinRequest1.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
             var joinRequestRxpk2 = joinRequest2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
-
 
             var joinRequestDevNonce1 = joinRequest1.GetDevNonceAsString();
             var joinRequestDevNonce2 = joinRequest2.GetDevNonceAsString();
@@ -54,7 +50,7 @@ namespace LoRaWan.NetworkServer.Test
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             loRaDeviceClient.Setup(x => x.GetTwinAsync())
-                .ReturnsAsync(twin);                
+                .ReturnsAsync(twin);
 
             // Device twin will be updated
             string afterJoin1AppSKey = null;
@@ -87,26 +83,25 @@ namespace LoRaWan.NetworkServer.Test
 
             // Lora device api will be search by devices with matching deveui,
             var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            loRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce1))
+            loRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(this.ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce1))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            loRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce2))
+            loRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(this.ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce2))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            // using factory to create mock of 
+            // using factory to create mock of
             var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
 
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
 
-            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(this.ServerConfiguration.GatewayID, loRaDeviceApi.Object);
 
             var messageProcessor = new MessageProcessor(
                 this.ServerConfiguration,
                 deviceRegistry,
                 frameCounterUpdateStrategyFactory,
-                new LoRaPayloadDecoder()
-                );
+                new LoRaPayloadDecoder());
 
             var joinRequestTask1 = messageProcessor.ProcessMessageAsync(joinRequestRxpk1);
 

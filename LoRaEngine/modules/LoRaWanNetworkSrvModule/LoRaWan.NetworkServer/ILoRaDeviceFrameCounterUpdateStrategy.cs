@@ -1,13 +1,11 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using System;
-using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Threading.Tasks;
+
     // Defines a contract to handle device frame counters
     // A device has 2 frame counters
     // Up:   messages coming from the device (D2C)

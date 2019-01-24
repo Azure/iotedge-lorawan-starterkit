@@ -1,12 +1,10 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using System.Net.Http;
 
 namespace LoRaWan.NetworkServer
 {
+    using System.Net.Http;
+
     /// <summary>
     /// Provides a <see cref="HttpClient"/> to access Service Facade API
     /// </summary>

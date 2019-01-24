@@ -1,15 +1,14 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using Microsoft.Azure.Devices.Shared;
-using Moq;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using Microsoft.Azure.Devices.Shared;
+    using Moq;
+    using Xunit;
+
     /// <summary>
     /// Tests the <see cref="LoRaDevice"/>
     /// </summary>
@@ -63,7 +62,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true);
 
             target.SetFcntUp(12);
-            Assert.Equal(12, target.FCntUp);            
+            Assert.Equal(12, target.FCntUp);
             await target.SaveFrameCountChangesAsync();
         }
 
@@ -87,36 +86,34 @@ namespace LoRaWan.NetworkServer.Test
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    {"AppEUI", "ABC0200000000009" },
-                    {"AppKey", "ABC02000000000000000000000000009"},
-                    {"GatewayID", "mygateway"},
-                    {"SensorDecoder", "DecoderValueSensor"},
-                    {"$version", 1},
+                    { "AppEUI", "ABC0200000000009" },
+                    { "AppKey", "ABC02000000000000000000000000009" },
+                    { "GatewayID", "mygateway" },
+                    { "SensorDecoder", "DecoderValueSensor" },
+                    { "$version", 1 },
                 },
                 reported: new Dictionary<string, object>
                 {
-                    {"$version", 1},
-                }
-            );
+                    { "$version", 1 },
+                });
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
-            var loRaDevice = new LoRaDevice("", "ABC0200000000009", this.loRaDeviceClient.Object);
+            var loRaDevice = new LoRaDevice(string.Empty, "ABC0200000000009", this.loRaDeviceClient.Object);
             await loRaDevice.InitializeAsync();
             Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
             Assert.Equal("ABC02000000000000000000000000009", loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
-            Assert.Empty(loRaDevice.AppSKey ?? "");
-            Assert.Empty(loRaDevice.NwkSKey ?? "");
-            Assert.Empty(loRaDevice.DevAddr ?? "");
-            Assert.Empty(loRaDevice.DevNonce ?? "");
-            Assert.Empty(loRaDevice.NetID ?? "");
+            Assert.Empty(loRaDevice.AppSKey ?? string.Empty);
+            Assert.Empty(loRaDevice.NwkSKey ?? string.Empty);
+            Assert.Empty(loRaDevice.DevAddr ?? string.Empty);
+            Assert.Empty(loRaDevice.DevNonce ?? string.Empty);
+            Assert.Empty(loRaDevice.NetID ?? string.Empty);
             Assert.False(loRaDevice.IsABP);
             Assert.False(loRaDevice.IsOurDevice);
         }
-
 
         [Fact]
         public async Task When_Initialized_Joined_OTAA_Device_Should_Have_All_Properties()
@@ -124,21 +121,20 @@ namespace LoRaWan.NetworkServer.Test
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    {"AppEUI", "ABC0200000000009" },
-                    {"AppKey", "ABC02000000000000000000000000009"},
-                    {"GatewayID", "mygateway"},
-                    {"SensorDecoder", "DecoderValueSensor"},
-                    {"$version", 1},
+                    { "AppEUI", "ABC0200000000009" },
+                    { "AppKey", "ABC02000000000000000000000000009" },
+                    { "GatewayID", "mygateway" },
+                    { "SensorDecoder", "DecoderValueSensor" },
+                    { "$version", 1 },
                 },
                 reported: new Dictionary<string, object>
                 {
-                    {"$version", 1},
-                    {"NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    {"AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009"},
-                    {"DevNonce", "0123"},
-                    {"DevAddr", "0000AABB"},
-                }
-            );
+                    { "$version", 1 },
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevNonce", "0123" },
+                    { "DevAddr", "0000AABB" },
+                });
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
@@ -163,36 +159,35 @@ namespace LoRaWan.NetworkServer.Test
             var twin = TestUtils.CreateTwin(
                 desired: new Dictionary<string, object>
                 {
-                    {"NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    {"AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009"},
-                    {"DevAddr", "0000AABB"},
-                    {"GatewayID", "mygateway"},
-                    {"SensorDecoder", "DecoderValueSensor"},
-                    {"$version", 1},
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                    { "GatewayID", "mygateway" },
+                    { "SensorDecoder", "DecoderValueSensor" },
+                    { "$version", 1 },
                 },
                 reported: new Dictionary<string, object>
                 {
-                    {"$version", 1},
-                    {"NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
-                    {"AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009"},
-                    {"DevAddr", "0000AABB"},
-                }
-            );
+                    { "$version", 1 },
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                });
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
             var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
             await loRaDevice.InitializeAsync();
-            Assert.Empty(loRaDevice.AppEUI ?? "");
-            Assert.Empty(loRaDevice.AppKey ?? "");
+            Assert.Empty(loRaDevice.AppEUI ?? string.Empty);
+            Assert.Empty(loRaDevice.AppKey ?? string.Empty);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
             Assert.True(loRaDevice.IsABP);
             Assert.True(loRaDevice.IsOurDevice);
             Assert.Equal("ABC02000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.NwkSKey);
             Assert.Equal("ABCD2000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.AppSKey);
-            Assert.Empty(loRaDevice.DevNonce ?? "");
+            Assert.Empty(loRaDevice.DevNonce ?? string.Empty);
             Assert.Equal("0000AABB", loRaDevice.DevAddr);
         }
     }

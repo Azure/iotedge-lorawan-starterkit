@@ -1,18 +1,18 @@
-//
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using System;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+
     public class CaseInsensitiveEnvironmentVariables
     {
         private readonly Dictionary<string, string> envVars;
 
-        public CaseInsensitiveEnvironmentVariables() : this(Environment.GetEnvironmentVariables())
+        public CaseInsensitiveEnvironmentVariables()
+            : this(Environment.GetEnvironmentVariables())
         {
         }
 
@@ -25,7 +25,6 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-
         public int GetEnvVar(string key, int defaultValue)
         {
             var value = defaultValue;
@@ -34,11 +33,11 @@ namespace LoRaWan.NetworkServer
                 if (int.TryParse(envValue, out var parsedValue))
                     value = parsedValue;
             }
-            
+
             return value;
         }
 
-         public uint GetEnvVar(string key, uint defaultValue)
+        public uint GetEnvVar(string key, uint defaultValue)
         {
             var value = defaultValue;
             if (this.envVars.TryGetValue(key, out var envValue))
@@ -46,7 +45,7 @@ namespace LoRaWan.NetworkServer
                 if (uint.TryParse(envValue, out var parsedValue))
                     value = parsedValue;
             }
-            
+
             return value;
         }
 
@@ -58,7 +57,7 @@ namespace LoRaWan.NetworkServer
                 if (double.TryParse(envValue, out var parsedValue))
                     value = parsedValue;
             }
-            
+
             return value;
         }
 
@@ -70,7 +69,7 @@ namespace LoRaWan.NetworkServer
                 if (bool.TryParse(envValue, out var parsedValue))
                     value = parsedValue;
             }
-            
+
             return value;
         }
 
@@ -79,9 +78,8 @@ namespace LoRaWan.NetworkServer
             var value = defaultValue;
             if (this.envVars.TryGetValue(key, out var envValue))
                 value = envValue;
+
             return value;
         }
-
     }
-
 }

@@ -1,19 +1,16 @@
-//
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using LoRaWan.NetworkServer;
-using System;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
+    using System.Text;
+    using System.Threading.Tasks;
+    using LoRaWan.NetworkServer;
+    using Xunit;
 
     public class LoRaPayloadDecoderTest
     {
-
         [Theory]
         [InlineData("DecoderValueSensor", "1234", 1)]
         [InlineData("DecoderValueSensor", "1234", 2)]

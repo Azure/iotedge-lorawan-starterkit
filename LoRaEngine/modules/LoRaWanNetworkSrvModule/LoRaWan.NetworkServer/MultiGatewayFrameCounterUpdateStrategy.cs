@@ -1,13 +1,11 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using System;
-using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Threading.Tasks;
+
     // Frame counter strategy for multi gateway scenarios
     // Frame Down counters is resolved by calling the LoRa device API. Only a single caller will received a valid frame counter (> 0)
     public class MultiGatewayFrameCounterUpdateStrategy : ILoRaDeviceFrameCounterUpdateStrategy
@@ -25,9 +23,9 @@ namespace LoRaWan.NetworkServer
         {
             loRaDevice.SetFcntUp(0);
             loRaDevice.SetFcntDown(0);
-            if (await InternalSaveChangesAsync(loRaDevice, force: true))
+            if (await this.InternalSaveChangesAsync(loRaDevice, force: true))
             {
-                return await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI);  
+                return await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI);
             }
 
             return false;
@@ -36,7 +34,7 @@ namespace LoRaWan.NetworkServer
         public async ValueTask<int> NextFcntDown(LoRaDevice loRaDevice, int messageFcnt)
         {
             var result = await this.loRaDeviceAPIService.NextFCntDownAsync(
-                devEUI: loRaDevice.DevEUI, 
+                devEUI: loRaDevice.DevEUI,
                 fcntDown: loRaDevice.FCntDown,
                 fcntUp: messageFcnt,
                 gatewayId: this.gatewayID);
@@ -44,12 +42,12 @@ namespace LoRaWan.NetworkServer
             if (result > 0)
             {
                 loRaDevice.SetFcntDown(result);
-            }            
+            }
 
             return result;
         }
 
-        public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => InternalSaveChangesAsync(loRaDevice, force: false);
+        public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => this.InternalSaveChangesAsync(loRaDevice, force: false);
 
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {

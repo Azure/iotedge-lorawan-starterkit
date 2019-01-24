@@ -1,12 +1,10 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer
 {
+    using System.Threading.Tasks;
+
     public class SingleGatewayFrameCounterUpdateStrategy : ILoRaDeviceFrameCounterUpdateStrategy, ILoRaDeviceInitializer
     {
         public SingleGatewayFrameCounterUpdateStrategy()
@@ -17,7 +15,7 @@ namespace LoRaWan.NetworkServer
         {
             loRaDevice.SetFcntUp(0);
             loRaDevice.SetFcntDown(0);
-            return await InternalSaveChangesAsync(loRaDevice, force: true);
+            return await this.InternalSaveChangesAsync(loRaDevice, force: true);
         }
 
         public ValueTask<int> NextFcntDown(LoRaDevice loRaDevice, int messageFcnt)
@@ -25,7 +23,7 @@ namespace LoRaWan.NetworkServer
             return new ValueTask<int>(loRaDevice.IncrementFcntDown(1));
         }
 
-        public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => InternalSaveChangesAsync(loRaDevice, force: false);
+        public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => this.InternalSaveChangesAsync(loRaDevice, force: false);
 
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {
@@ -47,7 +45,7 @@ namespace LoRaWan.NetworkServer
                 loRaDevice.IncrementFcntDown(10);
 
                 // do not save the changes
-                //loRaDevice.AcceptFrameCountChanges();
+                // loRaDevice.AcceptFrameCountChanges();
             }
         }
     }

@@ -1,19 +1,22 @@
 FROM microsoft/dotnet:2.1-sdk AS build-env
-WORKDIR /app
 
-COPY ./Logger ./Logger
-COPY ./LoRaWan.NetworkServer ./LoRaWan.NetworkServer
-COPY ./LoRaWanNetworkSrvModule ./LoRaWanNetworkSrvModule
-COPY ./LoraTools ./LoraTools
+WORKDIR /build
+COPY ./stylecop.* ./
 
-WORKDIR ./LoRaWanNetworkSrvModule
+WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger ./Logger
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools ./LoraTools
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer ./LoRaWan.NetworkServer
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule ./LoRaWanNetworkSrvModule
+
+WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule
 RUN dotnet restore
 
 RUN dotnet publish -c Debug -o out
 
 FROM microsoft/dotnet:2.1-runtime
 WORKDIR /app
-COPY --from=build-env /app/LoRaWanNetworkSrvModule/out/* ./
+COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
 
 RUN useradd -ms /bin/bash moduleuser
 USER moduleuser

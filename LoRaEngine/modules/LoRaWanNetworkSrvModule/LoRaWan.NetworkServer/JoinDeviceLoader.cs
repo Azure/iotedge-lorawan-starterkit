@@ -1,13 +1,11 @@
-//
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using System;
-using System.Threading.Tasks;
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Loads devices for join requests
     /// This object remains in cache until join succeeds or timeout expires (2 minutes)
@@ -19,31 +17,32 @@ namespace LoRaWan.NetworkServer
         Task<LoRaDevice> loading;
 
         volatile bool canCache;
-        internal bool CanCache => canCache;
+
+        internal bool CanCache => this.canCache;
 
         internal JoinDeviceLoader(IoTHubDeviceInfo ioTHubDevice, ILoRaDeviceFactory deviceFactory)
         {
             this.ioTHubDevice = ioTHubDevice;
             this.deviceFactory = deviceFactory;
             this.canCache = true;
-            this.loading = LoadAsync();
+            this.loading = this.LoadAsync();
         }
 
         // Waits until device is created
-        internal Task<LoRaDevice> WaitCompleteAsync() => loading;
+        internal Task<LoRaDevice> WaitCompleteAsync() => this.loading;
 
         async Task<LoRaDevice> LoadAsync()
         {
-            var loRaDevice = this.deviceFactory.Create(ioTHubDevice);
-            
+            var loRaDevice = this.deviceFactory.Create(this.ioTHubDevice);
+
             try
             {
                 Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", Logger.LoggingLevel.Info);
-                
+
                 if (await loRaDevice.InitializeAsync())
                 {
                     Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
-                
+
                     return loRaDevice;
                 }
                 else
