@@ -169,7 +169,7 @@ namespace LoRaWan.Test.Shared
             packetForwarder.SubscribeOnce(token, PhysicalIdentifier.PULL_RESP, (response) =>
             {
                 var txpk = Txpk.CreateTxpk(response, this.AppKey);
-                byte[] convertedInputMessage = Convert.FromBase64String(txpk.data);
+                byte[] convertedInputMessage = Convert.FromBase64String(txpk.Data);
                 var joinAccept = new LoRaPayloadJoinAccept(convertedInputMessage, this.AppKey);
 
                 // handle join

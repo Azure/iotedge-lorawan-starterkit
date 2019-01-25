@@ -58,7 +58,6 @@ namespace LoRaWan.IntegrationTest
                     TestLogger.Log($"Error opening serial port '{port}': {ex.ToString()}");
                     throw;
                 }
-                
             }
 
             return result;

@@ -39,9 +39,9 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var joinRxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
+            var joinRxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
-            var devNonce = ConversionHelper.ByteArrayToString(joinRequest.DevNonce);
+            var devNonce = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequest.DevNonce);
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
             var appEUI = simulatedDevice.LoRaDevice.AppEUI;
@@ -115,7 +115,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var downlinkJoinAcceptMessage = await messageProcessor.ProcessMessageAsync(joinRxpk);
             Assert.NotNull(downlinkJoinAcceptMessage);
-            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkJoinAcceptMessage.txpk.data), simulatedDevice.LoRaDevice.AppKey);
+            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkJoinAcceptMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
 
             // check that the device is in cache
@@ -145,7 +145,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("100", fcnt: startingPayloadFcnt);
-            var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0]);
+            var unconfirmedMessageResult = await messageProcessor.ProcessMessageAsync(unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0]);
             Assert.Null(unconfirmedMessageResult);
 
             // fcnt up was updated
@@ -162,18 +162,18 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
-            var confirmedMessageRxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).rxpk[0];
+            var confirmedMessageRxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var confirmedMessage = await messageProcessor.ProcessMessageAsync(confirmedMessageRxpk);
             Assert.NotNull(confirmedMessage);
-            Assert.NotNull(confirmedMessage.txpk);
+            Assert.NotNull(confirmedMessage.Txpk);
             Assert.Equal(2, sentTelemetry.Count);
 
             // validates txpk according to eu region
-            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(confirmedMessageRxpk), confirmedMessage.txpk.freq);
-            Assert.Equal("4/5", confirmedMessage.txpk.codr);
-            Assert.False(confirmedMessage.txpk.imme);
-            Assert.True(confirmedMessage.txpk.ipol);
-            Assert.Equal("LORA", confirmedMessage.txpk.modu);
+            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(confirmedMessageRxpk), confirmedMessage.Txpk.Freq);
+            Assert.Equal("4/5", confirmedMessage.Txpk.Codr);
+            Assert.False(confirmedMessage.Txpk.Imme);
+            Assert.True(confirmedMessage.Txpk.Ipol);
+            Assert.Equal("LORA", confirmedMessage.Txpk.Modu);
 
             // fcnt up was updated
             Assert.Equal(startingPayloadFcnt + 1, loRaDevice.FCntUp);
@@ -202,7 +202,7 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest1 = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var joinRequestRxpk1 = joinRequest1.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
+            var joinRequestRxpk1 = joinRequest1.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
 
             var joinRequestDevNonce1 = ConversionHelper.ByteArrayToString(joinRequest1.DevNonce);
             var devAddr = string.Empty;
@@ -266,11 +266,11 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(this.ServerConfiguration.GatewayID, devEUI, appEUI, ConversionHelper.ByteArrayToString(joinRequest2.DevNonce)))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            var joinRequestRxpk2 = joinRequest2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
-            var joinRequestDevNonce2 = ConversionHelper.ByteArrayToString(joinRequest2.DevNonce);
+            var joinRequestRxpk2 = joinRequest2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
+            var joinRequestDevNonce2 = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequest2.DevNonce);
             var joinRequestDownlinkMessage2 = await messageProcessor.ProcessMessageAsync(joinRequestRxpk2);
             Assert.NotNull(joinRequestDownlinkMessage2);
-            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinRequestDownlinkMessage2.txpk.data), simulatedDevice.LoRaDevice.AppKey);
+            var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinRequestDownlinkMessage2.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             Assert.Equal(joinAccept.DevAddr.ToArray(), ConversionHelper.StringToByteArray(afterJoinDevAddr));
 
             var devicesForDevAddr = deviceRegistry.InternalGetCachedDevicesForDevAddr(afterJoinDevAddr);
@@ -311,7 +311,7 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var joinRequestRxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).rxpk[0];
+            var joinRequestRxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).Rxpk[0];
 
             var joinRequestDevNonce = ConversionHelper.ByteArrayToString(joinRequest.DevNonce);
             var devAddr = string.Empty;
@@ -367,7 +367,7 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var joinRequestRxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).rxpk[0];
+            var joinRequestRxpk = joinRequest.SerializeUplink(simulatedDevice.AppKey).Rxpk[0];
 
             var joinRequestDevNonce = ConversionHelper.ByteArrayToString(joinRequest.DevNonce);
             var devAddr = string.Empty;
@@ -428,8 +428,8 @@ namespace LoRaWan.NetworkServer.Test
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
             // Create Rxpk
-            var joinRxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).rxpk[0];
-            joinRxpk.rfch = rfch;
+            var joinRxpk = joinRequest.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
+            joinRxpk.Rfch = rfch;
 
             var devNonce = ConversionHelper.ByteArrayToString(joinRequest.DevNonce);
             var devAddr = string.Empty;
@@ -474,12 +474,12 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkJoinAcceptMessage = await messageProcessor.ProcessMessageAsync(joinRxpk);
             Assert.NotNull(downlinkJoinAcceptMessage);
             // validates txpk according to eu region
-            Assert.Equal(0U, downlinkJoinAcceptMessage.txpk.rfch);
-            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(joinRxpk), downlinkJoinAcceptMessage.txpk.freq);
-            Assert.Equal("4/5", downlinkJoinAcceptMessage.txpk.codr);
-            Assert.False(downlinkJoinAcceptMessage.txpk.imme);
-            Assert.True(downlinkJoinAcceptMessage.txpk.ipol);
-            Assert.Equal("LORA", downlinkJoinAcceptMessage.txpk.modu);
+            Assert.Equal(0U, downlinkJoinAcceptMessage.Txpk.Rfch);
+            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(joinRxpk), downlinkJoinAcceptMessage.Txpk.Freq);
+            Assert.Equal("4/5", downlinkJoinAcceptMessage.Txpk.Codr);
+            Assert.False(downlinkJoinAcceptMessage.Txpk.Imme);
+            Assert.True(downlinkJoinAcceptMessage.Txpk.Ipol);
+            Assert.Equal("LORA", downlinkJoinAcceptMessage.Txpk.Modu);
 
             loRaDeviceClient.VerifyAll();
             loRaDeviceApi.VerifyAll();
@@ -532,10 +532,10 @@ namespace LoRaWan.NetworkServer.Test
                 new LoRaPayloadDecoder());
 
             // 1st join request
-            var joinRequest1Response = messageProcessor.ProcessMessageAsync(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).rxpk[0]);
+            var joinRequest1Response = messageProcessor.ProcessMessageAsync(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
 
             // 2nd join request
-            var joinRequest2Response = messageProcessor.ProcessMessageAsync(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).rxpk[0]);
+            var joinRequest2Response = messageProcessor.ProcessMessageAsync(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
 
             await Task.WhenAll(joinRequest1Response, joinRequest2Response);
 

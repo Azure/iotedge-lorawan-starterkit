@@ -1,26 +1,26 @@
-﻿using LoRaWan;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.NetworkInformation;
-using System.Diagnostics.CodeAnalysis;
-using LoRaTools;
-using LoRaTools.LoRaMessage;
-using System.Threading;
-using System.Linq;
-using System.Diagnostics;
-using LoRaTools.LoRaPhysical;
-
-namespace LoRaSimulator
+﻿namespace LoRaSimulator
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    using System.Net;
+    using System.Net.NetworkInformation;
+    using System.Net.Sockets;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using LoRaTools;
+    using LoRaTools.LoRaMessage;
+    using LoRaTools.LoRaPhysical;
+    using LoRaWan;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+
     public class Simulator : IDisposable
     {
-        static private int PORT = 1681;
+        private static int PORT = 1681;
 
         static UdpClient udpClient;
 
@@ -49,7 +49,8 @@ namespace LoRaSimulator
             udpClient = new UdpClient(endPoint);
 
             Logger.Log($"LoRaWAN Simulator started on port {PORT}", Logger.LoggingLevel.Always);
-            //send first sync
+
+            // send first sync
             _ = Task.Factory.StartNew(async () =>
             {
                 while (true)
@@ -59,13 +60,14 @@ namespace LoRaSimulator
                     await Task.Delay(10000);
                 }
             });
+
             // Reading the test configuration
             string json = System.IO.File.ReadAllText(@"testconfig.json");
 
             var theObjects = JsonConvert.DeserializeObject<JObject>(json);
 
             var rxpk = theObjects["rxpk"];
-            gateway = new GatewayDevice(rxpk.ToString());
+            this.gateway = new GatewayDevice(rxpk.ToString());
 
             var devices = theObjects["Devices"];
 
@@ -73,7 +75,7 @@ namespace LoRaSimulator
             foreach (var device in devices)
             {
                 SimulatedDevice simulated = new SimulatedDevice(device.ToString());
-                listDevices.Add(simulated);
+                this.listDevices.Add(simulated);
 
                 // create a new thread that will post content
                 _ = Task.Factory.StartNew(async () =>
@@ -86,7 +88,7 @@ namespace LoRaSimulator
                         var rand = (random.NextDouble() - 0.5) * simulated.RandomInterval;
                         if (simulated.dt.AddSeconds(simulated.Interval + rand) < DateTimeOffset.Now)
                         {
-                            //simulated.dt = DateTimeOffset.Now;
+                            // simulated.dt = DateTimeOffset.Now;
                             // check if the device is part of a group
                             // if yes, then find all the devices and make the loop all together
                             // send all the messages together
@@ -94,15 +96,16 @@ namespace LoRaSimulator
                             List<SimulatedDevice> devgroup = new List<SimulatedDevice>();
                             if (simulated.GroupRxpk != 0)
                             {
-                                devgroup = listDevices.Where(x => x.GroupRxpk == simulated.GroupRxpk).ToList();
+                                devgroup = this.listDevices.Where(x => x.GroupRxpk == simulated.GroupRxpk).ToList();
                             }
                             else
                             {
                                 devgroup.Add(simulated);
                             }
-                            //Debug.WriteLine(JsonConvert.SerializeObject(devgroup));
+
+                            // Debug.WriteLine(JsonConvert.SerializeObject(devgroup));
                             var msg = "{\"rxpk\":[";
-                            var devicetosend = "";
+                            var devicetosend = string.Empty;
 
                             foreach (var simul in devgroup)
                             {
@@ -116,10 +119,11 @@ namespace LoRaSimulator
                                 }
                                 else
                                 {
-                                    //simulated.LastPayload = new PhysicalPayload(GetRandomToken(), PhysicalIdentifier.PUSH_DATA, null);
-                                    //var header = simulated.LastPayload.GetSyncHeader(mac);
+                                    // simulated.LastPayload = new PhysicalPayload(GetRandomToken(), PhysicalIdentifier.PUSH_DATA, null);
+                                    // var header = simulated.LastPayload.GetSyncHeader(mac);
                                     tosend = simul.GetJoinRequest();
-                                    //    var rxpkgateway = gateway.GetMessage(tosend);
+
+                                    // var rxpkgateway = gateway.GetMessage(tosend);
                                     //    var msg = "{\"rxpk\":[" + rxpkgateway + "]}";
                                     //    var gat = Encoding.Default.GetBytes(msg);
                                     //    byte[] data = new byte[header.Length + gat.Length];
@@ -127,13 +131,14 @@ namespace LoRaSimulator
                                     //    Array.Copy(gat, 0, data, header.Length, gat.Length);
                                     //    await UdpSendMessage(data);
                                 }
-                                var rxpkgateway = gateway.GetMessage(tosend);
+                                var rxpkgateway = this.gateway.GetMessage(tosend);
 
                                 msg += rxpkgateway + ",";
                                 devicetosend += simul.LoRaDevice.DevEUI + ",";
                                 simul.dt = DateTimeOffset.Now;
                             }
                             byte[] header = simulated.LastPayload.GetSyncHeader(mac);
+
                             // get rid of the the last ","
                             msg = msg.Substring(0, msg.Length - 1);
                             msg += "]}";
@@ -144,18 +149,15 @@ namespace LoRaSimulator
                             Array.Copy(gat, 0, data, header.Length, gat.Length);
 
                             await UdpSendMessage(data);
-                            Logger.Log(devicetosend, $"Sending data: {BitConverter.ToString(header).Replace("-", "")}{Encoding.Default.GetString(gat)}", Logger.LoggingLevel.Always);
+                            Logger.Log(devicetosend, $"Sending data: {BitConverter.ToString(header).Replace("-", string.Empty)}{Encoding.Default.GetString(gat)}", Logger.LoggingLevel.Always);
                         }
                     }
                 });
 
             }
 
-
-
-
             // TODO: Need to start this in a thread
-            await RunUdpListener();
+            await this.RunUdpListener();
 
         }
 
@@ -195,13 +197,11 @@ namespace LoRaSimulator
         async Task RunUdpListener()
         {
 
-
             while (true)
             {
                 UdpReceiveResult receivedResults = await udpClient.ReceiveAsync();
 
                 // Logger.Log($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}", Logger.LoggingLevel.Always);
-
 
                 // If 4, it may mean we received a confirmation
                 if (receivedResults.Buffer.Length >= 4)
@@ -210,22 +210,26 @@ namespace LoRaSimulator
                     byte[] token = new byte[2];
                     token[0] = receivedResults.Buffer[1];
                     token[1] = receivedResults.Buffer[2];
+
                     // identifier
                     var identifier = (PhysicalIdentifier)receivedResults.Buffer[3];
+
                     // Find the device
                     try
                     {
-                        foreach (var dev in listDevices)
+                        foreach (var dev in this.listDevices)
                         {
                             if (dev.LastPayload != null)
-                                if ((dev.LastPayload.token[0] == token[0]) && (dev.LastPayload.token[1] == token[1]))
+                            {
+                                if ((dev.LastPayload.Token[0] == token[0]) && (dev.LastPayload.Token[1] == token[1]))
                                 {
                                     string device = dev.LoRaDevice.DevEUI;
+
                                     // check last operation and answer
-                                    // Is is a simple push data?                                    
+                                    // Is is a simple push data?
                                     if (identifier == PhysicalIdentifier.PUSH_ACK)
                                     {
-                                        if (dev.LastPayload.identifier == PhysicalIdentifier.PUSH_DATA)
+                                        if (dev.LastPayload.Identifier == PhysicalIdentifier.PUSH_DATA)
                                         {
                                             Logger.Log(device, $"PUSH_DATA confirmation receiveced from NetworkServer", Logger.LoggingLevel.Info);
                                         }
@@ -237,15 +241,17 @@ namespace LoRaSimulator
                                     else if (identifier == PhysicalIdentifier.PULL_RESP)
                                     {
                                         // we asked something, we get an answer
-                                        var txpk=Txpk.CreateTxpk(receivedResults.Buffer, dev.LoRaDevice.AppKey);
-                                        LoRaMessageWrapper loraMessage = new LoRaMessageWrapper(txpk, dev.LoRaDevice.AppKey);
-                                    
-                                            // Check if the device is not joined, then it is maybe the answer
-                                            if ((loraMessage.LoRaMessageType == LoRaMessageType.JoinAccept) && (dev.LoRaDevice.DevAddr == ""))
+                                        var txpk =Txpk.CreateTxpk(receivedResults.Buffer, dev.LoRaDevice.AppKey);
+                                        LoRaPayload.TryCreateLoRaPayloadForSimulator(txpk, dev.LoRaDevice.AppKey, out LoRaPayload loraMessage);
+
+                                        // Check if the device is not joined, then it is maybe the answer
+                                        if ((loraMessage.LoRaMessageType == LoRaMessageType.JoinAccept) && (dev.LoRaDevice.DevAddr == string.Empty))
                                             {
                                                 Logger.Log(device, $"Received join accept", Logger.LoggingLevel.Info);
-                                                var payload = (LoRaPayloadJoinAccept)loraMessage.LoRaPayloadMessage;
-                                                // TODO Need to check if the time is not passed 
+
+                                                var payload = (LoRaPayloadJoinAccept)loraMessage;
+
+                                                // TODO Need to check if the time is not passed
 
                                                 // Calculate the keys
                                                 var netid = payload.NetID.ToArray();
@@ -261,12 +267,14 @@ namespace LoRaSimulator
                                                 dev.LoRaDevice.NetId = BitConverter.ToString(netid).Replace("-", "");
                                                 dev.LoRaDevice.AppNonce = BitConverter.ToString(appNonce).Replace("-", "");
                                                 var devAdd = payload.DevAddr;
-                                                //Array.Reverse(devAdd);
+
+                                                // Array.Reverse(devAdd);
                                                 dev.LoRaDevice.DevAddr = BitConverter.ToString(devAdd.ToArray()).Replace("-", "");
                                             }
-                                        
+
                                     }
                                 }
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -274,23 +282,24 @@ namespace LoRaSimulator
 
                         Logger.Log($"Something when wrong: {ex.Message}", Logger.LoggingLevel.Error);
                     }
-                    //if (receivedResults.Buffer[3] == (byte)PhysicalIdentifier.PUSH_ACK)
-                    //{
+
+                    // if (receivedResults.Buffer[3] == (byte)PhysicalIdentifier.PUSH_ACK)
+                    // {
                     //    //Bingo
                     //    Logger.Log($"Confirmation receiveced", Logger.LoggingLevel.Always);
-                    //}
+                    // }
                 }
 
-                //try
-                //{
+                // try
+                // {
                 //    // TODO: process the message not really implemented yet
                 //    MessageProcessor messageProcessor = new MessageProcessor();
                 //    _ = messageProcessor.processMessage(receivedResults.Buffer);
-                //}
-                //catch (Exception ex)
-                //{
+                // }
+                // catch (Exception ex)
+                // {
                 //    Logger.Log($"Error processing the message {ex.Message}", Logger.LoggingLevel.Error);
-                //}
+                // }
             }
         }
 

@@ -188,7 +188,7 @@ namespace LoRaWan.NetworkServer
             try
             {
                 var downstreamMessage = await this.messageProcessorV2.ProcessMessageAsync(rxpk, startTimeProcessing);
-                if (downstreamMessage?.txpk != null)
+                if (downstreamMessage?.Txpk != null)
                 {
                     var jsonMsg = JsonConvert.SerializeObject(downstreamMessage);
                     var messageByte = Encoding.UTF8.GetBytes(jsonMsg);

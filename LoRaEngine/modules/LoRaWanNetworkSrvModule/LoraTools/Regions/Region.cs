@@ -1,255 +1,252 @@
-﻿using LoRaTools.LoRaPhysical;
-using LoRaTools.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.Regions
 {
-    public enum RegionEnum { EU, US }
+    using System.Collections.Generic;
+    using System.Linq;
+    using LoRaTools.LoRaPhysical;
+    using LoRaTools.Utils;
+
+    public enum LoRaRegion
+    {
+        EU868,
+        US915
+    }
 
     public class Region
     {
-        static readonly Region eu;
-        static readonly Region us;
+        static readonly Region EU868;
+        static readonly Region US915;
 
         static Region()
         {
-            #region EU region
-            eu = new Region(
-                RegionEnum.EU,
+            EU868 = new Region(
+                LoRaRegion.EU868,
                 0x34,
-                 ConversionHelper.StringToByteArray("C194C1"),
-                 (frequency: 869.525, datr: 0),
-                 1,
-                 2,
-                 5,
-                 6,
-                 16384,
-                 64,
-                 32,
-                 (min: 1, max: 3)
+                ConversionHelper.StringToByteArray("C194C1"),
+                (frequency: 869.525, datr: 0),
+                1,
+                2,
+                5,
+                6,
+                16384,
+                64,
+                32,
+                (min: 1, max: 3));
+            EU868.DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
+            EU868.DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
+            EU868.DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 59));
+            EU868.DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 123));
+            EU868.DRtoConfiguration.Add(4, (configuration: "SF8BW125", maxPyldSize: 230));
+            EU868.DRtoConfiguration.Add(5, (configuration: "SF7BW125", maxPyldSize: 230));
+            EU868.DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 230));
+            EU868.DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 230)); // USED FOR GFSK
 
-                );
-            eu.DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
-            eu.DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
-            eu.DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 59));
-            eu.DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 123));
-            eu.DRtoConfiguration.Add(4, (configuration: "SF8BW125", maxPyldSize: 230));
-            eu.DRtoConfiguration.Add(5, (configuration: "SF7BW125", maxPyldSize: 230));
-            eu.DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 230));
-            eu.DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 230)); //USED FOR GFSK
+            EU868.TXPowertoMaxEIRP.Add(0, "16");
+            EU868.TXPowertoMaxEIRP.Add(1, "2");
+            EU868.TXPowertoMaxEIRP.Add(2, "4");
+            EU868.TXPowertoMaxEIRP.Add(3, "6");
+            EU868.TXPowertoMaxEIRP.Add(4, "8");
+            EU868.TXPowertoMaxEIRP.Add(5, "10");
+            EU868.TXPowertoMaxEIRP.Add(6, "12");
+            EU868.TXPowertoMaxEIRP.Add(7, "14");
 
-            eu.TXPowertoMaxEIRP.Add(0, "16");
-            eu.TXPowertoMaxEIRP.Add(1, "2");
-            eu.TXPowertoMaxEIRP.Add(2, "4");
-            eu.TXPowertoMaxEIRP.Add(3, "6");
-            eu.TXPowertoMaxEIRP.Add(4, "8");
-            eu.TXPowertoMaxEIRP.Add(5, "10");
-            eu.TXPowertoMaxEIRP.Add(6, "12");
-            eu.TXPowertoMaxEIRP.Add(7, "14");
-
-            eu.RX1DROffsetTable = new int[8, 6]{
-            { 0,0,0,0,0,0},
-            { 1,0,0,0,0,0},
-            { 2,1,0,0,0,0},
-            { 3,2,1,0,0,0},
-            { 4,3,2,1,0,0},
-            { 5,4,3,2,1,0},
-            { 6,5,4,3,2,1},
-            { 7,6,5,4,3,2} };
-            #endregion
-
-            #region US region
-            us = new Region(
-                RegionEnum.US,
+            EU868.RX1DROffsetTable = new int[8, 6]
+            {
+            { 0, 0, 0, 0, 0, 0 },
+            { 1, 0, 0, 0, 0, 0 },
+            { 2, 1, 0, 0, 0, 0 },
+            { 3, 2, 1, 0, 0, 0 },
+            { 4, 3, 2, 1, 0, 0 },
+            { 5, 4, 3, 2, 1, 0 },
+            { 6, 5, 4, 3, 2, 1 },
+            { 7, 6, 5, 4, 3, 2 }
+            };
+            US915 = new Region(
+                LoRaRegion.US915,
                 0x34,
-                 null, //no GFSK in US Band
-                 (frequency: 923.3, datr: 8),
-                 1,
-                 2,
-                 5,
-                 6,
-                 16384,
-                 64,
-                 32,
-                 (min: 1, max: 3)
-
-                );
-            us.DRtoConfiguration.Add(0, (configuration: "SF10BW125", maxPyldSize: 19));
-            us.DRtoConfiguration.Add(1, (configuration: "SF9BW125", maxPyldSize: 61));
-            us.DRtoConfiguration.Add(2, (configuration: "SF8BW125", maxPyldSize: 133));
-            us.DRtoConfiguration.Add(3, (configuration: "SF7BW125", maxPyldSize: 250));
-            us.DRtoConfiguration.Add(4, (configuration: "SF8BW500", maxPyldSize: 250));
-            us.DRtoConfiguration.Add(8, (configuration: "SF12BW500", maxPyldSize: 61));
-            us.DRtoConfiguration.Add(9, (configuration: "SF11BW500", maxPyldSize: 137));
-            us.DRtoConfiguration.Add(10, (configuration: "SF10BW500", maxPyldSize: 250));
-            us.DRtoConfiguration.Add(11, (configuration: "SF9BW500", maxPyldSize: 250));
-            us.DRtoConfiguration.Add(12, (configuration: "SF8BW500", maxPyldSize: 250));
-            us.DRtoConfiguration.Add(13, (configuration: "SF7BW500", maxPyldSize: 250));
+                null, // no GFSK in US Band
+                (frequency: 923.3, datr: 8),
+                1,
+                2,
+                5,
+                6,
+                16384,
+                64,
+                32,
+                (min: 1, max: 3));
+            US915.DRtoConfiguration.Add(0, (configuration: "SF10BW125", maxPyldSize: 19));
+            US915.DRtoConfiguration.Add(1, (configuration: "SF9BW125", maxPyldSize: 61));
+            US915.DRtoConfiguration.Add(2, (configuration: "SF8BW125", maxPyldSize: 133));
+            US915.DRtoConfiguration.Add(3, (configuration: "SF7BW125", maxPyldSize: 250));
+            US915.DRtoConfiguration.Add(4, (configuration: "SF8BW500", maxPyldSize: 250));
+            US915.DRtoConfiguration.Add(8, (configuration: "SF12BW500", maxPyldSize: 61));
+            US915.DRtoConfiguration.Add(9, (configuration: "SF11BW500", maxPyldSize: 137));
+            US915.DRtoConfiguration.Add(10, (configuration: "SF10BW500", maxPyldSize: 250));
+            US915.DRtoConfiguration.Add(11, (configuration: "SF9BW500", maxPyldSize: 250));
+            US915.DRtoConfiguration.Add(12, (configuration: "SF8BW500", maxPyldSize: 250));
+            US915.DRtoConfiguration.Add(13, (configuration: "SF7BW500", maxPyldSize: 250));
 
             for (uint i = 0; i < 15; i++)
             {
-                us.TXPowertoMaxEIRP.Add(i, (30 - i).ToString());
+                US915.TXPowertoMaxEIRP.Add(i, (30 - i).ToString());
             }
 
-
-            us.RX1DROffsetTable = new int[5, 4]{
-            { 10,9,8,8},
-            { 11,10,9,8},
-            { 12,11,10,9},
-            { 13,12,11,10},
-            { 13,13,12,11},
+            US915.RX1DROffsetTable = new int[5, 4]
+            {
+            { 10, 9, 8, 8 },
+            { 11, 10, 9, 8 },
+            { 12, 11, 10, 9 },
+            { 13, 12, 11, 10 },
+            { 13, 13, 12, 11 },
             };
-            #endregion
         }
 
-        /// <summary>
-        /// Gets European region
-        /// </summary>
-        public static Region EU => eu;
+        public LoRaRegion LoRaRegion { get; set; }
 
-        /// <summary>
-        /// Gets North American region
-        /// </summary>
-        public static Region US => us;
-
-        public RegionEnum RegionEnum { get; set; }
         public byte LoRaSyncWord { get; private set; }
+
         public byte[] GFSKSyncWord { get; private set; }
+
         /// <summary>
-        /// Datarate to configuration and max payload size (M)
+        /// Gets or sets datarate to configuration and max payload size (M)
         /// max application payload size N should be N= M-8 bytes.
         /// This is in case of absence of Fopts field.
         /// </summary>
         public Dictionary<uint, (string configuration, uint maxPyldSize)> DRtoConfiguration { get; set; } = new Dictionary<uint, (string, uint)>();
+
         /// <summary>
-        /// By default MaxEIRP is considered to be +16dBm. 
+        /// Gets or sets by default MaxEIRP is considered to be +16dBm.
         /// If the end-device cannot achieve 16dBm EIRP, the Max EIRP SHOULD be communicated to the network server using an out-of-band channel during the end-device commissioning process.
         /// </summary>
         public Dictionary<uint, string> TXPowertoMaxEIRP { get; set; } = new Dictionary<uint, string>();
+
         /// <summary>
-        /// Table to the get receive windows Offsets.
+        /// Gets or sets table to the get receive windows Offsets.
         /// X = RX1DROffset Upstream DR
         /// Y = Downstream DR in RX1 slot
         /// </summary>
         public int[,] RX1DROffsetTable { get; set; }
 
-
         /// <summary>
-        /// Default parameters for the RX2 receive Windows, This windows use a fix frequency and Data rate.
+        /// Gets or sets default parameters for the RX2 receive Windows, This windows use a fix frequency and Data rate.
         /// </summary>
         public (double frequency, uint dr) RX2DefaultReceiveWindows { get; set; }
 
         /// <summary>
-        /// Default first receive windows. [sec]
+        /// Gets or sets default first receive windows. [sec]
         /// </summary>
-        public uint receive_delay1 { get; set; }
+        public uint Receive_delay1 { get; set; }
+
         /// <summary>
-        /// Default second receive Windows. Should be receive_delay1+1 [sec].
+        /// Gets or sets default second receive Windows. Should be receive_delay1+1 [sec].
         /// </summary>
-        public uint receive_delay2 { get; set; }
+        public uint Receive_delay2 { get; set; }
+
         /// <summary>
-        /// Default Join Accept Delay for first Join Accept Windows.[sec]
+        /// Gets or sets default Join Accept Delay for first Join Accept Windows.[sec]
         /// </summary>
-        public uint join_accept_delay1 { get; set; }
+        public uint Join_accept_delay1 { get; set; }
+
         /// <summary>
-        /// Default Join Accept Delay for second Join Accept Windows. [sec]
+        /// Gets or sets default Join Accept Delay for second Join Accept Windows. [sec]
         /// </summary>
-        public uint join_accept_delay2 { get; set; }
+        public uint Join_accept_delay2 { get; set; }
+
         /// <summary>
-        /// max fcnt gap between expected and received. [#frame]
+        /// Gets or sets max fcnt gap between expected and received. [#frame]
         /// If this difference is greater than the value of MAX_FCNT_GAP then too many data frames have been lost then subsequent will be discarded
         /// </summary>
-        public int max_fcnt_gap { get; set; }
+        public int Max_fcnt_gap { get; set; }
+
         /// <summary>
-        /// Number of uplink an end device can send without asking for an ADR acknowledgement request (set ADRACKReq bit to 1). [#frame]
+        /// Gets or sets number of uplink an end device can send without asking for an ADR acknowledgement request (set ADRACKReq bit to 1). [#frame]
         /// </summary>
-        public uint adr_ack_limit { get; set; }
+        public uint Adr_ack_limit { get; set; }
+
         /// <summary>
-        /// Number of frames in which the network is required to respond to a ADRACKReq request. [#frame]
+        /// Gets or sets number of frames in which the network is required to respond to a ADRACKReq request. [#frame]
         /// If no response, during time select a lower data rate.
         /// </summary>
-        public uint adr_adr_delay { get; set; }
+        public uint Adr_adr_delay { get; set; }
+
         /// <summary>
-        /// timeout for ack transmissiont, tuple with (min,max). Value should be a delay between min and max. [sec, sec].
+        /// Gets or sets timeout for ack transmissiont, tuple with (min,max). Value should be a delay between min and max. [sec, sec].
         /// If  an  end-­device  does  not  receive  a  frame  with  the  ACK  bit  set  in  one  of  the  two  receive  19   windows  immediately  following  the  uplink  transmission  it  may  resend  the  same  frame  with  20   the  same  payload  and  frame  counter  again  at  least  ACK_TIMEOUT  seconds  after  the  21   second  reception  window
         /// </summary>
-        public (uint min, uint max) ack_timeout { get; set; }
+        public (uint min, uint max) Ack_timeout { get; set; }
 
-        public Region(RegionEnum regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, uint datr) rX2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
+        public Region(LoRaRegion regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, uint datr) rX2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
         {
-            this.RegionEnum = regionEnum;
+            this.LoRaRegion = regionEnum;
+            this.Ack_timeout = ack_timeout;
 
-            LoRaSyncWord = loRaSyncWord;
-            GFSKSyncWord = gFSKSyncWord;
+            this.LoRaSyncWord = loRaSyncWord;
+            this.GFSKSyncWord = gFSKSyncWord;
 
-            RX2DefaultReceiveWindows = rX2DefaultReceiveWindows;
-            this.receive_delay1 = receive_delay1;
-            this.receive_delay2 = receive_delay2;
-            this.join_accept_delay1 = join_accept_delay1;
-            this.join_accept_delay2 = join_accept_delay2;
-            this.max_fcnt_gap = max_fcnt_gap;
-            this.adr_ack_limit = adr_ack_limit;
-            this.adr_adr_delay = adr_adr_delay;
-            this.ack_timeout = ack_timeout;
+            this.RX2DefaultReceiveWindows = rX2DefaultReceiveWindows;
+            this.Receive_delay1 = receive_delay1;
+            this.Receive_delay2 = receive_delay2;
+            this.Join_accept_delay1 = join_accept_delay1;
+            this.Join_accept_delay2 = join_accept_delay2;
+            this.Max_fcnt_gap = max_fcnt_gap;
+            this.Adr_ack_limit = adr_ack_limit;
+            this.Adr_adr_delay = adr_adr_delay;
         }
 
         /// <summary>
         /// Implement correct logic to get the correct transmission frequency based on the region.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
-        /// <returns></returns>
         public double GetDownstreamChannel(Rxpk upstreamChannel)
         {
-            if (this.RegionEnum == RegionEnum.EU)
+            if (this.LoRaRegion == LoRaRegion.EU868)
             {
-                //in case of EU, you respond on same frequency as you sent data.
-                return upstreamChannel.freq;
+                // in case of EU, you respond on same frequency as you sent data.
+                return upstreamChannel.Freq;
             }
-            else if (this.RegionEnum == RegionEnum.US)           
+            else if (this.LoRaRegion == LoRaRegion.US915)
             {
                 int channelNumber;
-                if (upstreamChannel.datr == "SF8BW500") //==DR4
+                if (upstreamChannel.Datr == "SF8BW500")
                 {
-                    channelNumber = 64 + (int)((upstreamChannel.freq - 903) / 1.6);
+                    // ==DR4
+                    channelNumber = 64 + (int)((upstreamChannel.Freq - 903) / 1.6);
                 }
-                else //if not DR4 other encoding
+                else
                 {
-                    channelNumber = (int)((upstreamChannel.freq - 902.3) / 0.2);
+                    // if not DR4 other encoding
+                    channelNumber = (int)((upstreamChannel.Freq - 902.3) / 0.2);
                 }
-                return 923.3 + (channelNumber % 8) * 0.6;
+
+                return 923.3 + channelNumber % 8 * 0.6;
             }
+
             return 0;
         }
+
         /// <summary>
         /// Implement correct logic to get the downstream data rate based on the region.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
-        /// <returns></returns>
         public string GetDownstreamDR(Rxpk upstreamChannel)
         {
-            if (this.RegionEnum == RegionEnum.EU)
+            if (this.LoRaRegion == LoRaRegion.EU868)
             {
-                //in case of EU, you respond on same frequency as you sent data.
-                return upstreamChannel.datr;
+                // in case of EU, you respond on same frequency as you sent data.
+                return upstreamChannel.Datr;
             }
-            else if (this.RegionEnum == RegionEnum.US)
+            else if (this.LoRaRegion == LoRaRegion.US915)
             {
-                var dr = this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == upstreamChannel.datr).Key;
-                //TODO take care of rx1droffset
-                var DRConf = this.DRtoConfiguration[10 - dr];
-                return DRConf.configuration;
+                var dr = this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == upstreamChannel.Datr).Key;
+                // TODO take care of rx1droffset
+                var (configuration, maxPyldSize) = this.DRtoConfiguration[10 - dr];
+                return configuration;
                 // return this.DRtoConfiguration[10-dr].configuration;
             }
 
             return null;
         }
-
-
-
-
-
     }
 }

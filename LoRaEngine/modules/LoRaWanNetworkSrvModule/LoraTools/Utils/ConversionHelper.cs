@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.Utils
 {
-    public  static class ConversionHelper
+    using System;
+    using System.Text;
+
+    public static class ConversionHelper
     {
         const string HexAlphabet = "0123456789ABCDEF";
 
@@ -12,12 +14,11 @@ namespace LoRaTools.Utils
         /// Method enabling to convert a hex string to a byte array.
         /// </summary>
         /// <param name="hex">Input hex string</param>
-        /// <returns></returns>
         public static byte[] StringToByteArray(string hex)
         {
-            int NumberChars = hex.Length;
-            byte[] bytes = new byte[NumberChars / 2];
-            for (int i = 0; i < NumberChars; i += 2)
+            int numberChars = hex.Length;
+            byte[] bytes = new byte[numberChars / 2];
+            for (int i = 0; i < numberChars; i += 2)
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
             return bytes;
         }
@@ -26,12 +27,11 @@ namespace LoRaTools.Utils
         {
             var byteSpan = bytes.Span;
             var result = new StringBuilder(bytes.Length * 2);
-            
 
-            for (var i=0; i < bytes.Length; i++)
+            for (var i = 0; i < bytes.Length; i++)
             {
-                result.Append(HexAlphabet[(int)(byteSpan[i] >> 4)]);
-                result.Append(HexAlphabet[(int)(byteSpan[i] & 0xF)]);
+                result.Append(HexAlphabet[byteSpan[i] >> 4]);
+                result.Append(HexAlphabet[byteSpan[i] & 0xF]);
             }
 
             return result.ToString();
@@ -42,28 +42,26 @@ namespace LoRaTools.Utils
             var byteSpan = bytes.Span;
             var result = new StringBuilder(bytes.Length * 2);
 
-
             for (var i = bytes.Length - 1; i >= 0; --i)
             {
-                result.Append(HexAlphabet[(int)(byteSpan[i] >> 4)]);
-                result.Append(HexAlphabet[(int)(byteSpan[i] & 0xF)]);
+                result.Append(HexAlphabet[byteSpan[i] >> 4]);
+                result.Append(HexAlphabet[byteSpan[i] & 0xF]);
             }
 
             return result.ToString();
         }
 
-
         static string ByteArrayToString(byte[] bytes)
         {
-            StringBuilder Result = new StringBuilder(bytes.Length * 2);
+            StringBuilder result = new StringBuilder(bytes.Length * 2);
 
-            foreach (byte B in bytes)
+            foreach (byte b in bytes)
             {
-                Result.Append(HexAlphabet[(int)(B >> 4)]);
-                Result.Append(HexAlphabet[(int)(B & 0xF)]);
+                result.Append(HexAlphabet[b >> 4]);
+                result.Append(HexAlphabet[b & 0xF]);
             }
 
-            return Result.ToString();
+            return result.ToString();
         }
     }
 }

@@ -49,14 +49,53 @@ namespace LoRaWan.IntegrationTest
 
         const int DEFAULT_TIMEWAIT = 100;
 
-        public enum _class_type_t { CLASS_A = 0, CLASS_C };
-        public enum _physical_type_t { EU434 = 0, EU868, US915, US915HYBRID, AU915, AU915OLD, CN470, CN779, AS923, KR920, IN865 };
-        public enum _device_mode_t { LWABP = 0, LWOTAA, TEST };
-        public enum _otaa_join_cmd_t { JOIN = 0, FORCE };
-        public enum _window_delay_t { RECEIVE_DELAY1 = 0, RECEIVE_DELAY2, JOIN_ACCEPT_DELAY1, JOIN_ACCEPT_DELAY2 };
-        public enum _band_width_t { BW125 = 125, BW250 = 250, BW500 = 500 };
-        public enum _spreading_factor_t { SF12 = 12, SF11 = 11, SF10 = 10, SF9 = 9, SF8 = 8, SF7 = 7 };
-        public enum _data_rate_t { DR0 = 0, DR1, DR2, DR3, DR4, DR5, DR6, DR7, DR8, DR9, DR10, DR11, DR12, DR13, DR14, DR15 };
+        public enum _class_type_t { CLASS_A = 0,
+            CLASS_C };
+        public enum _physical_type_t { EU434 = 0,
+            EU868,
+            US915,
+            US915HYBRID,
+            AU915,
+            AU915OLD,
+            CN470,
+            CN779,
+            AS923,
+            KR920,
+            IN865 };
+        public enum _device_mode_t { LWABP = 0,
+            LWOTAA,
+            TEST };
+        public enum _otaa_join_cmd_t { JOIN = 0,
+            FORCE };
+        public enum _window_delay_t { RECEIVE_DELAY1 = 0,
+            RECEIVE_DELAY2,
+            JOIN_ACCEPT_DELAY1,
+            JOIN_ACCEPT_DELAY2 };
+        public enum _band_width_t { BW125 = 125,
+            BW250 = 250,
+            BW500 = 500 };
+        public enum _spreading_factor_t { SF12 = 12,
+            SF11 = 11,
+            SF10 = 10,
+            SF9 = 9,
+            SF8 = 8,
+            SF7 = 7 };
+        public enum _data_rate_t { DR0 = 0,
+            DR1,
+            DR2,
+            DR3,
+            DR4,
+            DR5,
+            DR6,
+            DR7,
+            DR8,
+            DR9,
+            DR10,
+            DR11,
+            DR12,
+            DR13,
+            DR14,
+            DR15 };
 
         // Creates a new instance based on port identifier
         LoRaArduinoSerial (SerialDevice serialPort)

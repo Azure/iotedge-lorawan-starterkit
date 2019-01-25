@@ -1,39 +1,44 @@
-﻿using LoRaTools;
-using LoRaTools.LoRaPhysical;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LoRaSimulator
+﻿namespace LoRaSimulator
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using LoRaTools;
+    using LoRaTools.LoRaPhysical;
+    using Newtonsoft.Json;
+
     public class GatewayDevice
     {
-        public Rxpk rxpk { get; set; }
+        public Rxpk Rxpk { get; set; }
+
         // Used for the point 0. Always increase
         public long TimeAtBoot { get; internal set; }
+
         public GatewayDevice(string json)
         {
-            rxpk = JsonConvert.DeserializeObject<Rxpk>(json);
-            TimeAtBoot = DateTimeOffset.Now.UtcTicks;
+            this.Rxpk = JsonConvert.DeserializeObject<Rxpk>(json);
+            this.TimeAtBoot = DateTimeOffset.Now.UtcTicks;
 
         }
 
+        /// <summary>
+        /// Get a message
+        /// </summary>
         public string GetMessage(byte[] data)
         {
-            rxpk.data = Convert.ToBase64String(data);
-            rxpk.size = (uint)data.Length;
+            this.Rxpk.Data = Convert.ToBase64String(data);
+            this.Rxpk.Size = (uint)data.Length;
             // tmst it is time in micro seconds
             var now = DateTimeOffset.UtcNow;
-            var tmst = (now.UtcTicks - TimeAtBoot) / (TimeSpan.TicksPerMillisecond / 1000);
-            if (tmst >= UInt32.MaxValue)
+            var tmst = (now.UtcTicks - this.TimeAtBoot) / (TimeSpan.TicksPerMillisecond / 1000);
+            if (tmst >= uint.MaxValue)
             {
-                tmst = tmst - UInt32.MaxValue;
-                TimeAtBoot = now.UtcTicks - tmst;
+                tmst = tmst - uint.MaxValue;
+                this.TimeAtBoot = now.UtcTicks - tmst;
             }
-            rxpk.tmst = Convert.ToUInt32(tmst);
 
-            return JsonConvert.SerializeObject(rxpk);
+            this.Rxpk.Tmst = Convert.ToUInt32(tmst);
+            return JsonConvert.SerializeObject(this.Rxpk);
         }
 
     }
