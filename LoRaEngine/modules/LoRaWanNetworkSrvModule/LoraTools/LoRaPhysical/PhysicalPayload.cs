@@ -42,13 +42,13 @@ namespace LoRaTools
         public PhysicalPayload(byte[] input, bool server = false)
         {
             this.protocolVersion = input[0];
-            Array.Copy(input, 1, this.token, 0, 2);
-            this.identifier = GetIdentifierFromPayload(input);
+            Array.Copy(input, 1, this.Token, 0, 2);
+            this.Identifier = GetIdentifierFromPayload(input);
 
             if (!server)
             {
                 // PUSH_DATA That packet type is used by the gateway mainly to forward the RF packets received, and associated metadata, to the server
-                if (this.identifier == PhysicalIdentifier.PUSH_DATA)
+                if (this.Identifier == PhysicalIdentifier.PUSH_DATA)
                 {
                     Array.Copy(input, 4, this.gatewayIdentifier, 0, 8);
                     this.Message = new byte[input.Length - 12];
@@ -56,13 +56,13 @@ namespace LoRaTools
                 }
 
                 // PULL_DATA That packet type is used by the gateway to poll data from the server.
-                if (this.identifier == PhysicalIdentifier.PULL_DATA)
+                if (this.Identifier == PhysicalIdentifier.PULL_DATA)
                 {
                     Array.Copy(input, 4, this.gatewayIdentifier, 0, 8);
                 }
 
                 // TX_ACK That packet type is used by the gateway to send a feedback to the to inform if a downlink request has been accepted or rejected by the gateway.
-                if (this.identifier == PhysicalIdentifier.TX_ACK)
+                if (this.Identifier == PhysicalIdentifier.TX_ACK)
                 {
                     Logger.Log($"Tx ack received from gateway", Logger.LoggingLevel.Info);
                     Array.Copy(input, 4, this.gatewayIdentifier, 0, 8);
@@ -77,7 +77,7 @@ namespace LoRaTools
             {
                 // Case of message received on the server
                 // PULL_RESP is an answer from the client to the server for Join requests for example
-                if (this.identifier == PhysicalIdentifier.PULL_RESP)
+                if (this.Identifier == PhysicalIdentifier.PULL_RESP)
                 {
                     this.Message = new byte[input.Length - 4];
                     Array.Copy(input, 4, this.Message, 0, this.Message.Length);
@@ -92,15 +92,15 @@ namespace LoRaTools
             // 0x04 PULL_ACK That packet type is used by the server to confirm that the network route is open and that the server can send PULL_RESP packets at any time.
             if (type == PhysicalIdentifier.PUSH_ACK || type == PhysicalIdentifier.PULL_ACK)
             {
-                this.token = token;
-                this.identifier = type;
+                this.Token = token;
+                this.Identifier = type;
             }
 
             // 0x03 PULL_RESP That packet type is used by the server to send RF packets and  metadata that will have to be emitted by the gateway.
             else
             {
-                this.token = token;
-                this.identifier = type;
+                this.Token = token;
+                this.Identifier = type;
                 if (message != null)
                 {
                     this.Message = new byte[message.Length];
@@ -111,10 +111,13 @@ namespace LoRaTools
 
         // 1 byte
         private readonly byte protocolVersion = 2;
+
         // 1-2 bytes
-        private readonly byte[] token = new byte[2];
+        public byte[] Token { get; set; }
+
         // 1 byte
-        private readonly PhysicalIdentifier identifier;
+        public PhysicalIdentifier Identifier { get; set; }
+
         // 8 bytes
         private readonly byte[] gatewayIdentifier = new byte[8];
 
@@ -127,11 +130,11 @@ namespace LoRaTools
             {
                 this.protocolVersion
             };
-            returnList.AddRange(this.token);
-            returnList.Add((byte)this.identifier);
-            if (this.identifier == PhysicalIdentifier.PULL_DATA ||
-                this.identifier == PhysicalIdentifier.TX_ACK ||
-                this.identifier == PhysicalIdentifier.PUSH_DATA)
+            returnList.AddRange(this.Token);
+            returnList.Add((byte)this.Identifier);
+            if (this.Identifier == PhysicalIdentifier.PULL_DATA ||
+                this.Identifier == PhysicalIdentifier.TX_ACK ||
+                this.Identifier == PhysicalIdentifier.PUSH_DATA)
                 returnList.AddRange(this.gatewayIdentifier);
             if (this.Message != null)
                 returnList.AddRange(this.Message);
@@ -145,10 +148,10 @@ namespace LoRaTools
             // first is the protocole version
             buff[0] = 2;
             // Random token
-            buff[1] = this.token[0];
-            buff[2] = this.token[1];
+            buff[1] = this.Token[0];
+            buff[2] = this.Token[1];
             // the identifier
-            buff[3] = (byte)this.identifier;
+            buff[3] = (byte)this.Identifier;
             // Then the MAC address specific to the server
             for (int i = 0; i < 8; i++)
                 buff[4 + i] = mac[i];

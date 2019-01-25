@@ -6,13 +6,12 @@ using LoRaSimulator;
 
 namespace SimulatorLaunch
 {
-    class Program
+    internal class Program
     {
-        static Simulator udpServer = null;
-        static void Main(string[] args)
+        private static Simulator udpServer = null;
+
+        private static void Main(string[] args)
         {
-
-
             Run().Wait();
 
             // Wait until the app unloads or is cancelled
@@ -42,7 +41,7 @@ namespace SimulatorLaunch
         /// Initializes the DeviceClient and sets up the callback to receive
         /// messages containing temperature information
         /// </summary>
-        static async Task Run()
+        private static async Task Run()
         {
 
 

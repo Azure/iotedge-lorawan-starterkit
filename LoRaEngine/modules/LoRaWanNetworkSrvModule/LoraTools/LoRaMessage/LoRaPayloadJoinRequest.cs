@@ -41,6 +41,14 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public string GetDevNonceAsString() => ConversionHelper.ByteArrayToString(this.DevNonce);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoRaPayloadJoinRequest"/> class.
+        /// Constructor used for the simulator
+        /// </summary>
+        public LoRaPayloadJoinRequest()
+        {
+        }
+
         public LoRaPayloadJoinRequest(byte[] inputMessage)
             : base(inputMessage)
         {

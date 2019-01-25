@@ -108,6 +108,14 @@ namespace LoRaTools.LoRaMessage
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
+        /// Constructor used by the simulator
+        /// </summary>
+        public LoRaPayloadData()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Upstream Constructor (decode a LoRa Message from existing array of bytes)
         /// </summary>
         /// <param name="inputMessage">the upstream Constructor</param>
