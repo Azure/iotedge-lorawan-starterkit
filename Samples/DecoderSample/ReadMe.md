@@ -57,10 +57,20 @@ When running the solution in a container, the [Kestrel webserver](https://docs.m
 
 Create a docker image from your finished solution based on the target architecture and host it in an [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/), on DockerHub or in any other container registry of your choice.
 
-We provide the following Dockerfiles:
+We are using the [Azure IoT Edge for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge) extension to build and push the Docker image.
+
+Make sure you are logged in to the Azure Container Registry you are using. Run `docker login <mycontainerregistry>.azurecr.io` on your development machine.
+
+Edit the file [module.json](./module.json) to contain your container registry address, image name and version number:
+
+![Decoder Sample - module.json file](/Docs/Pictures/decodersample-module-json.png)
+
+We provide the Dockerfiles for the following architectures:
 
 - [Dockerfile.amd64](/Samples/DecoderSample/Dockerfile.amd64)
 - [Dockerfile.arm32v7](/Samples/DecoderSample/Dockerfile.arm32v7)
+
+To build the Docker image, right-click on the [module.json](./module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image".
 
 To **temporarily test** the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 80 to a free port on your host machine, like for example 8881.
 

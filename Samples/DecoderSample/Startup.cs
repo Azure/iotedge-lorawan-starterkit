@@ -1,20 +1,23 @@
-﻿using System;
-using System.Text;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace SensorDecoderModule
 {
+    using System;
+    using System.Text;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Diagnostics;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            this.Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -34,7 +37,7 @@ namespace SensorDecoderModule
             }
             else
             {
-                //app.UseHsts();
+                // app.UseHsts();
             }
 
             app.UseExceptionHandler(errorApp =>
@@ -51,7 +54,6 @@ namespace SensorDecoderModule
                         string exMessage;
                         if (ex.InnerException != null)
                             exMessage = $"Decoder error: {ex.InnerException.Message}";
-
                         else
                             exMessage = ex.Message;
 
@@ -61,7 +63,7 @@ namespace SensorDecoderModule
                 });
             });
 
-            //app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
             app.UseMvc();
         }
     }

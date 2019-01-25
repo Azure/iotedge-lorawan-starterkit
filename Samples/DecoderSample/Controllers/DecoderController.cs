@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Net;
-using SensorDecoderModule.Classes;
-using System.Reflection;
-using System.Text;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace SensorDecoderModule.Controllers
 {
+    using System;
+    using System.Net;
+    using System.Reflection;
+    using Microsoft.AspNetCore.Mvc;
+    using SensorDecoderModule.Classes;
+
     [Route("api")]
     [ApiController]
     public class DecoderController : ControllerBase
@@ -33,7 +31,7 @@ namespace SensorDecoderModule.Controllers
             }
             else
             {
-                throw new WebException( $"Decoder {decoder} not found.");
+                throw new WebException($"Decoder {decoder} not found.");
             }
         }
     }
