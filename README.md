@@ -298,25 +298,35 @@ To clear the cache and allow the device to connect follow these steps:
 
 Alternatively you can restart the Gateway or the LoRaWanNetworkSrvModule container.
 
-## Monitoring
+## Monitoring and Logging
 
-There is a logging mechanisms that output valuable information on the console of the docker container and/or as module message to IoT Hub
+There is a logging mechanism that outputs valuable information to the console of the docker container and can optionally forward these messages to IoT Hub.
 
-You can control the logging with the following environment variables on the LoRaWanNetworkSrvModule module:
+You can control logging with the following environment variables in the **LoRaWanNetworkSrvModule** IoT Edge module:
 
-LOG_LEVEL 3 Only errors are logged 
+| Variable  | Value                | Explanation                                                                              |
+|-----------|----------------------|------------------------------------------------------------------------------------------|
+| LOG_LEVEL | "1" or "Debug"       | Everything is logged, including the up- and downstream messages to the packet forwarder. |
+|           | "2" or "Information" | Errors and information are logged.                                                       |
+|           | "3" or "Error"       | Only errors are logged. (default if omitted)                                             |
 
-LOG_LEVEL 2 Errors and information are logged (default if omitted)
+For production environments, the **LOG_LEVEL** should be set to **Error**.
 
-LOG_LEVEL 1 Everything is logged including the up and down messages to the packet forwarder
+Setting **LOG_LEVEL** to **Debug** causes a lot of messages to be generated. Make sure to set **LOG_TO_HUB** to **false** in this case.
 
-LOG_TO_HUB true Log info are sent from the module to IoT Hub. You can used VSCode, [IoTHub explorer](https://github.com/Azure/iothub-explorer) or [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer) to monitor the log messages
+| Variable   | Value | Explanation                                          |
+|------------|-------|------------------------------------------------------|
+| LOG_TO_HUB | true  | Log info are sent from the module to IoT Hub.        |
+|            | false | Log info is not sent to IoT Hub (default if omitted) |
 
-LOG_TO_HUB false Log info is not sent to IoT Hub (default if omitted)
+You can use VSCode, [IoTHub explorer](https://github.com/Azure/iothub-explorer) or [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer) to monitor the log messages directly in IoT Hub if **LOG_TO_HUB** is set to **true**.
 
-LOG_TO_CONSOLE true Log info in docker log (default if omitted). Log in to the gateway and use "sudo docker logs LoRaWanNetworkSrvModule -f" to follow the log
+Log in to the gateway and use `sudo docker logs LoRaWanNetworkSrvModule -f` to follow the logs if you are not logging to IoT Hub.
 
-LOG_TO_CONSOLE false No log info in the docker log
+| Variable       | Value | Explanation                             |
+|----------------|-------|-----------------------------------------|
+| LOG_TO_CONSOLE | true  | Log to docker logs (default if omitted) |
+|                | false | Does not log to docker logs             |
 
 ## Customize the solution & Deep dive
 

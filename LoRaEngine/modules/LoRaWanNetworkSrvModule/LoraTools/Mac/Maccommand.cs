@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace LoRaTools
 {
@@ -28,17 +29,17 @@ namespace LoRaTools
                     macCommand.Add(linkCheck);
                     break;
                 case CidEnum.LinkADRCmd:
-                    Logger.Log("mac command detected : LinkADRCmd", Logger.LoggingLevel.Info);
+                    Logger.Log("mac command detected : LinkADRCmd", LogLevel.Information);
                     break;
                 case CidEnum.DutyCycleCmd:
                     DutyCycleCmd dutyCycle = new DutyCycleCmd();
                     macCommand.Add(dutyCycle);
                     break;
                 case CidEnum.RXParamCmd:
-                    Logger.Log("mac command detected : RXParamCmd", Logger.LoggingLevel.Info);
+                    Logger.Log("mac command detected : RXParamCmd", LogLevel.Information);
                     break;
                 case CidEnum.DevStatusCmd:
-                    Logger.Log("mac command detected : DevStatusCmd", Logger.LoggingLevel.Info);
+                    Logger.Log("mac command detected : DevStatusCmd", LogLevel.Information);
                     DevStatusCmd devStatus = new DevStatusCmd();
                     macCommand.Add(devStatus);
                     break;
@@ -69,37 +70,37 @@ namespace LoRaTools
                 switch (cid)
                 {
                     case CidEnum.LinkCheckCmd:
-                        Logger.Log("mac command detected : LinkCheckCmd", Logger.LoggingLevel.Info);
+                        Logger.Log("mac command detected : LinkCheckCmd", LogLevel.Information);
                         LinkCheckCmd linkCheck = new LinkCheckCmd();
                         pointer += linkCheck.Length;
                         macCommand.Add(linkCheck);
                         break;
                     case CidEnum.LinkADRCmd:
-                        Logger.Log("mac command detected : LinkADRCmd", Logger.LoggingLevel.Info);
+                        Logger.Log("mac command detected : LinkADRCmd", LogLevel.Information);
                         break;
                     case CidEnum.DutyCycleCmd:
-                        Logger.Log("mac command detected : DutyCycleCmd", Logger.LoggingLevel.Info);
+                        Logger.Log("mac command detected : DutyCycleCmd", LogLevel.Information);
                         DutyCycleCmd dutyCycle = new DutyCycleCmd();
                         pointer += dutyCycle.Length;
                         macCommand.Add(dutyCycle);
                         break;
                     case CidEnum.RXParamCmd:
-                        Logger.Log("mac command detected : RXParamCmd", Logger.LoggingLevel.Info);
+                        Logger.Log("mac command detected : RXParamCmd", LogLevel.Information);
                         break;
                     case CidEnum.DevStatusCmd:
-                        Logger.Log("mac command detected : DevStatusCmd", Logger.LoggingLevel.Info);
+                        Logger.Log("mac command detected : DevStatusCmd", LogLevel.Information);
                         DevStatusCmd devStatus = new DevStatusCmd(input[pointer + 1], input[pointer + 2]);
                         pointer += devStatus.Length;
                         macCommand.Add(devStatus);
                         break;
                     case CidEnum.NewChannelCmd:
-                        Logger.Log("mac command detected : NewChannelCmd", Logger.LoggingLevel.Info);
+                        Logger.Log("mac command detected : NewChannelCmd", LogLevel.Information);
                         NewChannelAns newChannel = new NewChannelAns(Convert.ToBoolean(input[pointer + 1] & 1), Convert.ToBoolean(input[pointer + 1] & 2));
                         pointer += newChannel.Length;
                         macCommand.Add(newChannel);
                         break;
                     case CidEnum.RXTimingCmd:
-                        Logger.Log("mac command detected : RXTimingCmd", Logger.LoggingLevel.Info);
+                        Logger.Log("mac command detected : RXTimingCmd", LogLevel.Information);
                         RXTimingSetupCmd rXTimingSetup = new RXTimingSetupCmd();
                         pointer += rXTimingSetup.Length;
                         macCommand.Add(rXTimingSetup);

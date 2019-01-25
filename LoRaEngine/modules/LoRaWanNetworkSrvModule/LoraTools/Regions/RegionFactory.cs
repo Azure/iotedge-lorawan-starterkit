@@ -1,13 +1,14 @@
-﻿using LoRaTools.LoRaPhysical;
-using LoRaTools.Utils;
-using LoRaWan;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace LoRaTools.Regions
+﻿namespace LoRaTools.Regions
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using LoRaTools.LoRaPhysical;
+    using LoRaTools.Utils;
+    using LoRaWan;
+    using Microsoft.Extensions.Logging;
+
     public static class RegionFactory
     {
         public static Region CurrentRegion
@@ -30,7 +31,7 @@ namespace LoRaTools.Regions
             }
             else
             {
-                Logger.Log("RegionFactory", "The current frequency plan is not supported. Currently only EU868 and US915 frequency bands are supported.", Logger.LoggingLevel.Error);
+                Logger.Log("RegionFactory", "The current frequency plan is not supported. Currently only EU868 and US915 frequency bands are supported.", LogLevel.Error);
                 return false;
             }
         }

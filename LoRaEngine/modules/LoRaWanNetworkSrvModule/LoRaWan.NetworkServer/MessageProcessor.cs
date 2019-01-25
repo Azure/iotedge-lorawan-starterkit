@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -77,7 +78,7 @@ namespace LoRaWan.NetworkServer
         {
             if (!LoRaPayload.TryCreateLoRaPayload(rxpk, out LoRaPayload loRaPayload))
             {
-                Logger.Log("There was a problem in decoding the Rxpk", Logger.LoggingLevel.Error);
+                Logger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);
                 return null;
             }
 
@@ -117,7 +118,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (!this.IsValidNetId(loraPayload.GetDevAddrNetID(), this.configuration.NetId))
                 {
-                    Logger.Log(ConversionHelper.ByteArrayToString(devAddr), "device is using another network id, ignoring this message", Logger.LoggingLevel.Info);
+                    Logger.Log(ConversionHelper.ByteArrayToString(devAddr), "device is using another network id, ignoring this message", LogLevel.Information);
                     return null;
                 }
 
@@ -128,7 +129,7 @@ namespace LoRaWan.NetworkServer
                 var loRaDevice = await this.deviceRegistry.GetDeviceForPayloadAsync(loraPayload);
                 if (loRaDevice == null)
                 {
-                    Logger.Log(ConversionHelper.ByteArrayToString(devAddr), $"device is not from our network, ignoring message", Logger.LoggingLevel.Info);
+                    Logger.Log(ConversionHelper.ByteArrayToString(devAddr), $"device is not from our network, ignoring message", LogLevel.Information);
                     return null;
                 }
 
@@ -178,11 +179,11 @@ namespace LoRaWan.NetworkServer
                         if (requiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
                         {
                             isConfirmedResubmit = true;
-                            Logger.Log(loRaDevice.DevEUI, $"resubmit from confirmed message detected, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", Logger.LoggingLevel.Info);
+                            Logger.Log(loRaDevice.DevEUI, $"resubmit from confirmed message detected, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
                         }
                         else
                         {
-                            Logger.Log(loRaDevice.DevEUI, $"invalid frame counter, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", Logger.LoggingLevel.Info);
+                            Logger.Log(loRaDevice.DevEUI, $"invalid frame counter, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
                             return null;
                         }
                     }
@@ -200,12 +201,12 @@ namespace LoRaWan.NetworkServer
                         {
                             // update our fcntup anyway?
                             // loRaDevice.SetFcntUp(payloadFcnt);
-                            Logger.Log(loRaDevice.DevEUI, "another gateway has already sent ack or downlink msg", Logger.LoggingLevel.Info);
+                            Logger.Log(loRaDevice.DevEUI, "another gateway has already sent ack or downlink msg", LogLevel.Information);
 
                             return null;
                         }
 
-                        Logger.Log(loRaDevice.DevEUI, $"down frame counter: {loRaDevice.FCntDown}", Logger.LoggingLevel.Info);
+                        Logger.Log(loRaDevice.DevEUI, $"down frame counter: {loRaDevice.FCntDown}", LogLevel.Information);
                     }
 
                     if (!isConfirmedResubmit)
@@ -213,7 +214,7 @@ namespace LoRaWan.NetworkServer
                         var validFcntUp = isFrameCounterFromNewlyStartedDevice || (payloadFcnt > loRaDevice.FCntUp);
                         if (validFcntUp)
                         {
-                            Logger.Log(loRaDevice.DevEUI, $"valid frame counter, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", Logger.LoggingLevel.Info);
+                            Logger.Log(loRaDevice.DevEUI, $"valid frame counter, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
 
                             object payloadData = null;
 
@@ -229,19 +230,19 @@ namespace LoRaWan.NetworkServer
                                 }
                                 catch (Exception ex)
                                 {
-                                    Logger.Log(loRaDevice.DevEUI, $"failed to decrypt message: {ex.Message}", Logger.LoggingLevel.Error);
+                                    Logger.Log(loRaDevice.DevEUI, $"failed to decrypt message: {ex.Message}", LogLevel.Error);
                                 }
 
                                 var fportUp = loraPayload.GetFPort();
 
                                 if (string.IsNullOrEmpty(loRaDevice.SensorDecoder))
                                 {
-                                    Logger.Log(loRaDevice.DevEUI, $"no decoder set in device twin. port: {fportUp}", Logger.LoggingLevel.Full);
+                                    Logger.Log(loRaDevice.DevEUI, $"no decoder set in device twin. port: {fportUp}", LogLevel.Debug);
                                     payloadData = Convert.ToBase64String(decryptedPayloadData);
                                 }
                                 else
                                 {
-                                    Logger.Log(loRaDevice.DevEUI, $"decoding with: {loRaDevice.SensorDecoder} port: {fportUp}", Logger.LoggingLevel.Full);
+                                    Logger.Log(loRaDevice.DevEUI, $"decoding with: {loRaDevice.SensorDecoder} port: {fportUp}", LogLevel.Debug);
                                     payloadData = await this.payloadDecoder.DecodeMessageAsync(decryptedPayloadData, fportUp, loRaDevice.SensorDecoder);
                                 }
                             }
@@ -255,7 +256,7 @@ namespace LoRaWan.NetworkServer
                         }
                         else
                         {
-                            Logger.Log(loRaDevice.DevEUI, $"invalid frame counter, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", Logger.LoggingLevel.Info);
+                            Logger.Log(loRaDevice.DevEUI, $"invalid frame counter, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
                         }
                     }
 
@@ -266,7 +267,7 @@ namespace LoRaWan.NetworkServer
                     {
                         if (requiresConfirmation)
                         {
-                            Logger.Log(loRaDevice.DevEUI, $"too late for down message ({timeWatcher.GetElapsedTime()}), sending only ACK to gateway", Logger.LoggingLevel.Info);
+                            Logger.Log(loRaDevice.DevEUI, $"too late for down message ({timeWatcher.GetElapsedTime()}), sending only ACK to gateway", LogLevel.Information);
                         }
 
                         return null;
@@ -322,7 +323,7 @@ namespace LoRaWan.NetworkServer
                                 {
                                     requiresConfirmation = true;
 
-                                    Logger.Log(loRaDevice.DevEUI, $"down frame counter: {loRaDevice.FCntDown}", Logger.LoggingLevel.Info);
+                                    Logger.Log(loRaDevice.DevEUI, $"down frame counter: {loRaDevice.FCntDown}", LogLevel.Information);
                                 }
                             }
 
@@ -417,7 +418,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (cloudToDeviceMessage.Properties.TryGetValueCaseInsensitive("cidtype", out var cidTypeValue))
                 {
-                    Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device MAC command received", Logger.LoggingLevel.Info);
+                    Logger.Log(loraDeviceInfo.DevEUI, $"Cloud to device MAC command received", LogLevel.Information);
                     MacCommandHolder macCommandHolder = new MacCommandHolder(Convert.ToByte(cidTypeValue));
                     macbytes = macCommandHolder.macCommand[0].ToBytes();
                 }
@@ -433,11 +434,11 @@ namespace LoRaWan.NetworkServer
                     fport = byte.Parse(fPortValue);
                 }
 
-                Logger.Log(loraDeviceInfo.DevEUI, $"Sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", Logger.LoggingLevel.Full);
+                Logger.Log(loraDeviceInfo.DevEUI, $"Sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Debug);
 
                 frmPayload = cloudToDeviceMessage?.GetBytes();
 
-                Logger.Log(loraDeviceInfo.DevEUI, $"C2D message: {Encoding.UTF8.GetString(frmPayload)}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport}, confirmed: {requiresDeviceAcknowlegement}, cidType: {cidTypeValue}", Logger.LoggingLevel.Info);
+                Logger.Log(loraDeviceInfo.DevEUI, $"C2D message: {Encoding.UTF8.GetString(frmPayload)}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport}, confirmed: {requiresDeviceAcknowlegement}, cidType: {cidTypeValue}", LogLevel.Information);
 
                 // cut to the max payload of lora for any EU datarate
                 if (frmPayload.Length > 51)
@@ -484,7 +485,7 @@ namespace LoRaWan.NetworkServer
 
                 if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
                 {
-                    Logger.Log(loraDeviceInfo.DevEUI, $"using standard second receive windows", Logger.LoggingLevel.Info);
+                    Logger.Log(loraDeviceInfo.DevEUI, $"using standard second receive windows", LogLevel.Information);
                     freq = this.loraRegion.RX2DefaultReceiveWindows.frequency;
                     datr = this.loraRegion.DRtoConfiguration[this.loraRegion.RX2DefaultReceiveWindows.dr].configuration;
                 }
@@ -494,7 +495,7 @@ namespace LoRaWan.NetworkServer
                 {
                     freq = this.configuration.Rx2DataFrequency;
                     datr = this.configuration.Rx2DataRate;
-                    Logger.Log(loraDeviceInfo.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", Logger.LoggingLevel.Info);
+                    Logger.Log(loraDeviceInfo.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", LogLevel.Information);
                 }
             }
             else
@@ -514,7 +515,7 @@ namespace LoRaWan.NetworkServer
             // ensure fport property has been set
             if (!cloudToDeviceMsg.Properties.TryGetValueCaseInsensitive(FPORT_MSG_PROPERTY_KEY, out var fportValue))
             {
-                Logger.Log(loRaDevice.DevEUI, $"missing {FPORT_MSG_PROPERTY_KEY} property in C2D message '{cloudToDeviceMsg.MessageId}'", Logger.LoggingLevel.Error);
+                Logger.Log(loRaDevice.DevEUI, $"missing {FPORT_MSG_PROPERTY_KEY} property in C2D message '{cloudToDeviceMsg.MessageId}'", LogLevel.Error);
                 return false;
             }
 
@@ -527,7 +528,7 @@ namespace LoRaWan.NetworkServer
                     return true;
             }
 
-            Logger.Log(loRaDevice.DevEUI, $"invalid fport '{fportValue}' in C2D message '{cloudToDeviceMsg.MessageId}'", Logger.LoggingLevel.Error);
+            Logger.Log(loRaDevice.DevEUI, $"invalid fport '{fportValue}' in C2D message '{cloudToDeviceMsg.MessageId}'", LogLevel.Error);
             return false;
         }
 
@@ -545,7 +546,7 @@ namespace LoRaWan.NetworkServer
             if (loRaPayloadData.IsUpwardAck())
             {
                 eventProperties = new Dictionary<string, string>();
-                Logger.Log(loRaDevice.DevEUI, $"Message ack received for C2D message id {loRaDevice.LastConfirmedC2DMessageID}", Logger.LoggingLevel.Info);
+                Logger.Log(loRaDevice.DevEUI, $"Message ack received for C2D message id {loRaDevice.LastConfirmedC2DMessageID}", LogLevel.Information);
                 eventProperties.Add(C2D_MSG_PROPERTY_VALUE_NAME, loRaDevice.LastConfirmedC2DMessageID ?? C2D_MSG_ID_PLACEHOLDER);
                 loRaDevice.LastConfirmedC2DMessageID = null;
             }
@@ -575,7 +576,7 @@ namespace LoRaWan.NetworkServer
                     payloadAsRaw = JsonConvert.SerializeObject(deviceTelemetry.Data, Formatting.None);
                 }
 
-                Logger.Log(loRaDevice.DevEUI, $"message '{payloadAsRaw}' sent to hub", Logger.LoggingLevel.Info);
+                Logger.Log(loRaDevice.DevEUI, $"message '{payloadAsRaw}' sent to hub", LogLevel.Information);
             }
         }
 
@@ -603,7 +604,7 @@ namespace LoRaWan.NetworkServer
                 processLogger.SetDevEUI(devEUI);
 
                 var devNonce = joinReq.GetDevNonceAsString();
-                Logger.Log(devEUI, $"join request received", Logger.LoggingLevel.Info);
+                Logger.Log(devEUI, $"join request received", LogLevel.Information);
 
                 var loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEUI, appEUI, devNonce);
                 if (loRaDevice == null)
@@ -611,26 +612,26 @@ namespace LoRaWan.NetworkServer
 
                 if (string.IsNullOrEmpty(loRaDevice.AppKey))
                 {
-                    Logger.Log(loRaDevice.DevEUI, "join refused: missing AppKey for OTAA device", Logger.LoggingLevel.Error);
+                    Logger.Log(loRaDevice.DevEUI, "join refused: missing AppKey for OTAA device", LogLevel.Error);
                     return null;
                 }
 
                 if (loRaDevice.AppEUI != appEUI)
                 {
-                    Logger.Log(devEUI, "join refused: AppEUI for OTAA does not match device", Logger.LoggingLevel.Error);
+                    Logger.Log(devEUI, "join refused: AppEUI for OTAA does not match device", LogLevel.Error);
                     return null;
                 }
 
                 if (!joinReq.CheckMic(loRaDevice.AppKey))
                 {
-                    Logger.Log(devEUI, "join refused: invalid MIC", Logger.LoggingLevel.Error);
+                    Logger.Log(devEUI, "join refused: invalid MIC", LogLevel.Error);
                     return null;
                 }
 
                 // Make sure that is a new request and not a replay
                 if (!string.IsNullOrEmpty(loRaDevice.DevNonce) && loRaDevice.DevNonce == devNonce)
                 {
-                    Logger.Log(devEUI, "join refused: DevNonce already used by this device", Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, "join refused: DevNonce already used by this device", LogLevel.Information);
                     loRaDevice.IsOurDevice = false;
                     return null;
                 }
@@ -638,7 +639,7 @@ namespace LoRaWan.NetworkServer
                 // Check that the device is joining through the linked gateway and not another
                 if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Logger.Log(devEUI, $"join refused: trying to join not through its linked gateway, ignoring join request", Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, $"join refused: trying to join not through its linked gateway, ignoring join request", LogLevel.Information);
                     loRaDevice.IsOurDevice = false;
                     return null;
                 }
@@ -660,24 +661,24 @@ namespace LoRaWan.NetworkServer
                 if (!timeWatcher.InTimeForJoinAccept())
                 {
                     // in this case it's too late, we need to break and avoid saving twins
-                    Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", LogLevel.Information);
                     return null;
                 }
 
-                Logger.Log(loRaDevice.DevEUI, $"saving join properties twins", Logger.LoggingLevel.Full);
+                Logger.Log(loRaDevice.DevEUI, $"saving join properties twins", LogLevel.Debug);
                 var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(devAddr, nwkSKey, appSKey, appNonce, devNonce, LoRaTools.Utils.ConversionHelper.ByteArrayToString(netId));
-                Logger.Log(loRaDevice.DevEUI, $"done saving join properties twins", Logger.LoggingLevel.Full);
+                Logger.Log(loRaDevice.DevEUI, $"done saving join properties twins", LogLevel.Debug);
 
                 if (!deviceUpdateSucceeded)
                 {
-                    Logger.Log(devEUI, $"join refused: join request could not save twins", Logger.LoggingLevel.Error);
+                    Logger.Log(devEUI, $"join refused: join request could not save twins", LogLevel.Error);
                     return null;
                 }
 
                 var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse(loRaDevice);
                 if (windowToUse == 0)
                 {
-                    Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", LogLevel.Information);
                     return null;
                 }
 
@@ -694,11 +695,11 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Information);
                     tmst = rxpk.tmst + this.loraRegion.join_accept_delay2 * 1000000;
                     if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
                     {
-                        Logger.Log(devEUI, $"using standard second receive windows for join request", Logger.LoggingLevel.Info);
+                        Logger.Log(devEUI, $"using standard second receive windows for join request", LogLevel.Information);
                         // using EU fix DR for RX2
                         freq = this.loraRegion.RX2DefaultReceiveWindows.frequency;
                         datr = this.loraRegion.DRtoConfiguration[RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
@@ -707,7 +708,7 @@ namespace LoRaWan.NetworkServer
                     // if specific twins are set, specify second channel to be as specified
                     else
                     {
-                        Logger.Log(devEUI, $"using custom  second receive windows for join request", Logger.LoggingLevel.Info);
+                        Logger.Log(devEUI, $"using custom  second receive windows for join request", LogLevel.Information);
                         freq = this.configuration.Rx2DataFrequency;
                         datr = this.configuration.Rx2DataRate;
                     }

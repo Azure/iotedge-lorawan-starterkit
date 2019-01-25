@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.Test.Shared;
+    using Microsoft.Extensions.Logging;
     using Moq;
 
     public class MessageProcessorTestBase
@@ -42,7 +43,7 @@ namespace LoRaWan.NetworkServer.Test
             {
                 GatewayID = ServerGatewayID,
                 LogToConsole = true,
-                LogLevel = (int)Logger.LoggingLevel.Full,
+                LogLevel = ((int)LogLevel.Debug).ToString(),
             };
 
             this.frameCounterUpdateStrategy = new Mock<ILoRaDeviceFrameCounterUpdateStrategy>(MockBehavior.Strict);

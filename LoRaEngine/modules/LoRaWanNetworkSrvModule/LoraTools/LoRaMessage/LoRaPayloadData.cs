@@ -1,19 +1,19 @@
-﻿using LoRaTools.LoRaPhysical;
-using LoRaTools.Utils;
-using LoRaWan;
-using Newtonsoft.Json;
-using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Security;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-
-namespace LoRaTools.LoRaMessage
+﻿namespace LoRaTools.LoRaMessage
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.InteropServices;
+    using System.Text;
+    using LoRaTools.LoRaPhysical;
+    using LoRaTools.Utils;
+    using LoRaWan;
+    using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
+    using Org.BouncyCastle.Crypto;
+    using Org.BouncyCastle.Crypto.Engines;
+    using Org.BouncyCastle.Crypto.Parameters;
+    using Org.BouncyCastle.Security;
 
     public enum FctrlEnum : short
     {
@@ -240,17 +240,17 @@ namespace LoRaTools.LoRaMessage
             PerformEncryption(appSKey);
             SetMic(nwkSKey);
             var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
-            if (Logger.LoggerLevel < Logger.LoggingLevel.Info)
+            if (Logger.LoggerLevel < LogLevel.Information)
             {
                 var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
                
                 if (devEUI.Length != 0)
                 {
-                    Logger.Log(devEUI, $"{((LoRaMessageType)(Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                    Logger.Log(devEUI, $"{((LoRaMessageType)(Mhdr.Span[0])).ToString()} {jsonMsg}", LogLevel.Debug);
                 }
                 else
                 {
-                    Logger.Log(ConversionHelper.ByteArrayToString(this.DevAddr.Span.ToArray()), $"{((LoRaMessageType)(Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                    Logger.Log(ConversionHelper.ByteArrayToString(this.DevAddr.Span.ToArray()), $"{((LoRaMessageType)(Mhdr.Span[0])).ToString()} {jsonMsg}", LogLevel.Debug);
                 }
             }
 

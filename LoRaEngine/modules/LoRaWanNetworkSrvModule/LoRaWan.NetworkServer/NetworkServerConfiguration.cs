@@ -50,8 +50,8 @@ namespace LoRaWan.NetworkServer
         public bool LogToConsole { get; set; } = true;
 
         // Gets/sets the logging level
-        // Default: 0 (Always logging)
-        public int LogLevel { get; set; } = 0;
+        // Default: 4 (Log Errors)
+        public string LogLevel { get; set; } = "4";
 
         // Gets/sets if logging to IoT Hub is enabled
         // Default: false

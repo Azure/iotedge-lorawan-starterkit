@@ -1,11 +1,13 @@
-﻿using LoRaWan;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LoRaTools.LoRaPhysical
+﻿namespace LoRaTools.LoRaPhysical
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using LoRaWan;
+    using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
+    using static LoRaWan.Logger;
+
     public class Txpk
     {
         public bool imme;
@@ -42,7 +44,7 @@ namespace LoRaTools.LoRaPhysical
                 }
                 else
                 {
-                    Logger.Log("Error: " + payloadDownObject.txpk, Logger.LoggingLevel.Full);
+                    Logger.Log("Error: " + payloadDownObject.txpk, LogLevel.Debug);
                 }
             }
             return null;

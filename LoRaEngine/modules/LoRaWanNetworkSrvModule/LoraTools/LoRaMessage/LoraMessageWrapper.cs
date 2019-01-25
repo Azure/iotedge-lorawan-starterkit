@@ -2,16 +2,18 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
-using LoRaWan;
-using Newtonsoft.Json;
-using System;
-using System.Text;
-using LoRaTools.LoRaPhysical;
-using LoRaTools.Utils;
-using static LoRaTools.LoRaMessage.LoRaPayloadData;
 
 namespace LoRaTools.LoRaMessage
 {
+    using System;
+    using System.Text;
+    using LoRaTools.LoRaPhysical;
+    using LoRaTools.Utils;
+    using LoRaWan;
+    using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json;
+    using static LoRaTools.LoRaMessage.LoRaPayloadData;
+
     public enum LoRaMessageType:byte
     {
         // Request sent by device to join
@@ -132,10 +134,10 @@ namespace LoRaTools.LoRaMessage
             var devEUI = payload.GetLoRaMessage().DevEUI;
             if (devEUI.Length != 0)
             {
-                Logger.Log(ConversionHelper.ByteArrayToString(devEUI.Span.ToArray()), $"{((LoRaMessageType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                Logger.Log(ConversionHelper.ByteArrayToString(devEUI.Span.ToArray()), $"{((LoRaMessageType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", LogLevel.Debug);
             }else
             {
-                Logger.Log(ConversionHelper.ByteArrayToString(payload.DevAddr.Span.ToArray()), $"{((LoRaMessageType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", Logger.LoggingLevel.Full);
+                Logger.Log(ConversionHelper.ByteArrayToString(payload.DevAddr.Span.ToArray()), $"{((LoRaMessageType)(payload.Mhdr.Span[0])).ToString()} {jsonMsg}", LogLevel.Debug);
             }
         }
 
