@@ -120,9 +120,12 @@ and add the following environment variables:
 * IOTEDGE_IOTHUBHOSTNAME: XXX.azure-devices.net where XXX is your IoT Hub registry name
 * FACADE_AUTH_CODE: key. Where key is the secret key to access the function used to gather the device information like twins, get their own secret key to realize posting operation in Azure IoT Hub
 * FACADE_SERVER_URL: https://XXX.azurewebsites.net/api where XXX is the name of your function. If you want as well to bebug the functions, you can do it. See full documentation [here](/LoRaEngine/README.md) if needed.
-* NET_SRV_LOG_LEVEL: 0 to get a full log view or any other level to get less information
+* LOG_LEVEL: 
+  * "1" or "Debug": Everything is logged, including the up- and downstream messages to the packet forwarder
+  * "2" or "Information": Errors and information are logged.
+  * "3" or "Error": Only errors are logged. 
 * ENABLE_GATEWAY: false this will allow to directly post the data from the devices to Azure IoT Hub. If you have a gateway, you'll need to specify true and adjust other environment variable. See full documentation [here](/LoRaEngine/README.md) if needed.
-* NET_SRV_LOGTO_HUB: false. So you won't log the data into Azure IoT Hub
+* LOG_TO_HUB: false. So you won't log the data into Azure IoT Hub
 
 ### Setting up the LoRaSimulator
 
