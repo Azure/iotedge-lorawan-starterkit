@@ -5,6 +5,7 @@ namespace LoRaTools.LoRaPhysical
 {
     using System.Text;
     using LoRaWan;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
     public class Txpk
@@ -63,7 +64,7 @@ namespace LoRaTools.LoRaPhysical
                 }
                 else
                 {
-                    Logger.Log("Error: " + payloadDownObject.Txpk, Logger.LoggingLevel.Full);
+                    Logger.Log("Error: " + payloadDownObject.Txpk, LogLevel.Debug);
                 }
             }
 

@@ -254,7 +254,7 @@ It is possible to run the bits in the LoRaEngine locally with from Visual Studio
 3. Open the properties of the project *LoRaWanNetworkServerModule* and set the following values under the Debug tab:
   - IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)
   - ENABLE_GATEWAY : false
-  - LOG_LEVEL : 1 (optional, to activate most verbose logging level)
+  - LOG_LEVEL : 1 or Debug (optional, to activate most verbose logging level)
   - FacadeServerUrl : http://localhost:7071/api/ (or pointer to the function you want to use)
   - FacadeAuthCode : <your function auth code, do not set this variable if running locally>
 4. Add a local.settings.json in the project LoRa KeysManagerFacade with

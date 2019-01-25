@@ -6,6 +6,7 @@ namespace LoRaTools.LoRaPhysical
     using System.Collections.Generic;
     using System.Text;
     using LoRaWan;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
     public class Rxpk
@@ -100,7 +101,7 @@ namespace LoRaTools.LoRaPhysical
                 var payload = Encoding.UTF8.GetString(physicalPayload.Message);
                 if (!payload.StartsWith("{\"stat"))
                 {
-                    Logger.Log($"Physical dataUp {payload}", Logger.LoggingLevel.Full);
+                    Logger.Log($"Physical dataUp {payload}", LogLevel.Debug);
                     var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);
                     if (payloadObject != null)
                     {
@@ -112,7 +113,7 @@ namespace LoRaTools.LoRaPhysical
                 }
                 else
                 {
-                    Logger.Log($"Statistic: {payload}", Logger.LoggingLevel.Full);
+                    Logger.Log($"Statistic: {payload}", LogLevel.Debug);
                 }
             }
 

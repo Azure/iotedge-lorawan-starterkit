@@ -16,8 +16,8 @@ namespace LoRaWan
         public bool LogToConsole { get; set; } = true;
 
         // Gets/sets the logging level
-        // Default: 0 (Always logging)
-        public int LogLevel { get; set; } = 0;
+        // Default: 4 (Error)
+        public int LogLevel { get; set; } = 4;
 
         // Gets/sets if logging to IoT Hub is enabled
         // Default: false
@@ -32,5 +32,26 @@ namespace LoRaWan
 
         // Gets/sets udp port to send logs
         public int LogToUdpPort { get; set; } = 6000;
+
+        public static int InitLogLevel(string logLevel)
+        {
+            int logLevelInt = 4;
+            logLevel = logLevel.ToUpper();
+
+            if (logLevel == "1" || logLevel == "DEBUG")
+            {
+                logLevelInt = 1;
+            }
+            else if (logLevel == "2" || logLevel == "INFORMATION" || logLevel == "INFO")
+            {
+                logLevelInt = 2;
+            }
+            else if (logLevel == "3" || logLevel == "4" || logLevel == "ERROR")
+            {
+                logLevelInt = 4;
+            }
+
+            return logLevelInt;
+        }
     }
 }

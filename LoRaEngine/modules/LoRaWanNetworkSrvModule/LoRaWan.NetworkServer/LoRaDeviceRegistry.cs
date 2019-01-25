@@ -13,6 +13,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Primitives;
 
     /// <summary>
@@ -84,19 +85,19 @@ namespace LoRaWan.NetworkServer
                 {
                     if (matchingDevice.IsOurDevice)
                     {
-                        Logger.Log(matchingDevice.DevEUI, "device in cache", Logger.LoggingLevel.Full);
+                        Logger.Log(matchingDevice.DevEUI, "device in cache", LogLevel.Debug);
                         return matchingDevice;
                     }
                     else
                     {
-                        Logger.Log(matchingDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
+                        Logger.Log(matchingDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", LogLevel.Information);
                         return null;
                     }
                 }
             }
 
             // If device was not found, search in the device API, updating local cache
-            Logger.Log(devAddr, "querying the registry for device", Logger.LoggingLevel.Info);
+            Logger.Log(devAddr, "querying the registry for device", LogLevel.Information);
 
             SearchDevicesResult searchDeviceResult = null;
             try
@@ -105,7 +106,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log(devAddr, $"Error searching device for payload. {ex.Message}", Logger.LoggingLevel.Error);
+                Logger.Log(devAddr, $"Error searching device for payload. {ex.Message}", LogLevel.Error);
                 return null;
             }
 
@@ -129,7 +130,7 @@ namespace LoRaWan.NetworkServer
                                     initializer.Initialize(loRaDevice);
 
                                 if (loRaDevice.DevEUI != null)
-                                    Logger.Log(loRaDevice.DevEUI, "device added to cache", Logger.LoggingLevel.Full);
+                                    Logger.Log(loRaDevice.DevEUI, "device added to cache", LogLevel.Debug);
 
                                 // TODO: stop if we found the matching device?
                                 // If we continue we can cache for later usage, but then do it in a new thread
@@ -137,7 +138,7 @@ namespace LoRaWan.NetworkServer
                                 {
                                     if (!loRaDevice.IsOurDevice)
                                     {
-                                        Logger.Log(loRaDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
+                                        Logger.Log(loRaDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", LogLevel.Information);
                                         return null;
                                     }
 
@@ -155,7 +156,7 @@ namespace LoRaWan.NetworkServer
                         {
                             // problem initializing the device (get twin timeout, etc)
                             // remove it from the cache
-                            Logger.Log(loRaDevice.DevEUI ?? devAddr, $"Error initializing device {loRaDevice.DevEUI}. {ex.Message}", Logger.LoggingLevel.Error);
+                            Logger.Log(loRaDevice.DevEUI ?? devAddr, $"Error initializing device {loRaDevice.DevEUI}. {ex.Message}", LogLevel.Error);
 
                             devicesMatchingDevAddr.TryRemove(loRaDevice.DevEUI, out _);
                         }
@@ -166,7 +167,7 @@ namespace LoRaWan.NetworkServer
                 var matchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => this.IsValidDeviceForPayload(x, loraPayload, logError: true));
                 if (matchingDevice != null && !matchingDevice.IsOurDevice)
                 {
-                    Logger.Log(matchingDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", Logger.LoggingLevel.Info);
+                    Logger.Log(matchingDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", LogLevel.Information);
                     return null;
                 }
 
@@ -189,7 +190,7 @@ namespace LoRaWan.NetworkServer
             var checkMicResult = loraPayload.CheckMic(loRaDevice.NwkSKey);
             if (!checkMicResult && logError)
             {
-                Logger.Log(loRaDevice.DevEUI, $"with devAddr {loRaDevice.DevAddr} check MIC failed", Logger.LoggingLevel.Full);
+                Logger.Log(loRaDevice.DevEUI, $"with devAddr {loRaDevice.DevAddr} check MIC failed", LogLevel.Debug);
             }
 
             return checkMicResult;
@@ -218,11 +219,11 @@ namespace LoRaWan.NetworkServer
         {
             if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(appEUI) || string.IsNullOrEmpty(devNonce))
             {
-                Logger.Log(devEUI, "join refused: missing devEUI/AppEUI/DevNonce in request", Logger.LoggingLevel.Error);
+                Logger.Log(devEUI, "join refused: missing devEUI/AppEUI/DevNonce in request", LogLevel.Error);
                 return null;
             }
 
-            Logger.Log(devEUI, "querying the registry for OTTA device", Logger.LoggingLevel.Info);
+            Logger.Log(devEUI, "querying the registry for OTTA device", LogLevel.Information);
 
             try
             {
@@ -234,13 +235,13 @@ namespace LoRaWan.NetworkServer
 
                 if (searchDeviceResult.IsDevNonceAlreadyUsed)
                 {
-                    Logger.Log(devEUI, $"join refused: DevNonce already used by this device", Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, $"join refused: DevNonce already used by this device", LogLevel.Information);
                     return null;
                 }
 
                 if (searchDeviceResult.Devices?.Count == 0)
                 {
-                    Logger.Log(devEUI, "join refused: no devices found matching join request", Logger.LoggingLevel.Info);
+                    Logger.Log(devEUI, "join refused: no devices found matching join request", LogLevel.Information);
                     return null;
                 }
 
@@ -254,7 +255,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log(devEUI, $"failed to get join devices from api. {ex.Message}", Logger.LoggingLevel.Error);
+                Logger.Log(devEUI, $"failed to get join devices from api. {ex.Message}", LogLevel.Error);
                 return null;
             }
         }
@@ -296,7 +297,7 @@ namespace LoRaWan.NetworkServer
                 oldResetCacheToken.Cancel();
                 oldResetCacheToken.Dispose();
 
-                Logger.Log("device cache cleared", Logger.LoggingLevel.Info);
+                Logger.Log("device cache cleared", LogLevel.Information);
             }
         }
     }
