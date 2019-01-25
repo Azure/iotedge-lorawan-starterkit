@@ -42,6 +42,7 @@ namespace LoRaTools
         public PhysicalPayload(byte[] input, bool server = false)
         {
             this.protocolVersion = input[0];
+            this.Token = new byte[2];
             Array.Copy(input, 1, this.Token, 0, 2);
             this.Identifier = GetIdentifierFromPayload(input);
 
@@ -113,7 +114,10 @@ namespace LoRaTools
         private readonly byte protocolVersion = 2;
 
         // 1-2 bytes
-        public byte[] Token { get; set; }
+        public byte[] Token
+        {
+            get; set;
+        }
 
         // 1 byte
         public PhysicalIdentifier Identifier { get; set; }
