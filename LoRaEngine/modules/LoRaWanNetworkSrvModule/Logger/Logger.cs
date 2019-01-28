@@ -66,7 +66,7 @@ namespace LoRaWan
 
         public static void Log(string deviceId, string message, LogLevel logLevel)
         {
-            if ((int)logLevel >= (int)configuration.LogLevel)
+            if (logLevel >= configuration.LogLevel)
             {
                 var msg = message;
 
