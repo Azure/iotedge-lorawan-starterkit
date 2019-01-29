@@ -60,7 +60,20 @@ namespace LoRaWan.NetworkServer
                 string partConnection = this.CreateIoTHubConnectionString(devEUI, primaryKey);
                 string deviceConnectionStr = $"{partConnection}DeviceId={devEUI};SharedAccessKey={primaryKey}";
 
-                var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, TransportType.Amqp_Tcp_Only);
+                // Enabling AMQP multiplexing
+                var transportSettings = new ITransportSettings[]
+                {
+                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
+                {
+                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                    {
+                        Pooling = true,
+                        MaxPoolSize = 1
+                    }
+                }
+                };
+
+                var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, transportSettings);
                 return new LoRaDeviceClient(devEUI, deviceClient);
             }
             catch (Exception ex)
