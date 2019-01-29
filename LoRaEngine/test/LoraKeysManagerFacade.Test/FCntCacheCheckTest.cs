@@ -29,7 +29,7 @@ namespace LoraKeysManagerFacade.Test
                 }),
             };
 
-            var actual = await FCntCacheCheck.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
+            var actual = FCntCacheCheck.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
             Assert.NotNull(actual);
             Assert.IsType<BadRequestObjectResult>(actual);
             var badRequestResult = (BadRequestObjectResult)actual;
@@ -52,7 +52,7 @@ namespace LoraKeysManagerFacade.Test
                 }),
             };
 
-            var actual = await FCntCacheCheck.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
+            var actual = FCntCacheCheck.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
             Assert.NotNull(actual);
             Assert.IsType<BadRequestObjectResult>(actual);
             var badRequestResult = (BadRequestObjectResult)actual;
@@ -75,7 +75,7 @@ namespace LoraKeysManagerFacade.Test
                 }),
             };
 
-            var actual = await FCntCacheCheck.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
+            var actual = FCntCacheCheck.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
             Assert.NotNull(actual);
             Assert.IsType<BadRequestObjectResult>(actual);
             var badRequestResult = (BadRequestObjectResult)actual;

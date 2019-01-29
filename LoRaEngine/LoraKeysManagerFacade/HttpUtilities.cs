@@ -1,16 +1,15 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using LoRaWan.Shared;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace LoraKeysManagerFacade
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using LoRaWan.Shared;
+    using Microsoft.AspNetCore.Http;
+
     /// <summary>
     /// Http utilities
     /// </summary>
@@ -19,8 +18,6 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// Gets requested <see cref="ApiVersion"/> from a <see cref="HttpRequest"/>
         /// </summary>
-        /// <param name="req"></param>
-        /// <returns></returns>
         public static ApiVersion GetRequestedVersion(this HttpRequest req)
         {
             string versionText = req.Query[ApiVersion.QueryStringParamName];
