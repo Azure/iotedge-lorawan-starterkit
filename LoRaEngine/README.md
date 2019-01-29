@@ -245,21 +245,28 @@ You can even test sending Cloud-2-Device message (e.g. by VSCode right click on 
 
 The Arduino example provided above will print the message on the console. Keep in mind that a [LoRaWAN Class A](https://www.thethingsnetwork.org/docs/lorawan/) device will only receive after a transmit, in our case every 30 seconds.
 
-## Debugging outside of IoT Edge and docker
+## Debugging in Visual Studio, outside of IoT Edge and Docker
 
-It is possible to run the bits in the LoRaEngine locally with from Visual Studio in order to enable a better debugging experience. Here are the steps you will need to enable this feature:
+It is possible to run the LoRaEngine locally from Visual Studio in order to enable a better debugging experience. Here are the steps you will need to follow in order to enable this feature:
 
-1. Change the value *server_adress* in the file *local_conf.json* (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.
-2. If you are using a Wireless and Windows, make sure your current Wireless network is set as Private in your Windows settings. Otherwise you won't receive the UDP packets.
-3. Open the properties of the project *LoRaWanNetworkServerModule* and set the following values under the Debug tab:
-  - IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)
-  - ENABLE_GATEWAY : false
-  - LOG_LEVEL : 1 or Debug (optional, to activate most verbose logging level)
-  - FacadeServerUrl : http://localhost:7071/api/ (or pointer to the function you want to use)
-  - FacadeAuthCode : <your function auth code, do not set this variable if running locally>
-4. Add a local.settings.json in the project LoRa KeysManagerFacade with
+1. Either change the value *server_adress* in the file [local_conf.json](./modules/LoRaWanPktFwdModule/local_conf.json) (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.
+
+2. **Alternatively**, configure your unmodified LoRaWanPktFwdModule Docker container / Edge module with the environment variable `NETWORK_SERVER=<ip of your computer>`
+
+3. If you are using a Wireless network in Windows, make sure it is configured as a private network in your Windows settings. Otherwise, the Windows Firewall will bock the incoming UDP packets.
+
+4. Open the properties of the project [LoRaWanNetworkServerModule](./modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj) and set the following Environment Variables under the Debug tab:
+
+- IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)
+- ENABLE_GATEWAY : false
+- LOG_LEVEL : 1 or Debug (optional, to activate most verbose logging level)
+- FACADE_SERVER_URL : http://localhost:7071/api/ (when debugging locally or any other URL of the Azure function you want to use)
+- IOTEDGE_DEVICEID : The Name of your PC
+
+5. Add a `local.settings.json` file to the project [LoRaKeysManagerFacade](./LoRaKeysManagerFacade) containing:
+
 ```json
-     {
+{
   "IsEncrypted": false,
   "values": {
     "AzureWebJobsStorage": "<Connection String of your deployed blob storage>",
@@ -268,15 +275,12 @@ It is possible to run the bits in the LoRaEngine locally with from Visual Studio
   },
   "ConnectionStrings": {
     "IoTHubConnectionString": "<Connection string of your IoT Hub Owner (go to keys -> IoT Hub owner and select the connection string)>",
-    "RedisConnectionString": "<your Redis connection string>"
+    "RedisConnectionString": "<Connection string of your Redis Cache>"
   }
-
 }
  ```
-5. Right click on your solution and select properties, select multiple startup projects. Start LoRaWanNetworkSrvModule and LoRaKeysManagerFacade.
+5. Right click on your solution and select properties, select multiple startup projects. Start `LoRaWanNetworkSrvModule` and `LoRaKeysManagerFacade`.
 
 6. If you hit start in your VS solution, you will receive messages directly from your packet forwarder. You will be able to debug directly from your computer. 
 
-Happy Debugging! 
-
-
+Happy Debugging!
