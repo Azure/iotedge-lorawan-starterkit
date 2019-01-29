@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading.Tasks;
     using System.Web;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
@@ -114,7 +115,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log($"Error in decoder handling: {ex.Message}", Logger.LoggingLevel.Error);
+                Logger.Log($"Error in decoder handling: {ex.Message}", LogLevel.Error);
 
                 result = JsonConvert.SerializeObject(new
                 {

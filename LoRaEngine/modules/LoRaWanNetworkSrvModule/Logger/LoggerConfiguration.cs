@@ -3,7 +3,9 @@
 
 namespace LoRaWan
 {
+    using System;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Extensions.Logging;
 
     // Defines the logger configuration
     public class LoggerConfiguration
@@ -16,8 +18,8 @@ namespace LoRaWan
         public bool LogToConsole { get; set; } = true;
 
         // Gets/sets the logging level
-        // Default: 0 (Always logging)
-        public int LogLevel { get; set; } = 0;
+        // Default: 4 (Error)
+        public LogLevel LogLevel { get; set; } = LogLevel.Error;
 
         // Gets/sets if logging to IoT Hub is enabled
         // Default: false
@@ -32,5 +34,26 @@ namespace LoRaWan
 
         // Gets/sets udp port to send logs
         public int LogToUdpPort { get; set; } = 6000;
+
+        public static LogLevel InitLogLevel(string logLevelIn)
+        {
+            LogLevel logLevelOut;
+
+            if (logLevelIn == "1" || string.Equals(logLevelIn, "debug", StringComparison.InvariantCultureIgnoreCase))
+            {
+                logLevelOut = LogLevel.Debug;
+            }
+            else if (logLevelIn == "2" || string.Equals(logLevelIn, "information", StringComparison.InvariantCultureIgnoreCase)
+                || string.Equals(logLevelIn, "info", StringComparison.InvariantCultureIgnoreCase))
+            {
+                logLevelOut = LogLevel.Information;
+            }
+            else
+            {
+                logLevelOut = LogLevel.Error;
+            }
+
+            return logLevelOut;
+        }
     }
 }

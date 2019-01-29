@@ -9,26 +9,18 @@ namespace LoRaWan
     using System.Text;
     using System.Threading;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Extensions.Logging;
 
     public class Logger
     {
         // Interval where we try to estabilish connection to udp logger
         const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
 
-        public enum LoggingLevel : int
-        {
-            Always = 0,
-            Full,
-            Info,
-            Error
-        }
-
-        public static LoggingLevel LoggerLevel => (LoggingLevel)configuration.LogLevel;
+        public static LogLevel LoggerLevel => (LogLevel)configuration.LogLevel;
 
         static LoggerConfiguration configuration = new LoggerConfiguration();
         static volatile UdpClient udpClient;
         static IPEndPoint udpEndpoint;
-
         static volatile bool isInitializeUdpLoggerRunning = false;
         private static Timer retryUdpLogInitializationTimer;
 
@@ -57,14 +49,24 @@ namespace LoRaWan
             }
         }
 
-        public static void Log(string message, LoggingLevel loggingLevel)
+        public static void LogAlways(string message)
         {
-            Log(null, message, loggingLevel);
+            LogAlways(null, message);
         }
 
-        public static void Log(string deviceId, string message, LoggingLevel loggingLevel)
+        public static void LogAlways(string deviceId, string message)
         {
-            if ((int)loggingLevel >= configuration.LogLevel || loggingLevel == LoggingLevel.Always)
+            Log(null, message, LogLevel.Critical);
+        }
+
+        public static void Log(string message, LogLevel logLevel)
+        {
+            Log(null, message, logLevel);
+        }
+
+        public static void Log(string deviceId, string message, LogLevel logLevel)
+        {
+            if (logLevel >= configuration.LogLevel)
             {
                 var msg = message;
 

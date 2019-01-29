@@ -90,7 +90,7 @@
                 Array.Reverse(DevNonce);
             }
 
-            Logger.Log(this.LoRaDevice.DevEUI, $"Join request sent DevNonce: {BitConverter.ToString(DevNonce).Replace("-","")}", Logger.LoggingLevel.Always);
+            Logger.LogAlways(this.LoRaDevice.DevEUI, $"Join request sent DevNonce: {BitConverter.ToString(DevNonce).Replace("-","")}");
             var join = new LoRaPayloadJoinRequest(AppEUI, DevEUI, DevNonce);
             join.SetMic(this.LoRaDevice.AppKey);
 
@@ -111,7 +111,7 @@
             // Random random = new Random();
             // int temp = random.Next(-50, 70);
             this.IncrementalData++;
-            Logger.Log(this.LoRaDevice.DevEUI, $"Simulated data: {this.IncrementalData.ToString()}", Logger.LoggingLevel.Always);
+            Logger.LogAlways(this.LoRaDevice.DevEUI, $"Simulated data: {this.IncrementalData.ToString()}");
             byte[] payload = Encoding.ASCII.GetBytes(this.IncrementalData.ToString());
             Array.Reverse(payload);
             // 0 = uplink, 1 = downlink

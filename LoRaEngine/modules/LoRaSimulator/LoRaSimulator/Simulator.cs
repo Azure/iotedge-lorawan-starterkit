@@ -15,6 +15,7 @@
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaWan;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
@@ -36,19 +37,19 @@
         public async Task RunServer()
         {
             mac = GetMacAddress();
-            Logger.Log("Starting LoRaWAN Simulator...", Logger.LoggingLevel.Always);
+            Logger.LogAlways("Starting LoRaWAN Simulator...");
 
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SIMULATOR_PORT")))
             {
                 PORT = Convert.ToInt32(Environment.GetEnvironmentVariable("SIMULATOR_PORT"));
-                Logger.Log($"Changing port to {PORT}", Logger.LoggingLevel.Always);
+                Logger.LogAlways($"Changing port to {PORT}");
             }
 
             // Creating the endpoint
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, PORT);
             udpClient = new UdpClient(endPoint);
 
-            Logger.Log($"LoRaWAN Simulator started on port {PORT}", Logger.LoggingLevel.Always);
+            Logger.LogAlways($"LoRaWAN Simulator started on port {PORT}");
 
             // send first sync
             _ = Task.Factory.StartNew(async () =>
@@ -149,7 +150,7 @@
                             Array.Copy(gat, 0, data, header.Length, gat.Length);
 
                             await UdpSendMessage(data);
-                            Logger.Log(devicetosend, $"Sending data: {BitConverter.ToString(header).Replace("-", string.Empty)}{Encoding.Default.GetString(gat)}", Logger.LoggingLevel.Always);
+                            Logger.LogAlways(devicetosend, $"Sending data: {BitConverter.ToString(header).Replace("-", string.Empty)}{Encoding.Default.GetString(gat)}");
                         }
                     }
                 });
@@ -201,7 +202,7 @@
             {
                 UdpReceiveResult receivedResults = await udpClient.ReceiveAsync();
 
-                // Logger.Log($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}", Logger.LoggingLevel.Always);
+                // Logger.LogAlways($"UDP message received ({receivedResults.Buffer.Length} bytes) from port: {receivedResults.RemoteEndPoint.Port}");
 
                 // If 4, it may mean we received a confirmation
                 if (receivedResults.Buffer.Length >= 4)
@@ -231,11 +232,11 @@
                                     {
                                         if (dev.LastPayload.Identifier == PhysicalIdentifier.PUSH_DATA)
                                         {
-                                            Logger.Log(device, $"PUSH_DATA confirmation receiveced from NetworkServer", Logger.LoggingLevel.Info);
+                                            Logger.Log(device, $"PUSH_DATA confirmation receiveced from NetworkServer", LogLevel.Information);
                                         }
                                         else
                                         {
-                                            Logger.Log(device, $"PUSH_ACK confirmation receiveced from ", Logger.LoggingLevel.Info);
+                                            Logger.Log(device, $"PUSH_ACK confirmation receiveced from ", LogLevel.Information);
                                         }
                                     }
                                     else if (identifier == PhysicalIdentifier.PULL_RESP)
@@ -247,7 +248,7 @@
                                         // Check if the device is not joined, then it is maybe the answer
                                         if ((loraMessage.LoRaMessageType == LoRaMessageType.JoinAccept) && (dev.LoRaDevice.DevAddr == string.Empty))
                                             {
-                                                Logger.Log(device, $"Received join accept", Logger.LoggingLevel.Info);
+                                                Logger.Log(device, $"Received join accept", LogLevel.Information);
 
                                                 var payload = (LoRaPayloadJoinAccept)loraMessage;
 
@@ -280,13 +281,13 @@
                     catch (Exception ex)
                     {
 
-                        Logger.Log($"Something when wrong: {ex.Message}", Logger.LoggingLevel.Error);
+                        Logger.Log($"Something when wrong: {ex.Message}", LogLevel.Error);
                     }
 
                     // if (receivedResults.Buffer[3] == (byte)PhysicalIdentifier.PUSH_ACK)
                     // {
                     //    //Bingo
-                    //    Logger.Log($"Confirmation receiveced", Logger.LoggingLevel.Always);
+                    //    Logger.LogAlways($"Confirmation receiveced");
                     // }
                 }
 
@@ -298,7 +299,7 @@
                 // }
                 // catch (Exception ex)
                 // {
-                //    Logger.Log($"Error processing the message {ex.Message}", Logger.LoggingLevel.Error);
+                //    Logger.Log($"Error processing the message {ex.Message}", LogLevel.Error);
                 // }
             }
         }

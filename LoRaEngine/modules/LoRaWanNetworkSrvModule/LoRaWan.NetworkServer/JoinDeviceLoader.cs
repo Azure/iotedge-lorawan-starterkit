@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Loads devices for join requests
@@ -37,11 +38,11 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", Logger.LoggingLevel.Info);
+                Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", LogLevel.Information);
 
                 if (await loRaDevice.InitializeAsync())
                 {
-                    Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", Logger.LoggingLevel.Info);
+                    Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", LogLevel.Information);
 
                     return loRaDevice;
                 }
@@ -51,13 +52,13 @@ namespace LoRaWan.NetworkServer
                     // object is non usable, must try to read twin again
                     // for the future we could retry here
                     this.canCache = false;
-                    Logger.Log(loRaDevice.DevEUI, "join refused: error initializing OTAA device, getting twin failed", Logger.LoggingLevel.Error);
+                    Logger.Log(loRaDevice.DevEUI, "join refused: error initializing OTAA device, getting twin failed", LogLevel.Error);
                 }
             }
             catch (Exception ex)
             {
                 // will reach here if the device does not have required properties in the twin
-                Logger.Log(loRaDevice.DevEUI, $"join refused: error initializing OTAA device. {ex.Message}", Logger.LoggingLevel.Error);
+                Logger.Log(loRaDevice.DevEUI, $"join refused: error initializing OTAA device. {ex.Message}", LogLevel.Error);
             }
 
             return null;

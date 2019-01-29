@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using Microsoft.Extensions.Logging;
 
     // Helper class to log process operations
     internal sealed class ProcessLogger : IDisposable
@@ -30,7 +31,7 @@ namespace LoRaWan.NetworkServer
 
         public void Dispose()
         {
-            Logger.Log(this.devEUI ?? LoRaTools.Utils.ConversionHelper.ByteArrayToString(this.devAddr), $"processing time: {this.timeWatcher.GetElapsedTime()}", Logger.LoggingLevel.Info);
+            Logger.Log(this.devEUI ?? LoRaTools.Utils.ConversionHelper.ByteArrayToString(this.devAddr), $"processing time: {this.timeWatcher.GetElapsedTime()}", LogLevel.Information);
             GC.SuppressFinalize(this);
         }
     }

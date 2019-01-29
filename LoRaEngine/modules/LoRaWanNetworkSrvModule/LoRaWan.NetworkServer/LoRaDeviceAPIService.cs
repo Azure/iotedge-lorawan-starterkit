@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -26,14 +27,14 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<ushort> NextFCntDownAsync(string devEUI, int fcntDown, int fcntUp, string gatewayId)
         {
-            Logger.Log(devEUI, $"syncing FCntDown for multigateway", Logger.LoggingLevel.Info);
+            Logger.Log(devEUI, $"syncing FCntDown for multigateway", LogLevel.Information);
 
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = $"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}";
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                Logger.Log(devEUI, $"error calling the NextFCntDown function, check the function log. {response.ReasonPhrase}", Logger.LoggingLevel.Error);
+                Logger.Log(devEUI, $"error calling the NextFCntDown function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
                 return 0;
             }
 
@@ -47,13 +48,13 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<bool> ABPFcntCacheResetAsync(string devEUI)
         {
-            Logger.Log(devEUI, $"ABP FCnt cache reset for multigateway", Logger.LoggingLevel.Info);
+            Logger.Log(devEUI, $"ABP FCnt cache reset for multigateway", LogLevel.Information);
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = $"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true";
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                Logger.Log(devEUI, $"error calling the NextFCntDown function, check the function log, {response.ReasonPhrase}", Logger.LoggingLevel.Error);
+                Logger.Log(devEUI, $"error calling the NextFCntDown function, check the function log, {response.ReasonPhrase}", LogLevel.Error);
                 return false;
             }
 
@@ -124,7 +125,7 @@ namespace LoRaWan.NetworkServer
 
                     if (!string.IsNullOrEmpty(badReqResult) && string.Equals(badReqResult, "UsedDevNonce", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        Logger.Log(devEUI ?? string.Empty, $"DevNonce already used by this device", Logger.LoggingLevel.Info);
+                        Logger.Log(devEUI ?? string.Empty, $"DevNonce already used by this device", LogLevel.Information);
                         return new SearchDevicesResult
                         {
                             IsDevNonceAlreadyUsed = true,
@@ -132,7 +133,7 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                Logger.Log(devAddr, $"error calling façade api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", Logger.LoggingLevel.Error);
+                Logger.Log(devAddr, $"error calling façade api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
 
                 // TODO: FBE check if we return null or throw exception
                 return new SearchDevicesResult();

@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Extensions.Logging;
 
     public class LoRaDeviceFactory : ILoRaDeviceFactory
     {
@@ -34,7 +35,7 @@ namespace LoRaWan.NetworkServer
 
             if (string.IsNullOrEmpty(this.configuration.IoTHubHostName))
             {
-                Logger.Log("Configuration/Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible", Logger.LoggingLevel.Error);
+                Logger.Log("Configuration/Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible", LogLevel.Error);
             }
 
             connectionString += $"HostName={this.configuration.IoTHubHostName};";
@@ -42,11 +43,11 @@ namespace LoRaWan.NetworkServer
             if (this.configuration.EnableGateway)
             {
                 connectionString += $"GatewayHostName={this.configuration.GatewayHostName};";
-                Logger.Log(devEUI, $"using edgeHub local queue", Logger.LoggingLevel.Info);
+                Logger.Log(devEUI, $"using edgeHub local queue", LogLevel.Information);
             }
             else
             {
-                Logger.Log(devEUI, $"using iotHub directly, no edgeHub queue", Logger.LoggingLevel.Info);
+                Logger.Log(devEUI, $"using iotHub directly, no edgeHub queue", LogLevel.Information);
             }
 
             return connectionString;
@@ -64,7 +65,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log(devEUI, $"could not create IoT Hub DeviceClient with error: {ex.Message}", Logger.LoggingLevel.Error);
+                Logger.Log(devEUI, $"could not create IoT Hub DeviceClient with error: {ex.Message}", LogLevel.Error);
                 throw;
             }
         }
