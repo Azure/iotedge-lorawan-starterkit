@@ -104,22 +104,22 @@ namespace CreateDeviceFunction
             // Information in this if clause, is for demo purpose only and should not be used for productive workloads.
             if (deployEndDevice)
             {
-                string oTAAdeviceId = "47AAC86800430028";
-                Device oTAADevice = new Device(oTAAdeviceId);
-                await manager.AddDeviceAsync(oTAADevice);
-                Twin oTAAendTwin = new Twin();
-                oTAAendTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:''," +
+                string otaaDeviceId = "47AAC86800430028";
+                Device otaaDevice = new Device(otaaDeviceId);
+                await manager.AddDeviceAsync(otaaDevice);
+                Twin otaaEndTwin = new Twin();
+                otaaEndTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:''," +
                 "SensorDecoder:'DecoderValueSensor'}");
-                var oTAARemoteTwin = await manager.GetTwinAsync(oTAAdeviceId);
-                await manager.UpdateTwinAsync(oTAAdeviceId, oTAAendTwin, oTAARemoteTwin.ETag);
-                string aBPdeviceId = "46AAC86800430028";
-                Device aBPDevice = new Device(aBPdeviceId);
-                await manager.AddDeviceAsync(aBPDevice);
-                Twin aBPTwin = new Twin();
-                aBPTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:''," +
+                var otaaRemoteTwin = await manager.GetTwinAsync(otaaDeviceId);
+                await manager.UpdateTwinAsync(otaaDeviceId, otaaEndTwin, otaaRemoteTwin.ETag);
+                string abpDeviceId = "46AAC86800430028";
+                Device abpDevice = new Device(abpDeviceId);
+                await manager.AddDeviceAsync(abpDevice);
+                Twin abpTwin = new Twin();
+                abpTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:''," +
                 "DevAddr:'0228B1B1',SensorDecoder:'DecoderValueSensor'}");
-                var aBPRemoteTwin = await manager.GetTwinAsync(aBPdeviceId);
-                await manager.UpdateTwinAsync(aBPdeviceId, aBPTwin, aBPRemoteTwin.ETag);
+                var abpRemoteTwin = await manager.GetTwinAsync(abpDeviceId);
+                await manager.UpdateTwinAsync(abpDeviceId, abpTwin, abpRemoteTwin.ETag);
             }
 
             var template = @"{'$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#', 'contentVersion': '1.0.0.0', 'parameters': {}, 'variables': {}, 'resources': []}";

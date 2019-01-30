@@ -44,7 +44,7 @@ namespace LoraKeysManagerFacade
             string fCntDown = req.Query["FCntDown"];
             string fCntUp = req.Query["FCntUp"];
             string gatewayId = req.Query["GatewayId"];
-            string aBPFcntCacheReset = req.Query["ABPFcntCacheReset"];
+            string abpFcntCacheReset = req.Query["ABPFcntCacheReset"];
             int newFCntDown = 0;
             if (redisCache == null)
             {
@@ -72,7 +72,7 @@ namespace LoraKeysManagerFacade
                 }
             }
 
-            if (!string.IsNullOrEmpty(aBPFcntCacheReset))
+            if (!string.IsNullOrEmpty(abpFcntCacheReset))
             {
                 redisCache.KeyDelete(devEUI);
                 return (ActionResult)new OkObjectResult(null);
