@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 namespace LoRaWan.Test.Shared
 {
     using System;
@@ -11,6 +12,7 @@ namespace LoRaWan.Test.Shared
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using Newtonsoft.Json;
 
@@ -25,7 +27,10 @@ namespace LoRaWan.Test.Shared
 
         public SimulatedPacketForwarder(IPEndPoint networkServerIPEndpoint, Rxpk rxpk = null)
         {
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 1681);
+            IPAddress ip = IPAddress.Any;
+            int port = 1681;
+            IPEndPoint endPoint = new IPEndPoint(ip, port);
+
             this.udpClient = new UdpClient(endPoint);
             this.networkServerIPEndpoint = networkServerIPEndpoint;
             this.TimeAtBoot = DateTimeOffset.Now.UtcTicks;
@@ -43,6 +48,8 @@ namespace LoRaWan.Test.Shared
                 Rssi = -17,
                 Lsnr = 12.0f
             };
+
+            TestLogger.Log($"*** Simulated Packed Forwarder created: {ip}:{port} ***");
         }
 
         string CreateMessagePacket(byte[] data)
@@ -68,6 +75,7 @@ namespace LoRaWan.Test.Shared
         Random random = new Random();
         private CancellationTokenSource cancellationTokenSource;
         private Task pushDataTask;
+        private Task pullDataTask;
         private Task listenerTask;
 
         byte[] GetRandomToken()
@@ -86,6 +94,7 @@ namespace LoRaWan.Test.Shared
         {
             this.cancellationTokenSource = new CancellationTokenSource();
             this.pushDataTask = Task.Run(async () => await this.PushDataAsync(this.cancellationTokenSource.Token));
+            this.pullDataTask = Task.Run(async () => await this.PullDataAsync(this.cancellationTokenSource.Token));
             this.listenerTask = Task.Run(async () => await this.ListenAsync(this.cancellationTokenSource.Token));
         }
 
@@ -104,13 +113,28 @@ namespace LoRaWan.Test.Shared
                         var identifier = PhysicalPayload.GetIdentifierFromPayload(receivedResults.Buffer);
                         currentToken[0] = receivedResults.Buffer[1];
                         currentToken[1] = receivedResults.Buffer[2];
-                        var tokenKey = this.CreateTokenKey(currentToken, identifier);
-                        TestLogger.Log($"[PKTFORWARDER] Received {identifier.ToString()} with token {tokenKey}");
+                        TestLogger.Log($"[PKTFORWARDER] Received {identifier.ToString()}");
 
-                        if (this.subscribers.TryGetValue(tokenKey, out var subscriber))
+                        if (identifier == PhysicalIdentifier.PULL_RESP)
                         {
-                            subscriber(receivedResults.Buffer);
-                            this.subscribers.Remove(tokenKey, out _);
+                            if (this.subscribers.Count > 0)
+                            {
+                                Func<byte[], bool> subscriberToRemove = null;
+
+                                foreach (var subscriber in this.subscribers)
+                                {
+                                    if (subscriber(receivedResults.Buffer))
+                                    {
+                                        subscriberToRemove = subscriber;
+                                        break;
+                                    }
+                                }
+
+                                if (subscriberToRemove != null)
+                                {
+                                    this.subscribers.Remove(subscriberToRemove);
+                                }
+                            }
                         }
                     }
                 }
@@ -120,22 +144,32 @@ namespace LoRaWan.Test.Shared
             }
         }
 
-        ConcurrentDictionary<uint, Action<byte[]>> subscribers = new ConcurrentDictionary<uint, Action<byte[]>>();
+        HashSet<Func<byte[], bool>> subscribers = new HashSet<Func<byte[], bool>>();
 
-        internal void SubscribeOnce(byte[] token, PhysicalIdentifier type, Action<byte[]> value)
+        internal void SubscribeOnce(Func<byte[], bool> value)
         {
-            this.subscribers.TryAdd(this.CreateTokenKey(token, type), value);
+            this.subscribers.Add(value);
         }
 
-        uint CreateTokenKey(byte[] token, PhysicalIdentifier type)
+        async Task PullDataAsync(CancellationToken cts)
         {
-            if (token == null || token.Length != 2)
+            try
             {
-                throw new Exception("Token must be an array with 2 elements");
+                while (!cts.IsCancellationRequested)
+                {
+                    var sync = new PhysicalPayload(this.GetRandomToken(), PhysicalIdentifier.PULL_DATA, null);
+                    var data = sync.GetSyncHeader(this.MacAddress);
+                    await this.udpClient.SendAsync(data, data.Length, this.networkServerIPEndpoint);
+                    await Task.Delay(30000, cts);
+                }
             }
-
-            var key = new byte[] { token[0], token[1], 0, (byte)type };
-            return BitConverter.ToUInt32(key, 0);
+            catch (TaskCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                TestLogger.Log($"Error in {nameof(this.PullDataAsync)}. {ex.ToString()}");
+            }
         }
 
         async Task PushDataAsync(CancellationToken cts)
@@ -185,6 +219,13 @@ namespace LoRaWan.Test.Shared
             {
                 await this.pushDataTask;
                 this.pushDataTask = null;
+            }
+
+            // wait until the stop pull data job is finished
+            if (this.pullDataTask != null)
+            {
+                await this.pullDataTask;
+                this.pullDataTask = null;
             }
 
             // listener will stop once we dispose the udp client
