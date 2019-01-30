@@ -469,10 +469,9 @@ namespace LoRaWan.NetworkServer.Test
         public async Task When_Ack_Message_Received_Should_Be_In_Msg_Properties(string deviceGatewayID, string data, string msgId = null)
         {
             const int initialFcntUp = 100;
+            const int payloadFcnt = 102;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             simulatedDevice.FrmCntUp = initialFcntUp;
-            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fctrl: (byte)FctrlEnum.Ack);
-            var ackRxpk = ackMessage.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
             if (msgId != null)
@@ -510,11 +509,15 @@ namespace LoRaWan.NetworkServer.Test
                deviceRegistry,
                frameCounterUpdateStrategyFactory,
                new LoRaPayloadDecoder());
+
+            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrl: (byte)FctrlEnum.Ack);
+            var ackRxpk = ackMessage.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+
             var ackTxpk = await messageProcessor.ProcessMessageAsync(ackRxpk);
             Assert.Null(ackTxpk);
             Assert.True(deviceRegistry.InternalGetCachedDevicesForDevAddr(loRaDevice.DevAddr).TryGetValue(loRaDevice.DevEUI, out var loRaDeviceInfo));
 
-            Assert.Equal(loRaDeviceInfo.FCntUp, simulatedDevice.FrmCntUp + 1);
+            Assert.Equal(payloadFcnt, loRaDeviceInfo.FCntUp);
         }
 
         [Theory]
@@ -904,12 +907,6 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
             loRaDevice.SensorDecoder = "DecoderValueSensor";
 
-            const int firstMessageFcnt = 3;
-            const int secondMessageFcnt = 4;
-            const string wrongNwkSKey = "00000000000000000000000000001234";
-            var unconfirmedMessageWithWrongMic = simulatedDevice.CreateUnconfirmedDataUpMessage("123", fcnt: firstMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, wrongNwkSKey).Rxpk[0];
-            var unconfirmedMessageWithCorrectMic = simulatedDevice.CreateUnconfirmedDataUpMessage("456", fcnt: secondMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
@@ -957,9 +954,14 @@ namespace LoRaWan.NetworkServer.Test
                 new LoRaPayloadDecoder());
 
             // first message should fail
+            const int firstMessageFcnt = 3;
+            const string wrongNwkSKey = "00000000000000000000000000001234";
+            var unconfirmedMessageWithWrongMic = simulatedDevice.CreateUnconfirmedDataUpMessage("123", fcnt: firstMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, wrongNwkSKey).Rxpk[0];
             Assert.Null(await messageProcessor.ProcessMessageAsync(unconfirmedMessageWithWrongMic));
 
             // second message should succeed
+            const int secondMessageFcnt = 4;
+            var unconfirmedMessageWithCorrectMic = simulatedDevice.CreateUnconfirmedDataUpMessage("456", fcnt: secondMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             Assert.Null(await messageProcessor.ProcessMessageAsync(unconfirmedMessageWithCorrectMic));
 
             Assert.NotNull(loRaDeviceTelemetry);
