@@ -603,12 +603,12 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(1, 300, 100, 310)]
         // - Aiming for RX2
         [InlineData(1, 601, 799, 999)]
-        [InlineData(1, 1000, 400, 600)]
+        [InlineData(1, 1000, 400, 610)]
 
         // Preferred Window: 2
         // - Aiming for RX2
-        [InlineData(2, 0, 1400, 1600)]
-        [InlineData(2, 100, 1300, 1500)]
+        [InlineData(2, 0, 1400, 1610)]
+        [InlineData(2, 100, 1300, 1510)]
         public async Task When_Device_Checks_For_C2D_Message_Uses_Available_Time(
             int preferredWindow,
             int sendEventDurationInMs,
