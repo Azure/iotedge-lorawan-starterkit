@@ -5,16 +5,17 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
-    using System.Threading;
     using System.Threading.Tasks;
-    using System.Threading.Tasks.Sources;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
-    using Newtonsoft.Json;
 
     public sealed class LoRaDevice : IDisposable
     {
+        /// <summary>
+        /// Defines the maximum amount of times an ack resubmit will be sent
+        /// </summary>
+        internal const int MaxConfirmationResubmitCount = 3;
+
         public string DevAddr { get; set; }
 
         // Gets if a device is activated by personalization
@@ -40,11 +41,7 @@ namespace LoRaWan.NetworkServer
 
         public string LastConfirmedC2DMessageID { get; set; }
 
-        int fcntUp;
-
         public int FCntUp => this.fcntUp;
-
-        int fcntDown;
 
         public int FCntDown => this.fcntDown;
 
@@ -78,12 +75,11 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        int hasFrameCountChanges;
-
-        /// <summary>
-        /// Gets a value indicating whether there are pending frame count changes
-        /// </summary>
-        public bool HasFrameCountChanges => this.hasFrameCountChanges == 1;
+        readonly object fcntLock;
+        volatile bool hasFrameCountChanges;
+        byte confirmationResubmitCount = 0;
+        volatile int fcntUp;
+        volatile int fcntDown;
 
         /// <summary>
         ///  Gets or sets a value indicating whether cloud to device messages are enabled for the device
@@ -96,10 +92,12 @@ namespace LoRaWan.NetworkServer
             this.DevAddr = devAddr;
             this.DevEUI = devEUI;
             this.loRaDeviceClient = loRaDeviceClient;
-            this.hasFrameCountChanges = 0;
             this.DownlinkEnabled = true;
             this.IsABPRelaxedFrameCounter = true;
             this.PreferredWindow = 1;
+            this.hasFrameCountChanges = false;
+            this.fcntLock = new object();
+            this.confirmationResubmitCount = 0;
         }
 
         /// <summary>
@@ -255,13 +253,20 @@ namespace LoRaWan.NetworkServer
         /// </remarks>
         public async Task<bool> SaveFrameCountChangesAsync()
         {
-            if (this.hasFrameCountChanges == 1)
+            if (this.hasFrameCountChanges)
             {
+                int savedFcntDown;
+                int savedFcntUp;
+                lock (this.fcntLock)
+                {
+                    savedFcntDown = this.FCntDown;
+                    savedFcntUp = this.FCntUp;
+                }
+
                 var reportedProperties = new TwinCollection();
-                var savedFcntDown = this.FCntDown;
-                var savedFcntUp = this.FCntUp;
                 reportedProperties[TwinProperty.FCntDown] = savedFcntDown;
                 reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
+
                 var result = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
                 if (result)
                 {
@@ -278,18 +283,35 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
+        /// Gets a value indicating whether there are pending frame count changes
+        /// </summary>
+        public bool HasFrameCountChanges => this.hasFrameCountChanges;
+
+        /// <summary>
         /// Accept changes to the frame count
         /// </summary>
-        public void AcceptFrameCountChanges() => Interlocked.Exchange(ref this.hasFrameCountChanges, 0);
+        public void AcceptFrameCountChanges()
+        {
+            lock (this.fcntLock)
+            {
+                this.hasFrameCountChanges = false;
+            }
+        }
 
         /// <summary>
         /// Increments <see cref="FCntDown"/>
         /// </summary>
         public int IncrementFcntDown(int value)
         {
-            var result = Interlocked.Add(ref this.fcntDown, value);
-            Interlocked.Exchange(ref this.hasFrameCountChanges, 1);
-            return result;
+            var newFcntDown = 0;
+            lock (this.fcntLock)
+            {
+                this.fcntDown += value;
+                this.hasFrameCountChanges = true;
+                newFcntDown = this.fcntDown;
+            }
+
+            return newFcntDown;
         }
 
         /// <summary>
@@ -297,16 +319,69 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void SetFcntDown(int newValue)
         {
-            var oldValue = Interlocked.Exchange(ref this.fcntDown, newValue);
-            if (newValue != oldValue)
-                Interlocked.Exchange(ref this.hasFrameCountChanges, 1);
+            lock (this.fcntLock)
+            {
+                if (newValue != this.fcntDown)
+                {
+                    this.fcntDown = newValue;
+                    this.hasFrameCountChanges = true;
+                }
+            }
         }
 
         public void SetFcntUp(int newValue)
         {
-            var oldValue = Interlocked.Exchange(ref this.fcntUp, newValue);
-            if (newValue != oldValue)
-                Interlocked.Exchange(ref this.hasFrameCountChanges, 1);
+            lock (this.fcntLock)
+            {
+                if (this.fcntUp != newValue)
+                {
+                    this.fcntUp = newValue;
+                    this.confirmationResubmitCount = 0;
+                    this.hasFrameCountChanges = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Optimized way to reset fcntUp and fcntDown to zero with a single lock
+        /// </summary>
+        internal void ResetFcnt()
+        {
+            lock (this.fcntLock)
+            {
+                if (!this.hasFrameCountChanges)
+                {
+                    this.hasFrameCountChanges = this.fcntDown != 0 || this.fcntUp != 0;
+                }
+
+                this.fcntDown = 0;
+                this.fcntUp = 0;
+                this.confirmationResubmitCount = 0;
+            }
+        }
+
+        /// <summary>
+        /// Indicates whether or not we can resubmit an ack for the confirmation up message
+        /// </summary>
+        /// <returns><c>true</c>, if resubmit is allowed, <c>false</c> otherwise.</returns>
+        /// <param name="payloadFcnt">Payload frame count</param>
+        public bool ValidateConfirmResubmit(ushort payloadFcnt)
+        {
+            lock (this.fcntLock)
+            {
+                if (this.FCntUp == payloadFcnt)
+                {
+                    if (this.confirmationResubmitCount < MaxConfirmationResubmitCount)
+                    {
+                        this.confirmationResubmitCount++;
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                return false;
+            }
         }
 
         public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => this.loRaDeviceClient.SendEventAsync(telemetry, properties);
@@ -341,8 +416,7 @@ namespace LoRaWan.NetworkServer
                 this.AppNonce = appNonce;
                 this.DevNonce = devNonce;
                 this.NetID = netID;
-                this.SetFcntDown(0);
-                this.SetFcntUp(0);
+                this.ResetFcnt();
                 this.AcceptFrameCountChanges();
             }
 

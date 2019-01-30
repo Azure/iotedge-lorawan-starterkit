@@ -21,8 +21,8 @@ namespace LoRaWan.NetworkServer
 
         public async Task<bool> ResetAsync(LoRaDevice loRaDevice)
         {
-            loRaDevice.SetFcntUp(0);
-            loRaDevice.SetFcntDown(0);
+            loRaDevice.ResetFcnt();
+
             if (await this.InternalSaveChangesAsync(loRaDevice, force: true))
             {
                 return await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI);

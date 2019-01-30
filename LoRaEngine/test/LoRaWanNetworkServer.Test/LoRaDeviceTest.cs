@@ -399,5 +399,112 @@ namespace LoRaWan.NetworkServer.Test
         {
             Assert.Equal(1, new LoRaDevice("12312", "31231", new Mock<ILoRaDeviceClient>().Object).PreferredWindow);
         }
+
+        [Fact]
+        public void After_3_Resubmits_Should_Not_Be_Valid_To_Resend_Ack()
+        {
+            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+
+            // 1st time
+            target.SetFcntUp(12);
+
+            // 1st resubmit
+            target.SetFcntUp(12);
+            Assert.True(target.ValidateConfirmResubmit(12));
+
+            // 2nd resubmit
+            target.SetFcntUp(12);
+            Assert.True(target.ValidateConfirmResubmit(12));
+
+            // 3rd resubmit
+            target.SetFcntUp(12);
+            Assert.True(target.ValidateConfirmResubmit(12));
+
+            // 4rd resubmit
+            target.SetFcntUp(12);
+            Assert.False(target.ValidateConfirmResubmit(12));
+
+            // new fcnt up
+            target.SetFcntUp(13);
+
+            Assert.False(target.ValidateConfirmResubmit(12), "Should not be valid to resubmit old fcntUp");
+
+            // resubmit new fcnt up
+            target.SetFcntUp(13);
+            Assert.True(target.ValidateConfirmResubmit(13));
+
+            Assert.False(target.ValidateConfirmResubmit(12), "Should not be valid to resubmit old fcntUp");
+        }
+
+        [Fact]
+        public void When_ResetFcnt_In_New_Instance_Should_Have_HasFrameCountChanges_False()
+        {
+            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+
+            // Setting from 0 to 0 should not trigger changes
+            target.ResetFcnt();
+            Assert.False(target.HasFrameCountChanges);
+        }
+
+        [Fact]
+        public void When_ResetFcnt_In_Device_With_Pending_Changes_Should_Have_HasFrameCountChanges_True()
+        {
+            // Non zero fcnt up
+            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            target.SetFcntUp(1);
+            target.ResetFcnt();
+            Assert.Equal(0, target.FCntUp);
+            Assert.Equal(0, target.FCntDown);
+            Assert.True(target.HasFrameCountChanges);
+
+            // Non zero fcnt down
+            target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            target.SetFcntDown(1);
+            target.ResetFcnt();
+            Assert.Equal(0, target.FCntUp);
+            Assert.Equal(0, target.FCntDown);
+            Assert.True(target.HasFrameCountChanges);
+
+            // Non zero fcnt down and up
+            target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            target.SetFcntDown(1);
+            target.SetFcntDown(2);
+            target.ResetFcnt();
+            Assert.Equal(0, target.FCntUp);
+            Assert.Equal(0, target.FCntDown);
+            Assert.True(target.HasFrameCountChanges);
+        }
+
+        [Fact]
+        public void When_ResetFcnt_In_NonZero_FcntUp_Or_FcntDown_Should_Have_HasFrameCountChanges_True()
+        {
+            // Non zero fcnt up
+            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            target.SetFcntUp(1);
+            target.AcceptFrameCountChanges();
+            target.ResetFcnt();
+            Assert.Equal(0, target.FCntUp);
+            Assert.Equal(0, target.FCntDown);
+            Assert.True(target.HasFrameCountChanges);
+
+            // Non zero fcnt down
+            target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            target.SetFcntDown(1);
+            target.AcceptFrameCountChanges();
+            target.ResetFcnt();
+            Assert.Equal(0, target.FCntUp);
+            Assert.Equal(0, target.FCntDown);
+            Assert.True(target.HasFrameCountChanges);
+
+            // Non zero fcnt down and up
+            target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            target.SetFcntDown(1);
+            target.SetFcntDown(2);
+            target.AcceptFrameCountChanges();
+            target.ResetFcnt();
+            Assert.Equal(0, target.FCntUp);
+            Assert.Equal(0, target.FCntDown);
+            Assert.True(target.HasFrameCountChanges);
+        }
     }
 }

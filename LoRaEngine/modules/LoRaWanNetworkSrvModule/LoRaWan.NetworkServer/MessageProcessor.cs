@@ -169,11 +169,15 @@ namespace LoRaWan.NetworkServer
                     var isConfirmedResubmit = false;
                     if (!isFrameCounterFromNewlyStartedDevice && payloadFcnt <= loRaDevice.FCntUp)
                     {
-                        // TODO: have a maximum retry (3)
-                        // Future: Keep track of how many times we acked the confirmed message (4+ times we skip)
                         // if it is confirmed most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub
                         if (requiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
                         {
+                            if (!loRaDevice.ValidateConfirmResubmit(payloadFcnt))
+                            {
+                                Logger.Log(loRaDevice.DevEUI, $"resubmit from confirmed message exceeds threshold of {LoRaDevice.MaxConfirmationResubmitCount}, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
+                                return null;
+                            }
+
                             isConfirmedResubmit = true;
                             Logger.Log(loRaDevice.DevEUI, $"resubmit from confirmed message detected, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
                         }
