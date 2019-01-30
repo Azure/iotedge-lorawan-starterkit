@@ -144,8 +144,7 @@ namespace LoRaWan.NetworkServer.Test
             var appEUI = simulatedDevice.LoRaDevice.AppEUI;
 
             this.LoRaDeviceRegistry.Setup(x => x.GetDeviceForJoinRequestAsync(devEUI, appEUI, devNonce))
-                .Callback(() => Thread.Sleep(TimeSpan.FromSeconds(7)))
-                .ReturnsAsync(() => loRaDevice);
+                .Returns(Task.Delay(TimeSpan.FromSeconds(7)).ContinueWith((_) => loRaDevice));
 
             // Send to message processor
             var messageProcessor = new MessageProcessor(

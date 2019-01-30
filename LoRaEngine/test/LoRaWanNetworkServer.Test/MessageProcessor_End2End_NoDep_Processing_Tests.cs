@@ -774,8 +774,7 @@ namespace LoRaWan.NetworkServer.Test
             // message will be sent
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Callback(() => Thread.Sleep(TimeSpan.FromMilliseconds(sendMessageDelayInMs)))
-                .ReturnsAsync(true);
+                .Returns(Task.Delay(sendMessageDelayInMs).ContinueWith((_) => true));
 
             // Lora device api
             var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);

@@ -416,8 +416,7 @@ namespace LoRaWan.NetworkServer.Test
             loraDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(deviceTwin);
 
             loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Callback(() => Thread.Sleep(1100))
-                .ReturnsAsync(true);
+                .Returns(Task.Delay(TimeSpan.FromMilliseconds(1100)).ContinueWith((_) => true));
 
             loraDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .ReturnsAsync(true);
@@ -599,9 +598,9 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         // Preferred Window: 1
         // - Aiming for RX1
-        [InlineData(1, 0, 400, 600)] // 1000 - (400 - noise)
-        [InlineData(1, 100, 300, 500)]
-        [InlineData(1, 300, 100, 300)]
+        [InlineData(1, 0, 400, 610)] // 1000 - (400 - noise)
+        [InlineData(1, 100, 300, 510)]
+        [InlineData(1, 300, 100, 310)]
         // - Aiming for RX2
         [InlineData(1, 601, 799, 999)]
         [InlineData(1, 1000, 400, 600)]
@@ -631,12 +630,12 @@ namespace LoRaWan.NetworkServer.Test
             var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
 
             var sentEventAsyncSetup = loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null));
-            if (sendEventDurationInMs > 0)
+            sentEventAsyncSetup.Returns(() =>
             {
-                sentEventAsyncSetup.Callback(() => Thread.Sleep(sendEventDurationInMs));
-            }
-
-            sentEventAsyncSetup.ReturnsAsync(true);
+                var t = Task.Delay(sendEventDurationInMs).ContinueWith<bool>((_) => true);
+                t.ConfigureAwait(false);
+                return t;
+            });
 
             var cloudToDeviceMessage = new Message(Encoding.UTF8.GetBytes("c2d"));
             cloudToDeviceMessage.Properties[MessageProcessor.FPORT_MSG_PROPERTY_KEY] = "1";
