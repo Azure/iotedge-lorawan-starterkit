@@ -630,9 +630,13 @@ namespace LoRaWan.NetworkServer.Test
 
             var loraDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
 
-            loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Callback(() => Thread.Sleep(sendEventDurationInMs))
-                .ReturnsAsync(true);
+            var sentEventAsyncSetup = loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null));
+            if (sendEventDurationInMs > 0)
+            {
+                sentEventAsyncSetup.Callback(() => Thread.Sleep(sendEventDurationInMs));
+            }
+
+            sentEventAsyncSetup.ReturnsAsync(true);
 
             var cloudToDeviceMessage = new Message(Encoding.UTF8.GetBytes("c2d"));
             cloudToDeviceMessage.Properties[MessageProcessor.FPORT_MSG_PROPERTY_KEY] = "1";
