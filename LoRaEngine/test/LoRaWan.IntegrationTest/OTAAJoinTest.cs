@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using LoRaWan.Test.Shared;
 using Newtonsoft.Json;
 using Xunit;
 using Xunit.Sdk;

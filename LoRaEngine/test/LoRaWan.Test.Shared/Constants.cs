@@ -1,4 +1,7 @@
-namespace LoRaWan.IntegrationTest
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+namespace LoRaWan.Test.Shared
 {
     public static class Constants
     {
@@ -12,7 +15,5 @@ namespace LoRaWan.IntegrationTest
         public const int DELAY_FOR_SERIAL_AFTER_JOIN = 1000;
 
         public const string TestCollectionName = "ArduinoSerialCollection";
-
     }
-
 }

@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.IntegrationTest
+namespace LoRaWan.Test.Shared
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.EventHubs;
@@ -18,12 +17,11 @@ namespace LoRaWan.IntegrationTest
 
     public abstract partial class IntegrationTestFixtureBase : IDisposable, IAsyncLifetime
     {
-        internal string GetMessageIdentifier(EventData eventData) 
+        internal string GetMessageIdentifier(EventData eventData)
         {
             eventData.Properties.TryGetValue("messageIdentifier", out var actualMessageIdentifier);
             return actualMessageIdentifier?.ToString();
-        }      
-       
+        }
 
         bool IsDeviceMessage(string expectedDeviceID, string expectedDataValue, EventData eventData, string eventDeviceID, string eventDataMessageBody)
         {
@@ -34,22 +32,22 @@ namespace LoRaWan.IntegrationTest
                     var messageJson = JObject.Parse(eventDataMessageBody);
                     if (messageJson != null)
                     {
-                        var data = messageJson["data"];                            
-                        return (data != null && data.ToString(Formatting.None) == expectedDataValue);
+                        var data = messageJson["data"];
+                        return data != null && data.ToString(Formatting.None) == expectedDataValue;
                     }
                 }
                 catch (Exception ex)
                 {
                     TestLogger.Log($"Error searching device payload: {eventDataMessageBody}. {ex.ToString()}");
                 }
-            } 
-           
+            }
+
             return false;
         }
 
         // Asserts leaf device message payload exists. It searches inside the payload "data" property. Has built-in retries
         public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string expectedDataValue, SearchLogOptions options = null)
-        {           
+        {
             var assertionLevel = this.Configuration.IoTHubAssertLevel;
             if (options != null && options.TreatAsError.HasValue)
                 assertionLevel = options.TreatAsError.Value ? LogValidationAssertLevel.Error : LogValidationAssertLevel.Warning;
@@ -58,7 +56,7 @@ namespace LoRaWan.IntegrationTest
                 return;
 
             var searchResult = await this.SearchIoTHubMessageAsync(
-                (eventData, eventDeviceID, eventDataMessageBody) => IsDeviceMessage(deviceID, expectedDataValue, eventData, eventDeviceID, eventDataMessageBody),
+                (eventData, eventDeviceID, eventDataMessageBody) => this.IsDeviceMessage(deviceID, expectedDataValue, eventData, eventDeviceID, eventDataMessageBody),
                 new SearchLogOptions
                 {
                     Description = options?.Description ?? expectedDataValue,
@@ -77,11 +75,10 @@ namespace LoRaWan.IntegrationTest
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
                     TestLogger.Log($"[WARN] '{expectedDataValue}' for device {deviceID} found in logs? {searchResult.Found}. Logs: [{logs}]");
                 }
-            }                    
+            }
         }
 
-
-         // Asserts network server module log contains
+        // Asserts network server module log contains
         public async Task AssertNetworkServerModuleLogStartsWithAsync(string logMessageStart)
         {
             if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
@@ -96,18 +93,17 @@ namespace LoRaWan.IntegrationTest
                 return;
 
             await this.AssertNetworkServerModuleLogExistsAsync(
-                (input) => input.StartsWith(logMessageStart1) || input.StartsWith(logMessageStart2), 
-                new SearchLogOptions(string.Concat(logMessageStart1, " or ", logMessageStart2))
-            );
+                (input) => input.StartsWith(logMessageStart1) || input.StartsWith(logMessageStart2),
+                new SearchLogOptions(string.Concat(logMessageStart1, " or ", logMessageStart2)));
         }
 
         public async Task<SearchLogResult> SearchNetworkServerModuleAsync(Func<string, bool> predicate, SearchLogOptions options = null)
         {
             SearchLogResult searchResult;
             if (this.udpLogListener != null)
-                 searchResult = await SearchUdpLogs(predicate, options);
+                searchResult = await this.SearchUdpLogs(predicate, options);
             else
-                searchResult = await SearchIoTHubLogs(predicate, options);
+                searchResult = await this.SearchIoTHubLogs(predicate, options);
 
             return searchResult;
         }
@@ -117,12 +113,12 @@ namespace LoRaWan.IntegrationTest
         {
             if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
                 return;
-            
+
             SearchLogResult searchResult;
             if (this.udpLogListener != null)
-                 searchResult = await SearchUdpLogs(predicate, options);
+                searchResult = await this.SearchUdpLogs(predicate, options);
             else
-                searchResult = await SearchIoTHubLogs(predicate, options);
+                searchResult = await this.SearchIoTHubLogs(predicate, options);
 
             if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Error)
             {
@@ -131,12 +127,12 @@ namespace LoRaWan.IntegrationTest
             }
             else if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Warning)
             {
-                if (!searchResult.Found)                
+                if (!searchResult.Found)
                 {
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
                     TestLogger.Log($"[WARN] '{options?.Description ?? "??"}' found in logs? {searchResult.Found}. Logs: [{logs}]");
                 }
-            }            
+            }
         }
 
         async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
@@ -156,6 +152,7 @@ namespace LoRaWan.IntegrationTest
                     {
                         TestLogger.Log($"UDP log message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
+
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
@@ -190,6 +187,7 @@ namespace LoRaWan.IntegrationTest
                     {
                         TestLogger.Log($"IoT Hub message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
+
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
@@ -225,6 +223,7 @@ namespace LoRaWan.IntegrationTest
                     {
                         TestLogger.Log($"IoT Hub message not found, attempt {i}/{maxAttempts}, waiting {timeToWait} secs");
                     }
+
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 

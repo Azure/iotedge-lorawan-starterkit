@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.IntegrationTest
+namespace LoRaWan.Test.Shared
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.EventHubs;
@@ -42,7 +41,6 @@ namespace LoRaWan.IntegrationTest
             {
                 if (!string.IsNullOrEmpty(this.Configuration.DevicePrefix))
                 {
-
                     d.DeviceID = string.Concat(this.Configuration.DevicePrefix, d.DeviceID.Substring(this.Configuration.DevicePrefix.Length, d.DeviceID.Length - this.Configuration.DevicePrefix.Length));
                     if (!string.IsNullOrEmpty(d.AppEUI))
                     {
@@ -86,7 +84,7 @@ namespace LoRaWan.IntegrationTest
         // Helper method to return all devices
         IEnumerable<TestDeviceInfo> GetAllDevices()
         {
-            var types = GetType();
+            var types = this.GetType();
             foreach (var prop in types.GetProperties())
             {
                 if (prop.PropertyType == typeof(TestDeviceInfo))
@@ -112,24 +110,21 @@ namespace LoRaWan.IntegrationTest
             this.udpLogListener?.ResetEvents();
         }
 
-
-
         public Task DisposeAsync() => Task.FromResult(0);
 
         RegistryManager GetRegistryManager()
         {
-            return (this.registryManager ?? (this.registryManager = RegistryManager.CreateFromConnectionString(this.Configuration.IoTHubConnectionString)));
-
+            return this.registryManager ?? (this.registryManager = RegistryManager.CreateFromConnectionString(this.Configuration.IoTHubConnectionString));
         }
 
-        internal async Task<Twin> GetTwinAsync(string deviceId)
+        public async Task<Twin> GetTwinAsync(string deviceId)
         {
             return await this.GetRegistryManager().GetTwinAsync(deviceId);
         }
 
-        internal Task SendCloudToDeviceMessage(string deviceId, string messageText, Dictionary<String, String> messageProperties = null) => this.SendCloudToDeviceMessage(deviceId, null, messageText, messageProperties);
+        public Task SendCloudToDeviceMessage(string deviceId, string messageText, Dictionary<string, string> messageProperties = null) => this.SendCloudToDeviceMessage(deviceId, null, messageText, messageProperties);
 
-        internal async Task SendCloudToDeviceMessage(string deviceId, string messageId, string messageText, Dictionary<String, String> messageProperties = null)
+        public async Task SendCloudToDeviceMessage(string deviceId, string messageId, string messageText, Dictionary<string, string> messageProperties = null)
         {
             var msg = new Message(Encoding.UTF8.GetBytes(messageText));
             if (messageProperties != null)
@@ -148,7 +143,7 @@ namespace LoRaWan.IntegrationTest
             await this.SendCloudToDeviceMessage(deviceId, msg);
         }
 
-        internal async Task SendCloudToDeviceMessage(string deviceId, Message message)
+        public async Task SendCloudToDeviceMessage(string deviceId, Message message)
         {
             ServiceClient sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString);
 
@@ -245,12 +240,13 @@ namespace LoRaWan.IntegrationTest
                     }
                 }
             }
+
             TestLogger.Log($"Done creating or updating IoT Hub devices.");
         }
 
         // Helper method to return TestDeviceInfo by a property name, NOT THE DEVICE ID!!
         // Usefull when running theories
-        internal TestDeviceInfo GetDeviceByPropertyName(string propertyName)
+        public TestDeviceInfo GetDeviceByPropertyName(string propertyName)
         {
             return (TestDeviceInfo)this.GetType().GetProperty(propertyName).GetValue(this);
         }

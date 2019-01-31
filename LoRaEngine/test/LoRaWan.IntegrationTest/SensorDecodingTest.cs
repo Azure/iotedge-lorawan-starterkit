@@ -1,11 +1,10 @@
-
-
-using System;
-using System.Threading.Tasks;
-using Xunit;
-
 namespace LoRaWan.IntegrationTest
 {
+    using LoRaWan.Test.Shared;
+    using System;
+    using System.Threading.Tasks;
+    using Xunit;
+
     // Tests sensor decoding test (http, reflection)
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]

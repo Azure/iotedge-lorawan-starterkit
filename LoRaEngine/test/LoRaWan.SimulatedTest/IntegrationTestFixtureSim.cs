@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.IntegrationTest
+namespace LoRaWan.SimulatedTest
 {
     using System;
     using System.Collections.Generic;
@@ -22,19 +22,28 @@ namespace LoRaWan.IntegrationTest
 
         List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP { get { return this.deviceRange1000_ABP; } }
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP
+        {
+            get { return this.deviceRange1000_ABP; }
+        }
 
         List<TestDeviceInfo> deviceRange1200_100_ABP = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1200_100_ABP { get { return this.deviceRange1200_100_ABP; } }
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1200_100_ABP
+        {
+            get { return this.deviceRange1200_100_ABP; }
+        }
 
         List<TestDeviceInfo> deviceRange1300_10_OTAA = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1300_10_OTAA { get { return this.deviceRange1300_10_OTAA; } }
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1300_10_OTAA
+        {
+            get { return this.deviceRange1300_10_OTAA; }
+        }
 
         public override void SetupTestDevices()
         {
-            var gatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID") ?? this.Configuration.LeafDeviceGatewayID;
+            string gatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID") ?? this.Configuration.LeafDeviceGatewayID;
 
             // Simulated devices start at 1000
 
@@ -72,7 +81,7 @@ namespace LoRaWan.IntegrationTest
                 SensorDecoder = "http://localhost:8888/api/DecoderValueSensor",
             };
 
-            for (var deviceID = 1100; deviceID <= 1110; deviceID++)
+            for (int deviceID = 1100; deviceID <= 1110; deviceID++)
             {
                 this.deviceRange1000_ABP.Add(
                     new TestDeviceInfo
@@ -90,7 +99,7 @@ namespace LoRaWan.IntegrationTest
             }
 
             // Range of 100 ABP devices from 1200 to 1299: Used for load testing
-            for (var deviceID = 1200; deviceID <= 1299; deviceID++)
+            for (int deviceID = 1200; deviceID <= 1299; deviceID++)
             {
                 this.deviceRange1200_100_ABP.Add(
                     new TestDeviceInfo
@@ -106,7 +115,7 @@ namespace LoRaWan.IntegrationTest
             }
 
             // Range of 10 OTAA devices from 1300 to 1309: Used for load testing
-            for (var deviceID = 1300; deviceID <= 1309; deviceID++)
+            for (int deviceID = 1300; deviceID <= 1309; deviceID++)
             {
                 this.deviceRange1300_10_OTAA.Add(
                     new TestDeviceInfo

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LoRaWan.Test.Shared;
 using Microsoft.Azure.Devices;
 using Xunit;
 
@@ -19,7 +20,8 @@ namespace LoRaWan.IntegrationTest
         static Random random = new Random();
    
 
-        public C2DMessageTest(IntegrationTestFixtureCi testFixture) : base(testFixture)
+        public C2DMessageTest(IntegrationTestFixtureCi testFixture)
+            : base(testFixture)
         {
         }
 
@@ -495,7 +497,7 @@ namespace LoRaWan.IntegrationTest
             var c2dMessage = new Message(Encoding.UTF8.GetBytes(c2dMessageBody))
             {
                 MessageId = Guid.NewGuid().ToString(),
-            };            
+            };
             c2dMessage.Properties[FportPropertyName] = fport.ToString();
             await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, c2dMessage);
             Log($"Message {c2dMessageBody} sent to device");

@@ -1,11 +1,12 @@
-using System;
-using System.Threading.Tasks;
-using System.Xml;
-using Newtonsoft.Json.Linq;
-using Xunit;
-
 namespace LoRaWan.IntegrationTest
 {
+    using System;
+    using System.Threading.Tasks;
+    using System.Xml;
+    using LoRaWan.Test.Shared;
+    using Newtonsoft.Json.Linq;
+    using Xunit;
+
     // Tests OTAA requests
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
