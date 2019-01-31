@@ -19,7 +19,7 @@ namespace LoRaWan.IntegrationTest
         static Random random = new Random();
    
 
-        public C2DMessageTest(IntegrationTestFixture testFixture) : base(testFixture)
+        public C2DMessageTest(IntegrationTestFixtureCi testFixture) : base(testFixture)
         {
         }
 
@@ -460,8 +460,8 @@ namespace LoRaWan.IntegrationTest
         // - 224+: reserved for future applications
         // Uses Device16_OTAA and Device17_OTAA
         [Theory]
-        [InlineData(0, nameof(IntegrationTestFixture.Device18_ABP))] // 0 => mac commands
-        [InlineData(224, nameof(IntegrationTestFixture.Device19_ABP))] // >= 224 is reserved
+        [InlineData(0, nameof(IntegrationTestFixtureCi.Device18_ABP))] // 0 => mac commands
+        [InlineData(224, nameof(IntegrationTestFixtureCi.Device19_ABP))] // >= 224 is reserved
         public async Task C2D_Using_Invalid_FPort_Should_Be_Ignored(byte fport, string devicePropertyName)
         {
             var device = this.TestFixture.GetDeviceByPropertyName(devicePropertyName);

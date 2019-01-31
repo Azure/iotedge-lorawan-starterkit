@@ -1,19 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LoRaWan.Test.Shared;
-using Microsoft.Azure.Devices;
-using Microsoft.Azure.Devices.Shared;
-using Microsoft.Azure.EventHubs;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Xunit;
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.IntegrationTest
 {
-    public partial class IntegrationTestFixture : IDisposable, IAsyncLifetime
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using LoRaWan.Test.Shared;
+    using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Azure.EventHubs;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+    using Xunit;
+
+    public partial class IntegrationTestFixtureBase : IDisposable, IAsyncLifetime
     {
         internal string GetMessageIdentifier(EventData eventData) 
         {

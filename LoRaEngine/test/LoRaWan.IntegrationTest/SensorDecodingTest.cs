@@ -11,7 +11,7 @@ namespace LoRaWan.IntegrationTest
     [Trait("Category", "SkipWhenLiveUnitTesting")]
     public class SensorDecodingTest: IntegrationTestBase
     {
-        public SensorDecodingTest(IntegrationTestFixture testFixture) : base(testFixture)
+        public SensorDecodingTest(IntegrationTestFixtureCi testFixture) : base(testFixture)
         {
         }
 

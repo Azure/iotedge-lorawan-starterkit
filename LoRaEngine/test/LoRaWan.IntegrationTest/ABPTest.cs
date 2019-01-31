@@ -10,7 +10,7 @@ namespace LoRaWan.IntegrationTest
     [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class ABPTest : IntegrationTestBase
     {
-        public ABPTest(IntegrationTestFixture testFixture) : base(testFixture)
+        public ABPTest(IntegrationTestFixtureCi testFixture) : base(testFixture)
         {
         }
 

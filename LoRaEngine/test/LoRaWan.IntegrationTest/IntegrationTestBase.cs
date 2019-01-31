@@ -8,16 +8,16 @@ using Xunit;
 
 namespace LoRaWan.IntegrationTest
 {
-    public class IntegrationTestBase : IClassFixture<IntegrationTestFixture>, IDisposable
+    public class IntegrationTestBase : IClassFixture<IntegrationTestFixtureCi>, IDisposable
     {
-        private IntegrationTestFixture testFixture;
-        protected IntegrationTestFixture TestFixture { get { return this.testFixture; } }
+        private IntegrationTestFixtureCi testFixture;
+        protected IntegrationTestFixtureCi TestFixture { get { return this.testFixture; } }
 
         private LoRaArduinoSerial arduinoDevice;
         protected LoRaArduinoSerial ArduinoDevice { get { return this.arduinoDevice; } }
 
 
-        public IntegrationTestBase(IntegrationTestFixture testFixture)
+        public IntegrationTestBase(IntegrationTestFixtureCi testFixture)
         {
             this.testFixture = testFixture;
             this.arduinoDevice = testFixture.ArduinoDevice;

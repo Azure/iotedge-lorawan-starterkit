@@ -27,7 +27,7 @@ namespace LoRaWan.IntegrationTest
         private readonly TimeSpan intervalAfterJoin;
         public TestConfiguration Configuration = TestConfiguration.GetConfiguration();
 
-        public SimulatorTestCollection(IntegrationTestFixture testFixture) : base(testFixture)
+        public SimulatorTestCollection(IntegrationTestFixtureCi testFixture) : base(testFixture)
         {
             this.intervalBetweenMessages = TimeSpan.FromSeconds(5);
             this.intervalAfterJoin = TimeSpan.FromSeconds(10);

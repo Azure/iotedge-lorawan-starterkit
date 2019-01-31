@@ -12,7 +12,7 @@ namespace LoRaWan.IntegrationTest
     public sealed class OTAATest : IntegrationTestBase
     {
 
-        public OTAATest(IntegrationTestFixture testFixture) : base(testFixture)
+        public OTAATest(IntegrationTestFixtureCi testFixture) : base(testFixture)
         {
         }
 
