@@ -22,7 +22,6 @@ namespace CreateDeviceFunction
     public static class CreateEdgeDevice
     {
         [FunctionName("CreateEdgeDevice")]
-        [Obsolete]
         public static async System.Threading.Tasks.Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, TraceWriter log, ExecutionContext context)
         {
             var config = new ConfigurationBuilder()
