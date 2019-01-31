@@ -70,9 +70,12 @@ namespace LoRaWan.IntegrationTest
 
         // Device20_OTAA: used for OTAA confirmed & unconfirmed messaging
         public TestDeviceInfo Device20_OTAA { get; private set; }
-        
+
         // Arduino device used for testing
-        public LoRaArduinoSerial ArduinoDevice { get { return this.arduinoDevice; } }
+        public LoRaArduinoSerial ArduinoDevice
+        {
+            get { return this.arduinoDevice; }
+        }
 
         private LoRaArduinoSerial arduinoDevice;
 

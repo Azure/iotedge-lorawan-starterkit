@@ -1,41 +1,44 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 namespace LoRaWan.IntegrationTest
 {
-    using LoRaWan.Test.Shared;
     using System;
     using System.Threading.Tasks;
+    using LoRaWan.Test.Shared;
     using Xunit;
 
     // Tests sensor decoding test (http, reflection)
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
-    public class SensorDecodingTest: IntegrationTestBaseCi
+    public class SensorDecodingTest : IntegrationTestBaseCi
     {
-        public SensorDecodingTest(IntegrationTestFixtureCi testFixture) : base(testFixture)
+        public SensorDecodingTest(IntegrationTestFixtureCi testFixture)
+            : base(testFixture)
         {
         }
 
-
         // Ensures that http sensor decoder decodes payload
         // Uses device Device11_OTAA
-        [Fact]    
+        [Fact]
         public async Task SensorDecoder_HttpBased_ValueSensorDecoder_DecodesPayload()
         {
             var device = this.TestFixtureCi.Device11_OTAA;
-            LogTestStart(device);    
+            this.LogTestStart(device);
 
-            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            await this.ArduinoDevice.SetDeviceModeAsync(LoRaArduinoSerial.Device_Mode_T.LWOTAA);
+            await this.ArduinoDevice.SetIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await this.ArduinoDevice.SetKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
-            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            var joinSucceeded = await this.ArduinoDevice.SetOTAAJoinAsyncWithRetry(LoRaArduinoSerial.Otaa_Join_Cmd_T.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
-            
+
             // wait 1 second after joined
-            await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN); 
-            
-            await this.ArduinoDevice.transferPacketWithConfirmedAsync("1234", 10);
+            await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
+
+            await this.ArduinoDevice.TransferPacketWithConfirmedAsync("1234", 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -54,22 +57,21 @@ namespace LoRaWan.IntegrationTest
         public async Task SensorDecoder_ReflectionBased_ValueSensorDecoder_DecodesPayload()
         {
             var device = this.TestFixtureCi.Device12_OTAA;
-            LogTestStart(device);      
+            this.LogTestStart(device);
 
-            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            await this.ArduinoDevice.SetDeviceModeAsync(LoRaArduinoSerial.Device_Mode_T.LWOTAA);
+            await this.ArduinoDevice.SetIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await this.ArduinoDevice.SetKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
-            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            var joinSucceeded = await this.ArduinoDevice.SetOTAAJoinAsyncWithRetry(LoRaArduinoSerial.Otaa_Join_Cmd_T.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
-            
-            // wait 1 second after joined
-            await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN); 
 
-            
-            await this.ArduinoDevice.transferPacketWithConfirmedAsync("4321", 10);
+            // wait 1 second after joined
+            await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
+
+            await this.ArduinoDevice.TransferPacketWithConfirmedAsync("4321", 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -82,5 +84,4 @@ namespace LoRaWan.IntegrationTest
             this.TestFixtureCi.ClearLogs();
         }
     }
-
 }

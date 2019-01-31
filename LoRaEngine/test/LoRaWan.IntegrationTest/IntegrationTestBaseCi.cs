@@ -1,19 +1,29 @@
-﻿using LoRaWan.Test.Shared;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using Xunit;
+﻿// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.IntegrationTest
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.CompilerServices;
+    using System.Text;
+    using LoRaWan.Test.Shared;
+    using Xunit;
+
     public class IntegrationTestBaseCi : IntegrationTestBase, IClassFixture<IntegrationTestFixtureCi>, IDisposable
-    {        
-        protected IntegrationTestFixtureCi TestFixtureCi { get { return (IntegrationTestFixtureCi)this.TestFixture; } }
-      
+    {
+        protected IntegrationTestFixtureCi TestFixtureCi
+        {
+            get { return (IntegrationTestFixtureCi)this.TestFixture; }
+        }
+
         private LoRaArduinoSerial arduinoDevice;
-        protected LoRaArduinoSerial ArduinoDevice { get { return this.arduinoDevice; } }
+
+        protected LoRaArduinoSerial ArduinoDevice
+        {
+            get { return this.arduinoDevice; }
+        }
 
         public IntegrationTestBaseCi(IntegrationTestFixtureCi testFixture)
             : base(testFixture)
@@ -25,7 +35,7 @@ namespace LoRaWan.IntegrationTest
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!this.disposedValue)
             {
                 if (disposing)
                 {
@@ -34,16 +44,15 @@ namespace LoRaWan.IntegrationTest
                         this.arduinoDevice.WaitForIdleAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
                 }
 
-                disposedValue = true;
+                this.disposedValue = true;
             }
         }
-
 
         // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
+            this.Dispose(true);
             // TODO: uncomment the following line if the finalizer is overridden above.
             GC.SuppressFinalize(this);
         }

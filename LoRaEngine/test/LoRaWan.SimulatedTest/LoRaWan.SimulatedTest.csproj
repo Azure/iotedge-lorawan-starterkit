@@ -26,21 +26,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  
+
   <!-- StyleCop Setup -->
   <ItemGroup>
     <AdditionalFiles Include="../../../stylecop.json" Link="stylecop.json" />
   </ItemGroup>
-  <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="appsettings.local.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
   <PropertyGroup>
-    <CodeAnalysisRuleSet>../../../stylecop.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>../../../stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <Import Project="../../../stylecop.props" />
 

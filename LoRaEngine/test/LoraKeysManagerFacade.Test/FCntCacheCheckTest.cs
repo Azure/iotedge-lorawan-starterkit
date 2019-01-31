@@ -1,22 +1,21 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using LoRaWan.Shared;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 
 namespace LoraKeysManagerFacade.Test
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using LoRaWan.Shared;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Http.Internal;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Extensions.Logging.Abstractions;
+    using Xunit;
+
     public class FCntCacheCheckTest
     {
         [Fact]
@@ -85,7 +84,6 @@ namespace LoraKeysManagerFacade.Test
             // Ensure current version is added to response
             Assert.Contains(ApiVersion.HttpHeaderName, request.HttpContext.Response.Headers);
             Assert.Equal("2018-12-16-preview", request.HttpContext.Response.Headers[ApiVersion.HttpHeaderName].FirstOrDefault());
-
         }
     }
 }

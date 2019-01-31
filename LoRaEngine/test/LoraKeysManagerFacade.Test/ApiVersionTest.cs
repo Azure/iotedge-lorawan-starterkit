@@ -1,15 +1,14 @@
-﻿//
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using LoRaWan.Shared;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
 
 namespace LoraKeysManagerFacade.Test
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using LoRaWan.Shared;
+    using Xunit;
+
     public class ApiVersionTest
     {
         [Fact]
@@ -17,7 +16,6 @@ namespace LoraKeysManagerFacade.Test
         {
             Assert.True(ApiVersion.Version_0_2_Or_Earlier < ApiVersion.Version_2018_12_16_Preview);
             Assert.True(ApiVersion.Version_0_2_Or_Earlier < ApiVersion.Version_2019_01_30_Preview);
-
         }
 
         [Fact]
@@ -41,7 +39,6 @@ namespace LoraKeysManagerFacade.Test
             var actual = ApiVersion.Parse(null);
             Assert.False(actual.IsKnown);
         }
-
 
         [Fact]
         public void Parse_Unknown_Version_String_Should_Return_Unkown_Version()
