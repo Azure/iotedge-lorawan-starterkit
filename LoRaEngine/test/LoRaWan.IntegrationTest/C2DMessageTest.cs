@@ -11,7 +11,7 @@ namespace LoRaWan.IntegrationTest
     // Tests Cloud to Device messages
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
-    public sealed class C2DMessageTest : IntegrationTestBase
+    public sealed class C2DMessageTest : IntegrationTestBaseCi
     {
         const string FportPropertyName = "fport";
         const string ConfirmedPropertyName = "Confirmed";
@@ -41,14 +41,14 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_OTAA_Confirmed_Receives_C2D_Message()
         {
-            var device = this.TestFixture.Device9_OTAA;
-            LogTestStart(device);    
+            var device = this.TestFixtureCi.Device9_OTAA;
+            this.LogTestStart(device);
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
@@ -70,13 +70,13 @@ namespace LoRaWan.IntegrationTest
                 // +CMSG: ACK Received
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
             }
 
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string>{ { FportPropertyName, "1"} });
+            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string>{ { FportPropertyName, "1"} });
             Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -101,7 +101,7 @@ namespace LoRaWan.IntegrationTest
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
                 var c2dLogMessage = $"{device.DeviceID}: C2D message: {c2dMessageBody}";
-                var searchResults = await this.TestFixture.SearchNetworkServerModuleAsync(
+                var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                     (messageBody) => {
                         return messageBody.StartsWith(c2dLogMessage);
                     },
@@ -127,7 +127,7 @@ namespace LoRaWan.IntegrationTest
                 }
                 
                 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -147,14 +147,14 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_OTAA_Unconfirmed_Receives_C2D_Message()
         {
-            var device = this.TestFixture.Device10_OTAA;
+            var device = this.TestFixtureCi.Device10_OTAA;
             LogTestStart(device);   
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
@@ -175,13 +175,13 @@ namespace LoRaWan.IntegrationTest
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
             }
 
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string> { { FportPropertyName, "1"} });
+            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string> { { FportPropertyName, "1"} });
             Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -203,7 +203,7 @@ namespace LoRaWan.IntegrationTest
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
                 var c2dLogMessage = $"{device.DeviceID}: C2D message: {c2dMessageBody}";
-                var searchResults = await this.TestFixture.SearchNetworkServerModuleAsync(
+                var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                     (messageBody) => {
                         return messageBody.StartsWith(c2dLogMessage);
                     },
@@ -229,7 +229,7 @@ namespace LoRaWan.IntegrationTest
                 }
                 
                 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -248,14 +248,14 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message()
         {
-            var device = this.TestFixture.Device15_OTAA;
+            var device = this.TestFixtureCi.Device15_OTAA;
             LogTestStart(device);
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
 
@@ -276,13 +276,13 @@ namespace LoRaWan.IntegrationTest
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
             }
 
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string>() { { FportPropertyName, "2"} });
+            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string>() { { FportPropertyName, "2"} });
             Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -304,7 +304,7 @@ namespace LoRaWan.IntegrationTest
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
                 var c2dLogMessage = $"{device.DeviceID}: C2D message: {c2dMessageBody}";
-                var searchResults = await this.TestFixture.SearchNetworkServerModuleAsync(
+                var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                     (messageBody) => {
                         return messageBody.StartsWith(c2dLogMessage);
                     },
@@ -331,7 +331,7 @@ namespace LoRaWan.IntegrationTest
                 }
 
 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -350,14 +350,14 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message()
         {
-            var device = this.TestFixture.Device14_OTAA;
+            var device = this.TestFixtureCi.Device14_OTAA;
             LogTestStart(device);
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
@@ -377,14 +377,14 @@ namespace LoRaWan.IntegrationTest
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
             }
 
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
             var msgId = Guid.NewGuid().ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, msgId, c2dMessageBody, new Dictionary<string, string>() 
+            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, msgId, c2dMessageBody, new Dictionary<string, string>() 
             { 
                 { FportPropertyName, "1" },
                 { ConfirmedPropertyName, "true" } 
@@ -411,7 +411,7 @@ namespace LoRaWan.IntegrationTest
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
                 // check if c2d message was found
-                var searchResults = await this.TestFixture.SearchNetworkServerModuleAsync(
+                var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                     (messageBody) => {
                         return messageBody.StartsWith(expectedUDPMessageV1) || messageBody.StartsWith(expectedUDPMessageV2);
                     },
@@ -438,7 +438,7 @@ namespace LoRaWan.IntegrationTest
                 }
 
 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -464,7 +464,7 @@ namespace LoRaWan.IntegrationTest
         [InlineData(224, nameof(IntegrationTestFixtureCi.Device19_ABP))] // >= 224 is reserved
         public async Task C2D_Using_Invalid_FPort_Should_Be_Ignored(byte fport, string devicePropertyName)
         {
-            var device = this.TestFixture.GetDeviceByPropertyName(devicePropertyName);
+            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             LogTestStart(device);
             
             // Setup LoRa device properties
@@ -473,7 +473,7 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             // Setup protocol properties
-            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
             // Sends 2x unconfirmed messages
             for (var i = 1; i <= 2; ++i)
@@ -487,7 +487,7 @@ namespace LoRaWan.IntegrationTest
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
             }
 
             // sends C2D - between 10 and 99
@@ -497,7 +497,7 @@ namespace LoRaWan.IntegrationTest
                 MessageId = Guid.NewGuid().ToString(),
             };            
             c2dMessage.Properties[FportPropertyName] = fport.ToString();
-            await this.TestFixture.SendCloudToDeviceMessage(device.DeviceID, c2dMessage);
+            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, c2dMessage);
             Log($"Message {c2dMessageBody} sent to device");
 
             // Following log will be generated in case C2D message has invalid fport:
@@ -522,7 +522,7 @@ namespace LoRaWan.IntegrationTest
                 // ensure c2d message is not found
                 // 0000000000000016: C2D message: 58
                 var c2dLogMessage = $"{device.DeviceID}: C2D message: {c2dMessageBody}";
-                var searchC2DMessageLogResult = await this.TestFixture.SearchNetworkServerModuleAsync(
+                var searchC2DMessageLogResult = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                     (messageBody) => {
                         return messageBody.StartsWith(c2dLogMessage);
                     },
@@ -538,7 +538,7 @@ namespace LoRaWan.IntegrationTest
                 if (!foundC2DInvalidFPortMessage)
                 {
                     var invalidFportLog = $"{device.DeviceID}: invalid fport '{fport}' in C2D message '{c2dMessage.MessageId}'";
-                    var searchInvalidFportLog = await this.TestFixture.SearchNetworkServerModuleAsync(
+                    var searchInvalidFportLog = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                         (messageBody) => {
                             return messageBody.StartsWith(invalidFportLog);
                         },
@@ -557,7 +557,7 @@ namespace LoRaWan.IntegrationTest
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
                 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
             }
 
             Assert.True(foundC2DInvalidFPortMessage, "Invalid fport message was not found in network server log");

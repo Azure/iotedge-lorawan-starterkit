@@ -8,51 +8,16 @@ using Xunit;
 
 namespace LoRaWan.IntegrationTest
 {
-    public class IntegrationTestBase : IClassFixture<IntegrationTestFixtureCi>, IDisposable
+
+    public class IntegrationTestBase
     {
-        private IntegrationTestFixtureCi testFixture;
-        protected IntegrationTestFixtureCi TestFixture { get { return this.testFixture; } }
+        private IntegrationTestFixtureBase testFixture;
+        protected IntegrationTestFixtureBase TestFixture { get { return this.testFixture; } }
 
-        private LoRaArduinoSerial arduinoDevice;
-        protected LoRaArduinoSerial ArduinoDevice { get { return this.arduinoDevice; } }
-
-
-        public IntegrationTestBase(IntegrationTestFixtureCi testFixture)
+        public IntegrationTestBase(IntegrationTestFixtureBase testFixture)
         {
             this.testFixture = testFixture;
-            this.arduinoDevice = testFixture.ArduinoDevice;
-            this.TestFixture.ClearLogs();
         }
-
-
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    // Before starting a new test, wait 5 seconds to ensure serial port is not receiving dirty data
-                    if (this.arduinoDevice != null)
-                        this.arduinoDevice.WaitForIdleAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
-                }
-            
-                disposedValue = true;
-            }
-        }
-
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            // TODO: uncomment the following line if the finalizer is overridden above.
-            GC.SuppressFinalize(this);
-        }
-        #endregion
 
         protected void Log(string value) =>TestLogger.Log(value);
 

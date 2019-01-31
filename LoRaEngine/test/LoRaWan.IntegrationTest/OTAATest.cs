@@ -9,7 +9,7 @@ namespace LoRaWan.IntegrationTest
     // Tests OTAA requests
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
-    public sealed class OTAATest : IntegrationTestBase
+    public sealed class OTAATest : IntegrationTestBaseCi
     {
 
         public OTAATest(IntegrationTestFixtureCi testFixture) : base(testFixture)
@@ -26,14 +26,14 @@ namespace LoRaWan.IntegrationTest
         {
             const int MESSAGES_COUNT = 10;
 
-            var device = this.TestFixture.Device4_OTAA;
+            var device = this.TestFixtureCi.Device4_OTAA;
             LogTestStart(device);    
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
@@ -45,7 +45,7 @@ namespace LoRaWan.IntegrationTest
             for (var i=0; i < MESSAGES_COUNT; ++i)            
             {
                 Console.WriteLine($"Starting sending OTAA unconfirmed message {i+1}/{MESSAGES_COUNT}");
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
 
                 var msg = PayloadGenerator.Next().ToString();
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
@@ -58,18 +58,18 @@ namespace LoRaWan.IntegrationTest
 
 
                 // 0000000000000004: valid frame counter, msg: 1 server: 0
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
 
                 // 0000000000000004: decoding with: DecoderValueSensor port: 8
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
             
                 // 0000000000000004: message '{"value": 51}' sent to hub
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
                 // Ensure device payload is available
                 // Data: {"value": 51}
                 var expectedPayload = $"{{\"value\":{msg}}}";
-                await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+                await this.TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
@@ -78,7 +78,7 @@ namespace LoRaWan.IntegrationTest
             for (var i=0; i < MESSAGES_COUNT; ++i)
             {
                 Console.WriteLine($"Starting sending OTTA confirmed message {i+1}/{MESSAGES_COUNT}");
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
 
                 var msg = PayloadGenerator.Next().ToString();
                 await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
@@ -90,15 +90,15 @@ namespace LoRaWan.IntegrationTest
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
                 // 0000000000000004: decoding with: DecoderValueSensor port: 8
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
             
                 // 0000000000000004: message '{"value": 51}' sent to hub
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
                 // Ensure device payload is available
                 // Data: {"value": 51}
                 var expectedPayload = $"{{\"value\":{msg}}}";
-                await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+                await this.TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }

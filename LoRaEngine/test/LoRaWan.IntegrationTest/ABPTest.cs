@@ -8,7 +8,7 @@ namespace LoRaWan.IntegrationTest
     // Tests ABP requests
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
-    public sealed class ABPTest : IntegrationTestBase
+    public sealed class ABPTest : IntegrationTestBaseCi
     {
         public ABPTest(IntegrationTestFixtureCi testFixture) : base(testFixture)
         {
@@ -22,14 +22,14 @@ namespace LoRaWan.IntegrationTest
         {
             const int MESSAGES_COUNT = 10;
 
-            var device = this.TestFixture.Device5_ABP;
+            var device = this.TestFixtureCi.Device5_ABP;
             LogTestStart(device);    
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion); 
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion); 
 
             // Sends 10x unconfirmed messages            
             for (var i=0; i < MESSAGES_COUNT; ++i)
@@ -45,15 +45,15 @@ namespace LoRaWan.IntegrationTest
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
                 // 0000000000000005: valid frame counter, msg: 1 server: 0
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
 
                 // 0000000000000005: decoding with: DecoderValueSensor port: 8
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
             
                 // 0000000000000005: message '{"value": 51}' sent to hub
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
             }
 
             // Sends 10x confirmed messages
@@ -70,15 +70,15 @@ namespace LoRaWan.IntegrationTest
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
                 // 0000000000000005: valid frame counter, msg: 1 server: 0
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
 
                 // 0000000000000005: decoding with: DecoderValueSensor port: 8
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
             
                 // 0000000000000005: message '{"value": 51}' sent to hub
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
             }
         }
 
@@ -89,7 +89,7 @@ namespace LoRaWan.IntegrationTest
         [InlineData("02060708")]
         public async Task Test_ABP_Wrong_DevAddr_Is_Ignored(string devAddrToUse)
         {
-            var device = this.TestFixture.Device6_ABP;
+            var device = this.TestFixtureCi.Device6_ABP;
             LogTestStart(device);
 
     
@@ -98,7 +98,7 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.setIdAsync(devAddrToUse, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion); 
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion); 
             
             await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
 
@@ -110,21 +110,21 @@ namespace LoRaWan.IntegrationTest
             if (devAddrToUse.StartsWith("02"))
             {
                 // 02060708: device is not our device, ignore message
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync(
                     $"{devAddrToUse}: device is not our device, ignore message",
                     $"{devAddrToUse}: device is not from our network, ignoring message");
             }
             else
             {
                 // 05060708: device is using another network id, ignoring this message
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync(
                  $"{devAddrToUse}: device is using another network id, ignoring this message"
              );
             }
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-            this.TestFixture.ClearLogs();
+            this.TestFixtureCi.ClearLogs();
 
             // Try with confirmed message
             await this.ArduinoDevice.transferPacketWithConfirmedAsync(PayloadGenerator.Next().ToString(), 10);
@@ -139,14 +139,14 @@ namespace LoRaWan.IntegrationTest
             if (devAddrToUse.StartsWith("02"))
             {
                 // 02060708: device is not our device, ignore message
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync(
                     $"{devAddrToUse}: device is not our device, ignore message",
                     $"{devAddrToUse}: device is not from our network, ignoring message");
             }
             else
             {
                 // 05060708: device is using another network id, ignoring this message
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync(
                  $"{devAddrToUse}: device is using another network id, ignoring this message"
              );
             }
@@ -162,7 +162,7 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_ABP_Mismatch_NwkSKey_And_AppSKey_Fails_Mic_Validation()
         {
-            var device = this.TestFixture.Device7_ABP;
+            var device = this.TestFixtureCi.Device7_ABP;
             LogTestStart(device);
 
             var appSKeyToUse = "000102030405060708090A0B0C0D0E0F";
@@ -173,7 +173,7 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(nwkSKeyToUse, appSKeyToUse, null);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion); 
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion); 
             
             await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
 
@@ -186,11 +186,11 @@ namespace LoRaWan.IntegrationTest
             //await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.lora.SerialLogs);
        
             // 0000000000000005: with devAddr 0028B1B0 check MIC failed. Device will be ignored from now on
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-            this.TestFixture.ClearLogs();
+            this.TestFixtureCi.ClearLogs();
 
             // Try with confirmed message
 
@@ -199,7 +199,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
             // 0000000000000005: with devAddr 0028B1B0 check MIC failed
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");            
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");            
 
             // wait until arduino stops trying to send confirmed msg
             await this.ArduinoDevice.WaitForIdleAsync();
@@ -210,7 +210,7 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error()
         {
-            var device = this.TestFixture.Device8_ABP;
+            var device = this.TestFixtureCi.Device8_ABP;
             LogTestStart(device);     
 
             var nwkSKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
@@ -219,7 +219,7 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(nwkSKeyToUse, device.AppSKey, null);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion); 
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion); 
             
             await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
 
@@ -230,10 +230,10 @@ namespace LoRaWan.IntegrationTest
             await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
             // 0000000000000008: with devAddr 0028B1B3 check MIC failed. Device will be ignored from now on
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
 
     
-            this.TestFixture.ClearLogs();
+            this.TestFixtureCi.ClearLogs();
 
             // Try with confirmed message
 
@@ -242,7 +242,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             // 0000000000000008: with devAddr 0028B1B3 check MIC failed.
-            await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
 
 
             // Before starting new test, wait until Lora drivers stops sending/receiving data
@@ -255,10 +255,10 @@ namespace LoRaWan.IntegrationTest
         public async Task Test_ABP_Device_With_Same_DevAddr()
         {
             const int MESSAGES_COUNT = 2;
-            LogTestStart(new TestDeviceInfo[] { this.TestFixture.Device16_ABP, this.TestFixture.Device17_ABP});
+            LogTestStart(new TestDeviceInfo[] { this.TestFixtureCi.Device16_ABP, this.TestFixtureCi.Device17_ABP});
 
-            await SendABPMessages(MESSAGES_COUNT, this.TestFixture.Device16_ABP);
-            await SendABPMessages(MESSAGES_COUNT, this.TestFixture.Device17_ABP);
+            await SendABPMessages(MESSAGES_COUNT, this.TestFixtureCi.Device16_ABP);
+            await SendABPMessages(MESSAGES_COUNT, this.TestFixtureCi.Device17_ABP);
 
         }
 
@@ -269,7 +269,7 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
             // Sends 10x unconfirmed messages            
             for (var i = 0; i < MESSAGES_COUNT; ++i)
@@ -285,15 +285,15 @@ namespace LoRaWan.IntegrationTest
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
                 // 0000000000000005: valid frame counter, msg: 1 server: 0
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
 
                 // 0000000000000005: decoding with: DecoderValueSensor port: 8
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
 
                 // 0000000000000005: message '{"value": 51}' sent to hub
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
             }
 
             // Sends 10x confirmed messages
@@ -310,15 +310,15 @@ namespace LoRaWan.IntegrationTest
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
                 // 0000000000000005: valid frame counter, msg: 1 server: 0
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
 
                 // 0000000000000005: decoding with: DecoderValueSensor port: 8
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
 
                 // 0000000000000005: message '{"value": 51}' sent to hub
-                await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
-                this.TestFixture.ClearLogs();
+                this.TestFixtureCi.ClearLogs();
             }
         }
     }

@@ -21,13 +21,14 @@ namespace LoRaWan.IntegrationTest
     // Tests ABP requests
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
-    public sealed class SimulatorTestCollection : IntegrationTestBase
+    public sealed class SimulatorTestCollection : IntegrationTestBaseSim
     {
         private readonly TimeSpan intervalBetweenMessages;
         private readonly TimeSpan intervalAfterJoin;
         public TestConfiguration Configuration = TestConfiguration.GetConfiguration();
 
-        public SimulatorTestCollection(IntegrationTestFixtureCi testFixture) : base(testFixture)
+        public SimulatorTestCollection(IntegrationTestFixtureSim testFixture)
+            : base(testFixture)
         {
             this.intervalBetweenMessages = TimeSpan.FromSeconds(5);
             this.intervalAfterJoin = TimeSpan.FromSeconds(10);
@@ -74,7 +75,7 @@ namespace LoRaWan.IntegrationTest
         {
             const int MessageCount = 5;
 
-            var device = this.TestFixture.Device1001_Simulated_ABP;
+            var device = this.TestFixtureSim.Device1001_Simulated_ABP;
             var simulatedDevice = new SimulatedDevice(device);
             var networkServerIPEndpoint = this.CreateNetworkServerEndpoint();
 
@@ -85,7 +86,7 @@ namespace LoRaWan.IntegrationTest
                 for (var i = 1; i <= MessageCount; i++)
                 {
                     await simulatedDevice.SendUnconfirmedMessageAsync(simulatedPacketForwarder, i.ToString());
-                    //await simulatedDevice.SendConfirmedMessageAsync(simulatedPacketForwarder, i.ToString());
+                    // await simulatedDevice.SendConfirmedMessageAsync(simulatedPacketForwarder, i.ToString());
                     await Task.Delay(this.intervalBetweenMessages);
                 }
 
@@ -98,7 +99,7 @@ namespace LoRaWan.IntegrationTest
         {
             const int MessageCount = 5;
 
-            var device = this.TestFixture.Device1002_Simulated_OTAA;
+            var device = this.TestFixtureSim.Device1002_Simulated_OTAA;
             var simulatedDevice = new SimulatedDevice(device);
             var networkServerIPEndpoint = this.CreateNetworkServerEndpoint();
 
@@ -131,7 +132,7 @@ namespace LoRaWan.IntegrationTest
         [Fact(Skip = "simulated")]
         public async Task Simulated_Http_Based_Decoder_Scenario()
         {
-            var device = this.TestFixture.Device1003_Simulated_HttpBasedDecoder;
+            var device = this.TestFixtureSim.Device1003_Simulated_HttpBasedDecoder;
             var simulatedDevice = new SimulatedDevice(device);
             var networkServerIPEndpoint = this.CreateNetworkServerEndpoint();
 
@@ -201,7 +202,7 @@ namespace LoRaWan.IntegrationTest
 
             int count = 0;
             var listSimulatedDevices = new List<SimulatedDevice>();
-            foreach (var device in this.TestFixture.DeviceRange1200_100_ABP)
+            foreach (var device in this.TestFixtureSim.DeviceRange1200_100_ABP)
             {
                 if (count < scenarioDeviceNumber && count < 100)
                 {
@@ -216,9 +217,9 @@ namespace LoRaWan.IntegrationTest
             int totalJoins = 0;
 
             var listSimulatedJoinDevices = new List<SimulatedDevice>();
-            foreach (var joinDdevice in this.TestFixture.DeviceRange1300_10_OTAA)
+            foreach (var joinDevice in this.TestFixtureSim.DeviceRange1300_10_OTAA)
             {
-                var simulatedJoinDevice = new SimulatedDevice(joinDdevice);
+                var simulatedJoinDevice = new SimulatedDevice(joinDevice);
                 listSimulatedJoinDevices.Add(simulatedJoinDevice);
             }
 

@@ -16,7 +16,7 @@ namespace LoRaWan.IntegrationTest
     using Newtonsoft.Json.Linq;
     using Xunit;
 
-    public partial class IntegrationTestFixtureBase : IDisposable, IAsyncLifetime
+    public abstract partial class IntegrationTestFixtureBase : IDisposable, IAsyncLifetime
     {
         internal string GetMessageIdentifier(EventData eventData) 
         {
