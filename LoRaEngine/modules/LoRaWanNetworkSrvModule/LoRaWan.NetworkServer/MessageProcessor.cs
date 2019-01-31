@@ -243,10 +243,11 @@ namespace LoRaWan.NetworkServer
                                 }
                             }
 
-                            // What do we need to send an UpAck to IoT Hub?
-                            // What is the content of the message
-                            // TODO Future: Don't wait if it is an unconfirmed message
-                            await this.SendDeviceEventAsync(loRaDevice, rxpk, payloadData, loraPayload, timeWatcher);
+                            if (!await this.SendDeviceEventAsync(loRaDevice, rxpk, payloadData, loraPayload, timeWatcher))
+                            {
+                                // failed to send event to IoT Hub, stop now
+                                return null;
+                            }
 
                             loRaDevice.SetFcntUp(payloadFcnt);
                         }
@@ -272,7 +273,7 @@ namespace LoRaWan.NetworkServer
                     // If it is confirmed and
                     // - Downlink is disabled for the device or
                     // - we don't have time to check c2d and send to device we return now
-                    if (requiresConfirmation && (!loRaDevice.DownlinkEnabled || timeToSecondWindow.Subtract(LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage) <= LoRaOperationTimeWatcher.MinimumTimeAvailableToCheckForCloudMessage))
+                    if (requiresConfirmation && (!loRaDevice.DownlinkEnabled || timeToSecondWindow.Subtract(LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage) <= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage))
                     {
                         return this.CreateDownlinkMessage(
                             null,
@@ -297,7 +298,7 @@ namespace LoRaWan.NetworkServer
                         // But we wait less that the timeout (available time before 2nd window)
                         // if message is received after timeout, keep it in loraDeviceInfo and return the next call
                         var timeAvailableToCheckCloudToDeviceMessages = timeWatcher.GetAvailableTimeToCheckCloudToDeviceMessage(loRaDevice);
-                        if (timeAvailableToCheckCloudToDeviceMessages > TimeSpan.Zero)
+                        if (timeAvailableToCheckCloudToDeviceMessages >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
                         {
                             cloudToDeviceMessage = await loRaDevice.ReceiveCloudToDeviceAsync(timeAvailableToCheckCloudToDeviceMessages);
                             if (cloudToDeviceMessage != null && !this.ValidateCloudToDeviceMessage(loRaDevice, cloudToDeviceMessage))
@@ -329,13 +330,14 @@ namespace LoRaWan.NetworkServer
                                     Logger.Log(loRaDevice.DevEUI, $"down frame counter: {loRaDevice.FCntDown}", LogLevel.Information);
                                 }
 
-                                // Checking again because the fcntdown resolution could have failed, causing us to drop the message
+                                // Checking again if cloudToDeviceMessage is valid because the fcntDown resolution could have failed,
+                                // causing us to drop the message
                                 if (cloudToDeviceMessage != null)
                                 {
-                                    var remainingTimeForFPendingCheck = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice) - (LoRaOperationTimeWatcher.CheckForCloudMessageCallEstimatedOverhead + LoRaOperationTimeWatcher.AdditionalCloudToDeviceMessageAvailableTime);
-                                    if (remainingTimeForFPendingCheck > TimeSpan.Zero)
+                                    var remainingTimeForFPendingCheck = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice) - (LoRaOperationTimeWatcher.CheckForCloudMessageCallEstimatedOverhead + LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage);
+                                    if (remainingTimeForFPendingCheck >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
                                     {
-                                        var additionalMsg = await loRaDevice.ReceiveCloudToDeviceAsync(LoRaOperationTimeWatcher.AdditionalCloudToDeviceMessageAvailableTime);
+                                        var additionalMsg = await loRaDevice.ReceiveCloudToDeviceAsync(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage);
                                         if (additionalMsg != null)
                                         {
                                             fpending = true;
@@ -534,7 +536,7 @@ namespace LoRaWan.NetworkServer
         }
 
         // Sends device telemetry data to IoT Hub
-        private async Task SendDeviceEventAsync(LoRaDevice loRaDevice, Rxpk rxpk, object decodedValue, LoRaPayloadData loRaPayloadData, LoRaOperationTimeWatcher timeWatcher)
+        private async Task<bool> SendDeviceEventAsync(LoRaDevice loRaDevice, Rxpk rxpk, object decodedValue, LoRaPayloadData loRaPayloadData, LoRaOperationTimeWatcher timeWatcher)
         {
             var deviceTelemetry = new LoRaDeviceTelemetry(rxpk, loRaPayloadData, decodedValue)
             {
@@ -578,7 +580,10 @@ namespace LoRaWan.NetworkServer
                 }
 
                 Logger.Log(loRaDevice.DevEUI, $"message '{payloadAsRaw}' sent to hub", LogLevel.Information);
+                return true;
             }
+
+            return false;
         }
 
         bool IsValidNetId(byte devAddrNwkid, uint netId)

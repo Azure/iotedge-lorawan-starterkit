@@ -756,7 +756,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Theory]
-        [InlineData(ServerGatewayID, 1600)]
+        [InlineData(ServerGatewayID, 1601)]
         [InlineData(ServerGatewayID, 2000)]
         [InlineData(ServerGatewayID, 5000)]
         [InlineData(null, 1600)]

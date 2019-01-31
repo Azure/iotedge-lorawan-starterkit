@@ -598,22 +598,23 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         // Preferred Window: 1
         // - Aiming for RX1
-        [InlineData(1, 0, 400, 610)] // 1000 - (400 - noise)
-        [InlineData(1, 100, 300, 510)]
-        [InlineData(1, 300, 100, 310)]
+        [InlineData(1, 0, 400, 610, 1)] // 1000 - (400 - noise)
+        [InlineData(1, 100, 300, 510, 1)]
+        [InlineData(1, 200, 200, 410, 1)]
         // - Aiming for RX2
-        [InlineData(1, 601, 799, 999)]
-        [InlineData(1, 1000, 400, 610)]
+        [InlineData(1, 700, 690, 999, 2)]
+        [InlineData(1, 1000, 250, 610, 2)]
 
         // Preferred Window: 2
         // - Aiming for RX2
-        [InlineData(2, 0, 1400, 1610)]
-        [InlineData(2, 100, 1300, 1510)]
+        [InlineData(2, 0, 1400, 1610, 2)]
+        [InlineData(2, 100, 1300, 1510, 2)]
         public async Task When_Device_Checks_For_C2D_Message_Uses_Available_Time(
             int preferredWindow,
             int sendEventDurationInMs,
             int checkMinDuration,
-            int checkMaxDuration)
+            int checkMaxDuration,
+            int expectedRX)
         {
             const int PayloadFcnt = 10;
             const int InitialDeviceFcntUp = 9;
@@ -632,9 +633,14 @@ namespace LoRaWan.NetworkServer.Test
             var sentEventAsyncSetup = loraDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null));
             sentEventAsyncSetup.Returns(() =>
             {
-                var t = Task.Delay(sendEventDurationInMs).ContinueWith<bool>((_) => true);
-                t.ConfigureAwait(false);
-                return t;
+                if (sendEventDurationInMs > 0)
+                {
+                    var task = Task.Delay(sendEventDurationInMs).ContinueWith<bool>((_) => true);
+                    task.ConfigureAwait(false);
+                    return task;
+                }
+
+                return Task.FromResult(true);
             });
 
             var cloudToDeviceMessage = new Message(Encoding.UTF8.GetBytes("c2d"));
@@ -643,13 +649,11 @@ namespace LoRaWan.NetworkServer.Test
             loraDeviceClient.Setup(x => x.ReceiveAsync(It.IsInRange<TimeSpan>(TimeSpan.FromMilliseconds(checkMinDuration), TimeSpan.FromMilliseconds(checkMaxDuration), Range.Inclusive)))
                 .ReturnsAsync(cloudToDeviceMessage);
 
-            loraDeviceClient.Setup(x => x.ReceiveAsync(LoRaOperationTimeWatcher.AdditionalCloudToDeviceMessageAvailableTime))
+            loraDeviceClient.Setup(x => x.ReceiveAsync(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage))
                 .Returns(this.EmptyAdditionalMessageReceiveAsync); // 2nd cloud to device message does not return anything
 
             loraDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
-
-            var payloadDecoder = new Mock<ILoRaPayloadDecoder>();
 
             var loRaDeviceAPI = new Mock<LoRaDeviceAPIServiceBase>();
 
@@ -670,10 +674,23 @@ namespace LoRaWan.NetworkServer.Test
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            Assert.NotNull(await messageProcessor.ProcessMessageAsync(rxpk));
+            var actualDownlink = await messageProcessor.ProcessMessageAsync(rxpk);
+            Assert.NotNull(actualDownlink);
 
             loraDeviceClient.VerifyAll();
             this.LoRaDeviceRegistry.VerifyAll();
+
+            var euRegion = RegionFactory.CreateEU868Region();
+            if (expectedRX == 1)
+            {
+                // ensure response is for RX1
+                Assert.Equal(rxpk.Tmst + 1000000, actualDownlink.Txpk.Tmst);
+            }
+            else
+            {
+                // ensure response is for RX2
+                Assert.Equal(rxpk.Tmst + 2000000, actualDownlink.Txpk.Tmst);
+            }
         }
     }
 }

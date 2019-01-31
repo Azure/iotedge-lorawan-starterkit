@@ -180,5 +180,25 @@ namespace LoRaWan.NetworkServer.Test
             // Will be around 1000 - delay - 400
             Assert.InRange(target.GetAvailableTimeToCheckCloudToDeviceMessage(loRaDevice), TimeSpan.FromMilliseconds(expectedMinMs), TimeSpan.FromMilliseconds(expectedMaxMs));
         }
+
+        [Theory]
+        // Preferred Window 1
+        [InlineData(1581, 1)]
+        [InlineData(1600, 1)]
+        [InlineData(2000, 1)]
+        // Preferred Window 2
+        [InlineData(1581, 2)]
+        [InlineData(1600, 2)]
+        [InlineData(2000, 2)]
+        public void When_Device_Out_Of_Time_For_C2D_Receive_Should_Return_TimeSpan_Zero(int delayInMs, int devicePreferredReceiveWindow)
+        {
+            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var loRaDevice = new LoRaDevice("1111", "2222", null)
+            {
+                PreferredWindow = devicePreferredReceiveWindow,
+            };
+
+            Assert.Equal(TimeSpan.Zero, target.GetAvailableTimeToCheckCloudToDeviceMessage(loRaDevice));
+        }
     }
 }

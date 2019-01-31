@@ -31,7 +31,7 @@ namespace LoRaWan.NetworkServer.Test
 
         protected Mock<ILoRaDeviceRegistry> LoRaDeviceRegistry => this.loRaDeviceRegistry;
 
-        protected Task<Message> EmptyAdditionalMessageReceiveAsync => Task.Delay(LoRaOperationTimeWatcher.AdditionalCloudToDeviceMessageAvailableTime).ContinueWith((_) => (Message)null);
+        protected Task<Message> EmptyAdditionalMessageReceiveAsync => Task.Delay(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage).ContinueWith((_) => (Message)null);
 
         public MessageProcessorTestBase()
         {

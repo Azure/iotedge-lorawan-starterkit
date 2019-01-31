@@ -23,10 +23,11 @@ namespace LoRaWan.NetworkServer
         public static TimeSpan ExpectedTimeToPackageAndSendMessage => expectedTimeToPackageAndSendMessage;
 
         /// <summary>
-        /// Gets the minium required time to check for cloud to device messages
-        /// 100ms
+        /// Gets the minimum available time to check for cloud to device messages
+        /// If we have less than this amount of time available no check is done
+        /// 20ms
         /// </summary>
-        public static TimeSpan MinimumTimeAvailableToCheckForCloudMessage => minimumTimeAvailableToCheckForCloudMessage;
+        public static TimeSpan MinimumAvailableTimeToCheckForCloudMessage => minimumAvailableTimeToCheckForCloudMessage;
 
         /// <summary>
         /// Gets the estimated overhead of calling receive message async (context switch, etc)
@@ -40,23 +41,15 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public static TimeSpan ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead => expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead;
 
-        /// <summary>
-        /// Gets the allocated time to check for additional cloud to device message
-        /// 20ms
-        /// </summary>
-        public static TimeSpan AdditionalCloudToDeviceMessageAvailableTime => additionalCloudToDeviceMessageAvailableTime;
-
-        static TimeSpan minimumTimeAvailableToCheckForCloudMessage;
+        static TimeSpan minimumAvailableTimeToCheckForCloudMessage;
         static TimeSpan expectedTimeToPackageAndSendMessage;
         static TimeSpan checkForCloudMessageCallEstimatedOverhead;
         static TimeSpan expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead;
-        static TimeSpan additionalCloudToDeviceMessageAvailableTime;
 
         static LoRaOperationTimeWatcher()
         {
-            additionalCloudToDeviceMessageAvailableTime = TimeSpan.FromMilliseconds(20);
             expectedTimeToPackageAndSendMessage = TimeSpan.FromMilliseconds(300);
-            minimumTimeAvailableToCheckForCloudMessage = TimeSpan.FromMilliseconds(100);
+            minimumAvailableTimeToCheckForCloudMessage = TimeSpan.FromMilliseconds(20);
             checkForCloudMessageCallEstimatedOverhead = TimeSpan.FromMilliseconds(100);
             expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead = expectedTimeToPackageAndSendMessage + checkForCloudMessageCallEstimatedOverhead;
         }
@@ -195,7 +188,7 @@ namespace LoRaWan.NetworkServer
             if (loRaDevice.PreferredWindow == 1)
             {
                 var availableTimeForFirstWindow = TimeSpan.FromSeconds(this.GetReceiveWindow1Delay(loRaDevice)).Subtract(elapsed.Add(ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead));
-                if (availableTimeForFirstWindow > TimeSpan.Zero)
+                if (availableTimeForFirstWindow >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
                 {
                     return availableTimeForFirstWindow;
                 }
@@ -203,7 +196,7 @@ namespace LoRaWan.NetworkServer
 
             // 2nd window
             var availableTimeForSecondWindow = TimeSpan.FromSeconds(this.GetReceiveWindow2Delay(loRaDevice)).Subtract(elapsed.Add(ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead));
-            if (availableTimeForSecondWindow > TimeSpan.Zero)
+            if (availableTimeForSecondWindow >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
             {
                 return availableTimeForSecondWindow;
             }
