@@ -17,15 +17,15 @@ variables:
   # Name of service connection for resource group
   azureServiceConnectionName: 'IntegrationTestRG'
 
-  edgeAgentVersion: 1.0.6-rc1
-  edgeHubVersion: 1.0.6-rc1
+  edgeAgentVersion: 1.0.6
+  edgeHubVersion: 1.0.6
   edgeHubRoute: FROM /* INTO $upstream
 
   # Defines the name of the VSTS agent in ARM architecture
   vstsAgentARM: myAgent-arm32v7
 
   # Defines the name of the VSTS agent in AMD64 architecture
-  vstsAgentAMD: ronnies-amd-agent
+  vstsAgentAMD: myAgent-amd64
 
   # Network Server module level: 1 in order to get decoder information
   networkServerLogLevel: 1  
