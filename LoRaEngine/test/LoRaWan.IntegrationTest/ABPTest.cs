@@ -28,9 +28,9 @@ namespace LoRaWan.IntegrationTest
             var device = this.TestFixtureCi.Device5_ABP;
             this.LogTestStart(device);
 
-            await this.ArduinoDevice.SetDeviceModeAsync(LoRaArduinoSerial.Device_Mode_T.LWABP);
-            await this.ArduinoDevice.SetIdAsync(device.DevAddr, device.DeviceID, null);
-            await this.ArduinoDevice.SetKeyAsync(device.NwkSKey, device.AppSKey, null);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
@@ -39,7 +39,7 @@ namespace LoRaWan.IntegrationTest
             {
                 var msg = PayloadGenerator.Next().ToString();
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i + 1}/{MESSAGES_COUNT}");
-                await this.ArduinoDevice.TransferPacketAsync(msg, 10);
+                await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -64,7 +64,7 @@ namespace LoRaWan.IntegrationTest
             {
                 var msg = PayloadGenerator.Next().ToString();
                 this.Log($"{device.DeviceID}: Sending confirmed '{msg}' {i + 1}/{MESSAGES_COUNT}");
-                await this.ArduinoDevice.TransferPacketWithConfirmedAsync(msg, 10);
+                await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -96,13 +96,13 @@ namespace LoRaWan.IntegrationTest
             this.LogTestStart(device);
 
             Assert.NotEqual(devAddrToUse, device.DevAddr);
-            await this.ArduinoDevice.SetDeviceModeAsync(LoRaArduinoSerial.Device_Mode_T.LWABP);
-            await this.ArduinoDevice.SetIdAsync(devAddrToUse, device.DeviceID, null);
-            await this.ArduinoDevice.SetKeyAsync(device.NwkSKey, device.AppSKey, null);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(devAddrToUse, device.DeviceID, null);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
-            await this.ArduinoDevice.TransferPacketAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
 
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
@@ -128,7 +128,7 @@ namespace LoRaWan.IntegrationTest
             this.TestFixtureCi.ClearLogs();
 
             // Try with confirmed message
-            await this.ArduinoDevice.TransferPacketWithConfirmedAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketWithConfirmedAsync(PayloadGenerator.Next().ToString(), 10);
 
             // wait for serial logs to be ready
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -167,13 +167,13 @@ namespace LoRaWan.IntegrationTest
             var nwkSKeyToUse = "01020304050607080910111213141516";
             Assert.NotEqual(appSKeyToUse, device.AppSKey);
             Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
-            await this.ArduinoDevice.SetDeviceModeAsync(LoRaArduinoSerial.Device_Mode_T.LWABP);
-            await this.ArduinoDevice.SetIdAsync(device.DevAddr, device.DeviceID, null);
-            await this.ArduinoDevice.SetKeyAsync(nwkSKeyToUse, appSKeyToUse, null);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+            await this.ArduinoDevice.setKeyAsync(nwkSKeyToUse, appSKeyToUse, null);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
-            await this.ArduinoDevice.TransferPacketAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
 
             // wait for serial logs to be ready
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -190,7 +190,7 @@ namespace LoRaWan.IntegrationTest
             this.TestFixtureCi.ClearLogs();
 
             // Try with confirmed message
-            await this.ArduinoDevice.TransferPacketWithConfirmedAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketWithConfirmedAsync(PayloadGenerator.Next().ToString(), 10);
 
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
@@ -211,13 +211,13 @@ namespace LoRaWan.IntegrationTest
 
             var nwkSKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
             Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
-            await this.ArduinoDevice.SetDeviceModeAsync(LoRaArduinoSerial.Device_Mode_T.LWABP);
-            await this.ArduinoDevice.SetIdAsync(device.DevAddr, device.DeviceID, null);
-            await this.ArduinoDevice.SetKeyAsync(nwkSKeyToUse, device.AppSKey, null);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+            await this.ArduinoDevice.setKeyAsync(nwkSKeyToUse, device.AppSKey, null);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
-            await this.ArduinoDevice.TransferPacketAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -231,7 +231,7 @@ namespace LoRaWan.IntegrationTest
             this.TestFixtureCi.ClearLogs();
 
             // Try with confirmed message
-            await this.ArduinoDevice.TransferPacketWithConfirmedAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketWithConfirmedAsync(PayloadGenerator.Next().ToString(), 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -256,9 +256,9 @@ namespace LoRaWan.IntegrationTest
 
         private async Task SendABPMessages(int messages_count, TestDeviceInfo device)
         {
-            await this.ArduinoDevice.SetDeviceModeAsync(LoRaArduinoSerial.Device_Mode_T.LWABP);
-            await this.ArduinoDevice.SetIdAsync(device.DevAddr, device.DeviceID, null);
-            await this.ArduinoDevice.SetKeyAsync(device.NwkSKey, device.AppSKey, null);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
@@ -267,7 +267,7 @@ namespace LoRaWan.IntegrationTest
             {
                 var msg = PayloadGenerator.Next().ToString();
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i + 1}/{messages_count}");
-                await this.ArduinoDevice.TransferPacketAsync(msg, 10);
+                await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -292,7 +292,7 @@ namespace LoRaWan.IntegrationTest
             {
                 var msg = PayloadGenerator.Next().ToString();
                 this.Log($"{device.DeviceID}: Sending confirmed '{msg}' {i + 1}/{messages_count}");
-                await this.ArduinoDevice.TransferPacketWithConfirmedAsync(msg, 10);
+                await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 

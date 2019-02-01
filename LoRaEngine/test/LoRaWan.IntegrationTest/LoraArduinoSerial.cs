@@ -31,6 +31,9 @@
   THE SOFTWARE.1  USA
 */
 
+#pragma warning disable SA1300 // Elements should begin with an uppercase letter
+#pragma warning disable SA1313 // Parameters should begin with a lowercase letter
+
 namespace LoRaWan.IntegrationTest
 {
     using System;
@@ -50,13 +53,13 @@ namespace LoRaWan.IntegrationTest
         private SerialPort serialPortWin;
         private SerialDevice serialPort;
 
-        public enum Class_Type_T
+        public enum _class_type_t
         {
             CLASS_A = 0,
             CLASS_C
         }
 
-        public enum Physical_Type_T
+        public enum _physical_type_t
         {
             EU434 = 0,
             EU868,
@@ -71,20 +74,20 @@ namespace LoRaWan.IntegrationTest
             IN865
         }
 
-        public enum Device_Mode_T
+        public enum _device_mode_t
         {
             LWABP = 0,
             LWOTAA,
             TEST
         }
 
-        public enum Otaa_Join_Cmd_T
+        public enum _otaa_join_cmd_t
         {
             JOIN = 0,
             FORCE
         }
 
-        public enum Window_Delay_T
+        public enum _window_delay_t
         {
             RECEIVE_DELAY1 = 0,
             RECEIVE_DELAY2,
@@ -92,14 +95,14 @@ namespace LoRaWan.IntegrationTest
             JOIN_ACCEPT_DELAY2
         }
 
-        public enum Band_Width_T
+        public enum _band_width_t
         {
             BW125 = 125,
             BW250 = 250,
             BW500 = 500
         }
 
-        public enum Spreading_Factor_T
+        public enum _spreading_factor_t
         {
             SF12 = 12,
             SF11 = 11,
@@ -109,7 +112,7 @@ namespace LoRaWan.IntegrationTest
             SF7 = 7
         }
 
-        public enum Data_Rate_T
+        public enum _data_rate_t
         {
             DR0 = 0,
             DR1,
@@ -130,7 +133,7 @@ namespace LoRaWan.IntegrationTest
         }
 
         // Creates a new instance based on port identifier
-        private LoRaArduinoSerial(SerialDevice serialPort)
+        LoRaArduinoSerial(SerialDevice serialPort)
         {
             this.serialPort = serialPort;
 
@@ -150,9 +153,9 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        private byte[] windowsSerialPortBuffer = null;
+        byte[] windowsSerialPortBuffer = null;
 
-        private LoRaArduinoSerial(SerialPort sp)
+        LoRaArduinoSerial(SerialPort sp)
         {
             this.serialPortWin = sp;
             this.windowsSerialPortBuffer = new byte[this.serialPortWin.ReadBufferSize];
@@ -175,7 +178,7 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        private void OnSerialDataReceived(string rawData)
+        void OnSerialDataReceived(string rawData)
         {
             try
             {
@@ -217,10 +220,10 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        private ConcurrentQueue<string> serialLogs = new ConcurrentQueue<string>();
-        private string buff = string.Empty;
+        ConcurrentQueue<string> serialLogs = new ConcurrentQueue<string>();
+        string buff = string.Empty;
 
-        private void AppendSerialLog(string message)
+        void AppendSerialLog(string message)
         {
             TestLogger.Log($"[SERIAL] {message}");
             this.serialLogs.Enqueue(message);
@@ -241,86 +244,86 @@ namespace LoRaWan.IntegrationTest
             this.serialLogs.Clear();
         }
 
-        public LoRaArduinoSerial SetId(string devAddr, string devEUI, string appEUI)
+        public LoRaArduinoSerial setId(string DevAddr, string DevEUI, string AppEUI)
         {
-            if (!string.IsNullOrEmpty(devAddr))
+            if (!string.IsNullOrEmpty(DevAddr))
             {
-                string cmd = $"AT+ID=DevAddr,{devAddr}\r\n";
-                this.SendCommand(cmd);
+                string cmd = $"AT+ID=DevAddr,{DevAddr}\r\n";
+                this.sendCommand(cmd);
 
                 Thread.Sleep(DEFAULT_TIMEWAIT);
             }
 
-            if (!string.IsNullOrEmpty(devEUI))
+            if (!string.IsNullOrEmpty(DevEUI))
             {
-                string cmd = $"AT+ID=DevEui,{devEUI}\r\n";
-                this.SendCommand(cmd);
+                string cmd = $"AT+ID=DevEui,{DevEUI}\r\n";
+                this.sendCommand(cmd);
                 Thread.Sleep(DEFAULT_TIMEWAIT);
             }
 
-            if (!string.IsNullOrEmpty(appEUI))
+            if (!string.IsNullOrEmpty(AppEUI))
             {
-                string cmd = $"AT+ID=AppEui,{appEUI}\r\n";
-                this.SendCommand(cmd);
+                string cmd = $"AT+ID=AppEui,{AppEUI}\r\n";
+                this.sendCommand(cmd);
                 Thread.Sleep(DEFAULT_TIMEWAIT);
             }
 
             return this;
         }
 
-        public async Task SetIdAsync(string devAddr, string devEUI, string appEUI)
+        public async Task setIdAsync(string DevAddr, string DevEUI, string AppEUI)
         {
             try
             {
-                if (!string.IsNullOrEmpty(devAddr))
+                if (!string.IsNullOrEmpty(DevAddr))
                 {
-                    string cmd = $"AT+ID=DevAddr,{devAddr}\r\n";
-                    this.SendCommand(cmd);
+                    string cmd = $"AT+ID=DevAddr,{DevAddr}\r\n";
+                    this.sendCommand(cmd);
 
                     await Task.Delay(DEFAULT_TIMEWAIT);
                 }
 
-                if (!string.IsNullOrEmpty(devEUI))
+                if (!string.IsNullOrEmpty(DevEUI))
                 {
-                    string cmd = $"AT+ID=DevEui,{devEUI}\r\n";
-                    this.SendCommand(cmd);
+                    string cmd = $"AT+ID=DevEui,{DevEUI}\r\n";
+                    this.sendCommand(cmd);
                     await Task.Delay(DEFAULT_TIMEWAIT);
                 }
 
-                if (!string.IsNullOrEmpty(appEUI))
+                if (!string.IsNullOrEmpty(AppEUI))
                 {
-                    string cmd = $"AT+ID=AppEui,{appEUI}\r\n";
-                    this.SendCommand(cmd);
+                    string cmd = $"AT+ID=AppEui,{AppEUI}\r\n";
+                    this.sendCommand(cmd);
                     await Task.Delay(DEFAULT_TIMEWAIT);
                 }
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.SetIdAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.setIdAsync)}. {ex.ToString()}");
             }
         }
 
-        public LoRaArduinoSerial SetKey(string nwkSKey, string appSKey, string appKey)
+        public LoRaArduinoSerial setKey(string NwkSKey, string AppSKey, string AppKey)
         {
-            if (!string.IsNullOrEmpty(nwkSKey))
+            if (!string.IsNullOrEmpty(NwkSKey))
             {
-                string cmd = $"AT+KEY=NWKSKEY,{nwkSKey}\r\n";
-                this.SendCommand(cmd);
+                string cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
+                this.sendCommand(cmd);
                 Thread.Sleep(DEFAULT_TIMEWAIT);
             }
 
-            if (!string.IsNullOrEmpty(appSKey))
+            if (!string.IsNullOrEmpty(AppSKey))
             {
-                string cmd = $"AT+KEY=APPSKEY,{appSKey}\r\n";
-                this.SendCommand(cmd);
+                string cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
+                this.sendCommand(cmd);
 
                 Thread.Sleep(DEFAULT_TIMEWAIT);
             }
 
-            if (!string.IsNullOrEmpty(appKey))
+            if (!string.IsNullOrEmpty(AppKey))
             {
-                string cmd = $"AT+KEY= APPKEY,{appKey}\r\n";
-                this.SendCommand(cmd);
+                string cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
+                this.sendCommand(cmd);
 
                 Thread.Sleep(DEFAULT_TIMEWAIT);
             }
@@ -328,153 +331,153 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public async Task SetKeyAsync(string nwkSKey, string appSKey, string appKey)
+        public async Task setKeyAsync(string NwkSKey, string AppSKey, string AppKey)
         {
             try
             {
-                if (!string.IsNullOrEmpty(nwkSKey))
+                if (!string.IsNullOrEmpty(NwkSKey))
                 {
-                    string cmd = $"AT+KEY=NWKSKEY,{nwkSKey}\r\n";
-                    this.SendCommand(cmd);
+                    string cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
+                    this.sendCommand(cmd);
                     await Task.Delay(DEFAULT_TIMEWAIT);
                 }
 
-                if (!string.IsNullOrEmpty(appSKey))
+                if (!string.IsNullOrEmpty(AppSKey))
                 {
-                    string cmd = $"AT+KEY=APPSKEY,{appSKey}\r\n";
-                    this.SendCommand(cmd);
+                    string cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
+                    this.sendCommand(cmd);
 
                     await Task.Delay(DEFAULT_TIMEWAIT);
                 }
 
-                if (!string.IsNullOrEmpty(appKey))
+                if (!string.IsNullOrEmpty(AppKey))
                 {
-                    string cmd = $"AT+KEY= APPKEY,{appKey}\r\n";
-                    this.SendCommand(cmd);
+                    string cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
+                    this.sendCommand(cmd);
 
                     await Task.Delay(DEFAULT_TIMEWAIT);
                 }
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.SetKeyAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.setKeyAsync)}. {ex.ToString()}");
             }
         }
 
-        public LoRaArduinoSerial SetDataRate(Data_Rate_T dataRate, Physical_Type_T physicalType)
+        public LoRaArduinoSerial setDataRate(_data_rate_t dataRate, _physical_type_t physicalType)
         {
-            if (physicalType == Physical_Type_T.EU434)
-                this.SendCommand("AT+DR=EU433\r\n");
-            else if (physicalType == Physical_Type_T.EU868)
-                this.SendCommand("AT+DR=EU868\r\n");
-            else if (physicalType == Physical_Type_T.US915)
-                this.SendCommand("AT+DR=US915\r\n");
-            else if (physicalType == Physical_Type_T.US915HYBRID)
-                this.SendCommand("AT+DR=US915HYBRID\r\n");
-            else if (physicalType == Physical_Type_T.AU915)
-                this.SendCommand("AT+DR=AU915\r\n");
-            else if (physicalType == Physical_Type_T.AU915OLD)
-                this.SendCommand("AT+DR=AU915OLD\r\n");
-            else if (physicalType == Physical_Type_T.CN470)
-                this.SendCommand("AT+DR=CN470\r\n");
-            else if (physicalType == Physical_Type_T.CN779)
-                this.SendCommand("AT+DR=CN779\r\n");
-            else if (physicalType == Physical_Type_T.AS923)
-                this.SendCommand("AT+DR=AS923\r\n");
-            else if (physicalType == Physical_Type_T.KR920)
-                this.SendCommand("AT+DR=KR920\r\n");
-            else if (physicalType == Physical_Type_T.IN865)
-                this.SendCommand("AT+DR=IN865\r\n");
+            if (physicalType == _physical_type_t.EU434)
+                this.sendCommand("AT+DR=EU433\r\n");
+            else if (physicalType == _physical_type_t.EU868)
+                this.sendCommand("AT+DR=EU868\r\n");
+            else if (physicalType == _physical_type_t.US915)
+                this.sendCommand("AT+DR=US915\r\n");
+            else if (physicalType == _physical_type_t.US915HYBRID)
+                this.sendCommand("AT+DR=US915HYBRID\r\n");
+            else if (physicalType == _physical_type_t.AU915)
+                this.sendCommand("AT+DR=AU915\r\n");
+            else if (physicalType == _physical_type_t.AU915OLD)
+                this.sendCommand("AT+DR=AU915OLD\r\n");
+            else if (physicalType == _physical_type_t.CN470)
+                this.sendCommand("AT+DR=CN470\r\n");
+            else if (physicalType == _physical_type_t.CN779)
+                this.sendCommand("AT+DR=CN779\r\n");
+            else if (physicalType == _physical_type_t.AS923)
+                this.sendCommand("AT+DR=AS923\r\n");
+            else if (physicalType == _physical_type_t.KR920)
+                this.sendCommand("AT+DR=KR920\r\n");
+            else if (physicalType == _physical_type_t.IN865)
+                this.sendCommand("AT+DR=IN865\r\n");
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             string cmd = $"AT+DR={dataRate}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public async Task SetDataRateAsync(Data_Rate_T dataRate, Physical_Type_T physicalType)
+        public async Task setDataRateAsync(_data_rate_t dataRate, _physical_type_t physicalType)
         {
-            if (physicalType == Physical_Type_T.EU434)
-                this.SendCommand("AT+DR=EU433\r\n");
-            else if (physicalType == Physical_Type_T.EU868)
-                this.SendCommand("AT+DR=EU868\r\n");
-            else if (physicalType == Physical_Type_T.US915)
-                this.SendCommand("AT+DR=US915\r\n");
-            else if (physicalType == Physical_Type_T.US915HYBRID)
-                this.SendCommand("AT+DR=US915HYBRID\r\n");
-            else if (physicalType == Physical_Type_T.AU915)
-                this.SendCommand("AT+DR=AU915\r\n");
-            else if (physicalType == Physical_Type_T.AU915OLD)
-                this.SendCommand("AT+DR=AU915OLD\r\n");
-            else if (physicalType == Physical_Type_T.CN470)
-                this.SendCommand("AT+DR=CN470\r\n");
-            else if (physicalType == Physical_Type_T.CN779)
-                this.SendCommand("AT+DR=CN779\r\n");
-            else if (physicalType == Physical_Type_T.AS923)
-                this.SendCommand("AT+DR=AS923\r\n");
-            else if (physicalType == Physical_Type_T.KR920)
-                this.SendCommand("AT+DR=KR920\r\n");
-            else if (physicalType == Physical_Type_T.IN865)
-                this.SendCommand("AT+DR=IN865\r\n");
+            if (physicalType == _physical_type_t.EU434)
+                this.sendCommand("AT+DR=EU433\r\n");
+            else if (physicalType == _physical_type_t.EU868)
+                this.sendCommand("AT+DR=EU868\r\n");
+            else if (physicalType == _physical_type_t.US915)
+                this.sendCommand("AT+DR=US915\r\n");
+            else if (physicalType == _physical_type_t.US915HYBRID)
+                this.sendCommand("AT+DR=US915HYBRID\r\n");
+            else if (physicalType == _physical_type_t.AU915)
+                this.sendCommand("AT+DR=AU915\r\n");
+            else if (physicalType == _physical_type_t.AU915OLD)
+                this.sendCommand("AT+DR=AU915OLD\r\n");
+            else if (physicalType == _physical_type_t.CN470)
+                this.sendCommand("AT+DR=CN470\r\n");
+            else if (physicalType == _physical_type_t.CN779)
+                this.sendCommand("AT+DR=CN779\r\n");
+            else if (physicalType == _physical_type_t.AS923)
+                this.sendCommand("AT+DR=AS923\r\n");
+            else if (physicalType == _physical_type_t.KR920)
+                this.sendCommand("AT+DR=KR920\r\n");
+            else if (physicalType == _physical_type_t.IN865)
+                this.sendCommand("AT+DR=IN865\r\n");
 
             await Task.Delay(DEFAULT_TIMEWAIT);
 
             string cmd = $"AT+DR={dataRate}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
-        public LoRaArduinoSerial SetPower(short power)
+        public LoRaArduinoSerial setPower(short power)
         {
             string cmd = $"AT+POWER={power}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public async Task SetPowerAsync(short power)
+        public async Task setPowerAsync(short power)
         {
             string cmd = $"AT+POWER={power}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
-        public LoRaArduinoSerial SetPort(int port)
+        public LoRaArduinoSerial setPort(int port)
         {
             string cmd = "AT+PORT={port}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public LoRaArduinoSerial SetAdaptiveDataRate(bool command)
+        public LoRaArduinoSerial setAdaptiveDataRate(bool command)
         {
             if (command)
-                this.SendCommand("AT+ADR=ON\r\n");
+                this.sendCommand("AT+ADR=ON\r\n");
             else
-                this.SendCommand("AT+ADR=OFF\r\n");
+                this.sendCommand("AT+ADR=OFF\r\n");
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public async Task SetAdaptiveDataRateAsync(bool command)
+        public async Task setAdaptiveDataRateAsync(bool command)
         {
             if (command)
-                this.SendCommand("AT+ADR=ON\r\n");
+                this.sendCommand("AT+ADR=ON\r\n");
             else
-                this.SendCommand("AT+ADR=OFF\r\n");
+                this.sendCommand("AT+ADR=OFF\r\n");
 
             await Task.Delay(DEFAULT_TIMEWAIT);
         }
@@ -499,54 +502,54 @@ namespace LoRaWan.IntegrationTest
             return false;
         }
 
-        public LoRaArduinoSerial SetChannel(int channel, float frequency)
+        public LoRaArduinoSerial setChannel(int channel, float frequency)
         {
             string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public async Task SetChannelAsync(int channel, float frequency)
+        public async Task setChannelAsync(int channel, float frequency)
         {
             string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
-        public LoRaArduinoSerial SetChannel(char channel, float frequency, Data_Rate_T dataRata)
+        public LoRaArduinoSerial setChannel(char channel, float frequency, _data_rate_t dataRata)
         {
             string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10},{dataRata}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public LoRaArduinoSerial SetChannel(char channel, float frequency, Data_Rate_T dataRataMin, Data_Rate_T dataRataMax)
+        public LoRaArduinoSerial setChannel(char channel, float frequency, _data_rate_t dataRataMin, _data_rate_t dataRataMax)
         {
             string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10},{dataRataMin},{dataRataMax}\r\n";
 
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public async Task<bool> TransferPacketAsync(string buffer, int timeout)
+        public async Task<bool> transferPacketAsync(string buffer, int timeout)
         {
             try
             {
-                this.SendCommand("AT+MSG=\"");
+                this.sendCommand("AT+MSG=\"");
 
-                this.SendCommand(buffer);
+                this.sendCommand(buffer);
 
-                this.SendCommand("\"\r\n");
+                this.sendCommand("\"\r\n");
 
                 DateTime start = DateTime.Now;
 
@@ -562,18 +565,18 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.TransferPacketAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.transferPacketAsync)}. {ex.ToString()}");
                 return false;
             }
         }
 
-        public bool TransferPacket(string buffer, int timeout)
+        public bool transferPacket(string buffer, int timeout)
         {
-            this.SendCommand("AT+MSG=\"");
+            this.sendCommand("AT+MSG=\"");
 
-            this.SendCommand(buffer);
+            this.sendCommand(buffer);
 
-            this.SendCommand("\"\r\n");
+            this.sendCommand("\"\r\n");
 
             DateTime start = DateTime.Now;
 
@@ -597,11 +600,11 @@ namespace LoRaWan.IntegrationTest
             return false;
         }
 
-        public bool TransferPacketWithConfirmed(string buffer, int timeout)
+        public bool transferPacketWithConfirmed(string buffer, int timeout)
         {
-            this.SendCommand("AT+CMSG=\"");
-            this.SendCommand(buffer);
-            this.SendCommand("\"\r\n");
+            this.sendCommand("AT+CMSG=\"");
+            this.sendCommand(buffer);
+            this.sendCommand("\"\r\n");
 
             DateTime start = DateTime.Now;
 
@@ -616,13 +619,13 @@ namespace LoRaWan.IntegrationTest
             // if (_buffer.Contains("+CMSG: ACK Received")) return true;
         }
 
-        public async Task<bool> TransferPacketWithConfirmedAsync(string buffer, int timeout)
+        public async Task<bool> transferPacketWithConfirmedAsync(string buffer, int timeout)
         {
             try
             {
-                this.SendCommand("AT+CMSG=\"");
-                this.SendCommand(buffer);
-                this.SendCommand("\"\r\n");
+                this.sendCommand("AT+CMSG=\"");
+                this.sendCommand(buffer);
+                this.sendCommand("\"\r\n");
 
                 DateTime start = DateTime.Now;
 
@@ -640,12 +643,12 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.TransferPacketWithConfirmedAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.transferPacketWithConfirmedAsync)}. {ex.ToString()}");
                 return false;
             }
         }
 
-        public LoRaArduinoSerial SetUnconfirmedMessageRepeatTime(uint time)
+        public LoRaArduinoSerial setUnconfirmedMessageRepeatTime(uint time)
         {
             if (time > 15)
                 time = 15;
@@ -653,14 +656,14 @@ namespace LoRaWan.IntegrationTest
                 time = 1;
 
             string cmd = $"AT+REPT={time}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public LoRaArduinoSerial SetConfirmedMessageRetryTime(uint time)
+        public LoRaArduinoSerial setConfirmedMessageRetryTime(uint time)
         {
             if (time > 15)
                 time = 15;
@@ -668,14 +671,14 @@ namespace LoRaWan.IntegrationTest
                 time = 1;
 
             string cmd = $"AT+RETRY={time}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public async Task SetConfirmedMessageRetryTimeAsync(uint time)
+        public async Task setConfirmedMessageRetryTimeAsync(uint time)
         {
             if (time > 15)
                 time = 15;
@@ -683,177 +686,177 @@ namespace LoRaWan.IntegrationTest
                 time = 1;
 
             string cmd = $"AT+RETRY={time}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
-        public LoRaArduinoSerial SetReceiceWindowFirst(bool command)
+        public LoRaArduinoSerial setReceiceWindowFirst(bool command)
         {
             if (command)
-                this.SendCommand("AT+RXWIN1=ON\r\n");
+                this.sendCommand("AT+RXWIN1=ON\r\n");
             else
-                this.SendCommand("AT+RXWIN1=OFF\r\n");
+                this.sendCommand("AT+RXWIN1=OFF\r\n");
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public LoRaArduinoSerial SetReceiceWindowFirst(int channel, float frequency)
+        public LoRaArduinoSerial setReceiceWindowFirst(int channel, float frequency)
         {
             string cmd = $"AT+RXWIN1={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public async Task SetReceiceWindowFirstAsync(int channel, float frequency)
+        public async Task setReceiceWindowFirstAsync(int channel, float frequency)
         {
             string cmd = $"AT+RXWIN1={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
-        public LoRaArduinoSerial SetReceiceWindowSecond(float frequency, Data_Rate_T dataRate)
+        public LoRaArduinoSerial setReceiceWindowSecond(float frequency, _data_rate_t dataRate)
         {
             string cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{dataRate}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public async Task SetReceiceWindowSecondAsync(float frequency, Data_Rate_T dataRate)
+        public async Task setReceiceWindowSecondAsync(float frequency, _data_rate_t dataRate)
         {
             string cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{dataRate}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
-        public LoRaArduinoSerial SetReceiceWindowSecond(float frequency, Spreading_Factor_T spreadingFactor, Band_Width_T bandwidth)
+        public LoRaArduinoSerial setReceiceWindowSecond(float frequency, _spreading_factor_t spreadingFactor, _band_width_t bandwidth)
         {
             string cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{spreadingFactor},{bandwidth}\r\n";
-            this.SendCommand(cmd);
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public LoRaArduinoSerial SetDutyCycle(bool command)
+        public LoRaArduinoSerial setDutyCycle(bool command)
         {
             if (command)
-                this.SendCommand("AT+LW=DC, ON\r\n");
+                this.sendCommand("AT+LW=DC, ON\r\n");
             else
-                this.SendCommand("AT+LW=DC, OFF\r\n");
+                this.sendCommand("AT+LW=DC, OFF\r\n");
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public async Task SetDutyCycleAsync(bool command)
+        public async Task setDutyCycleAsync(bool command)
         {
             if (command)
-                this.SendCommand("AT+LW=DC, ON\r\n");
+                this.sendCommand("AT+LW=DC, ON\r\n");
             else
-                this.SendCommand("AT+LW=DC, OFF\r\n");
+                this.sendCommand("AT+LW=DC, OFF\r\n");
 
             await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
-        public LoRaArduinoSerial SetJoinDutyCycle(bool command)
+        public LoRaArduinoSerial setJoinDutyCycle(bool command)
         {
             if (command)
-                this.SendCommand("AT+LW=JDC,ON\r\n");
+                this.sendCommand("AT+LW=JDC,ON\r\n");
             else
-                this.SendCommand("AT+LW=JDC,OFF\r\n");
+                this.sendCommand("AT+LW=JDC,OFF\r\n");
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
             return this;
         }
 
-        public async Task SetJoinDutyCycleAsync(bool command)
+        public async Task setJoinDutyCycleAsync(bool command)
         {
             if (command)
-                this.SendCommand("AT+LW=JDC,ON\r\n");
+                this.sendCommand("AT+LW=JDC,ON\r\n");
             else
-                this.SendCommand("AT+LW=JDC,OFF\r\n");
+                this.sendCommand("AT+LW=JDC,OFF\r\n");
 
             await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
-        public LoRaArduinoSerial SetReceiceWindowDelay(Window_Delay_T command, short delay)
+        public LoRaArduinoSerial setReceiceWindowDelay(_window_delay_t command, short _delay)
         {
             string cmd = string.Empty;
 
-            if (command == Window_Delay_T.RECEIVE_DELAY1)
-                cmd = $"AT+DELAY=RX1,{delay}\r\n";
-            else if (command == Window_Delay_T.RECEIVE_DELAY2)
-                cmd = $"AT+DELAY=RX2,{delay}\r\n";
-            else if (command == Window_Delay_T.JOIN_ACCEPT_DELAY1)
-                cmd = $"AT+DELAY=JRX1,{delay}\r\n";
-            else if (command == Window_Delay_T.JOIN_ACCEPT_DELAY2)
-                cmd = $"AT+DELAY=JRX2,{delay}\r\n";
-            this.SendCommand(cmd);
+            if (command == _window_delay_t.RECEIVE_DELAY1)
+                cmd = $"AT+DELAY=RX1,{_delay}\r\n";
+            else if (command == _window_delay_t.RECEIVE_DELAY2)
+                cmd = $"AT+DELAY=RX2,{_delay}\r\n";
+            else if (command == _window_delay_t.JOIN_ACCEPT_DELAY1)
+                cmd = $"AT+DELAY=JRX1,{_delay}\r\n";
+            else if (command == _window_delay_t.JOIN_ACCEPT_DELAY2)
+                cmd = $"AT+DELAY=JRX2,{_delay}\r\n";
+            this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
             return this;
         }
 
-        public LoRaArduinoSerial SetClassType(Class_Type_T type)
+        public LoRaArduinoSerial setClassType(_class_type_t type)
         {
-            if (type == Class_Type_T.CLASS_A)
-                this.SendCommand("AT+CLASS=A\r\n");
-            else if (type == Class_Type_T.CLASS_C)
-                this.SendCommand("AT+CLASS=C\r\n");
+            if (type == _class_type_t.CLASS_A)
+                this.sendCommand("AT+CLASS=A\r\n");
+            else if (type == _class_type_t.CLASS_C)
+                this.sendCommand("AT+CLASS=C\r\n");
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public LoRaArduinoSerial SetDeciveMode(Device_Mode_T mode)
+        public LoRaArduinoSerial setDeciveMode(_device_mode_t mode)
         {
-            if (mode == Device_Mode_T.LWABP)
-                this.SendCommand("AT+MODE=LWABP\r\n");
-            else if (mode == Device_Mode_T.LWOTAA)
-                this.SendCommand("AT+MODE=LWOTAA\r\n");
+            if (mode == _device_mode_t.LWABP)
+                this.sendCommand("AT+MODE=LWABP\r\n");
+            else if (mode == _device_mode_t.LWOTAA)
+                this.sendCommand("AT+MODE=LWOTAA\r\n");
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public async Task SetDeviceModeAsync(Device_Mode_T mode)
+        public async Task setDeviceModeAsync(_device_mode_t mode)
         {
             try
             {
-                if (mode == Device_Mode_T.LWABP)
-                    this.SendCommand("AT+MODE=LWABP\r\n");
-                else if (mode == Device_Mode_T.LWOTAA)
-                    this.SendCommand("AT+MODE=LWOTAA\r\n");
+                if (mode == _device_mode_t.LWABP)
+                    this.sendCommand("AT+MODE=LWABP\r\n");
+                else if (mode == _device_mode_t.LWOTAA)
+                    this.sendCommand("AT+MODE=LWOTAA\r\n");
 
                 await Task.Delay(DEFAULT_TIMEWAIT);
-             }
+            }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.SetDeviceModeAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex.ToString()}");
             }
         }
 
-        public bool SetOTAAJoin(Otaa_Join_Cmd_T command, int timeout)
+        public bool setOTAAJoin(_otaa_join_cmd_t command, int timeout)
         {
-            if (command == Otaa_Join_Cmd_T.JOIN)
-                this.SendCommand("AT+JOIN\r\n");
-            else if (command == Otaa_Join_Cmd_T.FORCE)
-                this.SendCommand("AT+JOIN=FORCE\r\n");
+            if (command == _otaa_join_cmd_t.JOIN)
+                this.sendCommand("AT+JOIN\r\n");
+            else if (command == _otaa_join_cmd_t.FORCE)
+                this.sendCommand("AT+JOIN=FORCE\r\n");
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
@@ -877,15 +880,15 @@ namespace LoRaWan.IntegrationTest
             // if (ptr) return false;
         }
 
-        public async Task<bool> SetOTAAJoinAsyncWithRetry(Otaa_Join_Cmd_T command, int timeoutPerTry, int retries)
+        public async Task<bool> setOTAAJoinAsyncWithRetry(_otaa_join_cmd_t command, int timeoutPerTry, int retries)
         {
             for (var attempt = 1; attempt <= retries; ++attempt)
             {
                 TestLogger.Log($"Join attempt #{attempt}/{retries}");
-                if (command == Otaa_Join_Cmd_T.JOIN)
-                    this.SendCommand("AT+JOIN\r\n");
-                else if (command == Otaa_Join_Cmd_T.FORCE)
-                    this.SendCommand("AT+JOIN=FORCE\r\n");
+                if (command == _otaa_join_cmd_t.JOIN)
+                    this.sendCommand("AT+JOIN\r\n");
+                else if (command == _otaa_join_cmd_t.FORCE)
+                    this.sendCommand("AT+JOIN=FORCE\r\n");
 
                 await Task.Delay(DEFAULT_TIMEWAIT);
 
@@ -914,32 +917,32 @@ namespace LoRaWan.IntegrationTest
             return false;
         }
 
-        public LoRaArduinoSerial SetDeviceLowPower()
+        public LoRaArduinoSerial setDeviceLowPower()
         {
-            this.SendCommand("AT+LOWPOWER\r\n");
+            this.sendCommand("AT+LOWPOWER\r\n");
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public LoRaArduinoSerial SetDeviceReset()
+        public LoRaArduinoSerial setDeviceReset()
         {
-            this.SendCommand("AT+RESET\r\n");
+            this.sendCommand("AT+RESET\r\n");
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
             return this;
         }
 
-        public void SetDeviceDefault()
+        public void setDeviceDefault()
         {
-            this.SendCommand("AT+FDEFAULT=RISINGHF\r\n");
+            this.sendCommand("AT+FDEFAULT=RISINGHF\r\n");
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
         }
 
-        private short GetBatteryVoltage()
+        short getBatteryVoltage()
         {
             short battery = 0;
 
@@ -951,7 +954,7 @@ namespace LoRaWan.IntegrationTest
             return battery;
         }
 
-        public void SendCommand(string command)
+        public void sendCommand(string command)
         {
             try
             {

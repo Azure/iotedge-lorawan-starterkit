@@ -20,7 +20,7 @@ namespace LoRaWanTest
         [InlineData(new byte[] { 0xF1, 0xF2, 0xF3, 0xF4 }, "F1F2F3F4")]
         public void Convert_Byte_Array_Should_Return_String(byte[] input, string expected)
         {
-            string actual = ConversionHelper.ByteArrayToString(input);
+            var actual = ConversionHelper.ByteArrayToString(input);
             Assert.Equal(expected, actual);
         }
 
@@ -32,8 +32,8 @@ namespace LoRaWanTest
         [InlineData(new byte[] { 0xF1, 0xF2, 0xF3, 0xF4 }, "F1F2F3F4")]
         public void Convert_Byte_Memory_Should_Return_String(byte[] input, string expected)
         {
-            Memory<byte> memory = new Memory<byte>(input);
-            string actual = ConversionHelper.ByteArrayToString(memory);
+            var memory = new Memory<byte>(input);
+            var actual = ConversionHelper.ByteArrayToString(memory);
             Assert.Equal(expected, actual);
         }
     }

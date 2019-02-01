@@ -26,19 +26,19 @@ namespace LoRaWan.IntegrationTest
             var device = this.TestFixtureCi.Device11_OTAA;
             this.LogTestStart(device);
 
-            await this.ArduinoDevice.SetDeviceModeAsync(LoRaArduinoSerial.Device_Mode_T.LWOTAA);
-            await this.ArduinoDevice.SetIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await this.ArduinoDevice.SetKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
-            var joinSucceeded = await this.ArduinoDevice.SetOTAAJoinAsyncWithRetry(LoRaArduinoSerial.Otaa_Join_Cmd_T.JOIN, 20000, 5);
+            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
 
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
-            await this.ArduinoDevice.TransferPacketWithConfirmedAsync("1234", 10);
+            await this.ArduinoDevice.transferPacketWithConfirmedAsync("1234", 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -59,19 +59,19 @@ namespace LoRaWan.IntegrationTest
             var device = this.TestFixtureCi.Device12_OTAA;
             this.LogTestStart(device);
 
-            await this.ArduinoDevice.SetDeviceModeAsync(LoRaArduinoSerial.Device_Mode_T.LWOTAA);
-            await this.ArduinoDevice.SetIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await this.ArduinoDevice.SetKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
-            var joinSucceeded = await this.ArduinoDevice.SetOTAAJoinAsyncWithRetry(LoRaArduinoSerial.Otaa_Join_Cmd_T.JOIN, 20000, 5);
+            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
 
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
-            await this.ArduinoDevice.TransferPacketWithConfirmedAsync("4321", 10);
+            await this.ArduinoDevice.transferPacketWithConfirmedAsync("4321", 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
