@@ -19,7 +19,6 @@ namespace LoRaWan.SimulatedTest
     using Xunit;
 
     // Tests ABP requests
-    [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class SimulatorTestCollection : IntegrationTestBaseSim
     {
