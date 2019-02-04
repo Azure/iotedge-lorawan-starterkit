@@ -19,7 +19,7 @@ namespace LoraKeysManagerFacade.Test
     public class FCntCacheCheckTest
     {
         [Fact]
-        public async Task Version_2018_12_16_Preview_Returns_Bad_Request_If_Version_0_2_Is_Requested()
+        public void Version_2018_12_16_Preview_Returns_Bad_Request_If_Version_0_2_Is_Requested()
         {
             var request = new DefaultHttpRequest(new DefaultHttpContext())
             {
@@ -41,7 +41,7 @@ namespace LoraKeysManagerFacade.Test
         }
 
         [Fact]
-        public async Task Version_2018_12_16_Preview_Returns_Bad_Request_If_Unknown_Version_Is_Requested()
+        public void Version_2018_12_16_Preview_Returns_Bad_Request_If_Unknown_Version_Is_Requested()
         {
             var request = new DefaultHttpRequest(new DefaultHttpContext())
             {
@@ -64,7 +64,7 @@ namespace LoraKeysManagerFacade.Test
         }
 
         [Fact]
-        public async Task Version_2018_12_16_Preview_Returns_Bad_Request_If_Version_2019_01_30_Preview_Is_Requested()
+        public void Version_2018_12_16_Preview_Returns_Bad_Request_If_Version_2019_01_30_Preview_Is_Requested()
         {
             var request = new DefaultHttpRequest(new DefaultHttpContext())
             {

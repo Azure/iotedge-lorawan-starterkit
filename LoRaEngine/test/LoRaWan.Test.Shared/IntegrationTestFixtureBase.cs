@@ -221,7 +221,7 @@ namespace LoRaWan.Test.Shared
                     var desiredProperties = testDevice.GetDesiredProperties();
                     foreach (var kv in desiredProperties)
                     {
-                        if (!deviceTwin.Properties.Desired.Contains(kv.Key) || (string)deviceTwin.Properties.Desired[kv.Key] != kv.Value)
+                        if (!deviceTwin.Properties.Desired.Contains(kv.Key) || (string)deviceTwin.Properties.Desired[kv.Key] != kv.Value.ToString())
                         {
                             var existingValue = string.Empty;
                             if (deviceTwin.Properties.Desired.Contains(kv.Key))

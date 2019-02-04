@@ -71,6 +71,9 @@ namespace LoRaWan.IntegrationTest
         // Device20_OTAA: used for OTAA confirmed & unconfirmed messaging
         public TestDeviceInfo Device20_OTAA { get; private set; }
 
+        // Device21_ABP: Preferred 2nd window
+        public TestDeviceInfo Device21_ABP { get; private set; }
+
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice
         {
@@ -336,6 +339,19 @@ namespace LoRaWan.IntegrationTest
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
+            };
+
+            // Device21_ABP: Preferred 2nd window
+            this.Device21_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000021",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+                SensorDecoder = "DecoderValueSensor",
+                AppSKey = "00000000000000000000000000000021",
+                NwkSKey = "00000000000000000000000000000021",
+                DevAddr = "00000021",
+                PreferredWindow = 2,
             };
         }
     }
