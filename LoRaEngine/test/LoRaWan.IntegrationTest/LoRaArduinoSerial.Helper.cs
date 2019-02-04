@@ -75,8 +75,12 @@ namespace LoRaWan.IntegrationTest
                     await this.setChannelAsync(0, 868.1F);
                     await this.setChannelAsync(1, 868.3F);
                     await this.setChannelAsync(2, 868.5F);
+                    await this.setChannelAsync(3, 867.1F);
+                    await this.setChannelAsync(4, 867.3F);
+                    await this.setChannelAsync(5, 867.5F);
+                    await this.setChannelAsync(6, 867.7F);
                     await this.setReceiceWindowFirstAsync(0, 868.1F);
-                    await this.setReceiceWindowSecondAsync(868.5F, LoRaArduinoSerial._data_rate_t.DR2);
+                    await this.setReceiceWindowSecondAsync(869.5F, LoRaArduinoSerial._data_rate_t.DR0);
                 }
                 else
                 {

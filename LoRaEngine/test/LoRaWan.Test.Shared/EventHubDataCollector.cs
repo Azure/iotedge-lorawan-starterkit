@@ -17,6 +17,8 @@ namespace LoRaWan.Test.Shared
         private EventHubClient eventHubClient;
         List<PartitionReceiver> receivers;
 
+        HashSet<Action<IEnumerable<EventData>>> subscribers;
+
         public bool LogToConsole { get; set; } = true;
 
         public string ConsumerGroupName { get; set; } = "$Default";
@@ -34,6 +36,8 @@ namespace LoRaWan.Test.Shared
             this.receivers = new List<PartitionReceiver>();
             if (!string.IsNullOrEmpty(consumerGroupName))
                 this.ConsumerGroupName = consumerGroupName;
+
+            this.subscribers = new HashSet<Action<IEnumerable<EventData>>>();
         }
 
         public async Task StartAsync()
@@ -61,12 +65,30 @@ namespace LoRaWan.Test.Shared
             this.events.Clear();
         }
 
+        public void Subscribe(Action<IEnumerable<EventData>> subscriber)
+        {
+            this.subscribers.Add(subscriber);
+        }
+
+        public void Unsubscribe(Action<IEnumerable<EventData>> subscriber)
+        {
+            this.subscribers.Remove(subscriber);
+        }
+
         public IReadOnlyCollection<EventData> GetEvents() => this.events;
 
         Task IPartitionReceiveHandler.ProcessEventsAsync(IEnumerable<EventData> events)
         {
             try
             {
+                if (this.subscribers.Count > 0)
+                {
+                    foreach (var subscriber in this.subscribers)
+                    {
+                        subscriber(events);
+                    }
+                }
+
                 foreach (var item in events)
                 {
                     this.events.Enqueue(item);

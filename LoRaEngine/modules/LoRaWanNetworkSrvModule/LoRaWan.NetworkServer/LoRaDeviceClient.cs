@@ -17,9 +17,6 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaDeviceClient : ILoRaDeviceClient
     {
-        // Maximum time waited to receive a message async
-        const int MaxReceiveMessageTimeoutInMs = 400;
-
         private readonly string devEUI;
         private DeviceClient deviceClient;
 
@@ -167,12 +164,11 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 1500;
+                // Set the operation timeout to accepted timeout plus one second
+                // Should not return an operation timeout since we wait less that it
+                this.deviceClient.OperationTimeoutInMilliseconds = (uint)(timeout.TotalMilliseconds + 1000);
 
                 this.SetRetry(true);
-
-                if (timeout.TotalMilliseconds > MaxReceiveMessageTimeoutInMs)
-                    timeout = TimeSpan.FromMilliseconds(MaxReceiveMessageTimeoutInMs);
 
                 Logger.Log(this.devEUI, $"checking c2d message for {timeout}", LogLevel.Debug);
 

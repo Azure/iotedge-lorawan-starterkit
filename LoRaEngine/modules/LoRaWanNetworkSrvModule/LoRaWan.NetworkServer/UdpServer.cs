@@ -32,7 +32,7 @@ namespace LoRaWan.NetworkServer
         const int PORT = 1680;
         private readonly NetworkServerConfiguration configuration;
 
-        private readonly MessageProcessor messageProcessorV2;
+        private readonly MessageProcessor messageProcessor;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
         readonly SemaphoreSlim randomLock = new SemaphoreSlim(1);
@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer
             ILoRaDeviceRegistry loRaDeviceRegistry)
         {
             this.configuration = configuration;
-            this.messageProcessorV2 = messageProcessor;
+            this.messageProcessor = messageProcessor;
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.loRaDeviceRegistry = loRaDeviceRegistry;
         }
@@ -187,7 +187,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                var downstreamMessage = await this.messageProcessorV2.ProcessMessageAsync(rxpk, startTimeProcessing);
+                var downstreamMessage = await this.messageProcessor.ProcessMessageAsync(rxpk, startTimeProcessing);
                 if (downstreamMessage?.Txpk != null)
                 {
                     var jsonMsg = JsonConvert.SerializeObject(downstreamMessage);
@@ -284,7 +284,8 @@ namespace LoRaWan.NetworkServer
 
                     await this.ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(this.OnDesiredPropertiesUpdate, null);
 
-                    await this.ioTHubModuleClient.SetMethodHandlerAsync("ClearCache", this.ClearCache, null);
+                    await this.ioTHubModuleClient.SetMethodDefaultHandlerAsync(this.OnDirectMethodCalled, null);
+                    // await this.ioTHubModuleClient.SetMethodHandlerAsync("ClearCache", this.ClearCache, null);
                 }
 
                 // running as non edge module for test and debugging
@@ -310,6 +311,18 @@ namespace LoRaWan.NetworkServer
 
             // Report Log level
             Logger.LogAlways($"Log Level: {(LogLevel)Logger.LoggerLevel}");
+        }
+
+        async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
+        {
+            Logger.Log($"Direct method called {methodRequest?.Name}", LogLevel.Debug);
+
+            if (string.Equals("clearcache", methodRequest.Name, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return await this.ClearCache(methodRequest, userContext);
+            }
+
+            return new MethodResponse(404);
         }
 
         private Task<MethodResponse> ClearCache(MethodRequest methodRequest, object userContext)

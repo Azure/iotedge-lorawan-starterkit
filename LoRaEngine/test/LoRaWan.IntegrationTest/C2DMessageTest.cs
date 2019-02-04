@@ -136,7 +136,10 @@ namespace LoRaWan.IntegrationTest
 
             // checks if log arrived
             if (!foundReceivePacket)
+            {
                 foundReceivePacket = this.ArduinoDevice.SerialLogs.Contains(expectedRxSerial);
+            }
+
             Assert.True(foundReceivePacket, $"Could not find lora receiving message '{expectedRxSerial}'");
         }
 
@@ -234,7 +237,10 @@ namespace LoRaWan.IntegrationTest
 
             // checks if log arrived
             if (!foundReceivePacket)
+            {
                 foundReceivePacket = this.ArduinoDevice.SerialLogs.Contains(expectedRxSerial);
+            }
+
             Assert.True(foundReceivePacket, $"Could not find lora receiving message '{expectedRxSerial}'");
         }
 
@@ -333,7 +339,10 @@ namespace LoRaWan.IntegrationTest
 
             // checks if log arrived
             if (!foundReceivePacket)
+            {
                 foundReceivePacket = this.ArduinoDevice.SerialLogs.Contains(expectedRxSerial);
+            }
+
             Assert.True(foundReceivePacket, $"Could not find lora receiving message '{expectedRxSerial}'");
         }
 
@@ -437,7 +446,10 @@ namespace LoRaWan.IntegrationTest
 
             // checks if log arrived
             if (!foundReceivePacket)
+            {
                 foundReceivePacket = this.ArduinoDevice.SerialLogs.Contains(expectedRxSerial);
+            }
+
             Assert.True(foundReceivePacket, $"Could not find lora receiving message '{expectedRxSerial}'");
         }
 
@@ -550,6 +562,140 @@ namespace LoRaWan.IntegrationTest
             }
 
             Assert.True(foundC2DInvalidFPortMessage, "Invalid fport message was not found in network server log");
+        }
+
+        /// <summary>
+        /// Ensures that a device that has preferred window set to two receives C2D messages
+        /// </summary>
+        [Fact]
+        public async Task C2D_When_Device_Has_Preferred_Windows_2_Should_Receive_In_2nd_Window()
+        {
+            var device = this.TestFixtureCi.Device21_ABP;
+            this.LogTestStart(device);
+
+            // Setup LoRa device properties
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+
+            // Setup protocol properties
+            await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
+
+            // Sends 2x unconfirmed messages
+            for (var i = 1; i <= 2; ++i)
+            {
+                var msg = PayloadGenerator.Next().ToString();
+                this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
+
+                await this.ArduinoDevice.transferPacketAsync(msg, 10);
+
+                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
+
+                this.TestFixture.ClearLogs();
+            }
+
+            // sends C2D - between 10 and 99
+            var c2dMessageBody = (100 + random.Next(90)).ToString();
+            var msgId = Guid.NewGuid().ToString();
+            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, msgId, c2dMessageBody, new Dictionary<string, string>()
+            {
+                { FportPropertyName, "1" },
+                { ConfirmedPropertyName, "true" },
+            });
+
+            this.Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
+
+            var foundC2DMessage = false;
+            var foundReceivePacket = false;
+            var foundReceivePacketInRX2 = false;
+            var expectedRxSerial1 = $"+MSG: PORT: 1; RX: \"{this.ToHexString(c2dMessageBody)}\"";
+            var expectedRxSerial2 = $"+MSG: RXWIN2";
+            var expectedUDPMessageV1 = $"{device.DevAddr}: ConfirmedDataDown";
+            var expectedUDPMessageV2 = $"{device.DeviceID}: C2D message: {c2dMessageBody}, id: {msgId}, fport: 1, confirmed: True";
+            this.Log($"Expected C2D received log is: {expectedRxSerial1} and {expectedRxSerial2}");
+            this.Log($"Expected UDP log starting with: {expectedUDPMessageV1} or {expectedUDPMessageV2}");
+
+            // Sends 8x confirmed messages, stopping if C2D message is found
+            for (var i = 3; i <= 10; ++i)
+            {
+                var msg = PayloadGenerator.Next().ToString();
+                this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
+                await this.ArduinoDevice.transferPacketAsync(msg, 10);
+
+                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
+
+                // check if c2d message was found
+                if (!foundC2DMessage)
+                {
+                    var searchResults = await this.TestFixture.SearchNetworkServerModuleAsync(
+                        (messageBody) =>
+                        {
+                            return messageBody.StartsWith(expectedUDPMessageV1) || messageBody.StartsWith(expectedUDPMessageV2);
+                        },
+                        new SearchLogOptions
+                        {
+                            Description = $"{expectedUDPMessageV1} or {expectedUDPMessageV2}",
+                            MaxAttempts = 1,
+                        });
+
+                    // We should only receive the message once
+                    if (searchResults.Found)
+                    {
+                        this.Log($"{device.DeviceID}: Found C2D message in log (after sending {i}/10)");
+                        foundC2DMessage = true;
+                    }
+                }
+
+                if (!foundReceivePacket)
+                {
+                    if (this.ArduinoDevice.SerialLogs.Contains(expectedRxSerial1))
+                    {
+                        this.Log($"{device.DeviceID}: Found serial log message {expectedRxSerial1} in log (after sending {i}/10)");
+                        foundReceivePacket = true;
+                    }
+                }
+
+                if (!foundReceivePacketInRX2)
+                {
+                    if (this.ArduinoDevice.SerialLogs.Any(x => x.StartsWith(expectedRxSerial2)))
+                    {
+                        this.Log($"{device.DeviceID}: Found serial log message {expectedRxSerial2} in log (after sending {i}/10)");
+                        foundReceivePacketInRX2 = true;
+                    }
+                }
+
+                if (foundReceivePacket && foundReceivePacketInRX2 && foundC2DMessage)
+                {
+                    this.Log($"{device.DeviceID}: Found all messages in log (after sending {i}/10)");
+                    break;
+                }
+
+                this.TestFixture.ClearLogs();
+
+                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+            }
+
+            Assert.True(foundC2DMessage, $"Did not find {expectedUDPMessageV1} or {expectedUDPMessageV2} in logs");
+
+            // checks if serial received the message
+            if (!foundReceivePacket)
+            {
+                foundReceivePacket = this.ArduinoDevice.SerialLogs.Contains(expectedRxSerial1);
+            }
+
+            Assert.True(foundReceivePacket, $"Could not find lora receiving message '{expectedRxSerial1}'");
+
+            // checks if serial received the message in RX2
+            if (!foundReceivePacketInRX2)
+            {
+                foundReceivePacketInRX2 = this.ArduinoDevice.SerialLogs.Any(x => x.StartsWith(expectedRxSerial2));
+            }
+
+            Assert.True(foundReceivePacketInRX2, $"Could not find lora receiving message '{expectedRxSerial2}'");
         }
     }
 }

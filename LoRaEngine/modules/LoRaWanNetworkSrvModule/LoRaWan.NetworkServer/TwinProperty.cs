@@ -24,5 +24,7 @@ namespace LoRaWan.NetworkServer
         public const string FCntDown = "FCntDown";
         public const string DevEUI = "DevEUI";
         public const string NetID = "NetId"; // Must be NetId to be backward compatible
+        public const string DownlinkEnabled = "Downlink";
+        public const string PreferredWindow = "PreferredWindow"; // (1 or 2)
     }
 }

@@ -12,11 +12,18 @@ namespace LoRaWan.Test.Shared
     /// </summary>
     public static class TestLogger
     {
+        public static bool LogDate { get; set; }
+
         /// <summary>
         /// Logs
         /// </summary>
         public static void Log(string text)
         {
+            if (LogDate)
+            {
+                text = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", text);
+            }
+
             // Log to diagnostics if a debbuger is attached
             if (Debugger.IsAttached)
             {
