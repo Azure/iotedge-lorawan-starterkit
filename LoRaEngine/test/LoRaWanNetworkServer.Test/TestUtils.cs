@@ -54,17 +54,32 @@ namespace LoRaWan.NetworkServer.Test
             return twin;
         }
 
-        public static Twin CreateABPTwin(this SimulatedDevice simulatedDevice)
+        public static Twin CreateABPTwin(this SimulatedDevice simulatedDevice, Dictionary<string, object> desiredProperties = null)
         {
-            return CreateTwin(
-                desired: new Dictionary<string, object>
+            var finalDesiredProperties = new Dictionary<string, object>
                 {
                     { TwinProperty.DevAddr, simulatedDevice.DevAddr },
                     { TwinProperty.AppSKey, simulatedDevice.AppSKey },
                     { TwinProperty.NwkSKey, simulatedDevice.NwkSKey },
                     { TwinProperty.GatewayID, simulatedDevice.LoRaDevice.GatewayID },
                     { TwinProperty.SensorDecoder, simulatedDevice.LoRaDevice.SensorDecoder },
-                });
+                };
+
+            if (desiredProperties != null)
+            {
+                foreach (var kv in desiredProperties)
+                {
+                    finalDesiredProperties[kv.Key] = kv.Value;
+                }
+            }
+
+            var reported = new Dictionary<string, object>
+            {
+                { TwinProperty.FCntDown, simulatedDevice.FrmCntDown },
+                { TwinProperty.FCntUp, simulatedDevice.FrmCntUp }
+            };
+
+            return CreateTwin(desired: finalDesiredProperties, reported: reported);
         }
     }
 }

@@ -46,12 +46,14 @@ namespace LoRaWan.Test.Shared
         // Project supports following values: DecoderGpsSensor, DecoderTemperatureSensor, DecoderValueSensor
         public string SensorDecoder { get; set; } = "DecoderValueSensor";
 
+        public int PreferredWindow { get; set; } = 1;
+
         /// <summary>
         /// Gets the desired properties for the <see cref="TestDeviceInfo"/>
         /// </summary>
-        public Dictionary<string, string> GetDesiredProperties()
+        public Dictionary<string, object> GetDesiredProperties()
         {
-            var desiredProperties = new Dictionary<string, string>();
+            var desiredProperties = new Dictionary<string, object>();
             if (!string.IsNullOrEmpty(this.AppEUI))
                 desiredProperties[nameof(this.AppEUI)] = this.AppEUI;
 
@@ -72,6 +74,8 @@ namespace LoRaWan.Test.Shared
 
             if (!string.IsNullOrEmpty(this.DevAddr))
                 desiredProperties[nameof(this.DevAddr)] = this.DevAddr;
+
+            desiredProperties[nameof(this.PreferredWindow)] = this.PreferredWindow;
 
             return desiredProperties;
         }

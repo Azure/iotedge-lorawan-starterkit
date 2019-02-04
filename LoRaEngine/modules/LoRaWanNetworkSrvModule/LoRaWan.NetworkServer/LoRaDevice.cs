@@ -58,11 +58,38 @@ namespace LoRaWan.NetworkServer
 
         public int? ReceiveDelay2 { get; set; }
 
-        public bool IsABPRelaxedFrameCounter { get; set; } = true;
+        public bool IsABPRelaxedFrameCounter { get; set; }
 
-        public bool AlwaysUseSecondWindow { get; set; } = false;
+        int preferredWindow;
+
+        /// <summary>
+        /// Gets or sets value indicating the preferred receive window for the device
+        /// </summary>
+        public int PreferredWindow
+        {
+            get => this.preferredWindow;
+
+            set
+            {
+                if (value != 1 && value != 2)
+                    throw new ArgumentOutOfRangeException(nameof(this.PreferredWindow), value, $"{nameof(this.PreferredWindow)} must bet 1 or 2");
+
+                this.preferredWindow = value;
+            }
+        }
 
         int hasFrameCountChanges;
+
+        /// <summary>
+        /// Gets a value indicating whether there are pending frame count changes
+        /// </summary>
+        public bool HasFrameCountChanges => this.hasFrameCountChanges == 1;
+
+        /// <summary>
+        ///  Gets or sets a value indicating whether cloud to device messages are enabled for the device
+        ///  By default it is enabled. To disable, set the desired property "EnableC2D" to false
+        /// </summary>
+        public bool DownlinkEnabled { get; set; }
 
         public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClient loRaDeviceClient)
         {
@@ -70,6 +97,9 @@ namespace LoRaWan.NetworkServer
             this.DevEUI = devEUI;
             this.loRaDeviceClient = loRaDeviceClient;
             this.hasFrameCountChanges = 0;
+            this.DownlinkEnabled = true;
+            this.IsABPRelaxedFrameCounter = true;
+            this.PreferredWindow = 1;
         }
 
         /// <summary>
@@ -96,6 +126,16 @@ namespace LoRaWan.NetworkServer
 
                     this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey];
                     this.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr];
+
+                    if (string.IsNullOrEmpty(this.NwkSKey))
+                        throw new InvalidLoRaDeviceException("NwkSKey is empty");
+
+                    if (string.IsNullOrEmpty(this.AppSKey))
+                        throw new InvalidLoRaDeviceException("AppSKey is empty");
+
+                    if (string.IsNullOrEmpty(this.DevAddr))
+                        throw new InvalidLoRaDeviceException("DevAddr is empty");
+
                     this.IsOurDevice = true;
                 }
                 else
@@ -137,14 +177,74 @@ namespace LoRaWan.NetworkServer
                 if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
                     this.SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder];
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntUp))
-                    this.fcntUp = twin.Properties.Reported[TwinProperty.FCntUp];
+                    this.fcntUp = this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntUp].Value);
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntDown))
-                    this.fcntDown = twin.Properties.Reported[TwinProperty.FCntDown];
+                    this.fcntDown = this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntDown].Value);
+
+                if (twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled))
+                {
+                    this.DownlinkEnabled = this.GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value);
+                }
+
+                if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
+                {
+                    var preferredWindowTwinValue = this.GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
+                    if (preferredWindowTwinValue == 2)
+                        this.PreferredWindow = preferredWindowTwinValue;
+                }
 
                 return true;
             }
 
             return false;
+        }
+
+        int GetTwinPropertyIntValue(dynamic value)
+        {
+            if (value is string valueString)
+            {
+                if (int.TryParse(valueString, out var fromString))
+                    return fromString;
+
+                return 0;
+            }
+
+            if (value is int valueInt)
+            {
+                return valueInt;
+            }
+
+            try
+            {
+                return System.Convert.ToInt32(value);
+            }
+            catch
+            {
+            }
+
+            return 0;
+        }
+
+        bool GetTwinPropertyBoolValue(dynamic value)
+        {
+            if (value is string valueString)
+            {
+                return
+                    string.Equals("true", valueString, StringComparison.InvariantCultureIgnoreCase) ||
+                    string.Equals("1", valueString, StringComparison.InvariantCultureIgnoreCase);
+            }
+
+            if (value is bool valueBool)
+            {
+                return valueBool;
+            }
+
+            if (value is int valueInt)
+            {
+                return value == 1;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -176,11 +276,6 @@ namespace LoRaWan.NetworkServer
 
             return true;
         }
-
-        /// <summary>
-        /// Gets a value indicating whether there are pending frame count changes
-        /// </summary>
-        public bool HasFrameCountChanges => this.hasFrameCountChanges == 1;
 
         /// <summary>
         /// Accept changes to the frame count

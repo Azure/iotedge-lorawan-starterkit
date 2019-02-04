@@ -756,7 +756,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Theory]
-        [InlineData(ServerGatewayID, 1600)]
+        [InlineData(ServerGatewayID, 1601)]
         [InlineData(ServerGatewayID, 2000)]
         [InlineData(ServerGatewayID, 5000)]
         [InlineData(null, 1600)]
@@ -774,8 +774,12 @@ namespace LoRaWan.NetworkServer.Test
             // message will be sent
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Callback(() => Thread.Sleep(TimeSpan.FromMilliseconds(sendMessageDelayInMs)))
-                .ReturnsAsync(true);
+                .Returns(() =>
+                {
+                    var task = Task.Delay(sendMessageDelayInMs).ContinueWith((_) => true);
+                    task.ConfigureAwait(false);
+                    return task;
+                });
 
             // Lora device api
             var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
@@ -907,12 +911,6 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
             loRaDevice.SensorDecoder = "DecoderValueSensor";
 
-            const int firstMessageFcnt = 3;
-            const int secondMessageFcnt = 4;
-            const string wrongNwkSKey = "00000000000000000000000000001234";
-            var unconfirmedMessageWithWrongMic = simulatedDevice.CreateUnconfirmedDataUpMessage("123", fcnt: firstMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, wrongNwkSKey).Rxpk[0];
-            var unconfirmedMessageWithCorrectMic = simulatedDevice.CreateUnconfirmedDataUpMessage("456", fcnt: secondMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
@@ -960,9 +958,14 @@ namespace LoRaWan.NetworkServer.Test
                 new LoRaPayloadDecoder());
 
             // first message should fail
+            const int firstMessageFcnt = 3;
+            const string wrongNwkSKey = "00000000000000000000000000001234";
+            var unconfirmedMessageWithWrongMic = simulatedDevice.CreateUnconfirmedDataUpMessage("123", fcnt: firstMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, wrongNwkSKey).Rxpk[0];
             Assert.Null(await messageProcessor.ProcessMessageAsync(unconfirmedMessageWithWrongMic));
 
             // second message should succeed
+            const int secondMessageFcnt = 4;
+            var unconfirmedMessageWithCorrectMic = simulatedDevice.CreateUnconfirmedDataUpMessage("456", fcnt: secondMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             Assert.Null(await messageProcessor.ProcessMessageAsync(unconfirmedMessageWithCorrectMic));
 
             Assert.NotNull(loRaDeviceTelemetry);
@@ -975,6 +978,57 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(devicesByDevAddr.TryGetValue(simulatedDevice.DevEUI, out var loRaDeviceFromRegistry));
             Assert.Equal(secondMessageFcnt, loRaDeviceFromRegistry.FCntUp);
             Assert.True(loRaDeviceFromRegistry.IsOurDevice);
+
+            loRaDeviceApi.VerifyAll();
+            loRaDeviceClient.VerifyAll();
+        }
+
+        /// <summary>
+        /// Tests that a ABP device without AppSKey should not send message to IoT Hub
+        /// </summary>
+        [Theory]
+        [InlineData(TwinProperty.AppSKey)]
+        [InlineData(TwinProperty.NwkSKey)]
+        [InlineData(TwinProperty.DevAddr)]
+        public async Task ABP_When_AppSKey_Or_NwkSKey_Or_DevAddr_Is_Missing_Should_Not_Send_Message_To_Hub(string missingProperty)
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
+            loRaDevice.SensorDecoder = "DecoderValueSensor";
+
+            // will get the device twin without AppSKey
+            var twin = TestUtils.CreateABPTwin(simulatedDevice);
+            twin.Properties.Desired[missingProperty] = null;
+            loRaDeviceClient.Setup(x => x.GetTwinAsync())
+                    .ReturnsAsync(twin);
+
+            // Lora device api
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+
+            // will search for the device twice
+            loRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(loRaDevice.DevAddr))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(loRaDevice.DevAddr, loRaDevice.DevEUI, "aaa").AsList()));
+
+            // using factory to create mock of
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, new MemoryCache(new MemoryCacheOptions()), loRaDeviceApi.Object, loRaDeviceFactory);
+
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(this.ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+
+            // Send to message processor
+            var messageProcessor = new MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                frameCounterUpdateStrategyFactory,
+                new LoRaPayloadDecoder());
+
+            // message should not be processed
+            Assert.Null(await messageProcessor.ProcessMessageAsync(simulatedDevice.CreateUnconfirmedMessageUplink("1234").Rxpk[0]));
+
+            var devicesByDevAddr = deviceRegistry.InternalGetCachedDevicesForDevAddr(simulatedDevice.DevAddr);
+            Assert.Empty(devicesByDevAddr);
 
             loRaDeviceApi.VerifyAll();
             loRaDeviceClient.VerifyAll();

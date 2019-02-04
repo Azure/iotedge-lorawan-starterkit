@@ -20,6 +20,8 @@ namespace LoRaWan.IntegrationTest
 
 
         public string ConsumerGroupName { get; set; } = "$Default";
+
+        HashSet<Action<IEnumerable<EventData>>> subscribers;
         
 
         public EventHubDataCollector(string connectionString) : this(connectionString, null)
@@ -34,6 +36,8 @@ namespace LoRaWan.IntegrationTest
             this.receivers = new List<PartitionReceiver>();
             if(!string.IsNullOrEmpty(consumerGroupName))
                 this.ConsumerGroupName = consumerGroupName;
+
+            this.subscribers = new HashSet<Action<IEnumerable<EventData>>>();
         }
 
         public async Task StartAsync()
@@ -60,6 +64,16 @@ namespace LoRaWan.IntegrationTest
             TestLogger.Log($"*** Clearing iot hub logs ({this.events.Count}) ***");
             this.events.Clear();
         }
+        
+        public void Subscribe(Action<IEnumerable<EventData>> subscriber)
+        {
+            this.subscribers.Add(subscriber);
+        }
+
+        public void Unsubscribe(Action<IEnumerable<EventData>> subscriber)
+        {
+            this.subscribers.Remove(subscriber);
+        }
 
         public IReadOnlyCollection<EventData> GetEvents() => this.events;
 
@@ -67,6 +81,14 @@ namespace LoRaWan.IntegrationTest
         {
             try
             {
+                if (subscribers.Count > 0)
+                {
+                    foreach (var subscriber in subscribers)
+                    {
+                        subscriber(events);
+                    }
+                }
+
                 foreach(var item in events)
                 {
                     this.events.Enqueue(item);

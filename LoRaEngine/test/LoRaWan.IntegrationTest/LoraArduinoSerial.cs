@@ -699,7 +699,6 @@ namespace LoRaWan.IntegrationTest
 
         public async Task setReceiceWindowSecondAsync (float frequency, _data_rate_t dataRate)
         {
-
             string cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{dataRate}\r\n";
             sendCommand (cmd);
 

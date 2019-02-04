@@ -225,10 +225,7 @@ It should look something like this for ABP:
     },
     "reported": {
       "$metadata": {
-        "$lastUpdated": "2018-08-06T15:16:32.2689851Z",
-        "FCntUp": {
-          "$lastUpdated": "2018-08-06T15:16:32.2689851Z"
-        }
+        "$lastUpdated": "2018-08-06T15:16:32.2689851Z"
       },
       "$version": 313
     }
@@ -238,6 +235,17 @@ It should look something like this for ABP:
 
 - Click Save
 - Turn on the device and you are ready to go
+
+### Optional device properties
+
+Customizations to lora devices are set by creating specific twin desired properties on the device. The following customizations are available:
+
+|Name|Description|Configuration|When to use|
+|-|-|-|-|
+|Enable/disable downstream messages|Allows disabling the downstream (cloud to device) for a device. By default downstream messages are enabled| Add twin desired property `"Downlink": false` to disable downstream messages. The absence of the twin property or setting value to `true` will enable downlink messages.|Disabling downlink on devices decreases message processing latency, since the network server will not look for cloud to device messages when an uplink is received. Only disable it in devices that are not expecting messages from cloud. Acknowledgement of confirmed upstream are sent to devices even when downlink is set to false|
+|Preferred receive window|Allows setting the device preferred receive window (RX1 or RX2). The default preferred receive window is 1| Add twin desired property `"PreferredWindow": 2` sets RX2 as preferred window. The absence of the twin property or setting the value to `1` will set RX1 as preferred window.|Using the second receive window increases the chances that the end application can process the upstream message and send a cloud to device message to the lora device without requiring and additional upstream message. Basically completing the round trip in less than 2 seconds.|
+
+**Important**: changes made to twin desired properties in devices that are already connected will only take effect once the network server is restarted or [cache is cleared](#cache-clearing).
 
 ### Decoders
 
@@ -332,7 +340,7 @@ Log in to the gateway and use `sudo docker logs LoRaWanNetworkSrvModule -f` to f
 
 Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanation.
 
-## Cloud to device message 
+## Cloud to device message
 
 The solution support sending Cloud to device (C2D) messages to LoRa messages using [standard IoT Hub Sdks](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d). Cloud to device messages require a Fport message property being set or it will be refused (as shown in the figure below from the Azure Portal). 
 
