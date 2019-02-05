@@ -485,9 +485,9 @@ namespace LoRaWan.NetworkServer
             if (receiveWindow == 0)
                 return null;
 
-            string datr;
-            double freq;
-            long tmst;
+            string datr = null;
+            double freq = 0;
+            long tmst = 0;
             if (receiveWindow == 2)
             {
                 tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
@@ -509,9 +509,17 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                datr = this.loraRegion.GetDownstreamDR(rxpk);
-                freq = this.loraRegion.GetDownstreamChannel(rxpk);
-                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow1Delay(loRaDevice) * 1000000;
+                try
+                {
+                    datr = this.loraRegion.GetDownstreamDR(rxpk);
+                    freq = this.loraRegion.GetDownstreamChannelFrequency(rxpk);
+                    tmst = rxpk.Tmst + this.loraRegion.Receive_delay1 * 1000000;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(loRaDevice.DevEUI, ex.Message, LogLevel.Error);
+                    return null;
+                }
             }
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
@@ -698,8 +706,15 @@ namespace LoRaWan.NetworkServer
                 uint tmst = 0;
                 if (windowToUse == 1)
                 {
-                    datr = this.loraRegion.GetDownstreamDR(rxpk);
-                    freq = this.loraRegion.GetDownstreamChannel(rxpk);
+                    try
+                    {
+                        datr = this.loraRegion.GetDownstreamDR(rxpk);
+                        freq = this.loraRegion.GetDownstreamChannelFrequency(rxpk);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log(devEUI, ex.ToString(), LogLevel.Error);
+                    }
 
                     // set tmst for the normal case
                     tmst = rxpk.Tmst + this.loraRegion.Join_accept_delay1 * 1000000;

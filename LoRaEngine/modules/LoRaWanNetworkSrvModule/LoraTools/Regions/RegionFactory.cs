@@ -109,7 +109,7 @@ namespace LoRaTools.Regions
             r.DRtoConfiguration.Add(12, (configuration: "SF8BW500", maxPyldSize: 250));
             r.DRtoConfiguration.Add(13, (configuration: "SF7BW500", maxPyldSize: 250));
 
-            for (uint i = 0; i < 15; i++)
+            for (uint i = 0; i < 14; i++)
             {
                 r.TXPowertoMaxEIRP.Add(i, (30 - i).ToString());
             }

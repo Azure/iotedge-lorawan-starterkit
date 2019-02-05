@@ -365,7 +365,7 @@ namespace LoRaWan.NetworkServer.Test
             var euRegion = RegionFactory.CreateEU868Region();
 
             // Ensure we are using second window frequency
-            Assert.Equal(euRegion.GetDownstreamChannel(rxpk), actual.Txpk.Freq);
+            Assert.Equal(euRegion.GetDownstreamChannelFrequency(rxpk), actual.Txpk.Freq);
 
             // Ensure we are using second window datr
             Assert.Equal(euRegion.GetDownstreamDR(rxpk), actual.Txpk.Datr);

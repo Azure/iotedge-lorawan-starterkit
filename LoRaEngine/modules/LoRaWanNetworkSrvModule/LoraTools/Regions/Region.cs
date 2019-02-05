@@ -3,6 +3,7 @@
 
 namespace LoRaTools.Regions
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using LoRaTools.LoRaPhysical;
@@ -177,7 +178,7 @@ namespace LoRaTools.Regions
         /// </summary>
         public (uint min, uint max) Ack_timeout { get; set; }
 
-        public Region(LoRaRegion regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, uint datr) rX2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
+        public Region(LoRaRegion regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, uint datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
         {
             this.LoRaRegion = regionEnum;
             this.Ack_timeout = ack_timeout;
@@ -185,7 +186,7 @@ namespace LoRaTools.Regions
             this.LoRaSyncWord = loRaSyncWord;
             this.GFSKSyncWord = gFSKSyncWord;
 
-            this.RX2DefaultReceiveWindows = rX2DefaultReceiveWindows;
+            this.RX2DefaultReceiveWindows = rx2DefaultReceiveWindows;
             this.Receive_delay1 = receive_delay1;
             this.Receive_delay2 = receive_delay2;
             this.Join_accept_delay1 = join_accept_delay1;
@@ -199,7 +200,7 @@ namespace LoRaTools.Regions
         /// Implement correct logic to get the correct transmission frequency based on the region.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
-        public double GetDownstreamChannel(Rxpk upstreamChannel)
+        public double GetDownstreamChannelFrequency(Rxpk upstreamChannel)
         {
             if (this.LoRaRegion == LoRaRegion.EU868)
             {
@@ -208,19 +209,20 @@ namespace LoRaTools.Regions
             }
             else if (this.LoRaRegion == LoRaRegion.US915)
             {
-                int channelNumber;
+                int upstreamChannelNumber;
+                // if DR4 the coding are different.
                 if (upstreamChannel.Datr == "SF8BW500")
                 {
                     // ==DR4
-                    channelNumber = 64 + (int)((upstreamChannel.Freq - 903) / 1.6);
+                    upstreamChannelNumber = 64 + (int)Math.Round((upstreamChannel.Freq - 903) / 1.6, 0);
                 }
                 else
                 {
                     // if not DR4 other encoding
-                    channelNumber = (int)((upstreamChannel.Freq - 902.3) / 0.2);
+                    upstreamChannelNumber = (int)((upstreamChannel.Freq - 902.3) / 0.2);
                 }
 
-                return 923.3 + channelNumber % 8 * 0.6;
+                return Math.Round(923.3 + upstreamChannelNumber % 8 * 0.6, 1);
             }
 
             return 0;
@@ -241,9 +243,15 @@ namespace LoRaTools.Regions
             {
                 var dr = this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == upstreamChannel.Datr).Key;
                 // TODO take care of rx1droffset
-                var (configuration, maxPyldSize) = this.DRtoConfiguration[10 - dr];
-                return configuration;
-                // return this.DRtoConfiguration[10-dr].configuration;
+                if (dr >= 0 && dr < 5)
+                {
+                    var (configuration, maxPyldSize) = dr != 4 ? this.DRtoConfiguration[10 + dr] : this.DRtoConfiguration[13];
+                    return configuration;
+                }
+                else
+                {
+                    throw new Exception("Datarate in {0} region was not within the acceptable range of upstream datarates.");
+                }
             }
 
             return null;
