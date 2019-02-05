@@ -13,8 +13,7 @@ namespace LoRaWan.NetworkServer
 
         public async Task<bool> ResetAsync(LoRaDevice loRaDevice)
         {
-            loRaDevice.SetFcntUp(0);
-            loRaDevice.SetFcntDown(0);
+            loRaDevice.ResetFcnt();
             return await this.InternalSaveChangesAsync(loRaDevice, force: true);
         }
 
@@ -43,9 +42,6 @@ namespace LoRaWan.NetworkServer
             if (loRaDevice.IsABP)
             {
                 loRaDevice.IncrementFcntDown(10);
-
-                // do not save the changes
-                // loRaDevice.AcceptFrameCountChanges();
             }
         }
     }

@@ -842,8 +842,8 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) =>
                  {
-                    Assert.Equal(2, t.Fcnt);
-                    Assert.Equal("2", ((JObject)t.Data)["value"].ToString());
+                     Assert.Equal(2, t.Fcnt);
+                     Assert.Equal("2", ((JObject)t.Data)["value"].ToString());
                  })
                  .ReturnsAsync(true);
 
@@ -1032,6 +1032,125 @@ namespace LoRaWan.NetworkServer.Test
 
             loRaDeviceApi.VerifyAll();
             loRaDeviceClient.VerifyAll();
+        }
+
+        [Theory]
+        [InlineData(ServerGatewayID)]
+        [InlineData(null)]
+        public async Task When_ConfirmedUp_Message_Is_Resubmitted_Should_Ack_3_Times(string deviceGatewayID)
+        {
+            const int deviceInitialFcntUp = 100;
+            const int deviceInitialFcntDown = 20;
+
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
+            simulatedDevice.FrmCntUp = deviceInitialFcntUp;
+            simulatedDevice.FrmCntDown = deviceInitialFcntDown;
+            var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+
+            var devEUI = simulatedDevice.LoRaDevice.DeviceID;
+
+            // C2D message will be checked
+            loRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            // We will send two messages
+            loRaDeviceClient.Setup(x => x.SendEventAsync(It.Is<LoRaDeviceTelemetry>(t => t.Fcnt == deviceInitialFcntUp + 1), It.IsAny<Dictionary<string, string>>()))
+                .ReturnsAsync(true);
+
+            loRaDeviceClient.Setup(x => x.SendEventAsync(It.Is<LoRaDeviceTelemetry>(t => t.Fcnt == deviceInitialFcntUp + 2), It.IsAny<Dictionary<string, string>>()))
+                .ReturnsAsync(true);
+
+            // Lora device api
+            var loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+
+            // in multigateway scenario the device api will be called to resolve fcntDown
+            if (string.IsNullOrEmpty(deviceGatewayID))
+            {
+                loRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown, deviceInitialFcntUp + 1, this.ServerConfiguration.GatewayID))
+                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 1));
+
+                loRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 1, deviceInitialFcntUp + 1, this.ServerConfiguration.GatewayID))
+                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 2));
+
+                loRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 2, deviceInitialFcntUp + 1, this.ServerConfiguration.GatewayID))
+                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 3));
+
+                loRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 3, deviceInitialFcntUp + 1, this.ServerConfiguration.GatewayID))
+                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 4));
+
+                loRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 4, deviceInitialFcntUp + 2, this.ServerConfiguration.GatewayID))
+                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 5));
+
+                loRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 5, deviceInitialFcntUp + 2, this.ServerConfiguration.GatewayID))
+                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 6));
+
+                loRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 6, deviceInitialFcntUp + 2, this.ServerConfiguration.GatewayID))
+                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 7));
+
+                loRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 7, deviceInitialFcntUp + 2, this.ServerConfiguration.GatewayID))
+                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 8));
+            }
+
+            // using factory to create mock of
+            var loRaDeviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+
+            // add device to cache already
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var dictionary = new DevEUIToLoRaDeviceDictionary();
+            var loRaDevice = TestUtils.CreateFromSimulatedDevice(simulatedDevice, loRaDeviceClient.Object);
+            dictionary[loRaDevice.DevEUI] = loRaDevice;
+            memoryCache.Set<DevEUIToLoRaDeviceDictionary>(loRaDevice.DevAddr, dictionary);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, loRaDeviceApi.Object, loRaDeviceFactory);
+
+            var frameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(this.ServerConfiguration.GatewayID, loRaDeviceApi.Object);
+
+            // Send to message processor
+            var messageProcessor = new MessageProcessor(
+                this.ServerConfiguration,
+                deviceRegistry,
+                frameCounterUpdateStrategyFactory,
+                new LoRaPayloadDecoder());
+
+            // sends confirmed message
+            var firstMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("repeat", fcnt: deviceInitialFcntUp + 1);
+            var firstMessageRxpk = firstMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+
+            // 1x as new fcntUp and 3x as resubmit
+            for (var i = 0; i < 4; i++)
+            {
+                var confirmedMessageResult = await messageProcessor.ProcessMessageAsync(firstMessageRxpk);
+
+                // ack should be received
+                Assert.NotNull(confirmedMessageResult);
+                Assert.NotNull(confirmedMessageResult.Txpk);
+            }
+
+            // resubmitting should fail
+            Assert.Null(await messageProcessor.ProcessMessageAsync(firstMessageRxpk));
+
+            // Sending the next fcnt with failed messages should work, including resubmit
+            var secondMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("repeat", fcnt: deviceInitialFcntUp + 2);
+            var secondMessageRxpk = secondMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+
+            // 1x as new fcntUp and 3x as resubmit
+            for (var i = 0; i < 4; i++)
+            {
+                var confirmedMessageResult = await messageProcessor.ProcessMessageAsync(secondMessageRxpk);
+
+                // ack should be received
+                Assert.NotNull(confirmedMessageResult);
+                Assert.NotNull(confirmedMessageResult.Txpk);
+            }
+
+            // resubmitting should fail
+            Assert.Null(await messageProcessor.ProcessMessageAsync(secondMessageRxpk));
+
+            Assert.Equal(2 + deviceInitialFcntUp, loRaDevice.FCntUp);
+            Assert.Equal(8 + deviceInitialFcntDown, loRaDevice.FCntDown);
+
+            loRaDeviceClient.VerifyAll();
+            loRaDeviceApi.VerifyAll();
         }
     }
 }

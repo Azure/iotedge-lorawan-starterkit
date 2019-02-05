@@ -14,15 +14,19 @@ namespace LoRaWan.NetworkServer
         string devEUI;
         ReadOnlyMemory<byte> devAddr;
 
+        public LogLevel LogLevel { get; set; }
+
         internal ProcessLogger(LoRaOperationTimeWatcher timeWatcher)
         {
             this.timeWatcher = timeWatcher;
+            this.LogLevel = LogLevel.Information;
         }
 
         internal ProcessLogger(LoRaOperationTimeWatcher timeWatcher, ReadOnlyMemory<byte> devAddr)
         {
             this.timeWatcher = timeWatcher;
             this.devAddr = devAddr;
+            this.LogLevel = LogLevel.Information;
         }
 
         internal void SetDevAddr(ReadOnlyMemory<byte> value) => this.devAddr = value;
@@ -31,7 +35,7 @@ namespace LoRaWan.NetworkServer
 
         public void Dispose()
         {
-            Logger.Log(this.devEUI ?? LoRaTools.Utils.ConversionHelper.ByteArrayToString(this.devAddr), $"processing time: {this.timeWatcher.GetElapsedTime()}", LogLevel.Information);
+            Logger.Log(this.devEUI ?? LoRaTools.Utils.ConversionHelper.ByteArrayToString(this.devAddr), $"processing time: {this.timeWatcher.GetElapsedTime()}", this.LogLevel);
             GC.SuppressFinalize(this);
         }
     }

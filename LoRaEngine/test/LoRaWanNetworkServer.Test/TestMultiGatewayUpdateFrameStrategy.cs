@@ -29,8 +29,7 @@ namespace LoRaWan.NetworkServer.Test
 
         public Task<bool> ResetAsync(LoRaDevice loRaDevice)
         {
-            loRaDevice.SetFcntDown(0);
-            loRaDevice.SetFcntUp(0);
+            loRaDevice.ResetFcnt();
 
             return Task.FromResult(true);
         }
