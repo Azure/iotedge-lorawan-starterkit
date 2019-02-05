@@ -79,6 +79,9 @@ namespace LoRaTools
                         this.MacCommand.Add(linkCheck);
                         break;
                     case CidEnum.LinkADRCmd:
+                        LinkADRCmd linkADRCmd = new LinkADRCmd();
+                        pointer += linkADRCmd.Length;
+                        this.MacCommand.Add(linkADRCmd);
                         Logger.Log("mac command detected : LinkADRCmd", LogLevel.Information);
                         break;
                     case CidEnum.DutyCycleCmd:
@@ -89,6 +92,9 @@ namespace LoRaTools
                         break;
                     case CidEnum.RXParamCmd:
                         Logger.Log("mac command detected : RXParamCmd", LogLevel.Information);
+                        RXParamSetupCmd rxParamSetupCmd = new RXParamSetupCmd();
+                        pointer += rxParamSetupCmd.Length;
+                        this.MacCommand.Add(rxParamSetupCmd);
                         break;
                     case CidEnum.DevStatusCmd:
                         Logger.Log("mac command detected : DevStatusCmd", LogLevel.Information);

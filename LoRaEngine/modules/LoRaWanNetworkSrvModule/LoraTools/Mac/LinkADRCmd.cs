@@ -13,6 +13,11 @@ namespace LoRaTools
         // private readonly byte dataRateTXPower;
         private readonly byte[] chMask = new byte[2];
 
+        public LinkADRCmd()
+        {
+            this.Length = 2;
+        }
+
         // private readonly byte redondancy;
         public override byte[] ToBytes()
         {
