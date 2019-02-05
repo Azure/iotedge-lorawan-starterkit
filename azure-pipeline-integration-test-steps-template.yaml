@@ -34,3 +34,12 @@ steps:
     searchFolder: '$(Common.TestResultsDirectory)'
     testRunTitle: '${{ parameters.platform }}-Integration tests'
     mergeTestResults: true
+    
+  # add ci-succeeded for PRs
+- task: fbeltrao.githubprlabels.task.githubprlabels@0
+  displayName: 'GitHub PR label (add ci-succeeded)'
+  condition: and(and(succeeded(), eq(variables['Build.Reason'], 'PullRequest')), ne(variables['RunTestsOnly'], 'true'))
+  inputs:
+    gitHubConnection: $(GitHubConnectionName)
+    action: add
+    label: 'ci-succeeded'

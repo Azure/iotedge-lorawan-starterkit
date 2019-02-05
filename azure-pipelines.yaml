@@ -59,6 +59,15 @@ jobs:
     vmImage: 'Ubuntu 16.04'   
 
   steps:
+  # remove ci-succeeded for PRs
+  - task: fbeltrao.githubprlabels.task.githubprlabels@0
+    displayName: 'GitHub PR label (remove ci-succeed)'
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    inputs:
+      gitHubConnection: $(GitHubConnectionName)
+      action: remove
+      label: 'ci-succeeded'
+
   # build LoRa Engine
   - script: dotnet build --configuration $(buildConfiguration) ./LoRaEngine/LoRaEngine.sln
     displayName: Build LoRa Engine
