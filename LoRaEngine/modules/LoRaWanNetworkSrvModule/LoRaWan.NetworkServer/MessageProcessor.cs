@@ -174,7 +174,8 @@ namespace LoRaWan.NetworkServer
                         {
                             if (!loRaDevice.ValidateConfirmResubmit(payloadFcnt))
                             {
-                                Logger.Log(loRaDevice.DevEUI, $"resubmit from confirmed message exceeds threshold of {LoRaDevice.MaxConfirmationResubmitCount}, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
+                                Logger.Log(loRaDevice.DevEUI, $"resubmit from confirmed message exceeds threshold of {LoRaDevice.MaxConfirmationResubmitCount}, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Debug);
+                                processLogger.LogLevel = LogLevel.Debug;
                                 return null;
                             }
 
