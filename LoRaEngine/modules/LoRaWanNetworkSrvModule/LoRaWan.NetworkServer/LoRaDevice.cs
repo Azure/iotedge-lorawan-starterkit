@@ -376,8 +376,6 @@ namespace LoRaWan.NetworkServer
                         this.confirmationResubmitCount++;
                         return true;
                     }
-
-                    return false;
                 }
 
                 return false;
