@@ -87,47 +87,6 @@ namespace LoRaTools.LoRaMessage
                 algoinput = algoinput.Concat(this.CfList.ToArray()).ToArray();
         }
 
-        [Obsolete("To be discontinued as part of messageProcessor refactor")]
-        public LoRaPayloadJoinAccept(string netId, string appKey, byte[] devAddr, byte[] appNonce, byte[] dlSettings, byte[] rxDelay, byte[] cfList)
-        {
-            int cfListLength = cfList == null ? 0 : cfList.Length;
-            this.RawMessage = new byte[1 + 12 + cfListLength];
-            this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
-            Array.Copy(new byte[] { 32 }, 0, this.RawMessage, 0, 1);
-            this.AppNonce = new Memory<byte>(this.RawMessage, 1, 3);
-            Array.Copy(appNonce, 0, this.RawMessage, 1, 3);
-            this.NetID = new Memory<byte>(this.RawMessage, 4, 3);
-            Array.Copy(ConversionHelper.StringToByteArray(netId), 0, this.RawMessage, 4, 3);
-            this.DevAddr = new Memory<byte>(this.RawMessage, 7, 4);
-            Array.Copy(devAddr, 0, this.RawMessage, 7, 4);
-            this.DlSettings = new Memory<byte>(this.RawMessage, 11, 1);
-            Array.Copy(dlSettings, 0, this.RawMessage, 11, 1);
-            this.RxDelay = new Memory<byte>(this.RawMessage, 12, 1);
-            Array.Copy(rxDelay, 0, this.RawMessage, 12, 1);
-            // set payload Wrapper fields
-            if (cfListLength > 0)
-            {
-                this.CfList = new Memory<byte>(this.RawMessage, 13, cfListLength);
-                Array.Copy(cfList, 0, this.RawMessage, 13, cfListLength);
-            }
-
-            // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
-            this.Fcnt = BitConverter.GetBytes(0x01);
-            if (BitConverter.IsLittleEndian)
-            {
-                this.AppNonce.Span.Reverse();
-                this.NetID.Span.Reverse();
-                this.DevAddr.Span.Reverse();
-            }
-
-            var algoinput = this.Mhdr.ToArray().Concat(this.AppNonce.ToArray()).Concat(this.NetID.ToArray()).Concat(this.DevAddr.ToArray()).Concat(this.DlSettings.ToArray()).Concat(this.RxDelay.ToArray()).ToArray();
-            if (!this.CfList.Span.IsEmpty)
-                algoinput = algoinput.Concat(this.CfList.ToArray()).ToArray();
-
-            this.CalculateMic(appKey, algoinput);
-            this.PerformEncryption(appKey);
-        }
-
         public LoRaPayloadJoinAccept(byte[] inputMessage, string appKey)
         {
             // Only MHDR is not encrypted with the key

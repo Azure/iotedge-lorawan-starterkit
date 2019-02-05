@@ -4,7 +4,9 @@
 namespace LoRaTools.LoRaPhysical
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
+    using LoRaTools.Regions;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -69,23 +71,10 @@ namespace LoRaTools.LoRaPhysical
             { 12, -20 }
         };
 
+        public Dictionary<int, double> GetSpreadFactorToSNR() => this.spreadFactorToSNR;
+
         [JsonExtensionData]
         public Dictionary<string, object> ExtraData { get; } = new Dictionary<string, object>();
-
-        /// <summary>
-        /// Get the modulation margin for MAC Commands LinkCheck
-        /// </summary>
-        /// <param name="input">the input physical rxpk from the packet</param>
-        public uint GetModulationMargin()
-        {
-            // required SNR:
-            var requiredSNR = this.spreadFactorToSNR[int.Parse(this.Datr.Substring(this.Datr.IndexOf("SF") + 2, this.Datr.IndexOf("BW") - 1 - this.Datr.IndexOf("SF") + 2))];
-            // get the minimum
-            uint margin = (uint)(this.Lsnr - requiredSNR);
-            if (margin < 0)
-                margin = 0;
-            return margin;
-        }
 
         /// <summary>
         /// Method to create a Rxpk object from a byte array.
@@ -118,6 +107,18 @@ namespace LoRaTools.LoRaPhysical
             }
 
             return new List<Rxpk>();
+        }
+
+        public uint GetModulationMargin()
+        {
+            // required SNR:
+            var requiredSNR = this.spreadFactorToSNR[int.Parse(this.Datr.Substring(this.Datr.IndexOf("SF") + 2, this.Datr.IndexOf("BW") - this.Datr.IndexOf("SF") - 2))];
+
+            // get the minimum
+            uint margin = (uint)(this.Lsnr - requiredSNR);
+            if (margin < 0)
+                margin = 0;
+            return margin;
         }
     }
 }

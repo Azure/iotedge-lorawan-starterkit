@@ -8,6 +8,7 @@ namespace LoRaTools.LoRaMessage
     using System.Linq;
     using System.Runtime.InteropServices;
     using LoRaTools.LoRaPhysical;
+    using LoRaTools.Mac;
     using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
@@ -34,6 +35,11 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadData : LoRaPayload
     {
+        /// <summary>
+        /// Gets or sets list of Mac Commands in the LoRaPayload
+        /// </summary>
+        public List<MacCommand> MacCommands { get; set; }
+
         /// <summary>
         /// Gets the LoRa payload fport as value
         /// </summary>
@@ -65,6 +71,11 @@ namespace LoRaTools.LoRaMessage
         {
             return this.LoRaMessageType == LoRaMessageType.ConfirmedDataDown || this.LoRaMessageType == LoRaMessageType.ConfirmedDataUp;
         }
+
+        /// <summary>
+        /// Get the MacCommands
+        /// </summary>
+        public List<MacCommand> GetMacCommands() => this.MacCommands;
 
         /// <summary>
         /// Indicates if the payload is an confirmation message acknowledgement
@@ -101,12 +112,6 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public int Direction { get; set; }
 
-        public MacCommandHolder GetMacCommands()
-        {
-            MacCommandHolder macHolder = new MacCommandHolder(this.Fopts.ToArray());
-            return macHolder;
-        }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Constructor used by the simulator
@@ -123,8 +128,6 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadData(byte[] inputMessage)
             : base(inputMessage)
         {
-            // in this case the payload is not downlink of our type
-            this.Direction = this.Mhdr.Span[0] & (1 << 6 - 1);
             // get the address
             byte[] addrbytes = new byte[4];
             Array.Copy(inputMessage, 1, addrbytes, 0, 4);
@@ -132,6 +135,17 @@ namespace LoRaTools.LoRaMessage
             Array.Reverse(addrbytes);
             this.DevAddr = addrbytes;
             this.LoRaMessageType = (LoRaMessageType)this.RawMessage[0];
+
+            if (this.LoRaMessageType == LoRaMessageType.ConfirmedDataDown ||
+                this.LoRaMessageType == LoRaMessageType.JoinAccept ||
+                this.LoRaMessageType == LoRaMessageType.UnconfirmedDataDown)
+            {
+                this.Direction = 1;
+            }
+            else
+            {
+                this.Direction = 0;
+            }
 
             this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
             // Fctrl Frame Control Octet
@@ -152,6 +166,13 @@ namespace LoRaTools.LoRaMessage
             this.Fport = new Memory<byte>(inputMessage, 8 + foptsSize, fportLength);
             // frmpayload
             this.Frmpayload = new Memory<byte>(inputMessage, 8 + fportLength + foptsSize, inputMessage.Length - 8 - fportLength - 4 - foptsSize);
+
+            // Populate the MacCommands present in the payload.
+            if (foptsSize > 0)
+            {
+                this.MacCommands = MacCommand.CreateMacCommandFromBytes(ConversionHelper.ByteArrayToString(this.DevAddr), this.Fopts);
+            }
+
             this.Mic = new Memory<byte>(inputMessage, inputMessage.Length - 4, 4);
         }
 
@@ -159,11 +180,32 @@ namespace LoRaTools.LoRaMessage
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Downstream Constructor (build a LoRa Message)
         /// </summary>
-        public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, byte[] fOpts, byte[] fPort, byte[] frmPayload, int direction)
+        public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction)
         {
+            List<byte> macBytes = new List<byte>();
+            if (macCommands != null)
+            {
+                foreach (var macCommand in macCommands)
+                {
+                    macBytes.AddRange(macCommand.ToBytes());
+                }
+            }
+
+            var fOpts = macBytes.ToArray();
             int fOptsLen = fOpts == null ? 0 : fOpts.Length;
             int frmPayloadLen = frmPayload == null ? 0 : frmPayload.Length;
             int fPortLen = fPort == null ? 0 : fPort.Length;
+
+            // TODO If there are mac commands to send and no payload, we need to put the mac commands in the frmpayload.
+            if (macBytes?.Count > 0 && (frmPayload == null || frmPayload?.Count() == 0))
+            {
+                frmPayload = fOpts;
+                fOpts = null;
+                fOptsLen = 0;
+                frmPayloadLen = frmPayload.Count();
+                fPortLen = 1;
+                fPort = new byte[1] { 0 };
+            }
 
             int macPyldSize = devAddr.Length + fctrl.Length + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;
             this.RawMessage = new byte[1 + macPyldSize + 4];
@@ -240,7 +282,16 @@ namespace LoRaTools.LoRaMessage
         /// <returns>the Downlink message</returns>
         public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI)
         {
-            this.PerformEncryption(appSKey);
+            // It is a Mac COmmand payload, need to encrypt with nwkskey
+            if (this.GetFPort() == 0)
+            {
+                this.PerformEncryption(nwkSKey);
+            }
+            else
+            {
+                this.PerformEncryption(appSKey);
+            }
+
             this.SetMic(nwkSKey);
             var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
             if (Logger.LoggerLevel < LogLevel.Information)
@@ -417,6 +468,28 @@ namespace LoRaTools.LoRaMessage
             }
 
             return messageArray.ToArray();
+        }
+
+        /// <summary>
+        /// Add Mac Command to a LoRa Payload
+        /// Warning, do not use this method if your LoRaPayload was created from bytes
+        /// </summary>
+        public void AddMacCommand(MacCommand mac)
+        {
+            if (this.MacCommands == null)
+            {
+                this.MacCommands = new List<MacCommand>();
+            }
+
+            this.MacCommands.Add(mac);
+        }
+
+        /// <summary>
+        /// Does a Mac command require an answer?
+        /// </summary>
+        public bool IsMacAnswerRequired()
+        {
+            return this.MacCommands?.Where(x => x.Cid == CidEnum.LinkCheckCmd).Count() > 0 ? true : false;
         }
     }
 }

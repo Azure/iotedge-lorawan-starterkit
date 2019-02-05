@@ -28,5 +28,8 @@ namespace LoRaWan.NetworkServer
 
         // Invalid receive window (when trying to resolve the window to use)
         public const int INVALID_RECEIVE_WINDOW = 0;
+
+        // Cloud to device Mac Command property name
+        public const string C2D_MSG_PROPERTY_MAC_COMMAND = "CidType";
     }
 }

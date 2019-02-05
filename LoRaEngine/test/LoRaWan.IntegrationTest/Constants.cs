@@ -15,5 +15,11 @@ namespace LoRaWan.IntegrationTest
         public const int DELAY_FOR_SERIAL_AFTER_JOIN = 1000;
 
         public const string TestCollectionName = "ArduinoSerialCollection";
+
+        // Defines Cloud to device message property containing fport value
+        internal const string FPORT_MSG_PROPERTY_KEY = "fport";
+
+        // Cloud to device Mac Command property name
+        public const string C2D_MSG_PROPERTY_MAC_COMMAND = "CidType";
     }
 }

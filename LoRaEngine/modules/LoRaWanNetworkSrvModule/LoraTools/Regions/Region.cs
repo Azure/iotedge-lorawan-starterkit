@@ -323,5 +323,13 @@ namespace LoRaTools.Regions
                 }
             }
         }
+
+        /// <summary>
+        /// Get Datarate number from SF#BW# string
+        /// </summary>
+        public int GetDRFromFreqAndChan(string datr)
+        {
+            return (int)this.DRtoConfiguration.Where(x => x.Value.configuration == datr).First().Key;
+        }
     }
 }

@@ -642,5 +642,164 @@ namespace LoRaWan.NetworkServer.Test
                 Assert.Equal(rxpk.Tmst + 2000000, actualDownlink.Txpk.Tmst);
             }
         }
-    }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("test")]
+        public async Task OTAA_Unconfirmed_With_Cloud_To_Device_Mac_Command_Returns_Downstream_Message(string msg)
+        {
+            const int PayloadFcnt = 10;
+            const int InitialDeviceFcntUp = 9;
+            const int InitialDeviceFcntDown = 20;
+
+            var simulatedDevice = new SimulatedDevice(
+                TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
+                frmCntUp: InitialDeviceFcntUp,
+                frmCntDown: InitialDeviceFcntDown);
+
+            var loraDevice = this.CreateLoRaDevice(simulatedDevice);
+
+            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .ReturnsAsync(true);
+
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .ReturnsAsync(true);
+
+            var cloudToDeviceMessage = new Message(Encoding.UTF8.GetBytes(msg));
+
+            if (msg != string.Empty)
+            {
+                cloudToDeviceMessage.Properties[Constants.FPORT_MSG_PROPERTY_KEY] = "1";
+            }
+
+            cloudToDeviceMessage.Properties[Constants.C2D_MSG_PROPERTY_MAC_COMMAND] = "DevStatusCmd";
+
+            this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                .ReturnsAsync(cloudToDeviceMessage)
+                .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
+
+            this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+                .ReturnsAsync(true);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+
+            // Send to message processor
+            var messageProcessor = new MessageDispatcher(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyProvider);
+
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+            var request = this.CreateWaitableRequest(rxpk);
+            messageProcessor.DispatchRequest(request);
+            Assert.True(await request.WaitCompleteAsync());
+
+            // Expectations
+            // 1. Message was sent to IoT Hub
+            this.LoRaDeviceClient.VerifyAll();
+            this.LoRaDeviceApi.VerifyAll();
+
+            // 2. Return is downstream message
+            Assert.NotNull(request.ResponseDownlink);
+            Assert.True(request.ProcessingSucceeded);
+            Assert.Single(this.PacketForwarder.DownlinkMessages);
+            var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
+            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+
+            // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
+            payloadDataDown.PerformEncryption(msg == string.Empty ?
+                    loraDevice.NwkSKey :
+                    loraDevice.AppSKey);
+
+            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+            Assert.False(payloadDataDown.IsConfirmed());
+            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+
+            // 4. Frame counter up was updated
+            Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
+
+            // 5. Frame counter down is updated
+            Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
+            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
+
+            // 6. Frame count has no pending changes
+            Assert.False(loraDevice.HasFrameCountChanges);
+
+            // 7. Mac commands should be present in reply
+            // mac command is in fopts if there is a c2d message
+            if (msg == string.Empty)
+            {
+                Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+                Assert.NotNull(payloadDataDown.Frmpayload.Span.ToArray());
+                Assert.Single(payloadDataDown.Frmpayload.Span.ToArray());
+                Assert.Equal((byte)LoRaTools.CidEnum.DevStatusCmd, payloadDataDown.Frmpayload.Span[0]);
+            }
+            else
+            {
+                Assert.NotNull(payloadDataDown.Fopts.Span.ToArray());
+                Assert.Single(payloadDataDown.Fopts.Span.ToArray());
+                Assert.Equal((byte)LoRaTools.CidEnum.DevStatusCmd, payloadDataDown.Fopts.Span[0]);
+            }
+
+            this.LoRaDeviceClient.VerifyAll();
+            this.LoRaDeviceApi.VerifyAll();
+        }
+
+        [Theory]
+        [InlineData("test")]
+        [InlineData("DevStatusCmd")]
+        public async Task OTAA_Unconfirmed_With_Cloud_To_Device_Mac_Command_Fails_Due_To_Wrong_setup(string mac)
+        {
+            const int PayloadFcnt = 10;
+            const int InitialDeviceFcntUp = 9;
+            const int InitialDeviceFcntDown = 20;
+
+            var simulatedDevice = new SimulatedDevice(
+                TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
+                frmCntUp: InitialDeviceFcntUp,
+                frmCntDown: InitialDeviceFcntDown);
+
+            var loraDevice = this.CreateLoRaDevice(simulatedDevice);
+
+            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .ReturnsAsync(true);
+
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .ReturnsAsync(true);
+
+            var cloudToDeviceMessage = new Message(Encoding.UTF8.GetBytes("asd"));
+
+            cloudToDeviceMessage.Properties[Constants.C2D_MSG_PROPERTY_MAC_COMMAND] = mac;
+
+            this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                .ReturnsAsync(cloudToDeviceMessage)
+                .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
+
+            this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+                .ReturnsAsync(true);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+
+            // Send to message processor
+            var messageProcessor = new MessageDispatcher(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyProvider);
+
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+            var request = this.CreateWaitableRequest(rxpk);
+            messageProcessor.DispatchRequest(request);
+            Assert.True(await request.WaitCompleteAsync());
+
+            // Expectations
+            // 1. Message was sent to IoT Hub
+            this.LoRaDeviceClient.VerifyAll();
+            this.LoRaDeviceApi.VerifyAll();
+
+            // 2. DownStream Message should be null as the processing should fail
+            Assert.Null(request.ResponseDownlink);
+        }
+        }
 }

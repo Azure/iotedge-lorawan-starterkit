@@ -450,14 +450,12 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
-        public LoRaArduinoSerial setPort(int port)
+        public async Task setPortAsync(int port)
         {
-            string cmd = "AT+PORT={port}\r\n";
+            string cmd = $"AT+PORT={port}\r\n";
             this.sendCommand(cmd);
 
-            Thread.Sleep(DEFAULT_TIMEWAIT);
-
-            return this;
+            await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
         public LoRaArduinoSerial setAdaptiveDataRate(bool command)
@@ -566,6 +564,35 @@ namespace LoRaWan.IntegrationTest
             catch (Exception ex)
             {
                 TestLogger.Log($"Error during {nameof(this.transferPacketAsync)}. {ex.ToString()}");
+                return false;
+            }
+        }
+
+        public async Task<bool> transferHexPacketAsync(string buffer, int timeout)
+        {
+            try
+            {
+                this.sendCommand("AT+MSGHEX=\"");
+
+                this.sendCommand(buffer);
+
+                this.sendCommand("\"\r\n");
+
+                DateTime start = DateTime.Now;
+
+                while (true)
+                {
+                    if (this.ReceivedSerial(x => x.StartsWith("+MSGHEX: Done")))
+                        return true;
+                    else if (start.AddSeconds(timeout) < DateTime.Now)
+                        return false;
+
+                    await Task.Delay(100);
+                }
+            }
+            catch (Exception ex)
+            {
+                TestLogger.Log($"Error during {nameof(this.transferHexPacketAsync)}. {ex.ToString()}");
                 return false;
             }
         }

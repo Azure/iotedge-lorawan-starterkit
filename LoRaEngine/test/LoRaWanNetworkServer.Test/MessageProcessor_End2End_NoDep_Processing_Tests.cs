@@ -195,6 +195,251 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.VerifyAll();
         }
 
+        [Fact]
+        public async Task ABP_Unconfirmed_Sends_Valid_Mac_Commands_As_Part_Of_Payload_And_Receives_Answer_As_Part_Of_Payload()
+        {
+            string deviceGatewayID = ServerGatewayID;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
+            var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
+            loRaDevice.SensorDecoder = string.Empty;
+
+            // message will be sent
+            LoRaDeviceTelemetry loRaDeviceTelemetry = null;
+
+            // C2D message will be checked
+            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            // add device to cache already
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var dictionary = new DevEUIToLoRaDeviceDictionary();
+            dictionary[loRaDevice.DevEUI] = loRaDevice;
+            memoryCache.Set<DevEUIToLoRaDeviceDictionary>(loRaDevice.DevAddr, dictionary);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+
+            // Send to message processor
+            var messageDispatcher = new MessageDispatcher(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyProvider);
+
+            // sends unconfirmed mac LinkCheckCmd
+            string msgPayload = "02";
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1, isHexPayload: true, fport: 0);
+            // only use nwkskey
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.NwkSKey, simulatedDevice.NwkSKey).Rxpk[0];
+            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            messageDispatcher.DispatchRequest(request);
+            Assert.True(await request.WaitCompleteAsync());
+            // Server should reply with MacCommand Answer
+            Assert.NotNull(request.ResponseDownlink);
+            LoRaPayloadData data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
+            Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
+            data.PerformEncryption(simulatedDevice.NwkSKey);
+            data.Frmpayload.Span.Reverse();
+            LoRaTools.LinkCheckAnswer link = new LoRaTools.LinkCheckAnswer(data.Frmpayload.Span);
+            Assert.NotNull(link);
+            Assert.Equal(1, (int)link.GwCnt);
+            Assert.Equal(15, (int)link.Margin);
+            // Nothing should be sent to IoT Hub
+            Assert.Null(loRaDeviceTelemetry);
+
+            this.LoRaDeviceClient.VerifyAll();
+            this.LoRaDeviceApi.VerifyAll();
+        }
+
+        [Fact]
+        public async Task ABP_Unconfirmed_Sends_Valid_Mac_Commands_In_Fopts_And_Reply_In_Fopts()
+        {
+            string deviceGatewayID = ServerGatewayID;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
+            var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
+            loRaDevice.SensorDecoder = string.Empty;
+
+            // message will be sent
+            LoRaDeviceTelemetry loRaDeviceTelemetry = null;
+            Dictionary<string, string> eventProperties = null;
+            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), It.IsNotNull<Dictionary<string, string>>()))
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) =>
+                {
+                    loRaDeviceTelemetry = t;
+                    eventProperties = d;
+                })
+                .ReturnsAsync(true);
+
+            var cloudToDeviceMessage = new Message(Encoding.UTF8.GetBytes("Hello"));
+
+            cloudToDeviceMessage.Properties[Constants.FPORT_MSG_PROPERTY_KEY] = "1";
+
+            this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                .ReturnsAsync(cloudToDeviceMessage)
+                .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
+
+            this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+                .ReturnsAsync(true);
+
+            // add device to cache already
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var dictionary = new DevEUIToLoRaDeviceDictionary();
+            dictionary[loRaDevice.DevEUI] = loRaDevice;
+            memoryCache.Set<DevEUIToLoRaDeviceDictionary>(loRaDevice.DevAddr, dictionary);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+
+            // Send to message processor
+            var messageDispatcher = new MessageDispatcher(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyProvider);
+
+            // sends unconfirmed mac LinkCheckCmd
+            string msgPayload = "Hello World";
+            List<LoRaTools.MacCommand> macCommands = new List<LoRaTools.MacCommand>()
+            {
+                new LoRaTools.LinkCheckRequest()
+            };
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1, macCommands: macCommands);
+            // only use nwkskey
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.NwkSKey, simulatedDevice.NwkSKey).Rxpk[0];
+            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            messageDispatcher.DispatchRequest(request);
+            Assert.True(await request.WaitCompleteAsync());
+            // Server should reply with MacCommand Answer
+            Assert.NotNull(request.ResponseDownlink);
+            LoRaPayloadData data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
+            Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
+            // FOpts are not encrypted
+            LoRaTools.LinkCheckAnswer link = new LoRaTools.LinkCheckAnswer(data.Fopts.Span);
+            Assert.NotNull(link);
+            Assert.NotNull(eventProperties);
+            Assert.Contains("LinkCheckCmd", eventProperties.Keys);
+            Assert.Equal(1, (int)link.GwCnt);
+            Assert.Equal(15, (int)link.Margin);
+            // Nothing should be sent to IoT Hub
+            Assert.NotNull(loRaDeviceTelemetry);
+
+            this.LoRaDeviceClient.VerifyAll();
+            this.LoRaDeviceApi.VerifyAll();
+        }
+
+        [Theory]
+        [InlineData("00")]
+        [InlineData("25")]
+        public async Task ABP_Unconfirmed_Sends_Invalid_Mac_Commands_In_Fopts(string macCommand)
+        {
+            string deviceGatewayID = ServerGatewayID;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
+            var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
+            loRaDevice.SensorDecoder = string.Empty;
+
+            // message will be sent
+            LoRaDeviceTelemetry loRaDeviceTelemetry = null;
+            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
+                {
+                    loRaDeviceTelemetry = t;
+                })
+                .ReturnsAsync(true);
+            var c2dMessage = "Hello";
+            var cloudToDeviceMessage = new Message(Encoding.UTF8.GetBytes(c2dMessage));
+
+            cloudToDeviceMessage.Properties[Constants.FPORT_MSG_PROPERTY_KEY] = "1";
+
+            this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                .ReturnsAsync(cloudToDeviceMessage)
+                .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
+
+            this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+                .ReturnsAsync(true);
+
+            // add device to cache already
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var dictionary = new DevEUIToLoRaDeviceDictionary();
+            dictionary[loRaDevice.DevEUI] = loRaDevice;
+            memoryCache.Set<DevEUIToLoRaDeviceDictionary>(loRaDevice.DevAddr, dictionary);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+
+            // Send to message processor
+            var messageDispatcher = new MessageDispatcher(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyProvider);
+
+            // sends unconfirmed mac LinkCheckCmd
+            string msgPayload = "Hello World";
+
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
+            unconfirmedMessagePayload.Fopts = ConversionHelper.StringToByteArray(macCommand);
+            unconfirmedMessagePayload.Fctrl = new byte[1] { (byte)unconfirmedMessagePayload.Fopts.Length };
+            // only use nwkskey
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.NwkSKey, simulatedDevice.NwkSKey).Rxpk[0];
+            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            messageDispatcher.DispatchRequest(request);
+            Assert.True(await request.WaitCompleteAsync());
+            // Server should reply with MacCommand Answer
+            Assert.NotNull(request.ResponseDownlink);
+            LoRaPayloadData data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
+            Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
+            // FOpts are not encrypted
+            var payload = data.GetDecryptedPayload(simulatedDevice.AppSKey);
+            string c2dreceivedPayload = Encoding.UTF8.GetString(payload);
+            Assert.Equal(c2dreceivedPayload, c2dMessage);
+            // Nothing should be sent to IoT Hub
+            Assert.NotNull(loRaDeviceTelemetry);
+
+            this.LoRaDeviceClient.VerifyAll();
+            this.LoRaDeviceApi.VerifyAll();
+        }
+
+        [Theory]
+        [InlineData("00")]
+        [InlineData("26")]
+        public async Task ABP_Unconfirmed_Sends_Invalid_Mac_Commands_As_Part_Of_Payload(string macCommand)
+        {
+            string deviceGatewayID = ServerGatewayID;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
+            var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
+            loRaDevice.SensorDecoder = string.Empty;
+
+            // message will be sent
+            LoRaDeviceTelemetry loRaDeviceTelemetry = null;
+
+            // C2D message will be checked
+            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            // add device to cache already
+            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            var dictionary = new DevEUIToLoRaDeviceDictionary();
+            dictionary[loRaDevice.DevEUI] = loRaDevice;
+            memoryCache.Set<DevEUIToLoRaDeviceDictionary>(loRaDevice.DevAddr, dictionary);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+
+            // Send to message processor
+            var messageDispatcher = new MessageDispatcher(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyProvider);
+
+            // sends unconfirmed mac LinkCheckCmd
+            string msgPayload = macCommand;
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1, isHexPayload: true, fport: 0);
+            // only use nwkskey
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.NwkSKey, simulatedDevice.NwkSKey).Rxpk[0];
+            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            messageDispatcher.DispatchRequest(request);
+            Assert.True(await request.WaitCompleteAsync());
+            // Server should not reply and discard the message
+            Assert.Null(request.ResponseDownlink);
+            Assert.Null(loRaDeviceTelemetry);
+
+            this.LoRaDeviceClient.VerifyAll();
+            this.LoRaDeviceApi.VerifyAll();
+        }
+
         [Theory]
         [InlineData(0, 0)]
         [InlineData(0, 1)]
