@@ -18,12 +18,14 @@ namespace LoRaWan.NetworkServer
 
         internal ProcessLogger(LoRaOperationTimeWatcher timeWatcher)
         {
+            this.LogLevel = LogLevel.Information;
             this.timeWatcher = timeWatcher;
             this.LogLevel = LogLevel.Information;
         }
 
         internal ProcessLogger(LoRaOperationTimeWatcher timeWatcher, ReadOnlyMemory<byte> devAddr)
         {
+            this.LogLevel = LogLevel.Information;
             this.timeWatcher = timeWatcher;
             this.devAddr = devAddr;
             this.LogLevel = LogLevel.Information;

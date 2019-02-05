@@ -116,7 +116,8 @@ namespace LoRaWan.NetworkServer
             {
                 if (!this.IsValidNetId(loraPayload.GetDevAddrNetID(), this.configuration.NetId))
                 {
-                    Logger.Log(ConversionHelper.ByteArrayToString(devAddr), "device is using another network id, ignoring this message", LogLevel.Information);
+                    Logger.Log(ConversionHelper.ByteArrayToString(devAddr), "device is using another network id, ignoring this message", LogLevel.Debug);
+                    processLogger.LogLevel = LogLevel.Debug;
                     return null;
                 }
 

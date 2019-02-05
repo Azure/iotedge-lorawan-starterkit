@@ -70,8 +70,6 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Finds a device based on the <see cref="LoRaPayloadData"/>
         /// </summary>
-        /// <param name="loraPayload"></param>
-        /// <returns></returns>
         public async Task<LoRaDevice> GetDeviceForPayloadAsync(LoRaPayloadData loraPayload)
         {
             var devAddr = ConversionHelper.ByteArrayToString(loraPayload.DevAddr.ToArray());
