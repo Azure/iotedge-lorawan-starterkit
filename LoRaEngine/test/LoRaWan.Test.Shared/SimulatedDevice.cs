@@ -150,7 +150,6 @@ namespace LoRaWan.Test.Shared
         }
 
         // Sends unconfirmed message
-        [Obsolete]
         public async Task SendUnconfirmedMessageAsync(SimulatedPacketForwarder simulatedPacketForwarder, string payload)
         {
             var token = await RandomTokenGenerator.GetTokenAsync();
@@ -168,7 +167,6 @@ namespace LoRaWan.Test.Shared
         }
 
         // Sends confirmed message
-        [Obsolete]
         public async Task SendConfirmedMessageAsync(SimulatedPacketForwarder simulatedPacketForwarder, string payload)
         {
             var token = await RandomTokenGenerator.GetTokenAsync();
@@ -186,7 +184,6 @@ namespace LoRaWan.Test.Shared
         }
 
         // Performs join
-        [Obsolete]
         public async Task<bool> JoinAsync(SimulatedPacketForwarder packetForwarder, int timeoutInMs = 30 * 1000)
         {
             if (this.IsJoined)

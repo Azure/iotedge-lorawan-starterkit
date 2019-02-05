@@ -602,7 +602,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(1, 100, 300, 510, 1)]
         [InlineData(1, 200, 200, 410, 1)]
         // - Aiming for RX2
-        [InlineData(1, 700, 690, 999, 2)]
+        [InlineData(1, 750, 690, 999, 2)]
         [InlineData(1, 1000, 250, 610, 2)]
 
         // Preferred Window: 2

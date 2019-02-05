@@ -13,7 +13,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\LoraKeysManagerFacade\LoraKeysManagerFacade.csproj" />
+    <ProjectReference Include="..\..\modules\LoRaWanNetworkSrvModule\Logger\Logger.csproj" />
+    <ProjectReference Include="..\..\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
+    <ProjectReference Include="..\LoRaWan.Test.Shared\LoRaWan.Test.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.local.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <!-- StyleCop Setup -->
@@ -24,5 +35,5 @@
     <CodeAnalysisRuleSet>../../../stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <Import Project="../../../stylecop.props" />
-  
+
 </Project>

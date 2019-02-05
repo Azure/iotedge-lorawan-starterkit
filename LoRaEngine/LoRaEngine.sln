@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoraKeysManagerFacade.Test"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Test.Shared", "test\LoRaWan.Test.Shared\LoRaWan.Test.Shared.csproj", "{727AF443-9B5E-4730-BC04-255F82D87C66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRaWan.SimulatedTest", "test\LoRaWan.SimulatedTest\LoRaWan.SimulatedTest.csproj", "{4FA0718D-15A2-4D4E-9310-7FB17B285757}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,6 +115,14 @@ Global
 		{727AF443-9B5E-4730-BC04-255F82D87C66}.Release|Any CPU.Build.0 = Release|Any CPU
 		{727AF443-9B5E-4730-BC04-255F82D87C66}.Release|x86.ActiveCfg = Release|Any CPU
 		{727AF443-9B5E-4730-BC04-255F82D87C66}.Release|x86.Build.0 = Release|Any CPU
+		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Debug|x86.Build.0 = Debug|Any CPU
+		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|x86.ActiveCfg = Release|Any CPU
+		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -123,6 +133,7 @@ Global
 		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{BDC96E16-510C-41DA-A075-4336CB5D58A1} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{727AF443-9B5E-4730-BC04-255F82D87C66} = {A3AF6806-947C-426F-8063-7229B71A4472}
+		{4FA0718D-15A2-4D4E-9310-7FB17B285757} = {A3AF6806-947C-426F-8063-7229B71A4472}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}

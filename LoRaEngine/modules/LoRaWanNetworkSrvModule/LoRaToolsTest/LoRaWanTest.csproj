@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -17,4 +17,13 @@
     <ProjectReference Include="..\LoraTools\LoRaTools.csproj" />
   </ItemGroup>
 
+  <!-- StyleCop Setup -->
+  <ItemGroup>
+    <AdditionalFiles Include="../../../../stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>../../../../stylecop.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <Import Project="../../../../stylecop.props" />
+  
 </Project>

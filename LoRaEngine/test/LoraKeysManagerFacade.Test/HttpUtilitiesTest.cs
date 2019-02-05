@@ -1,16 +1,15 @@
-//
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
-using System.Collections.Generic;
-using Xunit;
-using LoRaWan.Shared;
-using Microsoft.Extensions.Primitives;
 
 namespace LoraKeysManagerFacade.Test
 {
+    using System.Collections.Generic;
+    using LoRaWan.Shared;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Http.Internal;
+    using Microsoft.Extensions.Primitives;
+    using Xunit;
+
     public class HttpUtilitiesTest
     {
         [Fact]
@@ -42,7 +41,6 @@ namespace LoraKeysManagerFacade.Test
             Assert.False(actual.IsKnown);
             Assert.Equal("qwerty", actual.Version);
         }
-
 
         [Fact]
         public void When_Version_2018_12_16_Is_Requested_In_QueryString_Returns_It()

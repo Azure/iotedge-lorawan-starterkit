@@ -1,17 +1,19 @@
-using LoRaWan.Test.Shared;
-using System;
-using System.IO.Ports;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.IntegrationTest
 {
+    using System;
+    using System.IO.Ports;
+    using System.Runtime.InteropServices;
+    using System.Threading.Tasks;
+    using LoRaWan.Test.Shared;
 
     public sealed partial class LoRaArduinoSerial
     {
-        public static LoRaArduinoSerial CreateFromPort (string port)
+        public static LoRaArduinoSerial CreateFromPort(string port)
         {
-            var isWindows = RuntimeInformation.IsOSPlatform (OSPlatform.Windows);
+            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
             LoRaArduinoSerial result = null;
 
@@ -19,26 +21,25 @@ namespace LoRaWan.IntegrationTest
             {
                 TestLogger.Log($"** Starting serial port '{port}' on non-Windows **");
 
-                var serialPort = new SerialDevice (port, BaudRate.B115200);
-                result = new LoRaArduinoSerial (serialPort);
+                var serialPort = new SerialDevice(port, BaudRate.B115200);
+                result = new LoRaArduinoSerial(serialPort);
 
                 TestLogger.Log($"Opening serial port");
                 try
                 {
-                    serialPort.Open ();
+                    serialPort.Open();
                 }
                 catch (Exception ex)
                 {
                     TestLogger.Log($"Error opening serial port '{port}': {ex.ToString()}");
                     throw;
                 }
-
             }
             else
             {
                 TestLogger.Log($"** Starting serial port '{port}' on Windows **");
 
-                var serialPortWin = new SerialPort (port)
+                var serialPortWin = new SerialPort(port)
                 {
                     BaudRate = 115200,
                     Parity = Parity.None,
@@ -47,7 +48,7 @@ namespace LoRaWan.IntegrationTest
                     DtrEnable = true,
                     Handshake = Handshake.None
                 };
-                result = new LoRaArduinoSerial (serialPortWin);
+                result = new LoRaArduinoSerial(serialPortWin);
 
                 try
                 {
@@ -94,9 +95,8 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(SetupLora)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.SetupLora)}. {ex.ToString()}");
             }
         }
-        
     }
 }

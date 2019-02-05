@@ -306,25 +306,9 @@ namespace LoRaWanTest
                 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
             };
             var key = joinReq.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netId, joinReq.DevNonce.ToArray(), appKey);
-            Assert.Equal(key, new byte[16]
-            {
-                223,
-                83,
-                195,
-                95,
-                48,
-                52,
-                204,
-                206,
-                208,
-                255,
-                53,
-                76,
-                112,
-                222,
-                4,
-                223,
-            });
+            Assert.Equal(
+                key,
+                new byte[16] { 223, 83, 195, 95, 48, 52, 204, 206, 208, 255, 53, 76, 112, 222, 4, 223, });
         }
 
         /// <summary>
