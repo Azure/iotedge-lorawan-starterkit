@@ -406,7 +406,10 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         [InlineData(ServerGatewayID, "1234")]
         [InlineData(null, "1234")]
-        public async Task ABP_Unconfirmed_With_Value_Decoder_Sends_Decoded_Numeric_Payload(string deviceGatewayID, string msgPayload)
+        [InlineData(ServerGatewayID, "hello world")]
+        [InlineData(ServerGatewayID, "$1")]
+        [InlineData(ServerGatewayID, "100'000")]
+        public async Task ABP_Unconfirmed_With_Value_Decoder_Sends_Decoded_Payload(string deviceGatewayID, string msgPayload)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
