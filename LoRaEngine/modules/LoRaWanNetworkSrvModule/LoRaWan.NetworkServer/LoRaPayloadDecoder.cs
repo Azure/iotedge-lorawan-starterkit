@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Globalization;
     using System.Net.Http;
     using System.Reflection;
     using System.Text;
@@ -131,13 +132,17 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Value sensor decoding, from <see cref="byte[]"/> to <see cref="string"/>
         /// </summary>
-        /// <param name="payload"></param>
-        /// <param name="fport"></param>
-        /// <returns></returns>
+        /// <param name="payload">The payload to decode</param>
+        /// <param name="fport">The received frame port</param>
+        /// <returns>The decoded value as a JSON string</returns>
         public static string DecoderValueSensor(byte[] payload, uint fport)
         {
             var result = Encoding.UTF8.GetString(payload);
-            return $"{{ \"value\":{result} }}";
+
+            var isSupportedNumericValue = double.TryParse(result, NumberStyles.Float, CultureInfo.InvariantCulture, out double ignored);
+            var quotes = isSupportedNumericValue ? string.Empty : "\"";
+
+            return $"{{ \"value\":{quotes}{result}{quotes} }}";
         }
     }
 }
