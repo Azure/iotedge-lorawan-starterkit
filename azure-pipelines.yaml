@@ -12,6 +12,7 @@ variables:
   # image tag prefix for dev branch (0.3.0-dev)
   DEV_IMAGE_TAG: dev
 
+  # Build configuration for .NET components
   buildConfiguration: 'Release'
 
   # Name of service connection for resource group
