@@ -39,7 +39,7 @@ pr:
     - dev
 
 # Enable CI on branches master and dev
-# Batch builds
+# Batch builds 
 trigger:
   batch: true
   branches:
