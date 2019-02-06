@@ -13,6 +13,11 @@ namespace LoRaTools
         // private readonly byte dlSettings;
         private readonly byte[] frequency = new byte[3];
 
+        public RXParamSetupCmd()
+        {
+            this.Length = 2;
+        }
+
         public override byte[] ToBytes()
         {
             throw new NotImplementedException();
