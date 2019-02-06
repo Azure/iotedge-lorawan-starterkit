@@ -34,7 +34,6 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Registers a <see cref="ILoRaDeviceInitializer"/>
         /// </summary>
-        /// <param name="initializer"></param>
         void RegisterDeviceInitializer(ILoRaDeviceInitializer initializer);
 
         /// <summary>
