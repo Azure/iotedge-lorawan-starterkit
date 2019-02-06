@@ -16,6 +16,10 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData("DecoderValueSensor", "1234", 2)]
         [InlineData("DECODERVALUESENSOR", "1234", 1)]
         [InlineData("decodervaluesensor", "1234", 2)]
+        [InlineData("decodervaluesensor", "hello world", 2)]
+        [InlineData("decodervaluesensor", " 1 ", 2)]
+        [InlineData("decodervaluesensor", "$1", 2)]
+        [InlineData("decodervaluesensor", "100'000", 2)]
         public async Task When_Decoder_Is_DecoderValueSensor_Return_In_Value(string decoder, string payloadString, byte fport)
         {
             var payload = Encoding.UTF8.GetBytes(payloadString);
