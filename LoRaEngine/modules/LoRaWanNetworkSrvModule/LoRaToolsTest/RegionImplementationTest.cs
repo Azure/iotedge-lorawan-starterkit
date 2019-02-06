@@ -19,32 +19,11 @@ namespace LoRaWanTest
       [CombinatorialValues("SF12BW125", "SF11BW125", "SF10BW125", "SF9BW125", "SF8BW125", "SF7BW125", "SF7BW250")]string datr,
       [CombinatorialValues(868.1, 868.3, 868.5)] double freq)
         {
-            string jsonUplink =
-                @"{ ""rxpk"":[
- 	            {
-		            ""time"":""2013-03-31T16:21:17.528002Z"",
- 		            ""tmst"":3512348611,
- 		            ""chan"":2,
- 		            ""rfch"":0,
- 		            ""freq"":" + freq + @",
- 		            ""stat"":1,
- 		            ""modu"":""LORA"",
- 		            ""datr"":""" + datr + @""",
- 		            ""codr"":""4/6"",
- 		            ""rssi"":-35,
- 		            ""lsnr"":5.1,
- 		            ""size"":32,
- 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
-                }]}";
-
-            var multiRxpkInput = Encoding.Default.GetBytes(jsonUplink);
-            byte[] physicalUpstreamPyld = new byte[12];
-            physicalUpstreamPyld[0] = 2;
+            List<Rxpk> rxpk = GenerateRxpk(datr, freq);
 
             // in EU in standard parameters the expectation is that the reply arrive at same place.
             var expFreq = freq;
             var expDatr = datr;
-            List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
             Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannelFrequency(rxpk[0]), expFreq);
             Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamDR(rxpk[0]), expDatr);
         }
@@ -55,27 +34,7 @@ namespace LoRaWanTest
            [CombinatorialValues("SF10BW125", "SF9BW125", "SF8BW125", "SF7BW125")] string datr,
            [CombinatorialValues(902.3, 902.5, 902.7, 902.9, 903.1, 903.3, 903.5, 903.7, 903.9)] double freq)
         {
-            string jsonUplink =
-                @"{ ""rxpk"":[
- 	            {
-		            ""time"":""2013-03-31T16:21:17.528002Z"",
- 		            ""tmst"":3512348611,
- 		            ""chan"":2,
- 		            ""rfch"":0,
- 		            ""freq"":" + freq + @",
- 		            ""stat"":1,
- 		            ""modu"":""LORA"",
- 		            ""datr"":""" + datr + @""",
- 		            ""codr"":""4/6"",
- 		            ""rssi"":-35,
- 		            ""lsnr"":5.1,
- 		            ""size"":32,
- 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
-                }]}";
-
-            var multiRxpkInput = Encoding.Default.GetBytes(jsonUplink);
-            byte[] physicalUpstreamPyld = new byte[12];
-            physicalUpstreamPyld[0] = 2;
+            List<Rxpk> rxpk = GenerateRxpk(datr, freq);
 
             // in EU in standard parameters the expectation is that the reply arrive at same place.
             double expFreq = 0;
@@ -139,7 +98,6 @@ namespace LoRaWanTest
                     break;
             }
 
-            List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
             Assert.Equal(RegionFactory.CreateUS915Region().GetDownstreamChannelFrequency(rxpk[0]), expFreq);
             Assert.Equal(RegionFactory.CreateUS915Region().GetDownstreamDR(rxpk[0]), expDatr);
         }
@@ -150,27 +108,7 @@ namespace LoRaWanTest
           [CombinatorialValues("SF8BW500")] string datr,
           [CombinatorialValues(903, 904.6, 906.2, 907.8, 909.4, 911, 912.6, 914.2)] double freq)
         {
-            string jsonUplink =
-                @"{ ""rxpk"":[
- 	            {
-		            ""time"":""2013-03-31T16:21:17.528002Z"",
- 		            ""tmst"":3512348611,
- 		            ""chan"":2,
- 		            ""rfch"":0,
- 		            ""freq"":" + freq + @",
- 		            ""stat"":1,
- 		            ""modu"":""LORA"",
- 		            ""datr"":""" + datr + @""",
- 		            ""codr"":""4/6"",
- 		            ""rssi"":-35,
- 		            ""lsnr"":5.1,
- 		            ""size"":32,
- 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
-                }]}";
-
-            var multiRxpkInput = Encoding.Default.GetBytes(jsonUplink);
-            byte[] physicalUpstreamPyld = new byte[12];
-            physicalUpstreamPyld[0] = 2;
+            List<Rxpk> rxpk = GenerateRxpk(datr, freq);
 
             // in EU in standard parameters the expectation is that the reply arrive at same place.
             double expFreq = 0;
@@ -207,9 +145,68 @@ namespace LoRaWanTest
                     break;
             }
 
-            List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
             Assert.Equal(RegionFactory.CreateUS915Region().GetDownstreamChannelFrequency(rxpk[0]), expFreq);
             Assert.Equal(RegionFactory.CreateUS915Region().GetDownstreamDR(rxpk[0]), expDatr);
+        }
+
+        private static List<Rxpk> GenerateRxpk(string datr, double freq)
+        {
+            string jsonUplink =
+                @"{ ""rxpk"":[
+ 	            {
+		            ""time"":""2013-03-31T16:21:17.528002Z"",
+ 		            ""tmst"":3512348611,
+ 		            ""chan"":2,
+ 		            ""rfch"":0,
+ 		            ""freq"":" + freq + @",
+ 		            ""stat"":1,
+ 		            ""modu"":""LORA"",
+ 		            ""datr"":""" + datr + @""",
+ 		            ""codr"":""4/6"",
+ 		            ""rssi"":-35,
+ 		            ""lsnr"":5.1,
+ 		            ""size"":32,
+ 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
+                }]}";
+
+            var multiRxpkInput = Encoding.Default.GetBytes(jsonUplink);
+            byte[] physicalUpstreamPyld = new byte[12];
+            physicalUpstreamPyld[0] = 2;
+            List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
+            return rxpk;
+        }
+
+        [Theory]
+        // freq, dr
+        [InlineData(800, "SF12BW125", LoRaRegion.EU868)]
+        [InlineData(1023, "SF8BW125", LoRaRegion.EU868)]
+        [InlineData(868.1, "SF0BW125", LoRaRegion.EU868)]
+        [InlineData(869.3, "SF32BW543", LoRaRegion.EU868)]
+        [InlineData(800, "SF0BW125", LoRaRegion.EU868)]
+        [InlineData(700, "SF10BW125", LoRaRegion.US915)]
+        [InlineData(1024, "SF8BW125", LoRaRegion.US915)]
+        [InlineData(915, "SF0BW125", LoRaRegion.US915)]
+        [InlineData(920, "SF30BW400", LoRaRegion.US915)]
+        public void EnsureRegionLimitTestAreWorking(double freq, string datarate, LoRaRegion region)
+        {
+            var rxpk = GenerateRxpk(datarate, freq);
+            if (region == LoRaRegion.EU868)
+            {
+                Assert.Throws<RegionLimitException>(() =>
+                {
+                    RegionFactory.CreateEU868Region().GetDownstreamChannelFrequency(rxpk[0]);
+                    RegionFactory.CreateEU868Region().GetDownstreamDR(rxpk[0]);
+                });
+            }
+
+            if (region == LoRaRegion.US915)
+            {
+                Assert.Throws<RegionLimitException>(() =>
+                {
+                    RegionFactory.CreateUS915Region().GetDownstreamChannelFrequency(rxpk[0]);
+                    RegionFactory.CreateUS915Region().GetDownstreamDR(rxpk[0]);
+                });
+            }
         }
     }
 }

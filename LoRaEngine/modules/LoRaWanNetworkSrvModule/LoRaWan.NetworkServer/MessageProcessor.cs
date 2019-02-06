@@ -515,7 +515,7 @@ namespace LoRaWan.NetworkServer
                     freq = this.loraRegion.GetDownstreamChannelFrequency(rxpk);
                     tmst = rxpk.Tmst + this.loraRegion.Receive_delay1 * 1000000;
                 }
-                catch (RegionMappingException ex)
+                catch (RegionLimitException ex)
                 {
                     Logger.Log(loRaDevice.DevEUI, ex.Message, LogLevel.Error);
                     return null;
@@ -711,7 +711,7 @@ namespace LoRaWan.NetworkServer
                         datr = this.loraRegion.GetDownstreamDR(rxpk);
                         freq = this.loraRegion.GetDownstreamChannelFrequency(rxpk);
                     }
-                    catch (Exception ex)
+                    catch (RegionLimitException ex)
                     {
                         Logger.Log(devEUI, ex.ToString(), LogLevel.Error);
                     }

@@ -3,12 +3,12 @@
 
 namespace LoRaTools.Regions
 {
-    using System;
-
     /// <summary>
-    /// Exception representing invalid region parameters
+    /// Enum defining different exception that could rise on a region
     /// </summary>
-    public class RegionMappingException : Exception
+    public enum RegionLimitExceptionType
     {
+        Datarate,
+        Frequency
     }
 }
