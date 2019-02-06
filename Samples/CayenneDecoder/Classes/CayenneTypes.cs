@@ -11,7 +11,7 @@ namespace CayenneDecoderModule.Classes
         DigitalOutput = 1,      // 1 byte
         AnalogInput = 2,      // 2 bytes, 0.01 signed
         AnalogOutput = 3,      // 2 bytes, 0.01 signed
-        Luminisity = 101,    // 2 bytes, 1 lux unsigned
+        Luminosity = 101,    // 2 bytes, 1 lux unsigned
         Presence = 102,    // 1 byte, 1
         Temperature = 103,    // 2 bytes, 0.1°C signed
         RelativeHumidity = 104,     // 1 byte, 0.5% unsigned
@@ -28,7 +28,7 @@ namespace CayenneDecoderModule.Classes
         DigitalOutput = 3,    // 1 byte
         AnalogInput = 4,     // 2 bytes, 0.01 signed
         AnalogOutput = 4,    // 2 bytes, 0.01 signed
-        Luminisity = 4,     // 2 bytes, 1 lux unsigned
+        Luminosity = 4,     // 2 bytes, 1 lux unsigned
         Presence = 3,     // 1 byte, 1
         Temperature = 4,     // 2 bytes, 0.1°C signed
         RelativeHumidity = 3,     // 1 byte, 0.5% unsigned

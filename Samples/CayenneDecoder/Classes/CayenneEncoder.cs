@@ -81,9 +81,9 @@ namespace CayenneDecoderModule.Classes
         public int AddLuminosity(byte channel, UInt16 lux)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, (int)CayenneTypeSize.Luminisity);
+            Array.Resize<byte>(ref buffer, (int)CayenneTypeSize.Luminosity);
             buffer[cursor++] = channel;
-            buffer[cursor++] = (byte)CayenneTypes.Luminisity;
+            buffer[cursor++] = (byte)CayenneTypes.Luminosity;
             buffer[cursor++] = (byte)((lux >> 8) & 0xFF);
             buffer[cursor++] = (byte)(lux & 0xFF);
 

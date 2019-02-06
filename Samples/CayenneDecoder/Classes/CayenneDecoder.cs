@@ -66,7 +66,7 @@ namespace CayenneDecoderModule.Classes
 
         public bool TryGetIlluminanceSensor(out IlluminanceSensor illuminanceSensor)
         {
-            var ret = GetOutValues(CayenneTypes.Luminisity);
+            var ret = GetOutValues(CayenneTypes.Luminosity);
             if (ret != null)
             {
                 illuminanceSensor = new IlluminanceSensor() { Channel = ret[0], Value = (UInt16)((ret[1] << 8) + ret[2]) };
