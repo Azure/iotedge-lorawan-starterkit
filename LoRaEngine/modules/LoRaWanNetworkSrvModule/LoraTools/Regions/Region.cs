@@ -250,7 +250,7 @@ namespace LoRaTools.Regions
                 }
                 else
                 {
-                    throw new Exception("Datarate in {0} region was not within the acceptable range of upstream datarates.");
+                    throw new RegionMappingException("Datarate in {0} region was not within the acceptable range of upstream datarates.");
                 }
             }
 
