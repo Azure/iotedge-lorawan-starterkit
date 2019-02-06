@@ -114,6 +114,9 @@ namespace LoRaTools
                         pointer += rXTimingSetup.Length;
                         this.MacCommand.Add(rXTimingSetup);
                         break;
+                    default:
+                        Logger.Log($"value {input[pointer]} as MAC command type is not recognized, aborting Mac command parsing", LogLevel.Error);
+                        return;
                 }
             }
         }
