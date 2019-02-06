@@ -13,10 +13,10 @@ After writing the code that decodes your message, your method should return a **
 
 ```cs
 internal static class LoraDecoders
-{   
+{
     private static string DecoderValueSensor(byte[] payload, uint fport)
     {
-        var result = Encoding.ASCII.GetString(payload);            
+        var result = Encoding.ASCII.GetString(payload);
         return JsonConvert.SerializeObject(new { value = result });
     }
 }
@@ -70,7 +70,7 @@ We provide the Dockerfiles for the following architectures:
 - [Dockerfile.amd64](/Samples/DecoderSample/Dockerfile.amd64)
 - [Dockerfile.arm32v7](/Samples/DecoderSample/Dockerfile.arm32v7)
 
-To build the Docker image, right-click on the [module.json](./module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image".
+To build the Docker image, right-click on the [module.json](./module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for (ARM32v7 or AMD64) from the drop-down menu.
 
 To **temporarily test** the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 80 to a free port on your host machine, like for example 8881.
 
