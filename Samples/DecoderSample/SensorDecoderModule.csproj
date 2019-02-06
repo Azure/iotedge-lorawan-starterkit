@@ -16,13 +16,4 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.2" PrivateAssets="All" />
   </ItemGroup>
 
-  <!-- StyleCop Setup -->
-  <ItemGroup>
-    <AdditionalFiles Include="../../stylecop.json" Link="stylecop.json" />
-  </ItemGroup>
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>../../stylecop.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <Import Project="../../stylecop.props" />
-
 </Project>
