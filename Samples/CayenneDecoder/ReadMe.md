@@ -10,10 +10,10 @@ This decode takes a Lora payload and decode it based on the [Cayenne encoding sp
 
 The payload is decoded and transformed into a json object.
 
-The payload ```AWcA/wJoIgNzJiIEZQTz``` will then be transformed as:
+The payload ```AWcA5gJoMANzJigEZQD9``` will then be transformed as:
 
 ```json
-{"value":{"IlluminanceSensor":{"Channel":4,"Value":1267},"TemperatureSensor":{"Channel":1,"Value":25.5},"HumiditySensor":{"Channel":2,"Value":17.0},"Barometer":{"Channel":3,"Value":976.2}}}
+{"value":{"IlluminanceSensor":{"Channel":4,"Value":253},"TemperatureSensor":{"Channel":1,"Value":23.0},"HumiditySensor":{"Channel":2,"Value":24.0},"Barometer":{"Channel":3,"Value":976.8}}}
 ```
 
 All Cayenne devices are supported.
