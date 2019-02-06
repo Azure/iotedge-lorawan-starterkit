@@ -45,7 +45,11 @@ namespace LoRaWan.Test.Shared
 
         public string AppEUI => this.LoRaDevice.AppEUI;
 
-        public string DevAddr => this.LoRaDevice.DevAddr;
+        public string DevAddr
+        {
+            get { return this.LoRaDevice.DevAddr; }
+            set { this.LoRaDevice.DevAddr = value; }
+        }
 
         public string DevEUI => this.LoRaDevice.DeviceID;
 

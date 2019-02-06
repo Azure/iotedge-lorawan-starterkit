@@ -18,11 +18,14 @@ namespace LoRaWan.NetworkServer
 
         public void Initialize(LoRaDevice loRaDevice)
         {
-            var isMultiGateway = !string.Equals(this.gatewayID, loRaDevice.GatewayID, StringComparison.InvariantCultureIgnoreCase);
-            var strategy = isMultiGateway ? this.frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy() : this.frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy();
-            if (strategy is ILoRaDeviceInitializer initializer)
+            if (loRaDevice.IsOurDevice)
             {
-                initializer.Initialize(loRaDevice);
+                var isMultiGateway = !string.Equals(this.gatewayID, loRaDevice.GatewayID, StringComparison.InvariantCultureIgnoreCase);
+                var strategy = isMultiGateway ? this.frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy() : this.frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy();
+                if (strategy is ILoRaDeviceInitializer initializer)
+                {
+                    initializer.Initialize(loRaDevice);
+                }
             }
         }
     }

@@ -11,10 +11,12 @@ namespace LoRaWan.NetworkServer
     public class LoRaDeviceFactory : ILoRaDeviceFactory
     {
         private readonly NetworkServerConfiguration configuration;
+        private readonly DefaultLoRaDataRequestHandler dataRequestHandler;
 
-        public LoRaDeviceFactory(NetworkServerConfiguration configuration)
+        public LoRaDeviceFactory(NetworkServerConfiguration configuration, DefaultLoRaDataRequestHandler dataRequestHandler)
         {
             this.configuration = configuration;
+            this.dataRequestHandler = dataRequestHandler;
         }
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
@@ -25,6 +27,9 @@ namespace LoRaWan.NetworkServer
                 devAddr: deviceInfo.DevAddr,
                 devEUI: deviceInfo.DevEUI,
                 loRaDeviceClient: loraDeviceClient);
+
+            if (this.dataRequestHandler != null)
+                loRaDevice.SetRequestHandler(this.dataRequestHandler);
 
             return loRaDevice;
         }
@@ -63,14 +68,14 @@ namespace LoRaWan.NetworkServer
                 // Enabling AMQP multiplexing
                 var transportSettings = new ITransportSettings[]
                 {
-                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-                {
-                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                    new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
                     {
-                        Pooling = true,
-                        MaxPoolSize = 1
+                        AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                        {
+                            Pooling = true,
+                            MaxPoolSize = 1
+                        }
                     }
-                }
                 };
 
                 var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, transportSettings);

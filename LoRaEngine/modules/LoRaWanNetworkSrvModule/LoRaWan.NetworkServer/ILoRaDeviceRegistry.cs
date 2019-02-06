@@ -19,6 +19,7 @@ namespace LoRaWan.NetworkServer
         // In order to handle a scenario where the network server is restarted and the fcntDown was not yet saved (we save every 10)
         // If device does not have gatewayid this will be handled by the service facade function (NextFCntDown)
         // 4. if (loraDeviceInfo.IsABP() && loraDeviceInfo.GatewayID != null && loraDeviceInfo was not read from cache)  device.FcntDown += 10;
+        [Obsolete("replaced by GetLoRaRequestQueue", true)]
         Task<LoRaDevice> GetDeviceForPayloadAsync(LoRaTools.LoRaMessage.LoRaPayloadData loraPayload);
 
         /// <summary>
@@ -40,5 +41,10 @@ namespace LoRaWan.NetworkServer
         /// Resets the device cache
         /// </summary>
         void ResetDeviceCache();
+
+        /// <summary>
+        /// Gets a <see cref="ILoRaDeviceRequestQueue"/> where requests can be queued
+        /// </summary>
+        ILoRaDeviceRequestQueue GetLoRaRequestQueue(LoRaRequest request);
     }
 }

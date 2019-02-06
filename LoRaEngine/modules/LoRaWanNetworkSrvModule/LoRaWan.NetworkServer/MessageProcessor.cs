@@ -19,6 +19,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Message processor
     /// </summary>
+    [Obsolete("replaced by MessageDispatcher", true)]
     public class MessageProcessor
     {
         // Defines Cloud to device message property containing fport value

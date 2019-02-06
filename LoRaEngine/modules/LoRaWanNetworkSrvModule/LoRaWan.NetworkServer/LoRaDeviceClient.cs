@@ -252,6 +252,27 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        /// <summary>
+        /// Disconnects device client
+        /// </summary>
+        public async Task<bool> DisconnectAsync()
+        {
+            try
+            {
+                await this.deviceClient.CloseAsync();
+                this.deviceClient = null;
+
+                Logger.Log(this.devEUI, $"device client disconnected", LogLevel.Debug);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(this.devEUI, $"could not disconnect device client with error: {ex.Message}", LogLevel.Error);
+                return false;
+            }
+        }
+
         public void Dispose()
         {
             this.deviceClient.Dispose();
