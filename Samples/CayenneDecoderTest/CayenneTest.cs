@@ -14,10 +14,10 @@ namespace CayenneDecoderTest
             byte channel = 1;
             cayenneEncoder.AddTemperature(channel, temp);
             var buff = cayenneEncoder.GetBuffer();
-            CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);            
+            CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetTemperatureSensor(out TemperatureSensor temperatureSensor);
-            Assert.True(temperatureSensor.Value == temp);
-            Assert.True(temperatureSensor.Channel == channel);
+            Assert.Equal(temperatureSensor.Value, temp);
+            Assert.Equal(temperatureSensor.Channel, channel);
         }
 
         [Fact]
@@ -30,8 +30,8 @@ namespace CayenneDecoderTest
             var buff = cayenneEncoder.GetBuffer();
             CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetDigitalInput(out DigitalInput digitalInput);
-            Assert.True(digitalInput.Value == temp);
-            Assert.True(digitalInput.Channel == channel);
+            Assert.Equal(digitalInput.Value, temp);
+            Assert.Equal(digitalInput.Channel, channel);
         }
 
         [Fact]
@@ -44,8 +44,8 @@ namespace CayenneDecoderTest
             var buff = cayenneEncoder.GetBuffer();
             CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetDigitalOutput(out DigitalOutput digitalOutput);
-            Assert.True(digitalOutput.Value == temp);
-            Assert.True(digitalOutput.Channel == channel);
+            Assert.Equal(digitalOutput.Value, temp);
+            Assert.Equal(digitalOutput.Channel, channel);
         }
 
         [Fact]
@@ -58,8 +58,8 @@ namespace CayenneDecoderTest
             var buff = cayenneEncoder.GetBuffer();
             CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetAnalogOutput(out AnalogOutput analogOutput);
-            Assert.True(analogOutput.Value == temp);
-            Assert.True(analogOutput.Channel == channel);
+            Assert.Equal(analogOutput.Value, temp);
+            Assert.Equal(analogOutput.Channel, channel);
         }
 
         [Fact]
@@ -72,8 +72,8 @@ namespace CayenneDecoderTest
             var buff = cayenneEncoder.GetBuffer();
             CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetAnalogInput(out AnalogInput analogInput);
-            Assert.True(analogInput.Value == temp);
-            Assert.True(analogInput.Channel == channel);
+            Assert.Equal(analogInput.Value, temp);
+            Assert.Equal(analogInput.Channel, channel);
         }
 
         [Fact]
@@ -86,8 +86,8 @@ namespace CayenneDecoderTest
             var buff = cayenneEncoder.GetBuffer();
             CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetIlluminanceSensor(out IlluminanceSensor illuminanceSensor);
-            Assert.True(illuminanceSensor.Value == temp);
-            Assert.True(illuminanceSensor.Channel == channel);
+            Assert.Equal(illuminanceSensor.Value, temp);
+            Assert.Equal(illuminanceSensor.Channel, channel);
         }
 
         [Fact]
@@ -100,8 +100,8 @@ namespace CayenneDecoderTest
             var buff = cayenneEncoder.GetBuffer();
             CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetPresenceSensor(out PresenceSensor presenceSensor);
-            Assert.True(presenceSensor.Value == temp);
-            Assert.True(presenceSensor.Channel == channel);
+            Assert.Equal(presenceSensor.Value, temp);
+            Assert.Equal(presenceSensor.Channel, channel);
         }
 
         [Fact]
@@ -114,8 +114,8 @@ namespace CayenneDecoderTest
             var buff = cayenneEncoder.GetBuffer();
             CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetHumiditySensor(out HumiditySensor humiditySensor);
-            Assert.True(humiditySensor.Value == temp);
-            Assert.True(humiditySensor.Channel == channel);
+            Assert.Equal(humiditySensor.Value, temp);
+            Assert.Equal(humiditySensor.Channel, channel);
         }
 
         [Fact]
@@ -128,8 +128,8 @@ namespace CayenneDecoderTest
             var buff = cayenneEncoder.GetBuffer();
             CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetBarometer(out Barometer barometer);
-            Assert.True(barometer.Value == temp);
-            Assert.True(barometer.Channel == channel);
+            Assert.Equal(barometer.Value, temp);
+            Assert.Equal(barometer.Channel, channel);
         }
 
         [Fact]
@@ -144,10 +144,10 @@ namespace CayenneDecoderTest
             var buff = cayenneEncoder.GetBuffer();
             CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetAccelerator(out Accelerator accelerator);
-            Assert.True(accelerator.X == x);
-            Assert.True(accelerator.Y == y);
-            Assert.True(accelerator.Z == z);
-            Assert.True(accelerator.Channel == channel);
+            Assert.Equal(accelerator.X, x);
+            Assert.Equal(accelerator.Y, y);
+            Assert.Equal(accelerator.Z, z);
+            Assert.Equal(accelerator.Channel, channel);
         }
 
         [Fact]
@@ -162,10 +162,10 @@ namespace CayenneDecoderTest
             var buff = cayenneEncoder.GetBuffer();
             CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetGyrometer(out Gyrometer gyrometer);
-            Assert.True(gyrometer.X == x);
-            Assert.True(gyrometer.Y == y);
-            Assert.True(gyrometer.Z == z);
-            Assert.True(gyrometer.Channel == channel);
+            Assert.Equal(gyrometer.X, x);
+            Assert.Equal(gyrometer.Y, y);
+            Assert.Equal(gyrometer.Z, z);
+            Assert.Equal(gyrometer.Channel, channel);
         }
 
         [Fact]
@@ -180,10 +180,10 @@ namespace CayenneDecoderTest
             var buff = cayenneEncoder.GetBuffer();
             CayenneDecoder cayenneDecoder = new CayenneDecoder(buff);
             cayenneDecoder.TryGetGPSLocation(out GPSLocation gPSLocation);
-            Assert.True(gPSLocation.Latitude == lat);
-            Assert.True(gPSLocation.Longitude == lon);
-            Assert.True(gPSLocation.Altitude == alt);
-            Assert.True(gPSLocation.Channel == channel);
+            Assert.Equal(gPSLocation.Latitude, lat);
+            Assert.Equal(gPSLocation.Longitude, lon);
+            Assert.Equal(gPSLocation.Altitude, alt);
+            Assert.Equal(gPSLocation.Channel, channel);
         }
     }
 }
