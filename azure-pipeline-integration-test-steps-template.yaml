@@ -40,6 +40,6 @@ steps:
   displayName: 'GitHub PR label (add ci-succeeded)'
   condition: and(and(succeeded(), eq(variables['Build.Reason'], 'PullRequest')), ne(variables['RunTestsOnly'], 'true'))
   inputs:
-    gitHubConnection: $(GitHubConnectionName)
+    gitHubConnection: kaizimmerm
     action: add
     label: 'ci-succeeded'
