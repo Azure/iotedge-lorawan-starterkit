@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 
 namespace CayenneDecoderModule.Classes
 {
+    /// <summary>
+    /// This enum is used to find the sensor type
+    /// The member names has to match with the CayenneTypeSize one
+    /// </summary>
     public enum CayenneTypes
     {
         DigitalInput = 0,       // 1 byte
@@ -21,6 +25,10 @@ namespace CayenneDecoderModule.Classes
         Gps = 136     // 3 byte lon/lat 0.0001 °, 3 bytes alt 0.01 meter
     }
 
+    /// <summary>
+    /// This enum is sued to find the size of the message for a specific sensor
+    /// The member names has to match with the CayenneTypes one
+    /// </summary>
     public enum CayenneTypeSize
     {
         // Data ID + Data Type + Data Size

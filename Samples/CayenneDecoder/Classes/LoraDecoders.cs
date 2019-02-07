@@ -10,7 +10,7 @@ namespace CayenneDecoderModule.Classes
             CayenneDecoder cayenneDecoder = new CayenneDecoder(payload);
 
             // Return a JSON string containing the decoded data
-            return JsonConvert.SerializeObject(new { value = cayenneDecoder.cayenneDevice });
+            return JsonConvert.SerializeObject(new { value = cayenneDecoder.CayenneDevice });
         }
     }
 }
