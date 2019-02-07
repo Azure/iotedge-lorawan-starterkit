@@ -88,9 +88,9 @@ the [Security TechCenter](https://technet.microsoft.com/en-us/security/default).
 An Azure deployment template is available to deploy all the required Azure infrastructure and get you started quickly.
 If you'd rather deploy it manually please jump directly into the [do it yourself section](/LoRaEngine).
 
-### Prequisites
+### Prerequisites
 
-Currently, the template work only with ARM based gateways, like a Raspberry Pi, support for x86 will be added in a future release. (you could actually already deploy it for intel by following the instructions in the [do it yourself section](/LoraEngine))
+Currently, the template work only with ARM based gateways, like a Raspberry Pi, support for x86 will be added in a future release. (you could actually already deploy it for Intel by following the instructions in the [do it yourself section](/LoraEngine))
 The template was tested to work on the following gateway types:
 
 - [Seeed Studio LoRa LoRaWAN Gateway - 868MHz/915MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
@@ -102,7 +102,7 @@ The LoRa device demo code in the Arduino folder is built only for Seeduino LoRaW
 
 ### Deployed Azure Infrastructure
 
-The template will deploy in your Azure subscription the Following ressources:
+The template will deploy in your Azure subscription the Following resources:
 
 - [IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
 - [Azure Function](https://azure.microsoft.com/en-us/services/functions/)
@@ -116,7 +116,7 @@ The template will deploy in your Azure subscription the Following ressources:
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
-2. You will get to a page asking you to fill the following fields :
+2. You will get to a page asking you to fill the following fields:
 
 - **Resource Group** - A logical "folder" where all the template resource would be put into, just choose a meaningful name.
 - **Location** - In which Datacenter the resources should be deployed.
@@ -126,7 +126,7 @@ The template will deploy in your Azure subscription the Following ressources:
 - **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
 - **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)
 
-  The deployment would take c.a. 10 minutes to complete.
+  The deployment would take _c.a._ 10 minutes to complete.
 
 3.  During this time, you can proceed to [install IoT Edge to your gateway](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm).
 
@@ -160,10 +160,10 @@ A LoRa device is a normal IoT Hub device with some specific device twin tags. Yo
 
 ### ABP (personalization) and OTAA (over the air) provisioning
 
-- Login in to the Azure portal go to IoT Hub -> IoT devices -> Add
-- Use the DeviceEUI as DeviceID -> Save
+- Login in to the Azure portal go to `IoT Hub` -> `IoT devices` -> `Add`
+- Use the `DeviceEUI` as `DeviceID` -> `Save`
 - Click on the newly created device
-- Click on Device Twin menu
+- Click on `Device Twin menu
 
 - Add the followings desired properties for OTAA:
 
@@ -236,7 +236,7 @@ It should look something like this for ABP:
 }
 ```
 
-- Click Save
+- Click `Save`
 - Turn on the device and you are ready to go
 
 ### Decoders
@@ -290,11 +290,11 @@ if the SensorDecoder tag has a "http" in it's string value, it will forward the 
 Due to the gateway caching the device information (tags) for 1 day, if the device tries to connect before you have provisioned it, it will not be able to connect because it will be considered a device for another LoRa network.
 To clear the cache and allow the device to connect follow these steps:
 
-- IoT Hub -> IoT Edge -> click on the device ID of your gateway
-- Click on LoRaWanNetworkSrvModule
-- Click Direct Method
+- `IoT Hub` -> `IoT Edge` -> click on the device ID of your gateway
+- Click on `LoRaWanNetworkSrvModule`
+- Click `Direct Method`
 - Type "ClearCache" on Method Name
-- Click Invoke Method
+- Click `Invoke Method`
 
 Alternatively you can restart the Gateway or the LoRaWanNetworkSrvModule container.
 
