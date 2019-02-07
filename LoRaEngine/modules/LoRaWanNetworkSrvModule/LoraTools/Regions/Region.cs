@@ -3,6 +3,7 @@
 
 namespace LoRaTools.Regions
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using LoRaTools.LoRaPhysical;
@@ -63,6 +64,20 @@ namespace LoRaTools.Regions
             { 6, 5, 4, 3, 2, 1 },
             { 7, 6, 5, 4, 3, 2 }
             };
+            List<string> euValidDataranges = new List<string>()
+            {
+                "SF12BW125", // 0
+                "SF11BW125", // 1
+                "SF10BW125", // 2
+                "SF9BW125", // 3
+                "SF8BW125", // 4
+                "SF7BW125", // 5
+                "SF7BW250", // 6
+                "50" // 7 FSK 50
+            };
+
+            EU868.RegionLimits = new RegionLimits((min: 863, max: 870), euValidDataranges);
+
             US915 = new Region(
                 LoRaRegion.US915,
                 0x34,
@@ -101,6 +116,22 @@ namespace LoRaTools.Regions
             { 13, 12, 11, 10 },
             { 13, 13, 12, 11 },
             };
+            List<string> usValidDataranges = new List<string>()
+            {
+                "SF10BW125", // 0
+                "SF9BW125", // 1
+                "SF8BW125", // 2
+                "SF7BW125", // 3
+                "SF8BW500", // 4
+                "SF12BW500", // 8
+                "SF11BW500", // 9
+                "SF10BW500", // 10
+                "SF9BW500", // 11
+                "SF8BW500", // 12
+                "SF8BW500" // 13
+            };
+
+            US915.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), usValidDataranges);
         }
 
         public LoRaRegion LoRaRegion { get; set; }
@@ -177,7 +208,12 @@ namespace LoRaTools.Regions
         /// </summary>
         public (uint min, uint max) Ack_timeout { get; set; }
 
-        public Region(LoRaRegion regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, uint datr) rX2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
+        /// <summary>
+        /// Gets or sets the limits on the region to ensure valid properties
+        /// </summary>
+        public RegionLimits RegionLimits { get; set; }
+
+        public Region(LoRaRegion regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, uint datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
         {
             this.LoRaRegion = regionEnum;
             this.Ack_timeout = ack_timeout;
@@ -185,7 +221,7 @@ namespace LoRaTools.Regions
             this.LoRaSyncWord = loRaSyncWord;
             this.GFSKSyncWord = gFSKSyncWord;
 
-            this.RX2DefaultReceiveWindows = rX2DefaultReceiveWindows;
+            this.RX2DefaultReceiveWindows = rx2DefaultReceiveWindows;
             this.Receive_delay1 = receive_delay1;
             this.Receive_delay2 = receive_delay2;
             this.Join_accept_delay1 = join_accept_delay1;
@@ -199,8 +235,9 @@ namespace LoRaTools.Regions
         /// Implement correct logic to get the correct transmission frequency based on the region.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
-        public double GetDownstreamChannel(Rxpk upstreamChannel)
+        public double GetDownstreamChannelFrequency(Rxpk upstreamChannel)
         {
+            this.EnsureValidRxpk(upstreamChannel);
             if (this.LoRaRegion == LoRaRegion.EU868)
             {
                 // in case of EU, you respond on same frequency as you sent data.
@@ -208,19 +245,20 @@ namespace LoRaTools.Regions
             }
             else if (this.LoRaRegion == LoRaRegion.US915)
             {
-                int channelNumber;
+                int upstreamChannelNumber;
+                // if DR4 the coding are different.
                 if (upstreamChannel.Datr == "SF8BW500")
                 {
                     // ==DR4
-                    channelNumber = 64 + (int)((upstreamChannel.Freq - 903) / 1.6);
+                    upstreamChannelNumber = 64 + (int)Math.Round((upstreamChannel.Freq - 903) / 1.6, 0);
                 }
                 else
                 {
                     // if not DR4 other encoding
-                    channelNumber = (int)((upstreamChannel.Freq - 902.3) / 0.2);
+                    upstreamChannelNumber = (int)((upstreamChannel.Freq - 902.3) / 0.2);
                 }
 
-                return 923.3 + channelNumber % 8 * 0.6;
+                return Math.Round(923.3 + upstreamChannelNumber % 8 * 0.6, 1);
             }
 
             return 0;
@@ -232,6 +270,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
         public string GetDownstreamDR(Rxpk upstreamChannel)
         {
+            this.EnsureValidRxpk(upstreamChannel);
             if (this.LoRaRegion == LoRaRegion.EU868)
             {
                 // in case of EU, you respond on same frequency as you sent data.
@@ -241,12 +280,48 @@ namespace LoRaTools.Regions
             {
                 var dr = this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == upstreamChannel.Datr).Key;
                 // TODO take care of rx1droffset
-                var (configuration, maxPyldSize) = this.DRtoConfiguration[10 - dr];
-                return configuration;
-                // return this.DRtoConfiguration[10-dr].configuration;
+                if (dr >= 0 && dr < 5)
+                {
+                    var (configuration, maxPyldSize) = dr != 4 ? this.DRtoConfiguration[10 + dr] : this.DRtoConfiguration[13];
+                    return configuration;
+                }
+                else
+                {
+                    throw new RegionLimitException($"Datarate {upstreamChannel.Datr} in {this.LoRaRegion} region was not within the acceptable range of upstream datarates.", RegionLimitExceptionType.Datarate);
+                }
             }
 
             return null;
+        }
+
+        private void EnsureValidRxpk(Rxpk rxpk)
+        {
+            if (this.LoRaRegion == LoRaRegion.EU868)
+            {
+                if (rxpk.Freq < EU868.RegionLimits.FrequencyRange.min ||
+                    rxpk.Freq > EU868.RegionLimits.FrequencyRange.max)
+                {
+                    throw new RegionLimitException($"Frequency {rxpk.Freq} in {this.LoRaRegion} region was not within the acceptable range of frequencies.", RegionLimitExceptionType.Frequency);
+                }
+
+                if (!EU868.RegionLimits.DatarateRange.Contains(rxpk.Datr))
+                {
+                    throw new RegionLimitException($"Datarate {rxpk.Datr} in {this.LoRaRegion} region was not within the acceptable range of upstream datarates.", RegionLimitExceptionType.Datarate);
+                }
+            }
+            else if (this.LoRaRegion == LoRaRegion.US915)
+            {
+                if (rxpk.Freq < US915.RegionLimits.FrequencyRange.min ||
+                    rxpk.Freq > US915.RegionLimits.FrequencyRange.max)
+                {
+                    throw new RegionLimitException($"Frequency {rxpk.Freq} in {this.LoRaRegion} region was not within the acceptable range of frequencies.", RegionLimitExceptionType.Frequency);
+                }
+
+                if (!US915.RegionLimits.DatarateRange.Contains(rxpk.Datr))
+                {
+                    throw new RegionLimitException($"Datarate {rxpk.Datr} in {this.LoRaRegion} region was not within the acceptable range of upstream datarates.", RegionLimitExceptionType.Datarate);
+                }
+            }
         }
     }
 }

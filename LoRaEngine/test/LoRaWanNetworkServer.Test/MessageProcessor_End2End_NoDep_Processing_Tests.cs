@@ -584,7 +584,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.NotNull(confirmedMessageResult.Txpk);
 
             // validates txpk according to eu region
-            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(rxpk), confirmedMessageResult.Txpk.Freq);
+            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannelFrequency(rxpk), confirmedMessageResult.Txpk.Freq);
             Assert.Equal("4/5", confirmedMessageResult.Txpk.Codr);
             Assert.False(confirmedMessageResult.Txpk.Imme);
             Assert.True(confirmedMessageResult.Txpk.Ipol);
@@ -748,7 +748,7 @@ namespace LoRaWan.NetworkServer.Test
             var confirmedMessageResult = await messageProcessor.ProcessMessageAsync(rxpk);
             Assert.NotNull(confirmedMessageResult);
             Assert.Equal(0U, confirmedMessageResult.Txpk.Rfch);
-            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannel(rxpk), confirmedMessageResult.Txpk.Freq);
+            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannelFrequency(rxpk), confirmedMessageResult.Txpk.Freq);
             Assert.Equal("4/5", confirmedMessageResult.Txpk.Codr);
             Assert.False(confirmedMessageResult.Txpk.Imme);
             Assert.True(confirmedMessageResult.Txpk.Ipol);
