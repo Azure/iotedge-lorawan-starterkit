@@ -13,7 +13,7 @@ The payload is decoded and transformed into a json object.
 The payload ```AWcA5gJoMANzJigEZQD9``` will then be transformed as:
 
 ```json
-{"value":{"IlluminanceSensor":{"Channel":4,"Value":253},"TemperatureSensor":{"Channel":1,"Value":23.0},"HumiditySensor":{"Channel":2,"Value":24.0},"Barometer":{"Channel":3,"Value":976.8}}}
+{"value":{"IlluminanceSensor":[{"Channel":4,"Value":253}],"TemperatureSensor":[{"Channel":1,"Value":23.0}],"HumiditySensor":[{"Channel":2,"Value":24.0}],"Barometer":[{"Channel":3,"Value":976.8}]}}
 ```
 
 All Cayenne devices are supported.

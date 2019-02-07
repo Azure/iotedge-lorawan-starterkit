@@ -10,218 +10,149 @@ namespace CayenneDecoderModule.Classes
     {
 
         byte[] buffer;
+        public CayenneDevice cayenneDevice { get; internal set; }
 
         public CayenneDecoder(byte[] payload)
         {
             buffer = payload;
+            cayenneDevice = new CayenneDevice();
+            ExtractAllDevices();
         }
 
-        public bool TryGetDigitalInput(out DigitalInput digitalInput)
+        private void ExtractAllDevices()
         {
-            var ret = GetOutValues(CayenneTypes.DigitalInput);
-            if (ret != null)
-            {
-                digitalInput = new DigitalInput() { Channel = ret[0], Value = ret[1] };
-                return true;
-            }
-            digitalInput = null;
-            return false;
-        }
-
-        public bool TryGetDigitalOutput(out DigitalOutput digitalOutput)
-        {
-            var ret = GetOutValues(CayenneTypes.DigitalOutput);
-            if (ret != null)
-            {
-                digitalOutput = new DigitalOutput() { Channel = ret[0], Value = ret[1] };
-                return true;
-            }
-            digitalOutput = null;
-            return false;
-        }
-
-        public bool TryGetAnalogInput(out AnalogInput analogInput)
-        {
-            var ret = GetOutValues(CayenneTypes.AnalogInput);
-            if (ret != null)
-            {
-                analogInput = new AnalogInput() { Channel = ret[0], Value = ((Int16)(ret[1] << 8) + ret[2]) / 100.0 };
-                return true;
-            }
-            analogInput = null;
-            return false;
-        }
-
-        public bool TryGetAnalogOutput(out AnalogOutput analogOutput)
-        {
-            var ret = GetOutValues(CayenneTypes.AnalogOutput);
-            if (ret != null)
-            {
-                analogOutput = new AnalogOutput() { Channel = ret[0], Value = ((Int16)(ret[1] << 8) + ret[2]) / 100.0 };
-                return true;
-            }
-            analogOutput = null;
-            return false;
-        }
-
-        public bool TryGetIlluminanceSensor(out IlluminanceSensor illuminanceSensor)
-        {
-            var ret = GetOutValues(CayenneTypes.Luminosity);
-            if (ret != null)
-            {
-                illuminanceSensor = new IlluminanceSensor() { Channel = ret[0], Value = (UInt16)((ret[1] << 8) + ret[2]) };
-                return true;
-            }
-            illuminanceSensor = null;
-            return false;
-        }
-
-        public bool TryGetPresenceSensor(out PresenceSensor presenceSensor)
-        {
-            var ret = GetOutValues(CayenneTypes.Presence);
-            if (ret != null)
-            {
-                presenceSensor = new PresenceSensor() { Channel = ret[0], Value = ret[1] };
-                return true;
-            }
-            presenceSensor = null;
-            return false;
-        }
-
-        public bool TryGetTemperatureSensor(out TemperatureSensor temperatureSensor)
-        {
-            var ret = GetOutValues(CayenneTypes.Temperature);
-            if (ret != null)
-            {
-                temperatureSensor = new TemperatureSensor() { Channel = ret[0], Value = ((Int16)(ret[1] << 8) + ret[2]) / 10.0 };
-                return true;
-            }
-            temperatureSensor = null;
-            return false;
-        }
-
-        public bool TryGetHumiditySensor(out HumiditySensor humiditySensor)
-        {
-            var ret = GetOutValues(CayenneTypes.RelativeHumidity);
-            if (ret != null)
-            {
-                humiditySensor = new HumiditySensor() { Channel = ret[0], Value = ret[1] / 2.0 };
-                return true;
-            }
-            humiditySensor = null;
-            return false;
-        }
-
-        public bool TryGetAccelerator(out Accelerator accelerator)
-        {
-            var ret = GetOutValues(CayenneTypes.Accelerator);
-            if (ret != null)
-            {
-                accelerator = new Accelerator()
-                {
-                    Channel = ret[0],
-                    X = ((Int16)(ret[1] << 8) + ret[2]) / 1000.0,
-                    Y = ((Int16)(ret[3] << 8) + ret[4]) / 1000.0,
-                    Z = ((Int16)(ret[5] << 8) + ret[6]) / 1000.0
-                };
-                return true;
-            }
-            accelerator = null;
-            return false;
-        }
-
-        public bool TryGetBarometer(out Barometer barometer)
-        {
-            var ret = GetOutValues(CayenneTypes.Barometer);
-            if (ret != null)
-            {
-                barometer = new Barometer() { Channel = ret[0], Value = ((ret[1] << 8) + ret[2]) / 10.0 };
-                return true;
-            }
-            barometer = null;
-            return false;
-        }
-
-        public bool TryGetGyrometer(out Gyrometer gyrometer)
-        {
-            var ret = GetOutValues(CayenneTypes.Gyrometer);
-            if (ret != null)
-            {
-                gyrometer = new Gyrometer()
-                {
-                    Channel = ret[0],
-                    X = ((Int16)(ret[1] << 8) + ret[2]) / 100.0,
-                    Y = ((Int16)(ret[3] << 8) + ret[4]) / 100.0,
-                    Z = ((Int16)(ret[5] << 8) + ret[6]) / 100.0
-                };
-                return true;
-            }
-            gyrometer = null;
-            return false;
-        }
-
-        public bool TryGetGPSLocation(out GPSLocation gPSLocation)
-        {
-            var ret = GetOutValues(CayenneTypes.Gps);
-            if (ret != null)
-            {
-                gPSLocation = new GPSLocation();
-
-                gPSLocation.Channel = ret[0];
-                double sign = 1.0;
-                if ((ret[1] & 0x80) == 0x80)
-                {
-                    ret[1] = (byte)(ret[1] & 0x7F);
-                    sign = -1.0;
-                }
-                gPSLocation.Latitude = sign * ((ret[1] << 16) + (ret[2] << 8) + ret[3]) / 10000.0;
-                sign = 1.0;
-                if ((ret[4] & 0x80) == 0x80)
-                {
-                    ret[4] = (byte)(ret[4] & 0x7F);
-                    sign = -1.0;
-                }
-                gPSLocation.Longitude = sign * ((ret[4] << 16) + (ret[5] << 8) + ret[6]) / 10000.0;
-                sign = 1.0;
-                if ((ret[7] & 0x80) == 0x80)
-                {
-                    ret[7] = (byte)(ret[7] & 0x7F);
-                    sign = -1.0;
-                }
-                gPSLocation.Altitude = sign * ((ret[7] << 16) + (ret[8] << 8) + ret[9]) / 100.0;
-                return true;
-            }
-            gPSLocation = null;
-            return false;
-        }
-
-        private byte[] GetOutValues(CayenneTypes cayenneTypes)
-        {
-            byte[] outArray = null;
             byte channel = 0;
             int cursor = 0;
             try
             {
-                while (cursor != buffer.Length)
+                foreach (var cayenneTypes in Enum.GetValues(typeof(CayenneTypes)))
                 {
-                    channel = buffer[cursor++];
-                    var type = buffer[cursor++];
-                    var size = (byte)Enum.Parse<CayenneTypeSize>(Enum.GetName(typeof(CayenneTypes), type));
-                    if (type == (byte)cayenneTypes)
+                    while (cursor != buffer.Length)
                     {
-                        // found what we want to decode
-                        outArray = new byte[size - 1];
-                        outArray[0] = channel;
-                        Array.Copy(buffer, cursor, outArray, 1, outArray.Length - 1);
-                        return outArray;
-                    }
-                    cursor += size - 2;
-                }
+                        channel = buffer[cursor++];
+                        var type = buffer[cursor++];
+                        var size = (byte)Enum.Parse<CayenneTypeSize>(Enum.GetName(typeof(CayenneTypes), type));
 
+                        switch ((CayenneTypes)type)
+                        {
+                            case CayenneTypes.DigitalInput:
+                                var digitalInput = new DigitalInput() { Channel = channel, Value = buffer[cursor] };
+                                if (cayenneDevice.DigitalInput == null)
+                                    cayenneDevice.DigitalInput = new List<DigitalInput>();
+                                cayenneDevice.DigitalInput.Add(digitalInput);
+                                break;
+                            case CayenneTypes.DigitalOutput:
+                                var digitalOutput = new DigitalOutput() { Channel = channel, Value = buffer[cursor] };
+                                if (cayenneDevice.DigitaOutput == null)
+                                    cayenneDevice.DigitaOutput = new List<DigitalOutput>();
+                                cayenneDevice.DigitaOutput.Add(digitalOutput);
+                                break;
+                            case CayenneTypes.AnalogInput:
+                                var analogInput = new AnalogInput() { Channel = channel, Value = ((Int16)(buffer[cursor] << 8) + buffer[cursor + 1]) / 100.0 };
+                                if (cayenneDevice.AnalogInput == null)
+                                    cayenneDevice.AnalogInput = new List<AnalogInput>();
+                                cayenneDevice.AnalogInput.Add(analogInput);
+                                break;
+                            case CayenneTypes.AnalogOutput:
+                                var analogOutput = new AnalogOutput() { Channel = channel, Value = ((Int16)(buffer[cursor] << 8) + buffer[cursor + 1]) / 100.0 };
+                                if (cayenneDevice.AnalogOutput == null)
+                                    cayenneDevice.AnalogOutput = new List<AnalogOutput>();
+                                cayenneDevice.AnalogOutput.Add(analogOutput);
+                                break;
+                            case CayenneTypes.Luminosity:
+                                var illuminanceSensor = new IlluminanceSensor() { Channel = channel, Value = (UInt16)((buffer[cursor] << 8) + buffer[cursor + 1]) };
+                                if (cayenneDevice.IlluminanceSensor == null)
+                                    cayenneDevice.IlluminanceSensor = new List<IlluminanceSensor>();
+                                cayenneDevice.IlluminanceSensor.Add(illuminanceSensor);
+                                break;
+                            case CayenneTypes.Presence:
+                                var presenceSensor = new PresenceSensor() { Channel = channel, Value = buffer[cursor] };
+                                if (cayenneDevice.PresenceSensor == null)
+                                    cayenneDevice.PresenceSensor = new List<PresenceSensor>();
+                                cayenneDevice.PresenceSensor.Add(presenceSensor);
+                                break;
+                            case CayenneTypes.Temperature:
+                                var temperatureSensor = new TemperatureSensor() { Channel = channel, Value = ((Int16)(buffer[cursor] << 8) + buffer[cursor + 1]) / 10.0 };
+                                if (cayenneDevice.TemperatureSensor == null)
+                                    cayenneDevice.TemperatureSensor = new List<TemperatureSensor>();
+                                cayenneDevice.TemperatureSensor.Add(temperatureSensor);
+                                break;
+                            case CayenneTypes.RelativeHumidity:
+                                var humiditySensor = new HumiditySensor() { Channel = channel, Value = buffer[cursor] / 2.0 };
+                                if (cayenneDevice.HumiditySensor == null)
+                                    cayenneDevice.HumiditySensor = new List<HumiditySensor>();
+                                cayenneDevice.HumiditySensor.Add(humiditySensor);
+                                break;
+                            case CayenneTypes.Accelerator:
+                                var accelerator = new Accelerator()
+                                {
+                                    Channel = channel,
+                                    X = ((Int16)(buffer[cursor] << 8) + buffer[cursor + 1]) / 1000.0,
+                                    Y = ((Int16)(buffer[cursor + 2] << 8) + buffer[cursor + 3]) / 1000.0,
+                                    Z = ((Int16)(buffer[cursor + 4] << 8) + buffer[cursor + 5]) / 1000.0
+                                };
+                                if (cayenneDevice.Accelerator == null)
+                                    cayenneDevice.Accelerator = new List<Accelerator>();
+                                cayenneDevice.Accelerator.Add(accelerator);
+                                break;
+                            case CayenneTypes.Barometer:
+                                var barometer = new Barometer() { Channel = channel, Value = ((buffer[cursor] << 8) + buffer[cursor + 1]) / 10.0 };
+                                if (cayenneDevice.Barometer == null)
+                                    cayenneDevice.Barometer = new List<Barometer>();
+                                cayenneDevice.Barometer.Add(barometer);
+                                break;
+                            case CayenneTypes.Gyrometer:
+                                var gyrometer = new Gyrometer()
+                                {
+                                    Channel = channel,
+                                    X = ((Int16)(buffer[cursor] << 8) + buffer[cursor + 1]) / 100.0,
+                                    Y = ((Int16)(buffer[cursor + 2] << 8) + buffer[cursor + 3]) / 100.0,
+                                    Z = ((Int16)(buffer[cursor + 4] << 8) + buffer[cursor + 5]) / 100.0
+                                };
+                                if (cayenneDevice.Gyrometer == null)
+                                    cayenneDevice.Gyrometer = new List<Gyrometer>();
+                                cayenneDevice.Gyrometer.Add(gyrometer);
+                                break;
+                            case CayenneTypes.Gps:
+                                var gPSLocation = new GPSLocation();
+
+                                gPSLocation.Channel = channel;
+                                double sign = 1.0;
+                                if ((buffer[cursor] & 0x80) == 0x80)
+                                {
+                                    buffer[cursor] = (byte)(buffer[cursor] & 0x7F);
+                                    sign = -1.0;
+                                }
+                                gPSLocation.Latitude = sign * ((buffer[cursor] << 16) + (buffer[cursor + 1] << 8) + buffer[cursor + 2]) / 10000.0;
+                                sign = 1.0;
+                                if ((buffer[cursor + 3] & 0x80) == 0x80)
+                                {
+                                    buffer[cursor + 3] = (byte)(buffer[cursor + 3] & 0x7F);
+                                    sign = -1.0;
+                                }
+                                gPSLocation.Longitude = sign * ((buffer[cursor + 3] << 16) + (buffer[cursor + 4] << 8) + buffer[cursor + 5]) / 10000.0;
+                                sign = 1.0;
+                                if ((buffer[cursor + 6] & 0x80) == 0x80)
+                                {
+                                    buffer[cursor + 6] = (byte)(buffer[cursor + 6] & 0x7F);
+                                    sign = -1.0;
+                                }
+                                gPSLocation.Altitude = sign * ((buffer[cursor + 6] << 16) + (buffer[cursor + 7] << 8) + buffer[cursor + 8]) / 100.0;
+                                if (cayenneDevice.GPSLocation == null)
+                                    cayenneDevice.GPSLocation = new List<GPSLocation>();
+                                cayenneDevice.GPSLocation.Add(gPSLocation);
+                                break;
+                            default:
+                                break;
+                        }
+                        cursor += size - 2;
+                    }
+                }
             }
             catch (Exception)
             { }
-            return outArray;
         }
     }
+
+
 }
