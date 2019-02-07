@@ -39,7 +39,7 @@ If you want to update a LoRa Gateway running our software 0.2.0-preview to the c
 
 ## Current limitations
 
-- Multigateway works but is not fully tested and you need to implement message deduplication after IoT Hub, if multiples gateways are used in the same range of the device we recommend setting the gateway tag "GatewayID" on the device twins with the IoT Edge ID of the preferred gateway for that device.
+- We support multigateway but currently you need to implement message deduplication after IoT Hub, if multiples gateways are used in the same range of the device and you don't want duplicate messages or redundancy we recommend setting the gateway tag "GatewayID" on the device twins with the IoT Edge ID of the preferred gateway for that device.
 - No Class B and C
 - No ADR
 - Tested only for EU868 and US915 frequency
@@ -53,6 +53,7 @@ If you want to update a LoRa Gateway running our software 0.2.0-preview to the c
 
 - [Seeed Studio LoRa LoRaWAN Gateway - 868MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
 - [AAEON AIOT-ILRA01 LoRa® Certified Intel® Based Gateway and Network Server](https://www.aaeon.com/en/p/intel-lora-gateway-system-server)
+- [AAEON Indoor 4G LoRaWAN Edge Gateway & Network Server](https://www.industrialgateways.eu/UPS-IoT-EDGE-LoRa)
 - [MyPi Industrial IoT Integrator Board](http://www.embeddedpi.com/integrator-board) with [RAK833-SPI mPCIe-LoRa-Concentrator](http://www.embeddedpi.com/iocards)
 - Raspberry Pi 3 with [IC880A](https://wireless-solutions.de/products/radiomodules/ic880a.html)
 - [RAK833-USB mPCIe-LoRa-Concentrator with Raspberry Pi 3](/Docs/LoRaWanPktFwdRAK833USB)
