@@ -90,13 +90,9 @@ If you'd rather deploy it manually please jump directly into the [do it yourself
 
 ### Prequisites
 
-Currently, the template work only with ARM based gateways, like a Raspberry Pi, support for x86 will be added in a future release. (you could actually already deploy it for intel by following the instructions in the [do it yourself section](/LoraEngine))
-The template was tested to work on the following gateway types:
+The template supports now x86 and arm architectures and will automatically deploy the correct version to your gateway. Make sure to provide your gateway's reset pin in the dialog before the deployment.
 
-- [Seeed Studio LoRa LoRaWAN Gateway - 868MHz/915MHz Kit with Raspberry Pi 3](https://www.seeedstudio.com/LoRa-LoRaWAN-Gateway-868MHz-Kit-with-Raspberry-Pi-3-p-2823.html)
-- [IC880A](https://wireless-solutions.de/products/radiomodules/ic880a.html)
-
-If you want to use the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in this [submodule](/Docs/LoRaWanPktFwdRAK833USB).
+Additionally, if your gateway use SPI_DEV version 1 the packet forwarder module will not work out-of-the-box. To fix this, simply add an environment variable 'SPI_DEV' set to the value 1 to the LoRaWanPktFwdModule module (SPI_DEV is set to 2 by default).
 
 The LoRa device demo code in the Arduino folder is built only for Seeduino LoRaWan board and was not test with other Arduino LoRa boards.
 
