@@ -21,7 +21,7 @@
           "edgeAgent": {
             "type": "docker",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-agent:$EDGE_AGENT_VERSION",
+              "image": "mcr.microsoft.com/azureiotedge-agent:1.0.6",
               "createOptions": ""
             }
           },
@@ -30,7 +30,7 @@
             "status": "running",
             "restartPolicy": "always",
             "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-hub:$EDGE_HUB_VERSION",
+              "image": "mcr.microsoft.com/azureiotedge-hub:1.0.6",
               "createOptions": {
                 "HostConfig": {
                   "PortBindings": {
@@ -50,13 +50,16 @@
             },
             "env": {
               "OptimizeForPerformance": {
-                "value": "$EDGEHUB_OPTIMIZEFORPERFORMANCE"
+                "value": "false"
               },
               "mqttSettings__enabled": {
-                "value": "$EDGEHUB_MQTTSETTINGS_ENABLED"
+                "value": "false"
               },
               "httpSettings__enabled": {
-                "value": "$EDGEHUB_HTTPSETTINGS_ENABLED"
+                "value": "false"
+              },
+              "TwinManagerVersion": {
+                "value": "v2"
               }
             }
           }
