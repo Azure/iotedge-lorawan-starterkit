@@ -356,4 +356,4 @@ This repository is licensed with the [MIT](LICENSE) license.
 
 ## Contributing
 
-If you would like to contribute to the IoT Edge LoRaWAN Starter Kit source code, please base your own branch and pull request (PR) off our [DEV branch](./tree/dev).
+If you would like to contribute to the IoT Edge LoRaWAN Starter Kit source code, please base your own branch and pull request (PR) off our [DEV branch](/tree/dev).
