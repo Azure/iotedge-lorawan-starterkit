@@ -4,7 +4,7 @@ iot hub ABP Desired properties for deviceid: 46AAC86800430028
     "desired": {
     "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
     "NwkSKey": "3B7E151628AED2A6ABF7158809CF4F3C",
-    "DevAddr": "0028B1B1",
+    "DevAddr": "0228B1B1",
     "GatewayID" :"",
     "SensorDecoder" :"DecoderValueSensor"
     },
@@ -76,7 +76,7 @@ void configLoraOTAAWrongDevEUI(void)
 void configLoraABP(void)
 {
    deviceId ="46AAC86800430028";
-   devAddr ="0028B1B1";
+   devAddr ="0228B1B1";
    appSKey ="2B7E151628AED2A6ABF7158809CF4F3C";
    nwkSKey ="3B7E151628AED2A6ABF7158809CF4F3C";
    lora.setDeciveMode(LWABP);

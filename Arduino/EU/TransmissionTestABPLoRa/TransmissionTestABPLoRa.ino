@@ -14,7 +14,7 @@ char * nwkSKey = "3B7E151628AED2A6ABF7158809CF4F3C";
     "desired": {
     "AppSKey": "2B7E151628AED2A6ABF7158809CF4F3C",
     "NwkSKey": "3B7E151628AED2A6ABF7158809CF4F3C",
-    "DevAddr": "0028B1B1",
+    "DevAddr": "0228B1B1",
     "GatewayID" :"",
     "SensorDecoder" :"DecoderValueSensor"
     },
