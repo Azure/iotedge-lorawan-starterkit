@@ -44,7 +44,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 loRaDeviceRegistryMock.Object,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -89,7 +89,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 loRaDeviceRegistryMock.Object,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -155,7 +155,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 loRaDeviceRegistryMock.Object,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -201,7 +201,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 loRaDeviceRegistryMock.Object,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -246,7 +246,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 loRaDeviceRegistryMock.Object,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -288,7 +288,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 loRaDeviceRegistryMock.Object,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -353,7 +353,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -407,7 +407,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);

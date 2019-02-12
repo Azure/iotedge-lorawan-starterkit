@@ -96,7 +96,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello", fcnt: payloadFcntUp);
@@ -176,7 +176,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
@@ -235,7 +235,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
@@ -296,7 +296,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
@@ -356,7 +356,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                this.ServerConfiguration,
                deviceRegistry,
-               this.FrameCounterUpdateStrategyFactory);
+               this.FrameCounterUpdateStrategyProvider);
 
             var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrl: (byte)FctrlEnum.Ack);
             var ackRxpk = ackMessage.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -411,7 +411,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("repeat", fcnt: 100);
@@ -511,7 +511,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                this.ServerConfiguration,
                deviceRegistry,
-               this.FrameCounterUpdateStrategyFactory);
+               this.FrameCounterUpdateStrategyProvider);
 
             // Unconfirmed message #1 should fail
             var unconfirmedRxpk1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1)
@@ -581,7 +581,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
             var messagePayload = simulatedDevice.CreateConfirmedDataUpMessage("1234");
@@ -642,7 +642,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello");
@@ -703,7 +703,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // send 1st unconfirmed message, get twin will fail
             var unconfirmedMessage1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
@@ -787,7 +787,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // first message should fail
             const int firstMessageFcnt = 3;
@@ -854,7 +854,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // message should not be processed
             var request = this.CreateWaitableRequest(simulatedDevice.CreateUnconfirmedMessageUplink("1234").Rxpk[0]);
@@ -935,7 +935,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends confirmed message
             var firstMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("repeat", fcnt: deviceInitialFcntUp + 1);
@@ -1007,7 +1007,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message #1
             var unconfirmedMessagePayload1 = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
@@ -1095,7 +1095,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message #1
             var unconfirmedMessagePayload1 = simulatedDevice1.CreateUnconfirmedDataUpMessage("1", fcnt: payloadFcntUp);
@@ -1212,7 +1212,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message #1
             var unconfirmedMessagePayload1 = simulatedDevice1.CreateUnconfirmedDataUpMessage("1", fcnt: payloadFcntUp);

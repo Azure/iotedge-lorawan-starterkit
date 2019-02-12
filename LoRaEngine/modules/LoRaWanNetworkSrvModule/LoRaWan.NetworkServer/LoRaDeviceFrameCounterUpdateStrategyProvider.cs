@@ -3,12 +3,12 @@
 
 namespace LoRaWan.NetworkServer
 {
-    public class LoRaDeviceFrameCounterUpdateStrategyFactory : ILoRaDeviceFrameCounterUpdateStrategyFactory
+    public class LoRaDeviceFrameCounterUpdateStrategyProvider : ILoRaDeviceFrameCounterUpdateStrategyProvider
     {
         private readonly MultiGatewayFrameCounterUpdateStrategy multiGateway;
         private readonly SingleGatewayFrameCounterUpdateStrategy singleGateway;
 
-        public LoRaDeviceFrameCounterUpdateStrategyFactory(string gatewayID, LoRaDeviceAPIServiceBase loRaDeviceAPIService)
+        public LoRaDeviceFrameCounterUpdateStrategyProvider(string gatewayID, LoRaDeviceAPIServiceBase loRaDeviceAPIService)
         {
             this.multiGateway = new MultiGatewayFrameCounterUpdateStrategy(gatewayID, loRaDeviceAPIService);
             this.singleGateway = new SingleGatewayFrameCounterUpdateStrategy();

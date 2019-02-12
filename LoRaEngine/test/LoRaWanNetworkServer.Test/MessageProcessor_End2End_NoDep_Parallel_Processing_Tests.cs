@@ -169,7 +169,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
             var unconfirmedMessage1 = simulatedDevice.CreateUnconfirmedMessageUplink("1", fcnt: 1).Rxpk[0];
@@ -342,7 +342,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var device1Messages = await this.SendMessages(device1, messageDispatcher, payloadInitialFcnt, delayBetweenMessages);
             var device2Messages = await this.SendMessages(device2, messageDispatcher, payloadInitialFcnt, delayBetweenMessages);

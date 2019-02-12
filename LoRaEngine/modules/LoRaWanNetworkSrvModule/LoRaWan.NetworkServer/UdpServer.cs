@@ -69,18 +69,18 @@ namespace LoRaWan.NetworkServer
 
 #if USING_MSG_DISPATCHER
             var loRaDeviceAPIService = new LoRaDeviceAPIService(configuration, new ServiceFacadeHttpClientProvider(configuration, ApiVersion.LatestVersion));
-            var frameCounterStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(configuration.GatewayID, loRaDeviceAPIService);
-            var dataHandlerImplementation = new DefaultLoRaDataRequestHandler(configuration, frameCounterStrategyFactory, new LoRaPayloadDecoder());
+            var frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(configuration.GatewayID, loRaDeviceAPIService);
+            var dataHandlerImplementation = new DefaultLoRaDataRequestHandler(configuration, frameCounterStrategyProvider, new LoRaPayloadDecoder());
             var loRaDeviceFactory = new LoRaDeviceFactory(configuration, dataHandlerImplementation);
             var loRaDeviceRegistry = new LoRaDeviceRegistry(configuration, new MemoryCache(new MemoryCacheOptions()), loRaDeviceAPIService, loRaDeviceFactory);
-            var messageDispatcher = new MessageDispatcher(configuration, loRaDeviceRegistry, frameCounterStrategyFactory);
+            var messageDispatcher = new MessageDispatcher(configuration, loRaDeviceRegistry, frameCounterStrategyProvider);
             return new UdpServer(configuration, messageDispatcher, loRaDeviceAPIService, loRaDeviceRegistry);
 #else
             var loRaDeviceFactory = new LoRaDeviceFactory(configuration, null);
             var loRaDeviceAPIService = new LoRaDeviceAPIService(configuration, new ServiceFacadeHttpClientProvider(configuration, ApiVersion.LatestVersion));
             var loRaDeviceRegistry = new LoRaDeviceRegistry(configuration, new MemoryCache(new MemoryCacheOptions()), loRaDeviceAPIService, loRaDeviceFactory);
-            var frameCounterStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(configuration.GatewayID, loRaDeviceAPIService);
-            var messageProcessor = new MessageProcessor(configuration, loRaDeviceRegistry, frameCounterStrategyFactory, new LoRaPayloadDecoder());
+            var frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(configuration.GatewayID, loRaDeviceAPIService);
+            var messageProcessor = new MessageProcessor(configuration, loRaDeviceRegistry, frameCounterStrategyProvider, new LoRaPayloadDecoder());
 
             return new UdpServer(configuration, messageProcessor, loRaDeviceAPIService, loRaDeviceRegistry);
 #endif

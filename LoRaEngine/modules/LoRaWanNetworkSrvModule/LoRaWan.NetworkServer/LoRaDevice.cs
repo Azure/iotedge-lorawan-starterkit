@@ -69,7 +69,7 @@ namespace LoRaWan.NetworkServer
 
             set
             {
-                if (value != 1 && value != 2)
+                if (value != Constants.RECEIVE_WINDOW_1 && value != Constants.RECEIVE_WINDOW_2)
                     throw new ArgumentOutOfRangeException(nameof(this.PreferredWindow), value, $"{nameof(this.PreferredWindow)} must bet 1 or 2");
 
                 this.preferredWindow = value;
@@ -192,7 +192,7 @@ namespace LoRaWan.NetworkServer
                 if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
                 {
                     var preferredWindowTwinValue = this.GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
-                    if (preferredWindowTwinValue == 2)
+                    if (preferredWindowTwinValue == Constants.RECEIVE_WINDOW_2)
                         this.PreferredWindow = preferredWindowTwinValue;
                 }
 
@@ -450,7 +450,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private void QueueNext()
+        private void ProcessNext()
         {
             // Access to runningRequest and queuedRequests must be
             // thread safe
@@ -482,7 +482,7 @@ namespace LoRaWan.NetworkServer
                 }
                 finally
                 {
-                    this.QueueNext();
+                    this.ProcessNext();
                 }
 
                 if (processingError != null)

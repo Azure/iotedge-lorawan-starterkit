@@ -70,7 +70,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // 1st join request
             // Should fail

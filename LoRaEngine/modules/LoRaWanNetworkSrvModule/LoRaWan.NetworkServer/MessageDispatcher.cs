@@ -21,38 +21,23 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public class MessageDispatcher
     {
-        // Defines Cloud to device message property containing fport value
-        internal const string FPORT_MSG_PROPERTY_KEY = "fport";
-
-        // Fport value reserved for mac commands
-        const byte LORA_FPORT_RESERVED_MAC_MSG = 0;
-
-        // Starting Fport value reserved for future applications
-        const byte LORA_FPORT_RESERVED_FUTURE_START = 224;
-
-        // Default value of a C2D message id if missing from the message
-        internal const string C2D_MSG_ID_PLACEHOLDER = "ConfirmationC2DMessageWithNoId";
-
-        // Name of the upstream message property reporint a confirmed message
-        internal const string C2D_MSG_PROPERTY_VALUE_NAME = "C2DMsgConfirmed";
-
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry deviceRegistry;
-        private readonly ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory;
+        private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private volatile Region loraRegion;
 
         public MessageDispatcher(
             NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry deviceRegistry,
-            ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory)
+            ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
         {
             this.configuration = configuration;
             this.deviceRegistry = deviceRegistry;
-            this.frameCounterUpdateStrategyFactory = frameCounterUpdateStrategyFactory;
+            this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
 
             // Register frame counter initializer
             // It will take care of seeding ABP devices created here for single gateway scenarios
-            this.deviceRegistry.RegisterDeviceInitializer(new FrameCounterLoRaDeviceInitializer(configuration.GatewayID, frameCounterUpdateStrategyFactory));
+            this.deviceRegistry.RegisterDeviceInitializer(new FrameCounterLoRaDeviceInitializer(configuration.GatewayID, frameCounterUpdateStrategyProvider));
         }
 
         /// <summary>
@@ -220,7 +205,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse(loRaDevice);
-                if (windowToUse == 0)
+                if (windowToUse == Constants.INVALID_RECEIVE_WINDOW)
                 {
                     Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", LogLevel.Information);
                     request.NotifyFailed(null, LoRaDeviceRequestFailedReason.ReceiveWindowMissed);
@@ -230,7 +215,7 @@ namespace LoRaWan.NetworkServer
                 double freq = 0;
                 string datr = null;
                 uint tmst = 0;
-                if (windowToUse == 1)
+                if (windowToUse == Constants.RECEIVE_WINDOW_1)
                 {
                     datr = this.loraRegion.GetDownstreamDR(request.Rxpk);
                     freq = this.loraRegion.GetDownstreamChannelFrequency(request.Rxpk);

@@ -28,8 +28,7 @@ namespace LoRaWan.NetworkServer
                 devEUI: deviceInfo.DevEUI,
                 loRaDeviceClient: loraDeviceClient);
 
-            if (this.dataRequestHandler != null)
-                loRaDevice.SetRequestHandler(this.dataRequestHandler);
+            loRaDevice.SetRequestHandler(this.dataRequestHandler);
 
             return loRaDevice;
         }

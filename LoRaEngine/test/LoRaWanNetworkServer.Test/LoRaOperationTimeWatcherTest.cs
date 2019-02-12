@@ -57,10 +57,10 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null)
             {
-                PreferredWindow = 2,
+                PreferredWindow = Constants.RECEIVE_WINDOW_2,
             };
 
-            Assert.Equal(2, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.RECEIVE_WINDOW_2, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -71,7 +71,7 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null);
 
-            Assert.Equal(1, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.RECEIVE_WINDOW_1, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -83,7 +83,7 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null);
 
-            Assert.Equal(2, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.RECEIVE_WINDOW_2, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -95,7 +95,7 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null);
 
-            Assert.Equal(0, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.INVALID_RECEIVE_WINDOW, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]

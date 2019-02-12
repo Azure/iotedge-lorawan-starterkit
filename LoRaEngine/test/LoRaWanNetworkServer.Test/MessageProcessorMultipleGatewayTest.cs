@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.Test
 
         public Mock<LoRaDeviceAPIServiceBase> SecondLoRaDeviceApi { get; }
 
-        public LoRaDeviceFrameCounterUpdateStrategyFactory SecondFrameCounterUpdateStrategyFactory { get; }
+        public LoRaDeviceFrameCounterUpdateStrategyProvider SecondFrameCounterUpdateStrategyProvider { get; }
 
         private DefaultLoRaDataRequestHandler secondRequestHandlerImplementation;
 
@@ -51,10 +51,10 @@ namespace LoRaWan.NetworkServer.Test
 
             this.SecondPacketForwarder = new TestPacketForwarder();
             this.SecondLoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            this.SecondFrameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(SecondServerGatewayID, this.SecondLoRaDeviceApi.Object);
-            this.secondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.SecondServerConfiguration, this.SecondFrameCounterUpdateStrategyFactory, new LoRaPayloadDecoder());
+            this.SecondFrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(SecondServerGatewayID, this.SecondLoRaDeviceApi.Object);
+            this.secondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.SecondServerConfiguration, this.SecondFrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder());
             this.SecondLoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.SecondLoRaDeviceFactory = new TestLoRaDeviceFactory(this.SecondServerConfiguration, this.SecondFrameCounterUpdateStrategyFactory, this.SecondLoRaDeviceClient.Object);
+            this.SecondLoRaDeviceFactory = new TestLoRaDeviceFactory(this.SecondServerConfiguration, this.SecondFrameCounterUpdateStrategyProvider, this.SecondLoRaDeviceClient.Object);
         }
 
         [Fact]
@@ -87,12 +87,12 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor1 = new MessageDispatcher(
                 this.ServerConfiguration,
                 loRaDeviceRegistry1,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var messageProcessor2 = new MessageDispatcher(
                 this.SecondServerConfiguration,
                 loRaDeviceRegistry2,
-                this.SecondFrameCounterUpdateStrategyFactory);
+                this.SecondFrameCounterUpdateStrategyProvider);
 
             // Starts with fcnt up zero
             Assert.Equal(0, loRaDevice1.FCntUp);

@@ -262,7 +262,7 @@ namespace LoRaWan.NetworkServer
                 await this.deviceClient.CloseAsync();
                 this.deviceClient = null;
 
-                Logger.Log(this.devEUI, $"device client disconnected", LogLevel.Debug);
+                Logger.Log(this.devEUI, "device client disconnected", LogLevel.Debug);
 
                 return true;
             }

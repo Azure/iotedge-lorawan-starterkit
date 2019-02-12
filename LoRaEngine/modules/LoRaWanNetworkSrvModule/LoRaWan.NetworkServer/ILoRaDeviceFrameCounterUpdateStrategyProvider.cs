@@ -3,7 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
-    public interface ILoRaDeviceFrameCounterUpdateStrategyFactory
+    public interface ILoRaDeviceFrameCounterUpdateStrategyProvider
     {
         ILoRaDeviceFrameCounterUpdateStrategy GetMultiGatewayStrategy();
 

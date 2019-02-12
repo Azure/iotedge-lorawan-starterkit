@@ -90,7 +90,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var joinRequest1 = this.CreateWaitableRequest(joinRequestRxpk1);
             messageProcessor.DispatchRequest(joinRequest1);

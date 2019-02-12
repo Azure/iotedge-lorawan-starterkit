@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer.Test
 
         protected Mock<LoRaDeviceAPIServiceBase> LoRaDeviceApi { get; }
 
-        protected ILoRaDeviceFrameCounterUpdateStrategyFactory FrameCounterUpdateStrategyFactory { get; }
+        protected ILoRaDeviceFrameCounterUpdateStrategyProvider FrameCounterUpdateStrategyProvider { get; }
 
         protected NetworkServerConfiguration ServerConfiguration { get; }
 
@@ -56,10 +56,10 @@ namespace LoRaWan.NetworkServer.Test
 
             this.PacketForwarder = new TestPacketForwarder();
             this.LoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            this.FrameCounterUpdateStrategyFactory = new LoRaDeviceFrameCounterUpdateStrategyFactory(ServerGatewayID, this.LoRaDeviceApi.Object);
-            this.requestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyFactory, new LoRaPayloadDecoder());
+            this.FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerGatewayID, this.LoRaDeviceApi.Object);
+            this.requestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder());
             this.LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.LoRaDeviceFactory = new TestLoRaDeviceFactory(this.ServerConfiguration, this.FrameCounterUpdateStrategyFactory, this.LoRaDeviceClient.Object);
+            this.LoRaDeviceFactory = new TestLoRaDeviceFactory(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.LoRaDeviceClient.Object);
         }
 
         public MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());

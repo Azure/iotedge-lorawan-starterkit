@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
@@ -106,7 +106,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             // sends confirmed message
             var rxpk = simulatedDevice.CreateConfirmedMessageUplink("1234", fcnt: payloadFcnt).Rxpk[0];
@@ -158,7 +158,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -228,7 +228,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -306,7 +306,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 loRaDeviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -400,7 +400,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 loRaDeviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -500,7 +500,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 loRaDeviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -615,7 +615,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyFactory);
+                this.FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -631,7 +631,7 @@ namespace LoRaWan.NetworkServer.Test
             var actualDownlink = this.PacketForwarder.DownlinkMessages.First();
 
             var euRegion = RegionFactory.CreateEU868Region();
-            if (expectedRX == 1)
+            if (expectedRX == Constants.RECEIVE_WINDOW_1)
             {
                 // ensure response is for RX1
                 Assert.Equal(rxpk.Tmst + 1000000, actualDownlink.Txpk.Tmst);

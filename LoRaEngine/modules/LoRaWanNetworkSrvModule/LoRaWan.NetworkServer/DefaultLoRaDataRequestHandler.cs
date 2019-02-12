@@ -18,16 +18,16 @@ namespace LoRaWan.NetworkServer
     public class DefaultLoRaDataRequestHandler : ILoRaDataRequestHandler
     {
         private readonly NetworkServerConfiguration configuration;
-        private readonly ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory;
+        private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private readonly ILoRaPayloadDecoder payloadDecoder;
 
         public DefaultLoRaDataRequestHandler(
             NetworkServerConfiguration configuration,
-            ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory,
+            ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             ILoRaPayloadDecoder payloadDecoder)
         {
             this.configuration = configuration;
-            this.frameCounterUpdateStrategyFactory = frameCounterUpdateStrategyFactory;
+            this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.payloadDecoder = payloadDecoder;
         }
 
@@ -37,8 +37,8 @@ namespace LoRaWan.NetworkServer
             var loraPayload = (LoRaPayloadData)request.Payload;
             var isMultiGateway = !string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
             var frameCounterStrategy = isMultiGateway ?
-                this.frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy() :
-                this.frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy();
+                this.frameCounterUpdateStrategyProvider.GetMultiGatewayStrategy() :
+                this.frameCounterUpdateStrategyProvider.GetSingleGatewayStrategy();
 
             var payloadFcnt = loraPayload.GetFcnt();
             var requiresConfirmation = loraPayload.IsConfirmed();
@@ -415,13 +415,13 @@ namespace LoRaWan.NetworkServer
             // if (firstWindowTime > TimeSpan.Zero)
             //     System.Threading.Thread.Sleep(firstWindowTime);
             var receiveWindow = timeWatcher.ResolveReceiveWindowToUse(loRaDevice);
-            if (receiveWindow == 0)
+            if (receiveWindow == Constants.INVALID_RECEIVE_WINDOW)
                 return null;
 
             string datr;
             double freq;
             long tmst;
-            if (receiveWindow == 2)
+            if (receiveWindow == Constants.RECEIVE_WINDOW_2)
             {
                 tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
 
