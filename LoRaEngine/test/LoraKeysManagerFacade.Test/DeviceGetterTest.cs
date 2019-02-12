@@ -13,6 +13,8 @@ namespace LoraKeysManagerFacade.Test
     using Moq;
     using Xunit;
 
+    // Ensure tests don't run in parallel since LoRaRegistryManager is shared
+    [Collection("LoraKeysManagerFacade.Test")]
     public class DeviceGetterTest
     {
         private const string PrimaryKey = "ABCDEFGH1234567890";

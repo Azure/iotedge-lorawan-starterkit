@@ -209,8 +209,8 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            var cloudToDeviceMessage = new Message();
-            cloudToDeviceMessage.Properties.Add("fport", "1");
+            var c2dMessage = new LoRaCloudToDeviceMessage() { Fport = 1 };
+            var cloudToDeviceMessage = c2dMessage.CreateMessage();
             // C2D message will be retrieved
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync(cloudToDeviceMessage);
@@ -223,14 +223,8 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, initialFcntDown, payloadFcnt, this.ServerConfiguration.GatewayID))
                  .ReturnsAsync((ushort)0);
 
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
-
-            var devEUIDeviceDict = new DevEUIToLoRaDeviceDictionary();
-            devEUIDeviceDict.TryAdd(devEUI, cachedDevice);
-            memoryCache.Set(devAddr, devEUIDeviceDict);
-
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(cachedDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
             var messageDispatcher = new MessageDispatcher(

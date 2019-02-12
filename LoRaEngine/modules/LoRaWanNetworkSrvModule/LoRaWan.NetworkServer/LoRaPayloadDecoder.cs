@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.Net.Http;
     using System.Reflection;
@@ -19,22 +20,37 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public class LoRaPayloadDecoder : ILoRaPayloadDecoder
     {
+        private readonly HttpClient httpClient;
+
         // Http client used by decoders
         // Decoder calls don't need proxy since they will never leave the IoT Edge device
-        Lazy<HttpClient> decodersHttpClient = new Lazy<HttpClient>(() =>
-        {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
-            client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
-            return client;
-        });
+        Lazy<HttpClient> decodersHttpClient;
 
-        public async ValueTask<JObject> DecodeMessageAsync(byte[] payload, byte fport, string sensorDecoder)
+        public LoRaPayloadDecoder()
+        {
+            this.decodersHttpClient = new Lazy<HttpClient>(() =>
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
+                client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
+                return client;
+            });
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoRaPayloadDecoder"/> class.
+        /// Constructor for unit testing
+        /// </summary>
+        public LoRaPayloadDecoder(HttpClient httpClient)
+        {
+            this.httpClient = httpClient;
+        }
+
+        public async ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, byte fport, string sensorDecoder)
         {
             sensorDecoder = sensorDecoder ?? string.Empty;
 
-            string result;
-            var base64Payload = Convert.ToBase64String(payload);
+            var base64Payload = ((payload?.Length ?? 0) == 0) ? string.Empty : Convert.ToBase64String(payload);
 
             // Call local decoder (no "http://" in SensorDecoder)
             if (!sensorDecoder.Contains("http://"))
@@ -44,18 +60,20 @@ namespace LoRaWan.NetworkServer
 
                 if (toInvoke != null)
                 {
-                    result = (string)toInvoke.Invoke(null, new object[] { payload, fport });
+                    return new DecodePayloadResult(toInvoke.Invoke(null, new object[] { devEUI, payload, fport }));
                 }
                 else
                 {
-                    result = $"{{\"error\": \"No '{sensorDecoder}' decoder found\", \"rawpayload\": \"{base64Payload}\"}}";
+                    return new DecodePayloadResult()
+                    {
+                        Error = $"'{sensorDecoder}' decoder not found",
+                    };
                 }
             }
-
-            // Call SensorDecoderModule hosted in seperate container ("http://" in SensorDecoder)
-            // Format: http://containername/api/decodername
             else
             {
+                // Call SensorDecoderModule hosted in seperate container ("http://" in SensorDecoder)
+                // Format: http://containername/api/decodername
                 string toCall = sensorDecoder;
 
                 if (sensorDecoder.EndsWith("/"))
@@ -63,86 +81,116 @@ namespace LoRaWan.NetworkServer
                     toCall = sensorDecoder.Substring(0, sensorDecoder.Length - 1);
                 }
 
+                // Support decoders that have a parameter in the URL
+                // http://decoder/api/sampleDecoder?x=1 -> should become http://decoder/api/sampleDecoder?x=1&devEUI=11&fport=1&payload=12345
+                var queryStringParamSeparator = toCall.Contains('?') ? "&" : "?";
+
                 // use HttpUtility to UrlEncode Fport and payload
-                string fportEncoded = HttpUtility.UrlEncode(fport.ToString());
-                string payloadEncoded = HttpUtility.UrlEncode(base64Payload);
+                var payloadEncoded = HttpUtility.UrlEncode(base64Payload);
+                var devEUIEncoded = HttpUtility.UrlEncode(devEUI);
 
                 // Add Fport and Payload to URL
-                toCall = $"{toCall}?fport={fportEncoded}&payload={payloadEncoded}";
+                toCall = $"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport.ToString()}&payload={payloadEncoded}";
 
                 // Call SensorDecoderModule
-                result = await this.CallSensorDecoderModule(toCall, payload);
+                return await this.CallSensorDecoderModule(toCall, payload);
             }
-
-            JObject resultJson;
-
-            // Verify that result is valid JSON.
-            try
-            {
-                resultJson = JObject.Parse(result);
-            }
-            catch
-            {
-                resultJson = JObject.Parse($"{{\"error\": \"Invalid JSON returned from '{sensorDecoder}'\", \"rawpayload\": \"{base64Payload}\"}}");
-            }
-
-            return resultJson;
         }
 
-        async Task<string> CallSensorDecoderModule(string sensorDecoderModuleUrl, byte[] payload)
+        async Task<DecodePayloadResult> CallSensorDecoderModule(string sensorDecoderModuleUrl, byte[] payload)
         {
-            var base64Payload = Convert.ToBase64String(payload);
-            string result = string.Empty;
+            var base64Payload = ((payload?.Length ?? 0) == 0) ? string.Empty : Convert.ToBase64String(payload);
 
             try
             {
-                HttpResponseMessage response = await this.decodersHttpClient.Value.GetAsync(sensorDecoderModuleUrl);
+                var httpClientToUse = this.httpClient ?? this.decodersHttpClient.Value;
+                HttpResponseMessage response = await httpClientToUse.GetAsync(sensorDecoderModuleUrl);
 
                 if (!response.IsSuccessStatusCode)
                 {
                     var badReqResult = await response.Content.ReadAsStringAsync();
 
-                    result = JsonConvert.SerializeObject(new
+                    return new DecodePayloadResult()
                     {
-                        error = $"SensorDecoderModule '{sensorDecoderModuleUrl}' returned bad request.",
-                        exceptionMessage = badReqResult ?? string.Empty,
-                        rawpayload = base64Payload
-                    });
+                        Error = $"SensorDecoderModule '{sensorDecoderModuleUrl}' returned bad request.",
+                        ErrorDetail = badReqResult ?? string.Empty,
+                    };
                 }
                 else
                 {
-                    result = await response.Content.ReadAsStringAsync();
+                    var externalRawResponse = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrEmpty(externalRawResponse))
+                    {
+                        try
+                        {
+                            LoRaCloudToDeviceMessage loRaCloudToDeviceMessage = null;
+                            var externalDecoderResponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(externalRawResponse);
+                            if (externalDecoderResponse.TryGetValue("cloudToDeviceMessage", out var cloudToDeviceObject))
+                            {
+                                if (cloudToDeviceObject is JObject jsonObject)
+                                {
+                                    loRaCloudToDeviceMessage = jsonObject.ToObject<LoRaCloudToDeviceMessage>();
+                                }
+                                else
+                                {
+                                    loRaCloudToDeviceMessage = (LoRaCloudToDeviceMessage)cloudToDeviceObject;
+                                }
+
+                                externalDecoderResponse.Remove("cloudToDeviceMessage");
+                            }
+
+                            return new DecodePayloadResult(externalDecoderResponse)
+                            {
+                                CloudToDeviceMessage = loRaCloudToDeviceMessage
+                            };
+                        }
+                        catch (JsonReaderException)
+                        {
+                            // not a json object, use as string
+                            return new DecodePayloadResult(externalRawResponse);
+                        }
+                    }
+                    else
+                    {
+                        // not a json object, use as string
+                        return new DecodePayloadResult(externalRawResponse);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Logger.Log($"Error in decoder handling: {ex.Message}", LogLevel.Error);
 
-                result = JsonConvert.SerializeObject(new
+                return new DecodePayloadResult()
                 {
-                    error = $"Call to SensorDecoderModule '{sensorDecoderModuleUrl}' failed.",
-                    exceptionMessage = ex.Message,
-                    rawpayload = base64Payload
-                });
+                    Error = $"Call to SensorDecoderModule '{sensorDecoderModuleUrl}' failed.",
+                    ErrorDetail = ex.Message,
+                };
             }
-
-            return result;
         }
 
         /// <summary>
-        /// Value sensor decoding, from <see cref="byte[]"/> to <see cref="string"/>
+        /// Value sensor decoding, from <see cref="byte[]"/> to <see cref="DecodePayloadResult"/>
         /// </summary>
+        /// <param name="devEUI">Device identifier</param>
         /// <param name="payload">The payload to decode</param>
         /// <param name="fport">The received frame port</param>
         /// <returns>The decoded value as a JSON string</returns>
-        public static string DecoderValueSensor(byte[] payload, uint fport)
+        public static object DecoderValueSensor(string devEUI, byte[] payload, uint fport)
         {
-            var result = Encoding.UTF8.GetString(payload);
+            var payloadText = ((payload?.Length ?? 0) == 0) ? string.Empty : Encoding.UTF8.GetString(payload);
 
-            var isSupportedNumericValue = double.TryParse(result, NumberStyles.Float, CultureInfo.InvariantCulture, out double ignored);
-            var quotes = isSupportedNumericValue ? string.Empty : "\"";
+            if (long.TryParse(payloadText, NumberStyles.Float, CultureInfo.InvariantCulture, out var longValue))
+            {
+                return new DecodedPayloadValue(longValue);
+            }
 
-            return $"{{ \"value\":{quotes}{result}{quotes} }}";
+            if (double.TryParse(payloadText, NumberStyles.Float, CultureInfo.InvariantCulture, out var doubleValue))
+            {
+                return new DecodedPayloadValue(doubleValue);
+            }
+
+            return new DecodedPayloadValue(payloadText);
         }
     }
 }

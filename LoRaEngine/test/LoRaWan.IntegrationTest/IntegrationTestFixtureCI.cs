@@ -77,8 +77,11 @@ namespace LoRaWan.IntegrationTest
         // Device22_ABP: used for ABP Mac Commands testing
         public TestDeviceInfo Device22_ABP { get; private set; }
 
-        // Device22_ABP: used for OTAA C2D Mac Commands testing
+        // Device23_OTAA: used for OTAA C2D Mac Commands testing
         public TestDeviceInfo Device23_OTAA { get; private set; }
+
+        // Device24_ABP: Class C device
+        public TestDeviceInfo Device24_ABP { get; private set; }
 
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice
@@ -381,6 +384,19 @@ namespace LoRaWan.IntegrationTest
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
+            };
+
+            // Device24_OTAA: used for C2D mac Command testing
+            this.Device24_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000024",
+                AppSKey = "00000000000000000000000000000024",
+                NwkSKey = "00000000000000000000000000000024",
+                DevAddr = "00000022",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+                SensorDecoder = "DecoderValueSensor",
+                ClassType = 'C',
             };
         }
     }

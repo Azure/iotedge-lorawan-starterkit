@@ -27,5 +27,6 @@ namespace LoRaWan.NetworkServer
         public const string DownlinkEnabled = "Downlink";
         public const string PreferredWindow = "PreferredWindow"; // (1 or 2)
         public const string Deduplication = "Deduplication"; // None (default), Drop, Mark
+        public const string ClassType = "ClassType";
     }
 }

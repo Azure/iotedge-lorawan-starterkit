@@ -60,7 +60,8 @@ namespace LoRaWan.NetworkServer.Test
                 destinationDictionary,
                 null,
                 this.serverConfiguration,
-                (_) => { finished.Release(); });
+                (_, l) => { finished.Release(); },
+                (d) => { destinationDictionary.TryAdd(d.DevEUI, d); });
 
             await finished.WaitAsync();
 
@@ -102,7 +103,8 @@ namespace LoRaWan.NetworkServer.Test
                 destinationDictionary,
                 null,
                 this.serverConfiguration,
-                (_) => { finished.Release(); });
+                (_, l) => { finished.Release(); },
+                (d) => destinationDictionary.TryAdd(d.DevEUI, d));
 
             var req1 = new WaitableLoRaRequest(payload1);
             target.Queue(req1);
@@ -155,7 +157,8 @@ namespace LoRaWan.NetworkServer.Test
                 destinationDictionary,
                 null,
                 this.serverConfiguration,
-                (_) => { finished.Release(); });
+                (_, l) => { finished.Release(); },
+                (d) => destinationDictionary.TryAdd(d.DevEUI, d));
 
             var request = new WaitableLoRaRequest(payload);
             target.Queue(request);
@@ -198,7 +201,8 @@ namespace LoRaWan.NetworkServer.Test
                 destinationDictionary,
                 null,
                 this.serverConfiguration,
-                (_) => { finished.Release(); });
+                (_, l) => { finished.Release(); },
+                (d) => destinationDictionary.TryAdd(d.DevEUI, d));
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
             payload.SerializeUplink(simulatedDevice.AppSKey, "00000000000000000000000000EEAAFF");

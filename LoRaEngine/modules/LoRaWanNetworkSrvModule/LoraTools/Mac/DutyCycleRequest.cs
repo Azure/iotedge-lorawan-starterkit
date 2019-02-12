@@ -17,7 +17,11 @@ namespace LoRaTools
 
         public override int Length => 2;
 
-        // Downstream message
+        public DutyCycleRequest()
+        {
+        }
+
+        // Downstream message˙
         public DutyCycleRequest(byte dutyCyclePL)
         {
             this.Cid = CidEnum.DutyCycleCmd;

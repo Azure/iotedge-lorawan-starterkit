@@ -38,12 +38,10 @@ namespace LoRaWan.Shared
         public static ApiVersion Version_2018_12_16_Preview { get; }
 
         /// <summary>
-        /// Gets Planned Version 0.4 -> Released on 2019-01-30
-        /// No real dates, just used for testing
-        /// Backward compatible with <see cref="Version_2018_12_16_Preview"/>
+        /// Gets Planned Version 0.5
+        /// Added GetDeviceByDevEUI method
+        /// Backward compatible with <see cref="Version_2018_12_16_Preview" />
         /// </summary>
-        public static ApiVersion Version_2019_01_30_Preview { get; }
-
         public static ApiVersion Version_2019_02_12_Preview { get; }
 
         /// <summary>
@@ -58,7 +56,6 @@ namespace LoRaWan.Shared
         {
             yield return Version_0_2_Or_Earlier;
             yield return Version_2018_12_16_Preview;
-            yield return Version_2019_01_30_Preview;
             yield return Version_2019_02_12_Preview;
         }
 
@@ -90,10 +87,6 @@ namespace LoRaWan.Shared
             // Version_2018_12_16_Preview, not backward compatible
             Version_2018_12_16_Preview = new ApiVersion("2018-12-16-preview");
             Version_2018_12_16_Preview.MinCompatibleVersion = Version_2018_12_16_Preview;
-
-            // Version_2019_01_30_Preview, backward compatible with at least Version_2018_12_16_Preview
-            Version_2019_01_30_Preview = new ApiVersion("2019-01-30-preview");
-            Version_2019_01_30_Preview.MinCompatibleVersion = Version_2018_12_16_Preview;
 
             // Version_2019_02_12_Preview, not backward compatible
             Version_2019_02_12_Preview = new ApiVersion("2019-02-12-preview");

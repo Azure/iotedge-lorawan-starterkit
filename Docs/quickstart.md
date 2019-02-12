@@ -253,26 +253,63 @@ Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanat
 
 ## Cloud to device message
 
-The solution support sending Cloud to device (C2D) messages to LoRa messages using [standard IoT Hub Sdks](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d). Cloud to device messages require a Fport message property being set or it will be refused (as shown in the figure below from the Azure Portal). 
+Sending cloud to device messages in the solution uses the following JSON format to describe the downstream:
+
+```json
+{
+  "devEUI": "string",
+  "fport": integer,
+  "confirmed": boolean,
+  "payload": "string",
+  "rawPayload": "string"
+}
+```
+
+#### Fields
+
+|Field|Type|Description|Required|
+|-|-|-|-|
+|devEUI|String|Device EUI|Only when sending messages to class C devices
+|fport|Integer|Payload fport, must be between 1 and 223|Yes
+|confirmed|Boolean|Indicates if an ack is required from the LoRa device. By default `false`|No
+|payload|String|Payload as text|Either `payload` or `rawPayload` must be provided|
+|rawPayload|String|Payload as bytem encoded in base64 format|Either `payload` or `rawPayload` must be provided|
+
+### Class A devices
+
+The solution support sending Cloud to device (C2D) messages to LoRa class A devices using [standard IoT Hub SDKs](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d). The message body should follow the following contract:
 
 ![C2D portal](/Docs/Pictures/cloudtodevice.png)
 
 The following tools can be used to send cloud to devices messages from Azure :
 
-* [Azure Portal](http://portal.azure.com) -> IoT Hub -> Devices -> message to device
+* [Azure Portal](http://portal.azure.com) &rarr; IoT Hub &rarr; Devices &rarr; message to device
 * [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer)
-* [Visual Studio Code IoT Hub Extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit) 
+* [Visual Studio Code IoT Hub Extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit)
 
-It is possible to add a 'Confirmed' message property set to true,in order to send the C2D message as ConfirmedDataDown to the LoRa device (as in picture above and below). You can enable additional message tracking options by setting the C2D message id to a value (C2D message ID is automatically populated with the Device Explorer tool used in the image below). 
+In confirmed messages a ConfirmedDataDown message will be send to the LoRa device (as in picture above and below). You can enable additional message tracking options by setting the C2D message id to a value (C2D message ID is automatically populated with the Device Explorer tool used in the image below).
 
 ![C2D portal](/Docs/Pictures/sendC2DConfirmed.png)
 
 As soon as the device acknowledges the message, it will report it in the logs and as a message property named 'C2DMsgConfirmed' on a message upstream (or generate an empty message in case of an empty ack message). The value of the message property will be set to the C2D message id that triggered the response if not null, otherwise to 'C2D Msg Confirmation'. You can find here below a set of picture illustrating the response when the C2D message id was sent to the value '4d3d0cd3-603a-4e00-a441-74aa55f53401'.
 
-
-
 ![C2D portal](/Docs/Pictures/receiveC2DConfirmation.png)
 
+### Class C devices
+
+To send downstream messages to class C devices the following is required:
+
+- The device twin desired property `"ClassType": "C"` must be set.
+- The device must send at least one message upstream.
+
+Once the requirements are met, sending downstream messages is achieved by calling the direct method `CloudToDeviceMessage` in the module client. In Azure Portal:
+
+* [Azure Portal](http://portal.azure.com) &rarr; IoT Hub &rarr; IoT Edge &rarr; LoRaWanNetworkSrvModule (under Modules) &rarr; Direct Method
+* [Visual Studio Code IoT Hub Extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit)
+
+The method name is `CloudToDeviceMessage` and the payload is the JSON following the structure previously described. Don't forget to set a value to the `devEUI` property.
+
+![C2D Class C portal](/Docs/Pictures/cloudtodevice-classc.png)
 
 ## MAC Commands
 
@@ -283,4 +320,3 @@ CidType : 6
 ```
 
 ![MacCommand](/Docs/Pictures/MacCommand.PNG)
-

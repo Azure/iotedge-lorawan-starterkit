@@ -37,7 +37,9 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true);
 
             Assert.Equal(10, target.IncrementFcntDown(10));
+            Assert.Equal(0, target.LastSavedFCntDown);
             await target.SaveFrameCountChangesAsync();
+            Assert.Equal(10, target.LastSavedFCntDown);
         }
 
         [Fact]
@@ -50,7 +52,9 @@ namespace LoRaWan.NetworkServer.Test
 
             target.SetFcntDown(12);
             Assert.Equal(12, target.FCntDown);
+            Assert.Equal(0, target.LastSavedFCntDown);
             await target.SaveFrameCountChangesAsync();
+            Assert.Equal(12, target.LastSavedFCntDown);
         }
 
         [Fact]
@@ -63,7 +67,9 @@ namespace LoRaWan.NetworkServer.Test
 
             target.SetFcntUp(12);
             Assert.Equal(12, target.FCntUp);
+            Assert.Equal(0, target.LastSavedFCntUp);
             await target.SaveFrameCountChangesAsync();
+            Assert.Equal(12, target.LastSavedFCntUp);
         }
 
         [Fact]
@@ -76,8 +82,10 @@ namespace LoRaWan.NetworkServer.Test
 
             target.SetFcntUp(12);
             Assert.Equal(12, target.FCntUp);
+            Assert.Equal(0, target.LastSavedFCntUp);
             await target.SaveFrameCountChangesAsync();
             Assert.False(target.HasFrameCountChanges);
+            Assert.Equal(12, target.LastSavedFCntUp);
         }
 
         [Fact]
@@ -106,6 +114,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal("ABC02000000000000000000000000009", loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
+            Assert.Equal(0, loRaDevice.FCntDown);
+            Assert.Equal(0, loRaDevice.LastSavedFCntDown);
+            Assert.Equal(0, loRaDevice.FCntUp);
+            Assert.Equal(0, loRaDevice.LastSavedFCntUp);
+            Assert.False(loRaDevice.HasFrameCountChanges);
             Assert.Empty(loRaDevice.AppSKey ?? string.Empty);
             Assert.Empty(loRaDevice.NwkSKey ?? string.Empty);
             Assert.Empty(loRaDevice.DevAddr ?? string.Empty);
@@ -185,6 +198,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
             Assert.True(loRaDevice.IsABP);
             Assert.True(loRaDevice.IsOurDevice);
+            Assert.Equal(0, loRaDevice.FCntDown);
+            Assert.Equal(0, loRaDevice.LastSavedFCntDown);
+            Assert.Equal(0, loRaDevice.FCntUp);
+            Assert.Equal(0, loRaDevice.LastSavedFCntUp);
+            Assert.False(loRaDevice.HasFrameCountChanges);
             Assert.Equal("ABC02000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.NwkSKey);
             Assert.Equal("ABCD2000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.AppSKey);
             Assert.Empty(loRaDevice.DevNonce ?? string.Empty);
@@ -444,6 +462,8 @@ namespace LoRaWan.NetworkServer.Test
             // Setting from 0 to 0 should not trigger changes
             target.ResetFcnt();
             Assert.False(target.HasFrameCountChanges);
+            Assert.Equal(0, target.LastSavedFCntDown);
+            Assert.Equal(0, target.LastSavedFCntUp);
         }
 
         [Fact]
@@ -494,6 +514,8 @@ namespace LoRaWan.NetworkServer.Test
             target.ResetFcnt();
             Assert.Equal(0, target.FCntUp);
             Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0, target.LastSavedFCntUp);
+            Assert.Equal(1, target.LastSavedFCntDown);
             Assert.True(target.HasFrameCountChanges);
 
             // Non zero fcnt down and up
@@ -504,7 +526,46 @@ namespace LoRaWan.NetworkServer.Test
             target.ResetFcnt();
             Assert.Equal(0, target.FCntUp);
             Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0, target.LastSavedFCntUp);
+            Assert.Equal(2, target.LastSavedFCntDown);
+
             Assert.True(target.HasFrameCountChanges);
+        }
+
+        [Fact]
+        public async Task When_Initialized_ABP_Device_Has_Fcnt_Should_Have_Non_Zero_Fcnt_Values()
+        {
+            var twin = TestUtils.CreateTwin(
+                desired: new Dictionary<string, object>
+                {
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                    { "GatewayID", "mygateway" },
+                    { "SensorDecoder", "DecoderValueSensor" },
+                    { "$version", 1 },
+                },
+                reported: new Dictionary<string, object>
+                {
+                    { "$version", 1 },
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                    { "FCntDown", 10 },
+                    { "FCntUp", 20 },
+                });
+
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(twin);
+
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
+            await loRaDevice.InitializeAsync();
+            Assert.True(loRaDevice.IsOurDevice);
+            Assert.Equal(10, loRaDevice.FCntDown);
+            Assert.Equal(10, loRaDevice.LastSavedFCntDown);
+            Assert.Equal(20, loRaDevice.FCntUp);
+            Assert.Equal(20, loRaDevice.LastSavedFCntUp);
+            Assert.False(loRaDevice.HasFrameCountChanges);
         }
     }
 }

@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
     using LoRaWan.NetworkServer;
     using LoRaWan.Test.Shared;
     using Xunit;
@@ -18,12 +19,12 @@ namespace LoRaWan.NetworkServer.Test
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: fcnt, fport: fport);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var decodedValue = new { value=1 };
+            var decodedValue = new { value = 1 };
 
-            var target = new LoRaDeviceTelemetry(rxpk, payload, decodedValue);
+            var target = new LoRaDeviceTelemetry(rxpk, payload, decodedValue, payload.GetDecryptedPayload(simulatedDevice.AppSKey));
             Assert.Equal(rxpk.Chan, target.Chan);
             Assert.Equal(rxpk.Codr, target.Codr);
-            Assert.Equal(rxpk.Data, target.Rawdata);
+            Assert.Equal(Convert.ToBase64String(payload.GetDecryptedPayload(simulatedDevice.AppSKey)), target.Rawdata);
             Assert.Equal(decodedValue, target.Data);
             Assert.Equal(rxpk.Datr, target.Datr);
             Assert.Equal(rxpk.Freq, target.Freq);
@@ -37,7 +38,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(rxpk.Tmms, target.Tmms);
             Assert.Equal(rxpk.Tmst, target.Tmst);
             Assert.Equal(payload.GetFcnt(), target.Fcnt);
-            Assert.Equal(payload.FPort, target.Port);
+            Assert.Equal(payload.GetFPort(), target.Port);
         }
     }
 }

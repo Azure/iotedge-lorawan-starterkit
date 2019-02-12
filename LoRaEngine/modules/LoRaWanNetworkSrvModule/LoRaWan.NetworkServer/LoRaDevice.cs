@@ -44,7 +44,17 @@ namespace LoRaWan.NetworkServer
 
         public int FCntUp => this.fcntUp;
 
+        /// <summary>
+        /// Gets the last saved value for <see cref="FCntUp"/>
+        /// </summary>
+        public int LastSavedFCntUp => this.lastSavedFcntUp;
+
         public int FCntDown => this.fcntDown;
+
+        /// <summary>
+        /// Gets the last saved value for <see cref="FCntDown"/>
+        /// </summary>
+        public int LastSavedFCntDown => this.lastSavedFcntDown;
 
         private readonly ILoRaDeviceClient loRaDeviceClient;
 
@@ -78,14 +88,23 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        readonly object fcntLock;
+        public LoRaDeviceClassType ClassType
+        {
+            get => this.classType;
+        }
+
+        readonly object fcntSync;
+        readonly object queueSync;
         readonly Queue<LoRaRequest> queuedRequests;
         volatile bool hasFrameCountChanges;
         byte confirmationResubmitCount = 0;
         volatile int fcntUp;
         volatile int fcntDown;
+        volatile int lastSavedFcntUp;
+        volatile int lastSavedFcntDown;
         volatile LoRaRequest runningRequest;
         private ILoRaDataRequestHandler dataRequestHandler;
+        LoRaDeviceClassType classType;
 
         /// <summary>
         ///  Gets or sets a value indicating whether cloud to device messages are enabled for the device
@@ -102,9 +121,11 @@ namespace LoRaWan.NetworkServer
             this.IsABPRelaxedFrameCounter = true;
             this.PreferredWindow = 1;
             this.hasFrameCountChanges = false;
-            this.fcntLock = new object();
+            this.fcntSync = new object();
             this.confirmationResubmitCount = 0;
+            this.queueSync = new object();
             this.queuedRequests = new Queue<LoRaRequest>();
+            this.classType = LoRaDeviceClassType.A;
         }
 
         /// <summary>
@@ -182,9 +203,16 @@ namespace LoRaWan.NetworkServer
                 if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
                     this.SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder];
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntUp))
+                {
                     this.fcntUp = this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntUp].Value);
+                    this.lastSavedFcntUp = this.fcntUp;
+                }
+
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntDown))
+                {
                     this.fcntDown = this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntDown].Value);
+                    this.lastSavedFcntDown = this.fcntDown;
+                }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled))
                 {
@@ -203,6 +231,14 @@ namespace LoRaWan.NetworkServer
                     var val = (string)twin.Properties.Desired[TwinProperty.Deduplication];
                     Enum.TryParse<DeduplicationMode>(val, out DeduplicationMode mode);
                     this.Deduplication = mode;
+                }
+
+                if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
+                {
+                    if (string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        this.classType = LoRaDeviceClassType.C;
+                    }
                 }
 
                 return true;
@@ -271,7 +307,7 @@ namespace LoRaWan.NetworkServer
             {
                 int savedFcntDown;
                 int savedFcntUp;
-                lock (this.fcntLock)
+                lock (this.fcntSync)
                 {
                     savedFcntDown = this.FCntDown;
                     savedFcntUp = this.FCntUp;
@@ -286,7 +322,7 @@ namespace LoRaWan.NetworkServer
                 {
                     if (savedFcntUp == this.FCntUp && savedFcntDown == this.FCntDown)
                     {
-                        this.AcceptFrameCountChanges();
+                        this.AcceptFrameCountChanges(savedFcntUp, savedFcntDown);
                     }
                 }
 
@@ -306,9 +342,20 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void AcceptFrameCountChanges()
         {
-            lock (this.fcntLock)
+            this.AcceptFrameCountChanges(this.fcntUp, this.fcntDown);
+        }
+
+        /// <summary>
+        /// Accept changes to the frame count
+        /// </summary>
+        void AcceptFrameCountChanges(int savedFcntUp, int savedFcntDown)
+        {
+            lock (this.fcntSync)
             {
-                this.hasFrameCountChanges = false;
+                this.lastSavedFcntUp = savedFcntUp;
+                this.lastSavedFcntDown = savedFcntDown;
+
+                this.hasFrameCountChanges = this.fcntDown != this.lastSavedFcntDown || this.fcntUp != this.lastSavedFcntUp;
             }
         }
 
@@ -318,9 +365,27 @@ namespace LoRaWan.NetworkServer
         public int IncrementFcntDown(int value)
         {
             var newFcntDown = 0;
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
                 this.fcntDown += value;
+                this.hasFrameCountChanges = true;
+                newFcntDown = this.fcntDown;
+            }
+
+            return newFcntDown;
+        }
+
+        /// <summary>
+        /// Increments <see cref="FCntDown"/> and the <see cref="LastSavedFCntDown"/>.
+        /// Called by device initializer, incrementing by 10 but should not trigger a save
+        /// </summary>
+        internal int IncrementFcntDownAndLastSaved(int value)
+        {
+            var newFcntDown = 0;
+            lock (this.fcntSync)
+            {
+                this.fcntDown += value;
+                this.lastSavedFcntDown += value;
                 this.hasFrameCountChanges = true;
                 newFcntDown = this.fcntDown;
             }
@@ -333,7 +398,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void SetFcntDown(int newValue)
         {
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
                 if (newValue != this.fcntDown)
                 {
@@ -345,7 +410,7 @@ namespace LoRaWan.NetworkServer
 
         public void SetFcntUp(int newValue)
         {
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
                 if (this.fcntUp != newValue)
                 {
@@ -361,7 +426,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal void ResetFcnt()
         {
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
                 if (!this.hasFrameCountChanges)
                 {
@@ -386,7 +451,7 @@ namespace LoRaWan.NetworkServer
         /// <param name="payloadFcnt">Payload frame count</param>
         public bool ValidateConfirmResubmit(ushort payloadFcnt)
         {
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
                 if (this.FCntUp == payloadFcnt)
                 {
@@ -424,8 +489,11 @@ namespace LoRaWan.NetworkServer
             reportedProperties[TwinProperty.NetID] = netID;
             reportedProperties[TwinProperty.DevNonce] = devNonce;
 
+            var devAddrBeforeSave = this.DevAddr;
             var succeeded = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
-            if (succeeded)
+
+            // Only save if the devAddr remains the same, otherwise ignore the save
+            if (succeeded && devAddrBeforeSave == this.DevAddr)
             {
                 this.DevAddr = devAddr;
                 this.NwkSKey = nwkSKey;
@@ -446,11 +514,14 @@ namespace LoRaWan.NetworkServer
         {
             // Access to runningRequest and queuedRequests must be
             // thread safe
-            lock (this)
+            lock (this.queueSync)
             {
                 if (this.runningRequest == null)
                 {
-                    this.StartNextRequest(request);
+                    this.runningRequest = request;
+
+                    // Ensure that this is schedule in a new thread, releasing the lock asap
+                    Task.Run(() => { _ = this.RunAndQueueNext(request); });
                 }
                 else
                 {
@@ -463,55 +534,50 @@ namespace LoRaWan.NetworkServer
         {
             // Access to runningRequest and queuedRequests must be
             // thread safe
-            lock (this)
+            lock (this.queueSync)
             {
                 this.runningRequest = null;
                 if (this.queuedRequests.TryDequeue(out var nextRequest))
                 {
-                    this.StartNextRequest(nextRequest);
+                    this.runningRequest = nextRequest;
+
+                    // Ensure that this is schedule in a new thread, releasing the lock asap
+                    Task.Run(() => { _ = this.RunAndQueueNext(nextRequest); });
                 }
             }
         }
 
-        void StartNextRequest(LoRaRequest requestToStart)
+        async Task RunAndQueueNext(LoRaRequest request)
         {
-            async Task RunAndQueueNext(LoRaRequest request)
+            LoRaDeviceRequestProcessResult result = null;
+            Exception processingError = null;
+
+            try
             {
-                LoRaDeviceRequestProcessResult result = null;
-                Exception processingError = null;
-
-                try
-                {
-                    result = await this.dataRequestHandler.ProcessRequestAsync(request, this);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log(this.DevEUI, $"Error processing request: {ex.Message}", LogLevel.Error);
-                    processingError = ex;
-                }
-                finally
-                {
-                    this.ProcessNext();
-                }
-
-                if (processingError != null)
-                {
-                    request.NotifyFailed(this, processingError);
-                }
-                else if (result.FailedReason.HasValue)
-                {
-                    request.NotifyFailed(this, result.FailedReason.Value);
-                }
-                else
-                {
-                    request.NotifySucceeded(this, result?.DownlinkMessage);
-                }
+                result = await this.dataRequestHandler.ProcessRequestAsync(request, this);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(this.DevEUI, $"Error processing request: {ex.Message}", LogLevel.Error);
+                processingError = ex;
+            }
+            finally
+            {
+                this.ProcessNext();
             }
 
-            this.runningRequest = requestToStart;
-
-            // Ensure that this is schedule in a new thread, releasing the lock asap
-            Task.Run(() => { _ = RunAndQueueNext(requestToStart); });
+            if (processingError != null)
+            {
+                request.NotifyFailed(this, processingError);
+            }
+            else if (result.FailedReason.HasValue)
+            {
+                request.NotifyFailed(this, result.FailedReason.Value);
+            }
+            else
+            {
+                request.NotifySucceeded(this, result?.DownlinkMessage);
+            }
         }
 
         public void Dispose()

@@ -19,6 +19,10 @@ namespace LoRaTools
 
         public int GetDelay() => this.Settings & 0b00001111;
 
+        public RXTimingSetupRequest()
+        {
+        }
+
         public RXTimingSetupRequest(byte delay)
         {
             this.Cid = CidEnum.RXTimingCmd;

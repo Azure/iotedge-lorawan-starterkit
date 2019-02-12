@@ -217,6 +217,9 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .ReturnsAsync(true);
+
             var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -253,9 +256,9 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Fact]
-        public async Task OTAA_Unconfirmed_Message_With_FcntUp_10_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_Null()
+        public async Task OTAA_Unconfirmed_Message_With_Fcnt_Change_Of_10_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_Null()
         {
-            const int PayloadFcnt = 10;
+            const int PayloadFcnt = 19;
             const int InitialDeviceFcntUp = 9;
             const int InitialDeviceFcntDown = 20;
 
@@ -396,6 +399,9 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(await request1.WaitCompleteAsync());
             Assert.True(request1.ProcessingFailed);
             Assert.Equal(LoRaDeviceRequestFailedReason.BelongsToAnotherGateway, request1.ProcessingFailedReason);
+
+            // Let loading finish
+            await Task.Delay(10);
 
             // device should be cached
             var cachedDevices = deviceRegistry.InternalGetCachedDevicesForDevAddr(simulatedDevice.DevAddr);

@@ -10,18 +10,6 @@ namespace LoRaWan.NetworkServer
 
     public interface ILoRaDeviceRegistry
     {
-        // Going to search devices in
-        // 1. Cache
-        // 2. If offline -> local storage (future functionality, reverse lookup)
-        // 3. If online -> call function (return all devices with matching devaddr)
-        // 3.1 Validate [mic, gatewayid]
-
-        // In order to handle a scenario where the network server is restarted and the fcntDown was not yet saved (we save every 10)
-        // If device does not have gatewayid this will be handled by the service facade function (NextFCntDown)
-        // 4. if (loraDeviceInfo.IsABP() && loraDeviceInfo.GatewayID != null && loraDeviceInfo was not read from cache)  device.FcntDown += 10;
-        [Obsolete("replaced by GetLoRaRequestQueue", true)]
-        Task<LoRaDevice> GetDeviceForPayloadAsync(LoRaTools.LoRaMessage.LoRaPayloadData loraPayload);
-
         /// <summary>
         /// Gets devices that matches an OTAA join request
         /// </summary>
@@ -30,7 +18,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates device after a succesfull join request
         /// </summary>
-        void UpdateDeviceAfterJoin(LoRaDevice loRaDevice);
+        Task UpdateDeviceAfterJoinAsync(LoRaDevice loRaDevice, string oldDevAddr = null);
 
         /// <summary>
         /// Registers a <see cref="ILoRaDeviceInitializer"/>
@@ -46,5 +34,10 @@ namespace LoRaWan.NetworkServer
         /// Gets a <see cref="ILoRaDeviceRequestQueue"/> where requests can be queued
         /// </summary>
         ILoRaDeviceRequestQueue GetLoRaRequestQueue(LoRaRequest request);
+
+        /// <summary>
+        /// Gets a device by DevEUI
+        /// </summary>
+        Task<LoRaDevice> GetDeviceByDevEUIAsync(string devEUI);
     }
 }

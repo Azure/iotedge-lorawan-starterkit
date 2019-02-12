@@ -11,6 +11,7 @@ namespace LoRaTools
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
+    [JsonConverter(typeof(MacCommandJsonConverter))]
     public abstract class MacCommand
     {
         /// <summary>

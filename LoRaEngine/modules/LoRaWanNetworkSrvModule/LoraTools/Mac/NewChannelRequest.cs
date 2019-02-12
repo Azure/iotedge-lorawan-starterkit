@@ -28,6 +28,10 @@ namespace LoRaTools
 
         public override int Length => 6;
 
+        public NewChannelRequest()
+        {
+        }
+
         public NewChannelRequest(byte chIndex, byte[] freq, byte maxDr, byte minDr)
         {
             this.ChIndex = chIndex;

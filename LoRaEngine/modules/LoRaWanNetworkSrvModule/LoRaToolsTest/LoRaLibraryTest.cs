@@ -345,7 +345,7 @@ namespace LoRaWanTest
 
             Assert.Equal(12, devicePayloadData.GetFcnt());
             Assert.Equal(0, devicePayloadData.Direction);
-            Assert.Equal(1, devicePayloadData.FPort);
+            Assert.Equal(1, devicePayloadData.GetFPort());
 
             var datr = "SF10BW125";
             var freq = 868.3;
@@ -359,7 +359,7 @@ namespace LoRaWanTest
             var parsedLoRaPayloadData = (LoRaPayloadData)parsedLoRaPayload;
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.FPort);
+            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
 
             // Ensure that mic check and getting payload back works
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
@@ -369,7 +369,7 @@ namespace LoRaWanTest
             // checking mic and getting payload should not change the payload properties
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.FPort);
+            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
 
             // checking mic should not break getting the payload
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
@@ -379,7 +379,7 @@ namespace LoRaWanTest
             // checking mic and getting payload should not change the payload properties
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.FPort);
+            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
         }
 
         /// <summary>

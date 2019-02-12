@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="LoRaWan.NetworkServer.UdpServer">
+    <Position X="0.5" Y="0.5" Width="2" />
+    <Members>
+      <Field Name="classCMessageSender" Hidden="true" />
+      <Field Name="configuration" Hidden="true" />
+      <Field Name="disposedValue" Hidden="true" />
+      <Field Name="ioTHubModuleClient" Hidden="true" />
+      <Field Name="loRaDeviceAPIService" Hidden="true" />
+      <Field Name="loRaDeviceRegistry" Hidden="true" />
+      <Field Name="messageDispatcher" Hidden="true" />
+      <Field Name="PORT" Hidden="true" />
+      <Field Name="pullAckRemoteLoRaAddress" Hidden="true" />
+      <Field Name="pullAckRemoteLoRaAggregatorPort" Hidden="true" />
+      <Field Name="random" Hidden="true" />
+      <Field Name="randomLock" Hidden="true" />
+      <Field Name="udpClient" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>IgAJgAAFBKAAAQQAQAAAAAAAgECAEkAAAISACggABAg=</HashCode>
+      <FileName>UdpServer.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="LoRaWan.NetworkServer.MessageDispatcher">
+    <Position X="3" Y="0.5" Width="2.75" />
+    <Members>
+      <Field Name="configuration" Hidden="true" />
+      <Field Name="deviceRegistry" Hidden="true" />
+      <Field Name="frameCounterUpdateStrategyProvider" Hidden="true" />
+      <Field Name="loraRegion" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAAAAgAAAAAAAAAAAAAAAAAAAKAAAgAAgCkAAAAQAA=</HashCode>
+      <FileName>MessageDispatcher.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LoRaWan.NetworkServer.LoRaDeviceRegistry">
+    <Position X="6.25" Y="0.5" Width="2.25" />
+    <Members>
+      <Field Name="cache" Hidden="true" />
+      <Field Name="configuration" Hidden="true" />
+      <Field Name="deviceFactory" Hidden="true" />
+      <Field Name="initializers" Hidden="true" />
+      <Field Name="INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES" Hidden="true" />
+      <Field Name="loRaDeviceAPIService" Hidden="true" />
+      <Field Name="resetCacheChangeToken" Hidden="true" />
+      <Field Name="resetCacheToken" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>ACAIgBAAAMAgAAFQAAABRAQFABigAAEAAAAEIAAEgAA=</HashCode>
+      <FileName>LoRaDeviceRegistry.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="LoRaWan.NetworkServer.LoRaDevice">
+    <Position X="9" Y="0.5" Width="3.75" />
+    <Members>
+      <Field Name="classType" Hidden="true" />
+      <Field Name="confirmationResubmitCount" Hidden="true" />
+      <Field Name="dataRequestHandler" Hidden="true" />
+      <Field Name="fcntDown" Hidden="true" />
+      <Field Name="fcntSync" Hidden="true" />
+      <Field Name="fcntUp" Hidden="true" />
+      <Field Name="hasFrameCountChanges" Hidden="true" />
+      <Field Name="lastSavedFcntDown" Hidden="true" />
+      <Field Name="lastSavedFcntUp" Hidden="true" />
+      <Field Name="loRaDeviceClient" Hidden="true" />
+      <Field Name="MaxConfirmationResubmitCount" Hidden="true" />
+      <Field Name="preferredWindow" Hidden="true" />
+      <Field Name="queuedRequests" Hidden="true" />
+      <Field Name="queueSync" Hidden="true" />
+      <Field Name="runningRequest" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>kCBMUhBAAKBhmSAQJQAEohbIQUAAKAgAEAgDAEIIBEk=</HashCode>
+      <FileName>LoRaDevice.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

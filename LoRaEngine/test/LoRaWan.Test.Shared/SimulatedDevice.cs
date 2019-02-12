@@ -45,6 +45,8 @@ namespace LoRaWan.Test.Shared
 
         public string AppEUI => this.LoRaDevice.AppEUI;
 
+        public char ClassType => this.LoRaDevice.ClassType;
+
         public string DevAddr
         {
             get { return this.LoRaDevice.DevAddr; }
