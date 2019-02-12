@@ -8,21 +8,23 @@ namespace LoRaWan.NetworkServer
     public class FrameCounterLoRaDeviceInitializer : ILoRaDeviceInitializer
     {
         private readonly string gatewayID;
-        private readonly ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory;
+        private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
 
-        public FrameCounterLoRaDeviceInitializer(string gatewayID, ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory)
+        public FrameCounterLoRaDeviceInitializer(string gatewayID, ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
         {
             this.gatewayID = gatewayID;
-            this.frameCounterUpdateStrategyFactory = frameCounterUpdateStrategyFactory;
+            this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
         }
 
         public void Initialize(LoRaDevice loRaDevice)
         {
-            var isMultiGateway = !string.Equals(this.gatewayID, loRaDevice.GatewayID, StringComparison.InvariantCultureIgnoreCase);
-            var strategy = isMultiGateway ? this.frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy() : this.frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy();
-            if (strategy is ILoRaDeviceInitializer initializer)
+            if (loRaDevice.IsOurDevice)
             {
-                initializer.Initialize(loRaDevice);
+                var strategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
+                if (strategy != null && strategy is ILoRaDeviceInitializer initializer)
+                {
+                    initializer.Initialize(loRaDevice);
+                }
             }
         }
     }

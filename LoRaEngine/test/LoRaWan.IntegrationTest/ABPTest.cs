@@ -183,7 +183,7 @@ namespace LoRaWan.IntegrationTest
             // await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.lora.SerialLogs);
 
             // 0000000000000005: with devAddr 0028B1B0 check MIC failed. Device will be ignored from now on
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DevAddr}: with devAddr {device.DevAddr} check MIC failed");
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -195,7 +195,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
             // 0000000000000005: with devAddr 0028B1B0 check MIC failed
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DevAddr}: with devAddr {device.DevAddr} check MIC failed");
 
             // wait until arduino stops trying to send confirmed msg
             await this.ArduinoDevice.WaitForIdleAsync();
@@ -226,7 +226,7 @@ namespace LoRaWan.IntegrationTest
             await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
             // 0000000000000008: with devAddr 0028B1B3 check MIC failed. Device will be ignored from now on
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DevAddr}: with devAddr {device.DevAddr} check MIC failed");
 
             this.TestFixtureCi.ClearLogs();
 
@@ -236,14 +236,14 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             // 0000000000000008: with devAddr 0028B1B3 check MIC failed.
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: with devAddr {device.DevAddr} check MIC failed");
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DevAddr}: with devAddr {device.DevAddr} check MIC failed");
 
             // Before starting new test, wait until Lora drivers stops sending/receiving data
             await this.ArduinoDevice.WaitForIdleAsync();
         }
 
         // Verifies that ABP confirmed and unconfirmed messages are working
-        // Uses Device5_ABP
+        // Uses Device16_ABP and Device17_ABP
         [Fact]
         public async Task Test_ABP_Device_With_Same_DevAddr()
         {

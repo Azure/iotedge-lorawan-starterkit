@@ -137,16 +137,16 @@ namespace LoRaWan.NetworkServer
         public int ResolveReceiveWindowToUse(LoRaDevice loRaDevice)
         {
             var elapsed = this.GetElapsedTime();
-            if (loRaDevice.PreferredWindow == 1 && this.InTimeForReceiveFirstWindow(loRaDevice, elapsed))
+            if (loRaDevice.PreferredWindow == Constants.RECEIVE_WINDOW_1 && this.InTimeForReceiveFirstWindow(loRaDevice, elapsed))
             {
-                return 1;
+                return Constants.RECEIVE_WINDOW_1;
             }
             else if (this.InTimeForReceiveSecondWindow(loRaDevice, elapsed))
             {
-                return 2;
+                return Constants.RECEIVE_WINDOW_2;
             }
 
-            return 0;
+            return Constants.INVALID_RECEIVE_WINDOW;
         }
 
         /// <summary>
@@ -157,14 +157,14 @@ namespace LoRaWan.NetworkServer
             var elapsed = this.GetElapsedTime();
             if (this.InTimeForJoinAcceptFirstWindow(loRaDevice, elapsed))
             {
-                return 1;
+                return Constants.RECEIVE_WINDOW_1;
             }
             else if (this.InTimeForJoinAcceptSecondWindow(loRaDevice, elapsed))
             {
-                return 2;
+                return Constants.RECEIVE_WINDOW_2;
             }
 
-            return 0;
+            return Constants.INVALID_RECEIVE_WINDOW;
         }
 
         bool InTimeForJoinAcceptFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed)
@@ -185,7 +185,7 @@ namespace LoRaWan.NetworkServer
         public TimeSpan GetAvailableTimeToCheckCloudToDeviceMessage(LoRaDevice loRaDevice)
         {
             var elapsed = this.GetElapsedTime();
-            if (loRaDevice.PreferredWindow == 1)
+            if (loRaDevice.PreferredWindow == Constants.RECEIVE_WINDOW_1)
             {
                 var availableTimeForFirstWindow = TimeSpan.FromSeconds(this.GetReceiveWindow1Delay(loRaDevice)).Subtract(elapsed.Add(ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead));
                 if (availableTimeForFirstWindow >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)

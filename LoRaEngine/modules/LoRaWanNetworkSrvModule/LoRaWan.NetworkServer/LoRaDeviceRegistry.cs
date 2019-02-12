@@ -32,6 +32,12 @@ namespace LoRaWan.NetworkServer
         private volatile IMemoryCache cache;
         private CancellationTokenSource resetCacheToken;
 
+        /// <summary>
+        /// Gets or sets the interval in which devices will be loaded
+        /// Only affect reload attempts for same DevAddr
+        /// </summary>
+        public TimeSpan DevAddrReloadInterval { get; set; }
+
         public LoRaDeviceRegistry(
             NetworkServerConfiguration configuration,
             IMemoryCache cache,
@@ -44,6 +50,7 @@ namespace LoRaWan.NetworkServer
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.deviceFactory = deviceFactory;
             this.initializers = new HashSet<ILoRaDeviceInitializer>();
+            this.DevAddrReloadInterval = TimeSpan.FromSeconds(30);
         }
 
         /// <summary>
@@ -67,9 +74,75 @@ namespace LoRaWan.NetworkServer
             });
         }
 
+        DeviceLoaderSynchronizer GetOrCreateLoadingDevicesRequestQueue(string devAddr)
+        {
+            return this.cache.GetOrCreate<DeviceLoaderSynchronizer>(
+                $"devaddrloader:{devAddr}",
+                (ce) =>
+                {
+                    var cts = new CancellationTokenSource();
+                    ce.ExpirationTokens.Add(new CancellationChangeToken(cts.Token));
+
+                    var destinationDictionary = this.InternalGetCachedDevicesForDevAddr(devAddr);
+                    var originalDeviceCount = destinationDictionary.Count;
+                    var loader = new DeviceLoaderSynchronizer(
+                        devAddr,
+                        this.loRaDeviceAPIService,
+                        this.deviceFactory,
+                        destinationDictionary,
+                        this.initializers,
+                        this.configuration,
+                        (t) =>
+                        {
+                            // If the operation to load was successfull
+                            // wait for 30 seconds for pending requests to go thorugh and avoid additional calls
+                            if (t.IsCompletedSuccessfully && this.DevAddrReloadInterval > TimeSpan.Zero)
+                            {
+                                Logger.Log(devAddr, $"Scheduled removal of loader in {this.DevAddrReloadInterval}. Dictionary has {destinationDictionary.Count}, from {originalDeviceCount}", LogLevel.Debug);
+                                // remove from cache after 30 seconds
+                                cts.CancelAfter(this.DevAddrReloadInterval);
+                            }
+                            else
+                            {
+                                Logger.Log(devAddr, $"Removing loader now. Dictionary has {destinationDictionary.Count}, from {originalDeviceCount}. Loader succeeded: {t.IsCompletedSuccessfully}", LogLevel.Debug);
+                                // remove from cache now
+                                cts.Cancel();
+                            }
+                        });
+
+                    return loader;
+                });
+        }
+
+        public ILoRaDeviceRequestQueue GetLoRaRequestQueue(LoRaRequest request)
+        {
+            var devAddr = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
+            var devicesMatchingDevAddr = this.InternalGetCachedDevicesForDevAddr(devAddr);
+
+            // If already in cache, return quickly
+            if (devicesMatchingDevAddr.Count > 0)
+            {
+                var cachedMatchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => this.IsValidDeviceForPayload(x, (LoRaPayloadData)request.Payload, logError: false));
+                if (cachedMatchingDevice != null)
+                {
+                    Logger.Log(cachedMatchingDevice.DevEUI, "device in cache", LogLevel.Debug);
+                    if (cachedMatchingDevice.IsOurDevice)
+                    {
+                        return cachedMatchingDevice;
+                    }
+
+                    return new ExternalGatewayLoRaRequestQueue(cachedMatchingDevice);
+                }
+            }
+
+            // not in cache, need to make a single search by dev addr
+            return this.GetOrCreateLoadingDevicesRequestQueue(devAddr);
+        }
+
         /// <summary>
         /// Finds a device based on the <see cref="LoRaPayloadData"/>
         /// </summary>
+        [Obsolete("replaced by queue")]
         public async Task<LoRaDevice> GetDeviceForPayloadAsync(LoRaPayloadData loraPayload)
         {
             var devAddr = ConversionHelper.ByteArrayToString(loraPayload.DevAddr.ToArray());

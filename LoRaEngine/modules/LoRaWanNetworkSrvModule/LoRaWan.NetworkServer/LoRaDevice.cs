@@ -8,8 +8,9 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Logging;
 
-    public sealed class LoRaDevice : IDisposable
+    public sealed class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
     {
         /// <summary>
         /// Defines the maximum amount of times an ack resubmit will be sent
@@ -68,7 +69,7 @@ namespace LoRaWan.NetworkServer
 
             set
             {
-                if (value != 1 && value != 2)
+                if (value != Constants.RECEIVE_WINDOW_1 && value != Constants.RECEIVE_WINDOW_2)
                     throw new ArgumentOutOfRangeException(nameof(this.PreferredWindow), value, $"{nameof(this.PreferredWindow)} must bet 1 or 2");
 
                 this.preferredWindow = value;
@@ -76,10 +77,13 @@ namespace LoRaWan.NetworkServer
         }
 
         readonly object fcntLock;
+        readonly Queue<LoRaRequest> queuedRequests;
         volatile bool hasFrameCountChanges;
         byte confirmationResubmitCount = 0;
         volatile int fcntUp;
         volatile int fcntDown;
+        volatile LoRaRequest runningRequest;
+        private ILoRaDataRequestHandler dataRequestHandler;
 
         /// <summary>
         ///  Gets or sets a value indicating whether cloud to device messages are enabled for the device
@@ -98,6 +102,7 @@ namespace LoRaWan.NetworkServer
             this.hasFrameCountChanges = false;
             this.fcntLock = new object();
             this.confirmationResubmitCount = 0;
+            this.queuedRequests = new Queue<LoRaRequest>();
         }
 
         /// <summary>
@@ -187,7 +192,7 @@ namespace LoRaWan.NetworkServer
                 if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
                 {
                     var preferredWindowTwinValue = this.GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
-                    if (preferredWindowTwinValue == 2)
+                    if (preferredWindowTwinValue == Constants.RECEIVE_WINDOW_2)
                         this.PreferredWindow = preferredWindowTwinValue;
                 }
 
@@ -361,6 +366,11 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
+        /// Disconnects device from IoT Hub
+        /// </summary>
+        public Task<bool> DisconnectAsync() => this.loRaDeviceClient.DisconnectAsync();
+
+        /// <summary>
         /// Indicates whether or not we can resubmit an ack for the confirmation up message
         /// </summary>
         /// <returns><c>true</c>, if resubmit is allowed, <c>false</c> otherwise.</returns>
@@ -419,6 +429,80 @@ namespace LoRaWan.NetworkServer
             }
 
             return succeeded;
+        }
+
+        internal void SetRequestHandler(ILoRaDataRequestHandler dataRequestHandler) => this.dataRequestHandler = dataRequestHandler;
+
+        public void Queue(LoRaRequest request)
+        {
+            // Access to runningRequest and queuedRequests must be
+            // thread safe
+            lock (this)
+            {
+                if (this.runningRequest == null)
+                {
+                    this.StartNextRequest(request);
+                }
+                else
+                {
+                    this.queuedRequests.Enqueue(request);
+                }
+            }
+        }
+
+        private void ProcessNext()
+        {
+            // Access to runningRequest and queuedRequests must be
+            // thread safe
+            lock (this)
+            {
+                this.runningRequest = null;
+                if (this.queuedRequests.TryDequeue(out var nextRequest))
+                {
+                    this.StartNextRequest(nextRequest);
+                }
+            }
+        }
+
+        void StartNextRequest(LoRaRequest requestToStart)
+        {
+            async Task RunAndQueueNext(LoRaRequest request)
+            {
+                LoRaDeviceRequestProcessResult result = null;
+                Exception processingError = null;
+
+                try
+                {
+                    result = await this.dataRequestHandler.ProcessRequestAsync(request, this);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(this.DevEUI, $"Error processing request: {ex.Message}", LogLevel.Error);
+                    processingError = ex;
+                }
+                finally
+                {
+                    this.ProcessNext();
+                }
+
+                if (processingError != null)
+                {
+                    request.NotifyFailed(this, processingError);
+                }
+                else if (result.FailedReason.HasValue)
+                {
+                    request.NotifyFailed(this, result.FailedReason.Value);
+                }
+                else
+                {
+                    request.NotifySucceeded(this, result?.DownlinkMessage);
+                }
+            }
+
+            this.runningRequest = requestToStart;
+
+            // Ensure that this is schedule in a new thread, releasing the lock asap
+            Task.Run(() => { _ = RunAndQueueNext(requestToStart); });
         }
 
         public void Dispose()

@@ -14,7 +14,8 @@ namespace LoRaWan.NetworkServer.Test
     {
         internal static LoRaDevice CreateFromSimulatedDevice(
             SimulatedDevice simulatedDevice,
-            ILoRaDeviceClient loRaDeviceClient)
+            ILoRaDeviceClient loRaDeviceClient,
+            DefaultLoRaDataRequestHandler requestHandler = null)
         {
             var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, loRaDeviceClient)
             {
@@ -28,6 +29,9 @@ namespace LoRaWan.NetworkServer.Test
             };
             result.SetFcntDown(simulatedDevice.FrmCntDown);
             result.SetFcntUp(simulatedDevice.FrmCntUp);
+
+            if (requestHandler != null)
+                result.SetRequestHandler(requestHandler);
 
             return result;
         }
@@ -75,6 +79,38 @@ namespace LoRaWan.NetworkServer.Test
 
             var reported = new Dictionary<string, object>
             {
+                { TwinProperty.FCntDown, simulatedDevice.FrmCntDown },
+                { TwinProperty.FCntUp, simulatedDevice.FrmCntUp }
+            };
+
+            return CreateTwin(desired: finalDesiredProperties, reported: reported);
+        }
+
+        internal static Twin CreateOTAATwin(this SimulatedDevice simulatedDevice, Dictionary<string, object> desiredProperties = null)
+        {
+            var finalDesiredProperties = new Dictionary<string, object>
+                {
+                    { TwinProperty.AppEUI, simulatedDevice.AppEUI },
+                    { TwinProperty.AppKey, simulatedDevice.AppKey },
+                    { TwinProperty.GatewayID, simulatedDevice.LoRaDevice.GatewayID },
+                    { TwinProperty.SensorDecoder, simulatedDevice.LoRaDevice.SensorDecoder },
+                };
+
+            if (desiredProperties != null)
+            {
+                foreach (var kv in desiredProperties)
+                {
+                    finalDesiredProperties[kv.Key] = kv.Value;
+                }
+            }
+
+            var reported = new Dictionary<string, object>
+            {
+                { TwinProperty.DevAddr, simulatedDevice.DevAddr },
+                { TwinProperty.AppSKey, simulatedDevice.AppSKey },
+                { TwinProperty.NwkSKey, simulatedDevice.NwkSKey },
+                { TwinProperty.DevNonce, simulatedDevice.DevNonce },
+                { TwinProperty.NetID, simulatedDevice.NetId },
                 { TwinProperty.FCntDown, simulatedDevice.FrmCntDown },
                 { TwinProperty.FCntUp, simulatedDevice.FrmCntUp }
             };

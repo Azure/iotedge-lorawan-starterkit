@@ -303,7 +303,7 @@ namespace LoRaWan.IntegrationTest
                 IsIoTHubDevice = true,
                 AppSKey = "00000000000000000000000000000017",
                 NwkSKey = "00000000000000000000000000000017",
-                DevAddr = "00000017",
+                DevAddr = this.Device16_ABP.DevAddr, // MUST match DevAddr from Device16
             };
 
             // Device18_ABP: used for C2D invalid fport testing

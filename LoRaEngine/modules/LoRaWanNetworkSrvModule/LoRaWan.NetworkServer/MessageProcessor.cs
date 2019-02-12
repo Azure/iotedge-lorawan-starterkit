@@ -19,6 +19,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Message processor
     /// </summary>
+    [Obsolete("replaced by MessageDispatcher", true)]
     public class MessageProcessor
     {
         // Defines Cloud to device message property containing fport value
@@ -38,24 +39,24 @@ namespace LoRaWan.NetworkServer
 
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry deviceRegistry;
-        private readonly ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory;
+        private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private readonly ILoRaPayloadDecoder payloadDecoder;
         private volatile Region loraRegion;
 
         public MessageProcessor(
             NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry deviceRegistry,
-            ILoRaDeviceFrameCounterUpdateStrategyFactory frameCounterUpdateStrategyFactory,
+            ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             ILoRaPayloadDecoder payloadDecoder)
         {
             this.configuration = configuration;
             this.deviceRegistry = deviceRegistry;
-            this.frameCounterUpdateStrategyFactory = frameCounterUpdateStrategyFactory;
+            this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.payloadDecoder = payloadDecoder;
 
             // Register frame counter initializer
             // It will take care of seeding ABP devices created here for single gateway scenarios
-            this.deviceRegistry.RegisterDeviceInitializer(new FrameCounterLoRaDeviceInitializer(configuration.GatewayID, frameCounterUpdateStrategyFactory));
+            this.deviceRegistry.RegisterDeviceInitializer(new FrameCounterLoRaDeviceInitializer(configuration.GatewayID, frameCounterUpdateStrategyProvider));
         }
 
         /// <summary>
@@ -135,8 +136,7 @@ namespace LoRaWan.NetworkServer
                 // Add context to logger
                 processLogger.SetDevEUI(loRaDevice.DevEUI);
 
-                var isMultiGateway = !string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
-                var frameCounterStrategy = isMultiGateway ? this.frameCounterUpdateStrategyFactory.GetMultiGatewayStrategy() : this.frameCounterUpdateStrategyFactory.GetSingleGatewayStrategy();
+                var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
 
                 var payloadFcnt = loraPayload.GetFcnt();
                 var requiresConfirmation = loraPayload.IsConfirmed();
@@ -483,13 +483,13 @@ namespace LoRaWan.NetworkServer
             // if (firstWindowTime > TimeSpan.Zero)
             //     System.Threading.Thread.Sleep(firstWindowTime);
             var receiveWindow = timeWatcher.ResolveReceiveWindowToUse(loRaDevice);
-            if (receiveWindow == 0)
+            if (receiveWindow == Constants.INVALID_RECEIVE_WINDOW)
                 return null;
 
             string datr = null;
             double freq = 0;
             long tmst = 0;
-            if (receiveWindow == 2)
+            if (receiveWindow == Constants.RECEIVE_WINDOW_2)
             {
                 tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
 
@@ -705,7 +705,7 @@ namespace LoRaWan.NetworkServer
                 double freq = 0;
                 string datr = null;
                 uint tmst = 0;
-                if (windowToUse == 1)
+                if (windowToUse == Constants.RECEIVE_WINDOW_1)
                 {
                     try
                     {
