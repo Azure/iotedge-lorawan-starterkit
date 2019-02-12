@@ -71,6 +71,9 @@ namespace LoRaWan.NetworkServer
         [JsonProperty("edgets")]
         public long Edgets { get; set; }
 
+        [JsonProperty("dupmsg")]
+        public bool? DupMsg { get; set; }
+
         [JsonExtensionData]
         public Dictionary<string, object> ExtraData { get; } = new Dictionary<string, object>();
 

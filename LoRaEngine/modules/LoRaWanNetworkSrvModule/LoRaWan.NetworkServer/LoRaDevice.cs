@@ -10,6 +10,13 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
 
+    public enum DeduplicationMode
+    {
+        None = 0,
+        Drop,
+        Mark
+    }
+
     public sealed class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
     {
         /// <summary>
@@ -57,6 +64,8 @@ namespace LoRaWan.NetworkServer
         public int? ReceiveDelay2 { get; set; }
 
         public bool IsABPRelaxedFrameCounter { get; set; }
+
+        public DeduplicationMode Deduplication { get; set; }
 
         int preferredWindow;
 
@@ -194,6 +203,13 @@ namespace LoRaWan.NetworkServer
                     var preferredWindowTwinValue = this.GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
                     if (preferredWindowTwinValue == Constants.RECEIVE_WINDOW_2)
                         this.PreferredWindow = preferredWindowTwinValue;
+                }
+
+                if (twin.Properties.Desired.Contains(TwinProperty.Deduplication))
+                {
+                    var val = (string)twin.Properties.Desired[TwinProperty.Deduplication];
+                    Enum.TryParse<DeduplicationMode>(val, out DeduplicationMode mode);
+                    this.Deduplication = mode;
                 }
 
                 return true;

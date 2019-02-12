@@ -73,6 +73,7 @@ namespace LoRaWan.NetworkServer
             var dataHandlerImplementation = new DefaultLoRaDataRequestHandler(configuration, frameCounterStrategyProvider, new LoRaPayloadDecoder());
             var loRaDeviceFactory = new LoRaDeviceFactory(configuration, dataHandlerImplementation);
             var loRaDeviceRegistry = new LoRaDeviceRegistry(configuration, new MemoryCache(new MemoryCacheOptions()), loRaDeviceAPIService, loRaDeviceFactory);
+            var deduplicationStrategyFactory = new DeduplicationStrategyFactory(loRaDeviceAPIService);
             var messageDispatcher = new MessageDispatcher(configuration, loRaDeviceRegistry, frameCounterStrategyProvider);
             return new UdpServer(configuration, messageDispatcher, loRaDeviceAPIService, loRaDeviceRegistry);
 #else

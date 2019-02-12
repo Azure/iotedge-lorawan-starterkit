@@ -39,6 +39,7 @@ namespace LoRaWan.NetworkServer
 
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry deviceRegistry;
+        private readonly IDeduplicationStrategyFactory deduplicationStrategyFactory;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private readonly ILoRaPayloadDecoder payloadDecoder;
         private volatile Region loraRegion;
@@ -47,12 +48,14 @@ namespace LoRaWan.NetworkServer
             NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry deviceRegistry,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
-            ILoRaPayloadDecoder payloadDecoder)
+            ILoRaPayloadDecoder payloadDecoder,
+            IDeduplicationStrategyFactory deduplicationStrategyFactory)
         {
             this.configuration = configuration;
             this.deviceRegistry = deviceRegistry;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.payloadDecoder = payloadDecoder;
+            this.deduplicationStrategyFactory = deduplicationStrategyFactory;
 
             // Register frame counter initializer
             // It will take care of seeding ABP devices created here for single gateway scenarios
@@ -136,9 +139,27 @@ namespace LoRaWan.NetworkServer
                 // Add context to logger
                 processLogger.SetDevEUI(loRaDevice.DevEUI);
 
-                var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
-
                 var payloadFcnt = loraPayload.GetFcnt();
+                DeduplicationResult deduplicationResult = null;
+
+                var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
+                if (useMultipleGateways)
+                {
+                    // applying the correct deduplication
+                    var deduplicationStrategy = this.deduplicationStrategyFactory.Create(loRaDevice);
+                    if (deduplicationStrategy != null)
+                    {
+                        deduplicationResult = await deduplicationStrategy.ResolveDeduplication(payloadFcnt, this.configuration.GatewayID);
+                        if (!deduplicationResult.CanProcess)
+                        {
+                            // duplication strategy is indicating that we do not need to continue processing this message
+                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcnt}", LogLevel.Information);
+                            return null;
+                        }
+                    }
+                }
+
+                var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
                 var requiresConfirmation = loraPayload.IsConfirmed();
 
                 using (new LoRaDeviceFrameCounterSession(loRaDevice, frameCounterStrategy))
@@ -190,10 +211,10 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    var fcntDown = 0;
+                    int? fcntDown = deduplicationResult != null && deduplicationResult.ClientFCntDown.HasValue ? deduplicationResult.ClientFCntDown : null;
                     // If it is confirmed it require us to update the frame counter down
                     // Multiple gateways: in redis, otherwise in device twin
-                    if (requiresConfirmation)
+                    if (requiresConfirmation && !fcntDown.HasValue)
                     {
                         fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, payloadFcnt);
 
@@ -249,7 +270,7 @@ namespace LoRaWan.NetworkServer
                                 }
                             }
 
-                            if (!await this.SendDeviceEventAsync(loRaDevice, rxpk, payloadData, loraPayload, timeWatcher))
+                            if (!await this.SendDeviceEventAsync(loRaDevice, rxpk, payloadData, loraPayload, timeWatcher, deduplicationResult))
                             {
                                 // failed to send event to IoT Hub, stop now
                                 return null;
@@ -550,7 +571,7 @@ namespace LoRaWan.NetworkServer
         }
 
         // Sends device telemetry data to IoT Hub
-        private async Task<bool> SendDeviceEventAsync(LoRaDevice loRaDevice, Rxpk rxpk, object decodedValue, LoRaPayloadData loRaPayloadData, LoRaOperationTimeWatcher timeWatcher)
+        private async Task<bool> SendDeviceEventAsync(LoRaDevice loRaDevice, Rxpk rxpk, object decodedValue, LoRaPayloadData loRaPayloadData, LoRaOperationTimeWatcher timeWatcher, DeduplicationResult deduplicationResult)
         {
             var deviceTelemetry = new LoRaDeviceTelemetry(rxpk, loRaPayloadData, decodedValue)
             {
@@ -558,6 +579,11 @@ namespace LoRaWan.NetworkServer
                 GatewayID = this.configuration.GatewayID,
                 Edgets = (long)(timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds
             };
+
+            if (deduplicationResult != null && deduplicationResult.IsDuplicate)
+            {
+                deviceTelemetry.DupMsg = true;
+            }
 
             Dictionary<string, string> eventProperties = null;
             if (loRaPayloadData.IsUpwardAck())
