@@ -20,9 +20,8 @@ namespace LoRaWan.NetworkServer
         {
             if (loRaDevice.IsOurDevice)
             {
-                var isMultiGateway = !string.Equals(this.gatewayID, loRaDevice.GatewayID, StringComparison.InvariantCultureIgnoreCase);
-                var strategy = isMultiGateway ? this.frameCounterUpdateStrategyProvider.GetMultiGatewayStrategy() : this.frameCounterUpdateStrategyProvider.GetSingleGatewayStrategy();
-                if (strategy is ILoRaDeviceInitializer initializer)
+                var strategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
+                if (strategy != null && strategy is ILoRaDeviceInitializer initializer)
                 {
                     initializer.Initialize(loRaDevice);
                 }

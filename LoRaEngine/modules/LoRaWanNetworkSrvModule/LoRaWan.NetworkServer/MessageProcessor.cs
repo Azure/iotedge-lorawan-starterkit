@@ -136,8 +136,7 @@ namespace LoRaWan.NetworkServer
                 // Add context to logger
                 processLogger.SetDevEUI(loRaDevice.DevEUI);
 
-                var isMultiGateway = !string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
-                var frameCounterStrategy = isMultiGateway ? this.frameCounterUpdateStrategyProvider.GetMultiGatewayStrategy() : this.frameCounterUpdateStrategyProvider.GetSingleGatewayStrategy();
+                var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
 
                 var payloadFcnt = loraPayload.GetFcnt();
                 var requiresConfirmation = loraPayload.IsConfirmed();

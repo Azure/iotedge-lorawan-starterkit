@@ -5,8 +5,6 @@ namespace LoRaWan.NetworkServer
 {
     public interface ILoRaDeviceFrameCounterUpdateStrategyProvider
     {
-        ILoRaDeviceFrameCounterUpdateStrategy GetMultiGatewayStrategy();
-
-        ILoRaDeviceFrameCounterUpdateStrategy GetSingleGatewayStrategy();
+        ILoRaDeviceFrameCounterUpdateStrategy GetStrategy(string deviceGatewayID);
     }
 }

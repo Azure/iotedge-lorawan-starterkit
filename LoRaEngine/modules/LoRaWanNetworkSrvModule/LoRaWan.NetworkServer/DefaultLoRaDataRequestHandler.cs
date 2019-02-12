@@ -35,10 +35,12 @@ namespace LoRaWan.NetworkServer
         {
             var timeWatcher = new LoRaOperationTimeWatcher(request.LoRaRegion, request.StartTime);
             var loraPayload = (LoRaPayloadData)request.Payload;
-            var isMultiGateway = !string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
-            var frameCounterStrategy = isMultiGateway ?
-                this.frameCounterUpdateStrategyProvider.GetMultiGatewayStrategy() :
-                this.frameCounterUpdateStrategyProvider.GetSingleGatewayStrategy();
+            var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
+            if (frameCounterStrategy == null)
+            {
+                Logger.Log(loRaDevice.DevEUI, $"failed to resolve frame count update strategy, device gateway: {loRaDevice.GatewayID}, message ignored", LogLevel.Error);
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.ApplicationError);
+            }
 
             var payloadFcnt = loraPayload.GetFcnt();
             var requiresConfirmation = loraPayload.IsConfirmed();
