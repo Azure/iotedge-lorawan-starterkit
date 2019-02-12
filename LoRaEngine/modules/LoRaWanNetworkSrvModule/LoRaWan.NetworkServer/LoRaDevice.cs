@@ -500,7 +500,9 @@ namespace LoRaWan.NetworkServer
             }
 
             this.runningRequest = requestToStart;
-            _ = RunAndQueueNext(requestToStart);
+
+            // Ensure that this is schedule in a new thread, releasing the lock asap
+            Task.Run(() => { _ = RunAndQueueNext(requestToStart); });
         }
 
         public void Dispose()
