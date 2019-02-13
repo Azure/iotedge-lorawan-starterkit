@@ -14,6 +14,7 @@ namespace LoraKeysManagerFacade
         private const string CacheKeyLockSuffix = "msglock";
         private static readonly TimeSpan LockWaitingTimeout = TimeSpan.FromSeconds(10);
         private static IDatabase redisCache;
+        private static object cacheSingletonLock = new object();
 
         private readonly string gatewayId;
         private readonly string devEUI;
@@ -90,7 +91,7 @@ namespace LoraKeysManagerFacade
                 return false;
             }
 
-            info = (DeviceCacheInfo)JsonConvert.DeserializeObject(cachedFCnt, typeof(DeviceCacheInfo));
+            info = JsonConvert.DeserializeObject<DeviceCacheInfo>(cachedFCnt);
             return info != null;
         }
 
@@ -122,7 +123,7 @@ namespace LoraKeysManagerFacade
                 return;
             }
 
-            lock (typeof(LoRaDeviceCache))
+            lock (cacheSingletonLock)
             {
                 if (redisCache == null)
                 {
