@@ -20,7 +20,7 @@ If you would like to make your gateway highlighted on our GitHub page, we expect
 
 Example:
 
-![Decoder](/Pictures/samples.png)
+![Decoder](/Docs/Pictures/samples.png)
 
 - We have provided a [sample reference implementation](/Samples/DecoderSample) of a decoder, please refer to this as a template and leverage the [instructions](/Samples/DecoderSample/ReadMe.md) to create implementation of your customer decoder. 
 - The Sample code can also contain device model specific tests that when run allows for testing of the gateway.

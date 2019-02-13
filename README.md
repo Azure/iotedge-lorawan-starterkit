@@ -37,7 +37,7 @@ The LoRaWAN starter kit is an *experimental* cross platform private network impl
 - ADR Support
 - Multi-gateways
   
-NOTE: Some features are a Work in Progress (WIP), see [**release notes**](releases) for current status of these feature deliverables.
+NOTE: Some features are a Work in Progress (WIP), see releases in the repo for current status of these feature deliverables.
 
 ## Prerequisites
 The following should be completed before proceeding with the LoRaWAN starter kit development or deployment in your environment.
@@ -68,7 +68,7 @@ Refer to [Known Issues](/Docs/issues.md) for known issues, gotchas and limitatio
 - [RAK833-USB mPCIe-LoRa-Concentrator with Raspberry Pi 3](/Docs/LoRaWanPktFwdRAK833USB)
 
 ## Support
-The LoRaWAN starter kit is an open source solution, it is NOT a Microsoft supported solution or product. For bugs and issues with the codebase please log an [Issue](issues/new) in this repo.
+The LoRaWAN starter kit is an open source solution, it is NOT a Microsoft supported solution or product. For bugs and issues with the codebase please log an issue in this repo.
 
 ## Contributing
 
