@@ -18,15 +18,15 @@ namespace LoRaWan.NetworkServer
             Logger.Log("Deduplication Strategy: Drop", LogLevel.Debug);
         }
 
-        public async Task<DeduplicationResult> ResolveDeduplication(int fcnt, string gatewayId)
+        public async Task<DeduplicationResult> ResolveDeduplication(int fcntUp, int? fcntDown, string gatewayId)
         {
-            var result = await this.loRaDeviceAPIService.CheckDuplicateMsgAsync(this.loRaDevice.DevEUI, fcnt, gatewayId);
+            var result = await this.loRaDeviceAPIService.CheckDuplicateMsgAsync(this.loRaDevice.DevEUI, fcntUp, gatewayId, fcntDown);
 
             result.CanProcess = !result.IsDuplicate;
 
             if (result.IsDuplicate)
             {
-                Logger.Log(this.loRaDevice.DevEUI, $"Duplicate message '{fcnt}' is dropped.", LogLevel.Debug);
+                Logger.Log(this.loRaDevice.DevEUI, $"Duplicate message '{fcntUp}' is dropped.", LogLevel.Debug);
             }
 
             return result;

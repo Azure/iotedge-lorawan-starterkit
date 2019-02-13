@@ -20,30 +20,57 @@ namespace LoRaWan.NetworkServer
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private readonly ILoRaPayloadDecoder payloadDecoder;
+        private readonly IDeduplicationStrategyFactory deduplicationFactory;
 
         public DefaultLoRaDataRequestHandler(
             NetworkServerConfiguration configuration,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
-            ILoRaPayloadDecoder payloadDecoder)
+            ILoRaPayloadDecoder payloadDecoder,
+            IDeduplicationStrategyFactory deduplicationFactory)
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.payloadDecoder = payloadDecoder;
+            this.deduplicationFactory = deduplicationFactory;
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
         {
             var timeWatcher = new LoRaOperationTimeWatcher(request.LoRaRegion, request.StartTime);
             var loraPayload = (LoRaPayloadData)request.Payload;
+
+            var payloadFcnt = loraPayload.GetFcnt();
+            var requiresConfirmation = loraPayload.IsConfirmed();
+
+            DeduplicationResult deduplicationResult = null;
+
+            var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
+            if (useMultipleGateways)
+            {
+                // applying the correct deduplication
+                var deduplicationStrategy = this.deduplicationFactory.Create(loRaDevice);
+                if (deduplicationStrategy != null)
+                {
+                    // if we require a confirmation we can calculate the next frame counter down
+                    // using the same roundtrip as resolving deduplication, passing it along in that
+                    // case. The API will then send down the next frame counter down with the result
+                    int? fcntDown = requiresConfirmation ? loRaDevice.FCntDown : (int?)null;
+                    deduplicationResult = await deduplicationStrategy.ResolveDeduplication(payloadFcnt, fcntDown, this.configuration.GatewayID);
+                    if (!deduplicationResult.CanProcess)
+                    {
+                        // duplication strategy is indicating that we do not need to continue processing this message
+                        Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcnt}", LogLevel.Information);
+                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
+                    }
+                }
+            }
+
             var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
             if (frameCounterStrategy == null)
             {
                 Logger.Log(loRaDevice.DevEUI, $"failed to resolve frame count update strategy, device gateway: {loRaDevice.GatewayID}, message ignored", LogLevel.Error);
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.ApplicationError);
             }
-
-            var payloadFcnt = loraPayload.GetFcnt();
-            var requiresConfirmation = loraPayload.IsConfirmed();
 
             using (new LoRaDeviceFrameCounterSession(loRaDevice, frameCounterStrategy))
             {
@@ -93,10 +120,12 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                var fcntDown = 0;
+                // if deduplication already processed the next framecounter down, use that
+                int? fcntDown = deduplicationResult?.ClientFCntDown;
+
                 // If it is confirmed it require us to update the frame counter down
                 // Multiple gateways: in redis, otherwise in device twin
-                if (requiresConfirmation)
+                if (!fcntDown.HasValue && requiresConfirmation)
                 {
                     fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, payloadFcnt);
 
@@ -152,7 +181,7 @@ namespace LoRaWan.NetworkServer
                             }
                         }
 
-                        if (!await this.SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData))
+                        if (!await this.SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, deduplicationResult))
                         {
                             // failed to send event to IoT Hub, stop now
                             return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.IoTHubProblem);
@@ -453,7 +482,7 @@ namespace LoRaWan.NetworkServer
             return ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI);
         }
 
-        private async Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue)
+        private async Task<bool> SendDeviceEventAsync(LoRaRequest request, LoRaDevice loRaDevice, LoRaOperationTimeWatcher timeWatcher, object decodedValue, DeduplicationResult deduplicationResult)
         {
             var loRaPayloadData = (LoRaPayloadData)request.Payload;
             var deviceTelemetry = new LoRaDeviceTelemetry(request.Rxpk, loRaPayloadData, decodedValue)
@@ -462,6 +491,11 @@ namespace LoRaWan.NetworkServer
                 GatewayID = this.configuration.GatewayID,
                 Edgets = (long)(timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds
             };
+
+            if (deduplicationResult != null && deduplicationResult.IsDuplicate)
+            {
+                deviceTelemetry.DupMsg = true;
+            }
 
             Dictionary<string, string> eventProperties = null;
             if (loRaPayloadData.IsUpwardAck())
