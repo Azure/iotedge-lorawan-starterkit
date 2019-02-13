@@ -10,13 +10,6 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
 
-    public enum DeduplicationMode
-    {
-        None = 0,
-        Drop,
-        Mark
-    }
-
     public sealed class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
     {
         /// <summary>

@@ -121,17 +121,4 @@ namespace LoRaTools
             }
         }
     }
-
-    public enum CidEnum
-    {
-        Zero,
-        One,
-        LinkCheckCmd,
-        LinkADRCmd,
-        DutyCycleCmd,
-        RXParamCmd,
-        DevStatusCmd,
-        NewChannelCmd,
-        RXTimingCmd
-    }
 }

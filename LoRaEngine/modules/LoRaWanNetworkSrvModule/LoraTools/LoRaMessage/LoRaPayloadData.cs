@@ -17,18 +17,6 @@ namespace LoRaTools.LoRaMessage
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
-    public enum FctrlEnum : short
-    {
-        FOptLen1 = 0,
-        FOptLen2 = 1,
-        FOptLen3 = 2,
-        FOptLen4 = 4,
-        FpendingOrClassB = 16,
-        Ack = 32,
-        ADRAckReq = 64,
-        ADR = 128
-    }
-
     /// <summary>
     /// the body of an Uplink (normal) message
     /// </summary>
