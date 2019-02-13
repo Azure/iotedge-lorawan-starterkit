@@ -7,7 +7,7 @@ The LoRaWAN starter kit is an *experimental* cross platform private network impl
   
   - [Features](#features)
   - [LoRaWAN Specification Support](#lorawan-specification-support)
-  - [Pre-requisites](#pre-requisites)
+  - [Prerequisites](#prerequisites)
   - [Getting Started](#getting-started)
   - [Known Issues and Limitations](#known-issues-and-limitations)
   - [Tested Gateways](#tested-gateways)
