@@ -71,7 +71,7 @@ namespace LoRaWan.NetworkServer
         [JsonProperty("edgets")]
         public long Edgets { get; set; }
 
-        [JsonProperty("dupmsg")]
+        [JsonProperty("dupmsg", DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool? DupMsg { get; set; }
 
         [JsonExtensionData]

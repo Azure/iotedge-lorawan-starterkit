@@ -17,12 +17,6 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaDeviceClient : ILoRaDeviceClient
     {
-        private static readonly JsonSerializerSettings DefaultJsonSerializerSettings = new JsonSerializerSettings
-        {
-            NullValueHandling = NullValueHandling.Ignore,
-            Formatting = Formatting.None
-        };
-
         private readonly string devEUI;
         private DeviceClient deviceClient;
 
@@ -132,7 +126,7 @@ namespace LoRaWan.NetworkServer
                     // Enable retry for this send message, off by default
                     this.SetRetry(true);
 
-                    var messageJson = JsonConvert.SerializeObject(telemetry, DefaultJsonSerializerSettings);
+                    var messageJson = JsonConvert.SerializeObject(telemetry, Formatting.None);
                     var message = new Message(Encoding.UTF8.GetBytes(messageJson));
 
                     Logger.Log(this.devEUI, $"sending message {messageJson} to hub", LogLevel.Debug);
