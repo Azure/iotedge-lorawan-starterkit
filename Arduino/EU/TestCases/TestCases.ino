@@ -47,6 +47,7 @@ void setup(void)
     while(!SerialUSB);
     
     lora.init();  
+    lora.setDeviceDefault();
     configStandardLoraSettings();
 }
 

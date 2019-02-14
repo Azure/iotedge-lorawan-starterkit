@@ -962,11 +962,21 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public void setDeviceDefault()
+        /// <summary>
+        /// Reset the device to default, usefull for port manipulation.
+        /// </summary>
+        public async Task setDeviceDefault()
         {
-            this.sendCommand("AT+FDEFAULT=RISINGHF\r\n");
+            try
+            {
+                this.sendCommand("AT+FDEFAULT=RISINGHF\r\n");
+            }
+            catch (Exception ex)
+            {
+                TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex.ToString()}");
+            }
 
-            Thread.Sleep(DEFAULT_TIMEWAIT);
+            await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
         short getBatteryVoltage()

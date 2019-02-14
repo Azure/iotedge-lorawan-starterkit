@@ -31,7 +31,7 @@ namespace LoRaWan.IntegrationTest
 
             var device = this.TestFixtureCi.Device22_ABP;
             this.LogTestStart(device);
-
+            await this.ArduinoDevice.setDeviceDefault();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
@@ -57,7 +57,6 @@ namespace LoRaWan.IntegrationTest
             await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: Answering to a");
 
             this.TestFixtureCi.ClearLogs();
-            await this.ArduinoDevice.setPortAsync(1);
         }
 
         // Ensures that Mac Commands C2D messages working
@@ -69,7 +68,7 @@ namespace LoRaWan.IntegrationTest
         {
             var device = this.TestFixtureCi.Device10_OTAA;
             this.LogTestStart(device);
-
+            await this.ArduinoDevice.setDeviceDefault();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);

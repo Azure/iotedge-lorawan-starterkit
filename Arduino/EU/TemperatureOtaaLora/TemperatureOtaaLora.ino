@@ -15,6 +15,7 @@ void setup(void)
   SerialUSB.begin(115200);
 
   lora.init();
+  lora.setDeviceDefault();
   lora.setId(NULL, "47AAC86800430010", "BE7A0000000014E3");
   lora.setKey(NULL, NULL, "8AFE71A145B253E49C3031AD068277A3");
 
