@@ -14,6 +14,7 @@ namespace LoRaWan.NetworkServer.Test
         private readonly Dictionary<string, ILoRaDeviceClient> deviceClientMap;
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
+        private readonly IDeduplicationStrategyFactory deduplicationFactory;
 
         public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient)
         {
@@ -31,11 +32,13 @@ namespace LoRaWan.NetworkServer.Test
         public TestLoRaDeviceFactory(
             NetworkServerConfiguration configuration,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
-            ILoRaDeviceClient loRaDeviceClient)
+            ILoRaDeviceClient loRaDeviceClient,
+            IDeduplicationStrategyFactory deduplicationFactory)
             : this(loRaDeviceClient)
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
+            this.deduplicationFactory = deduplicationFactory;
         }
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
@@ -50,7 +53,7 @@ namespace LoRaWan.NetworkServer.Test
                 deviceInfo.DevEUI,
                 deviceClientToAssign);
 
-            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder()));
+            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), this.deduplicationFactory));
             return loRaDevice;
         }
 

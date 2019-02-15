@@ -574,7 +574,6 @@ namespace LoRaWan.IntegrationTest
         {
             var device = this.TestFixtureCi.Device21_ABP;
             this.LogTestStart(device);
-
             // Setup LoRa device properties
             await this.ArduinoDevice.setDeviceDefault();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);

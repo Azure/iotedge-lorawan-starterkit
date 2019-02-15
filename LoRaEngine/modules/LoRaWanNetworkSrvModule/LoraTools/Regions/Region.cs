@@ -9,12 +9,6 @@ namespace LoRaTools.Regions
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
 
-    public enum LoRaRegion
-    {
-        EU868,
-        US915
-    }
-
     public class Region
     {
         static readonly Region EU868;

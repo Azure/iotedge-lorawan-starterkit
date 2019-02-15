@@ -8,17 +8,6 @@ namespace LoRaTools
     using LoRaWan;
     using Microsoft.Extensions.Logging;
 
-    public enum PhysicalIdentifier
-    {
-        PUSH_DATA,
-        PUSH_ACK,
-        PULL_DATA,
-        PULL_RESP,
-        PULL_ACK,
-        TX_ACK,
-        UNKNOWN = byte.MaxValue
-    }
-
     /// <summary>
     /// The Physical Payload wrapper
     /// </summary>

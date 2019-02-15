@@ -166,16 +166,4 @@ namespace LoRaTools
             return macCommands;
         }
     }
-
-    public enum CidEnum
-    {
-        Undefined = 0,
-        LinkCheckCmd = 2,
-        LinkADRCmd = 3,
-        DutyCycleCmd = 4,
-        RXParamCmd = 5,
-        DevStatusCmd = 6,
-        NewChannelCmd = 7,
-        RXTimingCmd = 8
-    }
 }

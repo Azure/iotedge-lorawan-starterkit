@@ -976,7 +976,12 @@ namespace LoRaWan.IntegrationTest
                 TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex.ToString()}");
             }
 
-            await Task.Delay(DEFAULT_TIMEWAIT);
+            for (int i = 0; i < 10; i++)
+            {
+                if (this.SerialLogs.Contains("+FDEFAULT: OK"))
+                    return;
+                await Task.Delay(DEFAULT_TIMEWAIT);
+            }
         }
 
         short getBatteryVoltage()

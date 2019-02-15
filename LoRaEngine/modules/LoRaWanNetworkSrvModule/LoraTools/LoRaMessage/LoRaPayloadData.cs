@@ -18,18 +18,6 @@ namespace LoRaTools.LoRaMessage
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
-    public enum FctrlEnum : short
-    {
-        FOptLen1 = 0,
-        FOptLen2 = 1,
-        FOptLen3 = 2,
-        FOptLen4 = 4,
-        FpendingOrClassB = 16,
-        Ack = 32,
-        ADRAckReq = 64,
-        ADR = 128
-    }
-
     /// <summary>
     /// the body of an Uplink (normal) message
     /// </summary>
@@ -180,7 +168,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction)
         {
-            List<byte> macBytes = new List<byte>(macCommands.Count());
+            List<byte> macBytes = new List<byte>(3);
             if (macCommands != null)
             {
                 foreach (var macCommand in macCommands)
@@ -487,7 +475,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public bool IsMacAnswerRequired()
         {
-            return this.MacCommands?.FirstOrDefault(x => x.Cid == CidEnum.LinkCheckCmd) == null ? true : false;
+            return this.MacCommands?.FirstOrDefault(x => x.Cid == CidEnum.LinkCheckCmd) != null;
         }
     }
 }

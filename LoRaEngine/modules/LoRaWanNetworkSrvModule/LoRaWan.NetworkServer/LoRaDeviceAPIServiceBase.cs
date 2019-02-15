@@ -44,6 +44,18 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void SetAuthCode(string value) => this.AuthCode = value;
 
+        /// <summary>
+        /// Validates if the specified message from the device
+        /// was already processed by any gateway in the system
+        /// </summary>
+        /// <param name="devEUI">Device identifier</param>
+        /// <param name="fcntUp">frame count of the message we received</param>
+        /// <param name="gatewayId">The current processing gateway</param>
+        /// <param name="fcntDown">The frame count down of the client. This is optional and if specified
+        /// will combine the framecount down checks with the message duplication check</param>
+        /// <returns>true if it is a duplicate otherwise false</returns>
+        public abstract Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, int fcntUp, string gatewayId, int? fcntDown = null);
+
         protected LoRaDeviceAPIServiceBase()
         {
         }

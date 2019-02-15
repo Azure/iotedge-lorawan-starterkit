@@ -3,7 +3,7 @@
 
 namespace LoraKeysManagerFacade
 {
-    public class FCnt
+    public class DeviceCacheInfo
     {
         public int FCntUp { get; set; }
 

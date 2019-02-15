@@ -58,6 +58,8 @@ namespace LoRaWan.NetworkServer
 
         public bool IsABPRelaxedFrameCounter { get; set; }
 
+        public DeduplicationMode Deduplication { get; set; }
+
         int preferredWindow;
 
         /// <summary>
@@ -194,6 +196,13 @@ namespace LoRaWan.NetworkServer
                     var preferredWindowTwinValue = this.GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
                     if (preferredWindowTwinValue == Constants.RECEIVE_WINDOW_2)
                         this.PreferredWindow = preferredWindowTwinValue;
+                }
+
+                if (twin.Properties.Desired.Contains(TwinProperty.Deduplication))
+                {
+                    var val = (string)twin.Properties.Desired[TwinProperty.Deduplication];
+                    Enum.TryParse<DeduplicationMode>(val, out DeduplicationMode mode);
+                    this.Deduplication = mode;
                 }
 
                 return true;

@@ -46,6 +46,29 @@ namespace LoRaWan.NetworkServer
             return 0;
         }
 
+        public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, int fcntUp, string gatewayId, int? fcntDown = null)
+        {
+            Logger.Log(devEUI, $"check for duplicate message", LogLevel.Debug);
+
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var url = $"{this.URL}DuplicateMsgCheck?code={this.AuthCode}&DevEUI={devEUI}&FCntUp={fcntUp}&GatewayId={gatewayId}";
+            if (fcntDown.HasValue)
+            {
+                url += string.Concat("&FCntDown=", fcntDown);
+            }
+
+            var response = await client.GetAsync(url);
+            if (!response.IsSuccessStatusCode)
+            {
+                Logger.Log(devEUI, $"error calling the DuplicateMsgCheck function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                return null;
+            }
+
+            var payload = await response.Content.ReadAsStringAsync();
+            Logger.Log(devEUI, $"deduplication response: '{payload}'", LogLevel.Debug);
+            return JsonConvert.DeserializeObject<DeduplicationResult>(payload);
+        }
+
         public override async Task<bool> ABPFcntCacheResetAsync(string devEUI)
         {
             Logger.Log(devEUI, $"ABP FCnt cache reset for multigateway", LogLevel.Information);
