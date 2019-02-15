@@ -11,7 +11,7 @@ namespace LoRaTools
     /// </summary>
     public class LinkCheckRequest : MacCommand
     {
-        public override int Length => 3;
+        public override int Length => 1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkCheckRequest"/> class.
@@ -24,14 +24,12 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            List<byte> returnedBytes = new List<byte>();
-            returnedBytes.Add((byte)this.Cid);
-            return returnedBytes;
+            yield return (byte)this.Cid;
         }
 
         public override string ToString()
         {
-            return string.Empty;
+            return $"Type: {this.Cid} Answer";
         }
     }
 }

@@ -549,13 +549,13 @@ namespace LoRaWan.IntegrationTest
 
                 this.sendCommand("\"\r\n");
 
-                DateTime start = DateTime.Now;
+                DateTime start = DateTime.UtcNow;
 
                 while (true)
                 {
                     if (this.ReceivedSerial(x => x.StartsWith("+MSG: Done")))
                         return true;
-                    else if (start.AddSeconds(timeout) < DateTime.Now)
+                    else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                         return false;
 
                     await Task.Delay(100);
@@ -578,13 +578,13 @@ namespace LoRaWan.IntegrationTest
 
                 this.sendCommand("\"\r\n");
 
-                DateTime start = DateTime.Now;
+                DateTime start = DateTime.UtcNow;
 
                 while (true)
                 {
                     if (this.ReceivedSerial(x => x.StartsWith("+MSGHEX: Done")))
                         return true;
-                    else if (start.AddSeconds(timeout) < DateTime.Now)
+                    else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                         return false;
 
                     await Task.Delay(100);
@@ -605,13 +605,13 @@ namespace LoRaWan.IntegrationTest
 
             this.sendCommand("\"\r\n");
 
-            DateTime start = DateTime.Now;
+            DateTime start = DateTime.UtcNow;
 
             while (true)
             {
                 if (this.ReceivedSerial(x => x.StartsWith("+MSG: Done")))
                     return true;
-                else if (start.AddSeconds(timeout) < DateTime.Now)
+                else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                     return false;
             }
         }
@@ -633,13 +633,13 @@ namespace LoRaWan.IntegrationTest
             this.sendCommand(buffer);
             this.sendCommand("\"\r\n");
 
-            DateTime start = DateTime.Now;
+            DateTime start = DateTime.UtcNow;
 
             while (true)
             {
                 if (this.ReceivedSerial(x => x.StartsWith("+CMSG: ACK Received")))
                     return true;
-                else if (start.AddSeconds(timeout) < DateTime.Now)
+                else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                     return false;
             }
 
@@ -654,13 +654,13 @@ namespace LoRaWan.IntegrationTest
                 this.sendCommand(buffer);
                 this.sendCommand("\"\r\n");
 
-                DateTime start = DateTime.Now;
+                DateTime start = DateTime.UtcNow;
 
                 while (true)
                 {
                     if (this.ReceivedSerial(x => x.StartsWith("+CMSG: ACK Received")))
                         return true;
-                    else if (start.AddSeconds(timeout) < DateTime.Now)
+                    else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                         return false;
 
                     await Task.Delay(100);
@@ -887,7 +887,7 @@ namespace LoRaWan.IntegrationTest
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
-            DateTime start = DateTime.Now;
+            DateTime start = DateTime.UtcNow;
 
             while (true)
             {
@@ -897,7 +897,7 @@ namespace LoRaWan.IntegrationTest
                     return false;
                 else if (this.ReceivedSerial(x => x.StartsWith("+JOIN: Join failed")))
                     return false;
-                else if (start.AddMilliseconds(timeout) < DateTime.Now)
+                else if (start.AddMilliseconds(timeout) < DateTime.UtcNow)
                     return false;
             }
 
@@ -919,9 +919,9 @@ namespace LoRaWan.IntegrationTest
 
                 await Task.Delay(DEFAULT_TIMEWAIT);
 
-                DateTime start = DateTime.Now;
+                DateTime start = DateTime.UtcNow;
 
-                while (DateTime.Now.Subtract(start).TotalMilliseconds < timeoutPerTry)
+                while (DateTime.UtcNow.Subtract(start).TotalMilliseconds < timeoutPerTry)
                 {
                     if (this.ReceivedSerial((s) => s.Contains("+JOIN: Network joined", StringComparison.Ordinal)))
                         return true;

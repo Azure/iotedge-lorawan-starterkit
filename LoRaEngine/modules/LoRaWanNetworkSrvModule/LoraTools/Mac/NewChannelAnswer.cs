@@ -5,44 +5,46 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using LoRaTools.Mac;
 
     public class NewChannelAnswer : MacCommand
     {
-        private readonly byte status;
+        public byte Status { get; set; }
+
+        public bool GetDataRangeOk() => ((this.Status >> 1) & 0b00000001) == 1;
+
+        public bool GetChannelFreqOk() => (this.Status & 0b00000001) == 1;
 
         public NewChannelAnswer(bool drRangeOk, bool chanFreqOk)
         {
-            this.status |= (byte)((drRangeOk ? 1 : 0) << 2);
-            this.status |= (byte)(chanFreqOk ? 1 : 0);
+            this.Status |= (byte)((drRangeOk ? 1 : 0) << 2);
+            this.Status |= (byte)(chanFreqOk ? 1 : 0);
             this.Cid = CidEnum.NewChannelCmd;
         }
 
         public NewChannelAnswer(ReadOnlySpan<byte> readOnlySpan)
+            : base(readOnlySpan)
         {
             if (readOnlySpan.Length < this.Length)
             {
-                throw new Exception("NewChannelAnswer detected but the byte format is not correct");
+                throw new MacCommandException("NewChannelAnswer detected but the byte format is not correct");
             }
-            else
-            {
-                this.status = readOnlySpan[1];
-                this.Cid = (CidEnum)readOnlySpan[0];
-            }
+
+            this.Status = readOnlySpan[1];
+            this.Cid = (CidEnum)readOnlySpan[0];
         }
 
         public override int Length => 2;
 
         public override IEnumerable<byte> ToBytes()
         {
-            List<byte> returnedBytes = new List<byte>();
-            returnedBytes.Add((byte)this.Cid);
-            returnedBytes.Add((byte)this.status);
-            return returnedBytes;
+            yield return (byte)this.Cid;
+            yield return (byte)this.Status;
         }
 
         public override string ToString()
         {
-            return string.Empty;
+            return $"Type: {this.Cid} Answer, frequency: {(this.GetChannelFreqOk() ? "updated" : "not updated")}, data rate: {(this.GetDataRangeOk() ? "updated" : "not updated")}";
         }
     }
 }

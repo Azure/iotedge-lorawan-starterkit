@@ -5,38 +5,44 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using LoRaTools.Utils;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// RXParamSetupReq & RXParamSetupAns TODO Region specific
     /// </summary>
     public class RXParamSetupRequest : MacCommand
     {
-        // private readonly byte dlSettings;
-        private readonly byte[] frequency = new byte[3];
-        private readonly byte dlSettings;
+        [JsonProperty("frequency")]
+        public byte[] Frequency { get; set; } = new byte[3];
+
+        [JsonProperty("dlSettings")]
+        public byte DlSettings { get; set; }
 
         public override int Length => 5;
 
+        public byte GetRX1DROffset() => (byte)((this.DlSettings >> 4) & 0b00001111);
+
+        public byte GetRX2DataRate() => (byte)(this.DlSettings & 0b00001111);
+
         public RXParamSetupRequest(byte rx1DROffset, byte rx2DataRateOffset, byte[] frequency)
         {
-            this.dlSettings = (byte)(((rx1DROffset << 4) | rx2DataRateOffset) & 0b01111111);
-            this.frequency = frequency;
+            this.DlSettings = (byte)(((rx1DROffset << 4) | rx2DataRateOffset) & 0b01111111);
+            this.Frequency = frequency;
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            List<byte> returnedBytes = new List<byte>();
-            returnedBytes.Add((byte)this.Cid);
-            returnedBytes.Add(this.dlSettings);
-            returnedBytes.Add(this.frequency[0]);
-            returnedBytes.Add(this.frequency[1]);
-            returnedBytes.Add(this.frequency[2]);
-            return returnedBytes;
+            yield return (byte)this.Cid;
+            yield return this.DlSettings;
+            yield return this.Frequency[0];
+            yield return this.Frequency[1];
+            yield return this.Frequency[2];
         }
 
         public override string ToString()
         {
-            return string.Empty;
+            return $"Type: {this.Cid} Answer, rx1 datarate offset: {this.GetRX1DROffset()}, rx2 datarate: {this.GetRX2DataRate()}, frequency plan: {ConversionHelper.ByteArrayToString(this.Frequency)}";
         }
     }
 }

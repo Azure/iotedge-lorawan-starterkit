@@ -329,7 +329,7 @@ namespace LoRaTools.Regions
         /// </summary>
         public int GetDRFromFreqAndChan(string datr)
         {
-            return (int)this.DRtoConfiguration.Where(x => x.Value.configuration == datr).First().Key;
+            return (int)this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Key;
         }
     }
 }

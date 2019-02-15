@@ -801,5 +801,5 @@ namespace LoRaWan.NetworkServer.Test
             // 2. DownStream Message should be null as the processing should fail
             Assert.Null(request.ResponseDownlink);
         }
-        }
+    }
 }

@@ -5,17 +5,20 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// LinkCheckAns Downstream
     /// </summary>
     public class LinkCheckAnswer : MacCommand
     {
+        [JsonProperty("margin")]
         public uint Margin { get; set; }
 
+        [JsonProperty("gwCnt")]
         public uint GwCnt { get; set; }
 
-        public override int Length => 1;
+        public override int Length => 3;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkCheckAnswer"/> class.
@@ -41,16 +44,14 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            List<byte> returnedBytes = new List<byte>();
-            returnedBytes.Add((byte)this.Cid);
-            returnedBytes.Add((byte)this.Margin);
-            returnedBytes.Add((byte)this.GwCnt);
-            return returnedBytes;
+            yield return (byte)this.Cid;
+            yield return (byte)this.Margin;
+            yield return (byte)this.GwCnt;
         }
 
         public override string ToString()
         {
-            return $"Margin: {this.Margin}, gateway count : {this.GwCnt}";
+            return $"Type: {this.Cid} Answer, margin: {this.Margin}, gateway count: {this.GwCnt}";
         }
     }
 }

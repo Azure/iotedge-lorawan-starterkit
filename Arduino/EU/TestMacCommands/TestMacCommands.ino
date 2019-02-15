@@ -29,7 +29,6 @@ _physical_type_t physicalType = EU868 ;
 //internal variables
 char data[10];
 char buffer[256];
-int i = 0;
 int lastCall = 0;
 
 
@@ -48,18 +47,11 @@ void setup(void)
   lora.setChannel(0, 868.1);
   lora.setChannel(1, 868.3);
   lora.setChannel(2, 868.5);
-
   lora.setReceiceWindowFirst(0, 868.1);
-
   lora.setAdaptiveDataRate(false);
-
   lora.setDutyCycle(false);
   lora.setJoinDutyCycle(false);
-
-
   lora.setPower(1);
-
-
 }
 
 void loop(void)
@@ -74,7 +66,6 @@ void loop(void)
       result = lora.transferPacketWithConfirmed(&macCmd, 1, 10);
     else
       result = lora.transferPacket(&macCmd,1, 10);
-    i++;
 
     if (result)
     {
@@ -94,7 +85,6 @@ void loop(void)
         for (unsigned char i = 0; i < length; i ++)
         {
           SerialUSB.print( char(buffer[i]));
-
         }
         SerialUSB.println();
       }

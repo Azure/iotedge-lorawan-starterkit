@@ -5,13 +5,15 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using Newtonsoft.Json;
 
     /// <summary>
     ///  DutyCycleReq Downstream
     /// </summary>
     public class DutyCycleRequest : MacCommand
     {
-        private readonly byte dutyCyclePL;
+        [JsonProperty("dutyCyclePL")]
+        public byte DutyCyclePL { get; set; }
 
         public override int Length => 2;
 
@@ -19,20 +21,18 @@ namespace LoRaTools
         public DutyCycleRequest(byte dutyCyclePL)
         {
             this.Cid = CidEnum.DutyCycleCmd;
-            this.dutyCyclePL = (byte)(dutyCyclePL & 0b00001111);
+            this.DutyCyclePL = (byte)(dutyCyclePL & 0b00001111);
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            List<byte> returnedBytes = new List<byte>();
-            returnedBytes.Add((byte)this.Cid);
-            returnedBytes.Add((byte)this.dutyCyclePL);
-            return returnedBytes;
+            yield return (byte)this.Cid;
+            yield return (byte)this.DutyCyclePL;
         }
 
         public override string ToString()
         {
-            return string.Empty;
+            return $"Type: {this.Cid} Request, dutyCyclePL: {this.DutyCyclePL}";
         }
     }
 }

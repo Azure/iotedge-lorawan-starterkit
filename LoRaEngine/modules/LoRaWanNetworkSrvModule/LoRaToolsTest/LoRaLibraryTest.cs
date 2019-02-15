@@ -334,7 +334,7 @@ namespace LoRaWanTest
             Array.Reverse(devAddr);
             byte[] fCtrl = new byte[] { 0x80 };
             var fcntBytes = BitConverter.GetBytes(fcnt);
-            List<MacCommand> fopts = new List<MacCommand>();
+            var fopts = new List<MacCommand>();
             byte[] fPort = new byte[] { 1 };
             byte[] payload = Encoding.UTF8.GetBytes(data);
             Array.Reverse(payload);
@@ -345,7 +345,7 @@ namespace LoRaWanTest
 
             Assert.Equal(12, devicePayloadData.GetFcnt());
             Assert.Equal(0, devicePayloadData.Direction);
-            Assert.Equal(1, devicePayloadData.GetFPort());
+            Assert.Equal(1, devicePayloadData.FPort);
 
             var datr = "SF10BW125";
             var freq = 868.3;
@@ -359,7 +359,7 @@ namespace LoRaWanTest
             var parsedLoRaPayloadData = (LoRaPayloadData)parsedLoRaPayload;
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPort);
 
             // Ensure that mic check and getting payload back works
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
@@ -369,7 +369,7 @@ namespace LoRaWanTest
             // checking mic and getting payload should not change the payload properties
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPort);
 
             // checking mic should not break getting the payload
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
@@ -379,7 +379,7 @@ namespace LoRaWanTest
             // checking mic and getting payload should not change the payload properties
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPort);
         }
 
         /// <summary>

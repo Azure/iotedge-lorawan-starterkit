@@ -23,14 +23,12 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return string.Empty;
+            return $"Type: {this.Cid} Request";
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            List<byte> returnedBytes = new List<byte>();
-            returnedBytes.Add((byte)this.Cid);
-            return returnedBytes;
+            yield return (byte)this.Cid;
         }
     }
 }

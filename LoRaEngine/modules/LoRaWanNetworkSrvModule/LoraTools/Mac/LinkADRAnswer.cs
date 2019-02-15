@@ -5,15 +5,23 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// LinkAdrRequest Downstream
     /// </summary>
     public class LinkADRAnswer : MacCommand
     {
-        private readonly byte status;
+        [JsonProperty("status")]
+        public byte Status { get; set; }
 
         public override int Length => 2;
+
+        public bool GetPowerAck() => ((this.Status >> 2) & 0b00000001) == 1;
+
+        public bool GetDRAck() => ((this.Status >> 1) & 0b00000001) == 1;
+
+        public bool GetCHMaskAck() => ((this.Status >> 0) & 0b00000001) == 1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRAnswer"/> class.
@@ -21,30 +29,29 @@ namespace LoRaTools
         public LinkADRAnswer(byte powerAck, bool dataRateAck, bool channelMaskAck)
         {
             this.Cid = CidEnum.LinkADRCmd;
-            this.status |= (byte)((byte)(powerAck & 0b00000011) << 2);
-            this.status |= (byte)((byte)(dataRateAck ? 1 << 1 : 0 << 1) | (byte)(channelMaskAck ? 1 : 0));
+            this.Status |= (byte)((byte)(powerAck & 0b00000011) << 2);
+            this.Status |= (byte)((byte)(dataRateAck ? 1 << 1 : 0 << 1) | (byte)(channelMaskAck ? 1 : 0));
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRAnswer"/> class.
         /// </summary>
         public LinkADRAnswer(ReadOnlySpan<byte> readOnlySpan)
+            : base(readOnlySpan)
         {
             this.Cid = (CidEnum)readOnlySpan[0];
-            this.status = readOnlySpan[1];
+            this.Status = readOnlySpan[1];
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            List<byte> returnedBytes = new List<byte>();
-            returnedBytes.Add((byte)this.Cid);
-            returnedBytes.Add(this.status);
-            return returnedBytes;
+            yield return (byte)this.Cid;
+            yield return this.Status;
         }
 
         public override string ToString()
         {
-            return string.Empty;
+            return $"Type: {this.Cid} Answer, power: {(this.GetPowerAck() ? "changed" : "not changed")}, data rate: {(this.GetDRAck() ? "changed" : "not changed")}, channels: {(this.GetCHMaskAck() ? "changed" : "not changed")}";
         }
     }
 }

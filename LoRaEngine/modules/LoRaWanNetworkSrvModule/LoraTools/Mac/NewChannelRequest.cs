@@ -5,43 +5,50 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using LoRaTools.Utils;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// Both ways
     /// </summary>
     public class NewChannelRequest : MacCommand
     {
-        private readonly byte chIndex;
+        [JsonProperty("chIndex")]
+        public byte ChIndex { get; set; }
 
-        private readonly byte[] freq;
+        [JsonProperty("freq")]
+        public byte[] Freq { get; set; }
 
-        private readonly byte drRange;
+        [JsonProperty("drRange")]
+        public byte DrRange { get; set; }
+
+        public int GetMaxDR() => (this.DrRange >> 4) & 0b00001111;
+
+        public int GetMinDR() => this.DrRange & 0b00001111;
 
         public override int Length => 6;
 
         public NewChannelRequest(byte chIndex, byte[] freq, byte maxDr, byte minDr)
         {
-            this.chIndex = chIndex;
-            this.freq = freq;
-            this.drRange = (byte)((byte)(maxDr << 4) | (minDr & 0b00001111));
+            this.ChIndex = chIndex;
+            this.Freq = freq;
+            this.DrRange = (byte)((byte)(maxDr << 4) | (minDr & 0b00001111));
             this.Cid = CidEnum.NewChannelCmd;
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            List<byte> returnedBytes = new List<byte>();
-            returnedBytes.Add((byte)this.Cid);
-            returnedBytes.Add((byte)this.chIndex);
-            returnedBytes.Add((byte)this.freq[0]);
-            returnedBytes.Add((byte)this.freq[1]);
-            returnedBytes.Add((byte)this.freq[2]);
-            returnedBytes.Add((byte)this.drRange);
-            return returnedBytes;
+            yield return (byte)this.Cid;
+            yield return (byte)this.ChIndex;
+            yield return (byte)this.Freq[0];
+            yield return (byte)this.Freq[1];
+            yield return (byte)this.Freq[2];
+            yield return (byte)this.DrRange;
         }
 
         public override string ToString()
         {
-            return string.Empty;
+            return $"Type: {this.Cid} Answer, channel index: {this.ChIndex}, frequency: {ConversionHelper.ByteArrayToString(this.Freq)}, min DR: {this.GetMinDR()}, max DR: {this.GetMaxDR()}";
         }
     }
 }

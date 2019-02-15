@@ -5,33 +5,35 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// RXTimingSetupAns Upstream & RXTimingSetupReq Downstream
     /// </summary>
     public class RXTimingSetupRequest : MacCommand
     {
-        private readonly byte settings;
+        [JsonProperty("settings")]
+        public byte Settings { get; set; }
 
         public override int Length => 2;
+
+        public int GetDelay() => this.Settings & 0b00001111;
 
         public RXTimingSetupRequest(byte delay)
         {
             this.Cid = CidEnum.RXTimingCmd;
-            this.settings |= delay;
+            this.Settings |= delay;
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            List<byte> returnedBytes = new List<byte>();
-            returnedBytes.Add((byte)this.Cid);
-            returnedBytes.Add((byte)this.settings);
-            return returnedBytes;
+            yield return (byte)this.Cid;
+            yield return (byte)this.Settings;
         }
 
         public override string ToString()
         {
-            return string.Empty;
+            return $"Type: {this.Cid} Answer, delay: {this.GetDelay()}";
         }
     }
 }

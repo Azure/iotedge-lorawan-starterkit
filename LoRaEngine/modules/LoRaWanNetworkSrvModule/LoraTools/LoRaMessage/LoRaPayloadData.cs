@@ -43,15 +43,18 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets the LoRa payload fport as value
         /// </summary>
-        public byte GetFPort()
+        public byte FPort
         {
-            byte fportUp = 0;
-            if (this.Fport.Span.Length > 0)
+            get
             {
-                fportUp = this.Fport.Span[0];
-            }
+                byte fportUp = 0;
+                if (this.Fport.Span.Length > 0)
+                {
+                    fportUp = this.Fport.Span[0];
+                }
 
-            return fportUp;
+                return fportUp;
+            }
         }
 
         /// <summary>
@@ -71,11 +74,6 @@ namespace LoRaTools.LoRaMessage
         {
             return this.LoRaMessageType == LoRaMessageType.ConfirmedDataDown || this.LoRaMessageType == LoRaMessageType.ConfirmedDataUp;
         }
-
-        /// <summary>
-        /// Get the MacCommands
-        /// </summary>
-        public List<MacCommand> GetMacCommands() => this.MacCommands;
 
         /// <summary>
         /// Indicates if the payload is an confirmation message acknowledgement
@@ -182,7 +180,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction)
         {
-            List<byte> macBytes = new List<byte>();
+            List<byte> macBytes = new List<byte>(macCommands.Count());
             if (macCommands != null)
             {
                 foreach (var macCommand in macCommands)
@@ -197,7 +195,7 @@ namespace LoRaTools.LoRaMessage
             int fPortLen = fPort == null ? 0 : fPort.Length;
 
             // TODO If there are mac commands to send and no payload, we need to put the mac commands in the frmpayload.
-            if (macBytes?.Count > 0 && (frmPayload == null || frmPayload?.Count() == 0))
+            if (macBytes.Count > 0 && (frmPayload == null || frmPayload?.Count() == 0))
             {
                 frmPayload = fOpts;
                 fOpts = null;
@@ -282,8 +280,8 @@ namespace LoRaTools.LoRaMessage
         /// <returns>the Downlink message</returns>
         public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI)
         {
-            // It is a Mac COmmand payload, need to encrypt with nwkskey
-            if (this.GetFPort() == 0)
+            // It is a Mac Command payload, needs to encrypt with nwkskey
+            if (this.FPort == 0)
             {
                 this.PerformEncryption(nwkSKey);
             }
@@ -489,7 +487,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public bool IsMacAnswerRequired()
         {
-            return this.MacCommands?.Where(x => x.Cid == CidEnum.LinkCheckCmd).Count() > 0 ? true : false;
+            return this.MacCommands?.FirstOrDefault(x => x.Cid == CidEnum.LinkCheckCmd) == null ? true : false;
         }
     }
 }

@@ -6,17 +6,31 @@ namespace LoRaTools
     using System;
     using System.Collections.Generic;
     using LoRaTools.Utils;
+    using Newtonsoft.Json;
 
     /// <summary>
     /// LinkAdrRequest Downstream
     /// </summary>
     public class LinkADRRequest : MacCommand
     {
-        private readonly byte dataRateTXPower;
-        private readonly ushort chMask;
-        private readonly byte redundancy;
+        [JsonProperty("dataRateTXPower")]
+        public byte DataRateTXPower { get; set; }
+
+        [JsonProperty("chMask")]
+        public ushort ChMask { get; set; }
+
+        [JsonProperty("redundancy")]
+        public byte Redundancy { get; set; }
 
         public override int Length => 5;
+
+        public int DataRate => (this.DataRateTXPower >> 4) & 0b00001111;
+
+        public int GetTXPower() => this.DataRateTXPower & 0b00001111;
+
+        public int GetChMaskCntl => (this.ChMask >> 4) & 0b00000111;
+
+        public int GetNbTrans() => this.ChMask & 0b00001111;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRRequest"/> class.
@@ -24,10 +38,10 @@ namespace LoRaTools
         public LinkADRRequest(byte datarate, byte txPower, ushort chMask, byte chMaskCntl, byte nbTrans)
         {
             this.Cid = CidEnum.LinkADRCmd;
-            this.dataRateTXPower = (byte)((datarate << 4) | txPower);
-            this.chMask = chMask;
+            this.DataRateTXPower = (byte)((datarate << 4) | txPower);
+            this.ChMask = chMask;
             // bit 7 is RFU
-            this.redundancy = (byte)((byte)((chMaskCntl << 4) | nbTrans) & 0b01111111);
+            this.Redundancy = (byte)((byte)((chMaskCntl << 4) | nbTrans) & 0b01111111);
         }
 
         /// <summary>
@@ -48,10 +62,10 @@ namespace LoRaTools
                     byte.TryParse(nbTransstr, out byte nbTrans))
                 {
                     this.Cid = CidEnum.LinkADRCmd;
-                    this.dataRateTXPower = (byte)((datarate << 4) | txPower);
-                    this.chMask = chMask;
+                    this.DataRateTXPower = (byte)((datarate << 4) | txPower);
+                    this.ChMask = chMask;
                     // bit 7 is RFU
-                    this.redundancy = (byte)((byte)((chMaskCntl << 4) | nbTrans) & 0b01111111);
+                    this.Redundancy = (byte)((byte)((chMaskCntl << 4) | nbTrans) & 0b01111111);
                 }
                 else
                 {
@@ -66,18 +80,16 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            List<byte> returnedBytes = new List<byte>();
-            returnedBytes.Add((byte)this.Cid);
-            returnedBytes.Add(this.dataRateTXPower);
-            returnedBytes.Add((byte)this.chMask);
-            returnedBytes.Add((byte)(this.chMask >> 8));
-            returnedBytes.Add(this.redundancy);
-            return returnedBytes;
+            yield return (byte)this.Cid;
+            yield return this.DataRateTXPower;
+            yield return (byte)this.ChMask;
+            yield return (byte)(this.ChMask >> 8);
+            yield return this.Redundancy;
         }
 
         public override string ToString()
         {
-            return string.Empty;
+            return $"Type: {this.Cid} Answer, datarate: {this.DataRate}, txpower: {this.GetTXPower()}, nbTrans: {this.GetNbTrans()}, channel Mask Control: {this.GetChMaskCntl}, Redundancy: {this.Redundancy}";
         }
     }
 }
