@@ -121,7 +121,7 @@ namespace LoRaWan.NetworkServer
                 if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
                 {
                     // ABP Case
-                    this.AppSKey = twin.Properties.Desired[TwinProperty.AppSKey];
+                    this.AppSKey = twin.Properties.Desired[TwinProperty.AppSKey].Value;
 
                     if (!twin.Properties.Desired.Contains(TwinProperty.NwkSKey))
                         throw new InvalidLoRaDeviceException("Missing NwkSKey for ABP device");
@@ -129,8 +129,8 @@ namespace LoRaWan.NetworkServer
                     if (!twin.Properties.Desired.Contains(TwinProperty.DevAddr))
                         throw new InvalidLoRaDeviceException("Missing DevAddr for ABP device");
 
-                    this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey];
-                    this.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr];
+                    this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value;
+                    this.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value;
 
                     if (string.IsNullOrEmpty(this.NwkSKey))
                         throw new InvalidLoRaDeviceException("NwkSKey is empty");
@@ -151,36 +151,36 @@ namespace LoRaWan.NetworkServer
                         throw new InvalidLoRaDeviceException("Missing AppKey for OTAA device");
                     }
 
-                    this.AppKey = twin.Properties.Desired[TwinProperty.AppKey];
+                    this.AppKey = twin.Properties.Desired[TwinProperty.AppKey].Value;
 
                     if (!twin.Properties.Desired.Contains(TwinProperty.AppEUI))
                     {
                         throw new InvalidLoRaDeviceException("Missing AppEUI for OTAA device");
                     }
 
-                    this.AppEUI = twin.Properties.Desired[TwinProperty.AppEUI];
+                    this.AppEUI = twin.Properties.Desired[TwinProperty.AppEUI].Value;
 
                     // Check for already joined OTAA device properties
                     if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
-                        this.DevAddr = twin.Properties.Reported[TwinProperty.DevAddr];
+                        this.DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value;
 
                     if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
-                        this.AppSKey = twin.Properties.Reported[TwinProperty.AppSKey];
+                        this.AppSKey = twin.Properties.Reported[TwinProperty.AppSKey].Value;
 
                     if (twin.Properties.Reported.Contains(TwinProperty.NwkSKey))
-                        this.NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey];
+                        this.NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey].Value;
 
                     if (twin.Properties.Reported.Contains(TwinProperty.NetID))
-                        this.NetID = twin.Properties.Reported[TwinProperty.NetID];
+                        this.NetID = twin.Properties.Reported[TwinProperty.NetID].Value;
 
                     if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
-                        this.DevNonce = twin.Properties.Reported[TwinProperty.DevNonce];
+                        this.DevNonce = twin.Properties.Reported[TwinProperty.DevNonce].Value;
                 }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
-                    this.GatewayID = twin.Properties.Desired[TwinProperty.GatewayID];
+                    this.GatewayID = twin.Properties.Desired[TwinProperty.GatewayID].Value;
                 if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
-                    this.SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder];
+                    this.SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder].Value;
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntUp))
                     this.fcntUp = this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntUp].Value);
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntDown))
