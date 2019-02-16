@@ -38,14 +38,14 @@ namespace LoRaTools.Regions
             EU868.DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 230));
             EU868.DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 230)); // USED FOR GFSK
 
-            EU868.TXPowertoMaxEIRP.Add(0, "16");
-            EU868.TXPowertoMaxEIRP.Add(1, "2");
-            EU868.TXPowertoMaxEIRP.Add(2, "4");
-            EU868.TXPowertoMaxEIRP.Add(3, "6");
-            EU868.TXPowertoMaxEIRP.Add(4, "8");
-            EU868.TXPowertoMaxEIRP.Add(5, "10");
-            EU868.TXPowertoMaxEIRP.Add(6, "12");
-            EU868.TXPowertoMaxEIRP.Add(7, "14");
+            EU868.TXPowertoMaxEIRP.Add(0, 16);
+            EU868.TXPowertoMaxEIRP.Add(1, 14);
+            EU868.TXPowertoMaxEIRP.Add(2, 12);
+            EU868.TXPowertoMaxEIRP.Add(3, 10);
+            EU868.TXPowertoMaxEIRP.Add(4, 8);
+            EU868.TXPowertoMaxEIRP.Add(5, 6);
+            EU868.TXPowertoMaxEIRP.Add(6, 4);
+            EU868.TXPowertoMaxEIRP.Add(7, 2);
 
             EU868.RX1DROffsetTable = new int[8, 6]
             {
@@ -99,7 +99,7 @@ namespace LoRaTools.Regions
 
             for (uint i = 0; i < 15; i++)
             {
-                US915.TXPowertoMaxEIRP.Add(i, (30 - i).ToString());
+                US915.TXPowertoMaxEIRP.Add(i, 30 - 2 * i);
             }
 
             US915.RX1DROffsetTable = new int[5, 4]
@@ -145,7 +145,7 @@ namespace LoRaTools.Regions
         /// Gets or sets by default MaxEIRP is considered to be +16dBm.
         /// If the end-device cannot achieve 16dBm EIRP, the Max EIRP SHOULD be communicated to the network server using an out-of-band channel during the end-device commissioning process.
         /// </summary>
-        public Dictionary<uint, string> TXPowertoMaxEIRP { get; set; } = new Dictionary<uint, string>();
+        public Dictionary<uint, uint> TXPowertoMaxEIRP { get; set; } = new Dictionary<uint, uint>();
 
         /// <summary>
         /// Gets or sets table to the get receive windows Offsets.

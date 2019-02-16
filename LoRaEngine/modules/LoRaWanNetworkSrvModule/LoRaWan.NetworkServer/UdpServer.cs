@@ -13,6 +13,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
@@ -66,7 +67,8 @@ namespace LoRaWan.NetworkServer
             var loRaDeviceAPIService = new LoRaDeviceAPIService(configuration, new ServiceFacadeHttpClientProvider(configuration, ApiVersion.LatestVersion));
             var frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(configuration.GatewayID, loRaDeviceAPIService);
             var deduplicationStrategyFactory = new DeduplicationStrategyFactory(loRaDeviceAPIService);
-            var dataHandlerImplementation = new DefaultLoRaDataRequestHandler(configuration, frameCounterStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory);
+            var adrStrategyProvider = new LoRaADRStrategyProvider();
+            var dataHandlerImplementation = new DefaultLoRaDataRequestHandler(configuration, frameCounterStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider);
             var loRaDeviceFactory = new LoRaDeviceFactory(configuration, dataHandlerImplementation);
             var loRaDeviceRegistry = new LoRaDeviceRegistry(configuration, new MemoryCache(new MemoryCacheOptions()), loRaDeviceAPIService, loRaDeviceFactory);
 

@@ -1,7 +1,7 @@
 
 #include <LoRaWan.h>
 //set to true to send confirmed data up messages
-bool confirmed = true;
+bool confirmed = false;
 //application information, should be similar to what was provisiionned in the device twins
 char * deviceId = "46AAC86800430028";
 char * devAddr = "0228B1B1";

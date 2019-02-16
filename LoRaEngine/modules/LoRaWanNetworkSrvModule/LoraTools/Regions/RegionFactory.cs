@@ -59,14 +59,14 @@ namespace LoRaTools.Regions
             r.DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 230));
             r.DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 230)); // USED FOR GFSK
 
-            r.TXPowertoMaxEIRP.Add(0, "16");
-            r.TXPowertoMaxEIRP.Add(1, "2");
-            r.TXPowertoMaxEIRP.Add(2, "4");
-            r.TXPowertoMaxEIRP.Add(3, "6");
-            r.TXPowertoMaxEIRP.Add(4, "8");
-            r.TXPowertoMaxEIRP.Add(5, "10");
-            r.TXPowertoMaxEIRP.Add(6, "12");
-            r.TXPowertoMaxEIRP.Add(7, "14");
+            r.TXPowertoMaxEIRP.Add(0, 16);
+            r.TXPowertoMaxEIRP.Add(1, 14);
+            r.TXPowertoMaxEIRP.Add(2, 12);
+            r.TXPowertoMaxEIRP.Add(3, 10);
+            r.TXPowertoMaxEIRP.Add(4, 8);
+            r.TXPowertoMaxEIRP.Add(5, 6);
+            r.TXPowertoMaxEIRP.Add(6, 4);
+            r.TXPowertoMaxEIRP.Add(7, 2);
 
             r.RX1DROffsetTable = new int[8, 6]
             {
@@ -111,7 +111,7 @@ namespace LoRaTools.Regions
 
             for (uint i = 0; i < 14; i++)
             {
-                r.TXPowertoMaxEIRP.Add(i, (30 - i).ToString());
+                r.TXPowertoMaxEIRP.Add(i, 30 - i);
             }
 
             r.RX1DROffsetTable = new int[5, 4]

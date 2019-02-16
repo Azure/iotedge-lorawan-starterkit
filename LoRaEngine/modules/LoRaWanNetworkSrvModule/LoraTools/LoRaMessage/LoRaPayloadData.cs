@@ -53,17 +53,29 @@ namespace LoRaTools.LoRaMessage
         public byte GetDevAddrNetID() => (byte)(this.DevAddr.Span[0] & 0b11111110);
 
         /// <summary>
-        /// Gets if the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp)
+        /// Gets a value indicating whether the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp)
         /// </summary>
-        public bool IsConfirmed()
-        {
-            return this.LoRaMessageType == LoRaMessageType.ConfirmedDataDown || this.LoRaMessageType == LoRaMessageType.ConfirmedDataUp;
-        }
+        public bool IsConfirmed => this.LoRaMessageType == LoRaMessageType.ConfirmedDataDown || this.LoRaMessageType == LoRaMessageType.ConfirmedDataUp;
+
+        /// <summary>
+        /// Gets a value indicating whether does a Mac command require an answer?
+        /// </summary>
+        public bool IsMacAnswerRequired => this.MacCommands?.FirstOrDefault(x => x.Cid == CidEnum.LinkCheckCmd) != null;
 
         /// <summary>
         /// Indicates if the payload is an confirmation message acknowledgement
         /// </summary>
         public bool IsUpwardAck() => (this.Fctrl.Span[0] & (byte)FctrlEnum.Ack) == 32;
+
+        /// <summary>
+        /// Gets a value indicating whether indicates if the payload is an confirmation message acknowledgement
+        /// </summary>
+        public bool IsAdrReq => (this.Fctrl.Span[0] & 0b01000000) > 0;
+
+        /// <summary>
+        /// Gets a value indicating whether the device has ADR enabled
+        /// </summary>
+        public bool IsAdrEnabled => (this.Fctrl.Span[0] & 0b10000000) > 0;
 
         /// <summary>
         /// Gets or sets frame control octet
@@ -466,14 +478,6 @@ namespace LoRaTools.LoRaMessage
             }
 
             this.MacCommands.Add(mac);
-        }
-
-        /// <summary>
-        /// Does a Mac command require an answer?
-        /// </summary>
-        public bool IsMacAnswerRequired()
-        {
-            return this.MacCommands?.FirstOrDefault(x => x.Cid == CidEnum.LinkCheckCmd) != null;
         }
     }
 }

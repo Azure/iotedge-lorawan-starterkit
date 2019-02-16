@@ -46,7 +46,7 @@ namespace LoRaWan.NetworkServer
 
             var payloadFcnt = loraPayload.GetFcnt();
             var payloadPort = loraPayload.GetFPort();
-            var requiresConfirmation = loraPayload.IsConfirmed() || loraPayload.IsMacAnswerRequired();
+            var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
 
             DeduplicationResult deduplicationResult = null;
 
@@ -186,7 +186,7 @@ namespace LoRaWan.NetworkServer
                                     loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(loRaDevice.DevEUI, decryptedPayloadData);
                                 }
 
-                                if (loraPayload.IsMacAnswerRequired())
+                                if (loraPayload.IsMacAnswerRequired)
                                 {
                                     fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcnt, frameCounterStrategy);
                                     if (!fcntDown.HasValue || fcntDown <= 0)
