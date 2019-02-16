@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Mac;
@@ -22,17 +23,20 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private readonly ILoRaPayloadDecoder payloadDecoder;
         private readonly IDeduplicationStrategyFactory deduplicationFactory;
+        private readonly ILoRaADRStrategyProvider loRaADRStrategyProvider;
 
         public DefaultLoRaDataRequestHandler(
             NetworkServerConfiguration configuration,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             ILoRaPayloadDecoder payloadDecoder,
-            IDeduplicationStrategyFactory deduplicationFactory)
+            IDeduplicationStrategyFactory deduplicationFactory,
+            ILoRaADRStrategyProvider loRaADRStrategyProvider)
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.payloadDecoder = payloadDecoder;
             this.deduplicationFactory = deduplicationFactory;
+            this.loRaADRStrategyProvider = loRaADRStrategyProvider;
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
@@ -41,7 +45,12 @@ namespace LoRaWan.NetworkServer
             var loraPayload = (LoRaPayloadData)request.Payload;
 
             var payloadFcnt = loraPayload.GetFcnt();
-            var requiresConfirmation = loraPayload.IsConfirmed() || loraPayload.IsMacAnswerRequired();
+            var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired || loraPayload.IsAdrReq;
+
+            if (loraPayload.IsAdrEnabled && loraPayload.IsAdrReq)
+            {
+                Logger.Log(loRaDevice.DevEUI, "here", LogLevel.Information);
+            }
 
             DeduplicationResult deduplicationResult = null;
 
@@ -166,7 +175,7 @@ namespace LoRaWan.NetworkServer
                                 if (fportUp == Constants.LORA_FPORT_RESERVED_MAC_MSG)
                                 {
                                     loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(loRaDevice.DevEUI, loraPayload.GetDecryptedPayload(loRaDevice.NwkSKey));
-                                    if (loraPayload.IsMacAnswerRequired())
+                                    if (loraPayload.IsMacAnswerRequired)
                                     {
                                         if (!requiresConfirmation)
                                         {
@@ -440,7 +449,7 @@ namespace LoRaWan.NetworkServer
                 fctrl = (byte)FctrlEnum.Ack;
             }
 
-            ICollection<MacCommand> macCommands = this.PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload, cloudToDeviceMessage, rxpk);
+            ICollection<MacCommand> macCommands = this.PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload, cloudToDeviceMessage, rxpk, loRaDevice);
             byte? fport = null;
             var requiresDeviceAcknowlegement = false;
 
@@ -499,6 +508,10 @@ namespace LoRaWan.NetworkServer
                 fport.HasValue ? new byte[] { fport.Value } : null,
                 frmPayload,
                 1);
+            if (upstreamPayload.IsAdrEnabled)
+            {
+                ackLoRaMessage.Fctrl.Span[0] |= (byte)FctrlEnum.ADR;
+            }
 
             // var firstWindowTime = timeWatcher.GetRemainingTimeToReceiveFirstWindow(loRaDevice);
             // if (firstWindowTime > TimeSpan.Zero)
@@ -600,12 +613,12 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Prepare the Mac Commands to be sent in the downstream message.
         /// </summary>
-        public ICollection<MacCommand> PrepareMacCommandAnswer(string devEUI, LoRaPayloadData loRaPayload, Message cloudToDeviceMessage, Rxpk rxpk)
+        public ICollection<MacCommand> PrepareMacCommandAnswer(string devEUI, LoRaPayloadData loRaPayload, Message cloudToDeviceMessage, Rxpk rxpk, LoRaDevice loRaDevice)
         {
             var macCommands = new Dictionary<int, MacCommand>();
 
             // Check if the device sent a Mac Command requiring a response. Currently only LinkCheck requires an answer.
-            if (loRaPayload.IsMacAnswerRequired())
+            if (loRaPayload.IsMacAnswerRequired)
             {
                 // Todo Check how I could see how many gateway received the message
                 // 1 is a placeholder of the number of gateways that actually received the message.
@@ -636,6 +649,31 @@ namespace LoRaWan.NetworkServer
                     {
                         Logger.Log(devEUI, ex.ToString(), LogLevel.Error);
                     }
+                }
+            }
+
+            // ADR Part.
+            // Currently only replying on ADR Req
+            if (loRaPayload.IsAdrEnabled && loRaPayload.IsAdrReq)
+            {
+                double maxSnr = 7;
+                int minFcnt = 0;
+                int maxFcnt = 25;
+
+                int currentNpRep = 1;
+                int currentTxPower = 3;
+
+                if (maxFcnt - minFcnt > 20)
+                {
+                    ILoRaADRStrategy loRaADRStrategy = this.loRaADRStrategyProvider.GetStrategy();
+                    var nbRep = loRaADRStrategy.ComputeNbRepetion(minFcnt, maxFcnt, currentNpRep);
+                    (int txPower, int datarate) = loRaADRStrategy.GetPowerAndDRConfiguration(rxpk, maxSnr, currentTxPower);
+                    LinkADRRequest linkADR = new LinkADRRequest((byte)datarate, (byte)txPower, 0, 0, (byte)nbRep);
+                    macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
+                }
+                else
+                {
+                    Logger.Log(devEUI, $"An ADR control frame was not sent as the network server did not have enough measurement to compute a rate adaptation", LogLevel.Information);
                 }
             }
 

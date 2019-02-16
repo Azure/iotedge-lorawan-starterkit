@@ -145,7 +145,7 @@ namespace LoRaWan.NetworkServer
                 processLogger.SetDevEUI(loRaDevice.DevEUI);
 
                 var payloadFcnt = loraPayload.GetFcnt();
-                var requiresConfirmation = loraPayload.IsConfirmed() || loraPayload.IsMacAnswerRequired();
+                var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
                 DeduplicationResult deduplicationResult = null;
 
                 var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
@@ -262,7 +262,7 @@ namespace LoRaWan.NetworkServer
                                     if (loraPayload.FPort == LORA_FPORT_RESERVED_MAC_MSG)
                                     {
                                         loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(loRaDevice.DevEUI, loraPayload.GetDecryptedPayload(loRaDevice.NwkSKey));
-                                        requiresConfirmation = loraPayload.IsConfirmed() || loraPayload.IsMacAnswerRequired();
+                                        requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
                                     }
                                     else
                                     {
@@ -852,7 +852,7 @@ namespace LoRaWan.NetworkServer
             Dictionary<int, MacCommand> macCommands = new Dictionary<int, MacCommand>();
 
             // Check if the device sent a Mac Command requiring a response. Currently only LinkCheck requires an answer.
-            if (loRaPayload.IsMacAnswerRequired())
+            if (loRaPayload.IsMacAnswerRequired)
             {
                 // Todo, check how I could see how many gateway received the message
                 var linkCheckAnswer = new LinkCheckAnswer(rxpk.GetModulationMargin(), 1);
