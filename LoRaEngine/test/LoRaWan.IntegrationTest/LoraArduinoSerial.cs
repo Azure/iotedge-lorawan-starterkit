@@ -870,7 +870,7 @@ namespace LoRaWan.IntegrationTest
                 else if (mode == _device_mode_t.LWOTAA)
                     this.sendCommand("AT+MODE=LWOTAA\r\n");
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 25; i++)
                 {
                     if (this.ReceivedSerial(x => x.StartsWith("+MODE:")))
                         return;
