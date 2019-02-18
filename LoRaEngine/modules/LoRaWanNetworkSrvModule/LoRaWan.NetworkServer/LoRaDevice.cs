@@ -121,7 +121,7 @@ namespace LoRaWan.NetworkServer
                 if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
                 {
                     // ABP Case
-                    this.AppSKey = twin.Properties.Desired[TwinProperty.AppSKey] as string;
+                    this.AppSKey = twin.Properties.Desired[TwinProperty.AppSKey].Value as string;
 
                     if (!twin.Properties.Desired.Contains(TwinProperty.NwkSKey))
                         throw new InvalidLoRaDeviceException("Missing NwkSKey for ABP device");
@@ -129,8 +129,8 @@ namespace LoRaWan.NetworkServer
                     if (!twin.Properties.Desired.Contains(TwinProperty.DevAddr))
                         throw new InvalidLoRaDeviceException("Missing DevAddr for ABP device");
 
-                    this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey] as string;
-                    this.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr] as string;
+                    this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value as string;
+                    this.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value as string;
 
                     if (string.IsNullOrEmpty(this.NwkSKey))
                         throw new InvalidLoRaDeviceException("NwkSKey is empty");
