@@ -294,3 +294,5 @@ Doc
 
 # local settings file
 appsettings.local.json
+Docs/.DS_Store
+.DS_Store
