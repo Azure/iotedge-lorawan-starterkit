@@ -35,10 +35,11 @@ We plan to support the following key features of LoRaWAN 1.0.2 specification, ho
 - Activation through ABP and OTAA.
 - Confirmed and unconfirmed upstream messages.
 - Confirmed and unconfirmed downstream messages.
+- Multi-gateways.
+- Message de-duplication
 - Support of MAC commands.*
 - ADR Support.*
-- Multi-gateways.*
-  
+
   **Planned features*
 ## Prerequisites
 The following should be completed before proceeding with the LoRaWAN starter kit development or deployment in your environment.
@@ -54,7 +55,7 @@ We have a variety of ways you can  get started with the kit, chose the appropria
 - **Setup a LoRaWAN Gateway**: We provide an easy to use Azure ARM template and deployment guidance to get you quickly started with the LoRaWAN starter kit. Use the [Quick Start](/Docs/quickstart.md) to setup a LoRaWAN Gateway and connect to LoRA end nodes. 
 - **Upgrade an existing installation**: Refer to the [upgrade guide](/Docs/upgrade.md) for instructions and tips for a clean upgrade.
 - **Develop and debug the LoRaWAN starter kit**: If you are a developer and want to contribute or customize the LoRaWAN starter kit, refer to our [Developer Guidance](/Docs/devguide.md) for more details on how to build, test and deploy the kit in your dev environment. We also support a [simulator](/Docs/simulator.md) that allows for developing without the need of an actual device gateway.
-- **Enable a gateway or device to be compatible with the starter kit**: If you are a device manufacturer and would like to test your device or Gateway compatibility with our LoRaWAN starter kit, you can follow these [instructions](/Docs/partner.md). As a gateway manufacturer, you will also find instructions in the link to contribute and have your device gateway highlighted on our repo.
+- **Enable a gateway or device to be compatible with the starter kit**: We have developed the LoRaWAN starter kit agnostic of a device manufacturer implementation and focussed on the specifics on underlying architectures (arm, x86). However, we understand that device manufacturers can have specific requirements; these could be specific to a gateway and the packet forwarders they use or to the LoRa nodes and the decoders the device may use. We have provided specific instructions on making these specialized hardware compatible with our kit. You can follow these [instructions](/Docs/partner.md) depending on your scenarios and also have your device gateway highlighted on our repo.
 
 ## Known Issues and Limitations
 
