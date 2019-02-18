@@ -121,7 +121,7 @@ namespace LoRaWan.NetworkServer
                 if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
                 {
                     // ABP Case
-                    this.AppSKey = twin.Properties.Desired[TwinProperty.AppSKey].Value;
+                    this.AppSKey = (string)twin.Properties.Desired[TwinProperty.AppSKey];
 
                     if (!twin.Properties.Desired.Contains(TwinProperty.NwkSKey))
                         throw new InvalidLoRaDeviceException("Missing NwkSKey for ABP device");
@@ -129,8 +129,8 @@ namespace LoRaWan.NetworkServer
                     if (!twin.Properties.Desired.Contains(TwinProperty.DevAddr))
                         throw new InvalidLoRaDeviceException("Missing DevAddr for ABP device");
 
-                    this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value;
-                    this.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value;
+                    this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey];
+                    this.DevAddr = (string)twin.Properties.Desired[TwinProperty.DevAddr];
 
                     if (string.IsNullOrEmpty(this.NwkSKey))
                         throw new InvalidLoRaDeviceException("NwkSKey is empty");
@@ -151,49 +151,49 @@ namespace LoRaWan.NetworkServer
                         throw new InvalidLoRaDeviceException("Missing AppKey for OTAA device");
                     }
 
-                    this.AppKey = twin.Properties.Desired[TwinProperty.AppKey].Value;
+                    this.AppKey = (string)twin.Properties.Desired[TwinProperty.AppKey];
 
                     if (!twin.Properties.Desired.Contains(TwinProperty.AppEUI))
                     {
                         throw new InvalidLoRaDeviceException("Missing AppEUI for OTAA device");
                     }
 
-                    this.AppEUI = twin.Properties.Desired[TwinProperty.AppEUI].Value;
+                    this.AppEUI = (string)twin.Properties.Desired[TwinProperty.AppEUI];
 
                     // Check for already joined OTAA device properties
                     if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
-                        this.DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value;
+                        this.DevAddr = (string)twin.Properties.Reported[TwinProperty.DevAddr];
 
                     if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
-                        this.AppSKey = twin.Properties.Reported[TwinProperty.AppSKey].Value;
+                        this.AppSKey = (string)twin.Properties.Reported[TwinProperty.AppSKey];
 
                     if (twin.Properties.Reported.Contains(TwinProperty.NwkSKey))
-                        this.NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey].Value;
+                        this.NwkSKey = (string)twin.Properties.Reported[TwinProperty.NwkSKey];
 
                     if (twin.Properties.Reported.Contains(TwinProperty.NetID))
-                        this.NetID = twin.Properties.Reported[TwinProperty.NetID].Value;
+                        this.NetID = (string)twin.Properties.Reported[TwinProperty.NetID];
 
                     if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
-                        this.DevNonce = twin.Properties.Reported[TwinProperty.DevNonce].Value;
+                        this.DevNonce = (string)twin.Properties.Reported[TwinProperty.DevNonce];
                 }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
-                    this.GatewayID = twin.Properties.Desired[TwinProperty.GatewayID].Value;
+                    this.GatewayID = (string)twin.Properties.Desired[TwinProperty.GatewayID];
                 if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
-                    this.SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder].Value;
+                    this.SensorDecoder = (string)twin.Properties.Desired[TwinProperty.SensorDecoder];
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntUp))
-                    this.fcntUp = this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntUp].Value);
+                    this.fcntUp = (int)this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntUp]);
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntDown))
-                    this.fcntDown = this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntDown].Value);
+                    this.fcntDown = (int)this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntDown]);
 
                 if (twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled))
                 {
-                    this.DownlinkEnabled = this.GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value);
+                    this.DownlinkEnabled = (bool)this.GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled]);
                 }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
                 {
-                    var preferredWindowTwinValue = this.GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
+                    var preferredWindowTwinValue = this.GetTwinPropertyIntValue((int)twin.Properties.Desired[TwinProperty.PreferredWindow]);
                     if (preferredWindowTwinValue == Constants.RECEIVE_WINDOW_2)
                         this.PreferredWindow = preferredWindowTwinValue;
                 }
