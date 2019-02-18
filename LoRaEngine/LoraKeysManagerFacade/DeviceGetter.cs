@@ -19,54 +19,49 @@ namespace LoraKeysManagerFacade
 
     public static class DeviceGetter
     {
-        static RegistryManager registryManager;
-        static object registrySingletonLock = new object();
-
-        public class IoTHubDeviceInfo
-        {
-            public string DevAddr { get; set; }
-
-            public string DevEUI { get; set; }
-
-            public string PrimaryKey { get; set; }
-        }
-
         /// <summary>
         /// Entry point function for getting devices
         /// </summary>
         [FunctionName(nameof(GetDevice))]
         public static async Task<IActionResult> GetDevice([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
         {
-            return await Run(req, log, context, ApiVersion.LatestVersion);
-        }
-
-        // Runner
-        public static async Task<IActionResult> Run(HttpRequest req, ILogger log, ExecutionContext context, ApiVersion currentApiVersion)
-        {
-            // Set the current version in the response header
-            req.HttpContext.Response.Headers.Add(ApiVersion.HttpHeaderName, currentApiVersion.Version);
-
-            var requestedVersion = req.GetRequestedVersion();
-            if (requestedVersion == null || !currentApiVersion.SupportsVersion(requestedVersion))
+            try
             {
-                return new BadRequestObjectResult($"Incompatible versions (requested: '{requestedVersion.Name ?? string.Empty}', current: '{currentApiVersion.Name}')");
+                VersionValidator.Validate(req);
+            }
+            catch (IncompatibleVersionException ex)
+            {
+                return new BadRequestObjectResult(ex);
             }
 
-            // ABP Case
+            // ABP parameters
             string devAddr = req.Query["DevAddr"];
-            // OTAA Case
+
+            // OTAA parameters
             string devEUI = req.Query["DevEUI"];
             string devNonce = req.Query["DevNonce"];
-
             string gatewayId = req.Query["GatewayId"];
 
-            EnsureRegistryManager(context);
+            try
+            {
+                var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, context);
+                string json = JsonConvert.SerializeObject(results);
+                return new OkObjectResult(json);
+            }
+            catch (DeviceNonceUsedException)
+            {
+                return new BadRequestObjectResult("UsedDevNonce");
+            }
+        }
 
-            List<IoTHubDeviceInfo> results = new List<IoTHubDeviceInfo>();
+        public static async Task<List<IoTHubDeviceInfo>> GetDeviceList(string devEUI, string gatewayId, string devNonce, string devAddr, ExecutionContext context)
+        {
+            var results = new List<IoTHubDeviceInfo>();
+            var registryManager = LoRaRegistryManager.GetCurrentInstance(context.FunctionAppDirectory);
 
-            // OTAA join
             if (devEUI != null)
             {
+                // OTAA join
                 string cacheKey = devEUI + devNonce;
                 using (var deviceCache = LoRaDeviceCache.Create(context, devEUI, gatewayId, cacheKey))
                 {
@@ -74,18 +69,20 @@ namespace LoraKeysManagerFacade
                     {
                         if (deviceCache.TryGetValue(out _))
                         {
-                            return (ActionResult)new BadRequestObjectResult("UsedDevNonce");
+                            throw new DeviceNonceUsedException();
                         }
 
                         deviceCache.SetValue(devNonce, TimeSpan.FromMinutes(1));
 
-                        var iotHubDeviceInfo = new IoTHubDeviceInfo();
                         var device = await registryManager.GetDeviceAsync(devEUI);
 
                         if (device != null)
                         {
-                            iotHubDeviceInfo.DevEUI = devEUI;
-                            iotHubDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
+                            var iotHubDeviceInfo = new IoTHubDeviceInfo
+                            {
+                                DevEUI = devEUI,
+                                PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey
+                            };
                             results.Add(iotHubDeviceInfo);
 
                             // clear device FCnt cache after join
@@ -94,10 +91,10 @@ namespace LoraKeysManagerFacade
                     }
                 }
             }
-
-            // ABP or normal message
             else if (devAddr != null)
             {
+                // ABP or normal message
+
                 // TODO check for sql injection
                 devAddr = devAddr.Replace('\'', ' ');
 
@@ -110,14 +107,13 @@ namespace LoraKeysManagerFacade
                     {
                         if (twin.DeviceId != null)
                         {
+                            var device = await registryManager.GetDeviceAsync(twin.DeviceId);
                             var iotHubDeviceInfo = new IoTHubDeviceInfo
                             {
-                                DevAddr = devAddr
+                                DevAddr = devAddr,
+                                DevEUI = twin.DeviceId,
+                                PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey
                             };
-
-                            var device = await registryManager.GetDeviceAsync(twin.DeviceId);
-                            iotHubDeviceInfo.DevEUI = twin.DeviceId;
-                            iotHubDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
                             results.Add(iotHubDeviceInfo);
                         }
                     }
@@ -125,39 +121,10 @@ namespace LoraKeysManagerFacade
             }
             else
             {
-                string errorMsg = "Missing devEUI or devAddr";
-                throw new Exception(errorMsg);
+                throw new Exception("Missing devEUI or devAddr");
             }
 
-            string json = JsonConvert.SerializeObject(results);
-            return (ActionResult)new OkObjectResult(json);
-        }
-
-        private static void EnsureRegistryManager(ExecutionContext context)
-        {
-            if (registryManager == null)
-            {
-                lock (registrySingletonLock)
-                {
-                    if (registryManager == null)
-                    {
-                        var config = new ConfigurationBuilder()
-                          .SetBasePath(context.FunctionAppDirectory)
-                          .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                          .AddEnvironmentVariables()
-                          .Build();
-                        string connectionString = config.GetConnectionString("IoTHubConnectionString");
-
-                        if (connectionString == null)
-                        {
-                            string errorMsg = "Missing IoTHubConnectionString in settings";
-                            throw new Exception(errorMsg);
-                        }
-
-                        registryManager = RegistryManager.CreateFromConnectionString(connectionString);
-                    }
-                }
-            }
+            return results;
         }
     }
 }

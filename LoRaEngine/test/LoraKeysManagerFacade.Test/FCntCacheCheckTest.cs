@@ -3,87 +3,57 @@
 
 namespace LoraKeysManagerFacade.Test
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using LoRaWan.Shared;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Http.Internal;
-    using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
-    using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
 
     public class FCntCacheCheckTest
     {
+        const string DeviceEUI = "Dev1";
+        const string GatewayId = "Gw1";
+
         [Fact]
-        public void Version_2018_12_16_Preview_Returns_Bad_Request_If_Version_0_2_Is_Requested()
+        public void FrameCounter_Down_Initial()
         {
-            var request = new DefaultHttpRequest(new DefaultHttpContext())
-            {
-                Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
-                {
-                }),
-            };
+            LoRaDeviceCache.InitCacheStore(new LoRaInMemoryDeviceStore());
 
-            var actual = FCntCacheCheck.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
-            Assert.NotNull(actual);
-            Assert.IsType<BadRequestObjectResult>(actual);
-            var badRequestResult = (BadRequestObjectResult)actual;
-
-            Assert.Equal("Incompatible versions (requested: '0.2 or earlier', current: '2018-12-16-preview')", badRequestResult.Value.ToString());
-
-            // Ensure current version is added to response
-            Assert.Contains(ApiVersion.HttpHeaderName, request.HttpContext.Response.Headers);
-            Assert.Equal("2018-12-16-preview", request.HttpContext.Response.Headers[ApiVersion.HttpHeaderName].FirstOrDefault());
+            var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
+            Assert.Equal(2, next);
         }
 
         [Fact]
-        public void Version_2018_12_16_Preview_Returns_Bad_Request_If_Unknown_Version_Is_Requested()
+        public void FrameCounter_Down_Update_Server()
         {
-            var request = new DefaultHttpRequest(new DefaultHttpContext())
-            {
-                Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
-                {
-                    { ApiVersion.QueryStringParamName, "zyx" }
-                }),
-            };
+            LoRaDeviceCache.InitCacheStore(new LoRaInMemoryDeviceStore());
 
-            var actual = FCntCacheCheck.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
-            Assert.NotNull(actual);
-            Assert.IsType<BadRequestObjectResult>(actual);
-            var badRequestResult = (BadRequestObjectResult)actual;
+            var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
+            Assert.Equal(2, next);
 
-            Assert.Equal("Incompatible versions (requested: 'zyx', current: '2018-12-16-preview')", badRequestResult.Value.ToString());
-
-            // Ensure current version is added to response
-            Assert.Contains(ApiVersion.HttpHeaderName, request.HttpContext.Response.Headers);
-            Assert.Equal("2018-12-16-preview", request.HttpContext.Response.Headers[ApiVersion.HttpHeaderName].FirstOrDefault());
+            next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 2, 1, new ExecutionContext());
+            Assert.Equal(3, next);
         }
 
         [Fact]
-        public void Version_2018_12_16_Preview_Returns_Bad_Request_If_Version_2019_01_30_Preview_Is_Requested()
+        public void FrameCounter_Down_Update_Device()
         {
-            var request = new DefaultHttpRequest(new DefaultHttpContext())
-            {
-                Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
-                {
-                    { ApiVersion.QueryStringParamName, ApiVersion.Version_2019_01_30_Preview.Version }
-                }),
-            };
+            LoRaDeviceCache.InitCacheStore(new LoRaInMemoryDeviceStore());
 
-            var actual = FCntCacheCheck.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
-            Assert.NotNull(actual);
-            Assert.IsType<BadRequestObjectResult>(actual);
-            var badRequestResult = (BadRequestObjectResult)actual;
+            var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
+            Assert.Equal(2, next);
 
-            Assert.Equal("Incompatible versions (requested: '2019-01-30-preview', current: '2018-12-16-preview')", badRequestResult.Value.ToString());
+            next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 3, 10, new ExecutionContext());
+            Assert.Equal(11, next);
+        }
 
-            // Ensure current version is added to response
-            Assert.Contains(ApiVersion.HttpHeaderName, request.HttpContext.Response.Headers);
-            Assert.Equal("2018-12-16-preview", request.HttpContext.Response.Headers[ApiVersion.HttpHeaderName].FirstOrDefault());
+        [Fact]
+        public void FrameCounter_Down_Retry_Increment()
+        {
+            LoRaDeviceCache.InitCacheStore(new LoRaInMemoryDeviceStore());
+
+            var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
+            Assert.Equal(2, next);
+
+            next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
+            Assert.Equal(3, next);
         }
     }
 }

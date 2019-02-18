@@ -20,21 +20,16 @@ namespace LoraKeysManagerFacade
 
     public static class FCntCacheCheck
     {
-        [FunctionName(nameof(NextFCntDown))]
-        public static IActionResult NextFCntDown([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
+        [FunctionName("NextFCntDown")]
+        public static IActionResult NextFCntDownInvoke([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
         {
-            return Run(req, log, context, ApiVersion.LatestVersion);
-        }
-
-        public static IActionResult Run(HttpRequest req, ILogger log, ExecutionContext context, ApiVersion currentApiVersion)
-        {
-            // set the current version in the response header
-            req.HttpContext.Response.Headers.Add(ApiVersion.HttpHeaderName, currentApiVersion.Version);
-
-            var requestedVersion = req.GetRequestedVersion();
-            if (requestedVersion == null || !currentApiVersion.SupportsVersion(requestedVersion))
+            try
             {
-                return new BadRequestObjectResult($"Incompatible versions (requested: '{requestedVersion.Name ?? string.Empty}', current: '{currentApiVersion.Name}')");
+                VersionValidator.Validate(req);
+            }
+            catch (IncompatibleVersionException ex)
+            {
+                return new BadRequestObjectResult(ex);
             }
 
             string devEUI = req.Query["DevEUI"];
@@ -60,6 +55,14 @@ namespace LoraKeysManagerFacade
                 throw new ArgumentException(errorMsg);
             }
 
+            newFCntDown = GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown, context);
+
+            return (ActionResult)new OkObjectResult(newFCntDown);
+        }
+
+        public static int GetNextFCntDown(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown, ExecutionContext context)
+        {
+            int newFCntDown = 0;
             using (var deviceCache = LoRaDeviceCache.Create(context, devEUI, gatewayId))
             {
                 if (deviceCache.TryToLock())
@@ -70,13 +73,13 @@ namespace LoraKeysManagerFacade
                     }
                     else
                     {
-                        newFCntDown = clientFCntDown + 1;
-                        deviceCache.Initialize(newFCntDown, clientFCntUp);
+                        var state = deviceCache.Initialize(clientFCntDown, clientFCntUp);
+                        newFCntDown = state.FCntDown;
                     }
                 }
             }
 
-            return (ActionResult)new OkObjectResult(newFCntDown);
+            return newFCntDown;
         }
 
         internal static int ProcessExistingDeviceInfo(LoRaDeviceCache deviceCache, DeviceCacheInfo cachedDeviceState, string gatewayId, int clientFCntUp, int clientFCntDown)
