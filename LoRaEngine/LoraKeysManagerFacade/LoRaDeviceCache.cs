@@ -18,18 +18,20 @@ namespace LoraKeysManagerFacade
 
         private readonly string gatewayId;
         private readonly string devEUI;
+        private readonly string cacheKey;
 
         public bool IsLockOwner { get; private set; }
 
         private string lockKey;
 
-        private LoRaDeviceCache(string devEUI, string gatewayId)
+        private LoRaDeviceCache(string devEUI, string gatewayId, string cacheKey)
         {
             this.devEUI = devEUI;
             this.gatewayId = gatewayId;
+            this.cacheKey = cacheKey ?? devEUI;
         }
 
-        public static LoRaDeviceCache Create(ExecutionContext context, string devEUI, string gatewayId)
+        public static LoRaDeviceCache Create(ExecutionContext context, string devEUI, string gatewayId, string cacheKey = null)
         {
             if (string.IsNullOrEmpty(devEUI))
             {
@@ -42,17 +44,17 @@ namespace LoraKeysManagerFacade
             }
 
             EnsureRedisInstance(context);
-            return new LoRaDeviceCache(devEUI, gatewayId);
+            return new LoRaDeviceCache(devEUI, gatewayId, cacheKey);
         }
 
-        public bool TryToLock()
+        public bool TryToLock(string lockKey = null)
         {
             if (this.IsLockOwner)
             {
                 return true;
             }
 
-            this.lockKey = this.devEUI + CacheKeyLockSuffix;
+            this.lockKey = lockKey ?? this.devEUI + CacheKeyLockSuffix;
             if (!redisCache.LockTake(this.lockKey, this.gatewayId, LockWaitingTimeout))
             {
                 return false;
@@ -77,15 +79,20 @@ namespace LoraKeysManagerFacade
             return serverStateForDeviceInfo;
         }
 
+        public bool TryGetValue(out string value)
+        {
+            value = null;
+            this.EnsureLockOwner();
+            value = redisCache.StringGet(this.cacheKey, CommandFlags.DemandMaster);
+            return value != null;
+        }
+
         public bool TryGetInfo(out DeviceCacheInfo info)
         {
             info = null;
-            if (!this.IsLockOwner)
-            {
-                throw new InvalidOperationException($"Trying to read information without owning the lock. Device: {this.devEUI} Gateway: {this.gatewayId}");
-            }
+            this.EnsureLockOwner();
 
-            string cachedFCnt = redisCache.StringGet(this.devEUI, CommandFlags.DemandMaster);
+            string cachedFCnt = redisCache.StringGet(this.cacheKey, CommandFlags.DemandMaster);
             if (string.IsNullOrEmpty(cachedFCnt))
             {
                 return false;
@@ -97,23 +104,38 @@ namespace LoraKeysManagerFacade
 
         public void StoreInfo(DeviceCacheInfo info)
         {
-            if (!this.IsLockOwner)
-            {
-                throw new InvalidOperationException($"Trying to update information without owning the lock. Device: {this.devEUI} Gateway: {this.gatewayId}");
-            }
-
-            LoRaDeviceCache.redisCache.StringSet(this.devEUI, JsonConvert.SerializeObject(info), new TimeSpan(30, 0, 0, 0), When.Always, CommandFlags.DemandMaster);
+            this.EnsureLockOwner();
+            LoRaDeviceCache.redisCache.StringSet(this.cacheKey, JsonConvert.SerializeObject(info), new TimeSpan(30, 0, 0, 0), When.Always, CommandFlags.DemandMaster);
         }
 
-        public static void Delete(string devEUI, ExecutionContext context)
+        public void SetValue(string value, TimeSpan? expiry = null)
         {
-            if (string.IsNullOrEmpty(devEUI))
+            this.EnsureLockOwner();
+            if (!expiry.HasValue)
+            {
+                expiry = TimeSpan.FromMinutes(1);
+            }
+
+            redisCache.StringSet(this.cacheKey, value, expiry, When.Always, CommandFlags.DemandMaster);
+        }
+
+        public static void Delete(string key, ExecutionContext context)
+        {
+            if (string.IsNullOrEmpty(key))
             {
                 return;
             }
 
             EnsureRedisInstance(context);
-            redisCache.KeyDelete(devEUI);
+            redisCache.KeyDelete(key);
+        }
+
+        private void EnsureLockOwner()
+        {
+            if (!this.IsLockOwner)
+            {
+                throw new InvalidOperationException($"Trying to access cache without owning the lock. Device: {this.devEUI} Gateway: {this.gatewayId}");
+            }
         }
 
         private static void EnsureRedisInstance(ExecutionContext context)

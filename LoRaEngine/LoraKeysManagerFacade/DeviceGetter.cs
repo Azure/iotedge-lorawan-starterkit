@@ -19,9 +19,8 @@ namespace LoraKeysManagerFacade
 
     public static class DeviceGetter
     {
-        static IDatabase redisCache;
-
         static RegistryManager registryManager;
+        static object registrySingletonLock = new object();
 
         public class IoTHubDeviceInfo
         {
@@ -61,39 +60,7 @@ namespace LoraKeysManagerFacade
 
             string gatewayId = req.Query["GatewayId"];
 
-            if (redisCache == null || registryManager == null)
-            {
-                lock (typeof(FCntCacheCheck))
-                {
-                    if (redisCache == null || registryManager == null)
-                    {
-                        var config = new ConfigurationBuilder()
-                          .SetBasePath(context.FunctionAppDirectory)
-                          .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                          .AddEnvironmentVariables()
-                          .Build();
-                        string connectionString = config.GetConnectionString("IoTHubConnectionString");
-
-                        if (connectionString == null)
-                        {
-                            string errorMsg = "Missing IoTHubConnectionString in settings";
-                            throw new Exception(errorMsg);
-                        }
-
-                        string redisConnectionString = config.GetConnectionString("RedisConnectionString");
-                        if (redisConnectionString == null)
-                        {
-                            string errorMsg = "Missing RedisConnectionString in settings";
-                            throw new Exception(errorMsg);
-                        }
-
-                        registryManager = RegistryManager.CreateFromConnectionString(connectionString);
-
-                        var redis = ConnectionMultiplexer.Connect(redisConnectionString);
-                        redisCache = redis.GetDatabase();
-                    }
-                }
-            }
+            EnsureRegistryManager(context);
 
             List<IoTHubDeviceInfo> results = new List<IoTHubDeviceInfo>();
 
@@ -101,22 +68,18 @@ namespace LoraKeysManagerFacade
             if (devEUI != null)
             {
                 string cacheKey = devEUI + devNonce;
-
-                try
+                using (var deviceCache = LoRaDeviceCache.Create(context, devEUI, gatewayId, cacheKey))
                 {
-                    if (redisCache.LockTake(cacheKey + "joinlock", gatewayId, new TimeSpan(0, 0, 10)))
+                    if (deviceCache.TryToLock(cacheKey + "joinlock"))
                     {
-                        // check if we already got the same devEUI and devNonce it can be a reaply attack or a multigateway setup recieving the same join.We are rfusing all other than the first one.
-                        string cachedDevNonce = redisCache.StringGet(cacheKey, CommandFlags.DemandMaster);
-
-                        if (!string.IsNullOrEmpty(cachedDevNonce))
+                        if (deviceCache.TryGetValue(out _))
                         {
                             return (ActionResult)new BadRequestObjectResult("UsedDevNonce");
                         }
 
-                        redisCache.StringSet(cacheKey, devNonce, new TimeSpan(0, 1, 0), When.Always, CommandFlags.DemandMaster);
+                        deviceCache.SetValue(devNonce, TimeSpan.FromMinutes(1));
 
-                        IoTHubDeviceInfo iotHubDeviceInfo = new IoTHubDeviceInfo();
+                        var iotHubDeviceInfo = new IoTHubDeviceInfo();
                         var device = await registryManager.GetDeviceAsync(devEUI);
 
                         if (device != null)
@@ -126,13 +89,9 @@ namespace LoraKeysManagerFacade
                             results.Add(iotHubDeviceInfo);
 
                             // clear device FCnt cache after join
-                            redisCache.KeyDelete(devEUI);
+                            LoRaDeviceCache.Delete(devEUI, context);
                         }
                     }
-                }
-                finally
-                {
-                    redisCache.LockRelease(cacheKey + "joinlock", gatewayId);
                 }
             }
 
@@ -151,8 +110,11 @@ namespace LoraKeysManagerFacade
                     {
                         if (twin.DeviceId != null)
                         {
-                            IoTHubDeviceInfo iotHubDeviceInfo = new IoTHubDeviceInfo();
-                            iotHubDeviceInfo.DevAddr = devAddr;
+                            var iotHubDeviceInfo = new IoTHubDeviceInfo
+                            {
+                                DevAddr = devAddr
+                            };
+
                             var device = await registryManager.GetDeviceAsync(twin.DeviceId);
                             iotHubDeviceInfo.DevEUI = twin.DeviceId;
                             iotHubDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
@@ -169,6 +131,33 @@ namespace LoraKeysManagerFacade
 
             string json = JsonConvert.SerializeObject(results);
             return (ActionResult)new OkObjectResult(json);
+        }
+
+        private static void EnsureRegistryManager(ExecutionContext context)
+        {
+            if (registryManager == null)
+            {
+                lock (registrySingletonLock)
+                {
+                    if (registryManager == null)
+                    {
+                        var config = new ConfigurationBuilder()
+                          .SetBasePath(context.FunctionAppDirectory)
+                          .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                          .AddEnvironmentVariables()
+                          .Build();
+                        string connectionString = config.GetConnectionString("IoTHubConnectionString");
+
+                        if (connectionString == null)
+                        {
+                            string errorMsg = "Missing IoTHubConnectionString in settings";
+                            throw new Exception(errorMsg);
+                        }
+
+                        registryManager = RegistryManager.CreateFromConnectionString(connectionString);
+                    }
+                }
+            }
         }
     }
 }
