@@ -870,7 +870,7 @@ namespace LoRaWan.IntegrationTest
                 else if (mode == _device_mode_t.LWOTAA)
                     this.sendCommand("AT+MODE=LWOTAA\r\n");
 
-                for (int i = 0; i < 20; i++)
+                for (int i = 0; i < 30; i++)
                 {
                     if (this.ReceivedSerial(x => x.StartsWith("+MODE:")))
                     {
@@ -975,7 +975,7 @@ namespace LoRaWan.IntegrationTest
         /// <summary>
         /// Reset the device to default, usefull for port manipulation.
         /// </summary>
-        public async Task setDeviceDefault()
+        public async Task setDeviceDefaultAsync()
         {
             try
             {
@@ -986,11 +986,11 @@ namespace LoRaWan.IntegrationTest
                 TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex.ToString()}");
             }
 
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < 30; i++)
             {
                 if (this.SerialLogs.Contains("+FDEFAULT: OK"))
                 {
-                    TestLogger.Log($"Waited for device reset, but could ot complete in the allocated time.");
+                    TestLogger.Log($"Device reset was complete in the allocated time");
                     return;
                 }
 
