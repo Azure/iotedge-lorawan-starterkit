@@ -27,7 +27,7 @@ namespace LoRaWan.IntegrationTest
 
             var device = this.TestFixtureCi.Device5_ABP;
             this.LogTestStart(device);
-            await this.ArduinoDevice.setDeviceDefault();
+            await this.ArduinoDevice.setDeviceDefaultAsync();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
@@ -96,7 +96,7 @@ namespace LoRaWan.IntegrationTest
             this.LogTestStart(device);
 
             Assert.NotEqual(devAddrToUse, device.DevAddr);
-            await this.ArduinoDevice.setDeviceDefault();
+            await this.ArduinoDevice.setDeviceDefaultAsync();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(devAddrToUse, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
@@ -168,7 +168,7 @@ namespace LoRaWan.IntegrationTest
             var nwkSKeyToUse = "01020304050607080910111213141516";
             Assert.NotEqual(appSKeyToUse, device.AppSKey);
             Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
-            await this.ArduinoDevice.setDeviceDefault();
+            await this.ArduinoDevice.setDeviceDefaultAsync();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(nwkSKeyToUse, appSKeyToUse, null);
@@ -213,7 +213,7 @@ namespace LoRaWan.IntegrationTest
 
             var nwkSKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
             Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
-            await this.ArduinoDevice.setDeviceDefault();
+            await this.ArduinoDevice.setDeviceDefaultAsync();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(nwkSKeyToUse, device.AppSKey, null);
@@ -259,7 +259,7 @@ namespace LoRaWan.IntegrationTest
 
         private async Task SendABPMessages(int messages_count, TestDeviceInfo device)
         {
-            await this.ArduinoDevice.setDeviceDefault();
+            await this.ArduinoDevice.setDeviceDefaultAsync();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);

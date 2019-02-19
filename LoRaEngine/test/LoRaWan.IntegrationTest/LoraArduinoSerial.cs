@@ -997,7 +997,7 @@ namespace LoRaWan.IntegrationTest
                 await Task.Delay(DEFAULT_TIMEWAIT);
             }
 
-            TestLogger.Log($"Waited for device reset, but could ot complete in the allocated time.");
+            TestLogger.Log($"Waited for device reset, but could not complete in the allocated time.");
             await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
