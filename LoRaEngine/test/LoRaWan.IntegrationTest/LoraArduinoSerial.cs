@@ -870,10 +870,15 @@ namespace LoRaWan.IntegrationTest
                 else if (mode == _device_mode_t.LWOTAA)
                     this.sendCommand("AT+MODE=LWOTAA\r\n");
 
-                for (int i = 0; i < 25; i++)
+                for (int i = 0; i < 20; i++)
                 {
                     if (this.ReceivedSerial(x => x.StartsWith("+MODE:")))
+                    {
+                        TestLogger.Log($"Set device to mode performed correctly");
                         return;
+                    }
+
+                    TestLogger.Log($"Set device to mode was not able to complete in allocated time");
                     await Task.Delay(DEFAULT_TIMEWAIT);
                 }
             }
@@ -981,12 +986,19 @@ namespace LoRaWan.IntegrationTest
                 TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex.ToString()}");
             }
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 15; i++)
             {
                 if (this.SerialLogs.Contains("+FDEFAULT: OK"))
+                {
+                    TestLogger.Log($"Waited for device reset, but could ot complete in the allocated time.");
                     return;
+                }
+
                 await Task.Delay(DEFAULT_TIMEWAIT);
             }
+
+            TestLogger.Log($"Waited for device reset, but could ot complete in the allocated time.");
+            await Task.Delay(DEFAULT_TIMEWAIT);
         }
 
         short getBatteryVoltage()
