@@ -9,8 +9,22 @@ namespace LoraKeysManagerFacade
 
     public static class LoRaRegistryManager
     {
+        private static readonly object SingletonLock = new object();
+
         private static RegistryManager current;
-        private static object singletonLock = new object();
+
+        /// <summary>
+        /// Explicit initialization of a <see cref="RegistryManager"/> implementation.
+        /// </summary>
+        /// <param name="testManager">RegistryManager to be used</param>
+        /// <remarks>Note: only used for unit testing</remarks>
+        public static void InitRegistryManager(RegistryManager testManager)
+        {
+            lock (SingletonLock)
+            {
+                current = testManager;
+            }
+        }
 
         public static RegistryManager GetCurrentInstance(string functionAppDirectory)
         {
@@ -19,7 +33,7 @@ namespace LoraKeysManagerFacade
                 return current;
             }
 
-            lock (singletonLock)
+            lock (SingletonLock)
             {
                 if (current == null)
                 {
