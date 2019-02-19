@@ -54,6 +54,7 @@ namespace LoRaWan.IntegrationTest
             }
 
             await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: Answering to a");
+            await this.ArduinoDevice.setPortAsync(1);
 
             this.TestFixtureCi.ClearLogs();
         }
