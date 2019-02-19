@@ -33,7 +33,6 @@ namespace LoRaWan.IntegrationTest
             this.LogTestStart(device);
 
             var twinBeforeJoin = await this.TestFixtureCi.GetTwinAsync(device.DeviceID);
-            await this.ArduinoDevice.setDeviceDefaultAsync();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
@@ -98,7 +97,6 @@ namespace LoRaWan.IntegrationTest
         {
             var device = this.TestFixtureCi.Device2_OTAA;
             this.LogTestStart(device);
-            await this.ArduinoDevice.setDeviceDefaultAsync();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
@@ -120,7 +118,6 @@ namespace LoRaWan.IntegrationTest
             this.LogTestStart(device);
             var appKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
             Assert.NotEqual(appKeyToUse, device.AppKey);
-            await this.ArduinoDevice.setDeviceDefaultAsync();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, appKeyToUse);
@@ -146,7 +143,6 @@ namespace LoRaWan.IntegrationTest
 
             var appEUIToUse = "FF7A00000000FCE3";
             Assert.NotEqual(appEUIToUse, device.AppEUI);
-            await this.ArduinoDevice.setDeviceDefaultAsync();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, appEUIToUse);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
@@ -165,7 +161,6 @@ namespace LoRaWan.IntegrationTest
         {
             var device = this.TestFixtureCi.Device20_OTAA;
             this.LogTestStart(device);
-            await this.ArduinoDevice.setDeviceDefaultAsync();
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
