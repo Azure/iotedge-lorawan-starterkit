@@ -22,13 +22,12 @@ namespace LoRaTools.ADR
         /// </summary>
         private readonly int[,] pktLossToNbRep = new int[4, 3] { { 1, 1, 2 }, { 1, 2, 3 }, { 2, 3, 3 }, { 3, 3, 3 } };
 
-        public (int txPower, int datarate) GetPowerAndDRConfiguration(Rxpk rxpk, double maxSnr, int currentTxPower)
+        public (int txPower, int datarate) GetPowerAndDRConfiguration(Rxpk rxpk, double maxSnr, int currentTxPowerIndex)
         {
-            int computedDatarate = rxpk.DataRate;
-
             double snrMargin = maxSnr - rxpk.RequiredSnr - MarginDb;
 
-            int maxTxPower = RegionFactory.CurrentRegion.TXPowertoMaxEIRP.Count - 1;
+            int maxTxPower = 7;
+            int computedDatarate = RegionFactory.CurrentRegion.GetDRFromFreqAndChan(rxpk.Datr);
             int minTxPower = 0;
 
             int nStep = (int)snrMargin;
@@ -41,30 +40,30 @@ namespace LoRaTools.ADR
                     {
                         computedDatarate++;
                     }
-                    else
+                    else if (currentTxPowerIndex < maxTxPower)
                     {
-                        currentTxPower = Math.Max(minTxPower, currentTxPower--);
+                        currentTxPowerIndex++;
                     }
 
-                    nStep -= 1;
-                    if (currentTxPower == minTxPower)
-                        return (currentTxPower, computedDatarate);
+                    nStep--;
+                    if (currentTxPowerIndex >= maxTxPower)
+                        return (currentTxPowerIndex, computedDatarate);
                 }
                 else if (nStep < 0)
                 {
-                    if (currentTxPower < maxTxPower)
+                    if (currentTxPowerIndex > minTxPower)
                     {
-                        currentTxPower = Math.Min(maxTxPower, currentTxPower++);
+                        currentTxPowerIndex--;
                         nStep++;
                     }
                     else
                     {
-                        return (currentTxPower, computedDatarate);
+                        return (currentTxPowerIndex, computedDatarate);
                     }
                 }
             }
 
-            return (currentTxPower, computedDatarate);
+            return (currentTxPowerIndex, computedDatarate);
         }
 
         public int ComputeNbRepetion(int first, int last, int currentNbRep)

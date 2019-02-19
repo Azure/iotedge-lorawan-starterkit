@@ -56,9 +56,9 @@ namespace LoRaTools.LoRaPhysical
         [JsonProperty("data")]
         public string Data { get; set; }
 
-        public double RequiredSnr => this.SpreadFactorToSNR[this.DataRate];
+        public double RequiredSnr => this.SpreadFactorToSNR[this.SpreadingFactor];
 
-        public int DataRate => int.Parse(this.Datr.Substring(this.Datr.IndexOf("SF") + 2, this.Datr.IndexOf("BW") - this.Datr.IndexOf("SF") - 2));
+        public int SpreadingFactor => int.Parse(this.Datr.Substring(this.Datr.IndexOf("SF") + 2, this.Datr.IndexOf("BW") - this.Datr.IndexOf("SF") - 2));
 
         /// <summary>
         /// Gets required Signal-to-noise ratio to demodulate a LoRa signal given a spread Factor
@@ -115,7 +115,7 @@ namespace LoRaTools.LoRaPhysical
         public uint GetModulationMargin()
         {
             // required SNR:
-            var requiredSNR = this.SpreadFactorToSNR[this.DataRate];
+            var requiredSNR = this.SpreadFactorToSNR[this.SpreadingFactor];
 
             // get the link budget
             int signedMargin = Math.Max(0, (int)(this.Lsnr - requiredSNR));
