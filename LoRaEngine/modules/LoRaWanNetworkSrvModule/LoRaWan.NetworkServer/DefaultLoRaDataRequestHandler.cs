@@ -24,19 +24,22 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaPayloadDecoder payloadDecoder;
         private readonly IDeduplicationStrategyFactory deduplicationFactory;
         private readonly ILoRaADRStrategyProvider loRaADRStrategyProvider;
+        private readonly ILoRAADRManagerFactory loRaADRManagerFactory;
 
         public DefaultLoRaDataRequestHandler(
             NetworkServerConfiguration configuration,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             ILoRaPayloadDecoder payloadDecoder,
             IDeduplicationStrategyFactory deduplicationFactory,
-            ILoRaADRStrategyProvider loRaADRStrategyProvider)
+            ILoRaADRStrategyProvider loRaADRStrategyProvider,
+            ILoRAADRManagerFactory loRaADRManagerFactory)
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.payloadDecoder = payloadDecoder;
             this.deduplicationFactory = deduplicationFactory;
             this.loRaADRStrategyProvider = loRaADRStrategyProvider;
+            this.loRaADRManagerFactory = loRaADRManagerFactory;
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
