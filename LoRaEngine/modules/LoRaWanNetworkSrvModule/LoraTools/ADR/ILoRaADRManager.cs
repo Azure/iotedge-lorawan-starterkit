@@ -4,11 +4,12 @@
 namespace LoRaTools.ADR
 {
     using System.Threading.Tasks;
+    using LoRaTools.LoRaPhysical;
 
     public interface ILoRaADRManager
     {
         Task StoreADREntry(LoRaADRTableEntry newEntry);
 
-        Task<LoRaADRResult> CalculateADRResult(string devEUI);
+        Task<LoRaADRResult> CalculateADRResult(string devEUI, Rxpk rxpk);
     }
 }
