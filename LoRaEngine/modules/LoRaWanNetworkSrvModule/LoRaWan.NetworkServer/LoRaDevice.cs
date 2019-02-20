@@ -188,7 +188,7 @@ namespace LoRaWan.NetworkServer
 
                 if (twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled))
                 {
-                    this.DownlinkEnabled = this.GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled]);
+                    this.DownlinkEnabled = this.GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value);
                 }
 
                 if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
