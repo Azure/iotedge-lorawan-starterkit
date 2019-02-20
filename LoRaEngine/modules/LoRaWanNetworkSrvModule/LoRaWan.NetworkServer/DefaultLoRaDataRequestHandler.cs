@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer
             var payloadFcnt = loraPayload.GetFcnt();
             var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired || loraPayload.IsAdrReq;
 
-            if (loraPayload.IsAdrEnabled && loraPayload.IsAdrReq)
+            if (loraPayload.IsAdrEnabled)
             {
                 Logger.Log(loRaDevice.DevEUI, "here", LogLevel.Information);
             }
@@ -657,28 +657,14 @@ namespace LoRaWan.NetworkServer
 
             // ADR Part.
             // Currently only replying on ADR Req
-            if (loRaPayload.IsAdrEnabled && loRaPayload.IsAdrReq)
-            {
-                double maxSnr = 7;
-                int minFcnt = 0;
-                int maxFcnt = 25;
-
-                int currentNpRep = 1;
-                int currentTxPower = 3;
-
-                if (maxFcnt - minFcnt > 20)
-                {
-                    ILoRaADRStrategy loRaADRStrategy = this.loRaADRStrategyProvider.GetStrategy();
-                    var nbRep = loRaADRStrategy.ComputeNbRepetion(minFcnt, maxFcnt, currentNpRep);
-                    (int txPower, int datarate) = loRaADRStrategy.GetPowerAndDRConfiguration(rxpk, maxSnr, currentTxPower);
-                    LinkADRRequest linkADR = new LinkADRRequest((byte)datarate, (byte)txPower, 0, 0, (byte)nbRep);
-                    macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
-                }
-                else
-                {
-                    Logger.Log(devEUI, $"An ADR control frame was not sent as the network server did not have enough measurement to compute a rate adaptation", LogLevel.Information);
-                }
-            }
+            // if (loRaPayload.IsAdrEnabled && loRaPayload.IsAdrReq)
+            // if (loRaPayload.IsAdrEnabled)
+            //    {
+            //        var loRaADRManager = this.loRaADRManagerFactory.Create(true, this.loRaADRStrategyProvider);
+            //        var adrResult = await loRaADRManager.CalculateADRResult(devEUI, rxpk);
+            //        LinkADRRequest linkADR = new LinkADRRequest((byte)adrResult.DataRate, (byte)adrResult.TxPower, 0, 0, (byte)adrResult.NbRepetition);
+            //        macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
+            // }
 
             // TODO Implement ADR control Logic
             return macCommands.Values;

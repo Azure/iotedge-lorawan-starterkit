@@ -1,7 +1,7 @@
 
 #include <LoRaWan.h>
 //set to true to send confirmed data up messages
-bool confirmed = false;
+bool confirmed = true;
 //application information, should be similar to what was provisiionned in the device twins
 char * deviceId = "46AAC86800430028";
 char * devAddr = "0228B1B1";
@@ -21,7 +21,7 @@ char * nwkSKey = "3B7E151628AED2A6ABF7158809CF4F3C";
 */
 
 //set initial datarate and physical information for the device
-_data_rate_t dr = DR6;
+_data_rate_t dr = DR2;
 _physical_type_t physicalType = EU868 ;
 
 //internal variables
@@ -43,14 +43,13 @@ void setup(void)
 
   lora.setDeciveMode(LWABP);
   lora.setDataRate(dr, physicalType);
-  lora.setPort(1);
   lora.setChannel(0, 868.1);
   lora.setChannel(1, 868.3);
   lora.setChannel(2, 868.5);
 
   lora.setReceiceWindowFirst(0, 868.1);
 
-  lora.setAdaptiveDataRate(false);
+  lora.setAdaptiveDataRate(true);
 
   lora.setDutyCycle(false);
   lora.setJoinDutyCycle(false);
