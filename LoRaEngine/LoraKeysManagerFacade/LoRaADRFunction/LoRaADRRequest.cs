@@ -7,7 +7,7 @@ namespace LoraKeysManagerFacade
     {
         public int DataRate { get; set; }
 
-        public int RequiredSnr { get; set; }
+        public float RequiredSnr { get; set; }
 
         public int FCntUp { get; set; }
 

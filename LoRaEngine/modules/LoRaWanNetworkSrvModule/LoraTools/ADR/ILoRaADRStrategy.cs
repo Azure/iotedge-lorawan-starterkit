@@ -14,7 +14,7 @@ namespace LoRaTools.ADR
     /// </summary>
     public interface ILoRaADRStrategy
     {
-        (int txPower, int datarate) GetPowerAndDRConfiguration(Rxpk rxpk, double maxSnr, int currentTxPower);
+        (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPower);
 
         int ComputeNbRepetion(int first, int last, int currentNbRep);
     }

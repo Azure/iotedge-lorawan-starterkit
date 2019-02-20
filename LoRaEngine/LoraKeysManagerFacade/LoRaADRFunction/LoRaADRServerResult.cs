@@ -3,16 +3,10 @@
 
 namespace LoraKeysManagerFacade
 {
-    public class LoRaADRResult
+    using LoRaTools.ADR;
+
+    public class LoRaADRServerResult : LoRaADRResult
     {
-        public int DataRate { get; set; }
-
-        public int RequiredSnr { get; set; }
-
-        public int FCntUp { get; set; }
-
         public int FCntDown { get; set; }
-
-        public string GatewayId { get; set; }
     }
 }

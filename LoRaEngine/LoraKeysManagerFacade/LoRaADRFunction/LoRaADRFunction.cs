@@ -41,14 +41,15 @@ namespace LoraKeysManagerFacade
             }
 
             var adrRequest = JsonConvert.DeserializeObject<LoRaADRRequest>(requestBody);
-            var result = await HandleADRRequest(adrRequest, EnsureLoraADRManagerInstance(context.FunctionAppDirectory));
+            var result = await HandleADRRequest(devEUI, adrRequest, EnsureLoraADRManagerInstance(context.FunctionAppDirectory));
 
-            return (ActionResult)new OkResult();
+            return new OkObjectResult(result);
         }
 
-        internal static async Task<LoRaADRResult> HandleADRRequest(LoRaADRRequest request, ILoRaADRManager adrManager)
+        internal static async Task<LoRaADRResult> HandleADRRequest(string devEUI, LoRaADRRequest request, ILoRaADRManager adrManager)
         {
-            return await Task.FromResult<LoRaADRResult>(null);
+            var adrResult = await adrManager.CalculateADRResult(devEUI, request.RequiredSnr, request.DataRate);
+            return adrResult;
         }
 
         private static ILoRaADRManager EnsureLoraADRManagerInstance(string functionAppDirectory)
