@@ -10,5 +10,7 @@ namespace LoRaTools.ADR
         public int TxPower { get; set; }
 
         public int DataRate { get; set; }
+
+        public string OwningGatewayId { get; set; }
     }
 }

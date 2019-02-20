@@ -325,5 +325,19 @@ namespace LoRaTools.Regions
         {
             return (int)this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Key;
         }
+
+        public static Region GetRegionFromFreq(double freq)
+        {
+            if (freq < 870 && freq > 863)
+            {
+                return Region.EU868;
+            }// US902-928
+            else if (freq <= 928 && freq >= 902)
+            {
+                return Region.US915;
+            }
+
+            return null;
+        }
     }
 }

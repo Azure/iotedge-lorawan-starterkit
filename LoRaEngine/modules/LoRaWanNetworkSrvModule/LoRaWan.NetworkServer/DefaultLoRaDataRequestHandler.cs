@@ -658,13 +658,13 @@ namespace LoRaWan.NetworkServer
             // ADR Part.
             // Currently only replying on ADR Req
             // if (loRaPayload.IsAdrEnabled && loRaPayload.IsAdrReq)
-            // if (loRaPayload.IsAdrEnabled)
-            //    {
-            //        var loRaADRManager = this.loRaADRManagerFactory.Create(true, this.loRaADRStrategyProvider);
-            //        var adrResult = await loRaADRManager.CalculateADRResult(devEUI, rxpk);
-            //        LinkADRRequest linkADR = new LinkADRRequest((byte)adrResult.DataRate, (byte)adrResult.TxPower, 0, 0, (byte)adrResult.NbRepetition);
-            //        macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
-            // }
+            if (loRaPayload.IsAdrEnabled)
+                {
+                    var loRaADRManager = this.loRaADRManagerFactory.Create(true, this.loRaADRStrategyProvider);
+                    var adrResult = await loRaADRManager.CalculateADRResult(devEUI, rxpk);
+                    LinkADRRequest linkADR = new LinkADRRequest((byte)adrResult.DataRate, (byte)adrResult.TxPower, 0, 0, (byte)adrResult.NbRepetition);
+                    macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
+                }
 
             // TODO Implement ADR control Logic
             return macCommands.Values;
