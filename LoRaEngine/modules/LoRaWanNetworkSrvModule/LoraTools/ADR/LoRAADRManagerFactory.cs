@@ -7,7 +7,7 @@ namespace LoRaTools.ADR
     {
         public ILoRaADRManager Create(bool isSingleGateway, ILoRaADRStrategyProvider strategyProvider)
         {
-            return isSingleGateway ? new LoRaLocalADRManager(new LoRaADRInMemoryStore(), strategyProvider) : null;
+            return isSingleGateway ? new LoRaADRDefaultManager(new LoRaADRInMemoryStore(), strategyProvider) : null;
         }
     }
 }
