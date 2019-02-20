@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Mac;
@@ -23,6 +24,8 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private readonly ILoRaPayloadDecoder payloadDecoder;
         private readonly IDeduplicationStrategyFactory deduplicationFactory;
+        private readonly ILoRaADRStrategyProvider loRaADRStrategyProvider;
+        private readonly ILoRAADRManagerFactory loRaADRManagerFactory;
         private IClassCDeviceMessageSender classCDeviceMessageSender;
 
         public DefaultLoRaDataRequestHandler(
@@ -30,6 +33,8 @@ namespace LoRaWan.NetworkServer
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             ILoRaPayloadDecoder payloadDecoder,
             IDeduplicationStrategyFactory deduplicationFactory,
+            ILoRaADRStrategyProvider loRaADRStrategyProvider,
+            ILoRAADRManagerFactory loRaADRManagerFactory,
             IClassCDeviceMessageSender classCDeviceMessageSender = null)
         {
             this.configuration = configuration;
@@ -37,6 +42,8 @@ namespace LoRaWan.NetworkServer
             this.payloadDecoder = payloadDecoder;
             this.deduplicationFactory = deduplicationFactory;
             this.classCDeviceMessageSender = classCDeviceMessageSender;
+            this.loRaADRStrategyProvider = loRaADRStrategyProvider;
+            this.loRaADRManagerFactory = loRaADRManagerFactory;
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)

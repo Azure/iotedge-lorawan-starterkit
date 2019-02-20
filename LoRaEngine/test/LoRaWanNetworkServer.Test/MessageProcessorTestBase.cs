@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer.Test
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaTools.ADR;
     using LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
     using LoRaWan.Test.Shared;
@@ -61,9 +62,11 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerGatewayID, this.LoRaDeviceApi.Object);
             var deduplicationFactory = new DeduplicationStrategyFactory(this.LoRaDeviceApi.Object);
-            this.RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.PayloadDecoder, deduplicationFactory);
+            var adrStrategyProvider = new LoRaADRStrategyProvider();
+            var adrManagerFactory = new LoRAADRManagerFactory();
+            this.RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory);
             this.LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.LoRaDeviceFactory = new TestLoRaDeviceFactory(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.LoRaDeviceClient.Object, deduplicationFactory);
+            this.LoRaDeviceFactory = new TestLoRaDeviceFactory(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.LoRaDeviceClient.Object, deduplicationFactory, adrStrategyProvider, adrManagerFactory);
         }
 
         public MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());
