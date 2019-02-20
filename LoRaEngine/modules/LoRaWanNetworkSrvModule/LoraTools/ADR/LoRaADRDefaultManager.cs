@@ -10,12 +10,12 @@ namespace LoRaTools.ADR
     using LoRaTools.Regions;
     using LoRaWan;
 
-    public class LoRaLocalADRManager : ILoRaADRManager
+    public class LoRaADRDefaultManager : ILoRaADRManager
     {
         private readonly ILoRaADRStore store;
         private readonly ILoRaADRStrategyProvider strategyProvider;
 
-        public LoRaLocalADRManager(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider)
+        public LoRaADRDefaultManager(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider)
         {
             this.store = store;
             this.strategyProvider = strategyProvider;

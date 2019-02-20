@@ -64,7 +64,7 @@ namespace LoraKeysManagerFacade
                 if (adrManager == null)
                 {
                     var redisStore = new LoRaADRRedisStore(FunctionConfigManager.GetCurrentConfiguration(functionAppDirectory).GetConnectionString("RedisConnectionString"));
-                    adrManager = new LoRaLocalADRManager(redisStore, new LoRaADRStrategyProvider());
+                    adrManager = new LoRaADRDefaultManager(redisStore, new LoRaADRStrategyProvider());
                 }
             }
 
