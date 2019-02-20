@@ -182,9 +182,9 @@ namespace LoRaWan.NetworkServer
                 if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
                     this.SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder].Value as string;
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntUp))
-                    this.fcntUp = this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntUp]);
+                    this.fcntUp = this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntUp].Value);
                 if (twin.Properties.Reported.Contains(TwinProperty.FCntDown))
-                    this.fcntDown = this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntDown]);
+                    this.fcntDown = this.GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntDown].Value);
 
                 if (twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled))
                 {
@@ -193,7 +193,7 @@ namespace LoRaWan.NetworkServer
 
                 if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
                 {
-                    var preferredWindowTwinValue = this.GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow]);
+                    var preferredWindowTwinValue = this.GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
                     if (preferredWindowTwinValue == Constants.RECEIVE_WINDOW_2)
                         this.PreferredWindow = preferredWindowTwinValue;
                 }
