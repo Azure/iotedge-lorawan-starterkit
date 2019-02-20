@@ -37,8 +37,13 @@ namespace LoRaTools.ADR
             await this.store.AddTableEntry(newEntry);
         }
 
-        public async Task<LoRaADRResult> CalculateADRResult(string devEUI, Rxpk rxpk)
+        public async Task<LoRaADRResult> CalculateADRResult(string devEUI, float requiredSnr, int dataRate, LoRaADRTableEntry newEntry = null)
         {
+            if (newEntry != null)
+            {
+                await this.store.AddTableEntry(newEntry);
+            }
+
             var table = await this.store.GetADRTable(devEUI);
             if (table == null || !table.IsComplete)
             {
@@ -53,10 +58,10 @@ namespace LoRaTools.ADR
             }
 
             var newNbRep = this.strategyProvider.GetStrategy().ComputeNbRepetion(table.Entries[0].FCnt, table.Entries[LoRaADRTable.FrameCountCaptureCount - 1].FCnt, (int)table.CurrentNbRep);
-            (int newTxPowerIndex, int newDatarate) = this.strategyProvider.GetStrategy().GetPowerAndDRConfiguration(rxpk, table.Entries.Max(x => x.Snr), (int)table.CurrentTxPower);
+            (int newTxPowerIndex, int newDatarate) = this.strategyProvider.GetStrategy().GetPowerAndDRConfiguration(requiredSnr, dataRate, table.Entries.Max(x => x.Snr), (int)table.CurrentTxPower);
 
             // checking if the new values are different from the old ones otherwise we don't do any adr change$
-            if (newNbRep != table.CurrentNbRep || newTxPowerIndex != table.CurrentTxPower || newDatarate != RegionFactory.CurrentRegion.GetDRFromFreqAndChan(rxpk.Datr))
+            if (newNbRep != table.CurrentNbRep || newTxPowerIndex != table.CurrentTxPower || newDatarate != dataRate)
             {
                 LoRaADRResult result = new LoRaADRResult()
                 {

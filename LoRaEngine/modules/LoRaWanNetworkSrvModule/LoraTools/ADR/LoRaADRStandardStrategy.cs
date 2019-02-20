@@ -22,12 +22,12 @@ namespace LoRaTools.ADR
         /// </summary>
         private readonly int[,] pktLossToNbRep = new int[4, 3] { { 1, 1, 2 }, { 1, 2, 3 }, { 2, 3, 3 }, { 3, 3, 3 } };
 
-        public (int txPower, int datarate) GetPowerAndDRConfiguration(Rxpk rxpk, double maxSnr, int currentTxPowerIndex)
+        public (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex)
         {
-            double snrMargin = maxSnr - rxpk.RequiredSnr - MarginDb;
+            double snrMargin = maxSnr - requiredSnr - MarginDb;
 
             int maxTxPower = 7;
-            int computedDatarate = RegionFactory.CurrentRegion.GetDRFromFreqAndChan(rxpk.Datr);
+            int computedDatarate = dataRate;
             int minTxPower = 0;
 
             int nStep = (int)snrMargin;
