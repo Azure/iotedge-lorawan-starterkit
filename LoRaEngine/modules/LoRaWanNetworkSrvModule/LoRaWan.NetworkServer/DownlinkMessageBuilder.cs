@@ -284,7 +284,12 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            // TODO Implement ADR control Logic
+            // ADR Part.
+            // Currently only replying on ADR Req
+            // var loRaADRManager = this.loRaADRManagerFactory.Create(true, this.loRaADRStrategyProvider);
+            // var adrResult = await loRaADRManager.CalculateADRResult(devEUI, rxpk);
+            // LinkADRRequest linkADR = new LinkADRRequest((byte)adrResult.DataRate, (byte)adrResult.TxPower, 0, 0, (byte)adrResult.NbRepetition);
+            // macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
             return macCommands.Values;
         }
     }

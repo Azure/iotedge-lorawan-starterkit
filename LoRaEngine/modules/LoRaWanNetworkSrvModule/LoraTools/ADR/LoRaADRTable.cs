@@ -9,7 +9,7 @@ namespace LoRaTools.ADR
     {
         public const int FrameCountCaptureCount = 20;
 
-        public int? CurrentTxPower { get; set; }
+        public int CurrentTxPower { get; set; } = 7;
 
         public int? CurrentNbRep { get; set; }
 

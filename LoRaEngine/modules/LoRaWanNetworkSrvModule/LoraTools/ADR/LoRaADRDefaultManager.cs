@@ -52,7 +52,7 @@ namespace LoRaTools.ADR
             }
 
             // calculate ADR answer
-            if (table.CurrentNbRep == null || table.CurrentTxPower == null)
+            if (table.CurrentNbRep == null)
             {
                 throw new ADRException("Missing values for currentTxPower or Current Nb Rep, aborting ADR calculation");
             }
