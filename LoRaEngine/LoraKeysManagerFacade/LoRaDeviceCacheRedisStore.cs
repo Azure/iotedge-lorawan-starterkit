@@ -14,13 +14,7 @@ namespace LoraKeysManagerFacade
 
         public LoRaDeviceCacheRedisStore(ExecutionContext context)
         {
-            var config = new ConfigurationBuilder()
-                                .SetBasePath(context.FunctionAppDirectory)
-                                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                                .AddEnvironmentVariables()
-                                .Build();
-
-            var redisConnectionString = config.GetConnectionString("RedisConnectionString");
+            var redisConnectionString = FunctionConfigManager.GetCurrentConfiguration(context.FunctionAppDirectory).GetConnectionString("RedisConnectionString");
 
             if (string.IsNullOrEmpty(redisConnectionString))
             {

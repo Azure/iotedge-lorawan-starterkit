@@ -23,11 +23,14 @@ namespace LoraKeysManagerFacade
         /// </summary>
         /// <param name="cacheStore">The custom store to use</param>
         /// <remarks>Do only use for unit testing</remarks>
-        public static void InitCacheStore(ILoRaDeviceCacheStore cacheStore)
+        public static void EnsureCacheStore(ILoRaDeviceCacheStore cacheStore)
         {
             lock (cacheSingletonLock)
             {
-                LoRaDeviceCache.cacheStore = cacheStore;
+                if (LoRaDeviceCache.cacheStore == null)
+                {
+                    LoRaDeviceCache.cacheStore = cacheStore;
+                }
             }
         }
 

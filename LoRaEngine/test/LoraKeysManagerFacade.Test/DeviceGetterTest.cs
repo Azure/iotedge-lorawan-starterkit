@@ -15,20 +15,25 @@ namespace LoraKeysManagerFacade.Test
 
     public class DeviceGetterTest
     {
-        private const string DevEUI = "DEV1";
-        private const string DevEUI2 = "DEV2";
-        private const string GatewayId = "GW1";
         private const string PrimaryKey = "ABCDEFGH1234567890";
 
         private readonly Mock<RegistryManager> mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Loose);
 
         private readonly ExecutionContext dummyContext = new ExecutionContext();
 
+        public DeviceGetterTest()
+        {
+            LoRaDeviceCache.EnsureCacheStore(new LoRaInMemoryDeviceStore());
+        }
+
         [Fact]
         public async void DeviceGetter_OTAA_Join()
         {
-            this.InitRegistryManager();
-            LoRaDeviceCache.InitCacheStore(new LoRaInMemoryDeviceStore());
+            const string DevEUI = "DEVDeviceGetterTest1_1";
+            const string DevEUI2 = "DEVDeviceGetterTest2_1";
+            const string GatewayId = "GWDeviceGetterTest1_1";
+
+            this.InitRegistryManager(DevEUI, DevEUI2);
 
             var items = await DeviceGetter.GetDeviceList(DevEUI, GatewayId, "ABCD", null, this.dummyContext);
 
@@ -39,8 +44,11 @@ namespace LoraKeysManagerFacade.Test
         [Fact]
         public async void DeviceGetter_ABP_Join()
         {
-            this.InitRegistryManager();
-            LoRaDeviceCache.InitCacheStore(new LoRaInMemoryDeviceStore());
+            const string DevEUI = "DEVDeviceGetterTest1_2";
+            const string DevEUI2 = "DEVDeviceGetterTest2_2";
+            const string GatewayId = "GWDeviceGetterTest1_2";
+
+            this.InitRegistryManager(DevEUI, DevEUI2);
 
             var items = await DeviceGetter.GetDeviceList(null, GatewayId, "ABCD", "DevAddr1", this.dummyContext);
 
@@ -49,7 +57,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.Equal(DevEUI2, items[1].DevEUI);
         }
 
-        private void InitRegistryManager()
+        private void InitRegistryManager(string devEui1, string devEui2)
         {
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             this.mockRegistryManager
@@ -64,7 +72,7 @@ namespace LoraKeysManagerFacade.Test
                 .Setup(x => x.HasMoreResults)
                 .Returns(() => (deviceCount < numberOfDevices));
 
-            string[] deviceIds = new string[numberOfDevices] { DevEUI, DevEUI2 };
+            string[] deviceIds = new string[numberOfDevices] { devEui1, devEui2 };
 
             IEnumerable<Twin> Twins()
             {

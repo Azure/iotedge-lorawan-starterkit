@@ -8,13 +8,16 @@ namespace LoraKeysManagerFacade.Test
 
     public class FCntCacheCheckTest
     {
-        const string DeviceEUI = "Dev1";
-        const string GatewayId = "Gw1";
+        public FCntCacheCheckTest()
+        {
+            LoRaDeviceCache.EnsureCacheStore(new LoRaInMemoryDeviceStore());
+        }
 
         [Fact]
         public void FrameCounter_Down_Initial()
         {
-            LoRaDeviceCache.InitCacheStore(new LoRaInMemoryDeviceStore());
+            const string DeviceEUI = "DevFCntCacheCheckTest1_1";
+            const string GatewayId = "GwFCntCacheCheckTest1_1";
 
             var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
             Assert.Equal(2, next);
@@ -23,7 +26,8 @@ namespace LoraKeysManagerFacade.Test
         [Fact]
         public void FrameCounter_Down_Update_Server()
         {
-            LoRaDeviceCache.InitCacheStore(new LoRaInMemoryDeviceStore());
+            const string DeviceEUI = "DevFCntCacheCheckTest1_2";
+            const string GatewayId = "GwFCntCacheCheckTest1_2";
 
             var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
             Assert.Equal(2, next);
@@ -35,7 +39,8 @@ namespace LoraKeysManagerFacade.Test
         [Fact]
         public void FrameCounter_Down_Update_Device()
         {
-            LoRaDeviceCache.InitCacheStore(new LoRaInMemoryDeviceStore());
+            const string DeviceEUI = "DevFCntCacheCheckTest1_3";
+            const string GatewayId = "GwFCntCacheCheckTest1_3";
 
             var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
             Assert.Equal(2, next);
@@ -47,7 +52,8 @@ namespace LoraKeysManagerFacade.Test
         [Fact]
         public void FrameCounter_Down_Retry_Increment()
         {
-            LoRaDeviceCache.InitCacheStore(new LoRaInMemoryDeviceStore());
+            const string DeviceEUI = "DevFCntCacheCheckTest1_4";
+            const string GatewayId = "GwFCntCacheCheckTest1_4";
 
             var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
             Assert.Equal(2, next);
