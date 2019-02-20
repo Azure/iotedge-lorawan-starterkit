@@ -7,6 +7,7 @@ namespace LoRaWanTest
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
@@ -38,16 +39,17 @@ namespace LoRaWanTest
             };
 
             var netId = ConversionHelper.ByteArrayToString(netId1);
-            LoRaPayloadJoinAccept joinAccept = new LoRaPayloadJoinAccept(netId, "00112233445566778899AABBCCDDEEFF", devAddr, appNonce, new byte[] { 0 }, new byte[] { 0 }, null);
-            Console.WriteLine(BitConverter.ToString(joinAccept.GetByteMessage()));
-
+            var appkey = "00112233445566778899AABBCCDDEEFF";
+            LoRaPayloadJoinAccept joinAccept = new LoRaPayloadJoinAccept(netId, devAddr, appNonce, new byte[] { 0 }, new byte[] { 0 }, null);
+            var joinacceptbyte = joinAccept.Serialize(appkey, "SF10BW125", 866.349812, 10000, "test");
+            var decodedJoinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinacceptbyte.Txpk.Data), appkey);
             byte[] joinAcceptMic = new byte[4]
             {
                 67, 72, 91, 188,
                 };
 
-            Assert.True(joinAccept.Mic.ToArray().SequenceEqual(joinAcceptMic));
-            var msg = ConversionHelper.ByteArrayToString(joinAccept.GetByteMessage());
+            Assert.True(decodedJoinAccept.Mic.ToArray().SequenceEqual(joinAcceptMic));
+            var msg = ConversionHelper.ByteArrayToString(Convert.FromBase64String(joinacceptbyte.Txpk.Data));
             Assert.Equal("20493EEB51FBA2116F810EDB3742975142", msg);
         }
 
@@ -332,7 +334,7 @@ namespace LoRaWanTest
             Array.Reverse(devAddr);
             byte[] fCtrl = new byte[] { 0x80 };
             var fcntBytes = BitConverter.GetBytes(fcnt);
-            byte[] fopts = new byte[0];
+            var fopts = new List<MacCommand>();
             byte[] fPort = new byte[] { 1 };
             byte[] payload = Encoding.UTF8.GetBytes(data);
             Array.Reverse(payload);
@@ -343,7 +345,7 @@ namespace LoRaWanTest
 
             Assert.Equal(12, devicePayloadData.GetFcnt());
             Assert.Equal(0, devicePayloadData.Direction);
-            Assert.Equal(1, devicePayloadData.GetFPort());
+            Assert.Equal(1, devicePayloadData.FPort);
 
             var datr = "SF10BW125";
             var freq = 868.3;
@@ -357,7 +359,7 @@ namespace LoRaWanTest
             var parsedLoRaPayloadData = (LoRaPayloadData)parsedLoRaPayload;
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPort);
 
             // Ensure that mic check and getting payload back works
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
@@ -367,7 +369,7 @@ namespace LoRaWanTest
             // checking mic and getting payload should not change the payload properties
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPort);
 
             // checking mic should not break getting the payload
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
@@ -377,7 +379,7 @@ namespace LoRaWanTest
             // checking mic and getting payload should not change the payload properties
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPort);
         }
 
         /// <summary>

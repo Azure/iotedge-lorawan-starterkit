@@ -47,7 +47,7 @@ void setup(void)
 
 
   lora.init(); 
-
+  lora.setDeviceDefault();
 
   lora.setId(NULL , "7A7A7A00000014E2", "BE7A0000000014E2");
   lora.setKey(NULL, NULL, "634B4631BB1BCCCC006A2608E5601717");

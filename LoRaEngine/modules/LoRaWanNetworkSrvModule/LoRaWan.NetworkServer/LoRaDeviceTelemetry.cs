@@ -102,7 +102,7 @@ namespace LoRaWan.NetworkServer
             this.Tmms = rxpk.Tmms;
             this.Tmst = rxpk.Tmst;
             this.Fcnt = loRaPayloadData.GetFcnt();
-            this.Port = loRaPayloadData.GetFPort();
+            this.Port = loRaPayloadData.FPort;
         }
     }
 }

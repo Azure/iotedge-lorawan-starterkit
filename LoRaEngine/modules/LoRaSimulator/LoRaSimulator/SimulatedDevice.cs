@@ -105,7 +105,7 @@
             byte[] fCtrl = new byte[] { 0x80 };
             // byte[] _FCnt = new byte[] { 0x00, 0x00 };
             this._fCnt[0]++;
-            byte[] fopts = null;
+            List<MacCommand> fopts = null;
             byte[] fPort = new byte[] { 0x01 };
             // Creating a random number
             // Random random = new Random();
