@@ -7,6 +7,7 @@ namespace LoRaWanNetworkServer.Test
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.Test;
@@ -67,7 +68,12 @@ namespace LoRaWanNetworkServer.Test
             var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
 
-            Assert.Equal(0, payloadDataDown.Frmpayload.Span.Length);
+            // We expect a mac command in the payload
+            Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
+            var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
+            Array.Reverse(decryptedPayload);
+            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+            Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
 
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
