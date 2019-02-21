@@ -3,8 +3,14 @@
 
 namespace LoraKeysManagerFacade.FunctionBundler
 {
+    using LoRaTools.ADR;
+
     public class FunctionBundlerResult
     {
         public DuplicateMsgResult DeduplicationResult { get; set; }
+
+        public LoRaADRResult AdrResult { get; set; }
+
+        public int NextFCntDown { get; set; }
     }
 }

@@ -31,8 +31,8 @@ namespace LoraKeysManagerFacade.Test
         [Fact]
         public async void DeviceGetter_OTAA_Join()
         {
-            const string DevEUI = "DEVDeviceGetterTest1_1";
-            const string DevEUI2 = "DEVDeviceGetterTest2_1";
+            const string DevEUI = "1234567890123456";
+            const string DevEUI2 = "ABCDEFABCDEFABC";
             const string GatewayId = "GWDeviceGetterTest1_1";
 
             this.InitRegistryManager(DevEUI, DevEUI2);

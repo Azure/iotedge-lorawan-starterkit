@@ -42,6 +42,11 @@ namespace LoraKeysManagerFacade
             string devNonce = req.Query["DevNonce"];
             string gatewayId = req.Query["GatewayId"];
 
+            if (devEUI != null)
+            {
+                EUIValidator.ValidateDevEUI(devEUI);
+            }
+
             try
             {
                 var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, context);
@@ -51,6 +56,10 @@ namespace LoraKeysManagerFacade
             catch (DeviceNonceUsedException)
             {
                 return new BadRequestObjectResult("UsedDevNonce");
+            }
+            catch (ArgumentException ex)
+            {
+                return new BadRequestObjectResult(ex.Message);
             }
         }
 
