@@ -45,7 +45,7 @@ namespace LoraKeysManagerFacade
             this.cacheKey = cacheKey ?? devEUI;
         }
 
-        public static LoRaDeviceCache Create(ExecutionContext context, string devEUI, string gatewayId, string cacheKey = null)
+        public static LoRaDeviceCache Create(string functionAppDirectory, string devEUI, string gatewayId, string cacheKey = null)
         {
             if (string.IsNullOrEmpty(devEUI))
             {
@@ -57,7 +57,7 @@ namespace LoraKeysManagerFacade
                 throw new ArgumentNullException("gatewayId");
             }
 
-            EnsureCacheStore(context);
+            EnsureCacheStore(functionAppDirectory);
             return new LoRaDeviceCache(devEUI, gatewayId, cacheKey);
         }
 
@@ -133,14 +133,14 @@ namespace LoraKeysManagerFacade
             cacheStore.StringSet(this.cacheKey, value, expiry);
         }
 
-        public static void Delete(string key, ExecutionContext context)
+        public static void Delete(string key, string functionAppDirectory)
         {
             if (string.IsNullOrEmpty(key))
             {
                 return;
             }
 
-            EnsureCacheStore(context);
+            EnsureCacheStore(functionAppDirectory);
             cacheStore.KeyDelete(key);
         }
 
@@ -152,7 +152,7 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        private static void EnsureCacheStore(ExecutionContext context)
+        private static void EnsureCacheStore(string functionAppDirectory)
         {
             if (cacheStore != null)
             {
@@ -163,7 +163,7 @@ namespace LoraKeysManagerFacade
             {
                 if (cacheStore == null)
                 {
-                    cacheStore = new LoRaDeviceCacheRedisStore(context);
+                    cacheStore = new LoRaDeviceCacheRedisStore(functionAppDirectory);
                 }
             }
         }

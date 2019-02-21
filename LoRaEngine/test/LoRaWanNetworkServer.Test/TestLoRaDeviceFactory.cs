@@ -3,10 +3,10 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
-    using System;
     using System.Collections.Generic;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.ADR;
 
     internal class TestLoRaDeviceFactory : ILoRaDeviceFactory
     {

@@ -3,9 +3,7 @@
 
 namespace LoRaWanTest
 {
-    using System;
     using System.Collections.Generic;
-    using System.Text;
     using LoRaTools.ADR;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
@@ -27,7 +25,7 @@ namespace LoRaWanTest
                 await loRaADRManager.StoreADREntry(tableEntries[i]);
             }
 
-            var adrResult = await loRaADRManager.CalculateADRResult(devEUI, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1);
+            var adrResult = await loRaADRManager.CalculateADRResultAndAddEntry(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1);
             if (expectedResult == null)
             {
                 Assert.Null(adrResult);

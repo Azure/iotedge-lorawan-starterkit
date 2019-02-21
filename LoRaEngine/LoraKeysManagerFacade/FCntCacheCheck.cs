@@ -4,19 +4,11 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using LoRaWan.Shared;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.Azure.WebJobs.Host;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
-    using Newtonsoft.Json;
-    using StackExchange.Redis;
 
     public static class FCntCacheCheck
     {
@@ -43,7 +35,7 @@ namespace LoraKeysManagerFacade
 
             if (!string.IsNullOrEmpty(abpFcntCacheReset))
             {
-                LoRaDeviceCache.Delete(devEUI, context);
+                LoRaDeviceCache.Delete(devEUI, context.FunctionAppDirectory);
                 return (ActionResult)new OkObjectResult(null);
             }
 
@@ -56,15 +48,15 @@ namespace LoraKeysManagerFacade
                 throw new ArgumentException(errorMsg);
             }
 
-            newFCntDown = GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown, context);
+            newFCntDown = GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown, context.FunctionAppDirectory);
 
             return (ActionResult)new OkObjectResult(newFCntDown);
         }
 
-        public static int GetNextFCntDown(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown, ExecutionContext context)
+        public static int GetNextFCntDown(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown, string functionAppDirectory)
         {
             int newFCntDown = 0;
-            using (var deviceCache = LoRaDeviceCache.Create(context, devEUI, gatewayId))
+            using (var deviceCache = LoRaDeviceCache.Create(functionAppDirectory, devEUI, gatewayId))
             {
                 if (deviceCache.TryToLock())
                 {

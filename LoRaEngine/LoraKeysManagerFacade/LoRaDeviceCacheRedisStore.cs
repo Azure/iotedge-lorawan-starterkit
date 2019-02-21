@@ -12,9 +12,9 @@ namespace LoraKeysManagerFacade
     {
         private IDatabase redisCache;
 
-        public LoRaDeviceCacheRedisStore(ExecutionContext context)
+        public LoRaDeviceCacheRedisStore(string functionAppDirectory)
         {
-            var redisConnectionString = FunctionConfigManager.GetCurrentConfiguration(context.FunctionAppDirectory).GetConnectionString("RedisConnectionString");
+            var redisConnectionString = FunctionConfigManager.GetCurrentConfiguration(functionAppDirectory).GetConnectionString("RedisConnectionString");
 
             if (string.IsNullOrEmpty(redisConnectionString))
             {

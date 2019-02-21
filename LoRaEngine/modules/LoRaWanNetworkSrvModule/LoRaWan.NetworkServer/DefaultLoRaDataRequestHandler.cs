@@ -27,6 +27,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaADRStrategyProvider loRaADRStrategyProvider;
         private readonly ILoRAADRManagerFactory loRaADRManagerFactory;
         private IClassCDeviceMessageSender classCDeviceMessageSender;
+        private readonly LoRaWan.NetworkServer.ADR.ILoRAADRManagerFactory loRaADRManagerFactory;
 
         public DefaultLoRaDataRequestHandler(
             NetworkServerConfiguration configuration,
@@ -35,7 +36,8 @@ namespace LoRaWan.NetworkServer
             IDeduplicationStrategyFactory deduplicationFactory,
             ILoRaADRStrategyProvider loRaADRStrategyProvider,
             ILoRAADRManagerFactory loRaADRManagerFactory,
-            IClassCDeviceMessageSender classCDeviceMessageSender = null)
+            IClassCDeviceMessageSender classCDeviceMessageSender = null,
+            LoRaWan.NetworkServer.ADR.ILoRAADRManagerFactory loRaADRManagerFactory)
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
@@ -58,11 +60,18 @@ namespace LoRaWan.NetworkServer
             DeduplicationResult deduplicationResult = null;
             LoRaADRResult loRaADRResult = null;
 
+            var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
+            if (frameCounterStrategy == null)
+            {
+                Logger.Log(loRaDevice.DevEUI, $"failed to resolve frame count update strategy, device gateway: {loRaDevice.GatewayID}, message ignored", LogLevel.Error);
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.ApplicationError);
+            }
+
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
 
             if (loraPayload.IsAdrEnabled)
             {
-                var loRaADRManager = this.loRaADRManagerFactory.Create(!useMultipleGateways, this.loRaADRStrategyProvider);
+                var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
 
                 var loRaADRTableEntry = new LoRaADRTableEntry()
                 {
@@ -72,8 +81,11 @@ namespace LoRaWan.NetworkServer
                     Snr = request.Rxpk.Lsnr
                 };
 
-                loRaADRResult = await loRaADRManager.CalculateADRResult(
+                loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
                     loRaDevice.DevEUI,
+                    this.configuration.GatewayID,
+                    payloadFcnt,
+                    loRaDevice.FCntDown,
                     (float)request.Rxpk.RequiredSnr,
                     request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
                     request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,

@@ -20,12 +20,12 @@ namespace LoraKeysManagerFacade.Test
             string gateway2Id = NewUniqueEUI64();
             string dev1EUI = NewUniqueEUI64();
 
-            var result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, null, new ExecutionContext());
+            var result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, null, string.Empty);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
             Assert.Null(result.ClientFCntDown);
 
-            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway2Id, 1, null, new ExecutionContext());
+            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway2Id, 1, null, string.Empty);
             Assert.True(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
             Assert.Null(result.ClientFCntDown);
@@ -37,12 +37,12 @@ namespace LoraKeysManagerFacade.Test
             string gateway1Id = NewUniqueEUI64();
             string dev1EUI = NewUniqueEUI64();
 
-            var result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, null, new ExecutionContext());
+            var result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, null, string.Empty);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
             Assert.Null(result.ClientFCntDown);
 
-            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, null, new ExecutionContext());
+            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, null, string.Empty);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
             Assert.Null(result.ClientFCntDown);
@@ -56,22 +56,22 @@ namespace LoraKeysManagerFacade.Test
             string dev1EUI = NewUniqueEUI64();
             string dev2EUI = NewUniqueEUI64();
 
-            var result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, null, new ExecutionContext());
+            var result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, null, string.Empty);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
             Assert.Null(result.ClientFCntDown);
 
-            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway2Id, 2, null, new ExecutionContext());
+            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway2Id, 2, null, string.Empty);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway2Id, result.GatewayId);
             Assert.Null(result.ClientFCntDown);
 
-            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev2EUI, gateway1Id, 1, null, new ExecutionContext());
+            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev2EUI, gateway1Id, 1, null, string.Empty);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
             Assert.Null(result.ClientFCntDown);
 
-            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev2EUI, gateway2Id, 2, null, new ExecutionContext());
+            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev2EUI, gateway2Id, 2, null, string.Empty);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway2Id, result.GatewayId);
             Assert.Null(result.ClientFCntDown);
@@ -88,13 +88,13 @@ namespace LoraKeysManagerFacade.Test
             LoRaDeviceCache.EnsureCacheStore(store);
 
             int fCntDown = 1;
-            var result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, fCntDown, new ExecutionContext());
+            var result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, fCntDown, string.Empty);
 
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
             Assert.Equal(++fCntDown, result.ClientFCntDown);
 
-            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway2Id, 1, fCntDown, new ExecutionContext());
+            result = DuplicateMsgCacheCheck.GetDuplicateMessageResult(dev1EUI, gateway2Id, 1, fCntDown, string.Empty);
             Assert.True(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
             Assert.Null(result.ClientFCntDown);

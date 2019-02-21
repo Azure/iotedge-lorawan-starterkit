@@ -61,22 +61,9 @@ namespace LoraKeysManagerFacade
 
             if (request.PerformADRCalculation)
             {
-                // we need to ensure we get a fcnt down
-                var frameCountDown = FCntCacheCheck.GetNextFCntDown(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, context);
-
-                LoRaADRResult adrResult = null;
-                if (frameCountDown > 0)
+                var adrResult = await adrManager.CalculateADRResultAndAddEntry(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex, newEntry);
+                if (adrResult == null)
                 {
-                    adrResult = await adrManager.CalculateADRResult(devEUI, request.RequiredSnr, request.DataRate, newEntry);
-                    if (adrResult != null)
-                    {
-                        adrResult.FCntDown = frameCountDown;
-                        adrResult.CanConfirmToDevice = true;
-                    }
-                }
-                else
-                {
-                    await adrManager.StoreADREntry(newEntry); // still want to persist this table entry
                     adrResult = await adrManager.GetLastResult(devEUI);
                 }
 
@@ -102,7 +89,7 @@ namespace LoraKeysManagerFacade
                 if (adrManager == null)
                 {
                     var redisStore = new LoRaADRRedisStore(FunctionConfigManager.GetCurrentConfiguration(functionAppDirectory).GetConnectionString("RedisConnectionString"));
-                    adrManager = new LoRaADRDefaultManager(redisStore, new LoRaADRStrategyProvider());
+                    adrManager = new LoRaADRServerManager(redisStore, new LoRaADRStrategyProvider(), functionAppDirectory);
                     // adrManager = new LoRaADRDefaultManager(new LoRaADRInMemoryStore(), new LoRaADRStrategyProvider());
                 }
             }
