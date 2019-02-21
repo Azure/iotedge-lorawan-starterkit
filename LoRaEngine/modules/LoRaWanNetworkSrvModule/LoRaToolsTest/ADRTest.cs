@@ -8,13 +8,22 @@ namespace LoRaWanTest
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
     using Xunit;
+    using Xunit.Abstractions;
 
     public class ADRTest
     {
+        ITestOutputHelper output;
+
+        public ADRTest(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
+
         [Theory]
         [ClassData(typeof(ADRTestData))]
-        public async System.Threading.Tasks.Task TestADRAsync(string devEUI, List<LoRaADRTableEntry> tableEntries, Rxpk rxpk, LoRaADRResult expectedResult)
+        public async System.Threading.Tasks.Task TestADRAsync(string testName, string devEUI, List<LoRaADRTableEntry> tableEntries, Rxpk rxpk, LoRaADRResult expectedResult)
         {
+            this.output.WriteLine($"Starting test {testName}");
             var region = RegionFactory.CreateEU868Region();
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
 
@@ -30,6 +39,15 @@ namespace LoRaWanTest
             {
                 Assert.Null(adrResult);
             }
+            else
+            {
+                Assert.Equal(expectedResult.DataRate, adrResult.DataRate);
+                Assert.Equal(expectedResult.NbRepetition, adrResult.NbRepetition);
+                Assert.Equal(expectedResult.TxPower, adrResult.TxPower);
+                Assert.Equal(expectedResult.FCntDown, adrResult.FCntDown);
+            }
+
+            this.output.WriteLine($"Test {testName} finished");
         }
     }
 }
