@@ -5,12 +5,61 @@ namespace LoraKeysManagerFacade.Test
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
+    using System.Linq;
+    using System.Threading.Tasks;
     using LoRaWan.Shared;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Http.Internal;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
 
     public class ApiVersionTest
     {
+        [Theory]
+        [InlineData(null)]
+        [InlineData("zyx")]
+        [InlineData("2019-01-30-preview")]
+        public async Task LatestVersion_Returns_Bad_Request_If_InvalidVersion_Requested(string requestVersion)
+        {
+            const string MissingVersionToken = "0.2 or earlier";
+
+            var dummyExecContext = new ExecutionContext();
+            var apiCalls = new Func<HttpRequest, Task<IActionResult>>[]
+            {
+                (req) => DeviceGetter.GetDevice(req, NullLogger.Instance, dummyExecContext),
+                (req) => Task.Run(() => FCntCacheCheck.NextFCntDownInvoke(req, NullLogger.Instance, dummyExecContext)),
+                (req) => Task.Run(() => DuplicateMsgCacheCheck.DuplicateMsgCheck(req, NullLogger.Instance, dummyExecContext))
+            };
+
+            foreach (var apiCall in apiCalls)
+            {
+                var request = new DefaultHttpRequest(new DefaultHttpContext());
+
+                if (!string.IsNullOrEmpty(requestVersion))
+                {
+                    request.Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
+                                                        {
+                                                            { ApiVersion.QueryStringParamName, requestVersion }
+                                                        });
+                }
+
+                var actual = await apiCall(request);
+                Assert.NotNull(actual);
+                Assert.IsType<BadRequestObjectResult>(actual);
+                var badRequestResult = (BadRequestObjectResult)actual;
+
+                var versionToken = !string.IsNullOrEmpty(requestVersion) ? requestVersion : MissingVersionToken;
+
+                Assert.Equal($"Incompatible versions (requested: '{versionToken}', current: '{ApiVersion.LatestVersion.Version}')", ((Exception)badRequestResult.Value).Message);
+
+                // Ensure current version is added to response
+                Assert.Contains(ApiVersion.HttpHeaderName, request.HttpContext.Response.Headers);
+                Assert.Equal(ApiVersion.LatestVersion.Version, request.HttpContext.Response.Headers[ApiVersion.HttpHeaderName].FirstOrDefault());
+            }
+        }
+
         [Fact]
         public void Version_02_Should_Be_Older_As_All()
         {

@@ -4,19 +4,12 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
     using LoRaWan.Shared;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.Azure.WebJobs.Host;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
-    using Newtonsoft.Json;
-    using StackExchange.Redis;
 
     public static class DuplicateMsgCacheCheck
     {
@@ -29,13 +22,13 @@ namespace LoraKeysManagerFacade
         [FunctionName(nameof(DuplicateMsgCheck))]
         public static IActionResult DuplicateMsgCheck([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
         {
-            var currentApiVersion = ApiVersion.LatestVersion;
-            req.HttpContext.Response.Headers.Add(ApiVersion.HttpHeaderName, currentApiVersion.Version);
-
-            var requestedVersion = req.GetRequestedVersion();
-            if (requestedVersion == null || !currentApiVersion.SupportsVersion(requestedVersion))
+            try
             {
-                return new BadRequestObjectResult($"Incompatible versions (requested: '{requestedVersion.Name ?? string.Empty}', current: '{currentApiVersion.Name}')");
+                VersionValidator.Validate(req);
+            }
+            catch (IncompatibleVersionException ex)
+            {
+                return new BadRequestObjectResult(ex);
             }
 
             string cacheReset = req.Query[QueryParamCacheReset];
@@ -59,10 +52,22 @@ namespace LoraKeysManagerFacade
                 throw new Exception(errorMsg);
             }
 
+            int? clientFCntDown = null;
+            if (int.TryParse(fCntDown, out var down))
+            {
+                clientFCntDown = down;
+            }
+
+            var result = GetDuplicateMessageResult(devEUI, gatewayId, clientFCntUp, clientFCntDown, context);
+
+            return new OkObjectResult(result);
+        }
+
+        public static DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, int clientFCntUp, int? clientFCntDown, ExecutionContext context)
+        {
             var isDuplicate = true;
             string processedDevice = gatewayId;
             int? newClientFCntDown = null;
-            int clientFCntDown = 0;
 
             using (var deviceCache = LoRaDeviceCache.Create(context, devEUI, gatewayId))
             {
@@ -88,11 +93,11 @@ namespace LoraKeysManagerFacade
                             processedDevice = cachedDeviceState.GatewayId;
                         }
 
-                        if (!isDuplicate && int.TryParse(fCntDown, out clientFCntDown))
+                        if (!isDuplicate && clientFCntDown.HasValue)
                         {
                             // requires a down confirmation
                             // combine the logic from FCntCacheCheck to avoid 2 roundtrips
-                            newClientFCntDown = FCntCacheCheck.ProcessExistingDeviceInfo(deviceCache, cachedDeviceState, gatewayId, clientFCntUp, clientFCntDown);
+                            newClientFCntDown = FCntCacheCheck.ProcessExistingDeviceInfo(deviceCache, cachedDeviceState, gatewayId, clientFCntUp, clientFCntDown.Value);
                         }
                         else if (updateCacheState)
                         {
@@ -104,20 +109,22 @@ namespace LoraKeysManagerFacade
                     else
                     {
                         // initialize
-                        int.TryParse(fCntDown, out clientFCntDown);
                         isDuplicate = false;
-                        var state = deviceCache.Initialize(clientFCntDown, clientFCntUp);
-                        newClientFCntDown = state.FCntDown;
+                        var state = deviceCache.Initialize(clientFCntDown.GetValueOrDefault(), clientFCntUp);
+                        if (clientFCntDown.HasValue)
+                        {
+                            newClientFCntDown = state.FCntDown;
+                        }
                     }
                 }
             }
 
-            return (ActionResult)new OkObjectResult(new
+            return new DuplicateMsgResult
             {
                 IsDuplicate = isDuplicate,
                 GatewayId = processedDevice,
                 ClientFCntDown = newClientFCntDown
-            });
+            };
         }
     }
 }

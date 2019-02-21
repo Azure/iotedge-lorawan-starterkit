@@ -4,47 +4,33 @@
 namespace CreateDeviceFunction
 {
     using System;
-    using System.Collections.Generic;
-    using System.IO;
     using System.Net;
     using System.Net.Http;
     using System.Text;
+    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.Azure.WebJobs.Host;
-    using Microsoft.Extensions.Configuration;
+    using Microsoft.Build.Framework;
     using Newtonsoft.Json;
 
     public static class CreateEdgeDevice
     {
         [FunctionName("CreateEdgeDevice")]
-        public static async System.Threading.Tasks.Task<HttpResponseMessage> RunAsync([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, TraceWriter log, ExecutionContext context)
+        public static async Task<HttpResponseMessage> CreateEdgeDeviceImp([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(context.FunctionAppDirectory)
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
-            string connectionString = config.GetConnectionString("IoTHubConnectionString");
-            string deviceConfigurationUrl = Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION");
-            RegistryManager manager = RegistryManager.CreateFromConnectionString(connectionString);
+            var manager = LoraKeysManagerFacade.LoRaRegistryManager.GetCurrentInstance(context.FunctionAppDirectory);
+
             // parse query parameter
             var queryStrings = req.GetQueryParameterDictionary();
-            string deviceName = string.Empty;
-            string publishingUserName = string.Empty;
-            string publishingPassword = string.Empty;
-            string region = string.Empty;
-            string resetPin = string.Empty;
 
-            queryStrings.TryGetValue("deviceName", out deviceName);
-            queryStrings.TryGetValue("publishingUserName", out publishingUserName);
-            queryStrings.TryGetValue("publishingPassword", out publishingPassword);
-            queryStrings.TryGetValue("region", out region);
-            queryStrings.TryGetValue("resetPin", out resetPin);
+            queryStrings.TryGetValue("deviceName", out string deviceName);
+            queryStrings.TryGetValue("publishingUserName", out string publishingUserName);
+            queryStrings.TryGetValue("publishingPassword", out string publishingPassword);
+            queryStrings.TryGetValue("region", out string region);
+            queryStrings.TryGetValue("resetPin", out string resetPin);
 
             // Get function facade key
             var base64Auth = Convert.ToBase64String(Encoding.Default.GetBytes($"{publishingUserName}:{publishingPassword}"));
@@ -75,7 +61,10 @@ namespace CreateDeviceFunction
             };
 
             await manager.AddDeviceAsync(edgeGatewayDevice);
-            string json = string.Empty;
+
+            string deviceConfigurationUrl = Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION");
+            string json = null;
+
             // todo correct
             using (WebClient wc = new WebClient())
             {
@@ -96,27 +85,26 @@ namespace CreateDeviceFunction
 
             await manager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
 
-            bool deployEndDevice = false;
-            bool.TryParse(Environment.GetEnvironmentVariable("DEPLOY_DEVICE"), out deployEndDevice);
+            bool.TryParse(Environment.GetEnvironmentVariable("DEPLOY_DEVICE"), out bool deployEndDevice);
 
             // This section will get deployed ONLY if the user selected the "deploy end device" options.
             // Information in this if clause, is for demo purpose only and should not be used for productive workloads.
             if (deployEndDevice)
             {
                 string otaaDeviceId = "47AAC86800430028";
-                Device otaaDevice = new Device(otaaDeviceId);
+                var otaaDevice = new Device(otaaDeviceId);
                 await manager.AddDeviceAsync(otaaDevice);
-                Twin otaaEndTwin = new Twin();
-                otaaEndTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:''," +
-                "SensorDecoder:'DecoderValueSensor'}");
+
+                var otaaEndTwin = new Twin();
+                otaaEndTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:'',SensorDecoder:'DecoderValueSensor'}");
                 var otaaRemoteTwin = await manager.GetTwinAsync(otaaDeviceId);
                 await manager.UpdateTwinAsync(otaaDeviceId, otaaEndTwin, otaaRemoteTwin.ETag);
+
                 string abpDeviceId = "46AAC86800430028";
-                Device abpDevice = new Device(abpDeviceId);
+                var abpDevice = new Device(abpDeviceId);
                 await manager.AddDeviceAsync(abpDevice);
-                Twin abpTwin = new Twin();
-                abpTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:''," +
-                "DevAddr:'0228B1B1',SensorDecoder:'DecoderValueSensor'}");
+                var abpTwin = new Twin();
+                abpTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:'',DevAddr:'0228B1B1',SensorDecoder:'DecoderValueSensor'}");
                 var abpRemoteTwin = await manager.GetTwinAsync(abpDeviceId);
                 await manager.UpdateTwinAsync(abpDeviceId, abpTwin, abpRemoteTwin.ETag);
             }
@@ -124,7 +112,7 @@ namespace CreateDeviceFunction
             var template = @"{'$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#', 'contentVersion': '1.0.0.0', 'parameters': {}, 'variables': {}, 'resources': []}";
             HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
 
-            response.Content = new StringContent(template, System.Text.Encoding.UTF8, "application/json");
+            response.Content = new StringContent(template, Encoding.UTF8, "application/json");
 
             return response;
         }

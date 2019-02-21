@@ -5,31 +5,47 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using Microsoft.Azure.WebJobs;
-    using Microsoft.Extensions.Configuration;
     using Newtonsoft.Json;
-    using StackExchange.Redis;
 
     public sealed class LoRaDeviceCache : IDisposable
     {
         private const string CacheKeyLockSuffix = "msglock";
         private static readonly TimeSpan LockWaitingTimeout = TimeSpan.FromSeconds(10);
-        private static IDatabase redisCache;
+        private static ILoRaDeviceCacheStore cacheStore;
         private static object cacheSingletonLock = new object();
 
         private readonly string gatewayId;
         private readonly string devEUI;
+        private readonly string cacheKey;
+
+        /// <summary>
+        /// Setting an explicit device store cache implementation
+        /// </summary>
+        /// <param name="cacheStore">The custom store to use</param>
+        /// <remarks>Do only use for unit testing</remarks>
+        public static void EnsureCacheStore(ILoRaDeviceCacheStore cacheStore)
+        {
+            lock (cacheSingletonLock)
+            {
+                if (LoRaDeviceCache.cacheStore == null)
+                {
+                    LoRaDeviceCache.cacheStore = cacheStore;
+                }
+            }
+        }
 
         public bool IsLockOwner { get; private set; }
 
         private string lockKey;
 
-        private LoRaDeviceCache(string devEUI, string gatewayId)
+        private LoRaDeviceCache(string devEUI, string gatewayId, string cacheKey)
         {
             this.devEUI = devEUI;
             this.gatewayId = gatewayId;
+            this.cacheKey = cacheKey ?? devEUI;
         }
 
-        public static LoRaDeviceCache Create(ExecutionContext context, string devEUI, string gatewayId)
+        public static LoRaDeviceCache Create(ExecutionContext context, string devEUI, string gatewayId, string cacheKey = null)
         {
             if (string.IsNullOrEmpty(devEUI))
             {
@@ -41,19 +57,19 @@ namespace LoraKeysManagerFacade
                 throw new ArgumentNullException("gatewayId");
             }
 
-            EnsureRedisInstance(context);
-            return new LoRaDeviceCache(devEUI, gatewayId);
+            EnsureCacheStore(context);
+            return new LoRaDeviceCache(devEUI, gatewayId, cacheKey);
         }
 
-        public bool TryToLock()
+        public bool TryToLock(string lockKey = null)
         {
             if (this.IsLockOwner)
             {
                 return true;
             }
 
-            this.lockKey = this.devEUI + CacheKeyLockSuffix;
-            if (!redisCache.LockTake(this.lockKey, this.gatewayId, LockWaitingTimeout))
+            this.lockKey = lockKey ?? this.devEUI + CacheKeyLockSuffix;
+            if (!cacheStore.LockTake(this.lockKey, this.gatewayId, LockWaitingTimeout))
             {
                 return false;
             }
@@ -77,15 +93,20 @@ namespace LoraKeysManagerFacade
             return serverStateForDeviceInfo;
         }
 
+        public bool TryGetValue(out string value)
+        {
+            value = null;
+            this.EnsureLockOwner();
+            value = cacheStore.StringGet(this.cacheKey);
+            return value != null;
+        }
+
         public bool TryGetInfo(out DeviceCacheInfo info)
         {
             info = null;
-            if (!this.IsLockOwner)
-            {
-                throw new InvalidOperationException($"Trying to read information without owning the lock. Device: {this.devEUI} Gateway: {this.gatewayId}");
-            }
+            this.EnsureLockOwner();
 
-            string cachedFCnt = redisCache.StringGet(this.devEUI, CommandFlags.DemandMaster);
+            string cachedFCnt = cacheStore.StringGet(this.cacheKey);
             if (string.IsNullOrEmpty(cachedFCnt))
             {
                 return false;
@@ -97,52 +118,52 @@ namespace LoraKeysManagerFacade
 
         public void StoreInfo(DeviceCacheInfo info)
         {
-            if (!this.IsLockOwner)
-            {
-                throw new InvalidOperationException($"Trying to update information without owning the lock. Device: {this.devEUI} Gateway: {this.gatewayId}");
-            }
-
-            LoRaDeviceCache.redisCache.StringSet(this.devEUI, JsonConvert.SerializeObject(info), new TimeSpan(30, 0, 0, 0), When.Always, CommandFlags.DemandMaster);
+            this.EnsureLockOwner();
+            cacheStore.StringSet(this.cacheKey, JsonConvert.SerializeObject(info), new TimeSpan(30, 0, 0, 0));
         }
 
-        public static void Delete(string devEUI, ExecutionContext context)
+        public void SetValue(string value, TimeSpan? expiry = null)
         {
-            if (string.IsNullOrEmpty(devEUI))
+            this.EnsureLockOwner();
+            if (!expiry.HasValue)
+            {
+                expiry = TimeSpan.FromMinutes(1);
+            }
+
+            cacheStore.StringSet(this.cacheKey, value, expiry);
+        }
+
+        public static void Delete(string key, ExecutionContext context)
+        {
+            if (string.IsNullOrEmpty(key))
             {
                 return;
             }
 
-            EnsureRedisInstance(context);
-            redisCache.KeyDelete(devEUI);
+            EnsureCacheStore(context);
+            cacheStore.KeyDelete(key);
         }
 
-        private static void EnsureRedisInstance(ExecutionContext context)
+        private void EnsureLockOwner()
         {
-            if (redisCache != null)
+            if (!this.IsLockOwner)
+            {
+                throw new InvalidOperationException($"Trying to access cache without owning the lock. Device: {this.devEUI} Gateway: {this.gatewayId}");
+            }
+        }
+
+        private static void EnsureCacheStore(ExecutionContext context)
+        {
+            if (cacheStore != null)
             {
                 return;
             }
 
             lock (cacheSingletonLock)
             {
-                if (redisCache == null)
+                if (cacheStore == null)
                 {
-                    var config = new ConfigurationBuilder()
-                                .SetBasePath(context.FunctionAppDirectory)
-                                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                                .AddEnvironmentVariables()
-                                .Build();
-
-                    var redisConnectionString = config.GetConnectionString("RedisConnectionString");
-
-                    if (string.IsNullOrEmpty(redisConnectionString))
-                    {
-                        string errorMsg = "Missing RedisConnectionString in settings";
-                        throw new Exception(errorMsg);
-                    }
-
-                    var redis = ConnectionMultiplexer.Connect(redisConnectionString);
-                    redisCache = redis.GetDatabase();
+                    cacheStore = new LoRaDeviceCacheRedisStore(context);
                 }
             }
         }
@@ -154,7 +175,7 @@ namespace LoraKeysManagerFacade
                 return;
             }
 
-            var released = LoRaDeviceCache.redisCache.LockRelease(this.lockKey, this.gatewayId);
+            var released = cacheStore.LockRelease(this.lockKey, this.gatewayId);
             if (!released)
             {
                 throw new InvalidOperationException("failed to release lock");
