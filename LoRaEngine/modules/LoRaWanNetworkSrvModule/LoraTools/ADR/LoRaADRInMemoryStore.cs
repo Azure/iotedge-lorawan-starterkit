@@ -29,6 +29,12 @@ namespace LoRaTools.ADR
             }
         }
 
+        public Task UpdateADRTable(string devEUI, LoRaADRTable table)
+        {
+            // void: the reference is up to date already
+            return Task.CompletedTask;
+        }
+
         public Task AddTableEntry(LoRaADRTableEntry entry)
         {
             lock (this.cache)

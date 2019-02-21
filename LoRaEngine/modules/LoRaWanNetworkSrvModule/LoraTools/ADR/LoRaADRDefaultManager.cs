@@ -57,17 +57,30 @@ namespace LoRaTools.ADR
             // checking if the new values are different from the old ones otherwise we don't do any adr change
             if (newNbRep != table.CurrentNbRep || newTxPowerIndex != table.CurrentTxPower || newDatarate != upstreamDataRate)
             {
-                LoRaADRResult result = new LoRaADRResult()
+                table.CurrentNbRep = newNbRep;
+                table.CurrentTxPower = newTxPowerIndex;
+
+                await this.store.UpdateADRTable(devEUI, table);
+
+                return new LoRaADRResult()
                 {
                     DataRate = newDatarate,
                     NbRepetition = newNbRep,
                     TxPower = newTxPowerIndex
                 };
-
-                return result;
             }
 
             return null;
+        }
+
+        public async Task<LoRaADRResult> GetLastResult(string devEUI)
+        {
+            var table = await this.store.GetADRTable(devEUI);
+            return new LoRaADRResult
+            {
+                NbRepetition = table.CurrentNbRep.GetValueOrDefault(),
+                TxPower = table.CurrentTxPower.GetValueOrDefault()
+            };
         }
     }
 }

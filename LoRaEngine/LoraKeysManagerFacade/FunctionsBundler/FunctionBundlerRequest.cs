@@ -3,6 +3,8 @@
 
 namespace LoraKeysManagerFacade.FunctionBundler
 {
+    using LoRaTools.CommonAPI;
+
     public class FunctionBundlerRequest
     {
         public string GatewayId { get; set; }
@@ -11,6 +13,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public int ClientFCntDown { get; set; }
 
-        public bool PerformDeduplication { get; set; }
+        public LoRaADRRequest AdrRequest { get; set; }
+
+        public FunctionBundlerItem FunctionItems { get; set; }
     }
 }

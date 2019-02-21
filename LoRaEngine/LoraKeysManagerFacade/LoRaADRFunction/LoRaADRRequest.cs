@@ -9,6 +9,10 @@ namespace LoraKeysManagerFacade
 
         public float RequiredSnr { get; set; }
 
+        public float Frequency { get; set; }
+
+        public bool PerformADRCalculation { get; set; }
+
         public int FCntUp { get; set; }
 
         public int FCntDown { get; set; }

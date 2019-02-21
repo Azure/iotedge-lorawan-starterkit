@@ -3,20 +3,14 @@
 
 namespace LoraKeysManagerFacade.FunctionBundler
 {
-    using System;
-    using System.IO;
-    using System.Linq;
     using System.Threading.Tasks;
-    using LoRaWan.Shared;
+    using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.Azure.WebJobs.Host;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
-    using StackExchange.Redis;
 
     public static class FunctionBundler
     {
@@ -36,6 +30,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 return new BadRequestObjectResult(ex);
             }
 
+            EUIValidator.ValidateDevEUI(devEUI);
+
             var requestBody = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(requestBody))
             {
@@ -43,14 +39,47 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
 
             var functionBundlerRequest = JsonConvert.DeserializeObject<FunctionBundlerRequest>(requestBody);
-            var result = await HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest);
+            var result = await HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest, context);
 
             return new OkObjectResult(result);
         }
 
-        internal static async Task<FunctionBundlerResult> HandleFunctionBundlerInvoke(string devEUI, FunctionBundlerRequest request)
+        internal static async Task<FunctionBundlerResult> HandleFunctionBundlerInvoke(string devEUI, FunctionBundlerRequest request, ExecutionContext context)
         {
-            return await Task.FromResult<FunctionBundlerResult>(null);
+            if (request == null)
+            {
+                return null;
+            }
+
+            var result = new FunctionBundlerResult();
+
+            var performADR = (request.FunctionItems & FunctionBundlerItem.ADR) == FunctionBundlerItem.ADR;
+
+            if ((request.FunctionItems & FunctionBundlerItem.Deduplication) == FunctionBundlerItem.Deduplication)
+            {
+                result.DeduplicationResult = DuplicateMsgCacheCheck.GetDuplicateMessageResult(devEUI, request.GatewayId, request.ClientFCntUp, null, context);
+            }
+
+            if (result.DeduplicationResult != null && result.DeduplicationResult.IsDuplicate)
+            {
+                // even if this is a duplication, we want to record ADR info if it was requested
+                if (performADR && request.AdrRequest != null)
+                {
+                    request.AdrRequest.PerformADRCalculation = false; // we lost the race, no calculation
+                    result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, context);
+                }
+            }
+            else if (performADR)
+            {
+                result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, context);
+                result.NextFCntDown = result.AdrResult.FCntDown;
+            }
+            else if (result.NextFCntDown == 0 && (request.FunctionItems & FunctionBundlerItem.FCntDown) == FunctionBundlerItem.FCntDown)
+            {
+                result.NextFCntDown = FCntCacheCheck.GetNextFCntDown(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, context);
+            }
+
+            return result;
         }
     }
 }

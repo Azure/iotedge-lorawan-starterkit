@@ -95,12 +95,6 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Helper method that calls the API GetDevice method
         /// </summary>
-        /// <param name="gatewayID"></param>
-        /// <param name="devAddr"></param>
-        /// <param name="devEUI"></param>
-        /// <param name="appEUI"></param>
-        /// <param name="devNonce"></param>
-        /// <returns></returns>
         async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();

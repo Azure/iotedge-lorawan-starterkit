@@ -34,6 +34,8 @@ namespace LoraKeysManagerFacade
             string cacheReset = req.Query[QueryParamCacheReset];
             string devEUI = req.Query[QueryParamDevEUI];
 
+            EUIValidator.ValidateDevEUI(devEUI);
+
             if (!string.IsNullOrEmpty(cacheReset) && !string.IsNullOrEmpty(devEUI))
             {
                 LoRaDeviceCache.Delete(devEUI, context);

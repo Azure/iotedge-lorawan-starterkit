@@ -17,20 +17,59 @@ namespace LoraKeysManagerFacade
         const string LockToken = "_lock";
         IDatabase redisCache;
 
+        sealed class RedisLockWrapper : IDisposable
+        {
+            private string lockKey;
+            private string owner;
+            private IDatabase redisCache;
+            private bool ownsLock;
+
+            internal RedisLockWrapper(string devEUI, IDatabase redisCache, string owner = "_LoRaRedisStore")
+            {
+                this.lockKey = GetEntryKey(devEUI) + LockToken;
+                this.redisCache = redisCache;
+                this.owner = owner;
+            }
+
+            internal bool TakeLock()
+            {
+                return this.ownsLock = this.redisCache.LockTake(this.lockKey, this.owner, TimeSpan.FromSeconds(10));
+            }
+
+            public void Dispose()
+            {
+                if (this.ownsLock)
+                {
+                    this.redisCache.LockRelease(this.lockKey, this.owner);
+                    this.ownsLock = false;
+                }
+            }
+        }
+
         public LoRaADRRedisStore(string redisConnectionString)
         {
             var redis = ConnectionMultiplexer.Connect(redisConnectionString);
             this.redisCache = redis.GetDatabase();
         }
 
+        public async Task UpdateADRTable(string devEUI, LoRaADRTable table)
+        {
+            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
+            {
+                if (redisLock.TakeLock())
+                {
+                    await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
+                }
+            }
+        }
+
         public async Task AddTableEntry(LoRaADRTableEntry entry)
         {
-            var entryKey = GetEntryKey(entry.DevEUI);
-            var lockKey = entryKey + LockToken;
-            if (this.redisCache.LockTake(lockKey, entry.GatewayId, TimeSpan.FromSeconds(5)))
+            using (var redisLock = new RedisLockWrapper(entry.DevEUI, this.redisCache))
             {
-                try
+                if (redisLock.TakeLock())
                 {
+                    var entryKey = GetEntryKey(entry.DevEUI);
                     var table = await this.GetADRTableCore(entryKey) ?? new LoRaADRTable();
 
                     var existing = table.Entries.FirstOrDefault(itm => itm.FCnt == entry.FCnt);
@@ -60,10 +99,6 @@ namespace LoraKeysManagerFacade
 
                     // update redis store
                     this.redisCache.StringSet(entryKey, JsonConvert.SerializeObject(table));
-                }
-                finally
-                {
-                    this.redisCache.LockRelease(lockKey, entry.GatewayId);
                 }
             }
         }

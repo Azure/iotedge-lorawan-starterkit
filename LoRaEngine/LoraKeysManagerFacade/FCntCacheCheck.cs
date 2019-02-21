@@ -39,6 +39,8 @@ namespace LoraKeysManagerFacade
             string abpFcntCacheReset = req.Query["ABPFcntCacheReset"];
             int newFCntDown = 0;
 
+            EUIValidator.ValidateDevEUI(devEUI);
+
             if (!string.IsNullOrEmpty(abpFcntCacheReset))
             {
                 LoRaDeviceCache.Delete(devEUI, context);
@@ -48,10 +50,9 @@ namespace LoraKeysManagerFacade
             // validate input parameters
             if (!int.TryParse(fCntDown, out int clientFCntDown) ||
                 !int.TryParse(fCntUp, out int clientFCntUp) ||
-                string.IsNullOrEmpty(devEUI) ||
                 string.IsNullOrEmpty(gatewayId))
             {
-                string errorMsg = "Missing DevEUI or FCntDown or FCntUp or GatewayId";
+                string errorMsg = "Missing FCntDown or FCntUp or GatewayId";
                 throw new ArgumentException(errorMsg);
             }
 

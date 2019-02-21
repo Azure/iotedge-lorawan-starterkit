@@ -10,6 +10,8 @@ namespace LoRaTools.ADR
     {
         Task StoreADREntry(LoRaADRTableEntry newEntry);
 
-        Task<LoRaADRResult> CalculateADRResult(string devEUI, float requiredSnr, int dataRate, int minTxPower, LoRaADRTableEntry newEntry = null);
+        Task<LoRaADRResult> CalculateADRResult(string devEUI, float requiredSnr, int dataRate, LoRaADRTableEntry newEntry = null);
+
+        Task<LoRaADRResult> GetLastResult(string devEUI);
     }
 }

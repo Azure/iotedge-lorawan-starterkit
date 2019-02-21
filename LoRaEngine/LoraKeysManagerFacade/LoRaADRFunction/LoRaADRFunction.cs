@@ -15,8 +15,8 @@ namespace LoraKeysManagerFacade
 
     public static class LoRaADRFunction
     {
+        private static readonly object AdrManagerSyncLock = new object();
         private static ILoRaADRManager adrManager;
-        private static object adrManagerSyncLock = new object();
 
         [FunctionName("ADRFunction")]
         public static async Task<IActionResult> FunctionBundlerImpl(
@@ -34,6 +34,8 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(ex);
             }
 
+            EUIValidator.ValidateDevEUI(devEUI);
+
             var requestBody = await req.ReadAsStringAsync();
             if (string.IsNullOrEmpty(requestBody))
             {
@@ -41,15 +43,51 @@ namespace LoraKeysManagerFacade
             }
 
             var adrRequest = JsonConvert.DeserializeObject<LoRaADRRequest>(requestBody);
-            var result = await HandleADRRequest(devEUI, adrRequest, EnsureLoraADRManagerInstance(context.FunctionAppDirectory));
+            var result = await HandleADRRequest(devEUI, adrRequest, context);
 
             return new OkObjectResult(result);
         }
 
-        internal static async Task<LoRaADRResult> HandleADRRequest(string devEUI, LoRaADRRequest request, ILoRaADRManager adrManager)
+        internal static async Task<LoRaADRResult> HandleADRRequest(string devEUI, LoRaADRRequest request, ExecutionContext context)
         {
-            var adrResult = await adrManager.CalculateADRResult(devEUI, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex);
-            return adrResult;
+            var adrManager = EnsureLoraADRManagerInstance(context.FunctionAppDirectory);
+            var newEntry = new LoRaADRTableEntry
+            {
+                 DevEUI = devEUI,
+                 FCnt = request.FCntUp,
+                 GatewayId = request.GatewayId,
+                 Snr = request.RequiredSnr
+            };
+
+            if (request.PerformADRCalculation)
+            {
+                // we need to ensure we get a fcnt down
+                var frameCountDown = FCntCacheCheck.GetNextFCntDown(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, context);
+
+                LoRaADRResult adrResult = null;
+                if (frameCountDown > 0)
+                {
+                    adrResult = await adrManager.CalculateADRResult(devEUI, request.RequiredSnr, request.DataRate, newEntry);
+                    if (adrResult != null)
+                    {
+                        adrResult.FCntDown = frameCountDown;
+                        adrResult.CanConfirmToDevice = true;
+                    }
+                }
+                else
+                {
+                    await adrManager.StoreADREntry(newEntry); // still want to persist this table entry
+                    adrResult = await adrManager.GetLastResult(devEUI);
+                }
+
+                return adrResult;
+            }
+            else
+            {
+                await adrManager.StoreADREntry(newEntry);
+            }
+
+            return null;
         }
 
         private static ILoRaADRManager EnsureLoraADRManagerInstance(string functionAppDirectory)
@@ -59,12 +97,13 @@ namespace LoraKeysManagerFacade
                 return adrManager;
             }
 
-            lock (adrManagerSyncLock)
+            lock (AdrManagerSyncLock)
             {
                 if (adrManager == null)
                 {
                     var redisStore = new LoRaADRRedisStore(FunctionConfigManager.GetCurrentConfiguration(functionAppDirectory).GetConnectionString("RedisConnectionString"));
                     adrManager = new LoRaADRDefaultManager(redisStore, new LoRaADRStrategyProvider());
+                    // adrManager = new LoRaADRDefaultManager(new LoRaADRInMemoryStore(), new LoRaADRStrategyProvider());
                 }
             }
 
