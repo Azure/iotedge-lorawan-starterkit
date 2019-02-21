@@ -37,7 +37,7 @@ namespace LoRaTools.ADR
             await this.store.AddTableEntry(newEntry);
         }
 
-        public async Task<LoRaADRResult> CalculateADRResult(string devEUI, float requiredSnr, int dataRate, LoRaADRTableEntry newEntry = null)
+        public async Task<LoRaADRResult> CalculateADRResult(string devEUI, float requiredSnr, int upstreamDataRate, int minTxPower, LoRaADRTableEntry newEntry = null)
         {
             if (newEntry != null)
             {
@@ -51,17 +51,11 @@ namespace LoRaTools.ADR
                 return null;
             }
 
-            // calculate ADR answer
-            if (table.CurrentNbRep == null || table.CurrentTxPower == null)
-            {
-                throw new ADRException("Missing values for currentTxPower or Current Nb Rep, aborting ADR calculation");
-            }
-
             var newNbRep = this.strategyProvider.GetStrategy().ComputeNbRepetion(table.Entries[0].FCnt, table.Entries[LoRaADRTable.FrameCountCaptureCount - 1].FCnt, (int)table.CurrentNbRep);
-            (int newTxPowerIndex, int newDatarate) = this.strategyProvider.GetStrategy().GetPowerAndDRConfiguration(requiredSnr, dataRate, table.Entries.Max(x => x.Snr), (int)table.CurrentTxPower);
+            (int newTxPowerIndex, int newDatarate) = this.strategyProvider.GetStrategy().GetPowerAndDRConfiguration(requiredSnr, upstreamDataRate, table.Entries.Max(x => x.Snr), (int)table.CurrentTxPower, minTxPower);
 
-            // checking if the new values are different from the old ones otherwise we don't do any adr change$
-            if (newNbRep != table.CurrentNbRep || newTxPowerIndex != table.CurrentTxPower || newDatarate != dataRate)
+            // checking if the new values are different from the old ones otherwise we don't do any adr change
+            if (newNbRep != table.CurrentNbRep || newTxPowerIndex != table.CurrentTxPower || newDatarate != upstreamDataRate)
             {
                 LoRaADRResult result = new LoRaADRResult()
                 {

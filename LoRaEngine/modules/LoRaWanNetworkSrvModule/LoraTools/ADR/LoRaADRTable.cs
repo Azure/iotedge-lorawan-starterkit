@@ -11,7 +11,7 @@ namespace LoRaTools.ADR
 
         public int CurrentTxPower { get; set; } = 7;
 
-        public int? CurrentNbRep { get; set; }
+        public int CurrentNbRep { get; set; } = 1;
 
         public List<LoRaADRTableEntry> Entries { get; set; } = new List<LoRaADRTableEntry>();
 

@@ -48,7 +48,7 @@ namespace LoraKeysManagerFacade
 
         internal static async Task<LoRaADRResult> HandleADRRequest(string devEUI, LoRaADRRequest request, ILoRaADRManager adrManager)
         {
-            var adrResult = await adrManager.CalculateADRResult(devEUI, request.RequiredSnr, request.DataRate);
+            var adrResult = await adrManager.CalculateADRResult(devEUI, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex);
             return adrResult;
         }
 

@@ -48,16 +48,49 @@ namespace LoRaWan.NetworkServer
             var loraPayload = (LoRaPayloadData)request.Payload;
 
             var payloadFcnt = loraPayload.GetFcnt();
-            var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired || loraPayload.IsAdrReq;
+            var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
+
+            DeduplicationResult deduplicationResult = null;
+            LoRaADRResult loRaADRResult = null;
+
+            var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
 
             if (loraPayload.IsAdrEnabled)
             {
-                Logger.Log(loRaDevice.DevEUI, "here", LogLevel.Information);
+                var loRaADRManager = this.loRaADRManagerFactory.Create(!useMultipleGateways, this.loRaADRStrategyProvider);
+
+                // todo fcnt
+                LoRaADRTableEntry loRaADRTableEntry = new LoRaADRTableEntry()
+                {
+                    DevEUI = loRaDevice.DevEUI,
+                    FCnt = 1,
+                    GatewayId = this.configuration.GatewayID,
+                    Snr = request.Rxpk.Lsnr
+                };
+
+                // TBD should I include the cached elements
+                loRaADRResult = await loRaADRManager.CalculateADRResult(
+                    loRaDevice.DevEUI,
+                    (float)request.Rxpk.RequiredSnr,
+                    request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
+                    request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
+                    loRaADRTableEntry);
+
+                // if a rate adaptation is performed we need to update local cache
+                // todo check serialization and update twin
+                if (loRaADRResult != null)
+                {
+                    loRaDevice.DataRate = loRaADRResult.DataRate;
+                    loRaDevice.TxPower = loRaADRResult.TxPower;
+                    loRaDevice.NbRepetition = loRaADRResult.NbRepetition;
+
+                    if (loRaADRResult.CanConfirmToDevice)
+                    {
+                        requiresConfirmation = true;
+                    }
+                }
             }
 
-            DeduplicationResult deduplicationResult = null;
-
-            var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
             if (useMultipleGateways)
             {
                 // applying the correct deduplication
@@ -267,7 +300,8 @@ namespace LoRaWan.NetworkServer
                         loRaDevice,
                         timeWatcher,
                         false, // fpending
-                        (ushort)fcntDown);
+                        (ushort)fcntDown,
+                        loRaADRResult);
 
                     if (downlinkMessage != null)
                     {
@@ -353,7 +387,8 @@ namespace LoRaWan.NetworkServer
                     loRaDevice,
                     timeWatcher,
                     fpending,
-                    (ushort)fcntDown);
+                    (ushort)fcntDown,
+                    loRaADRResult);
 
                 if (cloudToDeviceMessage != null)
                 {
@@ -438,7 +473,8 @@ namespace LoRaWan.NetworkServer
             LoRaDevice loRaDevice,
             LoRaOperationTimeWatcher timeWatcher,
             bool fpending,
-            ushort fcntDown)
+            ushort fcntDown,
+            LoRaADRResult loRaADRResult)
         {
             var upstreamPayload = (LoRaPayloadData)request.Payload;
             var rxpk = request.Rxpk;
@@ -452,7 +488,7 @@ namespace LoRaWan.NetworkServer
                 fctrl = (byte)FctrlEnum.Ack;
             }
 
-            ICollection<MacCommand> macCommands = this.PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload, cloudToDeviceMessage, rxpk, loRaDevice);
+            ICollection<MacCommand> macCommands = this.PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload, cloudToDeviceMessage, rxpk, loRaDevice, loRaADRResult);
             byte? fport = null;
             var requiresDeviceAcknowlegement = false;
 
@@ -616,7 +652,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Prepare the Mac Commands to be sent in the downstream message.
         /// </summary>
-        public ICollection<MacCommand> PrepareMacCommandAnswer(string devEUI, LoRaPayloadData loRaPayload, Message cloudToDeviceMessage, Rxpk rxpk, LoRaDevice loRaDevice)
+        public ICollection<MacCommand> PrepareMacCommandAnswer(string devEUI, LoRaPayloadData loRaPayload, Message cloudToDeviceMessage, Rxpk rxpk, LoRaDevice loRaDevice, LoRaADRResult loRaADRResult)
         {
             var macCommands = new Dictionary<int, MacCommand>();
 
@@ -657,16 +693,13 @@ namespace LoRaWan.NetworkServer
 
             // ADR Part.
             // Currently only replying on ADR Req
-            // if (loRaPayload.IsAdrEnabled && loRaPayload.IsAdrReq)
-            if (loRaPayload.IsAdrEnabled)
+            // if (loRaADRResult != null && loRaPayload.IsAdrReq)
+            if (loRaADRResult != null)
                 {
-                    var loRaADRManager = this.loRaADRManagerFactory.Create(true, this.loRaADRStrategyProvider);
-                    var adrResult = await loRaADRManager.CalculateADRResult(devEUI, rxpk);
-                    LinkADRRequest linkADR = new LinkADRRequest((byte)adrResult.DataRate, (byte)adrResult.TxPower, 0, 0, (byte)adrResult.NbRepetition);
+                    LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, 0, 0, (byte)loRaADRResult.NbRepetition);
                     macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
                 }
 
-            // TODO Implement ADR control Logic
             return macCommands.Values;
         }
     }

@@ -14,6 +14,7 @@ namespace LoRaTools.ADR
     {
         private const int MarginDb = 5;
         private const int MaxDR = 5;
+        private const int MaxTxPowerIndex = 0;
 
         /// <summary>
         /// Array to calculate nb Repetion given packet loss
@@ -22,13 +23,11 @@ namespace LoRaTools.ADR
         /// </summary>
         private readonly int[,] pktLossToNbRep = new int[4, 3] { { 1, 1, 2 }, { 1, 2, 3 }, { 2, 3, 3 }, { 3, 3, 3 } };
 
-        public (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex)
+        public (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex)
         {
             double snrMargin = maxSnr - requiredSnr - MarginDb;
 
-            int maxTxPower = 7;
             int computedDatarate = dataRate;
-            int minTxPower = 0;
 
             int nStep = (int)snrMargin;
 
@@ -40,18 +39,18 @@ namespace LoRaTools.ADR
                     {
                         computedDatarate++;
                     }
-                    else if (currentTxPowerIndex < maxTxPower)
+                    else if (currentTxPowerIndex < minTxPowerIndex)
                     {
                         currentTxPowerIndex++;
                     }
 
                     nStep--;
-                    if (currentTxPowerIndex >= maxTxPower)
+                    if (currentTxPowerIndex >= minTxPowerIndex)
                         return (currentTxPowerIndex, computedDatarate);
                 }
                 else if (nStep < 0)
                 {
-                    if (currentTxPowerIndex > minTxPower)
+                    if (currentTxPowerIndex > MaxTxPowerIndex)
                     {
                         currentTxPowerIndex--;
                         nStep++;

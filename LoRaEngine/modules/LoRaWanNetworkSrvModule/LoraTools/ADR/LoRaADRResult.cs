@@ -11,6 +11,6 @@ namespace LoRaTools.ADR
 
         public int DataRate { get; set; }
 
-        public string OwningGatewayId { get; set; }
+        public bool CanConfirmToDevice { get; set; }
     }
 }
