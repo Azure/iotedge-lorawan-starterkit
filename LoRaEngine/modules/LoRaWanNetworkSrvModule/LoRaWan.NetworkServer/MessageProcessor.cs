@@ -155,11 +155,7 @@ namespace LoRaWan.NetworkServer
                     var deduplicationStrategy = this.deduplicationStrategyFactory.Create(loRaDevice);
                     if (deduplicationStrategy != null)
                     {
-                        // if we require a confirmation we can calculate the next frame counter down
-                        // using the same roundtrip as resolving deduplication, passing it along in that
-                        // case. The API will then send down the next frame counter down with the result
-                        int? fcntDown = requiresConfirmation ? loRaDevice.FCntDown : (int?)null;
-                        deduplicationResult = await deduplicationStrategy.ResolveDeduplication(payloadFcnt, fcntDown, this.configuration.GatewayID);
+                        deduplicationResult = await deduplicationStrategy.ResolveDeduplication(payloadFcnt, loRaDevice.FCntDown, this.configuration.GatewayID);
                         if (!deduplicationResult.CanProcess)
                         {
                             // duplication strategy is indicating that we do not need to continue processing this message
@@ -219,7 +215,7 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    int? fcntDown = deduplicationResult?.ClientFCntDown;
+                    int? fcntDown = null; // deduplicationResult?.ClientFCntDown;
                     // If it is confirmed it require us to update the frame counter down
                     // Multiple gateways: in redis, otherwise in device twin
                     if (!fcntDown.HasValue && requiresConfirmation)

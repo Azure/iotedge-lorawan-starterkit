@@ -52,17 +52,13 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, int fcntUp, string gatewayId, int? fcntDown = null)
+        public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, int fcntUp, string gatewayId, int fcntDown)
         {
             Logger.Log(devEUI, $"check for duplicate message", LogLevel.Debug);
 
             using (var client = this.serviceFacadeHttpClientProvider.GetHttpClient())
             {
-                var url = $"{this.URL}DuplicateMsgCheck?code={this.AuthCode}&DevEUI={devEUI}&FCntUp={fcntUp}&GatewayId={gatewayId}";
-                if (fcntDown.HasValue)
-                {
-                    url += string.Concat("&FCntDown=", fcntDown);
-                }
+                var url = $"{this.URL}DuplicateMsgCheck/{devEUI}?code={this.AuthCode}&FCntUp={fcntUp}&GatewayId={gatewayId}&FCntDown={fcntDown}";
 
                 var response = await client.GetAsync(url);
                 if (!response.IsSuccessStatusCode)

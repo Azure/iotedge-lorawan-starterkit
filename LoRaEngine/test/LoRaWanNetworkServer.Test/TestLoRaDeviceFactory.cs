@@ -18,6 +18,7 @@ namespace LoRaWan.NetworkServer.Test
         private readonly IDeduplicationStrategyFactory deduplicationFactory;
         private readonly ILoRaADRStrategyProvider adrStrategyProvider;
         private readonly ILoRAADRManagerFactory adrManagerFactory;
+        private readonly IFunctionBundlerProvider functionBundlerProvider;
 
         public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient)
         {
@@ -38,7 +39,8 @@ namespace LoRaWan.NetworkServer.Test
             ILoRaDeviceClient loRaDeviceClient,
             IDeduplicationStrategyFactory deduplicationFactory,
             ILoRaADRStrategyProvider adrStrategyProvider,
-            ILoRAADRManagerFactory adrManagerFactory)
+            ILoRAADRManagerFactory adrManagerFactory,
+            IFunctionBundlerProvider functionBundlerProvider)
             : this(loRaDeviceClient)
         {
             this.configuration = configuration;
@@ -46,6 +48,7 @@ namespace LoRaWan.NetworkServer.Test
             this.deduplicationFactory = deduplicationFactory;
             this.adrStrategyProvider = adrStrategyProvider;
             this.adrManagerFactory = adrManagerFactory;
+            this.functionBundlerProvider = functionBundlerProvider;
         }
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
@@ -60,7 +63,7 @@ namespace LoRaWan.NetworkServer.Test
                 deviceInfo.DevEUI,
                 deviceClientToAssign);
 
-            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory));
+            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider));
             return loRaDevice;
         }
 

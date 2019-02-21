@@ -13,6 +13,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Mac;
     using LoRaTools.Utils;
+    using LoRaWan.NetworkServer.ADR;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -24,7 +25,8 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaPayloadDecoder payloadDecoder;
         private readonly IDeduplicationStrategyFactory deduplicationFactory;
         private readonly ILoRaADRStrategyProvider loRaADRStrategyProvider;
-        private readonly LoRaWan.NetworkServer.ADR.ILoRAADRManagerFactory loRaADRManagerFactory;
+        private readonly ILoRAADRManagerFactory loRaADRManagerFactory;
+        private readonly IFunctionBundlerProvider functionBundlerProvider;
 
         public DefaultLoRaDataRequestHandler(
             NetworkServerConfiguration configuration,
@@ -32,7 +34,8 @@ namespace LoRaWan.NetworkServer
             ILoRaPayloadDecoder payloadDecoder,
             IDeduplicationStrategyFactory deduplicationFactory,
             ILoRaADRStrategyProvider loRaADRStrategyProvider,
-            LoRaWan.NetworkServer.ADR.ILoRAADRManagerFactory loRaADRManagerFactory)
+            ILoRAADRManagerFactory loRaADRManagerFactory,
+            IFunctionBundlerProvider functionBundlerProvider)
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
@@ -40,6 +43,7 @@ namespace LoRaWan.NetworkServer
             this.deduplicationFactory = deduplicationFactory;
             this.loRaADRStrategyProvider = loRaADRStrategyProvider;
             this.loRaADRManagerFactory = loRaADRManagerFactory;
+            this.functionBundlerProvider = functionBundlerProvider;
         }
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
@@ -62,37 +66,40 @@ namespace LoRaWan.NetworkServer
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
 
-            if (loraPayload.IsAdrEnabled)
+            FunctionBundlerResult bundlerResult = null;
+
+            // The bundler makes sure we limit the number of roundtrips to the server.
+            // If we need to make multiple requests, this combines them into one and sends
+            // them up, combining the results. This is only required in multi gateway mode
+            // with multiple features enabled that required server side synchronization.
+            if (useMultipleGateways)
             {
-                var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
-
-                var loRaADRTableEntry = new LoRaADRTableEntry()
+                var bundler = this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
+                if (bundler != null)
                 {
-                    DevEUI = loRaDevice.DevEUI,
-                    FCnt = payloadFcnt,
-                    GatewayId = this.configuration.GatewayID,
-                    Snr = request.Rxpk.Lsnr
-                };
-
-                // If the ADR req bit is not set we don't perform rate adaptation.
-                if (!loraPayload.IsAdrReq)
-                {
-                    _ = loRaADRManager.StoreADREntry(loRaADRTableEntry);
+                    bundlerResult = await bundler.Execute();
+                    loRaADRResult = bundlerResult.AdrResult;
+                    if (bundlerResult.NextFCntDown.HasValue)
+                    {
+                        // we got a new framecounter down. Make sure this
+                        // gets saved eventually to the twins
+                        loRaDevice.SetFcntDown(bundlerResult.NextFCntDown.Value);
+                    }
                 }
-                else
-                {
-                    loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
-                        loRaDevice.DevEUI,
-                        this.configuration.GatewayID,
-                        payloadFcnt,
-                        loRaDevice.FCntDown,
-                        (float)request.Rxpk.RequiredSnr,
-                        request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
-                        request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
-                        loRaADRTableEntry);
-                    if (loRaADRResult != null)
-                        requiresConfirmation = true;
-                }
+            }
+
+            // ADR should be performed before the deduplication
+            // as we still want to collect the signal info, even if we drop
+            // it in the next step
+            if (loRaADRResult == null && loraPayload.IsAdrEnabled)
+            {
+                loRaADRResult = await this.PerformADR(request, loRaDevice, loraPayload, payloadFcnt, loRaADRResult, frameCounterStrategy);
+            }
+
+            if (loRaADRResult != null)
+            {
+                // if we got an ADR result, we have to send the update to the device
+                requiresConfirmation = true;
             }
 
             if (useMultipleGateways)
@@ -101,11 +108,9 @@ namespace LoRaWan.NetworkServer
                 var deduplicationStrategy = this.deduplicationFactory.Create(loRaDevice);
                 if (deduplicationStrategy != null)
                 {
-                    // if we require a confirmation we can calculate the next frame counter down
-                    // using the same roundtrip as resolving deduplication, passing it along in that
-                    // case. The API will then send down the next frame counter down with the result
-                    int? currentDeviceFcntDown = requiresConfirmation ? loRaDevice.FCntDown : (int?)null;
-                    deduplicationResult = await deduplicationStrategy.ResolveDeduplication(payloadFcnt, currentDeviceFcntDown, this.configuration.GatewayID);
+                    deduplicationResult = bundlerResult?.DeduplicationResult
+                                          ?? await deduplicationStrategy.ResolveDeduplication(payloadFcnt, loRaDevice.FCntDown, this.configuration.GatewayID);
+
                     if (!deduplicationResult.CanProcess)
                     {
                         // duplication strategy is indicating that we do not need to continue processing this message
@@ -163,8 +168,8 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                // if deduplication already processed the next framecounter down, use that
-                int? fcntDown = deduplicationResult?.ClientFCntDown;
+                // if the bundler already processed the next framecounter down, use that
+                int? fcntDown = bundlerResult?.NextFCntDown;
 
                 // If it is confirmed it require us to update the frame counter down
                 // Multiple gateways: in redis, otherwise in device twin
@@ -407,6 +412,42 @@ namespace LoRaWan.NetworkServer
 
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownstream);
             }
+        }
+
+        private async Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, ushort payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
+        {
+            if (loraPayload.IsAdrEnabled)
+            {
+                var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
+
+                var loRaADRTableEntry = new LoRaADRTableEntry()
+                {
+                    DevEUI = loRaDevice.DevEUI,
+                    FCnt = payloadFcnt,
+                    GatewayId = this.configuration.GatewayID,
+                    Snr = request.Rxpk.Lsnr
+                };
+
+                // If the ADR req bit is not set we don't perform rate adaptation.
+                if (!loraPayload.IsAdrReq)
+                {
+                    _ = loRaADRManager.StoreADREntry(loRaADRTableEntry);
+                }
+                else
+                {
+                    loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
+                        loRaDevice.DevEUI,
+                        this.configuration.GatewayID,
+                        payloadFcnt,
+                        loRaDevice.FCntDown,
+                        (float)request.Rxpk.RequiredSnr,
+                        request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
+                        request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
+                        loRaADRTableEntry);
+                }
+            }
+
+            return loRaADRResult;
         }
 
         private bool ValidateCloudToDeviceMessage(LoRaDevice loRaDevice, Message cloudToDeviceMsg)
