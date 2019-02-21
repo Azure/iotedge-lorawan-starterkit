@@ -22,7 +22,7 @@ namespace LoRaTools.ADR
             return Task.FromResult<bool>(true);
         }
 
-        public async Task StoreADREntry(LoRaADRTableEntry newEntry)
+        public virtual async Task StoreADREntry(LoRaADRTableEntry newEntry)
         {
             if (newEntry == null)
             {
@@ -38,7 +38,7 @@ namespace LoRaTools.ADR
             await this.store.AddTableEntry(newEntry);
         }
 
-        public async Task<LoRaADRResult> CalculateADRResultAndAddEntry(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, LoRaADRTableEntry newEntry = null)
+        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntry(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, LoRaADRTableEntry newEntry = null)
         {
             if (newEntry != null)
             {
@@ -71,7 +71,7 @@ namespace LoRaTools.ADR
             return Task.FromResult<int>(-1);
         }
 
-        public async Task<LoRaADRResult> GetLastResult(string devEUI)
+        public virtual async Task<LoRaADRResult> GetLastResult(string devEUI)
         {
             var table = await this.store.GetADRTable(devEUI);
             return new LoRaADRResult

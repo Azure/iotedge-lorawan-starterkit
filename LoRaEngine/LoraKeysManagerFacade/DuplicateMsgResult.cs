@@ -8,7 +8,5 @@ namespace LoraKeysManagerFacade
         public bool IsDuplicate { get; set; }
 
         public string GatewayId { get; set; }
-
-        public int? ClientFCntDown { get; set; }
     }
 }

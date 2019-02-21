@@ -8,15 +8,16 @@ namespace LoRaWan.NetworkServer.ADR
     using LoRaTools.ADR;
     using Microsoft.Extensions.Logging;
 
-    public class LoRaADRSingleModeManager : LoRaADRManagerBase
+    public class LoRaADRDefaultManager : LoRaADRManagerBase
     {
-        private readonly LoRaDevice loRaDevice;
+        protected LoRaDevice LoRaDevice { get; private set; }
+
         private readonly ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy;
 
-        public LoRaADRSingleModeManager(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy, LoRaDevice loRaDevice)
+        public LoRaADRDefaultManager(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy, LoRaDevice loRaDevice)
             : base(store, strategyProvider)
         {
-            this.loRaDevice = loRaDevice;
+            this.LoRaDevice = loRaDevice;
             this.frameCounterStrategy = frameCounterStrategy;
         }
 
@@ -24,16 +25,16 @@ namespace LoRaWan.NetworkServer.ADR
         {
             if (loRaADRResult != null)
             {
-                this.loRaDevice.DataRate = loRaADRResult.DataRate;
-                this.loRaDevice.TxPower = loRaADRResult.TxPower;
-                this.loRaDevice.NbRepetition = loRaADRResult.NbRepetition;
+                this.LoRaDevice.DataRate = loRaADRResult.DataRate;
+                this.LoRaDevice.TxPower = loRaADRResult.TxPower;
+                this.LoRaDevice.NbRepetition = loRaADRResult.NbRepetition;
                  // if a rate adaptation is performed we need to update local cache
                  // todo check serialization and update twin
                 if (loRaADRResult.CanConfirmToDevice)
                 {
-                    if (!await this.loRaDevice.TrySaveADRProperties())
+                    if (!await this.LoRaDevice.TrySaveADRProperties())
                     {
-                        Logger.Log(this.loRaDevice.DevEUI, $"Could not save new ADR poperties on twins ", LogLevel.Error);
+                        Logger.Log(this.LoRaDevice.DevEUI, $"Could not save new ADR poperties on twins ", LogLevel.Error);
                         return false;
                     }
                 }
@@ -44,7 +45,7 @@ namespace LoRaWan.NetworkServer.ADR
 
         public override Task<int> NextFCntDown(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown)
         {
-            return this.frameCounterStrategy.NextFcntDown(this.loRaDevice, clientFCntUp).AsTask();
+            return this.frameCounterStrategy.NextFcntDown(this.LoRaDevice, clientFCntUp).AsTask();
             // update twins
         }
     }

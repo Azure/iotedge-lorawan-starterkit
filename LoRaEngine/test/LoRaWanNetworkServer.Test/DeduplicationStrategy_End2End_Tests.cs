@@ -28,28 +28,23 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Theory]
-        [InlineData(DeduplicationMode.Mark, true)]
-        [InlineData(DeduplicationMode.Drop, true)]
-        [InlineData(DeduplicationMode.None, true)]
-        [InlineData(DeduplicationMode.Mark, false)]
-        [InlineData(DeduplicationMode.Drop, false)]
-        [InlineData(DeduplicationMode.None, false)]
-        public async Task Validate_Dup_Message_Processing(DeduplicationMode mode, bool confirmed)
+        [InlineData(DeduplicationMode.Mark)]
+        [InlineData(DeduplicationMode.Drop)]
+        [InlineData(DeduplicationMode.None)]
+        public async Task Validate_Dup_Message_Processing(DeduplicationMode mode)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1), 10, 10);
             bool messageProcessed = mode == DeduplicationMode.Drop;
             messageProcessed = false;
             this.LoRaDeviceApi
-                .Setup(x => x.CheckDuplicateMsgAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int?>()))
+                .Setup(x => x.CheckDuplicateMsgAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()))
                 .Returns<string, int, string, int?>((dev, fcntup, gateway, fcntdown) =>
                 {
                     var isDup = messageProcessed;
                     messageProcessed = true;
-                    Assert.True((confirmed && fcntdown.HasValue) || (!confirmed && !fcntdown.HasValue));
                     return Task.FromResult<DeduplicationResult>(new DeduplicationResult
                     {
-                        IsDuplicate = isDup,
-                        ClientFCntDown = fcntdown
+                        IsDuplicate = isDup
                     });
                 });
 
@@ -77,27 +72,10 @@ namespace LoRaWan.NetworkServer.Test
                 .Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            await this.SendTwoMessages(simulatedDevice, mode, confirmed);
-
-            if (mode == DeduplicationMode.Drop)
-            {
-                // 1x telemetry without dupMsg
-                Assert.Single(telemetryList.Where(t => t.DupMsg == null));
-
-                // 1x telemetry overall
-                Assert.Single(telemetryList);
-            }
-            else if (mode == DeduplicationMode.Mark)
-            {
-                // 1x telemetry without dupMsg
-                Assert.Single(telemetryList.Where(t => t.DupMsg == null));
-
-                // 1x telemetry with dupMsg
-                Assert.Single(telemetryList.Where(t => t.DupMsg == true));
-            }
+            await this.SendTwoMessages(mode);
         }
 
-        private async Task SendTwoMessages(SimulatedDevice simulatedDevice, DeduplicationMode mode, bool confirmed)
+        private async Task SendTwoMessages(DeduplicationMode mode)
         {
             var loRaDevice1 = this.CreateLoRaDevice(simulatedDevice);
             loRaDevice1.Deduplication = mode;
@@ -118,7 +96,7 @@ namespace LoRaWan.NetworkServer.Test
                 loRaDeviceRegistry2,
                 this.SecondFrameCounterUpdateStrategyProvider);
 
-            var payload = confirmed ? simulatedDevice.CreateConfirmedDataUpMessage("1234") : simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
 
             // Create Rxpk
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];

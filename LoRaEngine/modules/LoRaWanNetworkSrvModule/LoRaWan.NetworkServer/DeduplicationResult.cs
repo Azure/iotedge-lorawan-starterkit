@@ -19,13 +19,6 @@ namespace LoRaWan.NetworkServer
         public string GatewayId { get; set; }
 
         /// <summary>
-        /// Gets or sets the clientFcntDown. It will only be set if the original request
-        /// to the function actually contained a clientFcntDown otherwise it will be null.
-        /// This can be used to combine the 2 function calls of deduplication & fcnt down calculation
-        /// </summary>
-        public int? ClientFCntDown { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether we can process this message.
         /// </summary>
         public bool CanProcess { get; set; }

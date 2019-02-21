@@ -57,7 +57,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
             if ((request.FunctionItems & FunctionBundlerItem.Deduplication) == FunctionBundlerItem.Deduplication)
             {
-                result.DeduplicationResult = DuplicateMsgCacheCheck.GetDuplicateMessageResult(devEUI, request.GatewayId, request.ClientFCntUp, null, context.FunctionAppDirectory);
+                result.DeduplicationResult = DuplicateMsgCacheCheck.GetDuplicateMessageResult(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, context.FunctionAppDirectory);
             }
 
             if (result.DeduplicationResult != null && result.DeduplicationResult.IsDuplicate)
@@ -72,11 +72,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
             else if (performADR)
             {
                 result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, context);
-                result.NextFCntDown = result.AdrResult.FCntDown;
+                result.NextFCntDown = result?.AdrResult.FCntDown > 0 ? result.AdrResult.FCntDown : (int?)null;
             }
             else if (result.NextFCntDown == 0 && (request.FunctionItems & FunctionBundlerItem.FCntDown) == FunctionBundlerItem.FCntDown)
             {
-                result.NextFCntDown = FCntCacheCheck.GetNextFCntDown(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, context.FunctionAppDirectory);
+                var next = FCntCacheCheck.GetNextFCntDown(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, context.FunctionAppDirectory);
+                result.NextFCntDown = next > 0 ? next : (int?)null;
             }
 
             return result;
