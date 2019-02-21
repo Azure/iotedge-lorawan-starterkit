@@ -416,35 +416,32 @@ namespace LoRaWan.NetworkServer
 
         private async Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, ushort payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
-            if (loraPayload.IsAdrEnabled)
+            var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
+
+            var loRaADRTableEntry = new LoRaADRTableEntry()
             {
-                var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
+                DevEUI = loRaDevice.DevEUI,
+                FCnt = payloadFcnt,
+                GatewayId = this.configuration.GatewayID,
+                Snr = request.Rxpk.Lsnr
+            };
 
-                var loRaADRTableEntry = new LoRaADRTableEntry()
-                {
-                    DevEUI = loRaDevice.DevEUI,
-                    FCnt = payloadFcnt,
-                    GatewayId = this.configuration.GatewayID,
-                    Snr = request.Rxpk.Lsnr
-                };
-
-                // If the ADR req bit is not set we don't perform rate adaptation.
-                if (!loraPayload.IsAdrReq)
-                {
-                    _ = loRaADRManager.StoreADREntry(loRaADRTableEntry);
-                }
-                else
-                {
-                    loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
-                        loRaDevice.DevEUI,
-                        this.configuration.GatewayID,
-                        payloadFcnt,
-                        loRaDevice.FCntDown,
-                        (float)request.Rxpk.RequiredSnr,
-                        request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
-                        request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
-                        loRaADRTableEntry);
-                }
+            // If the ADR req bit is not set we don't perform rate adaptation.
+            if (!loraPayload.IsAdrReq)
+            {
+                _ = loRaADRManager.StoreADREntry(loRaADRTableEntry);
+            }
+            else
+            {
+                loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
+                    loRaDevice.DevEUI,
+                    this.configuration.GatewayID,
+                    payloadFcnt,
+                    loRaDevice.FCntDown,
+                    (float)request.Rxpk.RequiredSnr,
+                    request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
+                    request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
+                    loRaADRTableEntry);
             }
 
             return loRaADRResult;

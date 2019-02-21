@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer.ADR
 
         public ILoRaADRManager Create(ILoRaADRStrategyProvider strategyProvider, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy, LoRaDevice loRaDevice)
         {
-            return string.IsNullOrEmpty(loRaDevice.GatewayID)
+            return !string.IsNullOrEmpty(loRaDevice.GatewayID)
                     ? new LoRaADRDefaultManager(new LoRaADRInMemoryStore(), strategyProvider, frameCounterStrategy, loRaDevice)
                     : new LoRaADRMultiGatewayManager(loRaDevice, this.loRaDeviceAPIService);
         }
