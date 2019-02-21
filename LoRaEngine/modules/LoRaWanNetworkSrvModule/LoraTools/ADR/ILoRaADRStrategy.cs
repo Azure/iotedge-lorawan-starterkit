@@ -3,12 +3,6 @@
 
 namespace LoRaTools.ADR
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
-
     /// <summary>
     /// An interface implementing LoRa ADR strategies.
     /// </summary>

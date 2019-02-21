@@ -17,6 +17,11 @@ namespace LoRaTools.ADR
             this.strategyProvider = strategyProvider;
         }
 
+        protected virtual Task<bool> TryUpdateState(LoRaADRResult loRaADRResult)
+        {
+            return Task.FromResult<bool>(true);
+        }
+
         public async Task StoreADREntry(LoRaADRTableEntry newEntry)
         {
             if (newEntry == null)
@@ -53,7 +58,7 @@ namespace LoRaTools.ADR
                     table.CurrentNbRep = result.NbRepetition;
                     table.CurrentTxPower = result.TxPower;
                     await this.store.UpdateADRTable(devEUI, table);
-
+                    await this.TryUpdateState(result);
                     result.FCntDown = nextFcntDown;
                 }
             }

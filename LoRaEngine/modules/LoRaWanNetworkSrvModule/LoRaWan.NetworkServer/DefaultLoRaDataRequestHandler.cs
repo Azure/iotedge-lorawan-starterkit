@@ -74,33 +74,24 @@ namespace LoRaWan.NetworkServer
                     Snr = request.Rxpk.Lsnr
                 };
 
-                loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
-                    loRaDevice.DevEUI,
-                    this.configuration.GatewayID,
-                    payloadFcnt,
-                    loRaDevice.FCntDown,
-                    (float)request.Rxpk.RequiredSnr,
-                    request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
-                    request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
-                    loRaADRTableEntry);
-
-                // if a rate adaptation is performed we need to update local cache
-                // todo check serialization and update twin
-                if (loRaADRResult != null)
+                // If the ADR req bit is not set we don't perform rate adaptation.
+                if (!loraPayload.IsAdrReq)
                 {
-                    loRaDevice.DataRate = loRaADRResult.DataRate;
-                    loRaDevice.TxPower = loRaADRResult.TxPower;
-                    loRaDevice.NbRepetition = loRaADRResult.NbRepetition;
-
-                    if (loRaADRResult.CanConfirmToDevice)
-                    {
+                    _ = loRaADRManager.StoreADREntry(loRaADRTableEntry);
+                }
+                else
+                {
+                    loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
+                        loRaDevice.DevEUI,
+                        this.configuration.GatewayID,
+                        payloadFcnt,
+                        loRaDevice.FCntDown,
+                        (float)request.Rxpk.RequiredSnr,
+                        request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
+                        request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
+                        loRaADRTableEntry);
+                    if (loRaADRResult != null)
                         requiresConfirmation = true;
-                        // TODO save reported properties
-                        if (!await loRaDevice.TrySaveADRProperties())
-                        {
-                            Logger.Log(loRaDevice.DevEUI, $"Could not save new ADR poperties on twins ", LogLevel.Error);
-                        }
-                    }
                 }
             }
 
