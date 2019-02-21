@@ -84,8 +84,8 @@ namespace LoRaTools.ADR
             var table = await this.store.GetADRTable(devEUI);
             return new LoRaADRResult
             {
-                NbRepetition = table.CurrentNbRep.GetValueOrDefault(),
-                TxPower = table.CurrentTxPower.GetValueOrDefault()
+                NbRepetition = table.CurrentNbRep,
+                TxPower = table.CurrentTxPower
             };
         }
     }
