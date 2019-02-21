@@ -13,6 +13,8 @@ namespace LoraKeysManagerFacade
 
         public int FCntDown { get; set; }
 
+        public int MinTxPowerIndex { get; set; }
+
         public string GatewayId { get; set; }
     }
 }

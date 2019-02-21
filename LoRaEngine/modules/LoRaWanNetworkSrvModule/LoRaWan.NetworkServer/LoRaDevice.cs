@@ -68,6 +68,12 @@ namespace LoRaWan.NetworkServer
 
         public bool IsABPRelaxedFrameCounter { get; set; }
 
+        public int DataRate { get; set; }
+
+        public int TxPower { get; set; }
+
+        public int NbRepetition { get; set; }
+
         public DeduplicationMode Deduplication { get; set; }
 
         int preferredWindow;
