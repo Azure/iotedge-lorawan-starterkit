@@ -4,8 +4,10 @@
 namespace LoRaTools.ADR
 {
     using System;
+    using System.Linq;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
+    using LoRaWan;
 
     /// <summary>
     /// A strategy based on the standard ADR strategy
@@ -23,7 +25,31 @@ namespace LoRaTools.ADR
         /// </summary>
         private readonly int[,] pktLossToNbRep = new int[4, 3] { { 1, 1, 2 }, { 1, 2, 3 }, { 2, 3, 3 }, { 3, 3, 3 } };
 
-        public (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex)
+        public LoRaADRResult ComputeResult(LoRaADRTable table, float requiredSnr, int upstreamDataRate, int minTxPower)
+        {
+            if (table == null || table.Entries.Count < 20)
+            {
+                Logger.Log("ADR: Not enough frames captured.", Microsoft.Extensions.Logging.LogLevel.Debug);
+                return null;
+            }
+
+            var newNbRep = this.ComputeNbRepetion(table.Entries[0].FCnt, table.Entries[LoRaADRTable.FrameCountCaptureCount - 1].FCnt, (int)table.CurrentNbRep);
+            (int newTxPowerIndex, int newDatarate) = this.GetPowerAndDRConfiguration(requiredSnr, upstreamDataRate, table.Entries.Max(x => x.Snr), (int)table.CurrentTxPower, minTxPower);
+
+            if (newNbRep != table.CurrentNbRep || newTxPowerIndex != table.CurrentTxPower || newDatarate != upstreamDataRate)
+            {
+                return new LoRaADRResult()
+                {
+                    DataRate = newDatarate,
+                    NbRepetition = newNbRep,
+                    TxPower = newTxPowerIndex
+                };
+            }
+
+            return null;
+        }
+
+        private (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex)
         {
             double snrMargin = maxSnr - requiredSnr - MarginDb;
 
@@ -65,7 +91,7 @@ namespace LoRaTools.ADR
             return (currentTxPowerIndex, computedDatarate);
         }
 
-        public int ComputeNbRepetion(int first, int last, int currentNbRep)
+        private int ComputeNbRepetion(int first, int last, int currentNbRep)
         {
             double pktLossRate = (last - first - 20) / (last - first);
             if (pktLossRate < 0.05)

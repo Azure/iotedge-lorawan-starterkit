@@ -19,8 +19,6 @@ namespace LoraKeysManagerFacade.Test
 
         private readonly Mock<RegistryManager> mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Loose);
 
-        private readonly ExecutionContext dummyContext = new ExecutionContext();
-
         public DeviceGetterTest()
         {
             LoRaDeviceCache.EnsureCacheStore(new LoRaInMemoryDeviceStore());
@@ -35,7 +33,7 @@ namespace LoraKeysManagerFacade.Test
 
             this.InitRegistryManager(DevEUI, DevEUI2);
 
-            var items = await DeviceGetter.GetDeviceList(DevEUI, GatewayId, "ABCD", null, this.dummyContext);
+            var items = await DeviceGetter.GetDeviceList(DevEUI, GatewayId, "ABCD", null, string.Empty);
 
             Assert.Single(items);
             Assert.Equal(DevEUI, items[0].DevEUI);
@@ -50,7 +48,7 @@ namespace LoraKeysManagerFacade.Test
 
             this.InitRegistryManager(DevEUI, DevEUI2);
 
-            var items = await DeviceGetter.GetDeviceList(null, GatewayId, "ABCD", "DevAddr1", this.dummyContext);
+            var items = await DeviceGetter.GetDeviceList(null, GatewayId, "ABCD", "DevAddr1", string.Empty);
 
             Assert.Equal(2, items.Count);
             Assert.Equal(DevEUI, items[0].DevEUI);

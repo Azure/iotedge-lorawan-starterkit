@@ -57,7 +57,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
             if ((request.FunctionItems & FunctionBundlerItem.Deduplication) == FunctionBundlerItem.Deduplication)
             {
-                result.DeduplicationResult = DuplicateMsgCacheCheck.GetDuplicateMessageResult(devEUI, request.GatewayId, request.ClientFCntUp, null, context);
+                result.DeduplicationResult = DuplicateMsgCacheCheck.GetDuplicateMessageResult(devEUI, request.GatewayId, request.ClientFCntUp, null, context.FunctionAppDirectory);
             }
 
             if (result.DeduplicationResult != null && result.DeduplicationResult.IsDuplicate)
@@ -76,7 +76,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
             else if (result.NextFCntDown == 0 && (request.FunctionItems & FunctionBundlerItem.FCntDown) == FunctionBundlerItem.FCntDown)
             {
-                result.NextFCntDown = FCntCacheCheck.GetNextFCntDown(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, context);
+                result.NextFCntDown = FCntCacheCheck.GetNextFCntDown(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, context.FunctionAppDirectory);
             }
 
             return result;

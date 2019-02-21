@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.ADR;
     using LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.ADR;
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Caching.Memory;

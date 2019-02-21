@@ -38,7 +38,7 @@ namespace LoraKeysManagerFacade
 
             if (!string.IsNullOrEmpty(cacheReset) && !string.IsNullOrEmpty(devEUI))
             {
-                LoRaDeviceCache.Delete(devEUI, context);
+                LoRaDeviceCache.Delete(devEUI, context.FunctionAppDirectory);
                 return (ActionResult)new OkObjectResult(null);
             }
 
@@ -60,18 +60,18 @@ namespace LoraKeysManagerFacade
                 clientFCntDown = down;
             }
 
-            var result = GetDuplicateMessageResult(devEUI, gatewayId, clientFCntUp, clientFCntDown, context);
+            var result = GetDuplicateMessageResult(devEUI, gatewayId, clientFCntUp, clientFCntDown, context.FunctionAppDirectory);
 
             return new OkObjectResult(result);
         }
 
-        public static DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, int clientFCntUp, int? clientFCntDown, ExecutionContext context)
+        public static DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, int clientFCntUp, int? clientFCntDown, string functionAppDirectory)
         {
             var isDuplicate = true;
             string processedDevice = gatewayId;
             int? newClientFCntDown = null;
 
-            using (var deviceCache = LoRaDeviceCache.Create(context, devEUI, gatewayId))
+            using (var deviceCache = LoRaDeviceCache.Create(functionAppDirectory, devEUI, gatewayId))
             {
                 if (deviceCache.TryToLock())
                 {

@@ -19,7 +19,7 @@ namespace LoraKeysManagerFacade.Test
             var deviceEUI = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
 
-            var next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1, new ExecutionContext());
+            var next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1, string.Empty);
             Assert.Equal(2, next);
         }
 
@@ -29,10 +29,10 @@ namespace LoraKeysManagerFacade.Test
             var deviceEUI = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
 
-            var next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1, new ExecutionContext());
+            var next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1, string.Empty);
             Assert.Equal(2, next);
 
-            next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 2, 1, new ExecutionContext());
+            next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 2, 1, string.Empty);
             Assert.Equal(3, next);
         }
 
@@ -42,10 +42,10 @@ namespace LoraKeysManagerFacade.Test
             var deviceEUI = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
 
-            var next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1, new ExecutionContext());
+            var next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1, string.Empty);
             Assert.Equal(2, next);
 
-            next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 3, 10, new ExecutionContext());
+            next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 3, 10, string.Empty);
             Assert.Equal(11, next);
         }
 
@@ -55,10 +55,10 @@ namespace LoraKeysManagerFacade.Test
             var deviceEUI = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
 
-            var next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1, new ExecutionContext());
+            var next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1, string.Empty);
             Assert.Equal(2, next);
 
-            next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1, new ExecutionContext());
+            next = FCntCacheCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1, string.Empty);
             Assert.Equal(3, next);
         }
     }

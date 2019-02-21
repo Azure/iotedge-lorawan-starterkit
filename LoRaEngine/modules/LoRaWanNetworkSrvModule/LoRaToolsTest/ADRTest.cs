@@ -3,9 +3,7 @@
 
 namespace LoRaWanTest
 {
-    using System;
     using System.Collections.Generic;
-    using System.Text;
     using LoRaTools.ADR;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
@@ -20,15 +18,14 @@ namespace LoRaWanTest
             var region = RegionFactory.CreateEU868Region();
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
 
-            LoRAADRManagerFactory loRAADRManagerFactory = new LoRAADRManagerFactory();
-            var loRaADRManager = loRAADRManagerFactory.Create(true, provider);
+            var loRaADRManager = new LoRaADRManagerBase(new LoRaADRInMemoryStore(), provider);
 
             for (int i = 0; i < tableEntries.Count; i++)
             {
                 await loRaADRManager.StoreADREntry(tableEntries[i]);
             }
 
-            var adrResult = await loRaADRManager.CalculateADRResult(devEUI, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1);
+            var adrResult = await loRaADRManager.CalculateADRResultAndAddEntry(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1);
             if (expectedResult == null)
             {
                 Assert.Null(adrResult);

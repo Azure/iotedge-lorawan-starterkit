@@ -49,7 +49,7 @@ namespace LoraKeysManagerFacade
 
             try
             {
-                var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, context);
+                var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, context.FunctionAppDirectory);
                 string json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);
             }
@@ -63,16 +63,16 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public static async Task<List<IoTHubDeviceInfo>> GetDeviceList(string devEUI, string gatewayId, string devNonce, string devAddr, ExecutionContext context)
+        public static async Task<List<IoTHubDeviceInfo>> GetDeviceList(string devEUI, string gatewayId, string devNonce, string devAddr, string functionAppDirectory)
         {
             var results = new List<IoTHubDeviceInfo>();
-            var registryManager = LoRaRegistryManager.GetCurrentInstance(context.FunctionAppDirectory);
+            var registryManager = LoRaRegistryManager.GetCurrentInstance(functionAppDirectory);
 
             if (devEUI != null)
             {
                 // OTAA join
                 string cacheKey = devEUI + devNonce;
-                using (var deviceCache = LoRaDeviceCache.Create(context, devEUI, gatewayId, cacheKey))
+                using (var deviceCache = LoRaDeviceCache.Create(functionAppDirectory, devEUI, gatewayId, cacheKey))
                 {
                     if (deviceCache.TryToLock(cacheKey + "joinlock"))
                     {
@@ -95,7 +95,7 @@ namespace LoraKeysManagerFacade
                             results.Add(iotHubDeviceInfo);
 
                             // clear device FCnt cache after join
-                            LoRaDeviceCache.Delete(devEUI, context);
+                            LoRaDeviceCache.Delete(devEUI, functionAppDirectory);
                         }
                     }
                 }
