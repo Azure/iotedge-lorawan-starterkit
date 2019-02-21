@@ -27,5 +27,9 @@ namespace LoRaWan.NetworkServer
         public const string DownlinkEnabled = "Downlink";
         public const string PreferredWindow = "PreferredWindow"; // (1 or 2)
         public const string Deduplication = "Deduplication"; // None (default), Drop, Mark
+        // ADR stuff
+        public const string DataRate = "DataRate";
+        public const string TxPower = "TxPower"; // depend on region 0 - 7 EU or 0 - 14 US
+        public const string NbRepetition = "NbRepetition"; // 1 - 3
     }
 }

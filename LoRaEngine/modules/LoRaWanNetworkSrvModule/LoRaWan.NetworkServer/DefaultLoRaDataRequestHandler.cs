@@ -59,16 +59,14 @@ namespace LoRaWan.NetworkServer
             {
                 var loRaADRManager = this.loRaADRManagerFactory.Create(!useMultipleGateways, this.loRaADRStrategyProvider);
 
-                // todo fcnt
-                LoRaADRTableEntry loRaADRTableEntry = new LoRaADRTableEntry()
+                var loRaADRTableEntry = new LoRaADRTableEntry()
                 {
                     DevEUI = loRaDevice.DevEUI,
-                    FCnt = 1,
+                    FCnt = payloadFcnt,
                     GatewayId = this.configuration.GatewayID,
                     Snr = request.Rxpk.Lsnr
                 };
 
-                // TBD should I include the cached elements
                 loRaADRResult = await loRaADRManager.CalculateADRResult(
                     loRaDevice.DevEUI,
                     (float)request.Rxpk.RequiredSnr,
@@ -87,6 +85,11 @@ namespace LoRaWan.NetworkServer
                     if (loRaADRResult.CanConfirmToDevice)
                     {
                         requiresConfirmation = true;
+                        // TODO save reported properties
+                        if (!await loRaDevice.TrySaveADRProperties())
+                        {
+                            Logger.Log(loRaDevice.DevEUI, $"Could not save new ADR poperties on twins ", LogLevel.Error);
+                        }
                     }
                 }
             }
