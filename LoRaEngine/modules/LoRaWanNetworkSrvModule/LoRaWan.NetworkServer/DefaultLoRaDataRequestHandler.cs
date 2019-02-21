@@ -55,8 +55,51 @@ namespace LoRaWan.NetworkServer
             var payloadPort = loraPayload.GetFPort();
             var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
 
-            // todo fcnt
-            LoRaADRTableEntry loRaADRTableEntry = new LoRaADRTableEntry()
+            DeduplicationResult deduplicationResult = null;
+            LoRaADRResult loRaADRResult = null;
+
+            var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
+
+            if (loraPayload.IsAdrEnabled)
+            {
+                var loRaADRManager = this.loRaADRManagerFactory.Create(!useMultipleGateways, this.loRaADRStrategyProvider);
+
+                var loRaADRTableEntry = new LoRaADRTableEntry()
+                {
+                    DevEUI = loRaDevice.DevEUI,
+                    FCnt = payloadFcnt,
+                    GatewayId = this.configuration.GatewayID,
+                    Snr = request.Rxpk.Lsnr
+                };
+
+                loRaADRResult = await loRaADRManager.CalculateADRResult(
+                    loRaDevice.DevEUI,
+                    (float)request.Rxpk.RequiredSnr,
+                    request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
+                    request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
+                    loRaADRTableEntry);
+
+                // if a rate adaptation is performed we need to update local cache
+                // todo check serialization and update twin
+                if (loRaADRResult != null)
+                {
+                    loRaDevice.DataRate = loRaADRResult.DataRate;
+                    loRaDevice.TxPower = loRaADRResult.TxPower;
+                    loRaDevice.NbRepetition = loRaADRResult.NbRepetition;
+
+                    if (loRaADRResult.CanConfirmToDevice)
+                    {
+                        requiresConfirmation = true;
+                        // TODO save reported properties
+                        if (!await loRaDevice.TrySaveADRProperties())
+                        {
+                            Logger.Log(loRaDevice.DevEUI, $"Could not save new ADR poperties on twins ", LogLevel.Error);
+                        }
+                    }
+                }
+            }
+
+            if (useMultipleGateways)
             {
                 DevEUI = loRaDevice.DevEUI,
                 FCnt = 1,

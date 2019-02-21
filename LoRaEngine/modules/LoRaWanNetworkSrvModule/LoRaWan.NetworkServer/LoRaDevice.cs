@@ -594,6 +594,21 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        public async Task<bool> TrySaveADRProperties()
+        {
+            var reportedProperties = new TwinCollection();
+            reportedProperties[TwinProperty.DataRate] = this.DataRate;
+            reportedProperties[TwinProperty.TxPower] = this.TxPower;
+            reportedProperties[TwinProperty.NbRepetition] = this.NbRepetition;
+
+            var result = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+
+            if (result)
+                return true;
+            else
+                return false;
+        }
+
         public void Dispose()
         {
             this.loRaDeviceClient?.Dispose();
