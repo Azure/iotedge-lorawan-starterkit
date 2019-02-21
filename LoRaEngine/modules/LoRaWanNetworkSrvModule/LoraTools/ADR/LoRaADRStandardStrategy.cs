@@ -93,7 +93,7 @@ namespace LoRaTools.ADR
 
         private int ComputeNbRepetion(int first, int last, int currentNbRep)
         {
-            double pktLossRate = (last - first - 20) / (last - first);
+            double pktLossRate = (float)(last - first - 19) / (last - first);
             if (pktLossRate < 0.05)
             {
                 return this.pktLossToNbRep[0, currentNbRep];

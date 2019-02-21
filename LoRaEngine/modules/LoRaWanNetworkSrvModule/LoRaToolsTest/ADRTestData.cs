@@ -9,19 +9,20 @@ namespace LoRaWanTest
     using System.Text;
     using LoRaTools.ADR;
     using LoRaTools.LoRaPhysical;
+    using Xunit;
 
-    class ADRTestData : IEnumerable<object[]>
+    class ADRTestData : TheoryData<string, string, List<LoRaADRTableEntry>, Rxpk, LoRaADRResult>
     {
-        public IEnumerator<object[]> GetEnumerator()
+        public ADRTestData()
         {
-            // not enough entries
+            // First test not enough entries
             var tableentries = new List<LoRaADRTableEntry>();
 
             for (int i = 0; i < 10; i++)
             {
                 tableentries.Add(new LoRaADRTableEntry()
                 {
-                    DevEUI = "123",
+                    DevEUI = "notenoughentries",
                     FCnt = i,
                     GatewayCount = 1,
                     GatewayId = "mygateway",
@@ -31,20 +32,16 @@ namespace LoRaWanTest
 
             Rxpk rxpk = new Rxpk();
             rxpk.Datr = "SF7BW125";
+            this.AddRow("Not enough entries to calculate ADR", "notenoughentries", tableentries, rxpk, null);
 
-            yield return new object[]
-            {
-              "123", tableentries, rxpk, null
-            };
-
-            // enough entries
-            var tableentries2 = new List<LoRaADRTableEntry>();
+            // Second test enough entries
+            var notenoughentriestableentries = new List<LoRaADRTableEntry>();
 
             for (int i = 0; i < 20; i++)
             {
-                tableentries.Add(new LoRaADRTableEntry()
+                notenoughentriestableentries.Add(new LoRaADRTableEntry()
                 {
-                    DevEUI = "123",
+                    DevEUI = "decreaseTxPower",
                     FCnt = i,
                     GatewayCount = 1,
                     GatewayId = "mygateway",
@@ -52,8 +49,8 @@ namespace LoRaWanTest
                 });
             }
 
-            Rxpk rxpk2 = new Rxpk();
-            rxpk.Datr = "SF7BW125";
+            Rxpk notenoughentriesrxpk = new Rxpk();
+            notenoughentriesrxpk.Datr = "SF7BW125";
             LoRaADRResult loRaADRResult = new LoRaADRResult()
             {
                 DataRate = 5,
@@ -61,12 +58,33 @@ namespace LoRaWanTest
                 TxPower = 0
             };
 
-            yield return new object[]
-            {
-              "123", tableentries2, rxpk2, loRaADRResult
-            };
-        }
+            this.AddRow("ADR decreasing Tx Power", "decreaseTxPower", notenoughentriestableentries, notenoughentriesrxpk, loRaADRResult);
 
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+            // Third test enough entries increase nbrep
+            var increaseNbReptableentries = new List<LoRaADRTableEntry>();
+
+            for (int i = 0; i < 20; i++)
+            {
+                increaseNbReptableentries.Add(new LoRaADRTableEntry()
+                {
+                    DevEUI = "decreaseTxPower",
+                    FCnt = 3 * i,
+                    GatewayCount = 1,
+                    GatewayId = "mygateway",
+                    Snr = -20
+                });
+            }
+
+            Rxpk increaseNbReprxpk = new Rxpk();
+            increaseNbReprxpk.Datr = "SF7BW125";
+            LoRaADRResult increaseNbReploRaADRResult = new LoRaADRResult()
+            {
+                DataRate = 5,
+                NbRepetition = 3,
+                TxPower = 0
+            };
+
+            this.AddRow("ADR decrease NbRep", "decreaseTxPower", increaseNbReptableentries, increaseNbReprxpk, increaseNbReploRaADRResult);
+        }
     }
 }
