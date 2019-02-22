@@ -50,6 +50,16 @@ namespace LoRaWanNetworkServer.Test
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
+            // todo add case without buffer
+            for (int i = 0; i < 70; i++)
+            {
+                var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+                var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+                var requestInt = this.CreateWaitableRequest(rxpkInt);
+                messageProcessor.DispatchRequest(requestInt);
+                Assert.True(await requestInt.WaitCompleteAsync());
+            }
+
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var request = this.CreateWaitableRequest(rxpk);
@@ -93,5 +103,5 @@ namespace LoRaWanNetworkServer.Test
             this.LoRaDeviceClient.VerifyAll();
             this.LoRaDeviceApi.VerifyAll();
         }
-}
+    }
 }
