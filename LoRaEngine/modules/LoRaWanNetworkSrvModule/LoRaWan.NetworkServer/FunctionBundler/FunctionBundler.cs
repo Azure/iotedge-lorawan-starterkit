@@ -4,9 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System.Threading.Tasks;
-    using LoRaTools.CommonAPI;
-    using LoRaTools.LoRaMessage;
-    using LoRaWan.NetworkServer.ADR;
 
     public class FunctionBundler
     {

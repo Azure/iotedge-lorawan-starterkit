@@ -69,7 +69,7 @@ namespace LoRaWan.NetworkServer
         private static bool BuildFunctionItemsToCall(LoRaPayloadData loRaPayload, LoRaDevice loRaDevice, ILoRaDeviceMessageDeduplicationStrategy deduplicationStrategy, out FunctionBundlerItem functions)
         {
             var requiresAdr = loRaPayload.IsAdrEnabled;
-            var requiresExtraConfirmation = !requiresAdr && (loRaPayload.IsConfirmed || loRaPayload.IsMacAnswerRequired);
+            var requiresExtraConfirmation = loRaPayload.IsConfirmed || loRaPayload.IsMacAnswerRequired;
 
             var requiresDeduplication = deduplicationStrategy != null;
 

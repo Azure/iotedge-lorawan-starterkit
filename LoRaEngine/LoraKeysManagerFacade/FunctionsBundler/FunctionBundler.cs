@@ -16,7 +16,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
     {
         [FunctionName("FunctionBundler")]
         public static async Task<IActionResult> FunctionBundlerImpl(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "FunctionBundler/{devEUI}")]HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "FunctionBundler/{devEUI}")]HttpRequest req,
             ILogger log,
             ExecutionContext context,
             string devEUI)
@@ -39,12 +39,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
 
             var functionBundlerRequest = JsonConvert.DeserializeObject<FunctionBundlerRequest>(requestBody);
-            var result = await HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest, context);
+            var result = await HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest, context.FunctionAppDirectory);
 
             return new OkObjectResult(result);
         }
 
-        internal static async Task<FunctionBundlerResult> HandleFunctionBundlerInvoke(string devEUI, FunctionBundlerRequest request, ExecutionContext context)
+        public static async Task<FunctionBundlerResult> HandleFunctionBundlerInvoke(string devEUI, FunctionBundlerRequest request, string functionAppDirectory)
         {
             if (request == null)
             {
@@ -52,12 +52,13 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
 
             var result = new FunctionBundlerResult();
+            int? nextFrameCountDown = null;
 
             var performADR = (request.FunctionItems & FunctionBundlerItem.ADR) == FunctionBundlerItem.ADR;
 
             if ((request.FunctionItems & FunctionBundlerItem.Deduplication) == FunctionBundlerItem.Deduplication)
             {
-                result.DeduplicationResult = DuplicateMsgCacheCheck.GetDuplicateMessageResult(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, context.FunctionAppDirectory);
+                result.DeduplicationResult = DuplicateMsgCacheCheck.GetDuplicateMessageResult(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, functionAppDirectory);
             }
 
             if (result.DeduplicationResult != null && result.DeduplicationResult.IsDuplicate)
@@ -66,20 +67,25 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 if (performADR && request.AdrRequest != null)
                 {
                     request.AdrRequest.PerformADRCalculation = false; // we lost the race, no calculation
-                    result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, context.FunctionAppDirectory);
+                    result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, functionAppDirectory);
                 }
             }
-            else if (performADR)
+            else
             {
-                result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, context.FunctionAppDirectory);
-                result.NextFCntDown = result?.AdrResult.FCntDown > 0 ? result.AdrResult.FCntDown : (int?)null;
-            }
-            else if (result.NextFCntDown == 0 && (request.FunctionItems & FunctionBundlerItem.FCntDown) == FunctionBundlerItem.FCntDown)
-            {
-                var next = FCntCacheCheck.GetNextFCntDown(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, context.FunctionAppDirectory);
-                result.NextFCntDown = next > 0 ? next : (int?)null;
+                if (performADR)
+                {
+                    result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, functionAppDirectory);
+                    nextFrameCountDown = result?.AdrResult.FCntDown > 0 ? result.AdrResult.FCntDown : (int?)null;
+                }
+
+                if (nextFrameCountDown == null && (request.FunctionItems & FunctionBundlerItem.FCntDown) == FunctionBundlerItem.FCntDown)
+                {
+                    var next = FCntCacheCheck.GetNextFCntDown(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, functionAppDirectory);
+                    nextFrameCountDown = next > 0 ? next : (int?)null;
+                }
             }
 
+            result.NextFCntDown = nextFrameCountDown;
             return result;
         }
     }

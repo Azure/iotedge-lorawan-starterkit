@@ -62,22 +62,17 @@ namespace LoraKeysManagerFacade
             if (request.PerformADRCalculation)
             {
                 return await adrManager.CalculateADRResultAndAddEntry(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex, newEntry);
-
-                /*if (adrResult == null)
-                {
-                    adrResult = await adrManager.GetLastResult(devEUI);
-                }
-
-                return adrResult;//*/
             }
             else
             {
                 await adrManager.StoreADREntry(newEntry);
+                return await adrManager.GetLastResult(devEUI);
             }
-
-            return null;
         }
 
+        /// <summary>
+        /// Unit Testing: use this to override the <see cref="ILoRaADRManager"/>
+        /// </summary>
         public static ILoRaADRManager InitializeADRManager(ILoRaADRManager manager)
         {
             if (adrManager != null)
@@ -109,7 +104,6 @@ namespace LoraKeysManagerFacade
                 {
                     var redisStore = new LoRaADRRedisStore(FunctionConfigManager.GetCurrentConfiguration(functionAppDirectory).GetConnectionString("RedisConnectionString"));
                     adrManager = new LoRaADRServerManager(redisStore, new LoRaADRStrategyProvider(), functionAppDirectory);
-                    // adrManager = new LoRaADRDefaultManager(new LoRaADRInMemoryStore(), new LoRaADRStrategyProvider());
                 }
             }
 

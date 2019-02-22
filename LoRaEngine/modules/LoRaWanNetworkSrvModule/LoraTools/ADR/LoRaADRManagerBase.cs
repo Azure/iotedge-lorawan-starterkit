@@ -60,6 +60,12 @@ namespace LoRaTools.ADR
                     result.FCntDown = nextFcntDown;
                 }
             }
+            else
+            {
+                result = await this.GetLastResult(devEUI) ?? new LoRaADRResult();
+            }
+
+            result.NumberOfFrames = table.Entries.Count;
 
             return result;
         }
@@ -77,7 +83,8 @@ namespace LoRaTools.ADR
                 ? new LoRaADRResult
                 {
                     NbRepetition = table.CurrentNbRep,
-                    TxPower = table.CurrentTxPower
+                    TxPower = table.CurrentTxPower,
+                    NumberOfFrames = table.Entries.Count
                 }
                 : null;
         }
