@@ -392,7 +392,7 @@ namespace LoRaWan.IntegrationTest
                 DeviceID = "0000000000000024",
                 AppSKey = "00000000000000000000000000000024",
                 NwkSKey = "00000000000000000000000000000024",
-                DevAddr = "00000022",
+                DevAddr = "00000024",
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",

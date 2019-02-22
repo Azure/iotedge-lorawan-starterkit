@@ -28,6 +28,7 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_ClassC_Send_Message_From_Direct_Method_Should_Be_Received()
         {
+            const int MAX_MODULE_DIRECT_METHOD_CALL_TRIES = 3;
             var device = this.TestFixtureCi.Device24_ABP;
             this.LogTestStart(device);
 
@@ -46,7 +47,26 @@ namespace LoRaWan.IntegrationTest
             };
 
             TestLogger.Log($"[INFO] Using service client to call direct method to {this.TestFixture.Configuration.LeafDeviceGatewayID}/{this.TestFixture.Configuration.NetworkServerModuleID}");
-            await this.TestFixtureCi.InvokeModuleDirectMethodAsync(this.TestFixture.Configuration.LeafDeviceGatewayID, this.TestFixture.Configuration.NetworkServerModuleID, "cloudtodevicemessage", c2d);
+            TestLogger.Log($"[INFO] {JsonConvert.SerializeObject(c2d, Formatting.None)}");
+
+            for (var i = 0; i < MAX_MODULE_DIRECT_METHOD_CALL_TRIES;)
+            {
+                i++;
+
+                try
+                {
+                    await this.TestFixtureCi.InvokeModuleDirectMethodAsync(this.TestFixture.Configuration.LeafDeviceGatewayID, this.TestFixture.Configuration.NetworkServerModuleID, "cloudtodevicemessage", c2d);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    if (i == MAX_MODULE_DIRECT_METHOD_CALL_TRIES)
+                        throw;
+
+                    TestLogger.Log($"[ERR] Failed to call module direct method: {ex.Message}");
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+                }
+            }
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
