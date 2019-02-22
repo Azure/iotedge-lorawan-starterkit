@@ -22,7 +22,7 @@ namespace LoRaWanNetworkServer.Test
         [Fact]
         public async Task When_Receives_AdrAckReq_Send_Reply()
         {
-            const int PayloadFcnt = 10;
+            int payloadFcnt = 0;
             const int InitialDeviceFcntUp = 9;
             const int InitialDeviceFcntDown = 20;
 
@@ -53,14 +53,15 @@ namespace LoRaWanNetworkServer.Test
             // todo add case without buffer
             for (int i = 0; i < 70; i++)
             {
-                var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+                var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
                 var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
                 var requestInt = this.CreateWaitableRequest(rxpkInt);
                 messageProcessor.DispatchRequest(requestInt);
                 Assert.True(await requestInt.WaitCompleteAsync());
+                payloadFcnt++;
             }
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -91,7 +92,7 @@ namespace LoRaWanNetworkServer.Test
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
             // 4. Frame counter up was updated
-            Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
+            Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
@@ -99,9 +100,6 @@ namespace LoRaWanNetworkServer.Test
 
             // 6. Frame count has no pending changes
             Assert.False(loraDevice.HasFrameCountChanges);
-
-            this.LoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
         }
     }
 }
