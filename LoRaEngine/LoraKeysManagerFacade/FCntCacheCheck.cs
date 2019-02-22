@@ -66,7 +66,7 @@ namespace LoraKeysManagerFacade
                     }
                     else
                     {
-                        var state = deviceCache.Initialize(clientFCntDown, clientFCntUp);
+                        var state = deviceCache.Initialize(clientFCntUp, clientFCntDown + 1);
                         newFCntDown = state.FCntDown;
                     }
                 }

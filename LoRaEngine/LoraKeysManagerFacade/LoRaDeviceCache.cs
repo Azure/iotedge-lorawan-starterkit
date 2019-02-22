@@ -78,14 +78,13 @@ namespace LoraKeysManagerFacade
             return true;
         }
 
-        public DeviceCacheInfo Initialize(int clientFCntDown = 0, int clientFCntUp = 0)
+        public DeviceCacheInfo Initialize(int fCntUp = 0, int fCntDown = 0)
         {
             // it is the first message from this device
-            var newFCntDown = clientFCntDown + 1;
             var serverStateForDeviceInfo = new DeviceCacheInfo
             {
-                FCntDown = newFCntDown,
-                FCntUp = clientFCntUp,
+                FCntDown = fCntDown,
+                FCntUp = fCntUp,
                 GatewayId = this.gatewayId
             };
 

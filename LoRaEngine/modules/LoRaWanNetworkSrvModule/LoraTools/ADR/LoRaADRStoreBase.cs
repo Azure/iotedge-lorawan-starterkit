@@ -4,8 +4,6 @@
 namespace LoRaTools.ADR
 {
     using System.Linq;
-    using System.Threading.Tasks;
-    using Microsoft.Extensions.Caching.Memory;
 
     public abstract class LoRaADRStoreBase
     {

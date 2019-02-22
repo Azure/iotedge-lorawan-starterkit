@@ -11,17 +11,16 @@ namespace LoraKeysManagerFacade.Test
 
     public class ADRFunctionTest : FunctionTestBase
     {
-        private readonly ILoRaADRManager adrManager;
+        private static readonly ILoRaADRManager AdrManager;
 
-        public ADRFunctionTest()
+        static ADRFunctionTest()
         {
             var strategyProvider = new Mock<ILoRaADRStrategyProvider>(MockBehavior.Strict);
             strategyProvider
                 .Setup(x => x.GetStrategy())
                 .Returns(new LoRaADRStandardStrategy());
 
-            this.adrManager = new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, string.Empty);
-            LoRaADRFunction.InitializeADRManager(this.adrManager);
+            AdrManager = LoRaADRFunction.InitializeADRManager(new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, string.Empty));
             LoRaDeviceCache.EnsureCacheStore(new LoRaInMemoryDeviceStore());
         }
 
@@ -31,10 +30,12 @@ namespace LoraKeysManagerFacade.Test
             var deviceEUI = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
 
-            var req = CreateStandardRequest(gatewayId);
+            var req = CreateStandardADRRequest(gatewayId);
 
             var result = await LoRaADRFunction.HandleADRRequest(deviceEUI, req, string.Empty);
-            Assert.Null(result);
+            Assert.NotNull(result);
+            Assert.Equal(1, result.NumberOfFrames);
+            Assert.False(result.CanConfirmToDevice);
         }
 
         [Fact]
@@ -45,14 +46,14 @@ namespace LoraKeysManagerFacade.Test
             var gateway1Id = NewUniqueEUI64();
             var gateway2Id = NewUniqueEUI64();
 
-            var req = CreateStandardRequest(gateway1Id, -10);
-            var req2 = CreateStandardRequest(gateway2Id, -10);
+            var req = CreateStandardADRRequest(gateway1Id, -10);
+            var req2 = CreateStandardADRRequest(gateway2Id, -10);
 
             _ = await LoRaADRFunction.HandleADRRequest(deviceEUI, req, string.Empty);
             _ = await LoRaADRFunction.HandleADRRequest(deviceEUI, req2, string.Empty);
 
             // last entry should have 2 and the id should be from gw1
-            var last = await this.adrManager.GetLastEntry(deviceEUI);
+            var last = await AdrManager.GetLastEntry(deviceEUI);
             Assert.Equal(2, last.GatewayCount);
             Assert.Equal(gateway1Id, last.GatewayId);
 
@@ -60,7 +61,7 @@ namespace LoraKeysManagerFacade.Test
             _ = await LoRaADRFunction.HandleADRRequest(deviceEUI, req, string.Empty);
             _ = await LoRaADRFunction.HandleADRRequest(deviceEUI, req2, string.Empty);
 
-            last = await this.adrManager.GetLastEntry(deviceEUI);
+            last = await AdrManager.GetLastEntry(deviceEUI);
             Assert.Equal(4, last.GatewayCount);
 
             // add new fcnt and change snr for gw2
@@ -69,7 +70,7 @@ namespace LoraKeysManagerFacade.Test
             _ = await LoRaADRFunction.HandleADRRequest(deviceEUI, req, string.Empty);
             _ = await LoRaADRFunction.HandleADRRequest(deviceEUI, req2, string.Empty);
 
-            last = await this.adrManager.GetLastEntry(deviceEUI);
+            last = await AdrManager.GetLastEntry(deviceEUI);
             Assert.Equal(2, last.GatewayCount);
             Assert.Equal(gateway2Id, last.GatewayId);
             Assert.Equal(-9, last.Snr);
@@ -83,8 +84,8 @@ namespace LoraKeysManagerFacade.Test
             var gateway1Id = NewUniqueEUI64();
             var gateway2Id = NewUniqueEUI64();
 
-            var req = CreateStandardRequest(gateway1Id, -10);
-            var req2 = CreateStandardRequest(gateway2Id, -10);
+            var req = CreateStandardADRRequest(gateway1Id, -10);
+            var req2 = CreateStandardADRRequest(gateway2Id, -10);
 
             var rnd = new Random();
 
@@ -95,7 +96,7 @@ namespace LoraKeysManagerFacade.Test
                 _ = await LoRaADRFunction.HandleADRRequest(deviceEUI, req2, string.Empty);
 
                 var winner = req.RequiredSnr < req2.RequiredSnr ? gateway2Id : gateway1Id;
-                var last = await this.adrManager.GetLastEntry(deviceEUI);
+                var last = await AdrManager.GetLastEntry(deviceEUI);
                 Assert.Equal(winner, last.GatewayId);
                 Assert.Equal(2, last.GatewayCount);
 
@@ -114,30 +115,6 @@ namespace LoraKeysManagerFacade.Test
 
             Assert.Equal(req.FCntDown + 1, result1.FCntDown);
             Assert.Equal(0, result2.FCntDown);
-        }
-
-        private static LoRaADRRequest CreateStandardRequest(string gatewayId, float snr = -10)
-        {
-            var req = StandardRequest;
-            req.GatewayId = gatewayId;
-            req.RequiredSnr = snr;
-            return req;
-        }
-
-        private static LoRaADRRequest StandardRequest
-        {
-            get
-            {
-                return new LoRaADRRequest
-                {
-                    DataRate = 1,
-                    FCntUp = 1,
-                    RequiredSnr = -10,
-                    FCntDown = 1,
-                    MinTxPowerIndex = 4,
-                    PerformADRCalculation = true
-                };
-            }
         }
     }
 }

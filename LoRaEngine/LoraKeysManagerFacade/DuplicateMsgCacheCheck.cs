@@ -101,7 +101,7 @@ namespace LoraKeysManagerFacade
                     {
                         // initialize
                         isDuplicate = false;
-                        var state = deviceCache.Initialize(clientFCntDown, clientFCntUp);
+                        var state = deviceCache.Initialize(clientFCntUp, clientFCntDown);
                     }
                 }
             }

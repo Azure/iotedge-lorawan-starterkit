@@ -6,6 +6,7 @@ namespace LoraKeysManagerFacade.Test
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Threading.Tasks;
 
     public class FunctionTestBase
     {
@@ -35,6 +36,30 @@ namespace LoraKeysManagerFacade.Test
             }
 
             return NewUniqueEUI64();
+        }
+
+        protected static LoRaADRRequest CreateStandardADRRequest(string gatewayId, float snr = -10)
+        {
+            var req = StandardADRRequest;
+            req.GatewayId = gatewayId;
+            req.RequiredSnr = snr;
+            return req;
+        }
+
+        private static LoRaADRRequest StandardADRRequest
+        {
+            get
+            {
+                return new LoRaADRRequest
+                {
+                    DataRate = 1,
+                    FCntUp = 1,
+                    RequiredSnr = -10,
+                    FCntDown = 1,
+                    MinTxPowerIndex = 4,
+                    PerformADRCalculation = true
+                };
+            }
         }
     }
 }
