@@ -8,6 +8,8 @@ namespace LoRaWan.NetworkServer.ADR
     public class LoRAADRManagerFactory : ILoRAADRManagerFactory
     {
         private LoRaDeviceAPIServiceBase loRaDeviceAPIService;
+        private static readonly object InMemoryStoreLock = new object();
+        private static volatile LoRaADRInMemoryStore inMemoryStore;
 
         public LoRAADRManagerFactory(LoRaDeviceAPIServiceBase loRaDeviceAPIService)
         {
@@ -17,8 +19,29 @@ namespace LoRaWan.NetworkServer.ADR
         public ILoRaADRManager Create(ILoRaADRStrategyProvider strategyProvider, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy, LoRaDevice loRaDevice)
         {
             return !string.IsNullOrEmpty(loRaDevice.GatewayID)
-                    ? new LoRaADRDefaultManager(new LoRaADRInMemoryStore(), strategyProvider, frameCounterStrategy, loRaDevice)
+                    ? new LoRaADRDefaultManager(CurrentInMemoryStore, strategyProvider, frameCounterStrategy, loRaDevice)
                     : new LoRaADRMultiGatewayManager(loRaDevice, this.loRaDeviceAPIService);
+        }
+
+        private static LoRaADRInMemoryStore CurrentInMemoryStore
+        {
+            get
+            {
+                if (inMemoryStore != null)
+                {
+                    return inMemoryStore;
+                }
+
+                lock (InMemoryStoreLock)
+                {
+                    if (inMemoryStore == null)
+                    {
+                        inMemoryStore = new LoRaADRInMemoryStore();
+                    }
+                }
+
+                return inMemoryStore;
+            }
         }
     }
 }
