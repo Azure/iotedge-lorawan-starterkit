@@ -12,5 +12,7 @@ namespace LoRaTools.ADR
         Task<LoRaADRResult> CalculateADRResultAndAddEntry(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int dataRate, int minTxPower, LoRaADRTableEntry newEntry = null);
 
         Task<LoRaADRResult> GetLastResult(string devEUI);
+
+        Task<LoRaADRTableEntry> GetLastEntry(string devEUI);
     }
 }

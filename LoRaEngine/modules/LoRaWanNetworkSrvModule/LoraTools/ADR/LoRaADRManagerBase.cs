@@ -40,12 +40,10 @@ namespace LoRaTools.ADR
 
         public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntry(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, LoRaADRTableEntry newEntry = null)
         {
-            if (newEntry != null)
-            {
-                await this.store.AddTableEntry(newEntry);
-            }
+            var table = newEntry != null
+                        ? await this.store.AddTableEntry(newEntry)
+                        : await this.store.GetADRTable(devEUI);
 
-            var table = await this.store.GetADRTable(devEUI);
             var result = this.strategyProvider.GetStrategy().ComputeResult(table, requiredSnr, upstreamDataRate, minTxPower);
 
             if (result != null)
@@ -74,11 +72,20 @@ namespace LoRaTools.ADR
         public virtual async Task<LoRaADRResult> GetLastResult(string devEUI)
         {
             var table = await this.store.GetADRTable(devEUI);
-            return new LoRaADRResult
-            {
-                NbRepetition = table.CurrentNbRep,
-                TxPower = table.CurrentTxPower
-            };
+
+            return table != null
+                ? new LoRaADRResult
+                {
+                    NbRepetition = table.CurrentNbRep,
+                    TxPower = table.CurrentTxPower
+                }
+                : null;
+        }
+
+        public virtual async Task<LoRaADRTableEntry> GetLastEntry(string devEUI)
+        {
+            var table = await this.store.GetADRTable(devEUI);
+            return table != null && table.Entries.Count > 0 ? table.Entries[table.Entries.Count - 1] : null;
         }
     }
 }

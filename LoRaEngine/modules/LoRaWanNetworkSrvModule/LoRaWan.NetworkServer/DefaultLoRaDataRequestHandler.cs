@@ -66,27 +66,9 @@ namespace LoRaWan.NetworkServer
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
 
-            FunctionBundlerResult bundlerResult = null;
+            var bundlerResult = await this.TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
 
-            // The bundler makes sure we limit the number of roundtrips to the server.
-            // If we need to make multiple requests, this combines them into one and sends
-            // them up, combining the results. This is only required in multi gateway mode
-            // with multiple features enabled that required server side synchronization.
-            if (useMultipleGateways)
-            {
-                var bundler = this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
-                if (bundler != null)
-                {
-                    bundlerResult = await bundler.Execute();
-                    loRaADRResult = bundlerResult.AdrResult;
-                    if (bundlerResult.NextFCntDown.HasValue)
-                    {
-                        // we got a new framecounter down. Make sure this
-                        // gets saved eventually to the twins
-                        loRaDevice.SetFcntDown(bundlerResult.NextFCntDown.Value);
-                    }
-                }
-            }
+            loRaADRResult = bundlerResult?.AdrResult;
 
             // ADR should be performed before the deduplication
             // as we still want to collect the signal info, even if we drop
@@ -412,6 +394,27 @@ namespace LoRaWan.NetworkServer
 
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownstream);
             }
+        }
+
+        private async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)
+        {
+            FunctionBundlerResult bundlerResult = null;
+            if (useMultipleGateways)
+            {
+                var bundler = this.functionBundlerProvider.CreateIfRequired(this.configuration.GatewayID, loraPayload, loRaDevice, this.deduplicationFactory, request);
+                if (bundler != null)
+                {
+                    bundlerResult = await bundler.Execute();
+                    if (bundlerResult.NextFCntDown.HasValue)
+                    {
+                        // we got a new framecounter down. Make sure this
+                        // gets saved eventually to the twins
+                        loRaDevice.SetFcntDown(bundlerResult.NextFCntDown.Value);
+                    }
+                }
+            }
+
+            return bundlerResult;
         }
 
         private async Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, ushort payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
