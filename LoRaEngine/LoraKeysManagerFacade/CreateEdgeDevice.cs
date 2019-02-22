@@ -19,7 +19,11 @@ namespace CreateDeviceFunction
     public static class CreateEdgeDevice
     {
         [FunctionName("CreateEdgeDevice")]
-        public static async Task<HttpResponseMessage> CreateEdgeDeviceImp([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
+        public static async Task<HttpResponseMessage> CreateEdgeDeviceImp(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
+            HttpRequest req,
+            ILogger log,
+            ExecutionContext context)
         {
             var manager = LoraKeysManagerFacade.LoRaRegistryManager.GetCurrentInstance(context.FunctionAppDirectory);
 

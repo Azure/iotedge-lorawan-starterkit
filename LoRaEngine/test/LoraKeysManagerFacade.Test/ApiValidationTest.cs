@@ -5,8 +5,8 @@ namespace LoraKeysManagerFacade.Test
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
+    using LoraKeysManagerFacade.FunctionBundler;
     using LoRaWan.Shared;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Internal;
@@ -30,7 +30,9 @@ namespace LoraKeysManagerFacade.Test
             {
                 (req) => DeviceGetter.GetDevice(req, NullLogger.Instance, dummyExecContext),
                 (req) => Task.Run(() => FCntCacheCheck.NextFCntDownInvoke(req, NullLogger.Instance, dummyExecContext)),
-                (req) => Task.Run(() => DuplicateMsgCacheCheck.DuplicateMsgCheck(req, NullLogger.Instance, dummyExecContext, devEUI))
+                (req) => Task.Run(() => DuplicateMsgCacheCheck.DuplicateMsgCheck(req, NullLogger.Instance, dummyExecContext, devEUI)),
+                (req) => Task.Run(() => LoRaADRFunction.ADRFunctionImpl(req, NullLogger.Instance, dummyExecContext, devEUI)),
+                (req) => Task.Run(() => FunctionBundler.FunctionBundlerImpl(req, NullLogger.Instance, dummyExecContext, devEUI))
             };
 
             foreach (var apiCall in apiCalls)

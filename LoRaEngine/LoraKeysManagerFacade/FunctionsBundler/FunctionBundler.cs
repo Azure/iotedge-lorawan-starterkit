@@ -66,12 +66,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 if (performADR && request.AdrRequest != null)
                 {
                     request.AdrRequest.PerformADRCalculation = false; // we lost the race, no calculation
-                    result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, context);
+                    result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, context.FunctionAppDirectory);
                 }
             }
             else if (performADR)
             {
-                result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, context);
+                result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, context.FunctionAppDirectory);
                 result.NextFCntDown = result?.AdrResult.FCntDown > 0 ? result.AdrResult.FCntDown : (int?)null;
             }
             else if (result.NextFCntDown == 0 && (request.FunctionItems & FunctionBundlerItem.FCntDown) == FunctionBundlerItem.FCntDown)

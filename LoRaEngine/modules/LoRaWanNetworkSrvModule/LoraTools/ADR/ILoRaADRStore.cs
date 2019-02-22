@@ -10,7 +10,7 @@ namespace LoRaTools.ADR
     /// </summary>
     public interface ILoRaADRStore
     {
-        Task AddTableEntry(LoRaADRTableEntry entry);
+        Task<LoRaADRTable> AddTableEntry(LoRaADRTableEntry entry);
 
         Task UpdateADRTable(string devEUI, LoRaADRTable table);
 

@@ -11,7 +11,7 @@ namespace LoRaTools.ADR
     /// Stores ADR tables in memory on the gateway.
     /// This is the default implementation if we have a single gateway environment.
     /// </summary>
-    public class LoRaADRInMemoryStore : ILoRaADRStore
+    public class LoRaADRInMemoryStore : LoRaADRStoreBase, ILoRaADRStore
     {
         private readonly MemoryCache cache;
 
@@ -35,44 +35,14 @@ namespace LoRaTools.ADR
             return Task.CompletedTask;
         }
 
-        public Task AddTableEntry(LoRaADRTableEntry entry)
+        public Task<LoRaADRTable> AddTableEntry(LoRaADRTableEntry entry)
         {
             lock (this.cache)
             {
-                var table = this.cache.Get<LoRaADRTable>(entry.DevEUI);
-                if (table == null)
-                {
-                    table = new LoRaADRTable();
-                    this.cache.Set<LoRaADRTable>(entry.DevEUI, table);
-                }
-
-                var existing = table.Entries.FirstOrDefault(itm => itm.FCnt == entry.FCnt);
-
-                if (existing == null)
-                {
-                    // first for this framecount, simply add it
-                    entry.GatewayCount = 1;
-                    table.Entries.Add(entry);
-                }
-                else
-                {
-                    if (existing.Snr < entry.Snr)
-                    {
-                        // better update with this entry
-                        existing.Snr = entry.Snr;
-                        existing.GatewayId = entry.GatewayId;
-                    }
-
-                    existing.GatewayCount++;
-                }
-
-                if (table.Entries.Count > LoRaADRTable.FrameCountCaptureCount)
-                {
-                    table.Entries.RemoveAt(0);
-                }
+                var table = this.cache.GetOrCreate<LoRaADRTable>(entry.DevEUI, (cacheEntry) => new LoRaADRTable());
+                AddEntryToTable(table, entry);
+                return Task.FromResult<LoRaADRTable>(table);
             }
-
-            return Task.CompletedTask;
         }
     }
 }

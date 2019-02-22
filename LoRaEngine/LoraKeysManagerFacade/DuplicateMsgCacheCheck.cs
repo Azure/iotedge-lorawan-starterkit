@@ -4,7 +4,6 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using LoRaWan.Shared;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
@@ -21,7 +20,7 @@ namespace LoraKeysManagerFacade
 
         [FunctionName("DuplicateMsgCheck")]
         public static IActionResult DuplicateMsgCheck(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "DuplicateMsgCheck/{devEUI}")]HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "DuplicateMsgCheck/{devEUI}")]HttpRequest req,
             ILogger log,
             ExecutionContext context,
             string devEUI)

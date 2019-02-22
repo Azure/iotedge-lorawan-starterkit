@@ -11,7 +11,7 @@ namespace LoraKeysManagerFacade
     using Newtonsoft.Json;
     using StackExchange.Redis;
 
-    public class LoRaADRRedisStore : ILoRaADRStore
+    public class LoRaADRRedisStore : LoRaADRStoreBase, ILoRaADRStore
     {
         const string CacheToken = "ADR";
         const string LockToken = "_lock";
@@ -63,61 +63,33 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public async Task AddTableEntry(LoRaADRTableEntry entry)
+        public async Task<LoRaADRTable> AddTableEntry(LoRaADRTableEntry entry)
         {
+            LoRaADRTable table = null;
             using (var redisLock = new RedisLockWrapper(entry.DevEUI, this.redisCache))
             {
                 if (redisLock.TakeLock())
                 {
                     var entryKey = GetEntryKey(entry.DevEUI);
-                    var table = await this.GetADRTableCore(entryKey) ?? new LoRaADRTable();
+                    table = await this.GetADRTableCore(entryKey) ?? new LoRaADRTable();
 
-                    var existing = table.Entries.FirstOrDefault(itm => itm.FCnt == entry.FCnt);
-
-                    if (existing == null)
-                    {
-                        // first for this framecount, simply add it
-                        entry.GatewayCount = 1;
-                        table.Entries.Add(entry);
-                    }
-                    else
-                    {
-                        if (existing.Snr < entry.Snr)
-                        {
-                            // better update with this entry
-                            existing.Snr = entry.Snr;
-                            existing.GatewayId = entry.GatewayId;
-                        }
-
-                        existing.GatewayCount++;
-                    }
-
-                    if (table.Entries.Count > LoRaADRTable.FrameCountCaptureCount)
-                    {
-                        table.Entries.RemoveAt(0);
-                    }
+                    AddEntryToTable(table, entry);
 
                     // update redis store
                     this.redisCache.StringSet(entryKey, JsonConvert.SerializeObject(table));
                 }
             }
+
+            return table;
         }
 
         public async Task<LoRaADRTable> GetADRTable(string devEUI)
         {
-            const string lockOwner = "_ADRRedisCache";
-            var entryKey = GetEntryKey(devEUI);
-            var lockKey = entryKey + LockToken;
-
-            if (this.redisCache.LockTake(lockKey, lockOwner, TimeSpan.FromSeconds(2)))
+            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
             {
-                try
+                if (redisLock.TakeLock())
                 {
-                    return await this.GetADRTableCore(entryKey);
-                }
-                finally
-                {
-                    this.redisCache.LockRelease(lockKey, lockOwner);
+                    return await this.GetADRTableCore(GetEntryKey(devEUI));
                 }
             }
 

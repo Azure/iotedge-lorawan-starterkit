@@ -19,7 +19,7 @@ namespace LoraKeysManagerFacade
         private static ILoRaADRManager adrManager;
 
         [FunctionName("ADRFunction")]
-        public static async Task<IActionResult> FunctionBundlerImpl(
+        public static async Task<IActionResult> ADRFunctionImpl(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "ADRFunction/{devEUI}")]HttpRequest req,
             ILogger log,
             ExecutionContext context,
@@ -43,14 +43,14 @@ namespace LoraKeysManagerFacade
             }
 
             var adrRequest = JsonConvert.DeserializeObject<LoRaADRRequest>(requestBody);
-            var result = await HandleADRRequest(devEUI, adrRequest, context);
+            var result = await HandleADRRequest(devEUI, adrRequest, context.FunctionAppDirectory);
 
             return new OkObjectResult(result);
         }
 
-        internal static async Task<LoRaADRResult> HandleADRRequest(string devEUI, LoRaADRRequest request, ExecutionContext context)
+        public static async Task<LoRaADRResult> HandleADRRequest(string devEUI, LoRaADRRequest request, string functionAppDirectory)
         {
-            var adrManager = EnsureLoraADRManagerInstance(context.FunctionAppDirectory);
+            var adrManager = EnsureLoraADRManagerInstance(functionAppDirectory);
             var newEntry = new LoRaADRTableEntry
             {
                  DevEUI = devEUI,
@@ -61,13 +61,14 @@ namespace LoraKeysManagerFacade
 
             if (request.PerformADRCalculation)
             {
-                var adrResult = await adrManager.CalculateADRResultAndAddEntry(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex, newEntry);
-                if (adrResult == null)
+                return await adrManager.CalculateADRResultAndAddEntry(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex, newEntry);
+
+                /*if (adrResult == null)
                 {
                     adrResult = await adrManager.GetLastResult(devEUI);
                 }
 
-                return adrResult;
+                return adrResult;//*/
             }
             else
             {
@@ -75,6 +76,24 @@ namespace LoraKeysManagerFacade
             }
 
             return null;
+        }
+
+        public static ILoRaADRManager InitializeADRManager(ILoRaADRManager manager)
+        {
+            if (adrManager != null)
+            {
+                return adrManager;
+            }
+
+            lock (AdrManagerSyncLock)
+            {
+                if (adrManager == null)
+                {
+                    adrManager = manager;
+                }
+            }
+
+            return adrManager;
         }
 
         private static ILoRaADRManager EnsureLoraADRManagerInstance(string functionAppDirectory)
