@@ -85,7 +85,7 @@ namespace LoRaWan.NetworkServer
                 loRaADRResult = await this.PerformADR(request, loRaDevice, loraPayload, payloadFcnt, loRaADRResult, frameCounterStrategy);
             }
 
-            if (loRaADRResult != null)
+            if (loRaADRResult?.CanConfirmToDevice)
             {
                 // if we got an ADR result, we have to send the update to the device
                 requiresConfirmation = true;
@@ -454,7 +454,7 @@ loRaDevice.SetFcntUp(payloadFcnt);
                 DevEUI = loRaDevice.DevEUI,
                 FCnt = payloadFcnt,
                 GatewayId = this.configuration.GatewayID,
-                Snr = request.Rxpk.Lsnr
+                Snr = request.Rxpk.LsnrloRaADRResult
             };
 
             // If the ADR req bit is not set we don't perform rate adaptation.
@@ -464,7 +464,7 @@ loRaDevice.SetFcntUp(payloadFcnt);
             }
             else
             {
-                loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
+                 = await loRaADRManager.CalculateADRResultAndAddEntry(
                     loRaDevice.DevEUI,
                     this.configuration.GatewayID,
                     payloadFcnt,
@@ -473,6 +473,7 @@ loRaDevice.SetFcntUp(payloadFcnt);
                     request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
                     request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
                     loRaADRTableEntry);
+                    Logger.Log(loRaDevice.DevEUI, $"Device sent Adr Ack Request, computing an answer", LogLevel.Information);
             }
 
             return loRaADRResult;

@@ -104,6 +104,20 @@ namespace LoRaWan.IntegrationTest
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
+            
+            this.TestFixtureCi.ClearLogs();
+            // Starting ADR test protocol
+            Console.WriteLine($"Starting ADR test protocol");
+
+            // Sends 10x confirmed messages
+            // Provoke a AdrAckReq
+            for (var i = 0; i < 5 * MESSAGES_COUNT; ++i)
+            {
+                await this.ArduinoDevice.transferPacketAsync("adr test");
+            }
+            await this.TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, "Sending an ADR request: datarate");
+            await this.TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, "Device sent Adr Ack Request, computing an answer");
+
         }
     }
 }
