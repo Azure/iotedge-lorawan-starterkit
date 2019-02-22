@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer
                 loRaADRResult = await this.PerformADR(request, loRaDevice, loraPayload, payloadFcnt, loRaADRResult, frameCounterStrategy);
             }
 
-            if (loRaADRResult != null)
+            if (loRaADRResult?.CanConfirmToDevice)
             {
                 // if we got an ADR result, we have to send the update to the device
                 requiresConfirmation = true;
@@ -426,7 +426,7 @@ namespace LoRaWan.NetworkServer
                 DevEUI = loRaDevice.DevEUI,
                 FCnt = payloadFcnt,
                 GatewayId = this.configuration.GatewayID,
-                Snr = request.Rxpk.Lsnr
+                Snr = request.Rxpk.LsnrloRaADRResult
             };
 
             // If the ADR req bit is not set we don't perform rate adaptation.
@@ -436,7 +436,7 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
+                 = await loRaADRManager.CalculateADRResultAndAddEntry(
                     loRaDevice.DevEUI,
                     this.configuration.GatewayID,
                     payloadFcnt,
@@ -445,6 +445,7 @@ namespace LoRaWan.NetworkServer
                     request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
                     request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
                     loRaADRTableEntry);
+                    Logger.Log(loRaDevice.DevEUI, $"Device sent Adr Ack Request, computing an answer", LogLevel.Information);
             }
 
             return loRaADRResult;
@@ -731,11 +732,11 @@ namespace LoRaWan.NetworkServer
 
             // ADR Part.
             // Currently only replying on ADR Req
-            // if (loRaADRResult != null && loRaPayload.IsAdrReq)
-            if (loRaADRResult != null)
+            if (loRaADRResult != null && loRaPayload.IsAdrReq)
                 {
                     LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, 0, 0, (byte)loRaADRResult.NbRepetition);
                     macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
+                    Logger.Log(devEUI, $"Sending an ADR request: datarate {loRaADRResult}, txPower {loRaADRResult.TxPower}, number of repetition {loRaADRResult.NbRepetition}", LogLevel.Information);
                 }
 
             return macCommands.Values;
