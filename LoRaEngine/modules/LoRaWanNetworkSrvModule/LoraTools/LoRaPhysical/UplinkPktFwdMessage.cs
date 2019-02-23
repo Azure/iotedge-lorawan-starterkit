@@ -32,7 +32,7 @@ namespace LoRaTools.LoRaPhysical
         /// </summary>
         /// <param name="LoraMessage">the serialized LoRa Message.</param>
         /// <returns>UplinkPktFwdMessage object ready to be sent</returns>
-        public UplinkPktFwdMessage(byte[] loRaData, string datr, double freq, uint tmst = 0)
+        public UplinkPktFwdMessage(byte[] loRaData, string datr, double freq, uint tmst = 0, float lsnr = 0)
         {
             // This is a new ctor, must be validated by MIK
             this.Rxpk = new List<Rxpk>()
@@ -47,7 +47,8 @@ namespace LoRaTools.LoRaPhysical
                     Rfch = 1,
                     Modu = "LORA",
                     Datr = datr,
-                    Codr = "4/5"
+                    Codr = "4/5",
+                    Lsnr = lsnr
                 }
             };
         }

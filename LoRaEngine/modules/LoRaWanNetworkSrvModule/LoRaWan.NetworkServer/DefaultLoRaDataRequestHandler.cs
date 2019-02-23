@@ -464,6 +464,7 @@ loRaDevice.SetFcntUp(payloadFcnt);
             }
             else
             {
+                Logger.Log(loRaDevice.DevEUI, $"ADR Ack request received", LogLevel.Information);
                 loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
                     loRaDevice.DevEUI,
                     this.configuration.GatewayID,

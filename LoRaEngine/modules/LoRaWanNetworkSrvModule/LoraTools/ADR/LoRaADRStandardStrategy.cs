@@ -65,18 +65,18 @@ namespace LoRaTools.ADR
                     {
                         computedDatarate++;
                     }
-                    else if (currentTxPowerIndex < minTxPowerIndex)
+                    else if (currentTxPowerIndex < MaxTxPowerIndex)
                     {
                         currentTxPowerIndex++;
                     }
 
                     nStep--;
-                    if (currentTxPowerIndex >= minTxPowerIndex)
-                        return (currentTxPowerIndex, computedDatarate);
+                    if (currentTxPowerIndex >= MaxTxPowerIndex)
+                        return (MaxTxPowerIndex, computedDatarate);
                 }
                 else if (nStep < 0)
                 {
-                    if (currentTxPowerIndex > MaxTxPowerIndex)
+                    if (currentTxPowerIndex > minTxPowerIndex)
                     {
                         currentTxPowerIndex--;
                         nStep++;
