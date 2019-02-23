@@ -736,7 +736,7 @@ namespace LoRaWan.NetworkServer
             {
                 LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, 0, 0, (byte)loRaADRResult.NbRepetition);
                 macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
-                Logger.Log(devEUI, $"Sending an ADR request: datarate {loRaADRResult}, txPower {loRaADRResult.TxPower}, number of repetition {loRaADRResult.NbRepetition}", LogLevel.Information);
+                Logger.Log(devEUI, $"Sending an ADR request: datarate {loRaADRResult.DataRate}, txPower {loRaADRResult.TxPower}, number of repetition {loRaADRResult.NbRepetition}", LogLevel.Information);
             }
 
             return macCommands.Values;

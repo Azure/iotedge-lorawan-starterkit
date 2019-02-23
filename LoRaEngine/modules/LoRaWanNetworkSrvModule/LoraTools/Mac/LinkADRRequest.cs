@@ -45,6 +45,22 @@ namespace LoRaTools
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="LinkADRRequest"/> class. For tests to serialize from byte
+        /// </summary>
+        public LinkADRRequest(byte[] input)
+        {
+            if (input.Length < this.Length || input[0] != (byte)CidEnum.LinkADRCmd)
+            {
+                throw new Exception("the input was not in the expected form");
+            }
+
+            this.Cid = CidEnum.LinkADRCmd;
+            this.DataRateTXPower = input[1];
+            this.ChMask = BitConverter.ToUInt16(input, 2);
+            this.Redundancy = input[4];
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRRequest"/> class.
         /// </summary>
         public LinkADRRequest(IDictionary<string, string> dictionary)

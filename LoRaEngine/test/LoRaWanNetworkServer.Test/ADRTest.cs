@@ -19,12 +19,13 @@ namespace LoRaWanNetworkServer.Test
 
     public class ADRTest : MessageProcessorTestBase
     {
-        [Fact]
-        public async Task When_Receives_AdrAckReq_Send_Reply()
+        [Theory]
+        [InlineData(70, true, 3, 7, 1)]
+        public async Task When_Receives_AdrAckReq_Send_MacCommand_Reply(int count, bool expectADRApatation, int expectedDR, int expectedTXPower, int expectedNbRep)
         {
             int payloadFcnt = 0;
             const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const int InitialDeviceFcntDown = 2;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
@@ -51,7 +52,7 @@ namespace LoRaWanNetworkServer.Test
                 this.FrameCounterUpdateStrategyProvider);
 
             // todo add case without buffer
-            for (int i = 0; i < 70; i++)
+            for (int i = 0; i < count; i++)
             {
                 var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
                 var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -72,34 +73,40 @@ namespace LoRaWanNetworkServer.Test
             this.LoRaDeviceClient.VerifyAll();
             this.LoRaDeviceApi.VerifyAll();
 
-            // 2. Return is downstream message
-            Assert.NotNull(request.ResponseDownlink);
-            Assert.True(request.ProcessingSucceeded);
-            Assert.Single(this.PacketForwarder.DownlinkMessages);
-            var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            // 2. Return is downstream message$
+            if (expectADRApatation)
+            {
+                Assert.NotNull(request.ResponseDownlink);
+                Assert.True(request.ProcessingSucceeded);
+                Assert.Single(this.PacketForwarder.DownlinkMessages);
+                var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
+                var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
 
-            // We expect a mac command in the payload
-            Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
-            var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Array.Reverse(decryptedPayload);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
-            Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
+                // We expect a mac command in the payload
+                Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
+                var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
+                Array.Reverse(decryptedPayload);
+                Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+                Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
+                var linkAdr = new LinkADRRequest(decryptedPayload);
+                Assert.Equal(expectedDR, linkAdr.DataRate);
+                Assert.Equal(expectedTXPower, linkAdr.GetTXPower());
+                // Assert.Equal(expectedNbRep, linkAdr.GetNbTrans());
 
-            // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-            Assert.False(payloadDataDown.IsConfirmed);
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+                // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
+                Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+                Assert.False(payloadDataDown.IsConfirmed);
+                Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+                  // 4. Frame counter up was updated
+                Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
-            // 4. Frame counter up was updated
-            Assert.Equal(payloadFcnt, loraDevice.FCntUp);
+                // 5. Frame counter down is updated
+                Assert.Equal(InitialDeviceFcntDown, loraDevice.FCntDown);
+                Assert.Equal(InitialDeviceFcntDown, payloadDataDown.GetFcnt());
 
-            // 5. Frame counter down is updated
-            Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
-
-            // 6. Frame count has no pending changes
-            Assert.False(loraDevice.HasFrameCountChanges);
+                // 6. Frame count has no pending changes
+                Assert.False(loraDevice.HasFrameCountChanges);
+            }
         }
     }
 }
