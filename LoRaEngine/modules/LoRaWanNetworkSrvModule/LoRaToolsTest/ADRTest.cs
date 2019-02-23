@@ -37,7 +37,7 @@ namespace LoRaWanTest
             var adrResult = await loRaADRManager.CalculateADRResultAndAddEntry(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1);
             if (expectedResult == null)
             {
-                Assert.Null(adrResult);
+                Assert.False(adrResult.CanConfirmToDevice);
             }
             else
             {

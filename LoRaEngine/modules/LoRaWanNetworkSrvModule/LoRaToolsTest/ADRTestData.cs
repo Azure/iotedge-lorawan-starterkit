@@ -53,9 +53,9 @@ namespace LoRaWanTest
             notenoughentriesrxpk.Datr = "SF7BW125";
             LoRaADRResult loRaADRResult = new LoRaADRResult()
             {
-                DataRate = 5,
+                DataRate = 0,
                 NbRepetition = 1,
-                TxPower = 0
+                TxPower = 7
             };
 
             this.AddRow("ADR decreasing Tx Power", "decreaseTxPower", notenoughentriestableentries, notenoughentriesrxpk, loRaADRResult);
@@ -67,7 +67,7 @@ namespace LoRaWanTest
             {
                 increaseNbReptableentries.Add(new LoRaADRTableEntry()
                 {
-                    DevEUI = "decreaseTxPower",
+                    DevEUI = "decreaseNbRep",
                     FCnt = 3 * i,
                     GatewayCount = 1,
                     GatewayId = "mygateway",
@@ -81,10 +81,10 @@ namespace LoRaWanTest
             {
                 DataRate = 5,
                 NbRepetition = 3,
-                TxPower = 0
+                TxPower = 7
             };
 
-            this.AddRow("ADR decrease NbRep", "decreaseTxPower", increaseNbReptableentries, increaseNbReprxpk, increaseNbReploRaADRResult);
+            this.AddRow("ADR decrease NbRep", "decreaseNbRep", increaseNbReptableentries, increaseNbReprxpk, increaseNbReploRaADRResult);
         }
     }
 }

@@ -734,7 +734,7 @@ namespace LoRaWan.NetworkServer
 
             // ADR Part.
             // Currently only replying on ADR Req
-            if (loRaADRResult != null && loRaPayload.IsAdrReq)
+            if (loRaADRResult?.CanConfirmToDevice == true && loRaPayload.IsAdrReq)
             {
                 LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, 0, 0, (byte)loRaADRResult.NbRepetition);
                 macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
