@@ -436,6 +436,7 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
+                Logger.Log(loRaDevice.DevEUI, $"ADR Ack request received", LogLevel.Information);
                 loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
                     loRaDevice.DevEUI,
                     this.configuration.GatewayID,
@@ -586,6 +587,7 @@ namespace LoRaWan.NetworkServer
                 fport.HasValue ? new byte[] { fport.Value } : null,
                 frmPayload,
                 1);
+
             if (upstreamPayload.IsAdrEnabled)
             {
                 ackLoRaMessage.Fctrl.Span[0] |= (byte)FctrlEnum.ADR;
@@ -736,7 +738,7 @@ namespace LoRaWan.NetworkServer
             {
                 LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, 0, 0, (byte)loRaADRResult.NbRepetition);
                 macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
-                Logger.Log(devEUI, $"Sending an ADR request: datarate {loRaADRResult.DataRate}, txPower {loRaADRResult.TxPower}, number of repetition {loRaADRResult.NbRepetition}", LogLevel.Information);
+                Logger.Log(devEUI, $"Performing a rate adaptation: datarate {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetion {loRaADRResult.NbRepetition}", LogLevel.Information);
             }
 
             return macCommands.Values;

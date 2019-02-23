@@ -26,11 +26,11 @@ namespace LoRaTools
 
         public int DataRate => (this.DataRateTXPower >> 4) & 0b00001111;
 
-        public int GetTXPower() => this.DataRateTXPower & 0b00001111;
+        public int TxPower => this.DataRateTXPower & 0b00001111;
 
-        public int GetChMaskCntl => (this.ChMask >> 4) & 0b00000111;
+        public int ChMaskCntl => (this.Redundancy >> 4) & 0b00000111;
 
-        public int GetNbTrans() => this.ChMask & 0b00001111;
+        public int NbTrans => this.Redundancy & 0b00001111;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRRequest"/> class.
@@ -105,7 +105,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, datarate: {this.DataRate}, txpower: {this.GetTXPower()}, nbTrans: {this.GetNbTrans()}, channel Mask Control: {this.GetChMaskCntl}, Redundancy: {this.Redundancy}";
+            return $"Type: {this.Cid} Answer, datarate: {this.DataRate}, txpower: {this.TxPower}, nbTrans: {this.NbTrans}, channel Mask Control: {this.ChMaskCntl}, Redundancy: {this.Redundancy}";
         }
     }
 }

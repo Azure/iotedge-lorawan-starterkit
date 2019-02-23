@@ -261,11 +261,11 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Serialize a message to be sent upstream.
         /// </summary>
-        public UplinkPktFwdMessage SerializeUplink(string appSKey, string nwkSKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0)
+        public UplinkPktFwdMessage SerializeUplink(string appSKey, string nwkSKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0, float lsnr = 0)
         {
             this.PerformEncryption(appSKey);
             this.SetMic(nwkSKey);
-            return new UplinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
+            return new UplinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst, lsnr);
         }
 
         /// <summary>
