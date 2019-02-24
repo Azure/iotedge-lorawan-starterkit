@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer
 
         public int TxPower { get; set; }
 
-        public int NbTrans { get; set; }
+        public int NbRep { get; set; }
 
         public DeduplicationMode Deduplication { get; set; }
 
@@ -525,7 +525,7 @@ namespace LoRaWan.NetworkServer
             var reportedProperties = new TwinCollection();
             reportedProperties[TwinProperty.DataRate] = this.DataRate;
             reportedProperties[TwinProperty.TxPower] = this.TxPower;
-            reportedProperties[TwinProperty.NbTrans] = this.NbTrans;
+            reportedProperties[TwinProperty.NbRep] = this.NbRep;
 
             var result = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
 
