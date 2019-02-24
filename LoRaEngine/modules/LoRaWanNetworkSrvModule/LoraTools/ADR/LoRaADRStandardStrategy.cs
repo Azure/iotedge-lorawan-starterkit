@@ -65,18 +65,20 @@ namespace LoRaTools.ADR
                     {
                         computedDatarate++;
                     }
-                    else if (currentTxPowerIndex < MaxTxPowerIndex)
+
+                    // txpower is an inverted scale, hence if we want to reduce
+                    else if (currentTxPowerIndex < minTxPowerIndex)
                     {
                         currentTxPowerIndex++;
                     }
 
                     nStep--;
-                    if (currentTxPowerIndex <= MaxTxPowerIndex)
-                        return (MaxTxPowerIndex, computedDatarate);
+                    if (currentTxPowerIndex >= minTxPowerIndex)
+                        return (minTxPowerIndex, computedDatarate);
                 }
                 else if (nStep < 0)
                 {
-                    if (currentTxPowerIndex > minTxPowerIndex)
+                    if (currentTxPowerIndex > MaxTxPowerIndex)
                     {
                         currentTxPowerIndex--;
                         nStep++;
@@ -96,17 +98,17 @@ namespace LoRaTools.ADR
             double pktLossRate = (float)(last - first - 19) / (last - first);
             if (pktLossRate < 0.05)
             {
-                return this.pktLossToNbRep[0, currentNbRep];
+                return this.pktLossToNbRep[0, currentNbRep - 1];
             }
 
             if (pktLossRate >= 0.05 && pktLossRate < 0.10)
             {
-                return this.pktLossToNbRep[1, currentNbRep];
+                return this.pktLossToNbRep[1, currentNbRep - 1];
             }
 
             if (pktLossRate >= 0.10 && pktLossRate < 0.30)
             {
-                return this.pktLossToNbRep[2, currentNbRep];
+                return this.pktLossToNbRep[2, currentNbRep - 1];
             }
 
             return this.pktLossToNbRep[3, currentNbRep];
