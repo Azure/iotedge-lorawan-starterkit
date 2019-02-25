@@ -142,12 +142,11 @@ namespace LoRaWanNetworkServer.Test
             int messageCount = 20;
             int payloadFcnt = 0;
             const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 2;
+            const int ExpectedDeviceFcntDown = 2;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(deviceId, gatewayID: this.ServerConfiguration.GatewayID),
-                frmCntUp: InitialDeviceFcntUp,
-                frmCntDown: InitialDeviceFcntDown);
+                frmCntUp: InitialDeviceFcntUp);
 
             var loraDevice = this.CreateLoRaDevice(simulatedDevice);
 
@@ -224,8 +223,8 @@ namespace LoRaWanNetworkServer.Test
                 Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
                 // 5. Frame counter down is updated
-                Assert.Equal(InitialDeviceFcntDown, loraDevice.FCntDown);
-                Assert.Equal(InitialDeviceFcntDown, payloadDataDown.GetFcnt());
+                Assert.Equal(ExpectedDeviceFcntDown, loraDevice.FCntDown);
+                Assert.Equal(ExpectedDeviceFcntDown, payloadDataDown.GetFcnt());
 
                 // 6. Frame count has no pending changes
                 Assert.False(loraDevice.HasFrameCountChanges);
@@ -235,16 +234,15 @@ namespace LoRaWanNetworkServer.Test
         [Fact]
         public async Task When_Receives_AdrAckReq_ADR_Change_TxPower()
         {
-            uint deviceId = 20;
+            uint deviceId = 44;
             int messageCount = 20;
             int payloadFcnt = 0;
             const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 2;
+            const int ExpectedDeviceFcntDown = 2;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(deviceId, gatewayID: this.ServerConfiguration.GatewayID),
-                frmCntUp: InitialDeviceFcntUp,
-                frmCntDown: InitialDeviceFcntDown);
+                frmCntUp: InitialDeviceFcntUp);
 
             var loraDevice = this.CreateLoRaDevice(simulatedDevice);
 
@@ -319,8 +317,8 @@ namespace LoRaWanNetworkServer.Test
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
             // 5. Frame counter down is updated
-            Assert.Equal(InitialDeviceFcntDown, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown, payloadDataDown.GetFcnt());
+            Assert.Equal(ExpectedDeviceFcntDown, loraDevice.FCntDown);
+            Assert.Equal(ExpectedDeviceFcntDown, payloadDataDown.GetFcnt());
 
             // ****************************************************
             // Second part reduce connectivity and verify the DR stay to 5 and power set to max
@@ -366,8 +364,8 @@ namespace LoRaWanNetworkServer.Test
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
             // 5. Frame counter down is updated
-            Assert.Equal(InitialDeviceFcntDown + 2, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 2, payloadDataDown.GetFcnt());
+            Assert.Equal(ExpectedDeviceFcntDown, loraDevice.FCntDown);
+            Assert.Equal(ExpectedDeviceFcntDown, payloadDataDown.GetFcnt());
 
             // Expectations
             // 1. Message was sent to IoT Hub
@@ -387,12 +385,11 @@ namespace LoRaWanNetworkServer.Test
             int messageCount = 20;
             int payloadFcnt = 0;
             const int InitialDeviceFcntUp = 1;
-            const int InitialDeviceFcntDown = 0;
+            const int ExpectedDeviceFcntDown = 3;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(deviceId, gatewayID: this.ServerConfiguration.GatewayID),
-                frmCntUp: InitialDeviceFcntUp,
-                frmCntDown: InitialDeviceFcntDown);
+                frmCntUp: InitialDeviceFcntUp);
 
             var loraDevice = this.CreateLoRaDevice(simulatedDevice);
 
@@ -496,7 +493,7 @@ namespace LoRaWanNetworkServer.Test
             Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
             // ****************************************************
-            // Thirs part send normal messages to decrease NbRep to 1
+            // Third part send normal messages to decrease NbRep to 1
             // ****************************************************
             // send a message with a fcnt every 1
             for (int i = 0; i < messageCount; i++)
@@ -532,8 +529,8 @@ namespace LoRaWanNetworkServer.Test
             Assert.Equal(1, loraDevice.NbRep);
 
             // 5. Frame counter down is updated
-            Assert.Equal(InitialDeviceFcntDown + 2, loraDevice.FCntDown);
-            Assert.Equal(InitialDeviceFcntDown + 2, payloadDataDown.GetFcnt());
+            Assert.Equal(ExpectedDeviceFcntDown, loraDevice.FCntDown);
+            Assert.Equal(ExpectedDeviceFcntDown, payloadDataDown.GetFcnt());
 
             // 6. Frame count has no pending changes
             Assert.False(loraDevice.HasFrameCountChanges);
