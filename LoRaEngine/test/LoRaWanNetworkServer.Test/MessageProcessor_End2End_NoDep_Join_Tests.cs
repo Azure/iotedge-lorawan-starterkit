@@ -94,6 +94,17 @@ namespace LoRaWan.NetworkServer.Test
             {
                 this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, 0, startingPayloadFcnt + 1, this.ServerConfiguration.GatewayID))
                     .ReturnsAsync((ushort)1);
+                this.LoRaDeviceApi
+                    .Setup(x => x.FunctionBundler(devEUI, It.IsAny<FunctionBundlerRequest>()))
+                    .ReturnsAsync(() => new FunctionBundlerResult
+                    {
+                        AdrResult = new LoRaTools.ADR.LoRaADRResult
+                        {
+                            CanConfirmToDevice = true,
+                            FCntDown = 1,
+                        },
+                        NextFCntDown = 1
+                    });
             }
 
             // using factory to create mock of
@@ -196,7 +207,6 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Single(sentTelemetry, (t) => t.Fcnt == (startingPayloadFcnt + 1));
 
             this.LoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
         }
 
         [Theory]

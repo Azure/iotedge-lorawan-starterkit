@@ -88,10 +88,24 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true);
 
             // multi gateway will ask for next fcnt down
-            if (string.IsNullOrEmpty(deviceGatewayID))
+            var isMultigateway = string.IsNullOrEmpty(deviceGatewayID);
+            if (isMultigateway)
             {
                 this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, simulatedDevice.FrmCntDown, payloadFcnt, this.ServerConfiguration.GatewayID))
                     .ReturnsAsync((ushort)(simulatedDevice.FrmCntDown + 1));
+
+                // if we run with ADR, we will combine the call with the bundler
+                this.LoRaDeviceApi
+                    .Setup(x => x.FunctionBundler(devEUI, It.IsAny<FunctionBundlerRequest>()))
+                    .ReturnsAsync(() => new FunctionBundlerResult
+                        {
+                            AdrResult = new LoRaTools.ADR.LoRaADRResult
+                            {
+                                CanConfirmToDevice = true,
+                                FCntDown = simulatedDevice.FrmCntDown + 1,
+                            },
+                            NextFCntDown = simulatedDevice.FrmCntDown + 1
+                        });
             }
 
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -122,7 +136,10 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsAny<TimeSpan>()), Times.Never());
 
             this.LoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
+            if (isMultigateway && ((LoRaPayloadData)request.Payload).IsAdrEnabled)
+            {
+                this.LoRaDeviceApi.Verify(x => x.FunctionBundler(devEUI, It.IsAny<FunctionBundlerRequest>()));
+            }
         }
 
         [Theory]

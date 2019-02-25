@@ -71,43 +71,32 @@ namespace LoRaWan.NetworkServer
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.ApplicationError);
             }
 
+            // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
+            // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
+            bool isFrameCounterFromNewlyStartedDevice = DetermineIfFramecounterIsFromNewlyStartedDevice(loRaDevice, payloadFcnt, frameCounterStrategy);
+
+            // Reply attack or confirmed reply
+            // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
+            // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
+            if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcnt, loRaDevice, requiresConfirmation, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result))
+            {
+                return result;
+            }
+
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
-
-            var bundlerResult = await this.TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
-
-            loRaADRResult = bundlerResult?.AdrResult;
-
-            // ADR should be performed before the deduplication
-            // as we still want to collect the signal info, even if we drop
-            // it in the next step
-            if (loRaADRResult == null && loraPayload.IsAdrEnabled)
+            using (new LoRaDeviceFrameCounterSession(loRaDevice, frameCounterStrategy))
             {
-                loRaADRResult = await this.PerformADR(request, loRaDevice, loraPayload, payloadFcnt, loRaADRResult, frameCounterStrategy);
-            }
+                var bundlerResult = await this.TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
 
-            if (loRaADRResult?.CanConfirmToDevice == true)
-            {
-                // if we got an ADR result, we have to send the update to the device
-                requiresConfirmation = true;
-            }
+                loRaADRResult = bundlerResult?.AdrResult;
 
-            if (useMultipleGateways)
-            {
-                // applying the correct deduplication
-                var deduplicationStrategy = this.deduplicationFactory.Create(loRaDevice);
-                if (deduplicationStrategy != null)
+                // ADR should be performed before the deduplication
+                // as we still want to collect the signal info, even if we drop
+                // it in the next step
+                if (loRaADRResult == null && loraPayload.IsAdrEnabled)
                 {
-                    deduplicationResult = bundlerResult?.DeduplicationResult
-                                          ?? await deduplicationStrategy.ResolveDeduplication(payloadFcnt, loRaDevice.FCntDown, this.configuration.GatewayID);
-
-                    if (!deduplicationResult.CanProcess)
-                    {
-                        // duplication strategy is indicating that we do not need to continue processing this message
-                        Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcnt}", LogLevel.Information);
-                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
-                    }
+                    loRaADRResult = await this.PerformADR(request, loRaDevice, loraPayload, payloadFcnt, loRaADRResult, frameCounterStrategy);
                 }
-            }
 
             // Contains the Cloud to message we need to send
             ILoRaCloudToDeviceMessage cloudToDeviceMessage = null;
@@ -119,44 +108,25 @@ namespace LoRaWan.NetworkServer
                 var isFrameCounterFromNewlyStartedDevice = false;
                 if (payloadFcnt <= 1)
                 {
-                    if (loRaDevice.IsABP)
-                    {
-                        if (loRaDevice.IsABPRelaxedFrameCounter && loRaDevice.FCntUp >= 0 && payloadFcnt <= 1)
-                        {
-                            // known problem when device restarts, starts fcnt from zero
-                            _ = frameCounterStrategy.ResetAsync(loRaDevice);
-                            isFrameCounterFromNewlyStartedDevice = true;
-                        }
-                    }
-                    else if (loRaDevice.FCntUp == payloadFcnt && payloadFcnt == 0)
-                    {
-                        // Some devices start with frame count 0
-                        isFrameCounterFromNewlyStartedDevice = true;
-                    }
+                    // if we got an ADR result, we have to send the update to the device
+                    requiresConfirmation = true;
                 }
 
-                // Reply attack or confirmed reply
-                // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
-                // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
-                var isConfirmedResubmit = false;
-                if (!isFrameCounterFromNewlyStartedDevice && payloadFcnt <= loRaDevice.FCntUp)
+                if (useMultipleGateways)
                 {
-                    // if it is confirmed most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub
-                    if (requiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
+                    // applying the correct deduplication
+                    var deduplicationStrategy = this.deduplicationFactory.Create(loRaDevice);
+                    if (deduplicationStrategy != null)
                     {
-                        if (!loRaDevice.ValidateConfirmResubmit(payloadFcnt))
-                        {
-                            Logger.Log(loRaDevice.DevEUI, $"resubmit from confirmed message exceeds threshold of {LoRaDevice.MaxConfirmationResubmitCount}, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Debug);
-                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.ConfirmationResubmitThresholdExceeded);
-                        }
+                        deduplicationResult = bundlerResult?.DeduplicationResult
+                                              ?? await deduplicationStrategy.ResolveDeduplication(payloadFcnt, loRaDevice.FCntDown, this.configuration.GatewayID);
 
-                        isConfirmedResubmit = true;
-                        Logger.Log(loRaDevice.DevEUI, $"resubmit from confirmed message detected, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
-                    }
-                    else
-                    {
-                        Logger.Log(loRaDevice.DevEUI, $"invalid frame counter, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
-                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.InvalidFrameCounter);
+                        if (!deduplicationResult.CanProcess)
+                        {
+                            // duplication strategy is indicating that we do not need to continue processing this message
+                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcnt}", LogLevel.Information);
+                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
+                        }
                     }
                 }
 
@@ -424,6 +394,60 @@ loRaDevice.SetFcntUp(payloadFcnt);
         }
 
         internal void SetClassCMessageSender(IClassCDeviceMessageSender classCMessageSender) => this.classCDeviceMessageSender = classCMessageSender;
+        private static bool ValidateRequest(LoRaRequest request, bool isFrameCounterFromNewlyStartedDevice, ushort payloadFcnt, LoRaDevice loRaDevice, bool requiresConfirmation, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result)
+        {
+            isConfirmedResubmit = false;
+            result = null;
+            if (!isFrameCounterFromNewlyStartedDevice && payloadFcnt <= loRaDevice.FCntUp)
+            {
+                // if it is confirmed most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub
+                if (requiresConfirmation && payloadFcnt == loRaDevice.FCntUp)
+                {
+                    if (!loRaDevice.ValidateConfirmResubmit(payloadFcnt))
+                    {
+                        Logger.Log(loRaDevice.DevEUI, $"resubmit from confirmed message exceeds threshold of {LoRaDevice.MaxConfirmationResubmitCount}, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Debug);
+                        result = new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.ConfirmationResubmitThresholdExceeded);
+                        return false;
+                    }
+
+                    isConfirmedResubmit = true;
+                    Logger.Log(loRaDevice.DevEUI, $"resubmit from confirmed message detected, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
+                }
+                else
+                {
+                    Logger.Log(loRaDevice.DevEUI, $"invalid frame counter, message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
+                    result = new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.InvalidFrameCounter);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool DetermineIfFramecounterIsFromNewlyStartedDevice(LoRaDevice loRaDevice, ushort payloadFcnt, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
+        {
+            var isFrameCounterFromNewlyStartedDevice = false;
+            if (payloadFcnt <= 1)
+            {
+                if (loRaDevice.IsABP)
+                {
+                    if (loRaDevice.IsABPRelaxedFrameCounter && loRaDevice.FCntUp >= 0 && payloadFcnt <= 1)
+                    {
+                        // known problem when device restarts, starts fcnt from zero
+                        _ = frameCounterStrategy.ResetAsync(loRaDevice);
+                        isFrameCounterFromNewlyStartedDevice = true;
+                    }
+                }
+                else if (loRaDevice.FCntUp == payloadFcnt && payloadFcnt == 0)
+                {
+                    // Some devices start with frame count 0
+                    isFrameCounterFromNewlyStartedDevice = true;
+                }
+            }
+
+            return isFrameCounterFromNewlyStartedDevice;
+        }
+
         private async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)
         {
             FunctionBundlerResult bundlerResult = null;

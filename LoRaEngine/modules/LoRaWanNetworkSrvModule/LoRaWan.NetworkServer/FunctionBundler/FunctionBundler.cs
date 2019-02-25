@@ -22,14 +22,22 @@ namespace LoRaWan.NetworkServer
 
         public async Task<FunctionBundlerResult> Execute()
         {
-            var result = await this.deviceApi.FunctionBundler(this.devEui, this.request);
-
-            if (this.deduplicationStrategy != null && result.DeduplicationResult != null)
+            try
             {
-                result.DeduplicationResult = this.deduplicationStrategy.Process(result.DeduplicationResult, this.request.ClientFCntUp);
-            }
+                var result = await this.deviceApi.FunctionBundler(this.devEui, this.request);
 
-            return result;
+                if (this.deduplicationStrategy != null && result.DeduplicationResult != null)
+                {
+                    result.DeduplicationResult = this.deduplicationStrategy.Process(result.DeduplicationResult, this.request.ClientFCntUp);
+                }
+
+                return result;
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+                throw;
+            }
         }
     }
 }

@@ -60,7 +60,7 @@ namespace LoRaWanNetworkServer.Test
                 var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
                 var requestInt = this.CreateWaitableRequest(rxpkInt);
                 messageProcessor.DispatchRequest(requestInt);
-                Assert.True(await requestInt.WaitCompleteAsync());
+                Assert.True(await requestInt.WaitCompleteAsync(-1));
                 payloadFcnt++;
             }
 

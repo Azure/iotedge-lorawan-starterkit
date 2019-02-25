@@ -585,8 +585,17 @@ namespace LoRaWan.NetworkServer.Test
             // in multigateway scenario the device api will be called to resolve fcntDown
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, 20, 100, this.ServerConfiguration.GatewayID))
-                    .ReturnsAsync((ushort)expectedFcntDown);
+                this.LoRaDeviceApi
+                    .Setup(x => x.FunctionBundler(devEUI, It.Is<FunctionBundlerRequest>(req => req.ClientFCntDown == initialFcntDown && req.ClientFCntUp == initialFcntUp && req.GatewayId == this.ServerConfiguration.GatewayID)))
+                    .ReturnsAsync(() => new FunctionBundlerResult
+                    {
+                        AdrResult = new LoRaTools.ADR.LoRaADRResult
+                        {
+                            CanConfirmToDevice = true,
+                            FCntDown = expectedFcntDown,
+                        },
+                        NextFCntDown = expectedFcntDown
+                    });
             }
 
             // add device to cache already
@@ -1095,32 +1104,33 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.Is<LoRaDeviceTelemetry>(t => t.Fcnt == deviceInitialFcntUp + 2), It.IsAny<Dictionary<string, string>>()))
                 .ReturnsAsync(true);
 
+            var sb = new StringBuilder();
             // in multigateway scenario the device api will be called to resolve fcntDown
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown, deviceInitialFcntUp + 1, this.ServerConfiguration.GatewayID))
-                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 1));
+                this.LoRaDeviceApi.Setup(x => x.FunctionBundler(devEUI, It.Is<FunctionBundlerRequest>(r => r.ClientFCntDown == deviceInitialFcntDown && r.ClientFCntUp == deviceInitialFcntUp + 1)))
+                            .ReturnsAsync((string s, FunctionBundlerRequest req) => new FunctionBundlerResult { AdrResult = new LoRaTools.ADR.LoRaADRResult { CanConfirmToDevice = true, FCntDown = deviceInitialFcntDown + 1 }, NextFCntDown = deviceInitialFcntDown + 1 });
 
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 1, deviceInitialFcntUp + 1, this.ServerConfiguration.GatewayID))
-                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 2));
+                this.LoRaDeviceApi.Setup(x => x.FunctionBundler(devEUI, It.Is<FunctionBundlerRequest>(r => r.ClientFCntDown == deviceInitialFcntDown + 1 && r.ClientFCntUp == deviceInitialFcntUp + 1)))
+                            .ReturnsAsync((string s, FunctionBundlerRequest req) => new FunctionBundlerResult { AdrResult = new LoRaTools.ADR.LoRaADRResult { CanConfirmToDevice = true, FCntDown = deviceInitialFcntDown + 2 }, NextFCntDown = deviceInitialFcntDown + 2 });
 
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 2, deviceInitialFcntUp + 1, this.ServerConfiguration.GatewayID))
-                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 3));
+                this.LoRaDeviceApi.Setup(x => x.FunctionBundler(devEUI, It.Is<FunctionBundlerRequest>(r => r.ClientFCntDown == deviceInitialFcntDown + 2 && r.ClientFCntUp == deviceInitialFcntUp + 1)))
+                            .ReturnsAsync((string s, FunctionBundlerRequest req) => new FunctionBundlerResult { AdrResult = new LoRaTools.ADR.LoRaADRResult { CanConfirmToDevice = true, FCntDown = deviceInitialFcntDown + 3 }, NextFCntDown = deviceInitialFcntDown + 3 });
 
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 3, deviceInitialFcntUp + 1, this.ServerConfiguration.GatewayID))
-                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 4));
+                this.LoRaDeviceApi.Setup(x => x.FunctionBundler(devEUI, It.Is<FunctionBundlerRequest>(r => r.ClientFCntDown == deviceInitialFcntDown + 3 && r.ClientFCntUp == deviceInitialFcntUp + 1)))
+                            .ReturnsAsync((string s, FunctionBundlerRequest req) => new FunctionBundlerResult { AdrResult = new LoRaTools.ADR.LoRaADRResult { CanConfirmToDevice = true, FCntDown = deviceInitialFcntDown + 4 }, NextFCntDown = deviceInitialFcntDown + 4 });
 
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 4, deviceInitialFcntUp + 2, this.ServerConfiguration.GatewayID))
-                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 5));
+                this.LoRaDeviceApi.Setup(x => x.FunctionBundler(devEUI, It.Is<FunctionBundlerRequest>(r => r.ClientFCntDown == deviceInitialFcntDown + 4 && r.ClientFCntUp == deviceInitialFcntUp + 2)))
+                            .ReturnsAsync((string s, FunctionBundlerRequest req) => new FunctionBundlerResult { AdrResult = new LoRaTools.ADR.LoRaADRResult { CanConfirmToDevice = true, FCntDown = deviceInitialFcntDown + 5 }, NextFCntDown = deviceInitialFcntDown + 5 });
 
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 5, deviceInitialFcntUp + 2, this.ServerConfiguration.GatewayID))
-                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 6));
+                this.LoRaDeviceApi.Setup(x => x.FunctionBundler(devEUI, It.Is<FunctionBundlerRequest>(r => r.ClientFCntDown == deviceInitialFcntDown + 5 && r.ClientFCntUp == deviceInitialFcntUp + 2)))
+                            .ReturnsAsync((string s, FunctionBundlerRequest req) => new FunctionBundlerResult { AdrResult = new LoRaTools.ADR.LoRaADRResult { CanConfirmToDevice = true, FCntDown = deviceInitialFcntDown + 6 }, NextFCntDown = deviceInitialFcntDown + 6 });
 
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 6, deviceInitialFcntUp + 2, this.ServerConfiguration.GatewayID))
-                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 7));
+                this.LoRaDeviceApi.Setup(x => x.FunctionBundler(devEUI, It.Is<FunctionBundlerRequest>(r => r.ClientFCntDown == deviceInitialFcntDown + 6 && r.ClientFCntUp == deviceInitialFcntUp + 2)))
+                            .ReturnsAsync((string s, FunctionBundlerRequest req) => new FunctionBundlerResult { AdrResult = new LoRaTools.ADR.LoRaADRResult { CanConfirmToDevice = true, FCntDown = deviceInitialFcntDown + 7 }, NextFCntDown = deviceInitialFcntDown + 7 });
 
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, deviceInitialFcntDown + 7, deviceInitialFcntUp + 2, this.ServerConfiguration.GatewayID))
-                    .ReturnsAsync((ushort)(deviceInitialFcntDown + 8));
+                this.LoRaDeviceApi.Setup(x => x.FunctionBundler(devEUI, It.Is<FunctionBundlerRequest>(r => r.ClientFCntDown == deviceInitialFcntDown + 7 && r.ClientFCntUp == deviceInitialFcntUp + 2)))
+                            .ReturnsAsync((string s, FunctionBundlerRequest req) => new FunctionBundlerResult { AdrResult = new LoRaTools.ADR.LoRaADRResult { CanConfirmToDevice = true, FCntDown = deviceInitialFcntDown + 8 }, NextFCntDown = deviceInitialFcntDown + 8 });
             }
 
             // add device to cache already
