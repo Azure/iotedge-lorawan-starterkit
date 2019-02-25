@@ -51,6 +51,13 @@ namespace LoraKeysManagerFacade
         public static async Task<LoRaADRResult> HandleADRRequest(string devEUI, LoRaADRRequest request, string functionAppDirectory)
         {
             var adrManager = EnsureLoraADRManagerInstance(functionAppDirectory);
+
+            if (request.ClearCache)
+            {
+                await adrManager.Reset(devEUI);
+                return new LoRaADRResult();
+            }
+
             var newEntry = new LoRaADRTableEntry
             {
                  DevEUI = devEUI,

@@ -18,5 +18,7 @@ namespace LoraKeysManagerFacade
         public int MinTxPowerIndex { get; set; }
 
         public string GatewayId { get; set; }
+
+        public bool ClearCache { get; set; }
     }
 }

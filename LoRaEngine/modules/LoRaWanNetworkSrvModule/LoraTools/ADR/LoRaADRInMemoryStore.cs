@@ -44,5 +44,15 @@ namespace LoRaTools.ADR
                 return Task.FromResult<LoRaADRTable>(table);
             }
         }
+
+        public Task<bool> Reset(string devEUI)
+        {
+            lock (this.cache)
+            {
+                this.cache.Remove(devEUI);
+            }
+
+            return Task.FromResult<bool>(true);
+        }
     }
 }

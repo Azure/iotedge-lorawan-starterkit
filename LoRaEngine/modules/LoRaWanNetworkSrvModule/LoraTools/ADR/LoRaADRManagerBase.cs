@@ -5,6 +5,8 @@ namespace LoRaTools.ADR
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaWan;
+    using Microsoft.Extensions.Logging;
 
     public class LoRaADRManagerBase : ILoRaADRManager
     {
@@ -66,7 +68,7 @@ namespace LoRaTools.ADR
             }
 
             result.NumberOfFrames = table.Entries.Count;
-
+            Logger.Log(devEUI, $"Calculated ADR: CanConfirmToDevice: {result.CanConfirmToDevice}, TxPower: {result.TxPower}, DataRate: {result.DataRate}", LogLevel.Debug);
             return result;
         }
 
@@ -93,6 +95,11 @@ namespace LoRaTools.ADR
         {
             var table = await this.store.GetADRTable(devEUI);
             return table != null && table.Entries.Count > 0 ? table.Entries[table.Entries.Count - 1] : null;
+        }
+
+        public virtual async Task<bool> Reset(string devEUI)
+        {
+            return await this.store.Reset(devEUI);
         }
     }
 }

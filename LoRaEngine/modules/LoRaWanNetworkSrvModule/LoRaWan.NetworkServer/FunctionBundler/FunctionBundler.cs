@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
 
     public class FunctionBundler
     {
@@ -22,22 +23,16 @@ namespace LoRaWan.NetworkServer
 
         public async Task<FunctionBundlerResult> Execute()
         {
-            try
-            {
-                var result = await this.deviceApi.FunctionBundler(this.devEui, this.request);
+            var result = await this.deviceApi.FunctionBundler(this.devEui, this.request);
 
-                if (this.deduplicationStrategy != null && result.DeduplicationResult != null)
-                {
-                    result.DeduplicationResult = this.deduplicationStrategy.Process(result.DeduplicationResult, this.request.ClientFCntUp);
-                }
-
-                return result;
-            }
-            catch (System.Exception ex)
+            if (this.deduplicationStrategy != null && result.DeduplicationResult != null)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
-                throw;
+                result.DeduplicationResult = this.deduplicationStrategy.Process(result.DeduplicationResult, this.request.ClientFCntUp);
             }
+
+            Logger.Log(this.devEui, "FunctionBundler result: ", result, LogLevel.Debug);
+
+            return result;
         }
     }
 }

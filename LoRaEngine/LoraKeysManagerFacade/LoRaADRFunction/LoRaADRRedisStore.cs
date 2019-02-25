@@ -97,6 +97,19 @@ namespace LoraKeysManagerFacade
             return null;
         }
 
+        public async Task<bool> Reset(string devEUI)
+        {
+            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
+            {
+                if (redisLock.TakeLock())
+                {
+                    return await this.redisCache.KeyDeleteAsync(GetEntryKey(devEUI));
+                }
+            }
+
+            return false;
+        }
+
         private async Task<LoRaADRTable> GetADRTableCore(string key)
         {
             var existingContent = await this.redisCache.StringGetAsync(key);
