@@ -19,22 +19,18 @@ namespace LoraKeysManagerFacade
     {
         public void Configure(IWebJobsBuilder builder)
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Environment.CurrentDirectory)
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: false)
-                .AddEnvironmentVariables()
-                .Build();
+            var configHandler = ConfigHandler.Create(builder);
 
-            var iotHubConnectionString = config.GetValue<string>("IoTHubConnectionString");
+            var iotHubConnectionString = configHandler.IoTHubConnectionString;
             if (iotHubConnectionString == null)
             {
-                throw new Exception("Missing IoTHubConnectionString in settings");
+                throw new Exception($"Missing {ConfigHandler.IoTHubConnectionStringKey} in settings");
             }
 
-            var redisConnectionString = config.GetValue<string>("RedisConnectionString");
+            var redisConnectionString = configHandler.RedisConnectionString;
             if (redisConnectionString == null)
             {
-                throw new Exception("Missing RedisConnection string in settings");
+                throw new Exception($"Missing {ConfigHandler.RedisConnectionStringKey} in settings");
             }
 
             var redis = ConnectionMultiplexer.Connect(redisConnectionString);
@@ -52,6 +48,62 @@ namespace LoraKeysManagerFacade
             builder.Services.AddTransient<LoRaADRFunction>();
             builder.Services.AddTransient<FunctionBundlerFunction>();
             builder.Services.AddTransient<FunctionBundlerContext>();
+        }
+
+        abstract class ConfigHandler
+        {
+            internal const string IoTHubConnectionStringKey = "IoTHubConnectionString";
+            internal const string RedisConnectionStringKey = "RedisConnectionString";
+
+            internal static ConfigHandler Create(IWebJobsBuilder builder)
+            {
+                var tempProvider = builder.Services.BuildServiceProvider();
+                var config = tempProvider.GetRequiredService<IConfiguration>();
+
+                var iotHubConnectionString = config.GetConnectionString(IoTHubConnectionStringKey);
+                if (!string.IsNullOrEmpty(iotHubConnectionString))
+                {
+                    return new ProductionConfigHandler(config);
+                }
+
+                return new LocalConfigHandler();
+            }
+
+            internal abstract string RedisConnectionString { get; }
+
+            internal abstract string IoTHubConnectionString { get; }
+
+            class ProductionConfigHandler : ConfigHandler
+            {
+                private readonly IConfiguration config;
+
+                internal ProductionConfigHandler(IConfiguration config)
+                {
+                    this.config = config;
+                }
+
+                internal override string RedisConnectionString => this.config.GetConnectionString(RedisConnectionStringKey);
+
+                internal override string IoTHubConnectionString => this.config.GetConnectionString(IoTHubConnectionStringKey);
+            }
+
+            class LocalConfigHandler : ConfigHandler
+            {
+                private readonly IConfiguration config;
+
+                internal LocalConfigHandler()
+                {
+                    this.config = new ConfigurationBuilder()
+                                    .SetBasePath(Environment.CurrentDirectory)
+                                    .AddJsonFile("local.settings.json", optional: true, reloadOnChange: false)
+                                    .AddEnvironmentVariables()
+                                    .Build();
+                }
+
+                internal override string RedisConnectionString => this.config.GetValue<string>(RedisConnectionStringKey);
+
+                internal override string IoTHubConnectionString => this.config.GetValue<string>(IoTHubConnectionStringKey);
+            }
         }
     }
 }
