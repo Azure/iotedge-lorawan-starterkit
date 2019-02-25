@@ -29,7 +29,11 @@ namespace LoRaWan.NetworkServer.Test
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
             var devAddr = simulatedDevice.LoRaDevice.DevAddr;
 
-            this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, initialFcntDown, payloadFcnt, ServerGatewayID)).ReturnsAsync((ushort)0);
+            this.LoRaDeviceApi.Setup(x => x.FunctionBundler(devEUI, It.IsAny<FunctionBundlerRequest>())).ReturnsAsync(() => new FunctionBundlerResult
+                    {
+                        AdrResult = new LoRaTools.ADR.LoRaADRResult { CanConfirmToDevice = true, FCntDown = 0 },
+                        NextFCntDown = 0
+                    });
 
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var device = this.CreateLoRaDevice(simulatedDevice);
