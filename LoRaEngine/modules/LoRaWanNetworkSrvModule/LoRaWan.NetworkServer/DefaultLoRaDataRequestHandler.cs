@@ -131,7 +131,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 // if the bundler already processed the next framecounter down, use that
-                int? fcntDown = bundlerResult?.NextFCntDown;
+                int? fcntDown = loRaADRResult?.FCntDown > 0 ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
 
                 // If it is confirmed it require us to update the frame counter down
                 // Multiple gateways: in redis, otherwise in device twin
