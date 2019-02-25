@@ -1067,6 +1067,7 @@ namespace LoRaWan.IntegrationTest
             {
                 if (this.ReceivedSerial(x => x.StartsWith(expectedSerialStartText, StringComparison.InvariantCultureIgnoreCase)))
                 {
+                    await Task.Delay(DEFAULT_TIMEWAIT);
                     return;
                 }
 
