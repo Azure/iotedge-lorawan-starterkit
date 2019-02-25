@@ -9,17 +9,18 @@ namespace LoraKeysManagerFacade
 
     public class LoRaADRServerManager : LoRaADRManagerBase
     {
-        private readonly string functionAppDirectory;
+        private readonly ILoRaDeviceCacheStore deviceCacheStore;
 
-        public LoRaADRServerManager(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider, string functionsAppDirectory)
+        public LoRaADRServerManager(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider, ILoRaDeviceCacheStore deviceCacheStore)
             : base(store, strategyProvider)
         {
-            this.functionAppDirectory = functionsAppDirectory;
+            this.deviceCacheStore = deviceCacheStore;
         }
 
         public override Task<int> NextFCntDown(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown)
         {
-            return Task.FromResult(FCntCacheCheck.GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown, this.functionAppDirectory));
+            var fcntCheck = new FCntCacheCheck(this.deviceCacheStore);
+            return Task.FromResult(fcntCheck.GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown));
         }
     }
 }

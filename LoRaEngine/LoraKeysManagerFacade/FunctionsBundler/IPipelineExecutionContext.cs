@@ -3,7 +3,7 @@
 
 namespace LoraKeysManagerFacade.FunctionBundler
 {
-    using System.Threading.Tasks;
+    using System.Collections.Generic;
     using LoRaTools.CommonAPI;
 
     internal interface IPipelineExecutionContext
@@ -14,26 +14,6 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         FunctionBundlerResult Result { get; }
 
-        string FunctionAppDirectory { get; }
+        FunctionBundlerContext FunctionContext { get; }
     }
-
-    /*
-     * internal class PipelineExecutionContext
-    {
-        internal PipelineExecutionContext(string devEui, FunctionBundlerRequest request, string functionAppDirectory)
-        {
-            this.DevEUI = devEui;
-            this.Request = request;
-            this.FunctionAppDirectory = functionAppDirectory;
-        }
-
-        internal string DevEUI { get; private set; }
-
-        internal FunctionBundlerRequest Request { get; private set; }
-
-        internal FunctionBundlerResult Result { get; private set; } = new FunctionBundlerResult();
-
-        internal string FunctionAppDirectory { get; private set; }
-    }
-     * //*/
 }

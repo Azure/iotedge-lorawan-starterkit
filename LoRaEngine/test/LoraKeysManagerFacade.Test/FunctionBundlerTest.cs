@@ -14,17 +14,21 @@ namespace LoraKeysManagerFacade.Test
 
     public class FunctionBundlerTest : FunctionTestBase
     {
-        private static readonly ILoRaADRManager AdrManager;
+        private readonly ILoRaADRManager adrManager;
+        private readonly FunctionBundlerFunction functionBundler;
+        private readonly LoRaADRFunction adrFunction;
 
-        static FunctionBundlerTest()
+        public FunctionBundlerTest()
         {
             var strategyProvider = new Mock<ILoRaADRStrategyProvider>(MockBehavior.Strict);
             strategyProvider
                 .Setup(x => x.GetStrategy())
                 .Returns(new LoRaADRStandardStrategy());
 
-            AdrManager = LoRaADRFunction.InitializeADRManager(new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, string.Empty));
-            LoRaDeviceCache.EnsureCacheStore(new LoRaInMemoryDeviceStore());
+            var cacheStore = new LoRaInMemoryDeviceStore();
+            this.adrManager = new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, cacheStore);
+            this.functionBundler = new FunctionBundlerFunction(new FunctionBundlerContext(new DuplicateMsgCacheCheck(cacheStore), new LoRaADRFunction(this.adrManager), new FCntCacheCheck(cacheStore)));
+            this.adrFunction = new LoRaADRFunction(this.adrManager);
         }
 
         [Fact]
@@ -35,7 +39,7 @@ namespace LoraKeysManagerFacade.Test
 
             var req = CreateStandardBundlerRequest(gatewayId1);
 
-            var resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
+            var resp = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
             Assert.NotNull(resp);
             Assert.NotNull(resp.AdrResult);
             Assert.False(resp.AdrResult.CanConfirmToDevice);
@@ -58,7 +62,7 @@ namespace LoraKeysManagerFacade.Test
             req.AdrRequest = null;
             req.FunctionItems = FunctionBundlerItemType.FCntDown;
 
-            var resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
+            var resp = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
             Assert.NotNull(resp);
             Assert.Null(resp.AdrResult);
 
@@ -77,7 +81,7 @@ namespace LoraKeysManagerFacade.Test
             req.AdrRequest = null;
             req.FunctionItems = FunctionBundlerItemType.Deduplication;
 
-            var resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
+            var resp = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
             Assert.NotNull(resp);
             Assert.Null(resp.AdrResult);
 
@@ -98,7 +102,7 @@ namespace LoraKeysManagerFacade.Test
 
             req.FunctionItems = FunctionBundlerItemType.ADR;
 
-            var resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
+            var resp = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
             Assert.NotNull(resp);
             Assert.NotNull(resp.AdrResult);
             Assert.False(resp.AdrResult.CanConfirmToDevice);
@@ -121,7 +125,7 @@ namespace LoraKeysManagerFacade.Test
             req.FunctionItems = FunctionBundlerItemType.ADR | FunctionBundlerItemType.Deduplication;
             req2.FunctionItems = FunctionBundlerItemType.ADR | FunctionBundlerItemType.Deduplication;
 
-            var resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
+            var resp = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
             Assert.NotNull(resp);
             Assert.NotNull(resp.AdrResult);
             Assert.False(resp.AdrResult.CanConfirmToDevice);
@@ -134,12 +138,12 @@ namespace LoraKeysManagerFacade.Test
             Assert.Null(resp.NextFCntDown);
 
             // with ADR frames
-            await AdrManager.ResetAsync(devEUI);
+            await this.adrManager.ResetAsync(devEUI);
 
-            await PrepareADRFrames(devEUI, LoRaADRTable.FrameCountCaptureCount - 1, req.AdrRequest);
+            await this.PrepareADRFrames(devEUI, LoRaADRTable.FrameCountCaptureCount - 1, req.AdrRequest);
             req.ClientFCntUp = req.AdrRequest.FCntUp;
 
-            resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
+            resp = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
 
             Assert.NotNull(resp);
             Assert.NotNull(resp.AdrResult);
@@ -154,7 +158,7 @@ namespace LoraKeysManagerFacade.Test
             req.AdrRequest.FCntUp = req2.AdrRequest.FCntUp = req2.ClientFCntUp = ++req.ClientFCntUp;
             req.AdrRequest.FCntDown = req2.AdrRequest.FCntDown = req2.ClientFCntDown = req.ClientFCntDown = resp.NextFCntDown.GetValueOrDefault();
 
-            resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
+            resp = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
             Assert.NotNull(resp);
             Assert.NotNull(resp.AdrResult);
 
@@ -164,7 +168,7 @@ namespace LoraKeysManagerFacade.Test
 
             Assert.True(resp.AdrResult.CanConfirmToDevice || resp.NextFCntDown == null);
 
-            resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req2, string.Empty);
+            resp = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req2);
             Assert.NotNull(resp);
             Assert.NotNull(resp.AdrResult);
             Assert.True(resp.AdrResult.CanConfirmToDevice || resp.NextFCntDown == null);
@@ -193,7 +197,7 @@ namespace LoraKeysManagerFacade.Test
 
             foreach (var req in requests)
             {
-                await PrepareADRFrames(devEUI, 20, req.AdrRequest);
+                await this.PrepareADRFrames(devEUI, 20, req.AdrRequest);
                 req.ClientFCntUp = req.AdrRequest.FCntUp;
                 req.ClientFCntDown = req.AdrRequest.FCntDown;
             }
@@ -206,7 +210,7 @@ namespace LoraKeysManagerFacade.Test
                 // functionBundlerResults.Add(await ExecuteRequest(devEUI, req));
                 tasks.Add(Task.Run(async () =>
                 {
-                    functionBundlerResults.Add(await ExecuteRequest(devEUI, req));
+                    functionBundlerResults.Add(await this.ExecuteRequest(devEUI, req));
                 }));
             }
 
@@ -238,9 +242,9 @@ namespace LoraKeysManagerFacade.Test
             Assert.Equal(requests.Length - 1, dups);
         }
 
-        private static async Task<FunctionBundlerResult> ExecuteRequest(string devEUI, FunctionBundlerRequest req)
+        private async Task<FunctionBundlerResult> ExecuteRequest(string devEUI, FunctionBundlerRequest req)
         {
-            var result = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
+            var result = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
             lock (req)
             {
                 req.ClientFCntUp++;
@@ -275,12 +279,12 @@ namespace LoraKeysManagerFacade.Test
             };
         }
 
-        private static async Task PrepareADRFrames(string deviceEUI, int numberOfFrames, LoRaADRRequest req)
+        private async Task PrepareADRFrames(string deviceEUI, int numberOfFrames, LoRaADRRequest req)
         {
-            await PrepareADRFrames(deviceEUI, numberOfFrames, new List<LoRaADRRequest>() { req });
+            await this.PrepareADRFrames(deviceEUI, numberOfFrames, new List<LoRaADRRequest>() { req });
         }
 
-        private static async Task PrepareADRFrames(string deviceEUI, int numberOfFrames, List<LoRaADRRequest> requests)
+        private async Task PrepareADRFrames(string deviceEUI, int numberOfFrames, List<LoRaADRRequest> requests)
         {
             var rnd = new Random();
 
@@ -289,7 +293,7 @@ namespace LoraKeysManagerFacade.Test
             {
                 foreach (var req in requests)
                 {
-                    var res = await LoRaADRFunction.HandleADRRequest(deviceEUI, req, string.Empty);
+                    var res = await this.adrFunction.HandleADRRequest(deviceEUI, req);
 
                     req.RequiredSnr = rnd.Next(-20, 20);
                     req.DataRate = 2;

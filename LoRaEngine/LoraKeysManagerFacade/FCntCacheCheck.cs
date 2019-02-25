@@ -10,10 +10,19 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
 
-    public static class FCntCacheCheck
+    public class FCntCacheCheck
     {
+        private readonly ILoRaDeviceCacheStore deviceCache;
+
+        public FCntCacheCheck(ILoRaDeviceCacheStore deviceCache)
+        {
+            this.deviceCache = deviceCache;
+        }
+
         [FunctionName("NextFCntDown")]
-        public static IActionResult NextFCntDownInvoke([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
+        public IActionResult NextFCntDownInvoke(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req,
+            ILogger log)
         {
             try
             {
@@ -35,7 +44,7 @@ namespace LoraKeysManagerFacade
 
             if (!string.IsNullOrEmpty(abpFcntCacheReset))
             {
-                LoRaDeviceCache.Delete(devEUI, context.FunctionAppDirectory);
+                this.deviceCache.KeyDelete(devEUI);
                 return (ActionResult)new OkObjectResult(null);
             }
 
@@ -48,15 +57,15 @@ namespace LoraKeysManagerFacade
                 throw new ArgumentException(errorMsg);
             }
 
-            newFCntDown = GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown, context.FunctionAppDirectory);
+            newFCntDown = this.GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown);
 
             return (ActionResult)new OkObjectResult(newFCntDown);
         }
 
-        public static int GetNextFCntDown(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown, string functionAppDirectory)
+        public int GetNextFCntDown(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown)
         {
             int newFCntDown = 0;
-            using (var deviceCache = LoRaDeviceCache.Create(functionAppDirectory, devEUI, gatewayId))
+            using (var deviceCache = new LoRaDeviceCache(this.deviceCache, devEUI, gatewayId))
             {
                 if (deviceCache.TryToLock())
                 {

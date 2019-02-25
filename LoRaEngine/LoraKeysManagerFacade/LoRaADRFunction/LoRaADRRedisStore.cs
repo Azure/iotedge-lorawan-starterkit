@@ -46,10 +46,9 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public LoRaADRRedisStore(string redisConnectionString)
+        public LoRaADRRedisStore(IDatabase redisCache)
         {
-            var redis = ConnectionMultiplexer.Connect(redisConnectionString);
-            this.redisCache = redis.GetDatabase();
+            this.redisCache = redisCache;
         }
 
         public async Task UpdateADRTable(string devEUI, LoRaADRTable table)

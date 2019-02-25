@@ -9,20 +9,22 @@ namespace LoraKeysManagerFacade
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
-    public static class LoRaADRFunction
+    public class LoRaADRFunction
     {
-        private static readonly object AdrManagerSyncLock = new object();
-        private static ILoRaADRManager adrManager;
+        private ILoRaADRManager adrManager;
+
+        public LoRaADRFunction(ILoRaADRManager adrManager)
+        {
+            this.adrManager = adrManager;
+        }
 
         [FunctionName("ADRFunction")]
-        public static async Task<IActionResult> ADRFunctionImpl(
+        public async Task<IActionResult> ADRFunctionImpl(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = "ADRFunction/{devEUI}")]HttpRequest req,
             ILogger log,
-            ExecutionContext context,
             string devEUI)
         {
             try
@@ -43,18 +45,16 @@ namespace LoraKeysManagerFacade
             }
 
             var adrRequest = JsonConvert.DeserializeObject<LoRaADRRequest>(requestBody);
-            var result = await HandleADRRequest(devEUI, adrRequest, context.FunctionAppDirectory);
+            var result = await this.HandleADRRequest(devEUI, adrRequest);
 
             return new OkObjectResult(result);
         }
 
-        public static async Task<LoRaADRResult> HandleADRRequest(string devEUI, LoRaADRRequest request, string functionAppDirectory)
+        public async Task<LoRaADRResult> HandleADRRequest(string devEUI, LoRaADRRequest request)
         {
-            var adrManager = EnsureLoraADRManagerInstance(functionAppDirectory);
-
             if (request.ClearCache)
             {
-                await adrManager.ResetAsync(devEUI);
+                await this.adrManager.ResetAsync(devEUI);
                 return new LoRaADRResult();
             }
 
@@ -68,53 +68,13 @@ namespace LoraKeysManagerFacade
 
             if (request.PerformADRCalculation)
             {
-                return await adrManager.CalculateADRResultAndAddEntryAsync(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex, newEntry);
+                return await this.adrManager.CalculateADRResultAndAddEntryAsync(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex, newEntry);
             }
             else
             {
-                await adrManager.StoreADREntryAsync(newEntry);
-                return await adrManager.GetLastResultAsync(devEUI);
+                await this.adrManager.StoreADREntryAsync(newEntry);
+                return await this.adrManager.GetLastResultAsync(devEUI);
             }
-        }
-
-        /// <summary>
-        /// Unit Testing: use this to override the <see cref="ILoRaADRManager"/>
-        /// </summary>
-        public static ILoRaADRManager InitializeADRManager(ILoRaADRManager manager)
-        {
-            if (adrManager != null)
-            {
-                return adrManager;
-            }
-
-            lock (AdrManagerSyncLock)
-            {
-                if (adrManager == null)
-                {
-                    adrManager = manager;
-                }
-            }
-
-            return adrManager;
-        }
-
-        private static ILoRaADRManager EnsureLoraADRManagerInstance(string functionAppDirectory)
-        {
-            if (adrManager != null)
-            {
-                return adrManager;
-            }
-
-            lock (AdrManagerSyncLock)
-            {
-                if (adrManager == null)
-                {
-                    var redisStore = new LoRaADRRedisStore(FunctionConfigManager.GetCurrentConfiguration(functionAppDirectory).GetConnectionString("RedisConnectionString"));
-                    adrManager = new LoRaADRServerManager(redisStore, new LoRaADRStrategyProvider(), functionAppDirectory);
-                }
-            }
-
-            return adrManager;
         }
     }
 }

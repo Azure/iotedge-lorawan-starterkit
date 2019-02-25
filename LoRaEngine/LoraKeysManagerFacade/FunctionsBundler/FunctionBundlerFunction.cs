@@ -6,6 +6,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -14,13 +15,19 @@ namespace LoraKeysManagerFacade.FunctionBundler
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
-    public static class FunctionBundler
+    public class FunctionBundlerFunction
     {
+        private FunctionBundlerContext context;
+
+        public FunctionBundlerFunction(FunctionBundlerContext context)
+        {
+            this.context = context;
+        }
+
         [FunctionName("FunctionBundler")]
-        public static async Task<IActionResult> FunctionBundlerImpl(
+        public async Task<IActionResult> FunctionBundlerImpl(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "FunctionBundler/{devEUI}")]HttpRequest req,
             ILogger log,
-            ExecutionContext context,
             string devEUI)
         {
             try
@@ -41,14 +48,14 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
 
             var functionBundlerRequest = JsonConvert.DeserializeObject<FunctionBundlerRequest>(requestBody);
-            var result = await HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest, context.FunctionAppDirectory);
+            var result = await this.HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest);
 
             return new OkObjectResult(result);
         }
 
-        public static async Task<FunctionBundlerResult> HandleFunctionBundlerInvoke(string devEUI, FunctionBundlerRequest request, string functionAppDirectory)
+        public async Task<FunctionBundlerResult> HandleFunctionBundlerInvoke(string devEUI, FunctionBundlerRequest request)
         {
-            var pipeline = new FunctionBundlerPipelineExecuter(devEUI, request, functionAppDirectory);
+            var pipeline = new FunctionBundlerPipelineExecuter(devEUI, request, this.context);
             return await pipeline.Execute();
         }
     }

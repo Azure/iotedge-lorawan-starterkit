@@ -10,7 +10,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
 
-    public static class DuplicateMsgCacheCheck
+    public class DuplicateMsgCacheCheck
     {
         const string QueryParamDevEUI = "DevEUI";
         const string QueryParamGatewayId = "GatewayId";
@@ -18,11 +18,17 @@ namespace LoraKeysManagerFacade
         const string QueryParamFCntDown = "FCntDown";
         const string QueryParamCacheReset = "CacheReset";
 
+        private readonly ILoRaDeviceCacheStore cacheStore;
+
+        public DuplicateMsgCacheCheck(ILoRaDeviceCacheStore cacheStore)
+        {
+            this.cacheStore = cacheStore;
+        }
+
         [FunctionName("DuplicateMsgCheck")]
-        public static IActionResult DuplicateMsgCheck(
+        public IActionResult DuplicateMsgCheck(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "DuplicateMsgCheck/{devEUI}")]HttpRequest req,
             ILogger log,
-            ExecutionContext context,
             string devEUI)
         {
             try
@@ -39,7 +45,7 @@ namespace LoraKeysManagerFacade
             var cacheReset = req.Query[QueryParamCacheReset];
             if (!string.IsNullOrEmpty(cacheReset) && !string.IsNullOrEmpty(devEUI))
             {
-                LoRaDeviceCache.Delete(devEUI, context.FunctionAppDirectory);
+                this.cacheStore.KeyDelete(devEUI);
                 return (ActionResult)new OkObjectResult(null);
             }
 
@@ -56,17 +62,17 @@ namespace LoraKeysManagerFacade
                 throw new Exception(errorMsg);
             }
 
-            var result = GetDuplicateMessageResult(devEUI, gatewayId, clientFCntUp, clientFCntDown, context.FunctionAppDirectory);
+            var result = this.GetDuplicateMessageResult(devEUI, gatewayId, clientFCntUp, clientFCntDown);
 
             return new OkObjectResult(result);
         }
 
-        public static DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown, string functionAppDirectory)
+        public DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown)
         {
             var isDuplicate = true;
             string processedDevice = gatewayId;
 
-            using (var deviceCache = LoRaDeviceCache.Create(functionAppDirectory, devEUI, gatewayId))
+            using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId))
             {
                 if (deviceCache.TryToLock())
                 {

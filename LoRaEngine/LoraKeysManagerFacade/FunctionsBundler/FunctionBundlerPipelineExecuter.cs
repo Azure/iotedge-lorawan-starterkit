@@ -5,15 +5,10 @@ namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using LoRaTools.CommonAPI;
 
     public class FunctionBundlerPipelineExecuter : IPipelineExecutionContext
     {
-        private readonly string devEUI;
-        private readonly FunctionBundlerRequest request;
-        private readonly string functionAppDirectory;
-
-        private FunctionBundlerResult result = new FunctionBundlerResult();
-
         private static List<IFunctionBundlerExecutionItem> registeredHandlers = new List<IFunctionBundlerExecutionItem>
         {
             new DeduplicationExecutionItem(),
@@ -21,19 +16,22 @@ namespace LoraKeysManagerFacade.FunctionBundler
             new NextFCntDownExecutionItem()
         };
 
-        public string DevEUI => this.devEUI;
+        public string DevEUI { get; private set; }
 
-        public FunctionBundlerRequest Request => this.request;
+        public FunctionBundlerRequest Request { get; private set; }
 
-        public FunctionBundlerResult Result => this.result;
+        public FunctionBundlerResult Result { get; private set; } = new FunctionBundlerResult();
 
-        public string FunctionAppDirectory => this.functionAppDirectory;
+        public FunctionBundlerContext FunctionContext { get; private set; }
 
-        public FunctionBundlerPipelineExecuter(string devEUI, FunctionBundlerRequest request, string functionAppDirectory)
+        public FunctionBundlerPipelineExecuter(
+                                               string devEUI,
+                                               FunctionBundlerRequest request,
+                                               FunctionBundlerContext context)
         {
-            this.devEUI = devEUI;
-            this.request = request;
-            this.functionAppDirectory = functionAppDirectory;
+            this.DevEUI = devEUI;
+            this.Request = request;
+            this.FunctionContext = context;
         }
 
         public async Task<FunctionBundlerResult> Execute()
@@ -42,7 +40,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             for (var i = 0; i < registeredHandlers.Count; i++)
             {
                 var handler = registeredHandlers[i];
-                if (handler.NeedsToExecute(this.request.FunctionItems))
+                if (handler.NeedsToExecute(this.Request.FunctionItems))
                 {
                     executionPipeline.Add(handler);
                 }

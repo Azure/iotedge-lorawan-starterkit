@@ -10,7 +10,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
     {
         public Task<FunctionBundlerExecutionState> Execute(IPipelineExecutionContext context)
         {
-            context.Result.DeduplicationResult = DuplicateMsgCacheCheck.GetDuplicateMessageResult(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.FunctionAppDirectory);
+            var dedupFunc = context.FunctionContext.DupMsgCheckFunction;
+            context.Result.DeduplicationResult = dedupFunc.GetDuplicateMessageResult(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown);
             return Task.FromResult(context.Result.DeduplicationResult.IsDuplicate ? FunctionBundlerExecutionState.Abort : FunctionBundlerExecutionState.Continue);
         }
 

@@ -12,7 +12,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
         {
             if (!context.Result.NextFCntDown.HasValue)
             {
-                var next = FCntCacheCheck.GetNextFCntDown(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.FunctionAppDirectory);
+                var fCntCacheCheck = context.FunctionContext.FCntCacheCheckFunction;
+                var next = fCntCacheCheck.GetNextFCntDown(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown);
                 context.Result.NextFCntDown = next > 0 ? next : (int?)null;
             }
 

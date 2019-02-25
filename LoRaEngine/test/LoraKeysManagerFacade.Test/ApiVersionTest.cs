@@ -29,11 +29,11 @@ namespace LoraKeysManagerFacade.Test
             var dummyExecContext = new ExecutionContext();
             var apiCalls = new Func<HttpRequest, Task<IActionResult>>[]
             {
-                (req) => DeviceGetter.GetDevice(req, NullLogger.Instance, dummyExecContext),
-                (req) => Task.Run(() => FCntCacheCheck.NextFCntDownInvoke(req, NullLogger.Instance, dummyExecContext)),
-                (req) => Task.Run(() => DuplicateMsgCacheCheck.DuplicateMsgCheck(req, NullLogger.Instance, dummyExecContext, string.Empty)),
-                (req) => Task.Run(() => LoRaADRFunction.ADRFunctionImpl(req, NullLogger.Instance, dummyExecContext, string.Empty)),
-                (req) => Task.Run(() => FunctionBundler.FunctionBundlerImpl(req, NullLogger.Instance, dummyExecContext, string.Empty))
+                (req) => new DeviceGetter(null, null).GetDevice(req, NullLogger.Instance),
+                (req) => Task.Run(() => new FCntCacheCheck(null).NextFCntDownInvoke(req, NullLogger.Instance)),
+                (req) => Task.Run(() => new DuplicateMsgCacheCheck(null).DuplicateMsgCheck(req, NullLogger.Instance, string.Empty)),
+                (req) => Task.Run(() => new LoRaADRFunction(null).ADRFunctionImpl(req, NullLogger.Instance, string.Empty)),
+                (req) => Task.Run(() => new FunctionBundlerFunction(null).FunctionBundlerImpl(req, NullLogger.Instance, string.Empty))
             };
 
             foreach (var apiCall in apiCalls)
