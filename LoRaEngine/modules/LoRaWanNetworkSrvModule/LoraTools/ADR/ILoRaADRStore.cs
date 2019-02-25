@@ -15,5 +15,7 @@ namespace LoRaTools.ADR
         Task UpdateADRTable(string devEUI, LoRaADRTable table);
 
         Task<LoRaADRTable> GetADRTable(string devEUI);
+
+        Task<bool> Reset(string devEUI);
     }
 }

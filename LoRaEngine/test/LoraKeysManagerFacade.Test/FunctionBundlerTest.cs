@@ -134,20 +134,21 @@ namespace LoraKeysManagerFacade.Test
             Assert.Null(resp.NextFCntDown);
 
             // with ADR frames
+            await AdrManager.Reset(devEUI);
+
             await PrepareADRFrames(devEUI, LoRaADRTable.FrameCountCaptureCount - 1, req.AdrRequest);
             req.ClientFCntUp = req.AdrRequest.FCntUp;
+
             resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
 
             Assert.NotNull(resp);
             Assert.NotNull(resp.AdrResult);
-            Assert.True(resp.AdrResult.CanConfirmToDevice);
             Assert.Equal(LoRaADRTable.FrameCountCaptureCount, resp.AdrResult.NumberOfFrames);
 
             Assert.NotNull(resp.DeduplicationResult);
             Assert.Equal(gatewayId1, resp.DeduplicationResult.GatewayId);
             Assert.False(resp.DeduplicationResult.IsDuplicate);
-
-            Assert.Equal(req.ClientFCntDown + 1, resp.NextFCntDown);
+            Assert.True(resp.AdrResult.CanConfirmToDevice || resp.NextFCntDown == null);
 
             // multi request
             req.AdrRequest.FCntUp = req2.AdrRequest.FCntUp = req2.ClientFCntUp = ++req.ClientFCntUp;
@@ -156,24 +157,21 @@ namespace LoraKeysManagerFacade.Test
             resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
             Assert.NotNull(resp);
             Assert.NotNull(resp.AdrResult);
-            Assert.True(resp.AdrResult.CanConfirmToDevice);
 
             Assert.NotNull(resp.DeduplicationResult);
             Assert.Equal(gatewayId1, resp.DeduplicationResult.GatewayId);
             Assert.False(resp.DeduplicationResult.IsDuplicate);
 
-            Assert.Equal(req.ClientFCntDown + 1, resp.NextFCntDown);
+            Assert.True(resp.AdrResult.CanConfirmToDevice || resp.NextFCntDown == null);
 
             resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req2, string.Empty);
             Assert.NotNull(resp);
             Assert.NotNull(resp.AdrResult);
-            Assert.False(resp.AdrResult.CanConfirmToDevice);
+            Assert.True(resp.AdrResult.CanConfirmToDevice || resp.NextFCntDown == null);
 
             Assert.NotNull(resp.DeduplicationResult);
             Assert.Equal(gatewayId1, resp.DeduplicationResult.GatewayId);
             Assert.True(resp.DeduplicationResult.IsDuplicate);
-
-            Assert.Null(resp.NextFCntDown);
         }
 
         [Fact]
@@ -293,7 +291,8 @@ namespace LoraKeysManagerFacade.Test
                 {
                     var res = await LoRaADRFunction.HandleADRRequest(deviceEUI, req, string.Empty);
 
-                    req.RequiredSnr = rnd.Next(-20, 5);
+                    req.RequiredSnr = rnd.Next(-20, 20);
+                    req.DataRate = 2;
                     ++req.FCntUp;
                     req.FCntDown = res.FCntDown > 0 ? res.FCntDown : req.FCntDown;
                 }

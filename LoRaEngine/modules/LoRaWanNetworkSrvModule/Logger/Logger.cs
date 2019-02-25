@@ -64,6 +64,24 @@ namespace LoRaWan
             Log(null, message, logLevel);
         }
 
+        /// <summary>
+        /// Use this if you want to serialize an object to JSON and
+        /// append it to the message. The serialization will only take place
+        /// if the logLevel is larger or equal to the configured level
+        /// </summary>
+        /// <param name="deviceId">DeviceEUI</param>
+        /// <param name="message">The message that should be prepended to the serialized string</param>
+        /// <param name="toJson">The object to serialize</param>
+        /// <param name="logLevel">The desired <see cref="LogLevel"/></param>
+        public static void Log(string deviceId, string message, object toJson, LogLevel logLevel)
+        {
+            if (logLevel >= configuration.LogLevel)
+            {
+                var serializedObj = Newtonsoft.Json.JsonConvert.SerializeObject(toJson);
+                Log(deviceId, string.Concat(message, serializedObj), logLevel);
+            }
+        }
+
         public static void Log(string deviceId, string message, LogLevel logLevel)
         {
             if (logLevel >= configuration.LogLevel)

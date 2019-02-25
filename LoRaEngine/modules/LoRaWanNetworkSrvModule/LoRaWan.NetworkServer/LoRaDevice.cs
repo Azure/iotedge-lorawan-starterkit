@@ -275,6 +275,16 @@ namespace LoRaWan.NetworkServer
         {
             if (this.hasFrameCountChanges)
             {
+                return await this.SaveFrameCountChangesAsync(new TwinCollection());
+            }
+
+            return true;
+        }
+
+        private async Task<bool> SaveFrameCountChangesAsync(TwinCollection reportedProperties)
+        {
+            if (this.hasFrameCountChanges)
+            {
                 int savedFcntDown;
                 int savedFcntUp;
                 lock (this.fcntLock)
@@ -283,16 +293,18 @@ namespace LoRaWan.NetworkServer
                     savedFcntUp = this.FCntUp;
                 }
 
-                var reportedProperties = new TwinCollection();
                 reportedProperties[TwinProperty.FCntDown] = savedFcntDown;
                 reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
 
                 var result = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
                 if (result)
                 {
-                    if (savedFcntUp == this.FCntUp && savedFcntDown == this.FCntDown)
+                    lock (this.fcntLock)
                     {
-                        this.AcceptFrameCountChanges();
+                        if (savedFcntUp == this.FCntUp && savedFcntDown == this.FCntDown)
+                        {
+                            this.AcceptFrameCountChanges();
+                        }
                     }
                 }
 
@@ -527,12 +539,13 @@ namespace LoRaWan.NetworkServer
             reportedProperties[TwinProperty.TxPower] = this.TxPower;
             reportedProperties[TwinProperty.NbRep] = this.NbRep;
 
-            var result = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
+            if (this.hasFrameCountChanges)
+            {
+                // combining the save with the framecounter update
+                return await this.SaveFrameCountChangesAsync(reportedProperties);
+            }
 
-            if (result)
-                return true;
-            else
-                return false;
+            return await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
         }
 
         public void Dispose()

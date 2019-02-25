@@ -88,6 +88,30 @@ namespace LoRaWan.NetworkServer
             return JsonConvert.DeserializeObject<LoRaADRResult>(payload);
         }
 
+        public override async Task<bool> ClearADRCache(string devEUI)
+        {
+            Logger.Log(devEUI, $"clear ADR cache", LogLevel.Debug);
+
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var url = $"{this.URL}ADRFunction/{devEUI}?code={this.AuthCode}";
+
+            var request = new LoRaADRRequest
+            {
+                ClearCache = true
+            };
+
+            var requestBody = JsonConvert.SerializeObject(request);
+
+            var response = await client.PostAsync(url, PreparePostContent(requestBody));
+            if (!response.IsSuccessStatusCode)
+            {
+                Logger.Log(devEUI, $"error calling the ADR reset function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                return false;
+            }
+
+            return true;
+        }
+
         public override async Task<FunctionBundlerResult> FunctionBundler(string devEUI, FunctionBundlerRequest request)
         {
             Logger.Log(devEUI, $"Function bundler call", LogLevel.Debug);

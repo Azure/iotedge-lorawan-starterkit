@@ -3,11 +3,10 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System;
-    using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer.ADR;
+    using Microsoft.Extensions.Logging;
 
     public class FunctionBundlerProvider : IFunctionBundlerProvider
     {
@@ -62,6 +61,8 @@ namespace LoRaWan.NetworkServer
                     RequiredSnr = (float)request.Rxpk.RequiredSnr
                 };
             }
+
+            Logger.Log(loRaDevice.DevEUI, "New FunctionBundler Request: ", request, LogLevel.Debug);
 
             return new FunctionBundler(loRaDevice.DevEUI, this.deviceApi, bundlerRequest, deduplicationStrategy);
         }

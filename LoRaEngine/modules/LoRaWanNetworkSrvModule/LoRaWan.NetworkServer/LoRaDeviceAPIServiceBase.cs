@@ -61,6 +61,8 @@ namespace LoRaWan.NetworkServer
 
         public abstract Task<LoRaADRResult> CalculateADRAndStoreFrame(string devEUI, LoRaADRRequest adrRequest);
 
+        public abstract Task<bool> ClearADRCache(string devEUI);
+
         public abstract Task<FunctionBundlerResult> FunctionBundler(string devEUI, FunctionBundlerRequest request);
 
         protected LoRaDeviceAPIServiceBase()

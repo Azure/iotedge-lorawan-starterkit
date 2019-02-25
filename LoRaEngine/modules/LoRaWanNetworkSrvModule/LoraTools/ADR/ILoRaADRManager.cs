@@ -14,5 +14,7 @@ namespace LoRaTools.ADR
         Task<LoRaADRResult> GetLastResult(string devEUI);
 
         Task<LoRaADRTableEntry> GetLastEntry(string devEUI);
+
+        Task<bool> Reset(string devEUI);
     }
 }
