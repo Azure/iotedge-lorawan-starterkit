@@ -109,7 +109,7 @@ namespace LoRaWan.NetworkServer
                         if (!deduplicationResult.CanProcess)
                         {
                             // duplication strategy is indicating that we do not need to continue processing this message
-                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcnt}", LogLevel.Information);
+                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: {payloadFcnt}", LogLevel.Information);
                             return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
                         }
                     }
