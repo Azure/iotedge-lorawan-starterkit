@@ -145,14 +145,18 @@ namespace LoRaWan.Test.Shared
 
         public async Task SendCloudToDeviceMessage(string deviceId, Message message)
         {
-            var sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString);
-            await sc.SendAsync(deviceId, message);
+            using (var sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString))
+            {
+                await sc.SendAsync(deviceId, message);
+            }
         }
 
-        public async Task SendDirectMessageToDevice(string deviceId, string moduleId, CloudToDeviceMethod method)
+        public async Task InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod method)
         {
-            var sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString);
-            await sc.InvokeDeviceMethodAsync(deviceId, moduleId, method);
+            using (var sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString))
+            {
+                await sc.InvokeDeviceMethodAsync(deviceId, moduleId, method);
+            }
         }
 
         internal async Task<Twin> ReplaceTwinAsync(string deviceId, Twin updatedTwin, string etag)
