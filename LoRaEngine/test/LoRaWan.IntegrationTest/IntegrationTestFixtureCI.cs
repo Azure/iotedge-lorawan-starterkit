@@ -80,6 +80,9 @@ namespace LoRaWan.IntegrationTest
         // Device22_ABP: used for OTAA C2D Mac Commands testing
         public TestDeviceInfo Device23_OTAA { get; private set; }
 
+        // Device24_ABP: used for ADR testing
+        public TestDeviceInfo Device24_ABP { get; private set; }
+
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice
         {
@@ -381,6 +384,18 @@ namespace LoRaWan.IntegrationTest
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
+            };
+
+            // Device24_OTAA: used for ADR testing
+            this.Device24_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000024",
+                GatewayID = gatewayID,
+                SensorDecoder = "DecoderValueSensor",
+                IsIoTHubDevice = true,
+                AppSKey = "00000000000000000000000000000024",
+                NwkSKey = "00000000000000000000000000000024",
+                DevAddr = "00000024",
             };
         }
     }
