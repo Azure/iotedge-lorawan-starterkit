@@ -25,6 +25,7 @@ This guide helps you to execute and author integration tests on your local envir
   * LOG_LEVEL: 1
   * LOG_TO_UDP: true
   * LOG_TO_UDP_ADDRESS: development machine IP address (ensure IoT Edge machine can ping it)
+  * LOG_TO_UPD_PORT: default is 6000, set this, if you need it to be going to a different port
 * Integration test configuration (in file `appsettings.local.json`) has UDP logging enabled `"UdpLog": "true"`
 
 ## Installation
