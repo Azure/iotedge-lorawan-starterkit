@@ -24,17 +24,22 @@ namespace LoRaWan.IntegrationTest
         public async Task Test_ABP_Confirmed_And_Unconfirmed_Message()
         {
             const int MESSAGES_COUNT = 10;
-
             var device = this.TestFixtureCi.Device5_ABP;
             this.LogTestStart(device);
+            var twin = await this.TestFixtureCi.GetTwinAsync(device.DeviceID);
+
+            await this.TestFixture.UpdateReportedTwinAsync(device.DeviceID, "TxPower", 0);
+            // await this.TestFixture.SendDirectMessageToDevice(device.GatewayID, "LoRaWanNetworkSrvModule", new Microsoft.Azure.Devices.CloudToDeviceMethod("ClearCache"));
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
-
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
-
-            // Sends 10x unconfirmed messages
-            for (var i = 0; i < MESSAGES_COUNT; ++i)
+            // for a reason I need to set DR twice otherwise it reverts to DR 0
+            await this.ArduinoDevice.setDataRateAsync(LoRaArduinoSerial._data_rate_t.DR5, LoRaArduinoSerial._physical_type_t.EU868);
+            await this.ArduinoDevice.setAdaptiveDataRateAsync(true);
+            await this.ArduinoDevice.setDataRateAsync(LoRaArduinoSerial._data_rate_t.DR5, LoRaArduinoSerial._physical_type_t.EU868);
+            // Sends 5x unconfirmed messages
+            for (var i = 0; i < MESSAGES_COUNT / 2; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i + 1}/{MESSAGES_COUNT}");
@@ -58,14 +63,14 @@ namespace LoRaWan.IntegrationTest
                 this.TestFixtureCi.ClearLogs();
             }
 
-            // Sends 10x confirmed messages
-            for (var i = 0; i < MESSAGES_COUNT; ++i)
+            // Sends 5x confirmed messages
+            for (var i = 0; i < MESSAGES_COUNT / 2; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
-                this.Log($"{device.DeviceID}: Sending confirmed '{msg}' {i + 1}/{MESSAGES_COUNT}");
+                this.Log($"{device.DeviceID}: Sending confirmed '{msg}' {i + 1}/{MESSAGES_COUNT / 2}");
                 await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
-                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+                await Task.Delay(2 * Constants.DELAY_BETWEEN_MESSAGES);
 
                 // After transferPacketWithConfirmed: Expectation from serial
                 // +CMSG: ACK Received
@@ -82,6 +87,50 @@ namespace LoRaWan.IntegrationTest
 
                 this.TestFixtureCi.ClearLogs();
             }
+
+            // Sends 10x unconfirmed messages
+            for (var i = 0; i < MESSAGES_COUNT; ++i)
+            {
+                var msg = PayloadGenerator.Next().ToString();
+                this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i + 1}/{MESSAGES_COUNT / 2}");
+                await this.ArduinoDevice.transferPacketAsync(msg, 10);
+
+                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+                // After transferPacket: Expectation from serial
+                // +MSG: Done
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
+
+                // 0000000000000005: valid frame counter, msg: 1 server: 0
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+
+                // 0000000000000005: decoding with: DecoderValueSensor port: 8
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+
+                // 0000000000000005: message '{"value": 51}' sent to hub
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+
+                this.TestFixtureCi.ClearLogs();
+            }
+
+            // Starting ADR test protocol
+            Console.WriteLine($"Starting ADR test protocol");
+            this.Log($"{device.DeviceID}: Starting ADR protocol");
+
+            for (var i = 0; i < 56; ++i)
+            {
+                var message = PayloadGenerator.Next().ToString();
+                await this.ArduinoDevice.transferPacketAsync(message, 10);
+                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
+            }
+
+            await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES * 4);
+
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: ADR Ack request received");
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: Performing a rate adaptation: datarate");
+
+            await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES * 4);
         }
 
         // Verifies that ABP using wrong devAddr is ignored when sending messages

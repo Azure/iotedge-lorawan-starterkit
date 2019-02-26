@@ -106,28 +106,6 @@ namespace LoRaWan.IntegrationTest
             }
 
             this.TestFixtureCi.ClearLogs();
-            // Starting ADR test protocol
-            Console.WriteLine($"Starting ADR test protocol");
-            await this.ArduinoDevice.setAdaptiveDataRateAsync(true);
-            await this.ArduinoDevice.setDataRateAsync(LoRaArduinoSerial._data_rate_t.DR3, LoRaArduinoSerial._physical_type_t.EU868);
-            await this.ArduinoDevice.setPowerAsync(9);
-            this.Log($"{device.DeviceID}: Sending unconfirmed Mac LinkCheckCmd message");
-
-            for (var i = 0; i < 50; ++i)
-            {
-                var msg = i.ToString();
-                await this.ArduinoDevice.transferPacketAsync(msg, 10);
-                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
-
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
-            }
-
-            await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES * 4);
-
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: ADR Ack request received");
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: Performing a rate adaptation: DR");
-
-            await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES * 4);
         }
     }
 }
