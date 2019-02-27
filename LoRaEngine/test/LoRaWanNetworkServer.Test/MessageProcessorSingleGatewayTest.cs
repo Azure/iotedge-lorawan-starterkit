@@ -567,6 +567,9 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0, fcntDownSavedInTwin.Value);
             Assert.Equal(0, fcntUpSavedInTwin.Value);
 
+            // Adding the loaded devices to the cache can take a while, give it time
+            await Task.Delay(50);
+
             // verify that the device in device registry has correct properties and frame counters
             var devicesForDevAddr = deviceRegistry.InternalGetCachedDevicesForDevAddr(devAddr);
             Assert.Single(devicesForDevAddr);
