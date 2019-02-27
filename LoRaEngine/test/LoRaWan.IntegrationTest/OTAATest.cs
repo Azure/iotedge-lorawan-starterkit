@@ -104,8 +104,6 @@ namespace LoRaWan.IntegrationTest
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
             }
-
-            this.TestFixtureCi.ClearLogs();
         }
     }
 }

@@ -53,7 +53,7 @@ namespace LoRaTools.ADR
         {
             double snrMargin = maxSnr - requiredSnr - MarginDb;
 
-            int computedDatarate = dataRate;
+            int computedDataRate = dataRate;
 
             int nStep = (int)snrMargin;
 
@@ -61,9 +61,9 @@ namespace LoRaTools.ADR
             {
                 if (nStep > 0)
                 {
-                    if (computedDatarate < MaxDR)
+                    if (computedDataRate < MaxDR)
                     {
-                        computedDatarate++;
+                        computedDataRate++;
                     }
 
                     // txpower is an inverted scale, hence if we want to reduce
@@ -74,7 +74,7 @@ namespace LoRaTools.ADR
 
                     nStep--;
                     if (currentTxPowerIndex >= minTxPowerIndex)
-                        return (minTxPowerIndex, computedDatarate);
+                        return (minTxPowerIndex, computedDataRate);
                 }
                 else if (nStep < 0)
                 {
@@ -85,12 +85,12 @@ namespace LoRaTools.ADR
                     }
                     else
                     {
-                        return (currentTxPowerIndex, computedDatarate);
+                        return (currentTxPowerIndex, computedDataRate);
                     }
                 }
             }
 
-            return (currentTxPowerIndex, computedDatarate);
+            return (currentTxPowerIndex, computedDataRate);
         }
 
         private int ComputeNbRepetion(int first, int last, int currentNbRep)
