@@ -55,7 +55,7 @@ namespace LoraKeysManagerFacade.Test
 
                 var versionToken = !string.IsNullOrEmpty(requestVersion) ? requestVersion : MissingVersionToken;
 
-                Assert.Equal($"Incompatible versions (requested: '{versionToken}', current: '{ApiVersion.LatestVersion.Version}')", ((Exception)badRequestResult.Value).Message);
+                Assert.Equal($"Incompatible versions (requested: '{versionToken}', current: '{ApiVersion.LatestVersion.Version}')", badRequestResult.Value);
 
                 // Ensure current version is added to response
                 Assert.Contains(ApiVersion.HttpHeaderName, request.HttpContext.Response.Headers);

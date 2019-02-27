@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
@@ -11,23 +12,25 @@ namespace LoRaWan.NetworkServer
         private readonly LoRaDeviceAPIServiceBase deviceApi;
         private readonly FunctionBundlerRequest request;
         private readonly string devEui;
-        private readonly ILoRaDeviceMessageDeduplicationStrategy deduplicationStrategy;
+        private readonly IList<IFunctionBundlerExecutionItem> executionItems;
+        private readonly FunctionBundlerExecutionContext executionContext;
 
-        internal FunctionBundler(string devEui, LoRaDeviceAPIServiceBase deviceApi, FunctionBundlerRequest request, ILoRaDeviceMessageDeduplicationStrategy deduplicationStrategy)
+        internal FunctionBundler(string devEui, LoRaDeviceAPIServiceBase deviceApi, FunctionBundlerRequest request, IList<IFunctionBundlerExecutionItem> executionItems, FunctionBundlerExecutionContext executionContext)
         {
             this.devEui = devEui;
             this.deviceApi = deviceApi;
             this.request = request;
-            this.deduplicationStrategy = deduplicationStrategy;
+            this.executionItems = executionItems;
+            this.executionContext = executionContext;
         }
 
         public async Task<FunctionBundlerResult> Execute()
         {
             var result = await this.deviceApi.ExecuteFunctionBundlerAsync(this.devEui, this.request);
 
-            if (this.deduplicationStrategy != null && result.DeduplicationResult != null)
+            for (var i = 0; i < this.executionItems.Count; i++)
             {
-                result.DeduplicationResult = this.deduplicationStrategy.Process(result.DeduplicationResult, this.request.ClientFCntUp);
+                this.executionItems[i].ProcessResult(this.executionContext, result);
             }
 
             Logger.Log(this.devEui, "FunctionBundler result: ", result, LogLevel.Debug);

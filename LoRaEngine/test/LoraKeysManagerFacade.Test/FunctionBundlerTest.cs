@@ -56,7 +56,7 @@ namespace LoraKeysManagerFacade.Test
 
             var req = CreateStandardBundlerRequest(gatewayId1);
             req.AdrRequest = null;
-            req.FunctionItems = FunctionBundlerItem.FCntDown;
+            req.FunctionItems = FunctionBundlerItemType.FCntDown;
 
             var resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
             Assert.NotNull(resp);
@@ -75,7 +75,7 @@ namespace LoraKeysManagerFacade.Test
 
             var req = CreateStandardBundlerRequest(gatewayId1);
             req.AdrRequest = null;
-            req.FunctionItems = FunctionBundlerItem.Deduplication;
+            req.FunctionItems = FunctionBundlerItemType.Deduplication;
 
             var resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
             Assert.NotNull(resp);
@@ -96,7 +96,7 @@ namespace LoraKeysManagerFacade.Test
 
             var req = CreateStandardBundlerRequest(gatewayId1);
 
-            req.FunctionItems = FunctionBundlerItem.ADR;
+            req.FunctionItems = FunctionBundlerItemType.ADR;
 
             var resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
             Assert.NotNull(resp);
@@ -118,8 +118,8 @@ namespace LoraKeysManagerFacade.Test
             var req = CreateStandardBundlerRequest(gatewayId1);
             var req2 = CreateStandardBundlerRequest(gatewayId2);
 
-            req.FunctionItems = FunctionBundlerItem.ADR | FunctionBundlerItem.Deduplication;
-            req2.FunctionItems = FunctionBundlerItem.ADR | FunctionBundlerItem.Deduplication;
+            req.FunctionItems = FunctionBundlerItemType.ADR | FunctionBundlerItemType.Deduplication;
+            req2.FunctionItems = FunctionBundlerItemType.ADR | FunctionBundlerItemType.Deduplication;
 
             var resp = await FunctionBundler.HandleFunctionBundlerInvoke(devEUI, req, string.Empty);
             Assert.NotNull(resp);
@@ -271,7 +271,7 @@ namespace LoraKeysManagerFacade.Test
                 ClientFCntDown = 1,
                 ClientFCntUp = 2,
                 GatewayId = gatewayId,
-                FunctionItems = FunctionBundlerItem.ADR | FunctionBundlerItem.Deduplication | FunctionBundlerItem.FCntDown
+                FunctionItems = FunctionBundlerItemType.ADR | FunctionBundlerItemType.Deduplication | FunctionBundlerItemType.FCntDown
             };
         }
 

@@ -14,9 +14,9 @@ namespace LoraKeysManagerFacade.FunctionBundler
             return Task.FromResult(context.Result.DeduplicationResult.IsDuplicate ? FunctionBundlerExecutionState.Abort : FunctionBundlerExecutionState.Continue);
         }
 
-        public bool NeedsToExecute(FunctionBundlerItem item)
+        public bool NeedsToExecute(FunctionBundlerItemType item)
         {
-            return (item & FunctionBundlerItem.Deduplication) == FunctionBundlerItem.Deduplication;
+            return (item & FunctionBundlerItemType.Deduplication) == FunctionBundlerItemType.Deduplication;
         }
 
         public Task OnAbortExecution(IPipelineExecutionContext context)

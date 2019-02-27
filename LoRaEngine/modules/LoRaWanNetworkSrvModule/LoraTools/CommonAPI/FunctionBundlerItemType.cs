@@ -6,7 +6,7 @@ namespace LoRaTools.CommonAPI
     using System;
 
     [Flags]
-    public enum FunctionBundlerItem
+    public enum FunctionBundlerItemType
     {
         FCntDown = 0x1,
         Deduplication = 0x2,

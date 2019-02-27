@@ -3,14 +3,20 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using LoRaTools.CommonAPI;
+    using System.Collections.Generic;
     using LoRaTools.LoRaMessage;
-    using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Logging;
 
     public class FunctionBundlerProvider : IFunctionBundlerProvider
     {
         private readonly LoRaDeviceAPIServiceBase deviceApi;
+
+        private static List<IFunctionBundlerExecutionItem> functionItems = new List<IFunctionBundlerExecutionItem>
+        {
+            new FunctionBundlerDeduplicationExecutionItem(),
+            new FunctionBundlerADRExecutionItem(),
+            new FunctionBundlerFCntDownExecutionItem()
+        };
 
         public FunctionBundlerProvider(LoRaDeviceAPIServiceBase deviceApi)
         {
@@ -30,71 +36,47 @@ namespace LoRaWan.NetworkServer
                 return null;
             }
 
-            var deduplicationStrategy = deduplicationFactory.Create(loRaDevice);
+            var context = new FunctionBundlerExecutionContext
+            {
+                DeduplicationFactory = deduplicationFactory,
+                FCntDown = loRaDevice.FCntDown,
+                FCntUp = loRaPayload.GetFcnt(),
+                GatewayId = gatewayId,
+                LoRaDevice = loRaDevice,
+                LoRaPayload = loRaPayload,
+                Request = request
+            };
 
-            if (!BuildFunctionItemsToCall(loRaPayload, loRaDevice, deduplicationStrategy, out FunctionBundlerItem functions))
+            var qualifyingExecutionItems = new List<IFunctionBundlerExecutionItem>(functionItems.Count);
+            for (var i = 0; i < functionItems.Count; i++)
+            {
+                var itm = functionItems[i];
+                if (itm.RequiresExecution(context))
+                {
+                    qualifyingExecutionItems.Add(itm);
+                }
+            }
+
+            if (qualifyingExecutionItems.Count <= 1)
             {
                 return null;
             }
 
-            var fcntUp = loRaPayload.GetFcnt();
-            var fcntDown = loRaDevice.FCntDown;
-
             var bundlerRequest = new FunctionBundlerRequest
             {
-                ClientFCntDown = fcntDown,
-                ClientFCntUp = fcntUp,
+                ClientFCntDown = context.FCntDown,
+                ClientFCntUp = context.FCntUp,
                 GatewayId = gatewayId,
-                FunctionItems = functions
             };
 
-            if ((functions & FunctionBundlerItem.ADR) == FunctionBundlerItem.ADR)
+            for (var i = 0; i < qualifyingExecutionItems.Count; i++)
             {
-                bundlerRequest.AdrRequest = new LoRaADRRequest
-                {
-                    DataRate = request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
-                    FCntDown = fcntDown,
-                    FCntUp = fcntUp,
-                    GatewayId = gatewayId,
-                    MinTxPowerIndex = request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
-                    PerformADRCalculation = loRaPayload.IsAdrReq,
-                    RequiredSnr = (float)request.Rxpk.RequiredSnr
-                };
+                qualifyingExecutionItems[i].Prepare(context, bundlerRequest);
             }
 
-            Logger.Log(loRaDevice.DevEUI, "new FunctionBundler Request: ", bundlerRequest.AdrRequest, LogLevel.Debug);
+            Logger.Log(loRaDevice.DevEUI, "new FunctionBundler Request: ", bundlerRequest, LogLevel.Debug);
 
-            return new FunctionBundler(loRaDevice.DevEUI, this.deviceApi, bundlerRequest, deduplicationStrategy);
-        }
-
-        private static bool BuildFunctionItemsToCall(LoRaPayloadData loRaPayload, LoRaDevice loRaDevice, ILoRaDeviceMessageDeduplicationStrategy deduplicationStrategy, out FunctionBundlerItem functions)
-        {
-            var requiresAdr = loRaPayload.IsAdrEnabled;
-            var requiresExtraConfirmation = loRaPayload.IsConfirmed || loRaPayload.IsMacAnswerRequired;
-
-            var requiresDeduplication = deduplicationStrategy != null;
-
-            functions = 0;
-            var numberOfRequests = 0;
-            if (requiresDeduplication)
-            {
-                functions |= FunctionBundlerItem.Deduplication;
-                numberOfRequests++;
-            }
-
-            if (requiresAdr)
-            {
-                functions |= FunctionBundlerItem.ADR;
-                numberOfRequests++;
-            }
-
-            if (requiresExtraConfirmation)
-            {
-                functions |= FunctionBundlerItem.FCntDown;
-                numberOfRequests++;
-            }
-
-            return numberOfRequests > 1;
+            return new FunctionBundler(loRaDevice.DevEUI, this.deviceApi, bundlerRequest, qualifyingExecutionItems, context);
         }
     }
 }
