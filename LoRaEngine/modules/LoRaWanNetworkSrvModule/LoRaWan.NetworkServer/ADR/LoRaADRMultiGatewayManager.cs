@@ -15,7 +15,7 @@ namespace LoRaWan.NetworkServer.ADR
         public LoRaADRMultiGatewayManager(LoRaDevice loRaDevice, LoRaDeviceAPIServiceBase deviceApi)
             : base(null, null, null, loRaDevice)
         {
-            Logger.Log(loRaDevice.DevEUI, "Using LoRaADRMultiGatewayManager", LogLevel.Debug);
+            Logger.Log(loRaDevice.DevEUI, "using LoRaADRMultiGatewayManager", LogLevel.Debug);
             this.deviceApi = deviceApi;
         }
 
@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer.ADR
                 RequiredSnr = newEntry.Snr
             });
 
-            Logger.Log(newEntry.DevEUI, "Stored ADRTableEntry", LogLevel.Debug);
+            Logger.Log(newEntry.DevEUI, "stored ADRTableEntry", LogLevel.Debug);
         }
 
         public async override Task<LoRaADRResult> CalculateADRResultAndAddEntry(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, LoRaADRTableEntry newEntry = null)
@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer.ADR
             });
 
             await this.TryUpdateState(result);
-            Logger.Log(newEntry.DevEUI, $"Calculated ADR: CanConfirmToDevice: {result.CanConfirmToDevice}, TxPower: {result.TxPower}, DataRate: {result.DataRate}", LogLevel.Debug);
+            Logger.Log(newEntry.DevEUI, $"calculated ADR: CanConfirmToDevice: {result.CanConfirmToDevice}, TxPower: {result.TxPower}, DataRate: {result.DataRate}", LogLevel.Debug);
             return result;
         }
 

@@ -160,34 +160,6 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        //// Commenting out as member of other test case
-        //// Ensures that Mac Commands C2D messages working
-        //// Uses Device24_ABP
-        // [Fact]
-        // public async Task Test_ABP_Unconfirmed_React_To_Adr_Ack_Req()
-        // {
-        //    var device = this.TestFixtureCi.Device24_ABP;
-        //    this.LogTestStart(device);
-        //    await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
-        //    await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
-        //    await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
-        //    await this.ArduinoDevice.setDataRateAsync(LoRaArduinoSerial._data_rate_t.DR4, LoRaArduinoSerial._physical_type_t.EU868);
-        //    await this.ArduinoDevice.setAdaptiveDataRateAsync(true);
-        //    // Starting ADR test protocol
-        //    Console.WriteLine($"Starting ADR test protocol");
-        //    this.Log($"{device.DeviceID}: Starting ADR protocol
-        //    for (var i = 0; i < 65; ++i)
-        //    {
-        //        var message = PayloadGenerator.Next().ToString();
-        //        await this.ArduinoDevice.transferPacketAsync(message, 10);
-        //        await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
-        //        await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
-        //    }
-        //    await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES * 4);
-        //    await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: ADR Ack request received");
-        //    await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: Performing a rate adaptation: datarate");
-        //    await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES * 4);
-        //  }
         private string ToHexString(string str)
         {
             var sb = new StringBuilder();

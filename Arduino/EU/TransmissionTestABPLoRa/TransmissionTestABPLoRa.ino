@@ -21,7 +21,7 @@ char * nwkSKey = "3B7E151628AED2A6ABF7158809CF4F3C";
 */
 
 //set initial datarate and physical information for the device
-_data_rate_t dr = DR2;
+_data_rate_t dr = DR6;
 _physical_type_t physicalType = EU868 ;
 
 //internal variables
@@ -49,7 +49,7 @@ void setup(void)
 
   lora.setReceiceWindowFirst(0, 868.1);
 
-  lora.setAdaptiveDataRate(true);
+  lora.setAdaptiveDataRate(false);
 
   lora.setDutyCycle(false);
   lora.setJoinDutyCycle(false);

@@ -606,7 +606,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public async Task<bool> TrySaveADRProperties()
+        public async Task<bool> TrySaveADRPropertiesAsync()
         {
             var reportedProperties = new TwinCollection();
             reportedProperties[TwinProperty.DataRate] = this.DataRate;

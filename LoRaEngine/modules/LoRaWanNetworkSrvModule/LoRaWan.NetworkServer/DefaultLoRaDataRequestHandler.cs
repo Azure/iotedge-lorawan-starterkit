@@ -469,9 +469,6 @@ loRaDevice.SetFcntUp(payloadFcnt);
             return bundlerResult;
         }
 
-        /// <summary>
-        /// Perform ADR in case of Single Gateway Scenario
-        /// </summary>
         private async Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, ushort payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
             var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
@@ -501,6 +498,7 @@ loRaDevice.SetFcntUp(payloadFcnt);
                     request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
                     request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
                     loRaADRTableEntry);
+                Logger.Log(loRaDevice.DevEUI, $"device sent Adr Ack Request, computing an answer", LogLevel.Information);
             }
 
             return loRaADRResult;
