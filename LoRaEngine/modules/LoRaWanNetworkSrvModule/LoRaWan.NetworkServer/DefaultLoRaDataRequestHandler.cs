@@ -108,7 +108,7 @@ namespace LoRaWan.NetworkServer
                 var isFrameCounterFromNewlyStartedDevice = false;
                 if (payloadFcnt <= 1)
                 {
-                    // if we got an ADR result, we have to send the update to the device
+                    // if we got an ADR result or request, we have to send the update to the device
                     requiresConfirmation = true;
                 }
 
@@ -124,7 +124,7 @@ namespace LoRaWan.NetworkServer
                         if (!deduplicationResult.CanProcess)
                         {
                             // duplication strategy is indicating that we do not need to continue processing this message
-                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: {payloadFcnt}", LogLevel.Information);
+                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcnt}", LogLevel.Information);
                             return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
                         }
                     }
@@ -469,6 +469,9 @@ loRaDevice.SetFcntUp(payloadFcnt);
             return bundlerResult;
         }
 
+        /// <summary>
+        /// Perform ADR in case of Single Gateway Scenario
+        /// </summary>
         private async Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, ushort payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
             var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
@@ -498,7 +501,6 @@ loRaDevice.SetFcntUp(payloadFcnt);
                     request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
                     request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
                     loRaADRTableEntry);
-                Logger.Log(loRaDevice.DevEUI, $"Device sent Adr Ack Request, computing an answer", LogLevel.Information);
             }
 
             return loRaADRResult;

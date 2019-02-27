@@ -96,11 +96,11 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.Cid;
-            yield return this.DataRateTXPower;
-            yield return (byte)this.ChMask;
-            yield return (byte)(this.ChMask >> 8);
             yield return this.Redundancy;
+            yield return (byte)(this.ChMask >> 8);
+            yield return (byte)this.ChMask;
+            yield return this.DataRateTXPower;
+            yield return (byte)this.Cid;
         }
 
         public override string ToString()
