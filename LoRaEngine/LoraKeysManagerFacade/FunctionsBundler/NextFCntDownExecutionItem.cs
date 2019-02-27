@@ -8,12 +8,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
     internal class NextFCntDownExecutionItem : IFunctionBundlerExecutionItem
     {
-        public Task<FunctionBundlerExecutionState> Execute(string devEUI, FunctionBundlerRequest request, FunctionBundlerResult result, string functionAppDirectory)
+        public Task<FunctionBundlerExecutionState> Execute(IPipelineExecutionContext context)
         {
-            if (!result.NextFCntDown.HasValue)
+            if (!context.Result.NextFCntDown.HasValue)
             {
-                var next = FCntCacheCheck.GetNextFCntDown(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, functionAppDirectory);
-                result.NextFCntDown = next > 0 ? next : (int?)null;
+                var next = FCntCacheCheck.GetNextFCntDown(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.FunctionAppDirectory);
+                context.Result.NextFCntDown = next > 0 ? next : (int?)null;
             }
 
             return Task.FromResult(FunctionBundlerExecutionState.Continue);
@@ -24,7 +24,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             return (item & FunctionBundlerItem.FCntDown) == FunctionBundlerItem.FCntDown;
         }
 
-        public Task OnAbortExecution(string devEUI, FunctionBundlerRequest request, FunctionBundlerResult result, string functionAppDirectory)
+        public Task OnAbortExecution(IPipelineExecutionContext context)
         {
             return Task.CompletedTask;
         }
