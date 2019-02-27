@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
 
         public async Task<FunctionBundlerResult> Execute()
         {
-            var result = await this.deviceApi.FunctionBundler(this.devEui, this.request);
+            var result = await this.deviceApi.ExecuteFunctionBundlerAsync(this.devEui, this.request);
 
             if (this.deduplicationStrategy != null && result.DeduplicationResult != null)
             {

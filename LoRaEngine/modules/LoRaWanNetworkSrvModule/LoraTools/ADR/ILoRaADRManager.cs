@@ -7,14 +7,14 @@ namespace LoRaTools.ADR
 
     public interface ILoRaADRManager
     {
-        Task StoreADREntry(LoRaADRTableEntry newEntry);
+        Task StoreADREntryAsync(LoRaADRTableEntry newEntry);
 
-        Task<LoRaADRResult> CalculateADRResultAndAddEntry(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int dataRate, int minTxPower, LoRaADRTableEntry newEntry = null);
+        Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int dataRate, int minTxPower, LoRaADRTableEntry newEntry = null);
 
-        Task<LoRaADRResult> GetLastResult(string devEUI);
+        Task<LoRaADRResult> GetLastResultAsync(string devEUI);
 
-        Task<LoRaADRTableEntry> GetLastEntry(string devEUI);
+        Task<LoRaADRTableEntry> GetLastEntryAsync(string devEUI);
 
-        Task<bool> Reset(string devEUI);
+        Task<bool> ResetAsync(string devEUI);
     }
 }

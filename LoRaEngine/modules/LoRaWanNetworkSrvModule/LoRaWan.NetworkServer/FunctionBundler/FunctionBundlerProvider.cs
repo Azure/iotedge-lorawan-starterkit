@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer
                 };
             }
 
-            Logger.Log(loRaDevice.DevEUI, "New FunctionBundler Request: ", bundlerRequest.AdrRequest, LogLevel.Debug);
+            Logger.Log(loRaDevice.DevEUI, "new FunctionBundler Request: ", bundlerRequest.AdrRequest, LogLevel.Debug);
 
             return new FunctionBundler(loRaDevice.DevEUI, this.deviceApi, bundlerRequest, deduplicationStrategy);
         }

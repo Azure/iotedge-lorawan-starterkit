@@ -19,12 +19,12 @@ namespace LoRaTools.ADR
             this.strategyProvider = strategyProvider;
         }
 
-        protected virtual Task<bool> TryUpdateState(LoRaADRResult loRaADRResult)
+        protected virtual Task<bool> TryUpdateStateAsync(LoRaADRResult loRaADRResult)
         {
             return Task.FromResult<bool>(true);
         }
 
-        public virtual async Task StoreADREntry(LoRaADRTableEntry newEntry)
+        public virtual async Task StoreADREntryAsync(LoRaADRTableEntry newEntry)
         {
             if (newEntry == null)
             {
@@ -40,7 +40,7 @@ namespace LoRaTools.ADR
             await this.store.AddTableEntry(newEntry);
         }
 
-        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntry(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, LoRaADRTableEntry newEntry = null)
+        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, LoRaADRTableEntry newEntry = null)
         {
             var table = newEntry != null
                         ? await this.store.AddTableEntry(newEntry)
@@ -58,13 +58,13 @@ namespace LoRaTools.ADR
                     table.CurrentNbRep = result.NbRepetition;
                     table.CurrentTxPower = result.TxPower;
                     await this.store.UpdateADRTable(devEUI, table);
-                    await this.TryUpdateState(result);
+                    await this.TryUpdateStateAsync(result);
                     result.FCntDown = nextFcntDown;
                 }
             }
             else
             {
-                result = await this.GetLastResult(devEUI) ?? new LoRaADRResult();
+                result = await this.GetLastResultAsync(devEUI) ?? new LoRaADRResult();
             }
 
             result.NumberOfFrames = table.Entries.Count;
@@ -77,7 +77,7 @@ namespace LoRaTools.ADR
             return Task.FromResult<int>(-1);
         }
 
-        public virtual async Task<LoRaADRResult> GetLastResult(string devEUI)
+        public virtual async Task<LoRaADRResult> GetLastResultAsync(string devEUI)
         {
             var table = await this.store.GetADRTable(devEUI);
 
@@ -91,13 +91,13 @@ namespace LoRaTools.ADR
                 : null;
         }
 
-        public virtual async Task<LoRaADRTableEntry> GetLastEntry(string devEUI)
+        public virtual async Task<LoRaADRTableEntry> GetLastEntryAsync(string devEUI)
         {
             var table = await this.store.GetADRTable(devEUI);
             return table != null && table.Entries.Count > 0 ? table.Entries[table.Entries.Count - 1] : null;
         }
 
-        public virtual async Task<bool> Reset(string devEUI)
+        public virtual async Task<bool> ResetAsync(string devEUI)
         {
             return await this.store.Reset(devEUI);
         }

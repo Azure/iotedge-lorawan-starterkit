@@ -95,7 +95,7 @@ namespace LoRaWan.NetworkServer.Test
                 this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, 0, startingPayloadFcnt + 1, this.ServerConfiguration.GatewayID))
                     .ReturnsAsync((ushort)1);
                 this.LoRaDeviceApi
-                    .Setup(x => x.FunctionBundler(devEUI, It.IsAny<FunctionBundlerRequest>()))
+                    .Setup(x => x.ExecuteFunctionBundlerAsync(devEUI, It.IsAny<FunctionBundlerRequest>()))
                     .ReturnsAsync(() => new FunctionBundlerResult
                     {
                         AdrResult = new LoRaTools.ADR.LoRaADRResult

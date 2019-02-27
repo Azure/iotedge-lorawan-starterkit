@@ -454,12 +454,12 @@ namespace LoRaWan.NetworkServer
             // If the ADR req bit is not set we don't perform rate adaptation.
             if (!loraPayload.IsAdrReq)
             {
-                _ = loRaADRManager.StoreADREntry(loRaADRTableEntry);
+                _ = loRaADRManager.StoreADREntryAsync(loRaADRTableEntry);
             }
             else
             {
                 Logger.Log(loRaDevice.DevEUI, $"ADR Ack request received", LogLevel.Information);
-                loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntry(
+                loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntryAsync(
                     loRaDevice.DevEUI,
                     this.configuration.GatewayID,
                     payloadFcnt,

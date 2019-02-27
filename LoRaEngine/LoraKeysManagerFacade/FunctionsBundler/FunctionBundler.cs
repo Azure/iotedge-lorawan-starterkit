@@ -27,7 +27,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
             catch (IncompatibleVersionException ex)
             {
-                return new BadRequestObjectResult(ex);
+                return new BadRequestObjectResult(ex.Message);
             }
 
             EUIValidator.ValidateDevEUI(devEUI);
