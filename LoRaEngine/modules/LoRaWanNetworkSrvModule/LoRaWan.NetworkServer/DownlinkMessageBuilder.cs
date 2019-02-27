@@ -249,8 +249,10 @@ namespace LoRaWan.NetworkServer
                             if (rxpk != null)
                             {
                                 var linkCheckAnswer = new LinkCheckAnswer(rxpk.GetModulationMargin(), 1);
-                                macCommands.Add((int)CidEnum.LinkCheckCmd, linkCheckAnswer);
-                                Logger.Log(devEUI, $"Answering to a Mac Command Request {linkCheckAnswer.ToString()}", LogLevel.Information);
+                                if (macCommands.TryAdd((int)CidEnum.LinkCheckCmd, linkCheckAnswer))
+                                {
+                                    Logger.Log(devEUI, $"Answering to a Mac Command Request {linkCheckAnswer.ToString()}", LogLevel.Information);
+                                }
                             }
 
                             break;

@@ -26,11 +26,6 @@
   <ItemGroup>
     <AdditionalFiles Include="../../../../stylecop.json" Link="stylecop.json" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Y:\dev\github.com\Azure\iotedge-lorawan-starterkit\LoRaEngine\diagrams\BasicClassDiagram.cd">
-      <Link>BasicClassDiagram.cd</Link>
-    </None>
-  </ItemGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>../../../../stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>

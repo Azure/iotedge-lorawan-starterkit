@@ -44,7 +44,11 @@ namespace LoRaWan.NetworkServer
 
         private string SanitizeApiURL(string value)
         {
-            if (string.IsNullOrEmpty(value) || value.EndsWith('/'))
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            value = value.Trim();
+            if (value.EndsWith('/'))
                 return value;
 
             return string.Concat(value, "/");

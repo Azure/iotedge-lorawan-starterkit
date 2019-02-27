@@ -21,8 +21,8 @@ namespace LoRaWan.NetworkServer
 
         public LoRaCloudToDeviceMessageWrapper(LoRaDevice loRaDevice, Message message)
         {
-            this.loRaDevice = loRaDevice;
-            this.message = message;
+            this.loRaDevice = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
+            this.message = message ?? throw new ArgumentNullException(nameof(message));
 
             this.ParseMessage();
         }
@@ -56,10 +56,7 @@ namespace LoRaWan.NetworkServer
         {
             get
             {
-                if (this.parseCloudToDeviceMessage != null)
-                    return this.parseCloudToDeviceMessage.Fport;
-
-                return 0;
+                return this.parseCloudToDeviceMessage?.Fport ?? 0;
             }
         }
 

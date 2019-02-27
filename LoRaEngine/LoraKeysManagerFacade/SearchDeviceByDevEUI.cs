@@ -19,11 +19,6 @@ namespace LoraKeysManagerFacade
         [FunctionName(nameof(GetDeviceByDevEUI))]
         public static async Task<IActionResult> GetDeviceByDevEUI([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
         {
-            return await RunGetDeviceByDevEUI(req, log, context, ApiVersion.LatestVersion);
-        }
-
-        private static async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log, ExecutionContext context, ApiVersion currentApiVersion)
-        {
             try
             {
                 VersionValidator.Validate(req);
@@ -31,9 +26,14 @@ namespace LoraKeysManagerFacade
             catch (IncompatibleVersionException ex)
             {
                 log.LogError(ex, "Invalid version");
-                return new BadRequestObjectResult(ex);
+                return new BadRequestObjectResult(ex.Message);
             }
 
+            return await RunGetDeviceByDevEUI(req, log, context, ApiVersion.LatestVersion);
+        }
+
+        private static async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log, ExecutionContext context, ApiVersion currentApiVersion)
+        {
             string devEUI = req.Query["DevEUI"];
             if (string.IsNullOrEmpty(devEUI))
             {

@@ -273,7 +273,7 @@ Sending cloud to device messages in the solution uses the following JSON format 
 |fport|Integer|Payload fport, must be between 1 and 223|Yes
 |confirmed|Boolean|Indicates if an ack is required from the LoRa device. By default `false`|No
 |payload|String|Payload as text|Either `payload` or `rawPayload` must be provided|
-|rawPayload|String|Payload as bytem encoded in base64 format|Either `payload` or `rawPayload` must be provided|
+|rawPayload|String|Payload as byte encoded in base64 format|Either `payload` or `rawPayload` must be provided|
 
 ### Class A devices
 

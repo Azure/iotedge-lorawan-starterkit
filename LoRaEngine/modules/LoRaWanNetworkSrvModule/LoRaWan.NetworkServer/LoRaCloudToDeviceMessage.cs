@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
     public class LoRaCloudToDeviceMessage : ILoRaCloudToDeviceMessage
@@ -61,9 +62,10 @@ namespace LoRaWan.NetworkServer
                 {
                     return Convert.FromBase64String(this.RawPayload);
                 }
-                catch (FormatException)
+                catch (FormatException ex)
                 {
                     // Invalid base64 string, return empty payload
+                    Logger.Log($"Payload '{this.RawPayload}' is not a valid base64 value: {ex.Message}", LogLevel.Error);
                 }
             }
 

@@ -28,7 +28,10 @@ namespace LoRaWan.NetworkServer
             this.loading = Task.Run(() => this.LoadAsync());
         }
 
-        // Waits until device is created
+        /// <summary>
+        /// Returns Task containing the device loading execution.
+        /// Waiting for it will suspend your thread/task until the device join is complete
+        /// </summary>
         internal Task<LoRaDevice> WaitCompleteAsync() => this.loading;
 
         async Task<LoRaDevice> LoadAsync()

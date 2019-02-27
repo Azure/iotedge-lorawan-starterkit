@@ -403,10 +403,7 @@ namespace LoRaWan.NetworkServer
         private async Task<ILoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
         {
             var actualMessage = await loRaDevice.ReceiveCloudToDeviceAsync(timeAvailableToCheckCloudToDeviceMessages);
-            if (actualMessage != null)
-                return new LoRaCloudToDeviceMessageWrapper(loRaDevice, actualMessage);
-
-            return null;
+            return (actualMessage != null) ? new LoRaCloudToDeviceMessageWrapper(loRaDevice, actualMessage) : null;
         }
 
         private bool ValidateCloudToDeviceMessage(LoRaDevice loRaDevice, ILoRaCloudToDeviceMessage cloudToDeviceMsg)
