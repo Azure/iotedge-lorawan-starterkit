@@ -3,9 +3,9 @@
 //set to true to send confirmed data up messages
 bool confirmed=true;
 //application information, should be similar to what was provisiionned in the device twins
-char * deviceId ="47AAC86800430028";
-char * appKey="8AFE71A145B253E49C3031AD068277A1";
-char* appEui ="BE7A0000000014E2";
+char * deviceId ="BE7A000000002C5E";
+char * appKey="03302E1D4D5286EFB5736599DB5C734C";
+char* appEui ="BE7A000000001B25";
 
 /*
 iot hub OTAA tags for deviceid: 47AAC86800430028 

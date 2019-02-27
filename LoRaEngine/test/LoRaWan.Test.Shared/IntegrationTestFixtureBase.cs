@@ -145,24 +145,33 @@ namespace LoRaWan.Test.Shared
 
         public async Task SendCloudToDeviceMessage(string deviceId, Message message)
         {
-            var sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString);
-            await sc.SendAsync(deviceId, message);
+            using (var sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString))
+            {
+                await sc.SendAsync(deviceId, message);
+            }
         }
 
-        public async Task SendDirectMessageToDevice(string deviceId, string moduleId, CloudToDeviceMethod method)
+        public async Task InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod method)
         {
-            var sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString);
-            var result = await sc.InvokeDeviceMethodAsync(deviceId, moduleId, method);
+            using (var sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString))
+            {
+                await sc.InvokeDeviceMethodAsync(deviceId, moduleId, method);
+            }
         }
 
         public async Task UpdateReportedTwinAsync(string deviceId, string twinName, int twinValue)
         {
-            // "HostName=myuniquetestmikouhub.azure-devices.net;DeviceId=0100000000000005;SharedAccessKey=EhUc+1weQoRGk78VGN7Wiq2hHvf8hpgv1g+LwpVzxpw="
-            Microsoft.Azure.Devices.Client.DeviceClient device = Microsoft.Azure.Devices.Client.DeviceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString, deviceId);
-            var twinCollection = new TwinCollection();
-            twinCollection[twinName] = twinValue;
-            await device.UpdateReportedPropertiesAsync(twinCollection);
-            device.Dispose();
+            try
+            {
+                Microsoft.Azure.Devices.Client.DeviceClient device = Microsoft.Azure.Devices.Client.DeviceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString, deviceId);
+                var twinCollection = new TwinCollection();
+                twinCollection[twinName] = twinValue;
+                await device.UpdateReportedPropertiesAsync(twinCollection);
+                device.Dispose();
+            }
+            catch (System.InvalidOperationException)
+            {
+            }
         }
 
         public virtual async Task InitializeAsync()

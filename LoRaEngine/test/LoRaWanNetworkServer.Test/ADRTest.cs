@@ -23,7 +23,7 @@ namespace LoRaWanNetworkServer.Test
         // deviceId, # messages sent, isAdrReplyExpected, ExpectedDR, expectedPower, expectedNbRep
         [InlineData(10, 70, true, 5, 7, 1)]
         [InlineData(11, 15, false, 0, 0, 0)]
-        public async Task Perform_Rate_Adapatation_When_Possible(uint deviceId, int count, bool expectADRApatation, int expectedDR, int expectedTXPower, int expectedNbRep)
+        public async Task Perform_Rate_Adapatation_When_Possible(uint deviceId, int count, bool expectADRAdaptation, int expectedDR, int expectedTXPower, int expectedNbRep)
         {
             int payloadFcnt = 0;
             const int InitialDeviceFcntUp = 9;
@@ -74,19 +74,17 @@ namespace LoRaWanNetworkServer.Test
             this.LoRaDeviceClient.VerifyAll();
             this.LoRaDeviceApi.VerifyAll();
 
-            // 2. Return is downstream message
-            if (expectADRApatation)
-            {
-                Assert.NotNull(request.ResponseDownlink);
-                Assert.True(request.ProcessingSucceeded);
-                Assert.Single(this.PacketForwarder.DownlinkMessages);
-                var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
-                var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            Assert.NotNull(request.ResponseDownlink);
+            Assert.True(request.ProcessingSucceeded);
+            Assert.Single(this.PacketForwarder.DownlinkMessages);
+            var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
+            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
 
+            if (expectADRAdaptation)
+            {
                 // We expect a mac command in the payload
                 Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
                 var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-                Array.Reverse(decryptedPayload);
                 Assert.Equal(0, payloadDataDown.Fport.Span[0]);
                 Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
                 var linkAdr = new LinkADRRequest(decryptedPayload);
@@ -113,10 +111,9 @@ namespace LoRaWanNetworkServer.Test
             }
             else
             {
-                // In this case we don't expect any answer.
-                Assert.Null(request.ResponseDownlink);
-                Assert.True(request.ProcessingSucceeded);
-                Assert.Equal(payloadFcnt, loraDevice.FCntUp);
+                // In this case, no ADR adaptation is performed, so the message should be empty
+                Assert.Equal(0, payloadDataDown.Frmpayload.Span.Length);
+                Assert.Equal(0, payloadDataDown.Fopts.Span.Length);
             }
         }
 
@@ -191,21 +188,21 @@ namespace LoRaWanNetworkServer.Test
             this.LoRaDeviceApi.VerifyAll();
             Assert.True(request.ProcessingSucceeded);
 
+            Assert.NotNull(request.ResponseDownlink);
+            Assert.Single(this.PacketForwarder.DownlinkMessages);
+            var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
+            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+            // We expect a mac command in the payload
             if (deviceId == 6 || deviceId == 1)
             {
-                // In case of this particular test, we ensure that the server don't try to lower the Datarate (Forbidden)
-                Assert.Null(request.ResponseDownlink);
+                // In this case, no ADR adaptation is performed, so the message should be empty
+                Assert.Equal(0, payloadDataDown.Frmpayload.Span.Length);
+                Assert.Equal(0, payloadDataDown.Fopts.Span.Length);
             }
             else
             {
-                Assert.NotNull(request.ResponseDownlink);
-                Assert.Single(this.PacketForwarder.DownlinkMessages);
-                var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
-                var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
-                // We expect a mac command in the payload
                 Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
                 var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-                Array.Reverse(decryptedPayload);
                 Assert.Equal(0, payloadDataDown.Fport.Span[0]);
                 Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
                 var linkAdr = new LinkADRRequest(decryptedPayload);
@@ -298,7 +295,6 @@ namespace LoRaWanNetworkServer.Test
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Array.Reverse(decryptedPayload);
             Assert.Equal(0, payloadDataDown.Fport.Span[0]);
             Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
             var linkAdr = new LinkADRRequest(decryptedPayload);
@@ -345,7 +341,6 @@ namespace LoRaWanNetworkServer.Test
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Array.Reverse(decryptedPayload);
             Assert.Equal(0, payloadDataDown.Fport.Span[0]);
             Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
@@ -476,7 +471,6 @@ namespace LoRaWanNetworkServer.Test
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Array.Reverse(decryptedPayload);
             Assert.Equal(0, payloadDataDown.Fport.Span[0]);
             Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
@@ -519,7 +513,6 @@ namespace LoRaWanNetworkServer.Test
             // We expect a mac command in the payload
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Array.Reverse(decryptedPayload);
             Assert.Equal(0, payloadDataDown.Fport.Span[0]);
             Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);

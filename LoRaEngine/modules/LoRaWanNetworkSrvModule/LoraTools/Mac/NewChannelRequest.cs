@@ -38,12 +38,12 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.Cid;
-            yield return (byte)this.ChIndex;
-            yield return (byte)this.Freq[0];
-            yield return (byte)this.Freq[1];
-            yield return (byte)this.Freq[2];
             yield return (byte)this.DrRange;
+            yield return (byte)this.Freq[2];
+            yield return (byte)this.Freq[1];
+            yield return (byte)this.Freq[0];
+            yield return (byte)this.ChIndex;
+            yield return (byte)this.Cid;
         }
 
         public override string ToString()

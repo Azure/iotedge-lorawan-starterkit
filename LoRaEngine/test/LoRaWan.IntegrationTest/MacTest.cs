@@ -53,7 +53,7 @@ namespace LoRaWan.IntegrationTest
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: LinkCheckCmd mac command detected in upstream payload:");
             }
 
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: Answering to a");
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: answering to a");
             await this.ArduinoDevice.setPortAsync(1);
 
             this.TestFixtureCi.ClearLogs();

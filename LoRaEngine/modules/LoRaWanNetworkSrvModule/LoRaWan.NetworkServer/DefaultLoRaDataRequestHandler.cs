@@ -91,9 +91,9 @@ namespace LoRaWan.NetworkServer
                     loRaADRResult = await this.PerformADR(request, loRaDevice, loraPayload, payloadFcnt, loRaADRResult, frameCounterStrategy);
                 }
 
-                if (loRaADRResult?.CanConfirmToDevice == true)
+                if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrReq)
                 {
-                    // if we got an ADR result, we have to send the update to the device
+                    // if we got an ADR result or request, we have to send the update to the device
                     requiresConfirmation = true;
                 }
 
@@ -109,7 +109,7 @@ namespace LoRaWan.NetworkServer
                         if (!deduplicationResult.CanProcess)
                         {
                             // duplication strategy is indicating that we do not need to continue processing this message
-                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: {payloadFcnt}", LogLevel.Information);
+                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcnt}", LogLevel.Information);
                             return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
                         }
                     }
@@ -436,6 +436,9 @@ namespace LoRaWan.NetworkServer
             return bundlerResult;
         }
 
+        /// <summary>
+        /// Perform ADR in case of Single Gateway Scenario
+        /// </summary>
         private async Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, ushort payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
             var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
@@ -465,7 +468,6 @@ namespace LoRaWan.NetworkServer
                     request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
                     request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
                     loRaADRTableEntry);
-                Logger.Log(loRaDevice.DevEUI, $"Device sent Adr Ack Request, computing an answer", LogLevel.Information);
             }
 
             return loRaADRResult;
@@ -506,7 +508,7 @@ namespace LoRaWan.NetworkServer
                     return false;
                 }
 
-                Logger.Log(loRaDevice.DevEUI, $"Could not parse fport byte value '{fport}' in C2D message '{cloudToDeviceMsg.MessageId}'", LogLevel.Error);
+                Logger.Log(loRaDevice.DevEUI, $"could not parse fport byte value '{fport}' in C2D message '{cloudToDeviceMsg.MessageId}'", LogLevel.Error);
                 return false;
             }
             else
@@ -570,7 +572,7 @@ namespace LoRaWan.NetworkServer
                     fport = byte.Parse(fPortValue);
                 }
 
-                Logger.Log(loRaDevice.DevEUI, $"Sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Debug);
+                Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Debug);
 
                 frmPayload = cloudToDeviceMessage?.GetBytes();
 
@@ -671,7 +673,7 @@ namespace LoRaWan.NetworkServer
             if (loRaPayloadData.IsUpwardAck())
             {
                 eventProperties = new Dictionary<string, string>();
-                Logger.Log(loRaDevice.DevEUI, $"Message ack received for C2D message id {loRaDevice.LastConfirmedC2DMessageID}", LogLevel.Information);
+                Logger.Log(loRaDevice.DevEUI, $"message ack received for C2D message id {loRaDevice.LastConfirmedC2DMessageID}", LogLevel.Information);
                 eventProperties.Add(Constants.C2D_MSG_PROPERTY_VALUE_NAME, loRaDevice.LastConfirmedC2DMessageID ?? Constants.C2D_MSG_ID_PLACEHOLDER);
                 loRaDevice.LastConfirmedC2DMessageID = null;
             }
@@ -726,7 +728,7 @@ namespace LoRaWan.NetworkServer
                     (int)CidEnum.LinkCheckCmd,
                     linkCheckAnswer);
 
-                Logger.Log(devEUI, $"Answering to a Mac Command Request {linkCheckAnswer.ToString()}", LogLevel.Information);
+                Logger.Log(devEUI, $"answering to a Mac Command Request {linkCheckAnswer.ToString()}", LogLevel.Information);
             }
 
             if (cloudToDeviceMessage != null)
@@ -739,10 +741,10 @@ namespace LoRaWan.NetworkServer
                         var macCmd = MacCommand.CreateMacCommandFromC2DMessage(cidTypeValue, cloudToDeviceMessage.Properties);
                         if (!macCommands.TryAdd((int)macCmd.Cid, macCmd))
                         {
-                            Logger.Log(devEUI, $"Could not send the C2D Mac Command {cidTypeValue}, as such a property was already present in the message. Please resend the C2D", LogLevel.Error);
+                            Logger.Log(devEUI, $"could not send the C2D Mac Command {cidTypeValue}, as such a property was already present in the message. Please resend the C2D", LogLevel.Error);
                         }
 
-                        Logger.Log(devEUI, $"Cloud to device MAC command {cidTypeValue} received {macCmd}", LogLevel.Information);
+                        Logger.Log(devEUI, $"cloud to device MAC command {cidTypeValue} received {macCmd}", LogLevel.Information);
                     }
                     catch (MacCommandException ex)
                     {
@@ -753,11 +755,11 @@ namespace LoRaWan.NetworkServer
 
             // ADR Part.
             // Currently only replying on ADR Req
-            if (loRaADRResult?.CanConfirmToDevice == true && loRaPayload.IsAdrReq)
+            if (loRaADRResult?.CanConfirmToDevice == true)
             {
-                LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, 0, 0, (byte)loRaADRResult.NbRepetition);
+                LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, 25, 0, (byte)loRaADRResult.NbRepetition);
                 macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
-                Logger.Log(devEUI, $"Performing a rate adaptation: datarate {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetion {loRaADRResult.NbRepetition}", LogLevel.Information);
+                Logger.Log(devEUI, $"performing a rate adaptation: datarate {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetion {loRaADRResult.NbRepetition}", LogLevel.Information);
             }
 
             return macCommands.Values;
