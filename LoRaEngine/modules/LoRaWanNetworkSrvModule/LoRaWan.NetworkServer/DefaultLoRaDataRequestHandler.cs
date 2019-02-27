@@ -436,9 +436,6 @@ namespace LoRaWan.NetworkServer
             return bundlerResult;
         }
 
-        /// <summary>
-        /// Perform ADR in case of Single Gateway Scenario
-        /// </summary>
         private async Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, ushort payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
             var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
@@ -468,6 +465,7 @@ namespace LoRaWan.NetworkServer
                     request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
                     request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
                     loRaADRTableEntry);
+                Logger.Log(loRaDevice.DevEUI, $"device sent Adr Ack Request, computing an answer", LogLevel.Information);
             }
 
             return loRaADRResult;
@@ -757,7 +755,8 @@ namespace LoRaWan.NetworkServer
             // Currently only replying on ADR Req
             if (loRaADRResult?.CanConfirmToDevice == true)
             {
-                LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, 25, 0, (byte)loRaADRResult.NbRepetition);
+                const int placeholderChannel = 25;
+                LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, placeholderChannel, 0, (byte)loRaADRResult.NbRepetition);
                 macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
                 Logger.Log(devEUI, $"performing a rate adaptation: datarate {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetion {loRaADRResult.NbRepetition}", LogLevel.Information);
             }

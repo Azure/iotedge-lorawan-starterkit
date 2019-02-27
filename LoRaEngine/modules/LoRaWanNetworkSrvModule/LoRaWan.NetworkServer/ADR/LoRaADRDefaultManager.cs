@@ -32,9 +32,9 @@ namespace LoRaWan.NetworkServer.ADR
                  // todo check serialization and update twin
                 if (loRaADRResult.CanConfirmToDevice)
                 {
-                    if (!await this.LoRaDevice.TrySaveADRProperties())
+                    if (!await this.LoRaDevice.TrySaveADRPropertiesAsync())
                     {
-                        Logger.Log(this.LoRaDevice.DevEUI, $"Could not save new ADR poperties on twins ", LogLevel.Error);
+                        Logger.Log(this.LoRaDevice.DevEUI, $"could not save new ADR poperties on twins ", LogLevel.Error);
                         return false;
                     }
                 }

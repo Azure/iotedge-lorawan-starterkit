@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer.ADR
 
     public class LoRAADRManagerFactory : ILoRAADRManagerFactory
     {
-        private LoRaDeviceAPIServiceBase loRaDeviceAPIService;
+        private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private static readonly object InMemoryStoreLock = new object();
         private static volatile LoRaADRInMemoryStore inMemoryStore;
 
