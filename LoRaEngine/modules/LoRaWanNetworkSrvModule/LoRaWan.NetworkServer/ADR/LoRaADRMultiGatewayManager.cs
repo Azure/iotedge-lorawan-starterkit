@@ -19,14 +19,14 @@ namespace LoRaWan.NetworkServer.ADR
             this.deviceApi = deviceApi;
         }
 
-        public override Task<bool> Reset(string devEUI)
+        public override Task<bool> ResetAsync(string devEUI)
         {
             return this.deviceApi.ClearADRCache(devEUI);
         }
 
-        public async override Task StoreADREntry(LoRaADRTableEntry newEntry)
+        public async override Task StoreADREntryAsync(LoRaADRTableEntry newEntry)
         {
-            await this.deviceApi.CalculateADRAndStoreFrame(newEntry.DevEUI, new LoRaADRRequest
+            await this.deviceApi.CalculateADRAndStoreFrameAsync(newEntry.DevEUI, new LoRaADRRequest
             {
                 FCntUp = newEntry.FCnt,
                 GatewayId = newEntry.GatewayId,
@@ -36,9 +36,9 @@ namespace LoRaWan.NetworkServer.ADR
             Logger.Log(newEntry.DevEUI, "stored ADRTableEntry", LogLevel.Debug);
         }
 
-        public async override Task<LoRaADRResult> CalculateADRResultAndAddEntry(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, LoRaADRTableEntry newEntry = null)
+        public async override Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, LoRaADRTableEntry newEntry = null)
         {
-            var result = await this.deviceApi.CalculateADRAndStoreFrame(devEUI, new LoRaADRRequest
+            var result = await this.deviceApi.CalculateADRAndStoreFrameAsync(devEUI, new LoRaADRRequest
             {
                 DataRate = upstreamDataRate,
                 FCntDown = fCntDown,
@@ -49,12 +49,12 @@ namespace LoRaWan.NetworkServer.ADR
                 RequiredSnr = requiredSnr
             });
 
-            await this.TryUpdateState(result);
-            Logger.Log(newEntry.DevEUI, $"calculated ADR: CanConfirmToDevice: {result.CanConfirmToDevice}, TxPower: {result.TxPower}, DataRate: {result.DataRate}", LogLevel.Debug);
+            await this.TryUpdateStateAsync(result);
+            Logger.Log(newEntry.DevEUI, $"Calculated ADR: CanConfirmToDevice: {result.CanConfirmToDevice}, TxPower: {result.TxPower}, DataRate: {result.DataRate}", LogLevel.Debug);
             return result;
         }
 
-        protected override async Task<bool> TryUpdateState(LoRaADRResult loRaADRResult)
+        protected override async Task<bool> TryUpdateStateAsync(LoRaADRResult loRaADRResult)
         {
             if (loRaADRResult != null)
             {
@@ -64,7 +64,7 @@ namespace LoRaWan.NetworkServer.ADR
                 }
             }
 
-            return await base.TryUpdateState(loRaADRResult);
+            return await base.TryUpdateStateAsync(loRaADRResult);
         }
     }
 }

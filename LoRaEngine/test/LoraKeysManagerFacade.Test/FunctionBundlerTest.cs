@@ -134,7 +134,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.Null(resp.NextFCntDown);
 
             // with ADR frames
-            await AdrManager.Reset(devEUI);
+            await AdrManager.ResetAsync(devEUI);
 
             await PrepareADRFrames(devEUI, LoRaADRTable.FrameCountCaptureCount - 1, req.AdrRequest);
             req.ClientFCntUp = req.AdrRequest.FCntUp;

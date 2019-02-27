@@ -96,7 +96,7 @@ namespace LoRaWan.NetworkServer.Test
 
                 // if we run with ADR, we will combine the call with the bundler
                 this.LoRaDeviceApi
-                    .Setup(x => x.FunctionBundler(devEUI, It.IsAny<FunctionBundlerRequest>()))
+                    .Setup(x => x.ExecuteFunctionBundlerAsync(devEUI, It.IsAny<FunctionBundlerRequest>()))
                     .ReturnsAsync(() => new FunctionBundlerResult
                         {
                             AdrResult = new LoRaTools.ADR.LoRaADRResult
@@ -138,7 +138,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.VerifyAll();
             if (isMultigateway && ((LoRaPayloadData)request.Payload).IsAdrEnabled)
             {
-                this.LoRaDeviceApi.Verify(x => x.FunctionBundler(devEUI, It.IsAny<FunctionBundlerRequest>()));
+                this.LoRaDeviceApi.Verify(x => x.ExecuteFunctionBundlerAsync(devEUI, It.IsAny<FunctionBundlerRequest>()));
             }
         }
 

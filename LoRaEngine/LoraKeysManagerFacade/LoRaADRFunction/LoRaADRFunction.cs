@@ -31,7 +31,7 @@ namespace LoraKeysManagerFacade
             }
             catch (IncompatibleVersionException ex)
             {
-                return new BadRequestObjectResult(ex);
+                return new BadRequestObjectResult(ex.Message);
             }
 
             EUIValidator.ValidateDevEUI(devEUI);
@@ -54,7 +54,7 @@ namespace LoraKeysManagerFacade
 
             if (request.ClearCache)
             {
-                await adrManager.Reset(devEUI);
+                await adrManager.ResetAsync(devEUI);
                 return new LoRaADRResult();
             }
 
@@ -68,12 +68,12 @@ namespace LoraKeysManagerFacade
 
             if (request.PerformADRCalculation)
             {
-                return await adrManager.CalculateADRResultAndAddEntry(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex, newEntry);
+                return await adrManager.CalculateADRResultAndAddEntryAsync(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex, newEntry);
             }
             else
             {
-                await adrManager.StoreADREntry(newEntry);
-                return await adrManager.GetLastResult(devEUI);
+                await adrManager.StoreADREntryAsync(newEntry);
+                return await adrManager.GetLastResultAsync(devEUI);
             }
         }
 

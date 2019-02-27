@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer.ADR
             this.frameCounterStrategy = frameCounterStrategy;
         }
 
-        protected override async Task<bool> TryUpdateState(LoRaADRResult loRaADRResult)
+        protected override async Task<bool> TryUpdateStateAsync(LoRaADRResult loRaADRResult)
         {
             if (loRaADRResult != null)
             {

@@ -13,9 +13,7 @@ namespace LoraKeysManagerFacade.Test
     using Moq;
     using Xunit;
 
-    // Ensure tests don't run in parallel since LoRaRegistryManager is shared
-    [Collection("LoraKeysManagerFacade.Test")]
-    public class DeviceGetterTest
+    public class DeviceGetterTest : FunctionTestBase
     {
         private const string PrimaryKey = "ABCDEFGH1234567890";
 
@@ -29,32 +27,32 @@ namespace LoraKeysManagerFacade.Test
         [Fact]
         public async void DeviceGetter_OTAA_Join()
         {
-            const string DevEUI = "1234567890123456";
-            const string DevEUI2 = "ABCDEFABCDEFABC";
-            const string GatewayId = "GWDeviceGetterTest1_1";
+            string devEUI = NewUniqueEUI64();
+            string devEUI2 = NewUniqueEUI64();
+            string gatewayId = NewUniqueEUI64();
 
-            this.InitRegistryManager(DevEUI, DevEUI2);
+            this.InitRegistryManager(devEUI, devEUI2);
 
-            var items = await DeviceGetter.GetDeviceList(DevEUI, GatewayId, "ABCD", null, string.Empty);
+            var items = await DeviceGetter.GetDeviceList(devEUI, gatewayId, "ABCD", null, string.Empty);
 
             Assert.Single(items);
-            Assert.Equal(DevEUI, items[0].DevEUI);
+            Assert.Equal(devEUI, items[0].DevEUI);
         }
 
         [Fact]
         public async void DeviceGetter_ABP_Join()
         {
-            const string DevEUI = "DEVDeviceGetterTest1_2";
-            const string DevEUI2 = "DEVDeviceGetterTest2_2";
-            const string GatewayId = "GWDeviceGetterTest1_2";
+            string devEUI = NewUniqueEUI64();
+            string devEUI2 = NewUniqueEUI64();
+            string gatewayId = NewUniqueEUI64();
 
-            this.InitRegistryManager(DevEUI, DevEUI2);
+            this.InitRegistryManager(devEUI, devEUI2);
 
-            var items = await DeviceGetter.GetDeviceList(null, GatewayId, "ABCD", "DevAddr1", string.Empty);
+            var items = await DeviceGetter.GetDeviceList(null, gatewayId, "ABCD", "DevAddr1", string.Empty);
 
             Assert.Equal(2, items.Count);
-            Assert.Equal(DevEUI, items[0].DevEUI);
-            Assert.Equal(DevEUI2, items[1].DevEUI);
+            Assert.Equal(devEUI, items[0].DevEUI);
+            Assert.Equal(devEUI2, items[1].DevEUI);
         }
 
         private void InitRegistryManager(string devEui1, string devEui2)

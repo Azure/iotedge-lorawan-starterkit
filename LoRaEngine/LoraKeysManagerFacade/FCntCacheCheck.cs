@@ -21,7 +21,7 @@ namespace LoraKeysManagerFacade
             }
             catch (IncompatibleVersionException ex)
             {
-                return new BadRequestObjectResult(ex);
+                return new BadRequestObjectResult(ex.Message);
             }
 
             string devEUI = req.Query["DevEUI"];

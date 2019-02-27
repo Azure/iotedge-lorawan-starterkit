@@ -67,7 +67,7 @@ namespace LoRaWan.NetworkServer
             return JsonConvert.DeserializeObject<DeduplicationResult>(payload);
         }
 
-        public override async Task<LoRaADRResult> CalculateADRAndStoreFrame(string devEUI, LoRaADRRequest adrRequest)
+        public override async Task<LoRaADRResult> CalculateADRAndStoreFrameAsync(string devEUI, LoRaADRRequest adrRequest)
         {
             Logger.Log(devEUI, $"calculate ADR and store frame info", LogLevel.Debug);
 
@@ -112,7 +112,7 @@ namespace LoRaWan.NetworkServer
             return true;
         }
 
-        public override async Task<FunctionBundlerResult> FunctionBundler(string devEUI, FunctionBundlerRequest request)
+        public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request)
         {
             Logger.Log(devEUI, $"Function bundler call", LogLevel.Debug);
 
