@@ -8,7 +8,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
     internal interface IFunctionBundlerExecutionItem
     {
-        bool NeedsToExecute(FunctionBundlerItem item);
+        bool NeedsToExecute(FunctionBundlerItemType item);
 
         Task<FunctionBundlerExecutionState> Execute(IPipelineExecutionContext context);
 

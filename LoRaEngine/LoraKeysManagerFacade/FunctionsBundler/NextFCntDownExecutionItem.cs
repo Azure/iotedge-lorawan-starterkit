@@ -19,9 +19,9 @@ namespace LoraKeysManagerFacade.FunctionBundler
             return Task.FromResult(FunctionBundlerExecutionState.Continue);
         }
 
-        public bool NeedsToExecute(FunctionBundlerItem item)
+        public bool NeedsToExecute(FunctionBundlerItemType item)
         {
-            return (item & FunctionBundlerItem.FCntDown) == FunctionBundlerItem.FCntDown;
+            return (item & FunctionBundlerItemType.FCntDown) == FunctionBundlerItemType.FCntDown;
         }
 
         public Task OnAbortExecution(IPipelineExecutionContext context)
