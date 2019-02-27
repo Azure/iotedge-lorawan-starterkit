@@ -8,10 +8,10 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
     internal class DeduplicationExecutionItem : IFunctionBundlerExecutionItem
     {
-        public Task<FunctionBundlerExecutionState> Execute(string devEUI, FunctionBundlerRequest request, FunctionBundlerResult result, string functionAppDirectory)
+        public Task<FunctionBundlerExecutionState> Execute(IPipelineExecutionContext context)
         {
-            result.DeduplicationResult = DuplicateMsgCacheCheck.GetDuplicateMessageResult(devEUI, request.GatewayId, request.ClientFCntUp, request.ClientFCntDown, functionAppDirectory);
-            return Task.FromResult(result.DeduplicationResult.IsDuplicate ? FunctionBundlerExecutionState.Abort : FunctionBundlerExecutionState.Continue);
+            context.Result.DeduplicationResult = DuplicateMsgCacheCheck.GetDuplicateMessageResult(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.FunctionAppDirectory);
+            return Task.FromResult(context.Result.DeduplicationResult.IsDuplicate ? FunctionBundlerExecutionState.Abort : FunctionBundlerExecutionState.Continue);
         }
 
         public bool NeedsToExecute(FunctionBundlerItem item)
@@ -19,7 +19,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             return (item & FunctionBundlerItem.Deduplication) == FunctionBundlerItem.Deduplication;
         }
 
-        public Task OnAbortExecution(string devEUI, FunctionBundlerRequest request, FunctionBundlerResult result, string functionAppDirectory)
+        public Task OnAbortExecution(IPipelineExecutionContext context)
         {
             return Task.CompletedTask;
         }

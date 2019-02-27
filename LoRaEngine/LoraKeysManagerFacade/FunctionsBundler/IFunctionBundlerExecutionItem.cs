@@ -6,12 +6,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
 
-    public interface IFunctionBundlerExecutionItem
+    internal interface IFunctionBundlerExecutionItem
     {
         bool NeedsToExecute(FunctionBundlerItem item);
 
-        Task<FunctionBundlerExecutionState> Execute(string devEUI, FunctionBundlerRequest request, FunctionBundlerResult result, string functionAppDirectory);
+        Task<FunctionBundlerExecutionState> Execute(IPipelineExecutionContext context);
 
-        Task OnAbortExecution(string devEUI, FunctionBundlerRequest request, FunctionBundlerResult result, string functionAppDirectory);
+        Task OnAbortExecution(IPipelineExecutionContext context);
     }
 }

@@ -6,11 +6,13 @@ namespace LoraKeysManagerFacade.FunctionBundler
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    public class FunctionBundlerPipelineExecuter
+    public class FunctionBundlerPipelineExecuter : IPipelineExecutionContext
     {
         private readonly string devEUI;
         private readonly FunctionBundlerRequest request;
         private readonly string functionAppDirectory;
+
+        private FunctionBundlerResult result = new FunctionBundlerResult();
 
         private static List<IFunctionBundlerExecutionItem> registeredHandlers = new List<IFunctionBundlerExecutionItem>
         {
@@ -18,6 +20,14 @@ namespace LoraKeysManagerFacade.FunctionBundler
             new ADRExecutionItem(),
             new NextFCntDownExecutionItem()
         };
+
+        public string DevEUI => this.devEUI;
+
+        public FunctionBundlerRequest Request => this.request;
+
+        public FunctionBundlerResult Result => this.result;
+
+        public string FunctionAppDirectory => this.functionAppDirectory;
 
         public FunctionBundlerPipelineExecuter(string devEUI, FunctionBundlerRequest request, string functionAppDirectory)
         {
@@ -38,8 +48,6 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 }
             }
 
-            var result = new FunctionBundlerResult();
-
             var state = FunctionBundlerExecutionState.Continue;
 
             for (var i = 0; i < executionPipeline.Count; i++)
@@ -48,15 +56,15 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 switch (state)
                 {
                     case FunctionBundlerExecutionState.Continue:
-                        state = await handler.Execute(this.devEUI, this.request, result, this.functionAppDirectory);
+                        state = await handler.Execute(this);
                         break;
                     case FunctionBundlerExecutionState.Abort:
-                        await handler.OnAbortExecution(this.devEUI, this.request, result, this.functionAppDirectory);
+                        await handler.OnAbortExecution(this);
                         break;
                 }
             }
 
-            return result;
+            return this.Result;
         }
     }
 }

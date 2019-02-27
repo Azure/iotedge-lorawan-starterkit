@@ -8,10 +8,10 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
     internal class ADRExecutionItem : IFunctionBundlerExecutionItem
     {
-        public async Task<FunctionBundlerExecutionState> Execute(string devEUI, FunctionBundlerRequest request, FunctionBundlerResult result, string functionAppDirectory)
+        public async Task<FunctionBundlerExecutionState> Execute(IPipelineExecutionContext context)
         {
-            result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, functionAppDirectory);
-            result.NextFCntDown = result?.AdrResult.FCntDown > 0 ? result.AdrResult.FCntDown : (int?)null;
+            context.Result.AdrResult = await LoRaADRFunction.HandleADRRequest(context.DevEUI, context.Request.AdrRequest, context.FunctionAppDirectory);
+            context.Result.NextFCntDown = context.Result?.AdrResult.FCntDown > 0 ? context.Result.AdrResult.FCntDown : (int?)null;
             return FunctionBundlerExecutionState.Continue;
         }
 
@@ -20,12 +20,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
             return (item & FunctionBundlerItem.ADR) == FunctionBundlerItem.ADR;
         }
 
-        public async Task OnAbortExecution(string devEUI, FunctionBundlerRequest request, FunctionBundlerResult result, string functionAppDirectory)
+        public async Task OnAbortExecution(IPipelineExecutionContext context)
         {
             // aborts of the full pipeline indicate we do not calculate but we still want to capture the frame
             // if we have one
-            request.AdrRequest.PerformADRCalculation = false;
-            result.AdrResult = await LoRaADRFunction.HandleADRRequest(devEUI, request.AdrRequest, functionAppDirectory);
+            context.Request.AdrRequest.PerformADRCalculation = false;
+            context.Result.AdrResult = await LoRaADRFunction.HandleADRRequest(context.DevEUI, context.Request.AdrRequest, context.FunctionAppDirectory);
         }
     }
 }
