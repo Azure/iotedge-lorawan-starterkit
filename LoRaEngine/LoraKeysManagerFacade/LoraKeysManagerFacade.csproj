@@ -31,12 +31,6 @@
     <AdditionalFiles Include="../../stylecop.json" Link="stylecop.json" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="local.settings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
   </ItemGroup>
   <PropertyGroup>
