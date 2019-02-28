@@ -497,6 +497,7 @@ loRaDevice.SetFcntUp(payloadFcnt);
                     (float)request.Rxpk.RequiredSnr,
                     request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
                     request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
+                    request.LoRaRegion.MaxADRDataRate,
                     loRaADRTableEntry);
                 Logger.Log(loRaDevice.DevEUI, $"device sent Adr Ack Request, computing an answer", LogLevel.Information);
             }

@@ -64,7 +64,6 @@ namespace LoRaTools.LoRaMessage
         /// Method to take the different fields and assemble them in the message bytes
         /// </summary>
         /// <returns>the message bytes</returns>
-        [Obsolete("This method is planned to be deprecated in the next versions. Please use LoRaPayload instead.")]
         public abstract byte[] GetByteMessage();
 
         /// <summary>

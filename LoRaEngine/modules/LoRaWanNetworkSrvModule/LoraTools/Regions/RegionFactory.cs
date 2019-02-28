@@ -79,6 +79,8 @@ namespace LoRaTools.Regions
             { 6, 5, 4, 3, 2, 1 },
             { 7, 6, 5, 4, 3, 2 }
             };
+            r.MaxADRDataRate = 5;
+
             return r;
         }
 
@@ -122,6 +124,8 @@ namespace LoRaTools.Regions
             { 13, 12, 11, 10 },
             { 13, 13, 12, 11 },
             };
+
+            r.MaxADRDataRate = 3;
             return r;
         }
     }

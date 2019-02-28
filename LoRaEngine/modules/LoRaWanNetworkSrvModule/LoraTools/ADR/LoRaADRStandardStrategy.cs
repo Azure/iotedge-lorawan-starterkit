@@ -15,7 +15,6 @@ namespace LoRaTools.ADR
     public class LoRaADRStandardStrategy : ILoRaADRStrategy
     {
         private const int MarginDb = 5;
-        private const int MaxDR = 5;
         private const int MaxTxPowerIndex = 0;
 
         /// <summary>
@@ -25,7 +24,7 @@ namespace LoRaTools.ADR
         /// </summary>
         private readonly int[,] pktLossToNbRep = new int[4, 3] { { 1, 1, 2 }, { 1, 2, 3 }, { 2, 3, 3 }, { 3, 3, 3 } };
 
-        public LoRaADRResult ComputeResult(LoRaADRTable table, float requiredSnr, int upstreamDataRate, int minTxPower)
+        public LoRaADRResult ComputeResult(LoRaADRTable table, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr)
         {
             if (table == null || table.Entries.Count < 20)
             {
@@ -34,7 +33,7 @@ namespace LoRaTools.ADR
             }
 
             var newNbRep = this.ComputeNbRepetion(table.Entries[0].FCnt, table.Entries[LoRaADRTable.FrameCountCaptureCount - 1].FCnt, (int)table.CurrentNbRep);
-            (int newTxPowerIndex, int newDatarate) = this.GetPowerAndDRConfiguration(requiredSnr, upstreamDataRate, table.Entries.Max(x => x.Snr), (int)table.CurrentTxPower, minTxPower);
+            (int newTxPowerIndex, int newDatarate) = this.GetPowerAndDRConfiguration(requiredSnr, upstreamDataRate, table.Entries.Max(x => x.Snr), (int)table.CurrentTxPower, minTxPower, maxDr);
 
             if (newNbRep != table.CurrentNbRep || newTxPowerIndex != table.CurrentTxPower || newDatarate != upstreamDataRate)
             {
@@ -49,7 +48,7 @@ namespace LoRaTools.ADR
             return null;
         }
 
-        private (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex)
+        private (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex, int maxDr)
         {
             double snrMargin = maxSnr - requiredSnr - MarginDb;
 
@@ -61,7 +60,7 @@ namespace LoRaTools.ADR
             {
                 if (nStep > 0)
                 {
-                    if (computedDataRate < MaxDR)
+                    if (computedDataRate < maxDr)
                     {
                         computedDataRate++;
                     }

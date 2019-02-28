@@ -36,7 +36,7 @@ namespace LoRaWan.NetworkServer.ADR
             Logger.Log(newEntry.DevEUI, "stored ADRTableEntry", LogLevel.Debug);
         }
 
-        public async override Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, LoRaADRTableEntry newEntry = null)
+        public async override Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr, LoRaADRTableEntry newEntry = null)
         {
             var result = await this.deviceApi.CalculateADRAndStoreFrameAsync(devEUI, new LoRaADRRequest
             {

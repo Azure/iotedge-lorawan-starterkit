@@ -20,5 +20,7 @@ namespace LoraKeysManagerFacade
         public string GatewayId { get; set; }
 
         public bool ClearCache { get; set; }
+
+        public int MaxDataRate { get; internal set; }
     }
 }

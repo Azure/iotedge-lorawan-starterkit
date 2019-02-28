@@ -68,7 +68,7 @@ namespace LoraKeysManagerFacade
 
             if (request.PerformADRCalculation)
             {
-                return await this.adrManager.CalculateADRResultAndAddEntryAsync(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex, newEntry);
+                return await this.adrManager.CalculateADRResultAndAddEntryAsync(devEUI, request.GatewayId, request.FCntUp, request.FCntDown, request.RequiredSnr, request.DataRate, request.MinTxPowerIndex, request.MaxDataRate, newEntry);
             }
             else
             {

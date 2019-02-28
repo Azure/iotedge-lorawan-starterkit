@@ -40,13 +40,13 @@ namespace LoRaTools.ADR
             await this.store.AddTableEntry(newEntry);
         }
 
-        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, LoRaADRTableEntry newEntry = null)
+        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, int fCntUp, int fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr, LoRaADRTableEntry newEntry = null)
         {
             var table = newEntry != null
                         ? await this.store.AddTableEntry(newEntry)
                         : await this.store.GetADRTable(devEUI);
 
-            var result = this.strategyProvider.GetStrategy().ComputeResult(table, requiredSnr, upstreamDataRate, minTxPower);
+            var result = this.strategyProvider.GetStrategy().ComputeResult(table, requiredSnr, upstreamDataRate, minTxPower, maxDr);
 
             if (result != null)
             {

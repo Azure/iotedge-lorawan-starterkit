@@ -34,7 +34,7 @@ namespace LoRaWanTest
                 await loRaADRManager.StoreADREntryAsync(tableEntries[i]);
             }
 
-            var adrResult = await loRaADRManager.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1);
+            var adrResult = await loRaADRManager.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate);
             if (expectedResult == null)
             {
                 Assert.False(adrResult.CanConfirmToDevice);

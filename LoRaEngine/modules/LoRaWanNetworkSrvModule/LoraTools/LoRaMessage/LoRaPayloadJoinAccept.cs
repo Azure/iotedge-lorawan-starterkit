@@ -177,7 +177,6 @@ namespace LoRaTools.LoRaMessage
             return encryptedPayload;
         }
 
-        [Obsolete("Must override")]
         public override byte[] GetByteMessage()
         {
             List<byte> messageArray = new List<byte>();

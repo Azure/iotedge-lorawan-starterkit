@@ -120,7 +120,7 @@ namespace LoRaWanNetworkServer.Test
         [Theory]
         // deviceId, lsnr, inputDR, outputDR
         // DR5 with poor lsnr can't degrade DR
-        [InlineData(1, -20, "SF7BW125", 5, 0)]
+        [InlineData(221, -20, "SF7BW125", 5, 0)]
         // DR0 with high lsnr will result in move to DR5
         [InlineData(2, 20, "SF12BW125", 5, 7)]
         // DR1 with high lsnr will result in move to DR5
@@ -193,7 +193,7 @@ namespace LoRaWanNetworkServer.Test
             var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
             // We expect a mac command in the payload
-            if (deviceId == 6 || deviceId == 1)
+            if (deviceId == 6 || deviceId == 221)
             {
                 // In this case, no ADR adaptation is performed, so the message should be empty
                 Assert.Equal(0, payloadDataDown.Frmpayload.Span.Length);

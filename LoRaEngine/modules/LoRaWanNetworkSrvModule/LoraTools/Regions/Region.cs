@@ -70,6 +70,7 @@ namespace LoRaTools.Regions
                 "50" // 7 FSK 50
             };
 
+            EU868.MaxADRDataRate = 5;
             EU868.RegionLimits = new RegionLimits((min: 863, max: 870), euValidDataranges);
 
             US915 = new Region(
@@ -124,7 +125,7 @@ namespace LoRaTools.Regions
                 "SF8BW500", // 12
                 "SF8BW500" // 13
             };
-
+            US915.MaxADRDataRate = 3;
             US915.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), usValidDataranges);
         }
 
@@ -206,6 +207,8 @@ namespace LoRaTools.Regions
         /// Gets or sets the limits on the region to ensure valid properties
         /// </summary>
         public RegionLimits RegionLimits { get; set; }
+
+        public int MaxADRDataRate { get; set; }
 
         public Region(LoRaRegion regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, uint datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
         {
