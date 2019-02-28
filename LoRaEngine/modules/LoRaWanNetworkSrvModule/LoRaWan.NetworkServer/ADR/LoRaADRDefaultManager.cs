@@ -26,8 +26,8 @@ namespace LoRaWan.NetworkServer.ADR
             if (loRaADRResult != null)
             {
                 this.LoRaDevice.DataRate = loRaADRResult.DataRate;
-                this.LoRaDevice.TxPower = loRaADRResult.TxPower;
-                this.LoRaDevice.NbRep = loRaADRResult.NbRepetition;
+                this.LoRaDevice.TxPower = loRaADRResult.TxPower.GetValueOrDefault();
+                this.LoRaDevice.NbRep = loRaADRResult.NbRepetition.GetValueOrDefault();
                  // if a rate adaptation is performed we need to update local cache
                  // todo check serialization and update twin
                 if (loRaADRResult.CanConfirmToDevice)

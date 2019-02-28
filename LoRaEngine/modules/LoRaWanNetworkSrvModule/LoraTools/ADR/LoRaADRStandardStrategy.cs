@@ -16,6 +16,8 @@ namespace LoRaTools.ADR
     {
         private const int MarginDb = 5;
         private const int MaxTxPowerIndex = 0;
+        private const int DefaultDatarate = 0;
+        private const int DefaultNbRep = 1;
 
         /// <summary>
         /// Array to calculate nb Repetion given packet loss
@@ -32,8 +34,18 @@ namespace LoRaTools.ADR
                 return null;
             }
 
-            var newNbRep = this.ComputeNbRepetion(table.Entries[0].FCnt, table.Entries[LoRaADRTable.FrameCountCaptureCount - 1].FCnt, (int)table.CurrentNbRep);
-            (int newTxPowerIndex, int newDatarate) = this.GetPowerAndDRConfiguration(requiredSnr, upstreamDataRate, table.Entries.Max(x => x.Snr), (int)table.CurrentTxPower, minTxPower, maxDr);
+            if (!table.CurrentNbRep.HasValue || !table.CurrentTxPower.HasValue)
+            {
+                return new LoRaADRResult
+                {
+                    DataRate = DefaultDatarate,
+                    NbRepetition = DefaultNbRep,
+                    TxPower = MaxTxPowerIndex
+                };
+            }
+
+            var newNbRep = this.ComputeNbRepetion(table.Entries[0].FCnt, table.Entries[LoRaADRTable.FrameCountCaptureCount - 1].FCnt, table.CurrentNbRep.GetValueOrDefault());
+            (int newTxPowerIndex, int newDatarate) = this.GetPowerAndDRConfiguration(requiredSnr, upstreamDataRate, table.Entries.Max(x => x.Snr), table.CurrentTxPower.GetValueOrDefault(), minTxPower, maxDr);
 
             if (newNbRep != table.CurrentNbRep || newTxPowerIndex != table.CurrentTxPower || newDatarate != upstreamDataRate)
             {

@@ -6,15 +6,10 @@ namespace LoRaWan.NetworkServer.Test
     using System;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
-    using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices.Client;
-    using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;

@@ -15,7 +15,7 @@ namespace LoRaWan.NetworkServer
         {
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.loRaDevice = loRaDevice;
-            Logger.Log(this.loRaDevice.DevEUI, "Deduplication Strategy: Mark", LogLevel.Debug);
+            Logger.Log(this.loRaDevice.DevEUI, "deduplication Strategy: Mark", LogLevel.Debug);
         }
 
         public DeduplicationResult Process(DeduplicationResult result, int fCntUp)

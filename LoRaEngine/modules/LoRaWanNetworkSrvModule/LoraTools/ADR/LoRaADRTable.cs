@@ -13,12 +13,12 @@ namespace LoRaTools.ADR
         /// Gets or sets current TxPower Index of the system.
         /// Max Txpower is set to 0 and decrease for each increment by a #db.
         /// </summary>
-        public int CurrentTxPower { get; set; } = 0;
+        public int? CurrentTxPower { get; set; }
 
         /// <summary>
         /// Gets or sets the current number of repetion for device transmission
         /// </summary>
-        public int CurrentNbRep { get; set; } = 1;
+        public int? CurrentNbRep { get; set; }
 
         public List<LoRaADRTableEntry> Entries { get; set; } = new List<LoRaADRTableEntry>();
 

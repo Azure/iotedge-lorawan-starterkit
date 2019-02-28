@@ -5,9 +5,9 @@ namespace LoRaTools.ADR
 {
     public class LoRaADRResult
     {
-        public int NbRepetition { get; set; }
+        public int? NbRepetition { get; set; }
 
-        public int TxPower { get; set; }
+        public int? TxPower { get; set; }
 
         public int DataRate { get; set; }
 
