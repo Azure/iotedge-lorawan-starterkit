@@ -16,10 +16,24 @@ namespace LoraKeysManagerFacade.Test
 
         public ADRFunctionTest()
         {
+            var adrStrategy = new Mock<ILoRaADRStrategy>(MockBehavior.Strict);
+            adrStrategy
+                .Setup(x => x.ComputeResult(It.IsNotNull<LoRaADRTable>(), It.IsAny<float>(), It.IsAny<int>(), It.IsAny<int>()))
+                .Returns((LoRaADRTable table, float snr, int dr, int power) =>
+                    {
+                        return table.Entries.Count >= LoRaADRTable.FrameCountCaptureCount
+                        ? new LoRaADRResult()
+                            {
+                                NumberOfFrames = table.Entries.Count
+                            }
+                        : null;
+                    });
+
             var strategyProvider = new Mock<ILoRaADRStrategyProvider>(MockBehavior.Strict);
+
             strategyProvider
                 .Setup(x => x.GetStrategy())
-                .Returns(new LoRaADRStandardStrategy());
+                .Returns(adrStrategy.Object);
 
             this.adrManager = new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, new LoRaInMemoryDeviceStore());
             this.adrFunction = new LoRaADRFunction(this.adrManager);
