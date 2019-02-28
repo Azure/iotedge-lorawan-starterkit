@@ -79,7 +79,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 10x confirmed messages
             for (var i = 0; i < MESSAGES_COUNT; ++i)
             {
-                Console.WriteLine($"Starting sending OTTA confirmed message {i + 1}/{MESSAGES_COUNT}");
+                Console.WriteLine($"Starting sending OTAA confirmed message {i + 1}/{MESSAGES_COUNT}");
                 this.TestFixtureCi.ClearLogs();
 
                 var msg = PayloadGenerator.Next().ToString();

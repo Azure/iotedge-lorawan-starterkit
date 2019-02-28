@@ -278,7 +278,7 @@ namespace LoRaWan.NetworkServer
                 return null;
             }
 
-            Logger.Log(devEUI, "querying the registry for OTTA device", LogLevel.Information);
+            Logger.Log(devEUI, "querying the registry for OTAA device", LogLevel.Information);
 
             try
             {
