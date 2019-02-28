@@ -20,3 +20,7 @@ Below is a high level diagram of how the framework works, for more details refer
 
 ![Architecture](/Docs/Pictures/EdgeArchitecture.png)
 
+## Concepts
+### Adaptive Data Rate
+Solution support Adaptive Data Rate (ADR) device management as specified in [LoRa spec v1.0.2](https://lora-alliance.org/resource-hub/lorawantm-specification-v102). The main goal of the ADR is to optimize the network for maximum capacity ensuring devices always transmit with their best settings possible (highest DR, lowest power), you can find more ADR information on this [page](https://www.sghoslya.com/p/how-does-lorawan-nodes-changes-their.html). 
+Adaptive Data rate is always initiated and set on the device side. ADR should never be used with moving devices. Our implementation currently implement the [Semtech proposed Algorithm for ADR](https://www.thethingsnetwork.org/forum/uploads/default/original/2X/7/7480e044aa93a54a910dab8ef0adfb5f515d14a1.pdf) and has been tested against EU868 region plan.
