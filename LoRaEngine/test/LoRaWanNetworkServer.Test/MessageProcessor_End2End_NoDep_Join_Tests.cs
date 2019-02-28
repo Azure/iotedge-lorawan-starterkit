@@ -102,6 +102,8 @@ namespace LoRaWan.NetworkServer.Test
                         {
                             CanConfirmToDevice = true,
                             FCntDown = 1,
+                            NbRepetition = 1,
+                            TxPower = 0
                         },
                         NextFCntDown = 1
                     });
