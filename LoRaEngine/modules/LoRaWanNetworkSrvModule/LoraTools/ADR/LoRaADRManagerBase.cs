@@ -68,7 +68,7 @@ namespace LoRaTools.ADR
             }
 
             result.NumberOfFrames = table.Entries.Count;
-            Logger.Log(devEUI, $"Calculated ADR: CanConfirmToDevice: {result.CanConfirmToDevice}, TxPower: {result.TxPower}, DataRate: {result.DataRate}", LogLevel.Debug);
+            Logger.Log(devEUI, $"calculated ADR: CanConfirmToDevice: {result.CanConfirmToDevice}, TxPower: {result.TxPower}, DataRate: {result.DataRate}", LogLevel.Debug);
             return result;
         }
 

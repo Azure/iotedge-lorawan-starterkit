@@ -100,7 +100,7 @@ namespace LoRaWan.NetworkServer.Test
                     {
                         AdrResult = new LoRaTools.ADR.LoRaADRResult
                         {
-                            CanConfirmToDevice = true,
+                            CanConfirmToDevice = false,
                             FCntDown = 1,
                             NbRepetition = 1,
                             TxPower = 0
