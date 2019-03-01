@@ -29,6 +29,8 @@ namespace LoRaWan.NetworkServer
 
         Task<bool> AbandonAsync();
 
+        Task<bool> RejectAsync();
+
         /// <summary>
         /// Identifies if the message is a valid LoRa downstream message
         /// </summary>

@@ -291,6 +291,17 @@ namespace LoRaTools.Regions
             return null;
         }
 
+        /// <summary>
+        /// Implement correct logic to get the maximum payload size based on the datr/configuration.
+        /// </summary>
+        /// <param name="datr">the datr/configuration with which the message was transmitted</param>
+        public uint GetMaxPayloadSize(string datr)
+        {
+            var maxPayloadSize = this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Value.maxPyldSize;
+
+            return maxPayloadSize;
+        }
+
         private void EnsureValidRxpk(Rxpk rxpk)
         {
             if (this.LoRaRegion == LoRaRegion.EU868)

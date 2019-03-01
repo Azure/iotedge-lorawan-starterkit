@@ -36,5 +36,8 @@ namespace LoRaWan.NetworkServer
         /// ensure next value will be correct even if the network died before persisting it
         /// </summary>
         public const int FCNT_DOWN_INCREMENTED_ON_ABP_DEVICE_LOAD = 10;
+
+        // Cloud to device message overhead
+        public const int LORA_PROTOCOL_OVERHEAD_SIZE = 8;
     }
 }

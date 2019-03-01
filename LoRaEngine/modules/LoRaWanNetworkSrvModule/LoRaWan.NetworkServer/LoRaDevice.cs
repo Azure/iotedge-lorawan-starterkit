@@ -503,6 +503,8 @@ namespace LoRaWan.NetworkServer
 
         public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.loRaDeviceClient.AbandonAsync(cloudToDeviceMessage);
 
+        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.loRaDeviceClient.RejectAsync(cloudToDeviceMessage);
+
         /// <summary>
         /// Updates device on the server after a join succeeded
         /// </summary>
