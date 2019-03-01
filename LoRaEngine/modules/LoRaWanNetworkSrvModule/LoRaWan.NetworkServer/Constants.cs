@@ -36,5 +36,12 @@ namespace LoRaWan.NetworkServer
         /// ensure next value will be correct even if the network died before persisting it
         /// </summary>
         public const int FCNT_DOWN_INCREMENTED_ON_ABP_DEVICE_LOAD = 10;
+
+        /// <summary>
+        /// Amount of days a <see cref="LoRaDevice"/> is cached
+        /// This is absolute caching
+        /// For caching by devAddr and devEUI
+        /// </summary>
+        public const int DEVICE_CACHE_PERIOD_IN_DAYS = 2;
     }
 }

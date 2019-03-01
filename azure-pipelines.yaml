@@ -17,8 +17,8 @@ variables:
   # Name of service connection for resource group
   azureServiceConnectionName: 'IntegrationTestRG'
 
-  edgeAgentVersion: 1.0.6
-  edgeHubVersion: 1.0.6
+  edgeAgentVersion: 1.0.7-rc1
+  edgeHubVersion: 1.0.7-rc1
   edgeHubRoute: FROM /* INTO $upstream
 
   # Defines the name of the VSTS agent in ARM architecture

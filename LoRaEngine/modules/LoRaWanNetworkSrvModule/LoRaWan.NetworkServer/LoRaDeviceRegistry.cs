@@ -82,7 +82,7 @@ namespace LoRaWan.NetworkServer
             {
                 return this.cache.GetOrCreate<DevEUIToLoRaDeviceDictionary>(devAddr, (cacheEntry) =>
                 {
-                    cacheEntry.SlidingExpiration = TimeSpan.FromDays(1);
+                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromDays(Constants.DEVICE_CACHE_PERIOD_IN_DAYS));
                     cacheEntry.ExpirationTokens.Add(this.resetCacheChangeToken);
                     return new DevEUIToLoRaDeviceDictionary();
                 });
@@ -174,7 +174,10 @@ namespace LoRaWan.NetworkServer
 
             Logger.Log(loRaDevice.DevEUI, "device added to cache", LogLevel.Debug);
 
-            this.cache.Set(this.CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice, this.resetCacheChangeToken);
+            var devEUICacheOptions = new MemoryCacheEntryOptions();
+            devEUICacheOptions.SetAbsoluteExpiration(TimeSpan.FromDays(Constants.DEVICE_CACHE_PERIOD_IN_DAYS));
+            devEUICacheOptions.ExpirationTokens.Add(this.resetCacheChangeToken);
+            this.cache.Set(this.CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice, devEUICacheOptions);
         }
 
         /// <summary>
