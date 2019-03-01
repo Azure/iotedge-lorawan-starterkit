@@ -11,6 +11,7 @@ namespace LoRaTools
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
+    [JsonConverter(typeof(MacCommandJsonConverter))]
     public abstract class MacCommand
     {
         /// <summary>
@@ -40,53 +41,6 @@ namespace LoRaTools
         }
 
         public abstract IEnumerable<byte> ToBytes();
-
-        /// <summary>
-        /// Create a Mac Command from a C2D Message
-        /// </summary>
-        /// <param name="cidType">CidType of the MAC command</param>
-        /// <param name="properties">additional property to add</param>
-        /// <returns>the Mac command</returns>
-        public static MacCommand CreateMacCommandFromC2DMessage(string cidType, IDictionary<string, string> properties)
-        {
-            if (!Enum.TryParse(cidType, true, out CidEnum cid))
-            {
-                throw new MacCommandException("Could not parse the cid enum");
-            }
-
-            MacCommand macCommand = null;
-            switch (cid)
-            {
-                case CidEnum.LinkCheckCmd:
-                    if (properties.TryGetValueCaseInsensitive("margin", out string marginStr) &&
-                        properties.TryGetValueCaseInsensitive("gatewayCount", out string gatewayCountStr))
-                    {
-                        if (uint.TryParse(marginStr, out uint margin) && uint.TryParse(gatewayCountStr, out uint gatewayCount))
-                        macCommand = new LinkCheckAnswer(margin, gatewayCount);
-                        break;
-                    }
-
-                    throw new MacCommandException("Could not parse margin or gatewayCount argument");
-                case CidEnum.LinkADRCmd:
-                    macCommand = new LinkADRRequest(properties);
-                    break;
-                case CidEnum.DutyCycleCmd:
-                    // macCommand = new DutyCycleRequest();
-                    throw new NotImplementedException("DutyCycleCmd MAC command is not yet supported");
-                case CidEnum.RXParamCmd:
-                    // macCommand = new RXParamSetupRequest();
-                    throw new NotImplementedException("RXParamSetupRequest MAC command is not yet supported");
-                case CidEnum.DevStatusCmd:
-                    macCommand = new DevStatusRequest();
-                    break;
-                case CidEnum.NewChannelCmd:
-                    throw new NotImplementedException("NewChannelCmd MAC command is not yet supported");
-                case CidEnum.RXTimingCmd:
-                    throw new NotImplementedException("RXTimingCmd MAC command is not yet supported");
-            }
-
-            return macCommand;
-        }
 
         /// <summary>
         /// Create a List of Mac commands based on a sequence of bytes.

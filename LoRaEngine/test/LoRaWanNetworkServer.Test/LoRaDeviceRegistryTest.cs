@@ -383,5 +383,133 @@ namespace LoRaWan.NetworkServer.Test
             target.ResetDeviceCache();
             Assert.False(deviceList.Any(x => target.InternalGetCachedDevicesForDevAddr(x.DevAddr).Count > 0), "Should not find devices again");
         }
+
+        [Fact]
+        public async Task When_Loading_Device_By_DevAddr_Should_Be_Able_To_Load_By_DevEUI()
+        {
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
+
+            var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+            deviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
+
+            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            deviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(simDevice.CreateABPTwin());
+
+            var handlerImplementation = new Mock<ILoRaDataRequestHandler>(MockBehavior.Strict);
+            var deviceFactory = new TestLoRaDeviceFactory(deviceClient.Object, handlerImplementation.Object);
+
+            var deviceRegistry = new LoRaDeviceRegistry(
+                this.serverConfiguration,
+                this.cache,
+                deviceApi.Object,
+                deviceFactory);
+
+            var payload = simDevice.CreateUnconfirmedDataUpMessage("1");
+            payload.SerializeUplink(simDevice.AppSKey, simDevice.NwkSKey);
+            var request = new WaitableLoRaRequest(payload);
+
+            deviceRegistry.GetLoRaRequestQueue(request).Queue(request);
+            Assert.True(await request.WaitCompleteAsync());
+            Assert.NotNull(await deviceRegistry.GetDeviceByDevEUIAsync(simDevice.DevEUI));
+
+            handlerImplementation.VerifyAll();
+            deviceApi.VerifyAll();
+            deviceClient.VerifyAll();
+            deviceClient.Verify(x => x.GetTwinAsync(), Times.Once());
+        }
+
+        [Fact]
+        public async Task When_Loading_Device_By_DevEUI_Should_Be_Able_To_Load_By_DevAddr()
+        {
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
+
+            var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+            deviceApi.Setup(x => x.SearchByDevEUIAsync(simDevice.DevEUI))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
+
+            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            deviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(simDevice.CreateABPTwin());
+
+            var handlerImplementation = new Mock<ILoRaDataRequestHandler>(MockBehavior.Strict);
+            handlerImplementation.Setup(x => x.ProcessRequestAsync(It.IsNotNull<LoRaRequest>(), It.IsNotNull<LoRaDevice>()))
+                .Returns<LoRaRequest, LoRaDevice>((req, device) =>
+                {
+                    return Task.FromResult(new LoRaDeviceRequestProcessResult(device, req));
+                });
+
+            var deviceFactory = new TestLoRaDeviceFactory(deviceClient.Object, handlerImplementation.Object);
+
+            var deviceRegistry = new LoRaDeviceRegistry(
+                this.serverConfiguration,
+                this.cache,
+                deviceApi.Object,
+                deviceFactory);
+
+            Assert.NotNull(await deviceRegistry.GetDeviceByDevEUIAsync(simDevice.DevEUI));
+
+            var payload = simDevice.CreateUnconfirmedDataUpMessage("1");
+            payload.SerializeUplink(simDevice.AppSKey, simDevice.NwkSKey);
+            var request = new WaitableLoRaRequest(payload);
+
+            deviceRegistry.GetLoRaRequestQueue(request).Queue(request);
+            Assert.True(await request.WaitCompleteAsync());
+
+            handlerImplementation.VerifyAll();
+            deviceApi.VerifyAll();
+            deviceClient.VerifyAll();
+
+            deviceClient.Verify(x => x.GetTwinAsync(), Times.Once());
+        }
+
+        [Fact]
+        public async Task GetDeviceByDevEUIAsync_When_Api_Returns_Null_Should_Return_Null()
+        {
+            var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+            deviceApi.Setup(x => x.SearchByDevEUIAsync(It.IsNotNull<string>()))
+                .ReturnsAsync((SearchDevicesResult)null);
+
+            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+
+            var deviceFactory = new TestLoRaDeviceFactory(deviceClient.Object);
+
+            var deviceRegistry = new LoRaDeviceRegistry(
+                this.serverConfiguration,
+                this.cache,
+                deviceApi.Object,
+                deviceFactory);
+
+            var actual = await deviceRegistry.GetDeviceByDevEUIAsync("1");
+            Assert.Null(actual);
+
+            deviceApi.VerifyAll();
+            deviceClient.VerifyAll();
+        }
+
+        [Fact]
+        public async Task GetDeviceByDevEUIAsync_When_Api_Returns_Empty_Should_Return_Null()
+        {
+            var deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+            deviceApi.Setup(x => x.SearchByDevEUIAsync(It.IsNotNull<string>()))
+                .ReturnsAsync(new SearchDevicesResult());
+
+            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+
+            var deviceFactory = new TestLoRaDeviceFactory(deviceClient.Object);
+
+            var deviceRegistry = new LoRaDeviceRegistry(
+                this.serverConfiguration,
+                this.cache,
+                deviceApi.Object,
+                deviceFactory);
+
+            var actual = await deviceRegistry.GetDeviceByDevEUIAsync("1");
+            Assert.Null(actual);
+
+            deviceApi.VerifyAll();
+            deviceClient.VerifyAll();
+        }
     }
 }

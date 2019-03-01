@@ -95,12 +95,6 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Helper method that calls the API GetDevice method
         /// </summary>
-        /// <param name="gatewayID"></param>
-        /// <param name="devAddr"></param>
-        /// <param name="devEUI"></param>
-        /// <param name="appEUI"></param>
-        /// <param name="devNonce"></param>
-        /// <returns></returns>
         async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
@@ -159,6 +153,39 @@ namespace LoRaWan.NetworkServer
                 Logger.Log(devAddr, $"error calling façade api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
 
                 // TODO: FBE check if we return null or throw exception
+                return new SearchDevicesResult();
+            }
+
+            var result = await response.Content.ReadAsStringAsync();
+            var devices = (List<IoTHubDeviceInfo>)JsonConvert.DeserializeObject(result, typeof(List<IoTHubDeviceInfo>));
+            return new SearchDevicesResult(devices);
+        }
+
+        /// <inheritdoc />
+        public override async Task<SearchDevicesResult> SearchByDevEUIAsync(string devEUI)
+        {
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var url = new StringBuilder();
+            url.Append(this.URL)
+                .Append("GetDeviceByDevEUI?code=")
+                .Append(this.AuthCode);
+
+            if (!string.IsNullOrEmpty(devEUI))
+            {
+                url.Append("&DevEUI=")
+                    .Append(devEUI);
+            }
+
+            var response = await client.GetAsync(url.ToString());
+            if (!response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return new SearchDevicesResult();
+                }
+
+                Logger.Log(devEUI, $"error calling façade api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
+
                 return new SearchDevicesResult();
             }
 

@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -34,10 +35,24 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string appEUI, string devNonce);
 
+        public abstract Task<SearchDevicesResult> SearchByDevEUIAsync(string devEUI);
+
         /// <summary>
         /// Sets the new URL value
         /// </summary>
-        public void SetURL(string value) => this.URL = value;
+        public void SetURL(string value) => this.URL = this.SanitizeApiURL(value);
+
+        private string SanitizeApiURL(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            value = value.Trim();
+            if (value.EndsWith('/'))
+                return value;
+
+            return string.Concat(value, "/");
+        }
 
         /// <summary>
         /// Sets the authorization code for the URL
@@ -63,7 +78,7 @@ namespace LoRaWan.NetworkServer
         protected LoRaDeviceAPIServiceBase(NetworkServerConfiguration configuration)
         {
             this.AuthCode = configuration.FacadeAuthCode;
-            this.URL = configuration.FacadeServerUrl;
+            this.URL = this.SanitizeApiURL(configuration.FacadeServerUrl);
         }
     }
 }

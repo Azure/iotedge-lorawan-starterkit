@@ -22,16 +22,11 @@ namespace LoRaTools
             this.Cid = CidEnum.NewChannelCmd;
         }
 
-        public NewChannelAnswer(ReadOnlySpan<byte> readOnlySpan)
-            : base(readOnlySpan)
+        public NewChannelAnswer(ReadOnlySpan<byte> input)
+            : base(input)
         {
-            if (readOnlySpan.Length < this.Length)
-            {
-                throw new MacCommandException("NewChannelAnswer detected but the byte format is not correct");
-            }
-
-            this.Status = readOnlySpan[1];
-            this.Cid = (CidEnum)readOnlySpan[0];
+            this.Status = input[1];
+            this.Cid = (CidEnum)input[0];
         }
 
         public override int Length => 2;

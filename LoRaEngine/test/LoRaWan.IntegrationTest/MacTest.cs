@@ -95,7 +95,13 @@ namespace LoRaWan.IntegrationTest
                 this.TestFixtureCi.ClearLogs();
             }
 
-            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string> { { Constants.FPORT_MSG_PROPERTY_KEY, "1" } });
+            var c2dMessage = new TestLoRaCloudToDeviceMessage()
+            {
+                Fport = 1,
+                Payload = c2dMessageBody,
+            };
+
+            await this.TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
             this.Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;

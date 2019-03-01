@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer.Test
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;
@@ -41,11 +42,7 @@ namespace LoRaWan.NetworkServer.Test
             twin.Properties.Desired[TwinProperty.GatewayID] = deviceGatewayID;
             twin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             this.LoRaDeviceClient.Setup(x => x.GetTwinAsync())
-                .Returns(async () =>
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(7));
-                    return twin;
-                });
+                .ReturnsAsync(twin, TimeSpan.FromSeconds(7));
 
             // Device twin will be updated
             string afterJoinAppSKey = null;

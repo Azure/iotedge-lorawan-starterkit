@@ -51,7 +51,10 @@ namespace LoRaWan.NetworkServer
 
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {
-            if (loRaDevice.FCntUp % 10 == 0 || force)
+            var fcntUpDelta = loRaDevice.FCntUp - loRaDevice.LastSavedFCntUp;
+            var fcntDownDelta = loRaDevice.FCntDown - loRaDevice.LastSavedFCntDown;
+
+            if (force || fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA || fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA)
             {
                 return await loRaDevice.SaveFrameCountChangesAsync();
             }

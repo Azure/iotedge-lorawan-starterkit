@@ -55,27 +55,25 @@ namespace LoRaWan.NetworkServer.Test
             string afterJoin2AppSKey = null;
             string afterJoin2NwkSKey = null;
             string afterJoin2DevAddr = null;
-            var isFirstTwinUpdate = true;
+
             this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .ReturnsAsync(true, TimeSpan.FromSeconds(10))
                 .Callback<TwinCollection>((updatedTwin) =>
                 {
-                    if (isFirstTwinUpdate)
-                    {
-                        afterJoin1AppSKey = updatedTwin[TwinProperty.AppSKey];
-                        afterJoin1NwkSKey = updatedTwin[TwinProperty.NwkSKey];
-                        afterJoin1DevAddr = updatedTwin[TwinProperty.DevAddr];
+                    afterJoin1AppSKey = updatedTwin[TwinProperty.AppSKey];
+                    afterJoin1NwkSKey = updatedTwin[TwinProperty.NwkSKey];
+                    afterJoin1DevAddr = updatedTwin[TwinProperty.DevAddr];
 
-                        Thread.Sleep(TimeSpan.FromSeconds(10));
-                        isFirstTwinUpdate = false;
-                    }
-                    else
-                    {
-                        afterJoin2AppSKey = updatedTwin[TwinProperty.AppSKey];
-                        afterJoin2NwkSKey = updatedTwin[TwinProperty.NwkSKey];
-                        afterJoin2DevAddr = updatedTwin[TwinProperty.DevAddr];
-                    }
-                })
-                .ReturnsAsync(true);
+                    // update setup for no delay
+                    this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                        .ReturnsAsync(true)
+                        .Callback<TwinCollection>((updatedTwin2) =>
+                        {
+                            afterJoin2AppSKey = updatedTwin2[TwinProperty.AppSKey];
+                            afterJoin2NwkSKey = updatedTwin2[TwinProperty.NwkSKey];
+                            afterJoin2DevAddr = updatedTwin2[TwinProperty.DevAddr];
+                        });
+                });
 
             // Lora device api will be search by devices with matching deveui,
             this.LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(this.ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce1))
@@ -84,8 +82,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(this.ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce2))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewMemoryCache(), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,

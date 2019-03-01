@@ -35,17 +35,23 @@ fi
 
 # Starts with tests the can fail quick (pktforwarder is down, or something in this scenario)
 declare -a testsToRun=('LoRaWan.IntegrationTest.OTAAJoinTest'
-                       'LoRaWan.IntegrationTest.ABPTest' 
-                       'LoRaWan.IntegrationTest.C2DMessageTest' 
+                       'LoRaWan.IntegrationTest.ABPTest'
+                       'LoRaWan.IntegrationTest.C2DMessageTest'
                        'LoRaWan.IntegrationTest.OTAATest'
-                       'LoRaWan.IntegrationTest.SensorDecodingTest')
+                       'LoRaWan.IntegrationTest.MacTest'
+                       'LoRaWan.IntegrationTest.SensorDecodingTest'
+                       'LoRaWan.IntegrationTest.ClassCTest')
 
 testCount=${#testsToRun[@]}
 
 for (( i=1; i<${testCount}+1; i++ ));
 do
   echo "[INFO] Starting ${testsToRun[$i-1]} ($i/${testCount})..."
-  retry dotnet test --filter ${testsToRun[$i-1]} --logger trx --results-directory $TEST_RESULTS_PATH
+  if [ "$i" -eq 1 ];then
+      retry dotnet test --filter ${testsToRun[$i-1]} --logger trx --results-directory $TEST_RESULTS_PATH
+  else
+      retry dotnet test --no-build --filter ${testsToRun[$i-1]} --logger trx --results-directory $TEST_RESULTS_PATH
+  fi
 done
 
 echo "[INFO] Done executing tests!"

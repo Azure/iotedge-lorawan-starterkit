@@ -12,9 +12,11 @@ namespace LoRaWan.IntegrationTest
     using Microsoft.Azure.Devices;
     using Xunit;
 
-    // Tests Cloud to Device messages
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
+    /// <summary>
+    /// Tests Cloud to Device messages
+    /// </summary>
     public sealed class C2DMessageTest : IntegrationTestBaseCi
     {
         private const string FportPropertyName = "fport";
@@ -77,7 +79,14 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string> { { FportPropertyName, "1" } });
+            var c2dMessage = new TestLoRaCloudToDeviceMessage()
+            {
+                Payload = c2dMessageBody,
+                Fport = 1,
+                MessageId = Guid.NewGuid().ToString(),
+            };
+
+            await this.TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
             this.Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -179,7 +188,14 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string> { { FportPropertyName, "1" } });
+            var c2dMessage = new TestLoRaCloudToDeviceMessage()
+            {
+                Payload = c2dMessageBody,
+                Fport = 1,
+                MessageId = Guid.NewGuid().ToString(),
+            };
+
+            await this.TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
             this.Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -280,7 +296,14 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, c2dMessageBody, new Dictionary<string, string>() { { FportPropertyName, "2" } });
+            var c2dMessage = new TestLoRaCloudToDeviceMessage()
+            {
+                Payload = c2dMessageBody,
+                Fport = 2,
+                MessageId = Guid.NewGuid().ToString(),
+            };
+
+            await this.TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
             this.Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -381,11 +404,15 @@ namespace LoRaWan.IntegrationTest
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
             var msgId = Guid.NewGuid().ToString();
-            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, msgId, c2dMessageBody, new Dictionary<string, string>()
+            var c2dMessage = new TestLoRaCloudToDeviceMessage()
             {
-                { FportPropertyName, "1" },
-                { ConfirmedPropertyName, "true" }
-            });
+                Payload = c2dMessageBody,
+                Fport = 1,
+                MessageId = msgId,
+                Confirmed = true,
+            };
+
+            await this.TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
             this.Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
             var foundC2DMessage = false;
@@ -450,117 +477,6 @@ namespace LoRaWan.IntegrationTest
             Assert.True(foundReceivePacket, $"Could not find lora receiving message '{expectedRxSerial}'");
         }
 
-        // Ensures that C2D messages using invalid fport
-        // - Message is not forwarded to device
-        // - error is logged with correlation-id
-        // - Invalid fport values:
-        // - 0: reserved for mac commands
-        // - 224+: reserved for future applications
-        // Uses Device16_OTAA and Device17_OTAA
-        [Theory]
-        [InlineData(0, nameof(IntegrationTestFixtureCi.Device18_ABP))] // 0 => mac commands
-        [InlineData(224, nameof(IntegrationTestFixtureCi.Device19_ABP))] // >= 224 is reserved
-        public async Task C2D_Using_Invalid_FPort_Should_Be_Ignored(byte fport, string devicePropertyName)
-        {
-            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
-            this.LogTestStart(device);
-
-            // Setup LoRa device properties
-            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
-            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
-
-            // Setup protocol properties
-            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
-
-            // Sends 2x unconfirmed messages
-            for (var i = 1; i <= 2; ++i)
-            {
-                var msg = PayloadGenerator.Next().ToString();
-                this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
-
-                await this.ArduinoDevice.transferPacketAsync(msg, 10);
-
-                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
-
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
-
-                this.TestFixtureCi.ClearLogs();
-            }
-
-            // sends C2D - between 10 and 99
-            var c2dMessageBody = (100 + random.Next(90)).ToString();
-            var c2dMessage = new Message(Encoding.UTF8.GetBytes(c2dMessageBody))
-            {
-                MessageId = Guid.NewGuid().ToString(),
-            };
-            c2dMessage.Properties[FportPropertyName] = fport.ToString();
-            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, c2dMessage);
-            this.Log($"Message {c2dMessageBody} sent to device");
-
-            // Following log will be generated in case C2D message has invalid fport:
-            // "<device-id>: invalid fport '<fport>' in C2D message '<message-id>'
-            var foundC2DInvalidFPortMessage = false;
-
-            // Serial port will print the following once the message is received
-            var expectedRxSerial = $"RX: \"{this.ToHexString(c2dMessageBody)}\"";
-            this.Log($"Expected C2D contains: {expectedRxSerial}");
-
-            // Sends 8x unconfirmed messages, stopping if C2D message is found
-            for (var i = 3; i <= 10; ++i)
-            {
-                var msg = PayloadGenerator.Next().ToString();
-                this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
-                await this.ArduinoDevice.transferPacketAsync(msg, 10);
-
-                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
-
-                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
-
-                // ensure c2d message is not found
-                // 0000000000000016: C2D message: 58
-                var c2dLogMessage = $"{device.DeviceID}: C2D message: {c2dMessageBody}";
-                var searchC2DMessageLogResult = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (messageBody) =>
-                    {
-                        return messageBody.StartsWith(c2dLogMessage);
-                    },
-                    new SearchLogOptions
-                    {
-                        Description = c2dLogMessage,
-                        MaxAttempts = 1
-                    });
-                Assert.False(searchC2DMessageLogResult.Found, $"Message with fport {fport} should not be forwarded to device");
-
-                // ensure log with error is found
-                if (!foundC2DInvalidFPortMessage)
-                {
-                    var invalidFportLog = $"{device.DeviceID}: invalid fport '{fport}' in C2D message '{c2dMessage.MessageId}'";
-                    var searchInvalidFportLog = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
-                        (messageBody) =>
-                        {
-                            return messageBody.StartsWith(invalidFportLog);
-                        },
-                        new SearchLogOptions
-                        {
-                            Description = invalidFportLog,
-                            MaxAttempts = 1
-                        });
-
-                    foundC2DInvalidFPortMessage = searchInvalidFportLog.Found;
-                }
-
-                // Should not contain in the serial the c2d message
-                Assert.DoesNotContain(this.ArduinoDevice.SerialLogs, log => log.Contains(expectedRxSerial, StringComparison.InvariantCultureIgnoreCase));
-
-                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
-
-                this.TestFixtureCi.ClearLogs();
-            }
-
-            Assert.True(foundC2DInvalidFPortMessage, "Invalid fport message was not found in network server log");
-        }
-
         /// <summary>
         /// Ensures that a device that has preferred window set to two receives C2D messages
         /// </summary>
@@ -595,11 +511,15 @@ namespace LoRaWan.IntegrationTest
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
             var msgId = Guid.NewGuid().ToString();
-            await this.TestFixtureCi.SendCloudToDeviceMessage(device.DeviceID, msgId, c2dMessageBody, new Dictionary<string, string>()
+            var c2dMessage = new TestLoRaCloudToDeviceMessage()
             {
-                { FportPropertyName, "1" },
-                { ConfirmedPropertyName, "true" },
-            });
+                Payload = c2dMessageBody,
+                Fport = 1,
+                MessageId = msgId,
+                Confirmed = true,
+            };
+
+            await this.TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
 
             this.Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 

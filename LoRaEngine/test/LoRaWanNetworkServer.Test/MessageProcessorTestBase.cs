@@ -20,8 +20,6 @@ namespace LoRaWan.NetworkServer.Test
         private readonly byte[] macAddress;
         private long startTime;
 
-        private DefaultLoRaDataRequestHandler requestHandlerImplementation;
-
         public TestPacketForwarder PacketForwarder { get; }
 
         protected Mock<LoRaDeviceAPIServiceBase> LoRaDeviceApi { get; }
@@ -33,6 +31,10 @@ namespace LoRaWan.NetworkServer.Test
         internal TestLoRaDeviceFactory LoRaDeviceFactory { get; }
 
         protected Mock<ILoRaDeviceClient> LoRaDeviceClient { get; }
+
+        protected TestLoRaPayloadDecoder PayloadDecoder { get; }
+
+        protected DefaultLoRaDataRequestHandler RequestHandlerImplementation { get; }
 
         protected Task<Message> EmptyAdditionalMessageReceiveAsync => Task.Delay(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage).ContinueWith((_) => (Message)null);
 
@@ -54,11 +56,12 @@ namespace LoRaWan.NetworkServer.Test
                 LogToConsole = true,
             });
 
+            this.PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder());
             this.PacketForwarder = new TestPacketForwarder();
             this.LoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerGatewayID, this.LoRaDeviceApi.Object);
             var deduplicationFactory = new DeduplicationStrategyFactory(this.LoRaDeviceApi.Object);
-            this.requestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), deduplicationFactory);
+            this.RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.PayloadDecoder, deduplicationFactory);
             this.LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.LoRaDeviceFactory = new TestLoRaDeviceFactory(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.LoRaDeviceClient.Object, deduplicationFactory);
         }
@@ -79,7 +82,7 @@ namespace LoRaWan.NetworkServer.Test
             return cache;
         }
 
-        public LoRaDevice CreateLoRaDevice(SimulatedDevice simulatedDevice) => TestUtils.CreateFromSimulatedDevice(simulatedDevice, this.LoRaDeviceClient.Object, this.requestHandlerImplementation);
+        public LoRaDevice CreateLoRaDevice(SimulatedDevice simulatedDevice) => TestUtils.CreateFromSimulatedDevice(simulatedDevice, this.LoRaDeviceClient.Object, this.RequestHandlerImplementation);
 
         public WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk, IPacketForwarder packetForwarder = null) => new WaitableLoRaRequest(rxpk, packetForwarder ?? this.PacketForwarder);
     }

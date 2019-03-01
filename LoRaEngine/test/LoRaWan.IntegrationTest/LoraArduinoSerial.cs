@@ -48,6 +48,9 @@ namespace LoRaWan.IntegrationTest
     using System.Threading.Tasks;
     using LoRaWan.Test.Shared;
 
+    /// <summary>
+    /// Arduino driver for the LoRaWAN device
+    /// </summary>
     public sealed partial class LoRaArduinoSerial : IDisposable
     {
         private const int DEFAULT_TIMEWAIT = 100;
@@ -272,7 +275,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public async Task setIdAsync(string DevAddr, string DevEUI, string AppEUI, [CallerMemberName] string memberName = "")
+        public async Task setIdAsync(string DevAddr, string DevEUI, string AppEUI)
         {
             try
             {
@@ -281,31 +284,28 @@ namespace LoRaWan.IntegrationTest
                     string cmd = $"AT+ID=DevAddr,{DevAddr}\r\n";
                     this.sendCommand(cmd);
 
-                    if (!await this.TryWaitForSerialAsync("+ID: DevAddr", 30))
-                    {
-                        throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-                    }
+                    await this.EnsureSerialAnswerAsync("+ID: DevAddr", 30);
                 }
 
                 if (!string.IsNullOrEmpty(DevEUI))
                 {
                     string cmd = $"AT+ID=DevEui,{DevEUI}\r\n";
                     this.sendCommand(cmd);
-                    if (!await this.TryWaitForSerialAsync("+ID: DevEui", 30))
-                    {
-                        throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-                    }
+
+                    await this.EnsureSerialAnswerAsync("+ID: DevEui", 30);
                 }
 
                 if (!string.IsNullOrEmpty(AppEUI))
                 {
                     string cmd = $"AT+ID=AppEui,{AppEUI}\r\n";
                     this.sendCommand(cmd);
-                    if (!await this.TryWaitForSerialAsync("+ID: AppEui", 30))
-                    {
-                        throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-                    }
+
+                    await this.EnsureSerialAnswerAsync("+ID: AppEui", 30);
                 }
+            }
+            catch (ArduinoDeviceFailedException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -341,7 +341,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public async Task setKeyAsync(string NwkSKey, string AppSKey, string AppKey, [CallerMemberName] string memberName = "")
+        public async Task setKeyAsync(string NwkSKey, string AppSKey, string AppKey)
         {
             try
             {
@@ -349,10 +349,7 @@ namespace LoRaWan.IntegrationTest
                 {
                     string cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
                     this.sendCommand(cmd);
-                    if (!await this.TryWaitForSerialAsync("+KEY: NWKSKEY", 30))
-                    {
-                        throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-                    }
+                    await this.EnsureSerialAnswerAsync("+KEY: NWKSKEY", 30);
                 }
 
                 if (!string.IsNullOrEmpty(AppSKey))
@@ -360,10 +357,7 @@ namespace LoRaWan.IntegrationTest
                     string cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
                     this.sendCommand(cmd);
 
-                    if (!await this.TryWaitForSerialAsync("+KEY: APPSKEY", 30))
-                    {
-                        throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-                    }
+                    await this.EnsureSerialAnswerAsync("+KEY: APPSKEY", 30);
                 }
 
                 if (!string.IsNullOrEmpty(AppKey))
@@ -371,11 +365,12 @@ namespace LoRaWan.IntegrationTest
                     string cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
                     this.sendCommand(cmd);
 
-                    if (!await this.TryWaitForSerialAsync("+KEY: APPKEY", 30))
-                    {
-                        throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-                    }
+                    await this.EnsureSerialAnswerAsync("+KEY: APPKEY", 30);
                 }
+            }
+            catch (ArduinoDeviceFailedException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -418,7 +413,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public async Task setDataRateAsync(_data_rate_t dataRate, _physical_type_t physicalType, [CallerMemberName] string memberName = "")
+        public async Task setDataRateAsync(_data_rate_t dataRate, _physical_type_t physicalType)
         {
             if (physicalType == _physical_type_t.EU434)
                 this.sendCommand("AT+DR=EU433\r\n");
@@ -448,10 +443,7 @@ namespace LoRaWan.IntegrationTest
             string cmd = $"AT+DR={dataRate}\r\n";
             this.sendCommand(cmd);
 
-            if (!await this.TryWaitForSerialAsync("+DR:", 30))
-            {
-                throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-            }
+            await this.EnsureSerialAnswerAsync("+DR:", 30);
         }
 
         public LoRaArduinoSerial setPower(short power)
@@ -464,28 +456,20 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public async Task setPowerAsync(short power, [CallerMemberName] string memberName = "")
+        public async Task setPowerAsync(short power)
         {
             string cmd = $"AT+POWER={power}\r\n";
             this.sendCommand(cmd);
 
-            if (!await this.TryWaitForSerialAsync("+POWER:", 30))
-            {
-                throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-            }
+            await this.EnsureSerialAnswerAsync("+POWER:", 30);
         }
 
-        public async Task setPortAsync(int port, [CallerMemberName] string memberName = "")
+        public async Task setPortAsync(int port)
         {
             string cmd = $"AT+PORT={port}\r\n";
             this.sendCommand(cmd);
 
-            if (!await this.TryWaitForSerialAsync("+PORT:", 30))
-            {
-                throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-            }
-
-            await Task.Delay(DEFAULT_TIMEWAIT);
+            await this.EnsureSerialAnswerAsync("+PORT:", 30);
         }
 
         public LoRaArduinoSerial setAdaptiveDataRate(bool command)
@@ -500,17 +484,14 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public async Task setAdaptiveDataRateAsync(bool command, [CallerMemberName] string memberName = "")
+        public async Task setAdaptiveDataRateAsync(bool command)
         {
             if (command)
                 this.sendCommand("AT+ADR=ON\r\n");
             else
                 this.sendCommand("AT+ADR=OFF\r\n");
 
-            if (!await this.TryWaitForSerialAsync("+ADR:", 30))
-            {
-                throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-            }
+            await this.EnsureSerialAnswerAsync("+ADR:", 30);
         }
 
         // Wait until the serial data is empty
@@ -543,17 +524,12 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public async Task setChannelAsync(int channel, float frequency, [CallerMemberName] string memberName = "")
+        public async Task setChannelAsync(int channel, float frequency)
         {
             string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
             this.sendCommand(cmd);
 
-            if (!await this.TryWaitForSerialAsync("+CH:", 30))
-            {
-                throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-            }
-
-            await Task.Delay(DEFAULT_TIMEWAIT);
+            await this.EnsureSerialAnswerAsync("+CH:", 30);
         }
 
         public LoRaArduinoSerial setChannel(char channel, float frequency, _data_rate_t dataRata)
@@ -796,15 +772,12 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public async Task setReceiceWindowSecondAsync(float frequency, _data_rate_t dataRate, [CallerMemberName] string memberName = "")
+        public async Task setReceiceWindowSecondAsync(float frequency, _data_rate_t dataRate)
         {
             string cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{dataRate}\r\n";
             this.sendCommand(cmd);
 
-            if (!await this.TryWaitForSerialAsync("+RXWIN2:", 10))
-            {
-                throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-            }
+            await this.EnsureSerialAnswerAsync("+RXWIN2:", 10);
         }
 
         public LoRaArduinoSerial setReceiceWindowSecond(float frequency, _spreading_factor_t spreadingFactor, _band_width_t bandwidth)
@@ -890,6 +863,16 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
+        public async Task setClassTypeAsync(_class_type_t type)
+        {
+            if (type == _class_type_t.CLASS_A)
+                this.sendCommand("AT+CLASS=A\r\n");
+            else if (type == _class_type_t.CLASS_C)
+                this.sendCommand("AT+CLASS=C\r\n");
+
+            await Task.Delay(DEFAULT_TIMEWAIT);
+        }
+
         public LoRaArduinoSerial setDeciveMode(_device_mode_t mode)
         {
             if (mode == _device_mode_t.LWABP)
@@ -902,7 +885,7 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
-        public async Task setDeviceModeAsync(_device_mode_t mode, [CallerMemberName] string memberName = "")
+        public async Task setDeviceModeAsync(_device_mode_t mode)
         {
             try
             {
@@ -910,16 +893,13 @@ namespace LoRaWan.IntegrationTest
                     this.sendCommand("AT+MODE=LWABP\r\n");
                 else if (mode == _device_mode_t.LWOTAA)
                     this.sendCommand("AT+MODE=LWOTAA\r\n");
-
-                if (!await this.TryWaitForSerialAsync("+MODE:", 30))
-                {
-                    throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-                }
             }
             catch (Exception ex)
             {
                 TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex.ToString()}");
             }
+
+            await this.EnsureSerialAnswerAsync("+MODE:", 30);
         }
 
         public bool setOTAAJoin(_otaa_join_cmd_t command, int timeout)
@@ -1005,10 +985,19 @@ namespace LoRaWan.IntegrationTest
             return this;
         }
 
+        public async Task setDeviceResetAsync()
+        {
+            this.sendCommand("AT+RESET\r\n");
+
+            await Task.Delay(DEFAULT_TIMEWAIT);
+
+            await this.EnsureSerialAnswerAsync("+RESET:", 10);
+        }
+
         /// <summary>
         /// Reset the device to default, usefull for port manipulation.
         /// </summary>
-        public async Task setDeviceDefaultAsync([CallerMemberName] string memberName = "")
+        public async Task setDeviceDefaultAsync()
         {
             try
             {
@@ -1019,10 +1008,7 @@ namespace LoRaWan.IntegrationTest
                 TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex.ToString()}");
             }
 
-            if (!await this.TryWaitForSerialAsync("+FDEFAULT:", 10))
-            {
-                throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
-            }
+            await this.EnsureSerialAnswerAsync("+FDEFAULT:", 10);
         }
 
         short getBatteryVoltage()
@@ -1075,19 +1061,20 @@ namespace LoRaWan.IntegrationTest
             GC.SuppressFinalize(this);
         }
 
-        private async Task<bool> TryWaitForSerialAsync(string expectedString, int counter = 10)
+        async Task EnsureSerialAnswerAsync(string expectedSerialStartText, int retries = 10, [CallerMemberName] string memberName = "")
         {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < retries; i++)
             {
-                if (this.ReceivedSerial(x => x.StartsWith(expectedString)))
+                if (this.ReceivedSerial(x => x.StartsWith(expectedSerialStartText, StringComparison.InvariantCultureIgnoreCase)))
                 {
-                    return true;
+                    await Task.Delay(DEFAULT_TIMEWAIT);
+                    return;
                 }
 
                 await Task.Delay(DEFAULT_TIMEWAIT);
             }
 
-            return false;
+            throw new ArduinoDeviceFailedException($"Waited for command {memberName}, but could not complete in the allocated time.");
         }
     }
 }

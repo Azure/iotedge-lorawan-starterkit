@@ -31,18 +31,15 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets the LoRa payload fport as value
         /// </summary>
-        public byte FPort
+        public byte GetFPort()
         {
-            get
+            byte fportUp = 0;
+            if (this.Fport.Span.Length > 0)
             {
-                byte fportUp = 0;
-                if (this.Fport.Span.Length > 0)
-                {
-                    fportUp = this.Fport.Span[0];
-                }
-
-                return fportUp;
+                fportUp = this.Fport.Span[0];
             }
+
+            return fportUp;
         }
 
         /// <summary>
@@ -122,6 +119,7 @@ namespace LoRaTools.LoRaMessage
             this.DevAddr = addrbytes;
             this.LoRaMessageType = (LoRaMessageType)this.RawMessage[0];
 
+            // in this case the payload is not downlink of our type
             if (this.LoRaMessageType == LoRaMessageType.ConfirmedDataDown ||
                 this.LoRaMessageType == LoRaMessageType.JoinAccept ||
                 this.LoRaMessageType == LoRaMessageType.UnconfirmedDataDown)
@@ -269,7 +267,7 @@ namespace LoRaTools.LoRaMessage
         public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI)
         {
             // It is a Mac Command payload, needs to encrypt with nwkskey
-            if (this.FPort == 0)
+            if (this.GetFPort() == 0)
             {
                 this.PerformEncryption(nwkSKey);
             }

@@ -3,12 +3,13 @@
 
 namespace SensorDecoderModule.Classes
 {
+    using System;
     using System.Text;
     using Newtonsoft.Json;
 
     internal static class LoraDecoders
     {
-        private static string DecoderValueSensor(byte[] payload, uint fport)
+        private static string DecoderValueSensor(string devEUI, byte[] payload, byte fport)
         {
             // EITHER: Convert a payload containing a string back to string format for further processing
             var result = Encoding.UTF8.GetString(payload);
@@ -20,6 +21,34 @@ namespace SensorDecoderModule.Classes
 
             // Return a JSON string containing the decoded data
             return JsonConvert.SerializeObject(new { value = result });
+
+        }
+
+        private static string RelayToClassC(string devEUI, byte[] payload, byte fport)
+        {
+            // EITHER: Convert a payload containing a string back to string format for further processing
+            var decodedValue = Encoding.UTF8.GetString(payload);
+
+            // Write code that decodes the payload here.
+
+            // Return a JSON string containing the decoded data
+            var resultObject = new 
+            {
+                value = decodedValue,
+                cloudToDeviceMessage = new LoRaCloudToDeviceMessage()
+                {
+                    DevEUI = "12300000000CCCCC",
+                    Payload = "Hello",
+                    // RawPayload = "AQIC", // -> Sends 0x01 0x02 0x03 (in base64)
+                    Confirmed = false,
+                    Fport = fport,
+                    MessageId = Guid.NewGuid().ToString(),
+                }
+            };
+
+            // Return a JSON string containing the decoded data
+            return JsonConvert.SerializeObject(resultObject);
+
         }
     }
 }

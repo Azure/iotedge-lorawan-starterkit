@@ -30,7 +30,7 @@ The LoRaWAN starter kit is an *experimental* cross platform private network impl
 ## LoRaWAN Specification Support
 We plan to support the following key features of LoRaWAN 1.0.2 specification, however please note that not all of them are available as of today. Please refer to our release notes for more details on what is available.
 - Current supported Specification: *1.0.2*.
-- Support of Class A devices.
+- Support of Class A and C devices.
 - Support of **EU868** and **US915** channel frequencies.
 - Activation through ABP and OTAA.
 - Confirmed and unconfirmed upstream messages.

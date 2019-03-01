@@ -6,6 +6,8 @@ namespace LoraKeysManagerFacade.Test
     using Microsoft.Azure.WebJobs;
     using Xunit;
 
+    // Ensure tests don't run in parallel since LoRaRegistryManager is shared
+    [Collection("LoraKeysManagerFacade.Test")]
     public class FCntCacheCheckTest
     {
         public FCntCacheCheckTest()

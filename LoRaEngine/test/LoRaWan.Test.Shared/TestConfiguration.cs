@@ -61,5 +61,8 @@ namespace LoRaWan.Test.Shared
 
         // Gets/sets gateway NetId
         public uint NetId { get; set; } = 1;
+
+        // Gets/sets the network server module identifier
+        public string NetworkServerModuleID { get; set; } = "LoRaWanNetworkSrvModule";
     }
 }

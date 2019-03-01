@@ -25,6 +25,10 @@ namespace LoRaTools
 
         public byte GetRX2DataRate() => (byte)(this.DlSettings & 0b00001111);
 
+        public RXParamSetupRequest()
+        {
+        }
+
         public RXParamSetupRequest(byte rx1DROffset, byte rx2DataRateOffset, byte[] frequency)
         {
             this.DlSettings = (byte)(((rx1DROffset << 4) | rx2DataRateOffset) & 0b01111111);
