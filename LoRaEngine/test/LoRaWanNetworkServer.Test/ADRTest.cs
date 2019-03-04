@@ -21,17 +21,20 @@ namespace LoRaWanNetworkServer.Test
     {
         [Theory]
         // deviceId, # messages sent, ExpectedDR, expectedPower, expectedNbRep
-        [InlineData(10, 70, 5, 7, 1)]
-        [InlineData(11, 15, 2, 0, 1)]
-        public async Task Perform_Rate_Adapatation_When_Possible(uint deviceId, int count, int expectedDR, int expectedTXPower, int expectedNbRep)
+        // Enough Messages, Perform ADR
+        [InlineData(10, 70, 5, 7, 1, 9)]
+        // Not Enough Messages and fcnt too low, receives empty payload
+        [InlineData(11, 15, 2, 0, 1, 9)]
+        // Not Enough Messages and fcnt high, receives default values, stay on DR 2, max tx pow
+        [InlineData(12, 15, 2, 0, 1, 21)]
+        public async Task Perform_Rate_Adapatation_When_Possible(uint deviceId, int count, int expectedDR, int expectedTXPower, int expectedNbRep, int initialDeviceFcntUp)
         {
             int payloadFcnt = 0;
-            const int InitialDeviceFcntUp = 9;
             const int InitialDeviceFcntDown = 0;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(deviceId, gatewayID: this.ServerConfiguration.GatewayID),
-                frmCntUp: InitialDeviceFcntUp);
+                frmCntUp: initialDeviceFcntUp);
 
             var loraDevice = this.CreateLoRaDevice(simulatedDevice);
 
@@ -52,7 +55,20 @@ namespace LoRaWanNetworkServer.Test
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            payloadFcnt = await this.InitializeCacheToDefaultValuesAsync(payloadFcnt, simulatedDevice, messageProcessor);
+            // In this case we want to simulate a cache failure, so we don't initialize the cache.
+            if (deviceId != 12)
+            {
+                payloadFcnt = await this.InitializeCacheToDefaultValuesAsync(payloadFcnt, simulatedDevice, messageProcessor);
+            }
+            else
+            {
+                var payloadInt = simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: payloadFcnt);
+                var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+                var requestInt = this.CreateWaitableRequest(rxpkInt);
+                messageProcessor.DispatchRequest(requestInt);
+                Assert.True(await requestInt.WaitCompleteAsync(-1));
+                payloadFcnt++;
+            }
 
             for (int i = 0; i < count; i++)
             {
@@ -81,18 +97,26 @@ namespace LoRaWanNetworkServer.Test
             var downlinkMessage = this.PacketForwarder.DownlinkMessages[1];
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
 
-            // We expect a mac command in the payload
-            Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
-            var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
-            Assert.Equal(0, payloadDataDown.Fport.Span[0]);
-            Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
-            var linkAdr = new LinkADRRequest(decryptedPayload);
-            Assert.Equal(expectedDR, linkAdr.DataRate);
-            Assert.Equal(expectedDR, loraDevice.DataRate);
-            Assert.Equal(expectedTXPower, linkAdr.TxPower);
-            Assert.Equal(expectedTXPower, loraDevice.TxPower);
-            Assert.Equal(expectedNbRep, linkAdr.NbRep);
-            Assert.Equal(expectedNbRep, loraDevice.NbRep);
+            // in this case we expect a null payload
+            if (deviceId == 11)
+            {
+                Assert.Equal(0, payloadDataDown.Frmpayload.Span.Length);
+            }
+            else
+            {
+                // We expect a mac command in the payload
+                Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
+                var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
+                Assert.Equal(0, payloadDataDown.Fport.Span[0]);
+                Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
+                var linkAdr = new LinkADRRequest(decryptedPayload);
+                Assert.Equal(expectedDR, linkAdr.DataRate);
+                Assert.Equal(expectedDR, loraDevice.DataRate);
+                Assert.Equal(expectedTXPower, linkAdr.TxPower);
+                Assert.Equal(expectedTXPower, loraDevice.TxPower);
+                Assert.Equal(expectedNbRep, linkAdr.NbRep);
+                Assert.Equal(expectedNbRep, loraDevice.NbRep);
+            }
 
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
@@ -188,7 +212,7 @@ namespace LoRaWanNetworkServer.Test
             var downlinkMessage = this.PacketForwarder.DownlinkMessages[1];
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
             // We expect a mac command in the payload
-            if (deviceId == 6 || deviceId == 221)
+            if (deviceId == 221)
             {
                 // In this case, no ADR adaptation is performed, so the message should be empty
                 Assert.Equal(0, payloadDataDown.Frmpayload.Span.Length);

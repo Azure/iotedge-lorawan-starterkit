@@ -56,7 +56,7 @@ namespace LoRaTools.ADR
                 if (table == null
                     || !table.CurrentNbRep.HasValue
                     || !table.CurrentTxPower.HasValue
-                    || ((table.Entries.Count < currentStrategy.MinimumNumberOfResult) && ((fCntUp - 10) > table.Entries.Count)))
+                    || fCntUp > currentStrategy.MinimumNumberOfResult)
                 {
                     result = this.ReturnDefaultValues(upstreamDataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
                 }
