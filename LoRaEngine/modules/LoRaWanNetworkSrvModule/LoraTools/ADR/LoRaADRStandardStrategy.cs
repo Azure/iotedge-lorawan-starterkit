@@ -25,20 +25,26 @@ namespace LoRaTools.ADR
         /// </summary>
         private readonly int[,] pktLossToNbRep = new int[4, 3] { { 1, 1, 2 }, { 1, 2, 3 }, { 2, 3, 3 }, { 3, 3, 3 } };
 
+        public int MinimumNumberOfResult => 20;
+
+        public int DefaultTxPower => 0;
+
+        int ILoRaADRStrategy.DefaultNbRep => 1;
+
         public LoRaADRResult ComputeResult(LoRaADRTable table, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr)
         {
             // We do not have enough frame to calculate ADR. We can assume that a crash was the cause.
             if (table == null || table.Entries.Count < 20)
             {
                 Logger.Log("ADR: not enough frames captured. Sending default power values", Microsoft.Extensions.Logging.LogLevel.Debug);
-                return this.ReturnDefaultValues(upstreamDataRate);
+                return null;
             }
 
             // This is the first contact case to harmonize the txpower state between device and server or the crash case.
             if (!table.CurrentNbRep.HasValue || !table.CurrentTxPower.HasValue)
             {
                 Logger.Log("ADR: Sending the device default power values", Microsoft.Extensions.Logging.LogLevel.Debug);
-                return this.ReturnDefaultValues(upstreamDataRate);
+                return null;
             }
 
             // This is a case of standard ADR calculus.
@@ -56,16 +62,6 @@ namespace LoRaTools.ADR
             }
 
             return null;
-        }
-
-        private LoRaADRResult ReturnDefaultValues(int upstreamDataRate)
-        {
-            return new LoRaADRResult
-            {
-                DataRate = upstreamDataRate,
-                NbRepetition = DefaultNbRep,
-                TxPower = MaxTxPowerIndex
-            };
         }
 
         private (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex, int maxDr)

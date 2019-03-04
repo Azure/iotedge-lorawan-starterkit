@@ -9,5 +9,11 @@ namespace LoRaTools.ADR
     public interface ILoRaADRStrategy
     {
         LoRaADRResult ComputeResult(LoRaADRTable table, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr);
+
+        int MinimumNumberOfResult { get; }
+
+        int DefaultTxPower { get; }
+
+        int DefaultNbRep { get; }
     }
 }

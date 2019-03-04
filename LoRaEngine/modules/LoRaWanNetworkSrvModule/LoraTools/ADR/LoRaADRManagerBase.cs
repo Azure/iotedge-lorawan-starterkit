@@ -46,25 +46,37 @@ namespace LoRaTools.ADR
                         ? await this.store.AddTableEntry(newEntry)
                         : await this.store.GetADRTable(devEUI);
 
-            var result = this.strategyProvider.GetStrategy().ComputeResult(table, requiredSnr, upstreamDataRate, minTxPower, maxDr);
+            var currentStrategy = this.strategyProvider.GetStrategy();
 
-            if (result != null)
+            var result = currentStrategy.ComputeResult(table, requiredSnr, upstreamDataRate, minTxPower, maxDr);
+
+            if (result == null)
             {
-                var nextFcntDown = await this.NextFCntDown(devEUI, gatewayId, fCntUp, fCntDown);
-                result.CanConfirmToDevice = nextFcntDown > 0;
+                result = this.ReturnDefaultValues(upstreamDataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
 
-                if (result.CanConfirmToDevice)
-                {
-                    table.CurrentNbRep = result.NbRepetition;
-                    table.CurrentTxPower = result.TxPower;
-                    await this.store.UpdateADRTable(devEUI, table);
-                    await this.TryUpdateStateAsync(result);
-                    result.FCntDown = nextFcntDown;
-                }
+                //// In this case we want to reset the device to default values
+                // if (table == null || !table.CurrentNbRep.HasValue || !table.CurrentTxPower.HasValue || ((table.Entries.Count < currentStrategy.MinimumNumberOfResult) && (fCntUp - 10) > table.Entries.Count))
+                // {
+                //    result = this.ReturnDefaultValues(upstreamDataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
+                // }
+                // else
+                // {
+                //    result = await this.GetLastResultAsync(devEUI) ?? new LoRaADRResult();
+                //    result.NumberOfFrames = table.Entries.Count;
+                //    return result;
+                // }
             }
-            else
+
+            var nextFcntDown = await this.NextFCntDown(devEUI, gatewayId, fCntUp, fCntDown);
+            result.CanConfirmToDevice = nextFcntDown > 0;
+
+            if (result.CanConfirmToDevice)
             {
-                result = await this.GetLastResultAsync(devEUI) ?? new LoRaADRResult();
+                table.CurrentNbRep = result.NbRepetition;
+                table.CurrentTxPower = result.TxPower;
+                await this.store.UpdateADRTable(devEUI, table);
+                await this.TryUpdateStateAsync(result);
+                result.FCntDown = nextFcntDown;
             }
 
             result.NumberOfFrames = table.Entries.Count;
@@ -100,6 +112,16 @@ namespace LoRaTools.ADR
         public virtual async Task<bool> ResetAsync(string devEUI)
         {
             return await this.store.Reset(devEUI);
+        }
+
+        private LoRaADRResult ReturnDefaultValues(int upstreamDataRate, int defaultNbRep, int maxTxPowerIndex)
+        {
+            return new LoRaADRResult
+            {
+                DataRate = upstreamDataRate,
+                NbRepetition = defaultNbRep,
+                TxPower = maxTxPowerIndex
+            };
         }
     }
 }
