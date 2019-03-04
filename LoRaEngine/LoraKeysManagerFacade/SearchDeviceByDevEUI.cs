@@ -10,14 +10,22 @@ namespace LoraKeysManagerFacade
     using LoRaWan.Shared;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
 
     public class SearchDeviceByDevEUI
     {
+        private readonly RegistryManager registryManager;
+
+        public SearchDeviceByDevEUI(RegistryManager registryManager)
+        {
+            this.registryManager = registryManager;
+        }
+
         [FunctionName(nameof(GetDeviceByDevEUI))]
-        public static async Task<IActionResult> GetDeviceByDevEUI([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
+        public async Task<IActionResult> GetDeviceByDevEUI([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
         {
             try
             {
@@ -29,10 +37,10 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            return await RunGetDeviceByDevEUI(req, log, context, ApiVersion.LatestVersion);
+            return await this.RunGetDeviceByDevEUI(req, log, context, ApiVersion.LatestVersion);
         }
 
-        private static async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log, ExecutionContext context, ApiVersion currentApiVersion)
+        private async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log, ExecutionContext context, ApiVersion currentApiVersion)
         {
             string devEUI = req.Query["DevEUI"];
             if (string.IsNullOrEmpty(devEUI))
@@ -41,10 +49,8 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult("DevEUI missing in request");
             }
 
-            var registryManager = LoRaRegistryManager.GetCurrentInstance(context.FunctionAppDirectory);
-
             var result = new List<IoTHubDeviceInfo>();
-            var device = await registryManager.GetDeviceAsync(devEUI);
+            var device = await this.registryManager.GetDeviceAsync(devEUI);
             if (device != null)
             {
                 if (device != null)

@@ -76,6 +76,8 @@ namespace LoRaWan.NetworkServer
 
         public DeduplicationMode Deduplication { get; set; }
 
+        readonly object fcntLock;
+
         int preferredWindow;
 
         /// <summary>
@@ -99,7 +101,6 @@ namespace LoRaWan.NetworkServer
             get => this.classType;
         }
 
-        readonly object fcntSync;
         readonly object queueSync;
         readonly Queue<LoRaRequest> queuedRequests;
         volatile bool hasFrameCountChanges;
@@ -127,11 +128,11 @@ namespace LoRaWan.NetworkServer
             this.IsABPRelaxedFrameCounter = true;
             this.PreferredWindow = 1;
             this.hasFrameCountChanges = false;
-            this.fcntSync = new object();
             this.confirmationResubmitCount = 0;
             this.queueSync = new object();
             this.queuedRequests = new Queue<LoRaRequest>();
             this.classType = LoRaDeviceClassType.A;
+            this.fcntLock = new object();
         }
 
         /// <summary>
@@ -331,7 +332,7 @@ namespace LoRaWan.NetworkServer
             {
                 int savedFcntDown;
                 int savedFcntUp;
-                lock (this.fcntSync)
+                lock (this.fcntLock)
                 {
                     savedFcntDown = this.FCntDown;
                     savedFcntUp = this.FCntUp;
@@ -376,12 +377,9 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         void AcceptFrameCountChanges(int savedFcntUp, int savedFcntDown)
         {
-            lock (this.fcntSync)
+            lock (this.fcntLock)
             {
-                this.lastSavedFcntUp = savedFcntUp;
-                this.lastSavedFcntDown = savedFcntDown;
-
-                this.hasFrameCountChanges = this.fcntDown != this.lastSavedFcntDown || this.fcntUp != this.lastSavedFcntUp;
+                this.hasFrameCountChanges = false;
             }
         }
 
@@ -391,7 +389,7 @@ namespace LoRaWan.NetworkServer
         public int IncrementFcntDown(int value)
         {
             var newFcntDown = 0;
-            lock (this.fcntSync)
+            lock (this.fcntLock)
             {
                 this.fcntDown += value;
                 this.hasFrameCountChanges = true;
@@ -408,7 +406,7 @@ namespace LoRaWan.NetworkServer
         internal int IncrementFcntDownAndLastSaved(int value)
         {
             var newFcntDown = 0;
-            lock (this.fcntSync)
+            lock (this.fcntLock)
             {
                 this.fcntDown += value;
                 this.lastSavedFcntDown += value;
@@ -424,7 +422,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void SetFcntDown(int newValue)
         {
-            lock (this.fcntSync)
+            lock (this.fcntLock)
             {
                 if (newValue != this.fcntDown)
                 {
@@ -436,7 +434,7 @@ namespace LoRaWan.NetworkServer
 
         public void SetFcntUp(int newValue)
         {
-            lock (this.fcntSync)
+            lock (this.fcntLock)
             {
                 if (this.fcntUp != newValue)
                 {
@@ -452,7 +450,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal void ResetFcnt()
         {
-            lock (this.fcntSync)
+            lock (this.fcntLock)
             {
                 if (!this.hasFrameCountChanges)
                 {
@@ -477,7 +475,7 @@ namespace LoRaWan.NetworkServer
         /// <param name="payloadFcnt">Payload frame count</param>
         public bool ValidateConfirmResubmit(ushort payloadFcnt)
         {
-            lock (this.fcntSync)
+            lock (this.fcntLock)
             {
                 if (this.FCntUp == payloadFcnt)
                 {

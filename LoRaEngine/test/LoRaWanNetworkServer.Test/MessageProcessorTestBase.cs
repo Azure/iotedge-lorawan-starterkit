@@ -66,7 +66,7 @@ namespace LoRaWan.NetworkServer.Test
             var adrStrategyProvider = new LoRaADRStrategyProvider();
             var adrManagerFactory = new LoRAADRManagerFactory(this.LoRaDeviceApi.Object);
             var functionBundlerProvider = new FunctionBundlerProvider(this.LoRaDeviceApi.Object);
-            this.requestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
+            this.RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
             this.LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.LoRaDeviceFactory = new TestLoRaDeviceFactory(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.LoRaDeviceClient.Object, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
         }
