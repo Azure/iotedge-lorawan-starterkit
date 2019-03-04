@@ -105,11 +105,13 @@ namespace LoraKeysManagerFacade.Test
             var resp = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
             Assert.NotNull(resp);
             Assert.NotNull(resp.AdrResult);
-            Assert.False(resp.AdrResult.CanConfirmToDevice);
+            Assert.True(resp.AdrResult.CanConfirmToDevice);
+            Assert.Equal(req.AdrRequest.DataRate, resp.AdrResult.DataRate);
+            Assert.Equal(0, resp.AdrResult.TxPower);
             Assert.Equal(1, resp.AdrResult.NumberOfFrames);
 
             Assert.Null(resp.DeduplicationResult);
-            Assert.Null(resp.NextFCntDown);
+            Assert.Equal(2, resp.NextFCntDown);
         }
 
         [Fact]

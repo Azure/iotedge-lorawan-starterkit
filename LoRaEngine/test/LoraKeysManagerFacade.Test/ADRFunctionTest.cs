@@ -29,6 +29,10 @@ namespace LoraKeysManagerFacade.Test
                     : null;
                 });
 
+            adrStrategy.Setup(x => x.DefaultNbRep).Returns(1);
+            adrStrategy.Setup(x => x.DefaultTxPower).Returns(0);
+            adrStrategy.Setup(x => x.MinimumNumberOfResult).Returns(20);
+
             var strategyProvider = new Mock<ILoRaADRStrategyProvider>(MockBehavior.Strict);
 
             strategyProvider
@@ -50,7 +54,11 @@ namespace LoraKeysManagerFacade.Test
             var result = await this.adrFunction.HandleADRRequest(deviceEUI, req);
             Assert.NotNull(result);
             Assert.Equal(1, result.NumberOfFrames);
-            Assert.False(result.CanConfirmToDevice);
+            Assert.True(result.CanConfirmToDevice);
+
+            Assert.Equal(0, result.TxPower);
+            Assert.Equal(req.DataRate, result.DataRate);
+            Assert.Equal(1, result.NbRepetition);
         }
 
         [Fact]
@@ -128,7 +136,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.True(result1.CanConfirmToDevice);
             Assert.False(result2.CanConfirmToDevice);
 
-            Assert.Equal(req.FCntDown + 1, result1.FCntDown);
+            Assert.Equal(req.FCntDown + 2, result1.FCntDown);
             Assert.Equal(0, result2.FCntDown);
         }
     }
