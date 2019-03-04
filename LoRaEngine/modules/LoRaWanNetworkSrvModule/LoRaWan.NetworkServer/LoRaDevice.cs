@@ -76,8 +76,6 @@ namespace LoRaWan.NetworkServer
 
         public DeduplicationMode Deduplication { get; set; }
 
-        readonly object fcntLock;
-
         int preferredWindow;
 
         /// <summary>
@@ -101,6 +99,7 @@ namespace LoRaWan.NetworkServer
             get => this.classType;
         }
 
+        readonly object fcntSync;
         readonly object queueSync;
         readonly Queue<LoRaRequest> queuedRequests;
         volatile bool hasFrameCountChanges;
@@ -128,11 +127,11 @@ namespace LoRaWan.NetworkServer
             this.IsABPRelaxedFrameCounter = true;
             this.PreferredWindow = 1;
             this.hasFrameCountChanges = false;
+            this.fcntSync = new object();
             this.confirmationResubmitCount = 0;
             this.queueSync = new object();
             this.queuedRequests = new Queue<LoRaRequest>();
             this.classType = LoRaDeviceClassType.A;
-            this.fcntLock = new object();
         }
 
         /// <summary>
@@ -326,13 +325,19 @@ namespace LoRaWan.NetworkServer
             return true;
         }
 
-        private async Task<bool> SaveFrameCountChangesAsync(TwinCollection reportedProperties)
+        /// <summary>
+        /// Saves the frame count changes
+        /// </summary>
+        /// <remarks>
+        /// Changes will be saved only if there are actually changes to be saved
+        /// </remarks>
+        public async Task<bool> SaveFrameCountChangesAsync(TwinCollection reportedProperties)
         {
             if (this.hasFrameCountChanges)
             {
                 int savedFcntDown;
                 int savedFcntUp;
-                lock (this.fcntLock)
+                lock (this.fcntSync)
                 {
                     savedFcntDown = this.FCntDown;
                     savedFcntUp = this.FCntUp;
@@ -344,12 +349,9 @@ namespace LoRaWan.NetworkServer
                 var result = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
                 if (result)
                 {
-                    lock (this.fcntLock)
+                    if (savedFcntUp == this.FCntUp && savedFcntDown == this.FCntDown)
                     {
-                        if (savedFcntUp == this.FCntUp && savedFcntDown == this.FCntDown)
-                        {
-                            this.AcceptFrameCountChanges();
-                        }
+                        this.AcceptFrameCountChanges(savedFcntUp, savedFcntDown);
                     }
                 }
 
@@ -377,9 +379,12 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         void AcceptFrameCountChanges(int savedFcntUp, int savedFcntDown)
         {
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
-                this.hasFrameCountChanges = false;
+                this.lastSavedFcntUp = savedFcntUp;
+                this.lastSavedFcntDown = savedFcntDown;
+
+                this.hasFrameCountChanges = this.fcntDown != this.lastSavedFcntDown || this.fcntUp != this.lastSavedFcntUp;
             }
         }
 
@@ -389,7 +394,7 @@ namespace LoRaWan.NetworkServer
         public int IncrementFcntDown(int value)
         {
             var newFcntDown = 0;
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
                 this.fcntDown += value;
                 this.hasFrameCountChanges = true;
@@ -406,7 +411,7 @@ namespace LoRaWan.NetworkServer
         internal int IncrementFcntDownAndLastSaved(int value)
         {
             var newFcntDown = 0;
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
                 this.fcntDown += value;
                 this.lastSavedFcntDown += value;
@@ -422,7 +427,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void SetFcntDown(int newValue)
         {
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
                 if (newValue != this.fcntDown)
                 {
@@ -434,7 +439,7 @@ namespace LoRaWan.NetworkServer
 
         public void SetFcntUp(int newValue)
         {
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
                 if (this.fcntUp != newValue)
                 {
@@ -450,7 +455,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal void ResetFcnt()
         {
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
                 if (!this.hasFrameCountChanges)
                 {
@@ -475,7 +480,7 @@ namespace LoRaWan.NetworkServer
         /// <param name="payloadFcnt">Payload frame count</param>
         public bool ValidateConfirmResubmit(ushort payloadFcnt)
         {
-            lock (this.fcntLock)
+            lock (this.fcntSync)
             {
                 if (this.FCntUp == payloadFcnt)
                 {
@@ -604,6 +609,12 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        public void Dispose()
+        {
+            this.loRaDeviceClient?.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
         public async Task<bool> TrySaveADRPropertiesAsync()
         {
             var reportedProperties = new TwinCollection();
@@ -618,12 +629,6 @@ namespace LoRaWan.NetworkServer
             }
 
             return await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
-        }
-
-        public void Dispose()
-        {
-            this.loRaDeviceClient?.Dispose();
-            GC.SuppressFinalize(this);
         }
     }
 }
