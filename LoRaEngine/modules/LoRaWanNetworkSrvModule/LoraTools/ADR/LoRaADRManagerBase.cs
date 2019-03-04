@@ -52,19 +52,20 @@ namespace LoRaTools.ADR
 
             if (result == null)
             {
-                result = this.ReturnDefaultValues(upstreamDataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
-
-                //// In this case we want to reset the device to default values
-                // if (table == null || !table.CurrentNbRep.HasValue || !table.CurrentTxPower.HasValue || ((table.Entries.Count < currentStrategy.MinimumNumberOfResult) && (fCntUp - 10) > table.Entries.Count))
-                // {
-                //    result = this.ReturnDefaultValues(upstreamDataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
-                // }
-                // else
-                // {
-                //    result = await this.GetLastResultAsync(devEUI) ?? new LoRaADRResult();
-                //    result.NumberOfFrames = table.Entries.Count;
-                //    return result;
-                // }
+                // In this case we want to reset the device to default values as we have null values
+                if (table == null
+                    || !table.CurrentNbRep.HasValue
+                    || !table.CurrentTxPower.HasValue
+                    || ((table.Entries.Count < currentStrategy.MinimumNumberOfResult) && ((fCntUp - 10) > table.Entries.Count)))
+                {
+                    result = this.ReturnDefaultValues(upstreamDataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
+                }
+                else
+                {
+                    result = await this.GetLastResultAsync(devEUI) ?? new LoRaADRResult();
+                    result.NumberOfFrames = table.Entries.Count;
+                    return result;
+                }
             }
 
             var nextFcntDown = await this.NextFCntDown(devEUI, gatewayId, fCntUp, fCntDown);
