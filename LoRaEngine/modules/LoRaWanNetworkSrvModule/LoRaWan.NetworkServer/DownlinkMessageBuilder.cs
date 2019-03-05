@@ -63,38 +63,16 @@ namespace LoRaWan.NetworkServer
             Random rnd = new Random();
             rnd.NextBytes(rndToken);
 
-            string datr;
-            double freq;
-            long tmst;
-
-            if (receiveWindow == Constants.RECEIVE_WINDOW_2)
-            {
-                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
-
-                if (string.IsNullOrEmpty(configuration.Rx2DataRate))
-                {
-                    Logger.Log(loRaDevice.DevEUI, "using standard second receive windows", LogLevel.Information);
-                    freq = loRaRegion.RX2DefaultReceiveWindows.frequency;
-                    datr = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
-                }
-                else
-                {
-                    // if specific twins are set, specify second channel to be as specified
-                    freq = configuration.Rx2DataFrequency;
-                    datr = configuration.Rx2DataRate;
-                    Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", LogLevel.Information);
-                }
-            }
-            else
-            {
-                datr = loRaRegion.GetDownstreamDR(rxpk);
-                freq = loRaRegion.GetDownstreamChannelFrequency(rxpk);
-                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow1Delay(loRaDevice) * 1000000;
-            }
-
             // get max. payload size based on data rate from LoRaRegion
-            var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
-            var availablePayloadSize = maxPayloadSize;
+            var rx1MaxPayloadSize = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDR(rxpk));
+
+            var rx2MaxPayloadSize = string.IsNullOrEmpty(configuration.Rx2DataRate) ?
+                loRaRegion.GetMaxPayloadSize(loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].configuration) :
+                loRaRegion.GetMaxPayloadSize(configuration.Rx2DataRate);
+
+            var maxPayloadSize = Math.Max(rx1MaxPayloadSize, rx2MaxPayloadSize);
+            var availablePayloadSize = (receiveWindow == Constants.RECEIVE_WINDOW_1) ?
+                rx1MaxPayloadSize : rx2MaxPayloadSize;
 
             var macCommands = new List<MacCommand>();
 
@@ -113,8 +91,31 @@ namespace LoRaWan.NetworkServer
                 var totalC2dSize = cloudToDeviceMessage.GetPayload()?.Length ?? 0;
                 totalC2dSize += macCommandsC2d?.Sum(x => x.Length) ?? 0;
 
+                // Can C2D payload fit in RX 1? If not, try moving to RX2 or abandon
+                if (receiveWindow == Constants.RECEIVE_WINDOW_1)
+                {
+                    if (rx1MaxPayloadSize < totalC2dSize)
+                    {
+                        if (rx2MaxPayloadSize >= totalC2dSize)
+                            receiveWindow = Constants.RECEIVE_WINDOW_2;
+                        else
+                            abandonMessage = true;
+                    }
+                }
+
+                // Can C2D payload fit in RX 2? If not, abandon
+                if (receiveWindow == Constants.RECEIVE_WINDOW_2)
+                {
+                    if (rx2MaxPayloadSize < totalC2dSize)
+                        abandonMessage = true;
+                }
+
+                // Receive Window may have changed, reset available payload size.
+                availablePayloadSize = (receiveWindow == Constants.RECEIVE_WINDOW_1) ?
+                    rx1MaxPayloadSize : rx2MaxPayloadSize;
+
                 // Total C2D payload will fit
-                if (availablePayloadSize >= totalC2dSize)
+                if (!abandonMessage)
                 {
                     // Add frmPayload
                     frmPayload = cloudToDeviceMessage.GetPayload();
@@ -188,6 +189,35 @@ namespace LoRaWan.NetworkServer
                 reversedDevAddr[i] = srcDevAddr[srcDevAddr.Length - (1 + i)];
             }
 
+            string datr;
+            double freq;
+            long tmst;
+
+            if (receiveWindow == Constants.RECEIVE_WINDOW_2)
+            {
+                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
+
+                if (string.IsNullOrEmpty(configuration.Rx2DataRate))
+                {
+                    Logger.Log(loRaDevice.DevEUI, "using standard second receive windows", LogLevel.Information);
+                    freq = loRaRegion.RX2DefaultReceiveWindows.frequency;
+                    datr = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
+                }
+                else
+                {
+                    // if specific twins are set, specify second channel to be as specified
+                    freq = configuration.Rx2DataFrequency;
+                    datr = configuration.Rx2DataRate;
+                    Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", LogLevel.Information);
+                }
+            }
+            else
+            {
+                datr = loRaRegion.GetDownstreamDR(rxpk);
+                freq = loRaRegion.GetDownstreamChannelFrequency(rxpk);
+                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow1Delay(loRaDevice) * 1000000;
+            }
+
             var msgType = requiresDeviceAcknowlegement ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
             var ackLoRaMessage = new LoRaPayloadData(
                 msgType,
@@ -223,7 +253,7 @@ namespace LoRaWan.NetworkServer
 
             bool rejectMessage = false;
 
-            // Class C uses RX2 always
+            // Class C always uses RX2
             string datr;
             double freq;
             var tmst = 0; // immediate mode

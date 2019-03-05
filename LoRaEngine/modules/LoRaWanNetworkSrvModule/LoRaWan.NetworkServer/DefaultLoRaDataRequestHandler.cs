@@ -420,9 +420,13 @@ namespace LoRaWan.NetworkServer
             var rxpk = request.Rxpk;
             var loRaRegion = request.LoRaRegion;
             uint maxPayload;
+            uint rx1MaxPayload;
             uint rx2MaxPayload;
 
-            // Get max. payload size for second response window, considering possilbe user provided Rx2DataRate
+            // Get max. payload size for RX1
+            rx1MaxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDR(rxpk));
+
+            // Get max. payload size for RX2, considering possilbe user provided Rx2DataRate
             if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
                 rx2MaxPayload = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].maxPyldSize;
             else
@@ -435,16 +439,13 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                // Get max. payload size for first response window
-                var rx1MaxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDR(rxpk));
                 maxPayload = Math.Max(rx1MaxPayload, rx2MaxPayload);
             }
 
             // Deduct 8 bytes from max payload size.
             maxPayload -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
 
-            // Cloud to device message and optional C2D Mac commands is bigger than max. payload size: Reject.
-            // This message can never be delivered.
+            // Calculate total C2D message size based on optional C2D Mac commands.
             var totalPayload = cloudToDeviceMsg.GetPayload()?.Length ?? 0;
 
             if (cloudToDeviceMsg.MacCommands?.Count > 0)
@@ -455,9 +456,11 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
+            // C2D message and optional C2D Mac commands are bigger than max. payload size: REJECT.
+            // This message can never be delivered.
             if (totalPayload > maxPayload)
             {
-                Logger.Log(loRaDevice.DevEUI, $"message payload size ({totalPayload}) exceeds maximum allowed payload size ({maxPayload}) in C2D message '{cloudToDeviceMsg.MessageId}'", LogLevel.Error);
+                Logger.Log(loRaDevice.DevEUI, $"message payload size ({totalPayload}) exceeds maximum allowed payload size ({maxPayload}) in C2D message", LogLevel.Error);
                 return false;
             }
 
