@@ -154,19 +154,8 @@ namespace LoRaWan.NetworkServer
                 {
                     Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Information);
                     tmst = request.Rxpk.Tmst + loraRegion.Join_accept_delay2 * 1000000;
-                    if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
-                    {
-                        Logger.Log(devEUI, $"using standard second receive windows for join request", LogLevel.Information);
-                        // using EU fix DR for RX2
-                        freq = loraRegion.RX2DefaultReceiveWindows.frequency;
-                        datr = loraRegion.DRtoConfiguration[RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
-                    }
-                    else
-                    {
-                        Logger.Log(devEUI, $"using custom  second receive windows for join request", LogLevel.Information);
-                        freq = this.configuration.Rx2DataFrequency;
-                        datr = this.configuration.Rx2DataRate;
-                    }
+
+                    (freq, datr) = request.Rxpk.GetDownstreamRX2DRAndFreq(devEUI, this.configuration.Rx2DataRate, this.configuration.Rx2DataFrequency, loraRegion, null);
                 }
 
                 loRaDevice.IsOurDevice = true;
@@ -175,6 +164,37 @@ namespace LoRaWan.NetworkServer
                 // Build join accept downlink message
                 Array.Reverse(netId);
                 Array.Reverse(appNonceBytes);
+                byte[] dlSettings = new byte[1]
+                {
+                    0
+                };
+
+                if (request.LoRaRegion.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(loRaDevice.DesiredRX2DataRate))
+                {
+                    dlSettings[0] =
+                        (byte)(loRaDevice.DesiredRX2DataRate & 0b00001111);
+                }
+                else
+                {
+                    Logger.Log(devEUI, $"twin RX2 datarate values are not within acceptable values", LogLevel.Error);
+                }
+
+                if (loRaDevice.DesiredRX1DROffset >= 0 && loRaDevice.DesiredRX1DROffset < request.LoRaRegion.RX1DROffsetTable.GetUpperBound(1))
+                {
+                    var rx1droffset = (byte)(loRaDevice.DesiredRX1DROffset << 4);
+                    if (dlSettings == null)
+                    {
+                        dlSettings = new byte[1] { rx1droffset };
+                    }
+                    else
+                    {
+                        dlSettings[0] = (byte)(dlSettings[0] + rx1droffset);
+                    }
+                }
+                else
+                {
+                    Logger.Log(devEUI, $"twin Rx1 offset datarate values are not within acceptable values", LogLevel.Error);
+                }
 
                 var joinAccept = this.CreateJoinAcceptDownlinkMessage(
                     netId,
@@ -184,7 +204,8 @@ namespace LoRaWan.NetworkServer
                     datr,
                     freq,
                     tmst,
-                    devEUI);
+                    devEUI,
+                    dlSettings);
 
                 if (joinAccept != null)
                 {
@@ -211,13 +232,14 @@ namespace LoRaWan.NetworkServer
             string datr,
             double freq,
             long tmst,
-            string devEUI)
+            string devEUI,
+            byte[] dlSettings)
         {
             var loRaPayloadJoinAccept = new LoRaTools.LoRaMessage.LoRaPayloadJoinAccept(
                 LoRaTools.Utils.ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
                 ConversionHelper.StringToByteArray(devAddr), // todo add device address management
                 appNonce.ToArray(),
-                new byte[] { 0 },
+                dlSettings,
                 new byte[] { 0 },
                 null);
 
