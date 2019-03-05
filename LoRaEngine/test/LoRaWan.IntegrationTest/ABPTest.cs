@@ -23,18 +23,16 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR()
         {
+            await this.ArduinoDevice.setDeviceDefaultAsync();
             const int MESSAGES_COUNT = 10;
             var device = this.TestFixtureCi.Device5_ABP;
             this.LogTestStart(device);
-            await this.TestFixture.UpdateReportedTwinAsync(device.DeviceID, "TxPower", 0);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
-            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion, LoRaArduinoSerial._data_rate_t.DR3, 4, true);
             // for a reason I need to set DR twice otherwise it reverts to DR 0
-            await this.ArduinoDevice.setDataRateAsync(LoRaArduinoSerial._data_rate_t.DR3, LoRaArduinoSerial._physical_type_t.EU868);
-            await this.ArduinoDevice.setAdaptiveDataRateAsync(true);
-            await this.ArduinoDevice.setDataRateAsync(LoRaArduinoSerial._data_rate_t.DR3, LoRaArduinoSerial._physical_type_t.EU868);
+            // await this.ArduinoDevice.setDataRateAsync(LoRaArduinoSerial._data_rate_t.DR3, LoRaArduinoSerial._physical_type_t.EU868);
             // Sends 5x unconfirmed messages
             for (var i = 0; i < MESSAGES_COUNT / 2; ++i)
             {
@@ -134,8 +132,6 @@ namespace LoRaWan.IntegrationTest
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DevAddr}: LinkADRCmd mac command detected in upstream payload: Type: LinkADRCmd Answer, power: changed, data rate: changed,");
-
-                // await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains("SF7BW125"), null);
             }
         }
 

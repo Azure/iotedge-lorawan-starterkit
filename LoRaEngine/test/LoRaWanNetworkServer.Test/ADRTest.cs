@@ -128,9 +128,6 @@ namespace LoRaWanNetworkServer.Test
             // 5. Frame counter down is updated
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
             Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
-
-            // 6. Frame count has no pending changes
-            // Assert.False(loraDevice.HasFrameCountChanges);
         }
 
         [Theory]
@@ -242,9 +239,6 @@ namespace LoRaWanNetworkServer.Test
                 // 5. Frame counter down is updated
                 Assert.Equal(ExpectedDeviceFcntDown + 1, loraDevice.FCntDown);
                 Assert.Equal(ExpectedDeviceFcntDown + 1, payloadDataDown.GetFcnt());
-
-                // 6. Frame count has no pending changes
-                // Assert.False(loraDevice.HasFrameCountChanges);
             }
         }
 
@@ -387,8 +381,6 @@ namespace LoRaWanNetworkServer.Test
             this.LoRaDeviceClient.VerifyAll();
             this.LoRaDeviceApi.VerifyAll();
             Assert.True(request.ProcessingSucceeded);
-            // 6. Frame count has no pending changes
-            // Assert.False(loraDevice.HasFrameCountChanges);
         }
 
         [Fact]
@@ -547,9 +539,6 @@ namespace LoRaWanNetworkServer.Test
             // 5. Frame counter down is updated
             Assert.Equal(ExpectedDeviceFcntDown, loraDevice.FCntDown);
             Assert.Equal(ExpectedDeviceFcntDown, payloadDataDown.GetFcnt());
-
-            // 6. Frame count has no pending changes
-            // Assert.False(loraDevice.HasFrameCountChanges);
         }
 
         private async Task<int> SendMessage(float currentLsnr, string currentDR, int payloadFcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor, byte fctrl)
