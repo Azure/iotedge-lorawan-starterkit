@@ -44,7 +44,7 @@ namespace LoraKeysManagerFacade.Test
         }
 
         [Fact]
-        public async Task ADR_First_Entry()
+        public async Task ADR_First_Entry_Device_Reset()
         {
             var deviceEUI = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
@@ -107,7 +107,7 @@ namespace LoraKeysManagerFacade.Test
             var gateway1Id = NewUniqueEUI64();
             var gateway2Id = NewUniqueEUI64();
 
-            var req = CreateStandardADRRequest(gateway1Id, -10);
+            var req1 = CreateStandardADRRequest(gateway1Id, -10);
             var req2 = CreateStandardADRRequest(gateway2Id, -10);
 
             var rnd = new Random();
@@ -115,28 +115,30 @@ namespace LoraKeysManagerFacade.Test
             // add just 1 under the limit to the table
             for (var i = 0; i < LoRaADRTable.FrameCountCaptureCount - 1; i++)
             {
-                _ = await this.adrFunction.HandleADRRequest(deviceEUI, req);
-                _ = await this.adrFunction.HandleADRRequest(deviceEUI, req2);
+                var res1 = await this.adrFunction.HandleADRRequest(deviceEUI, req1);
+                var res2 = await this.adrFunction.HandleADRRequest(deviceEUI, req2);
 
-                var winner = req.RequiredSnr < req2.RequiredSnr ? gateway2Id : gateway1Id;
+                var winner = req1.RequiredSnr < req2.RequiredSnr ? gateway2Id : gateway1Id;
                 var last = await this.adrManager.GetLastEntryAsync(deviceEUI);
                 Assert.Equal(winner, last.GatewayId);
                 Assert.Equal(2, last.GatewayCount);
 
-                req.RequiredSnr = rnd.Next(-20, 5);
+                req1.RequiredSnr = rnd.Next(-20, 5);
                 req2.RequiredSnr = rnd.Next(-20, 5);
-                req2.FCntUp = ++req.FCntUp;
+                req2.FCntUp = ++req1.FCntUp;
+                req1.FCntDown = res1.FCntDown > 0 ? res1.FCntDown : req1.FCntDown;
+                req2.FCntDown = res2.FCntDown > 0 ? res2.FCntDown : req2.FCntDown;
             }
 
-            req2.FCntUp = ++req.FCntUp;
+            req2.FCntUp = ++req1.FCntUp;
 
             // first one should win
-            var result1 = await this.adrFunction.HandleADRRequest(deviceEUI, req);
+            var result1 = await this.adrFunction.HandleADRRequest(deviceEUI, req1);
             var result2 = await this.adrFunction.HandleADRRequest(deviceEUI, req2);
             Assert.True(result1.CanConfirmToDevice);
             Assert.False(result2.CanConfirmToDevice);
 
-            Assert.Equal(req.FCntDown + 2, result1.FCntDown);
+            Assert.Equal(req1.FCntDown + 1, result1.FCntDown);
             Assert.Equal(0, result2.FCntDown);
         }
     }
