@@ -265,13 +265,21 @@ namespace LoRaTools.Regions
         /// Implement correct logic to get the downstream data rate based on the region.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
-        public string GetDownstreamDR(Rxpk upstreamChannel)
+        public string GetDownstreamDR(Rxpk upstreamChannel, uint rx1DrOffset = 0)
         {
             this.EnsureValidRxpk(upstreamChannel);
             if (this.LoRaRegion == LoRaRegion.EU868)
             {
-                // in case of EU, you respond on same frequency as you sent data.
-                return upstreamChannel.Datr;
+                // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
+                if (rx1DrOffset < this.RX1DROffsetTable.GetUpperBound(1))
+                {
+                    // in case of EU, you respond on same frequency as you sent data.
+                    return this.DRtoConfiguration[(uint)this.RX1DROffsetTable[this.GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].configuration;
+                }
+                else
+                {
+                    return upstreamChannel.Datr;
+                }
             }
             else if (this.LoRaRegion == LoRaRegion.US915)
             {

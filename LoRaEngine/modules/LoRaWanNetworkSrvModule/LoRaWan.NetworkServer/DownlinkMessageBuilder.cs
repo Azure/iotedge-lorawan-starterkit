@@ -127,24 +127,11 @@ namespace LoRaWan.NetworkServer
             if (receiveWindow == Constants.RECEIVE_WINDOW_2)
             {
                 tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
-
-                if (string.IsNullOrEmpty(configuration.Rx2DataRate))
-                {
-                    Logger.Log(loRaDevice.DevEUI, "using standard second receive windows", LogLevel.Information);
-                    freq = loraRegion.RX2DefaultReceiveWindows.frequency;
-                    datr = loraRegion.DRtoConfiguration[loraRegion.RX2DefaultReceiveWindows.dr].configuration;
-                }
-                else
-                {
-                    // if specific twins are set, specify second channel to be as specified
-                    freq = configuration.Rx2DataFrequency;
-                    datr = configuration.Rx2DataRate;
-                    Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", LogLevel.Information);
-                }
+                (freq, datr) = request.Rxpk.GetDownstreamRX2DRAndFreq(loRaDevice.DevEUI, configuration.Rx2DataRate, configuration.Rx2DataFrequency, loraRegion, loRaDevice.RX2DataRate);
             }
             else
             {
-                datr = loraRegion.GetDownstreamDR(rxpk);
+                datr = loraRegion.GetDownstreamDR(rxpk, (uint)loRaDevice.RX1DROffset);
                 freq = loraRegion.GetDownstreamChannelFrequency(rxpk);
                 tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow1Delay(loRaDevice) * 1000000;
             }

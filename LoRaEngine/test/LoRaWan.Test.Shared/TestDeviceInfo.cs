@@ -50,6 +50,10 @@ namespace LoRaWan.Test.Shared
 
         public char ClassType { get; set; } = 'A';
 
+        public int RX2DataRate { get; set; } = 0;
+
+        public uint RX1DROffset { get; set; } = 0;
+
         /// <summary>
         /// Gets the desired properties for the <see cref="TestDeviceInfo"/>
         /// </summary>
@@ -81,6 +85,10 @@ namespace LoRaWan.Test.Shared
 
             if (char.ToLower(this.ClassType) != 'a')
                 desiredProperties[nameof(this.ClassType)] = this.ClassType.ToString();
+
+            desiredProperties[nameof(this.RX1DROffset)] = this.RX1DROffset;
+
+            desiredProperties[nameof(this.RX2DataRate)] = this.RX2DataRate;
 
             return desiredProperties;
         }

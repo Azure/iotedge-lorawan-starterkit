@@ -11,6 +11,18 @@ namespace LoRaTools.Regions
 
         public List<string> DatarateRange { get; set; }
 
+        public bool IsCurrentDRIndexWithinAcceptableValue(uint dr)
+        {
+            if (dr < this.DatarateRange.Count)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public RegionLimits((double min, double max) frequencyRange, List<string> datarateRange)
         {
             this.FrequencyRange = frequencyRange;

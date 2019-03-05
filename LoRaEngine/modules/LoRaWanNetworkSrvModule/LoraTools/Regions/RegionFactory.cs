@@ -3,6 +3,7 @@
 
 namespace LoRaTools.Regions
 {
+    using System.Collections.Generic;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
@@ -81,6 +82,19 @@ namespace LoRaTools.Regions
             };
             r.MaxADRDataRate = 5;
 
+            List<string> euValidDataranges = new List<string>()
+            {
+                "SF12BW125", // 0
+                "SF11BW125", // 1
+                "SF10BW125", // 2
+                "SF9BW125", // 3
+                "SF8BW125", // 4
+                "SF7BW125", // 5
+                "SF7BW250", // 6
+                "50" // 7 FSK 50
+            };
+
+            r.RegionLimits = new RegionLimits((min: 863, max: 870), euValidDataranges);
             return r;
         }
 
@@ -126,6 +140,22 @@ namespace LoRaTools.Regions
             };
 
             r.MaxADRDataRate = 3;
+            List<string> usValidDataranges = new List<string>()
+            {
+                "SF10BW125", // 0
+                "SF9BW125", // 1
+                "SF8BW125", // 2
+                "SF7BW125", // 3
+                "SF8BW500", // 4
+                "SF12BW500", // 8
+                "SF11BW500", // 9
+                "SF10BW500", // 10
+                "SF9BW500", // 11
+                "SF8BW500", // 12
+                "SF8BW500" // 13
+            };
+
+            r.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), usValidDataranges);
             return r;
         }
     }

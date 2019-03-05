@@ -99,6 +99,10 @@ namespace LoRaWan.NetworkServer
             get => this.classType;
         }
 
+        public ushort RX2DataRate { get; set; }
+
+        public ushort RX1DROffset { get; set; }
+
         readonly object fcntSync;
         readonly object queueSync;
         readonly Queue<LoRaRequest> queuedRequests;
@@ -132,6 +136,8 @@ namespace LoRaWan.NetworkServer
             this.queueSync = new object();
             this.queuedRequests = new Queue<LoRaRequest>();
             this.classType = LoRaDeviceClassType.A;
+            this.RX1DROffset = 0;
+            this.RX2DataRate = 0;
         }
 
         /// <summary>
@@ -239,6 +245,16 @@ namespace LoRaWan.NetworkServer
                         var val = twin.Properties.Desired[TwinProperty.Deduplication].Value as string;
                         Enum.TryParse<DeduplicationMode>(val, out DeduplicationMode mode);
                         this.Deduplication = mode;
+                    }
+
+                    if (twin.Properties.Desired.Contains(TwinProperty.RX2DataRate))
+                    {
+                        this.RX2DataRate = (ushort)this.GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
+                    }
+
+                    if (twin.Properties.Desired.Contains(TwinProperty.RX1DROffset))
+                    {
+                        this.RX1DROffset = (ushort)this.GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value);
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
