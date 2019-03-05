@@ -420,26 +420,21 @@ namespace LoRaWan.NetworkServer
             var rxpk = request.Rxpk;
             var loRaRegion = request.LoRaRegion;
             uint maxPayload;
-            uint rx1MaxPayload;
-            uint rx2MaxPayload;
 
-            // Get max. payload size for RX1
-            rx1MaxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDR(rxpk));
-
-            // Get max. payload size for RX2, considering possilbe user provided Rx2DataRate
-            if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
-                rx2MaxPayload = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].maxPyldSize;
-            else
-                rx2MaxPayload = loRaRegion.GetMaxPayloadSize(this.configuration.Rx2DataRate);
-
-            // Get overall max. payload size.
+            // If preferred Window is RX2, this is the max. payload
             if (loRaDevice.PreferredWindow == Constants.RECEIVE_WINDOW_2)
             {
-                maxPayload = rx2MaxPayload;
+                // Get max. payload size for RX2, considering possilbe user provided Rx2DataRate
+                if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
+                    maxPayload = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].maxPyldSize;
+                else
+                    maxPayload = loRaRegion.GetMaxPayloadSize(this.configuration.Rx2DataRate);
             }
+
+            // Otherwise, it is RX1.
             else
             {
-                maxPayload = Math.Max(rx1MaxPayload, rx2MaxPayload);
+                maxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDR(rxpk));
             }
 
             // Deduct 8 bytes from max payload size.

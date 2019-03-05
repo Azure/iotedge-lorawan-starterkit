@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer
             var receiveWindow = timeWatcher.ResolveReceiveWindowToUse(loRaDevice);
             if (receiveWindow == Constants.INVALID_RECEIVE_WINDOW)
             {
-                // No valid receive window. Abandon the message.
+                // No valid receive window. Abandon the message
                 abandonMessage = true;
                 return new DownlinkMessageBuilderResponse(null, abandonMessage);
             }
@@ -63,16 +63,42 @@ namespace LoRaWan.NetworkServer
             Random rnd = new Random();
             rnd.NextBytes(rndToken);
 
+            string datr;
+            double freq;
+            long tmst;
+
+            if (receiveWindow == Constants.RECEIVE_WINDOW_2)
+            {
+                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
+
+                if (string.IsNullOrEmpty(configuration.Rx2DataRate))
+                {
+                    Logger.Log(loRaDevice.DevEUI, "using standard second receive windows", LogLevel.Information);
+                    freq = loRaRegion.RX2DefaultReceiveWindows.frequency;
+                    datr = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
+                }
+                else
+                {
+                    // if specific twins are set, specify second channel to be as specified
+                    freq = configuration.Rx2DataFrequency;
+                    datr = configuration.Rx2DataRate;
+                    Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", LogLevel.Information);
+                }
+            }
+            else
+            {
+                datr = loRaRegion.GetDownstreamDR(rxpk);
+                freq = loRaRegion.GetDownstreamChannelFrequency(rxpk);
+                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow1Delay(loRaDevice) * 1000000;
+            }
+
             // get max. payload size based on data rate from LoRaRegion
-            var rx1MaxPayloadSize = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDR(rxpk));
+            var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
 
-            var rx2MaxPayloadSize = string.IsNullOrEmpty(configuration.Rx2DataRate) ?
-                loRaRegion.GetMaxPayloadSize(loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].configuration) :
-                loRaRegion.GetMaxPayloadSize(configuration.Rx2DataRate);
+            // Deduct 8 bytes from max payload size.
+            maxPayloadSize -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
 
-            var maxPayloadSize = Math.Max(rx1MaxPayloadSize, rx2MaxPayloadSize);
-            var availablePayloadSize = (receiveWindow == Constants.RECEIVE_WINDOW_1) ?
-                rx1MaxPayloadSize : rx2MaxPayloadSize;
+            var availablePayloadSize = maxPayloadSize;
 
             var macCommands = new List<MacCommand>();
 
@@ -91,31 +117,8 @@ namespace LoRaWan.NetworkServer
                 var totalC2dSize = cloudToDeviceMessage.GetPayload()?.Length ?? 0;
                 totalC2dSize += macCommandsC2d?.Sum(x => x.Length) ?? 0;
 
-                // Can C2D payload fit in RX 1? If not, try moving to RX2 or abandon
-                if (receiveWindow == Constants.RECEIVE_WINDOW_1)
-                {
-                    if (rx1MaxPayloadSize < totalC2dSize)
-                    {
-                        if (rx2MaxPayloadSize >= totalC2dSize)
-                            receiveWindow = Constants.RECEIVE_WINDOW_2;
-                        else
-                            abandonMessage = true;
-                    }
-                }
-
-                // Can C2D payload fit in RX 2? If not, abandon
-                if (receiveWindow == Constants.RECEIVE_WINDOW_2)
-                {
-                    if (rx2MaxPayloadSize < totalC2dSize)
-                        abandonMessage = true;
-                }
-
-                // Receive Window may have changed, reset available payload size.
-                availablePayloadSize = (receiveWindow == Constants.RECEIVE_WINDOW_1) ?
-                    rx1MaxPayloadSize : rx2MaxPayloadSize;
-
                 // Total C2D payload will fit
-                if (!abandonMessage)
+                if (availablePayloadSize >= totalC2dSize)
                 {
                     // Add frmPayload
                     frmPayload = cloudToDeviceMessage.GetPayload();
@@ -143,13 +146,13 @@ namespace LoRaWan.NetworkServer
                         fport = cloudToDeviceMessage.Fport;
                     }
 
-                    Logger.Log(loRaDevice.DevEUI, $"C2D message: {(frmPayload?.Length == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, $"C2D message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}", LogLevel.Information);
                     Array.Reverse(frmPayload);
                 }
                 else
                 {
                     // Flag message to be abandoned and log
-                    Logger.Log(loRaDevice.DevEUI, $"C2D message: {(frmPayload?.Length == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement} too long for flagged for receive window. Abandoning.", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, $"C2D message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement} too long for current receive window. Abandoning.", LogLevel.Information);
                     abandonMessage = true;
                 }
             }
@@ -187,35 +190,6 @@ namespace LoRaWan.NetworkServer
             for (int i = reversedDevAddr.Length - 1; i >= 0; --i)
             {
                 reversedDevAddr[i] = srcDevAddr[srcDevAddr.Length - (1 + i)];
-            }
-
-            string datr;
-            double freq;
-            long tmst;
-
-            if (receiveWindow == Constants.RECEIVE_WINDOW_2)
-            {
-                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
-
-                if (string.IsNullOrEmpty(configuration.Rx2DataRate))
-                {
-                    Logger.Log(loRaDevice.DevEUI, "using standard second receive windows", LogLevel.Information);
-                    freq = loRaRegion.RX2DefaultReceiveWindows.frequency;
-                    datr = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
-                }
-                else
-                {
-                    // if specific twins are set, specify second channel to be as specified
-                    freq = configuration.Rx2DataFrequency;
-                    datr = configuration.Rx2DataRate;
-                    Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", LogLevel.Information);
-                }
-            }
-            else
-            {
-                datr = loRaRegion.GetDownstreamDR(rxpk);
-                freq = loRaRegion.GetDownstreamChannelFrequency(rxpk);
-                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow1Delay(loRaDevice) * 1000000;
             }
 
             var msgType = requiresDeviceAcknowlegement ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
@@ -275,6 +249,10 @@ namespace LoRaWan.NetworkServer
 
             // get max. payload size based on data rate from LoRaRegion
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
+
+            // Deduct 8 bytes from max payload size.
+            maxPayloadSize -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+
             var availablePayloadSize = maxPayloadSize;
 
             var macCommands = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage.MacCommands, null, null);
