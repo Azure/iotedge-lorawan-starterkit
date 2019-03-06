@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer.Test
     {
         SemaphoreSlim nextFcntDownLock = new SemaphoreSlim(1);
 
-        public async ValueTask<int> NextFcntDown(LoRaDevice loRaDevice, int messageFcnt)
+        public async ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt)
         {
             await this.nextFcntDownLock.WaitAsync();
             try

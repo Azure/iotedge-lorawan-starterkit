@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(1, 1)]
         [InlineData(2, 10)]
         [InlineData(100, 2)]
-        public void When_Creating_Should_Copy_Values_From_Rxpk_And_Payload(int fcnt, byte fport)
+        public void When_Creating_Should_Copy_Values_From_Rxpk_And_Payload(uint fcnt, byte fport)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: fcnt, fport: fport);

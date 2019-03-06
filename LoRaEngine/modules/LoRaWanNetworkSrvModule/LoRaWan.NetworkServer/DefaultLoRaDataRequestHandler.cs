@@ -125,7 +125,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 // if deduplication already processed the next framecounter down, use that
-                int? fcntDown = loRaADRResult?.FCntDown > 0 ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
+                uint? fcntDown = loRaADRResult?.FCntDown > 0 ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
 
                 // If it is confirmed it require us to update the frame counter down
                 // Multiple gateways: in redis, otherwise in device twin
@@ -277,7 +277,7 @@ namespace LoRaWan.NetworkServer
                         timeWatcher,
                         null,
                         false, // fpending
-                        (ushort)fcntDown,
+                        fcntDown.GetValueOrDefault(),
                         loRaADRResult);
 
                     if (downlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
@@ -363,7 +363,7 @@ namespace LoRaWan.NetworkServer
                     timeWatcher,
                     cloudToDeviceMessage,
                     fpending,
-                    (ushort)fcntDown,
+                    fcntDown.GetValueOrDefault(),
                     loRaADRResult);
 
                 if (cloudToDeviceMessage != null)
@@ -543,10 +543,10 @@ namespace LoRaWan.NetworkServer
         /// Helper method to resolve FcntDown in case one was not yet acquired
         /// </summary>
         /// <returns>0 if the resolution failed or > 0 if a valid frame count was acquired</returns>
-        async ValueTask<int> EnsureHasFcntDownAsync(
+        async ValueTask<uint> EnsureHasFcntDownAsync(
             LoRaDevice loRaDevice,
-            int? fcntDown,
-            int payloadFcnt,
+            uint? fcntDown,
+            uint payloadFcnt,
             ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
             if (fcntDown > 0)

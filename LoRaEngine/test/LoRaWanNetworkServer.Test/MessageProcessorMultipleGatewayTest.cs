@@ -96,8 +96,8 @@ namespace LoRaWan.NetworkServer.Test
                 this.SecondFrameCounterUpdateStrategyProvider);
 
             // Starts with fcnt up zero
-            Assert.Equal(0, loRaDevice1.FCntUp);
-            Assert.Equal(0, loRaDevice2.FCntUp);
+            Assert.Equal(0U, loRaDevice1.FCntUp);
+            Assert.Equal(0U, loRaDevice2.FCntUp);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
 
@@ -124,8 +124,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Null(request2.ResponseDownlink);
 
             // 3. Frame counter up was updated to 1
-            Assert.Equal(1, loRaDevice1.FCntUp);
-            Assert.Equal(1, loRaDevice2.FCntUp);
+            Assert.Equal(1U, loRaDevice1.FCntUp);
+            Assert.Equal(1U, loRaDevice2.FCntUp);
         }
     }
 }

@@ -32,5 +32,6 @@ namespace LoRaWan.NetworkServer
         public const string DataRate = "DataRate";
         public const string TxPower = "TxPower"; // depend on region 0 - 7 EU or 0 - 14 US
         public const string NbRep = "NbRep"; // 1 - 3
+        public const string DisableABPRelaxMode = "DisableABPRelax";
     }
 }

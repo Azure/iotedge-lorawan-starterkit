@@ -24,6 +24,8 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     internal static class DownlinkMessageBuilder
     {
+        const uint Mask16Bit = 0x0000FFFF;
+
         /// <summary>
         /// Creates downlink message with ack for confirmation or cloud to device message
         /// </summary>
@@ -34,9 +36,11 @@ namespace LoRaWan.NetworkServer
             LoRaOperationTimeWatcher timeWatcher,
             ILoRaCloudToDeviceMessage cloudToDeviceMessage,
             bool fpending,
-            ushort fcntDown,
+            uint fcntDown,
             LoRaADRResult loRaADRResult)
         {
+            var fcntDownToSend = ValidateAndCreate16bitFCnt(fcntDown);
+
             var upstreamPayload = (LoRaPayloadData)request.Payload;
             var rxpk = request.Rxpk;
             var loRaRegion = request.LoRaRegion;
@@ -197,7 +201,7 @@ namespace LoRaWan.NetworkServer
                 msgType,
                 reversedDevAddr,
                 new byte[] { fctrl },
-                BitConverter.GetBytes(fcntDown),
+                BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
                 fport.HasValue ? new byte[] { fport.Value } : null,
                 frmPayload,
@@ -210,13 +214,26 @@ namespace LoRaWan.NetworkServer
                 isMessageTooLong);
         }
 
+        private static short ValidateAndCreate16bitFCnt(uint fcntDown)
+        {
+            if (fcntDown == 0)
+            {
+                throw new ArgumentOutOfRangeException("fcntDown");
+            }
+
+            var fcntDownToSend = (short)(fcntDown & Mask16Bit);
+            return fcntDownToSend;
+        }
+
         internal static DownlinkMessageBuilderResponse CreateDownlinkMessage(
             NetworkServerConfiguration configuration,
             LoRaDevice loRaDevice,
             Region loRaRegion,
             ILoRaCloudToDeviceMessage cloudToDeviceMessage,
-            ushort fcntDown)
+            uint fcntDown)
         {
+            var fcntDownToSend = ValidateAndCreate16bitFCnt(fcntDown);
+
             // default fport
             byte fctrl = 0;
             CidEnum macCommandType = CidEnum.Zero;
@@ -296,7 +313,7 @@ namespace LoRaWan.NetworkServer
                 msgType,
                 reversedDevAddr,
                 new byte[] { fctrl },
-                BitConverter.GetBytes(fcntDown),
+                BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
                 new byte[] { cloudToDeviceMessage.Fport },
                 frmPayload,

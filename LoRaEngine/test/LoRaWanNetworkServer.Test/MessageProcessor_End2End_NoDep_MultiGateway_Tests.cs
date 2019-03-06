@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer.Test
     {
         [Theory]
         [InlineData(0, 0, 1)]
-        public async Task When_Fcnt_Down_Fails_Should_Stop_And_Not_Update_Device_Twin(int initialFcntDown, int initialFcntUp, int payloadFcnt)
+        public async Task When_Fcnt_Down_Fails_Should_Stop_And_Not_Update_Device_Twin(uint initialFcntDown, uint initialFcntUp, uint payloadFcnt)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: null));
             simulatedDevice.FrmCntDown = initialFcntDown;
@@ -73,17 +73,17 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Theory]
-        [InlineData(null, 0, null, null)]
-        [InlineData(null, 0, 1, 1)]
-        [InlineData(null, 0, 100, 20)]
-        [InlineData(null, 1, null, null)]
-        [InlineData(null, 1, 1, 1)]
-        [InlineData(null, 1, 100, 20)]
+        [InlineData(null, 0U, null, null)]
+        [InlineData(null, 0U, 1U, 1U)]
+        [InlineData(null, 0U, 100U, 20U)]
+        [InlineData(null, 1U, null, null)]
+        [InlineData(null, 1U, 1U, 1U)]
+        [InlineData(null, 1U, 100U, 20U)]
         public async Task ABP_New_Loaded_Device_With_Fcnt_1_Or_0_Should_Reset_Fcnt_And_Send_To_IotHub(
             string twinGatewayID,
-            int payloadFcntUp,
-            int? deviceTwinFcntUp,
-            int? deviceTwinFcntDown)
+            uint payloadFcntUp,
+            uint? deviceTwinFcntUp,
+            uint? deviceTwinFcntDown)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: null));
 
@@ -182,7 +182,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(devEUI, loRaDevice.DevEUI);
             Assert.True(loRaDevice.IsABP);
             Assert.Equal(payloadFcntUp, loRaDevice.FCntUp);
-            Assert.Equal(0, loRaDevice.FCntDown);
+            Assert.Equal(0U, loRaDevice.FCntDown);
             if (payloadFcntUp == 0)
                 Assert.False(loRaDevice.HasFrameCountChanges); // no changes
             else
@@ -198,9 +198,9 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Getting_C2D_Message_Fails_To_Resolve_Fcnt_Down_Should_Drop_Message_And_Return_Null()
         {
-            const int initialFcntDown = 5;
-            const int initialFcntUp = 21;
-            const int payloadFcnt = 23;
+            const uint initialFcntDown = 5;
+            const uint initialFcntUp = 21;
+            const uint payloadFcnt = 23;
 
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: null));
             simulatedDevice.FrmCntUp = initialFcntUp;

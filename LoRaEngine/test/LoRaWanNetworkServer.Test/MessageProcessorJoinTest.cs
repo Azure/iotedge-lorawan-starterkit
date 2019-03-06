@@ -111,8 +111,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(loRaDevice.IsOurDevice);
 
             // Device frame counts were reset
-            Assert.Equal(0, loRaDevice.FCntDown);
-            Assert.Equal(0, loRaDevice.FCntUp);
+            Assert.Equal(0U, loRaDevice.FCntDown);
+            Assert.Equal(0U, loRaDevice.FCntUp);
             Assert.False(loRaDevice.HasFrameCountChanges);
 
             // Twin property were updated
@@ -166,8 +166,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(LoRaDeviceRequestFailedReason.ReceiveWindowMissed, request.ProcessingFailedReason);
 
             // Device frame counts were not modified
-            Assert.Equal(10, loRaDevice.FCntDown);
-            Assert.Equal(20, loRaDevice.FCntUp);
+            Assert.Equal(10U, loRaDevice.FCntDown);
+            Assert.Equal(20U, loRaDevice.FCntUp);
 
             // Twin property were updated
             this.LoRaDeviceClient.VerifyAll();
@@ -210,8 +210,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Null(request.ResponseDownlink);
 
             // Device frame counts were not modified
-            Assert.Equal(10, loRaDevice.FCntDown);
-            Assert.Equal(20, loRaDevice.FCntUp);
+            Assert.Equal(10U, loRaDevice.FCntDown);
+            Assert.Equal(20U, loRaDevice.FCntUp);
 
             // Twin property were updated
             this.LoRaDeviceClient.VerifyAll();
@@ -255,8 +255,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Null(request.ResponseDownlink);
 
             // Device frame counts did not changed
-            Assert.Equal(10, loRaDevice.FCntDown);
-            Assert.Equal(20, loRaDevice.FCntUp);
+            Assert.Equal(10U, loRaDevice.FCntDown);
+            Assert.Equal(20U, loRaDevice.FCntUp);
 
             this.LoRaDeviceClient.VerifyAll();
             this.LoRaDeviceApi.VerifyAll();
@@ -299,8 +299,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(LoRaDeviceRequestFailedReason.HandledByAnotherGateway, request.ProcessingFailedReason);
 
             // Device frame counts did not changed
-            Assert.Equal(10, loRaDevice.FCntDown);
-            Assert.Equal(20, loRaDevice.FCntUp);
+            Assert.Equal(10U, loRaDevice.FCntDown);
+            Assert.Equal(20U, loRaDevice.FCntUp);
         }
 
         [Theory]
@@ -378,8 +378,8 @@ namespace LoRaWan.NetworkServer.Test
                 Assert.Equal(deviceGatewayID, cachedDevice.GatewayID);
 
             // fcnt is restarted
-            Assert.Equal(0, cachedDevice.FCntUp);
-            Assert.Equal(0, cachedDevice.FCntDown);
+            Assert.Equal(0U, cachedDevice.FCntUp);
+            Assert.Equal(0U, cachedDevice.FCntDown);
             Assert.False(cachedDevice.HasFrameCountChanges);
         }
 

@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public string AuthCode { get; private set; }
 
-        public abstract Task<ushort> NextFCntDownAsync(string devEUI, int fcntDown, int fcntUp, string gatewayId);
+        public abstract Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId);
 
         public abstract Task<bool> ABPFcntCacheResetAsync(string devEUI);
 

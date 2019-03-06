@@ -3,6 +3,8 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public class SingleGatewayFrameCounterUpdateStrategy : ILoRaDeviceFrameCounterUpdateStrategy, ILoRaDeviceInitializer
@@ -17,24 +19,18 @@ namespace LoRaWan.NetworkServer
             return await this.InternalSaveChangesAsync(loRaDevice, force: true);
         }
 
-        public ValueTask<int> NextFcntDown(LoRaDevice loRaDevice, int messageFcnt)
+        public ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt)
         {
-            return new ValueTask<int>(loRaDevice.IncrementFcntDown(1));
+            return new ValueTask<uint>(loRaDevice.IncrementFcntDown(1));
         }
 
         public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => this.InternalSaveChangesAsync(loRaDevice, force: false);
 
+        private SemaphoreSlim ss = new SemaphoreSlim(1);
+
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {
-            var fcntUpDelta = loRaDevice.FCntUp - loRaDevice.LastSavedFCntUp;
-            var fcntDownDelta = loRaDevice.FCntDown - loRaDevice.LastSavedFCntDown;
-
-            if (force || fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA || fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA)
-            {
-                return await loRaDevice.SaveFrameCountChangesAsync();
-            }
-
-            return true;
+            return await loRaDevice.SaveFrameCountChangesAsync(force);
         }
 
         // Initializes a device instance created

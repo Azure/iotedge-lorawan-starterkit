@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     // Frame counter strategy for multi gateway scenarios
@@ -12,6 +13,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly string gatewayID;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
+        private object thelock = new object();
 
         public MultiGatewayFrameCounterUpdateStrategy(string gatewayID, LoRaDeviceAPIServiceBase loRaDeviceAPIService)
         {
@@ -31,7 +33,7 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-        public async ValueTask<int> NextFcntDown(LoRaDevice loRaDevice, int messageFcnt)
+        public async ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt)
         {
             var result = await this.loRaDeviceAPIService.NextFCntDownAsync(
                 devEUI: loRaDevice.DevEUI,
@@ -51,15 +53,7 @@ namespace LoRaWan.NetworkServer
 
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {
-            var fcntUpDelta = loRaDevice.FCntUp - loRaDevice.LastSavedFCntUp;
-            var fcntDownDelta = loRaDevice.FCntDown - loRaDevice.LastSavedFCntDown;
-
-            if (force || fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA || fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA)
-            {
-                return await loRaDevice.SaveFrameCountChangesAsync();
-            }
-
-            return true;
+            return await loRaDevice.SaveFrameCountChangesAsync(force);
         }
     }
 }

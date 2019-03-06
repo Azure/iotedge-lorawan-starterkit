@@ -73,7 +73,7 @@ namespace LoRaWan.NetworkServer
                     return false;
                 }
 
-                var fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, -1);
+                var fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, 0);
                 if (fcntDown <= 0)
                 {
                     Logger.Log(loRaDevice.DevEUI, "Could not obtain fcnt down for class C device", LogLevel.Information);
@@ -85,7 +85,7 @@ namespace LoRaWan.NetworkServer
                     loRaDevice, // TODO resolve region from device information
                     this.loRaRegion ?? RegionFactory.CurrentRegion ?? RegionFactory.CreateEU868Region(),
                     cloudToDeviceMessage,
-                    (ushort)fcntDown);
+                    fcntDown);
 
                 if (downlinkMessageBuilderResp.IsMessageTooLong)
                 {

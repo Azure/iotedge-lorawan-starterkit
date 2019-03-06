@@ -27,7 +27,7 @@ namespace LoRaWan.NetworkServer
             this.serviceFacadeHttpClientProvider = serviceFacadeHttpClientProvider;
         }
 
-        public override async Task<ushort> NextFCntDownAsync(string devEUI, int fcntDown, int fcntUp, string gatewayId)
+        public override async Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId)
         {
             Logger.Log(devEUI, $"syncing FCntDown for multigateway", LogLevel.Information);
 

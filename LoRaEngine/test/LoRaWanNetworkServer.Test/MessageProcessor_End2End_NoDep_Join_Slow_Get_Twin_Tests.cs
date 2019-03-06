@@ -112,8 +112,8 @@ namespace LoRaWan.NetworkServer.Test
                 Assert.Equal(deviceGatewayID, loRaDevice.GatewayID);
 
             // fcnt is restarted
-            Assert.Equal(0, loRaDevice.FCntUp);
-            Assert.Equal(0, loRaDevice.FCntDown);
+            Assert.Equal(0U, loRaDevice.FCntUp);
+            Assert.Equal(0U, loRaDevice.FCntDown);
             Assert.False(loRaDevice.HasFrameCountChanges);
 
             // searching the device should happen twice

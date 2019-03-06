@@ -149,9 +149,9 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         [InlineData(9, 10)]
         [InlineData(9, 19)]
-        public async Task OTAA_Unconfirmed_With_Cloud_To_Device_Message_Returns_Downstream_Message(int initialDeviceFcntUp, int payloadFcnt)
+        public async Task OTAA_Unconfirmed_With_Cloud_To_Device_Message_Returns_Downstream_Message(uint initialDeviceFcntUp, uint payloadFcnt)
         {
-            const int InitialDeviceFcntDown = 20;
+            const uint InitialDeviceFcntDown = 20;
             var needsToSaveFcnt = payloadFcnt - initialDeviceFcntUp >= Constants.MAX_FCNT_UNSAVED_DELTA;
 
             var simulatedDevice = new SimulatedDevice(
@@ -231,9 +231,9 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         [InlineData(9, 10)]
         [InlineData(9, 19)]
-        public async Task OTAA_Confirmed_With_Cloud_To_Device_Message_Returns_Downstream_Message(int initialDeviceFcntUp, int payloadFcnt)
+        public async Task OTAA_Confirmed_With_Cloud_To_Device_Message_Returns_Downstream_Message(uint initialDeviceFcntUp, uint payloadFcnt)
         {
-            const int InitialDeviceFcntDown = 20;
+            const uint InitialDeviceFcntDown = 20;
             var needsToSaveFcnt = payloadFcnt - initialDeviceFcntUp >= Constants.MAX_FCNT_UNSAVED_DELTA;
 
             var simulatedDevice = new SimulatedDevice(
@@ -309,9 +309,9 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_In_Time_For_First_Window_Should_Send_Downstream_In_First_Window()
         {
-            const int PayloadFcnt = 10;
-            const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const uint PayloadFcnt = 10;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
@@ -401,9 +401,9 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Too_Late_For_First_Window_Should_Send_Downstream_In_Second_Window()
         {
-            const int PayloadFcnt = 10;
-            const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const uint PayloadFcnt = 10;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
@@ -493,9 +493,9 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Device_Prefers_Second_Window_Should_Send_Downstream_In_Second_Window()
         {
-            const int PayloadFcnt = 10;
-            const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const uint PayloadFcnt = 10;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
@@ -583,7 +583,7 @@ namespace LoRaWan.NetworkServer.Test
             var expectedFcntDown = InitialDeviceFcntDown + 10 + 1; // adding 10 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
             Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
-            Assert.Equal(1, loRaDevice.FCntDown - loRaDevice.LastSavedFCntDown);
+            Assert.Equal(1U, loRaDevice.FCntDown - loRaDevice.LastSavedFCntDown);
 
             // 6. Frame count has pending changes
             Assert.True(loRaDevice.HasFrameCountChanges);
@@ -686,9 +686,9 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData("test")]
         public async Task OTAA_Unconfirmed_With_Cloud_To_Device_Mac_Command_Returns_Downstream_Message(string msg)
         {
-            const int PayloadFcnt = 20;
-            const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const uint PayloadFcnt = 20;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
@@ -853,9 +853,9 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData("0000000000000001")]
         public async Task Unconfirmed_Cloud_To_Device_From_Decoder_Should_Send_Downstream_Message(string c2dDevEUI)
         {
-            const int PayloadFcnt = 10;
-            const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const uint PayloadFcnt = 10;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
@@ -932,9 +932,9 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Takes_Too_Long_Receiving_First_C2D_Should_Abandon_Message()
         {
-            const int PayloadFcnt = 10;
-            const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const uint PayloadFcnt = 10;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
@@ -996,9 +996,9 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Takes_Too_Long_Getting_FcntDown_Should_Abandon_Message()
         {
-            const int PayloadFcnt = 10;
-            const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const uint PayloadFcnt = 10;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: null),

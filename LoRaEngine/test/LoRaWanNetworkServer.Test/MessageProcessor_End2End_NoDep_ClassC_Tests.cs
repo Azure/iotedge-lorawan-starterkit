@@ -37,9 +37,9 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(ServerGatewayID, 0, 19)]
         [InlineData(ServerGatewayID, 5, 5)]
         [InlineData(ServerGatewayID, 5, 24)]
-        public async Task When_ABP_Sends_Upstream_And_DirectMethod_Should_Send_Upstream_And_Downstream(string deviceGatewayID, int lastSavedFcntDown, int currentFcntDown)
+        public async Task When_ABP_Sends_Upstream_And_DirectMethod_Should_Send_Upstream_And_Downstream(string deviceGatewayID, uint lastSavedFcntDown, uint currentFcntDown)
         {
-            const int payloadFcnt = 2; // to avoid relax mode reset
+            const uint payloadFcnt = 2; // to avoid relax mode reset
             var shouldSaveFcnt = (currentFcntDown - lastSavedFcntDown) + 1 >= Constants.MAX_FCNT_UNSAVED_DELTA;
 
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID, deviceClassType: 'c'), frmCntDown: lastSavedFcntDown);
@@ -95,7 +95,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(simDevice.DevEUI, currentFcntDown, -1, this.ServerConfiguration.GatewayID))
+                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(simDevice.DevEUI, currentFcntDown, 0, this.ServerConfiguration.GatewayID))
                     .ReturnsAsync((ushort)(currentFcntDown + 1));
             }
 
@@ -190,7 +190,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(simDevice.DevEUI, simDevice.FrmCntDown, -1, this.ServerConfiguration.GatewayID))
+                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(simDevice.DevEUI, simDevice.FrmCntDown, 0, this.ServerConfiguration.GatewayID))
                     .ReturnsAsync((ushort)(simDevice.FrmCntDown + 1));
             }
 
@@ -215,9 +215,9 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task Unconfirmed_Cloud_To_Device_From_Decoder_Should_Call_ClassC_Message_Sender()
         {
-            const int PayloadFcnt = 10;
-            const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const uint payloadFcnt = 10;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
@@ -268,7 +268,7 @@ namespace LoRaWan.NetworkServer.Test
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -284,7 +284,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(request.ProcessingSucceeded);
 
             // 4. Frame counter up was updated
-            Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
+            Assert.Equal(payloadFcnt, loraDevice.FCntUp);
 
             // 5. Frame counter down is unchanged
             Assert.Equal(InitialDeviceFcntDown, loraDevice.FCntDown);
