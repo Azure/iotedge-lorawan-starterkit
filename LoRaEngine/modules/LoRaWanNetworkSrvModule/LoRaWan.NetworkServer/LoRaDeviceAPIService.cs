@@ -48,7 +48,7 @@ namespace LoRaWan.NetworkServer
             return 0;
         }
 
-        public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, int fcntUp, string gatewayId, int fcntDown)
+        public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown)
         {
             Logger.Log(devEUI, $"check for duplicate message", LogLevel.Debug);
 

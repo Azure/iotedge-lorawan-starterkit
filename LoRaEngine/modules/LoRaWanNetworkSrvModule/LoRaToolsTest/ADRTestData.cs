@@ -20,7 +20,7 @@ namespace LoRaWanTest
 
             var deviceNameNotEnoughEntries = "notenoughentries";
 
-            for (int i = 0; i < 10; i++)
+            for (uint i = 0; i < 10; i++)
             {
                 tableentries.Add(new LoRaADRTableEntry()
                 {
@@ -48,7 +48,7 @@ namespace LoRaWanTest
             var lowerDRTable = new List<LoRaADRTableEntry>();
             var lowerDRDeviceName = "decreaseTxPower";
 
-            for (int i = 0; i < 21; i++)
+            for (uint i = 0; i < 21; i++)
             {
                 lowerDRTable.Add(new LoRaADRTableEntry()
                 {
@@ -76,7 +76,7 @@ namespace LoRaWanTest
             var increaseNbReptableentries = new List<LoRaADRTableEntry>();
             var increaseNbRepDeviceName = "Increase NpRep";
 
-            for (int i = 0; i < 21; i++)
+            for (uint i = 0; i < 21; i++)
             {
                 increaseNbReptableentries.Add(new LoRaADRTableEntry()
                 {
@@ -108,7 +108,7 @@ namespace LoRaWanTest
             var decreaseNbRepDeviceName = "Decrease NpRep";
 
             // start by setting a high number of nbrep
-            for (int i = 0; i < 21; i++)
+            for (uint i = 0; i < 21; i++)
             {
                 decreaseNbReptableentries.Add(new LoRaADRTableEntry()
                 {
@@ -120,7 +120,7 @@ namespace LoRaWanTest
                 });
             }
 
-            for (int i = 61; i < 81; i++)
+            for (uint i = 61; i < 81; i++)
             {
                 decreaseNbReptableentries.Add(
                     new LoRaADRTableEntry()

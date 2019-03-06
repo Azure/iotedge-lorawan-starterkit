@@ -347,7 +347,7 @@ namespace LoRaWan.NetworkServer
 
         public async Task<bool> SaveFrameCountChangesAsync(bool force = false)
         {
-            return this.SaveFrameCountChangesAsync(new TwinCollection(), force);
+            return await this.SaveFrameCountChangesAsync(new TwinCollection(), force);
         }
 
         /// <summary>
@@ -358,6 +358,11 @@ namespace LoRaWan.NetworkServer
         /// </remarks>
         public async Task<bool> SaveFrameCountChangesAsync(TwinCollection reportedProperties, bool force = false)
         {
+            if (reportedProperties == null)
+            {
+                throw new ArgumentNullException(nameof(reportedProperties));
+            }
+
             try
             {
                 // We only ever want a single save operation per device
@@ -382,8 +387,8 @@ namespace LoRaWan.NetworkServer
                             savedFcntUp = this.FCntUp;
                         }
 
-                reportedProperties[TwinProperty.FCntDown] = savedFcntDown;
-                reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
+                        reportedProperties[TwinProperty.FCntDown] = savedFcntDown;
+                        reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
 
                         var result = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
                         if (result)
@@ -663,7 +668,7 @@ namespace LoRaWan.NetworkServer
             if (this.hasFrameCountChanges)
             {
                 // combining the save with the framecounter update
-                return await this.SaveFrameCountChangesAsync(reportedProperties);
+                return await this.SaveFrameCountChangesAsync(reportedProperties, true);
             }
 
             return await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);

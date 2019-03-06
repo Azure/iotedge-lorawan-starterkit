@@ -5,9 +5,9 @@ namespace LoraKeysManagerFacade
 {
     public class DeviceCacheInfo
     {
-        public int FCntUp { get; set; }
+        public uint FCntUp { get; set; }
 
-        public int FCntDown { get; set; }
+        public uint FCntDown { get; set; }
 
         public string GatewayId { get; set; }
     }

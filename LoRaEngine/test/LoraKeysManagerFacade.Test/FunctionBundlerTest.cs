@@ -111,7 +111,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.Equal(1, resp.AdrResult.NumberOfFrames);
 
             Assert.Null(resp.DeduplicationResult);
-            Assert.Equal(2, resp.NextFCntDown);
+            Assert.Equal(2U, resp.NextFCntDown);
         }
 
         [Fact]
@@ -234,7 +234,7 @@ namespace LoraKeysManagerFacade.Test
                 {
                     Assert.NotNull(res.AdrResult);
                     Assert.False(res.AdrResult.CanConfirmToDevice);
-                    Assert.Equal(0, res.AdrResult.FCntDown);
+                    Assert.Equal(0U, res.AdrResult.FCntDown);
                     Assert.Null(res.NextFCntDown);
                     dups++;
                 }

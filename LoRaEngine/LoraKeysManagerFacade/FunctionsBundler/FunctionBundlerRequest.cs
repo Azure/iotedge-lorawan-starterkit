@@ -9,9 +9,9 @@ namespace LoraKeysManagerFacade.FunctionBundler
     {
         public string GatewayId { get; set; }
 
-        public int ClientFCntUp { get; set; }
+        public uint ClientFCntUp { get; set; }
 
-        public int ClientFCntDown { get; set; }
+        public uint ClientFCntDown { get; set; }
 
         public LoRaADRRequest AdrRequest { get; set; }
 

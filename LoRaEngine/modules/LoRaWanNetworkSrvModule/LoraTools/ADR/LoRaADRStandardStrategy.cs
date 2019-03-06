@@ -108,7 +108,7 @@ namespace LoRaTools.ADR
             return (currentTxPowerIndex, computedDataRate);
         }
 
-        private int ComputeNbRepetion(int first, int last, int currentNbRep)
+        private int ComputeNbRepetion(uint first, uint last, int currentNbRep)
         {
             double pktLossRate = (float)(last - first - 19) / (last - first);
             if (pktLossRate < 0.05)

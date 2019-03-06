@@ -72,7 +72,7 @@ namespace LoRaWan.NetworkServer
         /// <param name="fcntUp">frame count of the message we received</param>
         /// <param name="gatewayId">The current processing gateway</param>
         /// <param name="fcntDown">The frame count down of the client.</returns>
-        public abstract Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, int fcntUp, string gatewayId, int fcntDown);
+        public abstract Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown);
 
         public abstract Task<LoRaADRResult> CalculateADRAndStoreFrameAsync(string devEUI, LoRaADRRequest adrRequest);
 

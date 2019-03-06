@@ -12,6 +12,6 @@ namespace LoRaWan.NetworkServer
 
         public LoRaADRResult AdrResult { get; set; }
 
-        public int? NextFCntDown { get; set; }
+        public uint? NextFCntDown { get; set; }
     }
 }

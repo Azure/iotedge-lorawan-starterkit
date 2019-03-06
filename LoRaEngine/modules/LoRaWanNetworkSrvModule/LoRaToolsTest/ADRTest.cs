@@ -29,7 +29,7 @@ namespace LoRaWanTest
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
             var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider);
             loRaADRManager.CallBase = true;
-            loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(1);
+            loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // If the test does not expect a default answer we trigger default reset before
             if (!expectDefaultAnswer)
@@ -56,7 +56,7 @@ namespace LoRaWanTest
             Assert.Equal(expectedResult.TxPower, adrResult.TxPower);
             Assert.Equal(expectedResult.FCntDown, adrResult.FCntDown);
 
-            loRaADRManager.Verify(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()), Times.AtLeastOnce, "NextFCntDown");
+            loRaADRManager.Verify(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>()), Times.AtLeastOnce, "NextFCntDown");
             this.output.WriteLine($"Test {testName} finished");
         }
 
@@ -70,7 +70,7 @@ namespace LoRaWanTest
             rxpk.Datr = "SF7BW125";
             var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider);
             loRaADRManager.CallBase = true;
-            loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(1);
+            loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // setup table with default value
             _ = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
@@ -83,7 +83,7 @@ namespace LoRaWanTest
             });
 
             // Add measurement and compute new ADR
-            for (int i = 0; i < 21; i++)
+            for (uint i = 0; i < 21; i++)
             {
                 await loRaADRManager.Object.StoreADREntryAsync(
                     new LoRaADRTableEntry()
@@ -117,7 +117,7 @@ namespace LoRaWanTest
             Assert.Equal(0, adrResult.TxPower);
             Assert.Equal(1, adrResult.NbRepetition);
 
-            loRaADRManager.Verify(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>()), Times.AtLeastOnce, "NextFCntDown");
+            loRaADRManager.Verify(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>()), Times.AtLeastOnce, "NextFCntDown");
         }
     }
 }
