@@ -12,18 +12,9 @@ namespace LoraKeysManagerFacade
     {
         private IDatabase redisCache;
 
-        public LoRaDeviceCacheRedisStore(ExecutionContext context)
+        public LoRaDeviceCacheRedisStore(IDatabase redisCache)
         {
-            var redisConnectionString = FunctionConfigManager.GetCurrentConfiguration(context.FunctionAppDirectory).GetConnectionString("RedisConnectionString");
-
-            if (string.IsNullOrEmpty(redisConnectionString))
-            {
-                string errorMsg = "Missing RedisConnectionString in settings";
-                throw new Exception(errorMsg);
-            }
-
-            var redis = ConnectionMultiplexer.Connect(redisConnectionString);
-            this.redisCache = redis.GetDatabase();
+            this.redisCache = redisCache;
         }
 
         public bool LockTake(string key, string value, TimeSpan timeout)

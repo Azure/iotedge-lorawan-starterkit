@@ -4,14 +4,13 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using LoRaWan.Shared;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
 
-    public static class DuplicateMsgCacheCheck
+    public class DuplicateMsgCacheCheck
     {
         const string QueryParamDevEUI = "DevEUI";
         const string QueryParamGatewayId = "GatewayId";
@@ -19,8 +18,18 @@ namespace LoraKeysManagerFacade
         const string QueryParamFCntDown = "FCntDown";
         const string QueryParamCacheReset = "CacheReset";
 
-        [FunctionName(nameof(DuplicateMsgCheck))]
-        public static IActionResult DuplicateMsgCheck([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
+        private readonly ILoRaDeviceCacheStore cacheStore;
+
+        public DuplicateMsgCacheCheck(ILoRaDeviceCacheStore cacheStore)
+        {
+            this.cacheStore = cacheStore;
+        }
+
+        [FunctionName("DuplicateMsgCheck")]
+        public IActionResult DuplicateMsgCheck(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "DuplicateMsgCheck/{devEUI}")]HttpRequest req,
+            ILogger log,
+            string devEUI)
         {
             try
             {
@@ -28,48 +37,42 @@ namespace LoraKeysManagerFacade
             }
             catch (IncompatibleVersionException ex)
             {
-                return new BadRequestObjectResult(ex);
+                return new BadRequestObjectResult(ex.Message);
             }
 
-            string cacheReset = req.Query[QueryParamCacheReset];
-            string devEUI = req.Query[QueryParamDevEUI];
+            EUIValidator.ValidateDevEUI(devEUI);
 
+            var cacheReset = req.Query[QueryParamCacheReset];
             if (!string.IsNullOrEmpty(cacheReset) && !string.IsNullOrEmpty(devEUI))
             {
-                LoRaDeviceCache.Delete(devEUI, context);
+                this.cacheStore.KeyDelete(devEUI);
                 return (ActionResult)new OkObjectResult(null);
             }
 
-            string gatewayId = req.Query[QueryParamGatewayId];
-            string fCntDown = req.Query[QueryParamFCntDown];
-            string fCntUp = req.Query[QueryParamFCntUp];
+            var gatewayId = req.Query[QueryParamGatewayId];
+            var fCntDown = req.Query[QueryParamFCntDown];
+            var fCntUp = req.Query[QueryParamFCntUp];
 
             if (string.IsNullOrEmpty(devEUI) ||
                 string.IsNullOrEmpty(gatewayId) ||
-                !int.TryParse(fCntUp, out int clientFCntUp))
+                !int.TryParse(fCntUp, out int clientFCntUp) ||
+                !int.TryParse(fCntDown, out int clientFCntDown))
             {
-                string errorMsg = $"Missing {QueryParamDevEUI} or {QueryParamFCntUp} or {QueryParamGatewayId}";
+                var errorMsg = $"Missing {QueryParamDevEUI} or {QueryParamFCntUp} or {QueryParamGatewayId}";
                 throw new Exception(errorMsg);
             }
 
-            int? clientFCntDown = null;
-            if (int.TryParse(fCntDown, out var down))
-            {
-                clientFCntDown = down;
-            }
-
-            var result = GetDuplicateMessageResult(devEUI, gatewayId, clientFCntUp, clientFCntDown, context);
+            var result = this.GetDuplicateMessageResult(devEUI, gatewayId, clientFCntUp, clientFCntDown);
 
             return new OkObjectResult(result);
         }
 
-        public static DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, int clientFCntUp, int? clientFCntDown, ExecutionContext context)
+        public DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown)
         {
             var isDuplicate = true;
             string processedDevice = gatewayId;
-            int? newClientFCntDown = null;
 
-            using (var deviceCache = LoRaDeviceCache.Create(context, devEUI, gatewayId))
+            using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId))
             {
                 if (deviceCache.TryToLock())
                 {
@@ -93,13 +96,7 @@ namespace LoraKeysManagerFacade
                             processedDevice = cachedDeviceState.GatewayId;
                         }
 
-                        if (!isDuplicate && clientFCntDown.HasValue)
-                        {
-                            // requires a down confirmation
-                            // combine the logic from FCntCacheCheck to avoid 2 roundtrips
-                            newClientFCntDown = FCntCacheCheck.ProcessExistingDeviceInfo(deviceCache, cachedDeviceState, gatewayId, clientFCntUp, clientFCntDown.Value);
-                        }
-                        else if (updateCacheState)
+                        if (updateCacheState)
                         {
                             cachedDeviceState.FCntUp = clientFCntUp;
                             cachedDeviceState.GatewayId = gatewayId;
@@ -110,11 +107,7 @@ namespace LoraKeysManagerFacade
                     {
                         // initialize
                         isDuplicate = false;
-                        var state = deviceCache.Initialize(clientFCntDown.GetValueOrDefault(), clientFCntUp);
-                        if (clientFCntDown.HasValue)
-                        {
-                            newClientFCntDown = state.FCntDown;
-                        }
+                        var state = deviceCache.Initialize(clientFCntUp, clientFCntDown);
                     }
                 }
             }
@@ -122,8 +115,7 @@ namespace LoraKeysManagerFacade
             return new DuplicateMsgResult
             {
                 IsDuplicate = isDuplicate,
-                GatewayId = processedDevice,
-                ClientFCntDown = newClientFCntDown
+                GatewayId = processedDevice
             };
         }
     }

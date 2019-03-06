@@ -68,6 +68,12 @@ namespace LoRaWan.NetworkServer
 
         public bool IsABPRelaxedFrameCounter { get; set; }
 
+        public int DataRate { get; set; }
+
+        public int TxPower { get; set; }
+
+        public int NbRep { get; set; }
+
         public DeduplicationMode Deduplication { get; set; }
 
         int preferredWindow;
@@ -313,6 +319,22 @@ namespace LoRaWan.NetworkServer
         {
             if (this.hasFrameCountChanges)
             {
+                return await this.SaveFrameCountChangesAsync(new TwinCollection());
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Saves the frame count changes
+        /// </summary>
+        /// <remarks>
+        /// Changes will be saved only if there are actually changes to be saved
+        /// </remarks>
+        public async Task<bool> SaveFrameCountChangesAsync(TwinCollection reportedProperties)
+        {
+            if (this.hasFrameCountChanges)
+            {
                 int savedFcntDown;
                 int savedFcntUp;
                 lock (this.fcntSync)
@@ -321,7 +343,6 @@ namespace LoRaWan.NetworkServer
                     savedFcntUp = this.FCntUp;
                 }
 
-                var reportedProperties = new TwinCollection();
                 reportedProperties[TwinProperty.FCntDown] = savedFcntDown;
                 reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
 
@@ -592,6 +613,22 @@ namespace LoRaWan.NetworkServer
         {
             this.loRaDeviceClient?.Dispose();
             GC.SuppressFinalize(this);
+        }
+
+        public async Task<bool> TrySaveADRPropertiesAsync()
+        {
+            var reportedProperties = new TwinCollection();
+            reportedProperties[TwinProperty.DataRate] = this.DataRate;
+            reportedProperties[TwinProperty.TxPower] = this.TxPower;
+            reportedProperties[TwinProperty.NbRep] = this.NbRep;
+
+            if (this.hasFrameCountChanges)
+            {
+                // combining the save with the framecounter update
+                return await this.SaveFrameCountChangesAsync(reportedProperties);
+            }
+
+            return await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
         }
     }
 }

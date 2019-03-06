@@ -65,13 +65,19 @@ namespace LoRaWan.IntegrationTest
         }
 
         // Setup lora for a given region
-        public async Task SetupLora(LoraRegion region)
+        public async Task SetupLora(
+            LoraRegion region,
+            LoRaArduinoSerial._data_rate_t dataRate = LoRaArduinoSerial._data_rate_t.DR6,
+            short power = 14,
+            bool adr = false)
         {
             try
             {
+                await this.setAdaptiveDataRateAsync(adr);
+
                 if (region == LoraRegion.EU)
                 {
-                    await this.setDataRateAsync(LoRaArduinoSerial._data_rate_t.DR6, LoRaArduinoSerial._physical_type_t.EU868);
+                    await this.setDataRateAsync(dataRate, LoRaArduinoSerial._physical_type_t.EU868);
                     await this.setChannelAsync(0, 868.1F);
                     await this.setChannelAsync(1, 868.3F);
                     await this.setChannelAsync(2, 868.5F);
@@ -88,10 +94,9 @@ namespace LoRaWan.IntegrationTest
                 }
 
                 await this.setConfirmedMessageRetryTimeAsync(10);
-                await this.setAdaptiveDataRateAsync(false);
                 await this.setDutyCycleAsync(false);
                 await this.setJoinDutyCycleAsync(false);
-                await this.setPowerAsync(14);
+                await this.setPowerAsync(power);
             }
             catch (Exception ex)
             {

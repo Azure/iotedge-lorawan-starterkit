@@ -26,11 +26,11 @@ namespace LoRaTools
 
         public int DataRate => (this.DataRateTXPower >> 4) & 0b00001111;
 
-        public int GetTXPower() => this.DataRateTXPower & 0b00001111;
+        public int TxPower => this.DataRateTXPower & 0b00001111;
 
-        public int GetChMaskCntl => (this.ChMask >> 4) & 0b00000111;
+        public int ChMaskCntl => (this.Redundancy >> 4) & 0b00000111;
 
-        public int GetNbTrans() => this.ChMask & 0b00001111;
+        public int NbRep => this.Redundancy & 0b00001111;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRRequest"/> class.
@@ -42,6 +42,22 @@ namespace LoRaTools
             this.ChMask = chMask;
             // bit 7 is RFU
             this.Redundancy = (byte)((byte)((chMaskCntl << 4) | nbTrans) & 0b01111111);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinkADRRequest"/> class. For tests to serialize from byte
+        /// </summary>
+        public LinkADRRequest(byte[] input)
+        {
+            if (input.Length < this.Length || input[0] != (byte)CidEnum.LinkADRCmd)
+            {
+                throw new Exception("the input was not in the expected form");
+            }
+
+            this.Cid = CidEnum.LinkADRCmd;
+            this.DataRateTXPower = input[1];
+            this.ChMask = BitConverter.ToUInt16(input, 2);
+            this.Redundancy = input[4];
         }
 
         /// <summary>
@@ -80,16 +96,16 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.Cid;
-            yield return this.DataRateTXPower;
-            yield return (byte)this.ChMask;
-            yield return (byte)(this.ChMask >> 8);
             yield return this.Redundancy;
+            yield return (byte)(this.ChMask >> 8);
+            yield return (byte)this.ChMask;
+            yield return this.DataRateTXPower;
+            yield return (byte)this.Cid;
         }
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, datarate: {this.DataRate}, txpower: {this.GetTXPower()}, nbTrans: {this.GetNbTrans()}, channel Mask Control: {this.GetChMaskCntl}, Redundancy: {this.Redundancy}";
+            return $"Type: {this.Cid} Answer, datarate: {this.DataRate}, txpower: {this.TxPower}, nbTrans: {this.NbRep}, channel Mask Control: {this.ChMaskCntl}, Redundancy: {this.Redundancy}";
         }
     }
 }

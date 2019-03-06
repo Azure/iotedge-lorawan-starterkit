@@ -11,41 +11,17 @@ namespace LoraKeysManagerFacade
     {
         private const string CacheKeyLockSuffix = "msglock";
         private static readonly TimeSpan LockWaitingTimeout = TimeSpan.FromSeconds(10);
-        private static ILoRaDeviceCacheStore cacheStore;
-        private static object cacheSingletonLock = new object();
 
+        private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly string gatewayId;
         private readonly string devEUI;
         private readonly string cacheKey;
-
-        /// <summary>
-        /// Setting an explicit device store cache implementation
-        /// </summary>
-        /// <param name="cacheStore">The custom store to use</param>
-        /// <remarks>Do only use for unit testing</remarks>
-        public static void EnsureCacheStore(ILoRaDeviceCacheStore cacheStore)
-        {
-            lock (cacheSingletonLock)
-            {
-                if (LoRaDeviceCache.cacheStore == null)
-                {
-                    LoRaDeviceCache.cacheStore = cacheStore;
-                }
-            }
-        }
 
         public bool IsLockOwner { get; private set; }
 
         private string lockKey;
 
-        private LoRaDeviceCache(string devEUI, string gatewayId, string cacheKey)
-        {
-            this.devEUI = devEUI;
-            this.gatewayId = gatewayId;
-            this.cacheKey = cacheKey ?? devEUI;
-        }
-
-        public static LoRaDeviceCache Create(ExecutionContext context, string devEUI, string gatewayId, string cacheKey = null)
+        public LoRaDeviceCache(ILoRaDeviceCacheStore cacheStore, string devEUI, string gatewayId, string cacheKey = null)
         {
             if (string.IsNullOrEmpty(devEUI))
             {
@@ -57,8 +33,10 @@ namespace LoraKeysManagerFacade
                 throw new ArgumentNullException("gatewayId");
             }
 
-            EnsureCacheStore(context);
-            return new LoRaDeviceCache(devEUI, gatewayId, cacheKey);
+            this.cacheStore = cacheStore;
+            this.devEUI = devEUI;
+            this.gatewayId = gatewayId;
+            this.cacheKey = cacheKey ?? devEUI;
         }
 
         public bool TryToLock(string lockKey = null)
@@ -69,7 +47,7 @@ namespace LoraKeysManagerFacade
             }
 
             this.lockKey = lockKey ?? this.devEUI + CacheKeyLockSuffix;
-            if (!cacheStore.LockTake(this.lockKey, this.gatewayId, LockWaitingTimeout))
+            if (!this.cacheStore.LockTake(this.lockKey, this.gatewayId, LockWaitingTimeout))
             {
                 return false;
             }
@@ -78,14 +56,13 @@ namespace LoraKeysManagerFacade
             return true;
         }
 
-        public DeviceCacheInfo Initialize(int clientFCntDown = 0, int clientFCntUp = 0)
+        public DeviceCacheInfo Initialize(int fCntUp = 0, int fCntDown = 0)
         {
             // it is the first message from this device
-            var newFCntDown = clientFCntDown + 1;
             var serverStateForDeviceInfo = new DeviceCacheInfo
             {
-                FCntDown = newFCntDown,
-                FCntUp = clientFCntUp,
+                FCntDown = fCntDown,
+                FCntUp = fCntUp,
                 GatewayId = this.gatewayId
             };
 
@@ -97,7 +74,7 @@ namespace LoraKeysManagerFacade
         {
             value = null;
             this.EnsureLockOwner();
-            value = cacheStore.StringGet(this.cacheKey);
+            value = this.cacheStore.StringGet(this.cacheKey);
             return value != null;
         }
 
@@ -106,7 +83,7 @@ namespace LoraKeysManagerFacade
             info = null;
             this.EnsureLockOwner();
 
-            string cachedFCnt = cacheStore.StringGet(this.cacheKey);
+            string cachedFCnt = this.cacheStore.StringGet(this.cacheKey);
             if (string.IsNullOrEmpty(cachedFCnt))
             {
                 return false;
@@ -119,7 +96,7 @@ namespace LoraKeysManagerFacade
         public void StoreInfo(DeviceCacheInfo info)
         {
             this.EnsureLockOwner();
-            cacheStore.StringSet(this.cacheKey, JsonConvert.SerializeObject(info), new TimeSpan(30, 0, 0, 0));
+            this.cacheStore.StringSet(this.cacheKey, JsonConvert.SerializeObject(info), new TimeSpan(30, 0, 0, 0));
         }
 
         public void SetValue(string value, TimeSpan? expiry = null)
@@ -130,18 +107,7 @@ namespace LoraKeysManagerFacade
                 expiry = TimeSpan.FromMinutes(1);
             }
 
-            cacheStore.StringSet(this.cacheKey, value, expiry);
-        }
-
-        public static void Delete(string key, ExecutionContext context)
-        {
-            if (string.IsNullOrEmpty(key))
-            {
-                return;
-            }
-
-            EnsureCacheStore(context);
-            cacheStore.KeyDelete(key);
+            this.cacheStore.StringSet(this.cacheKey, value, expiry);
         }
 
         private void EnsureLockOwner()
@@ -152,22 +118,6 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        private static void EnsureCacheStore(ExecutionContext context)
-        {
-            if (cacheStore != null)
-            {
-                return;
-            }
-
-            lock (cacheSingletonLock)
-            {
-                if (cacheStore == null)
-                {
-                    cacheStore = new LoRaDeviceCacheRedisStore(context);
-                }
-            }
-        }
-
         private void ReleaseLock()
         {
             if (!this.IsLockOwner)
@@ -175,7 +125,7 @@ namespace LoraKeysManagerFacade
                 return;
             }
 
-            var released = cacheStore.LockRelease(this.lockKey, this.gatewayId);
+            var released = this.cacheStore.LockRelease(this.lockKey, this.gatewayId);
             if (!released)
             {
                 throw new InvalidOperationException("failed to release lock");

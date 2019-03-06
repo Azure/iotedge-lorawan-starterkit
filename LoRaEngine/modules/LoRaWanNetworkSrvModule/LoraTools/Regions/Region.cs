@@ -38,14 +38,14 @@ namespace LoRaTools.Regions
             EU868.DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 230));
             EU868.DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 230)); // USED FOR GFSK
 
-            EU868.TXPowertoMaxEIRP.Add(0, "16");
-            EU868.TXPowertoMaxEIRP.Add(1, "2");
-            EU868.TXPowertoMaxEIRP.Add(2, "4");
-            EU868.TXPowertoMaxEIRP.Add(3, "6");
-            EU868.TXPowertoMaxEIRP.Add(4, "8");
-            EU868.TXPowertoMaxEIRP.Add(5, "10");
-            EU868.TXPowertoMaxEIRP.Add(6, "12");
-            EU868.TXPowertoMaxEIRP.Add(7, "14");
+            EU868.TXPowertoMaxEIRP.Add(0, 16);
+            EU868.TXPowertoMaxEIRP.Add(1, 14);
+            EU868.TXPowertoMaxEIRP.Add(2, 12);
+            EU868.TXPowertoMaxEIRP.Add(3, 10);
+            EU868.TXPowertoMaxEIRP.Add(4, 8);
+            EU868.TXPowertoMaxEIRP.Add(5, 6);
+            EU868.TXPowertoMaxEIRP.Add(6, 4);
+            EU868.TXPowertoMaxEIRP.Add(7, 2);
 
             EU868.RX1DROffsetTable = new int[8, 6]
             {
@@ -70,6 +70,7 @@ namespace LoRaTools.Regions
                 "50" // 7 FSK 50
             };
 
+            EU868.MaxADRDataRate = 5;
             EU868.RegionLimits = new RegionLimits((min: 863, max: 870), euValidDataranges);
 
             US915 = new Region(
@@ -99,7 +100,7 @@ namespace LoRaTools.Regions
 
             for (uint i = 0; i < 15; i++)
             {
-                US915.TXPowertoMaxEIRP.Add(i, (30 - i).ToString());
+                US915.TXPowertoMaxEIRP.Add(i, 30 - 2 * i);
             }
 
             US915.RX1DROffsetTable = new int[5, 4]
@@ -124,7 +125,7 @@ namespace LoRaTools.Regions
                 "SF8BW500", // 12
                 "SF8BW500" // 13
             };
-
+            US915.MaxADRDataRate = 3;
             US915.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), usValidDataranges);
         }
 
@@ -145,7 +146,7 @@ namespace LoRaTools.Regions
         /// Gets or sets by default MaxEIRP is considered to be +16dBm.
         /// If the end-device cannot achieve 16dBm EIRP, the Max EIRP SHOULD be communicated to the network server using an out-of-band channel during the end-device commissioning process.
         /// </summary>
-        public Dictionary<uint, string> TXPowertoMaxEIRP { get; set; } = new Dictionary<uint, string>();
+        public Dictionary<uint, uint> TXPowertoMaxEIRP { get; set; } = new Dictionary<uint, uint>();
 
         /// <summary>
         /// Gets or sets table to the get receive windows Offsets.
@@ -206,6 +207,8 @@ namespace LoRaTools.Regions
         /// Gets or sets the limits on the region to ensure valid properties
         /// </summary>
         public RegionLimits RegionLimits { get; set; }
+
+        public int MaxADRDataRate { get; set; }
 
         public Region(LoRaRegion regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, uint datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
         {

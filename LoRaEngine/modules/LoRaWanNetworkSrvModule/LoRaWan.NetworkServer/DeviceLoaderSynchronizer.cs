@@ -29,15 +29,13 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Gets if there were errors loading devices
+        /// Gets a value indicating whether gets if there were errors loading devices
         /// </summary>
-        /// <value></value>
         internal bool HasLoadingDeviceError { get; private set; }
 
         /// <summary>
         /// Gets the amount of devices that were loaded
         /// </summary>
-        /// <value></value>
         internal int CreatedDevicesCount { get; private set; }
 
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;

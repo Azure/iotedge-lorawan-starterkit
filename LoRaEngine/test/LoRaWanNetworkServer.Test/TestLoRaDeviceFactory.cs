@@ -3,9 +3,10 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
-    using System;
     using System.Collections.Generic;
+    using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.ADR;
 
     internal class TestLoRaDeviceFactory : ILoRaDeviceFactory
     {
@@ -15,6 +16,9 @@ namespace LoRaWan.NetworkServer.Test
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private readonly IDeduplicationStrategyFactory deduplicationFactory;
+        private readonly ILoRaADRStrategyProvider adrStrategyProvider;
+        private readonly ILoRAADRManagerFactory adrManagerFactory;
+        private readonly IFunctionBundlerProvider functionBundlerProvider;
 
         public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient)
         {
@@ -33,12 +37,18 @@ namespace LoRaWan.NetworkServer.Test
             NetworkServerConfiguration configuration,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             ILoRaDeviceClient loRaDeviceClient,
-            IDeduplicationStrategyFactory deduplicationFactory)
+            IDeduplicationStrategyFactory deduplicationFactory,
+            ILoRaADRStrategyProvider adrStrategyProvider,
+            ILoRAADRManagerFactory adrManagerFactory,
+            IFunctionBundlerProvider functionBundlerProvider)
             : this(loRaDeviceClient)
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.deduplicationFactory = deduplicationFactory;
+            this.adrStrategyProvider = adrStrategyProvider;
+            this.adrManagerFactory = adrManagerFactory;
+            this.functionBundlerProvider = functionBundlerProvider;
         }
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
@@ -53,7 +63,7 @@ namespace LoRaWan.NetworkServer.Test
                 deviceInfo.DevEUI,
                 deviceClientToAssign);
 
-            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), this.deduplicationFactory));
+            loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider));
             return loRaDevice;
         }
 

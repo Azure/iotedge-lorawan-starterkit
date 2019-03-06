@@ -27,7 +27,7 @@ namespace LoraKeysManagerFacade.Test
         {
             lock (this.locks)
             {
-                if (this.locks.TryGetValue(key + value, out var sem))
+                if (this.locks.TryGetValue(key, out var sem))
                 {
                     sem.Release();
                     return true;
@@ -42,13 +42,12 @@ namespace LoraKeysManagerFacade.Test
         public bool LockTake(string key, string value, TimeSpan timeout)
         {
             SemaphoreSlim waiter = null;
-            var lockKey = key + value;
 
             lock (this.locks)
             {
-                if (!this.locks.TryGetValue(lockKey, out waiter))
+                if (!this.locks.TryGetValue(key, out waiter))
                 {
-                    this.locks[lockKey] = new SemaphoreSlim(0);
+                    this.locks[key] = new SemaphoreSlim(0);
                     return true;
                 }
             }
@@ -57,7 +56,7 @@ namespace LoraKeysManagerFacade.Test
             {
                 lock (this.locks)
                 {
-                    this.locks[lockKey] = new SemaphoreSlim(0);
+                    this.locks[key] = new SemaphoreSlim(0);
                     return true;
                 }
             }

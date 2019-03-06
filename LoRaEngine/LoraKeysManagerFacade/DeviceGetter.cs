@@ -17,13 +17,24 @@ namespace LoraKeysManagerFacade
     using Newtonsoft.Json;
     using StackExchange.Redis;
 
-    public static class DeviceGetter
+    public class DeviceGetter
     {
+        private readonly RegistryManager registryManager;
+        private readonly ILoRaDeviceCacheStore cacheStore;
+
+        public DeviceGetter(RegistryManager registryManager, ILoRaDeviceCacheStore cacheStore)
+        {
+            this.registryManager = registryManager;
+            this.cacheStore = cacheStore;
+        }
+
         /// <summary>
         /// Entry point function for getting devices
         /// </summary>
         [FunctionName(nameof(GetDevice))]
-        public static async Task<IActionResult> GetDevice([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
+        public async Task<IActionResult> GetDevice(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req,
+            ILogger log)
         {
             try
             {
@@ -31,7 +42,7 @@ namespace LoraKeysManagerFacade
             }
             catch (IncompatibleVersionException ex)
             {
-                return new BadRequestObjectResult(ex);
+                return new BadRequestObjectResult(ex.Message);
             }
 
             // ABP parameters
@@ -42,9 +53,14 @@ namespace LoraKeysManagerFacade
             string devNonce = req.Query["DevNonce"];
             string gatewayId = req.Query["GatewayId"];
 
+            if (devEUI != null)
+            {
+                EUIValidator.ValidateDevEUI(devEUI);
+            }
+
             try
             {
-                var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, context);
+                var results = await this.GetDeviceList(devEUI, gatewayId, devNonce, devAddr);
                 string json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);
             }
@@ -52,18 +68,21 @@ namespace LoraKeysManagerFacade
             {
                 return new BadRequestObjectResult("UsedDevNonce");
             }
+            catch (ArgumentException ex)
+            {
+                return new BadRequestObjectResult(ex.Message);
+            }
         }
 
-        public static async Task<List<IoTHubDeviceInfo>> GetDeviceList(string devEUI, string gatewayId, string devNonce, string devAddr, ExecutionContext context)
+        public async Task<List<IoTHubDeviceInfo>> GetDeviceList(string devEUI, string gatewayId, string devNonce, string devAddr)
         {
             var results = new List<IoTHubDeviceInfo>();
-            var registryManager = LoRaRegistryManager.GetCurrentInstance(context.FunctionAppDirectory);
 
             if (devEUI != null)
             {
                 // OTAA join
                 string cacheKey = devEUI + devNonce;
-                using (var deviceCache = LoRaDeviceCache.Create(context, devEUI, gatewayId, cacheKey))
+                using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId, cacheKey))
                 {
                     if (deviceCache.TryToLock(cacheKey + "joinlock"))
                     {
@@ -74,7 +93,7 @@ namespace LoraKeysManagerFacade
 
                         deviceCache.SetValue(devNonce, TimeSpan.FromMinutes(1));
 
-                        var device = await registryManager.GetDeviceAsync(devEUI);
+                        var device = await this.registryManager.GetDeviceAsync(devEUI);
 
                         if (device != null)
                         {
@@ -85,8 +104,7 @@ namespace LoraKeysManagerFacade
                             };
                             results.Add(iotHubDeviceInfo);
 
-                            // clear device FCnt cache after join
-                            LoRaDeviceCache.Delete(devEUI, context);
+                            this.cacheStore.KeyDelete(devEUI);
                         }
                     }
                 }
@@ -98,7 +116,7 @@ namespace LoraKeysManagerFacade
                 // TODO check for sql injection
                 devAddr = devAddr.Replace('\'', ' ');
 
-                var query = registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{devAddr}' OR properties.reported.DevAddr ='{devAddr}'", 100);
+                var query = this.registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{devAddr}' OR properties.reported.DevAddr ='{devAddr}'", 100);
                 while (query.HasMoreResults)
                 {
                     var page = await query.GetNextAsTwinAsync();
@@ -107,7 +125,7 @@ namespace LoraKeysManagerFacade
                     {
                         if (twin.DeviceId != null)
                         {
-                            var device = await registryManager.GetDeviceAsync(twin.DeviceId);
+                            var device = await this.registryManager.GetDeviceAsync(twin.DeviceId);
                             var iotHubDeviceInfo = new IoTHubDeviceInfo
                             {
                                 DevAddr = devAddr,

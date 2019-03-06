@@ -7,6 +7,8 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools.ADR;
+    using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
@@ -46,16 +48,12 @@ namespace LoRaWan.NetworkServer
             return 0;
         }
 
-        public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, int fcntUp, string gatewayId, int? fcntDown = null)
+        public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, int fcntUp, string gatewayId, int fcntDown)
         {
             Logger.Log(devEUI, $"check for duplicate message", LogLevel.Debug);
 
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = $"{this.URL}DuplicateMsgCheck?code={this.AuthCode}&DevEUI={devEUI}&FCntUp={fcntUp}&GatewayId={gatewayId}";
-            if (fcntDown.HasValue)
-            {
-                url += string.Concat("&FCntDown=", fcntDown);
-            }
+            var url = $"{this.URL}DuplicateMsgCheck/{devEUI}?code={this.AuthCode}&FCntUp={fcntUp}&GatewayId={gatewayId}&FCntDown={fcntDown}";
 
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -67,6 +65,72 @@ namespace LoRaWan.NetworkServer
             var payload = await response.Content.ReadAsStringAsync();
             Logger.Log(devEUI, $"deduplication response: '{payload}'", LogLevel.Debug);
             return JsonConvert.DeserializeObject<DeduplicationResult>(payload);
+        }
+
+        public override async Task<LoRaADRResult> CalculateADRAndStoreFrameAsync(string devEUI, LoRaADRRequest adrRequest)
+        {
+            Logger.Log(devEUI, $"calculate ADR and store frame info", LogLevel.Debug);
+
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var url = $"{this.URL}ADRFunction/{devEUI}?code={this.AuthCode}";
+
+            var requestBody = JsonConvert.SerializeObject(adrRequest);
+
+            var response = await client.PostAsync(url, PreparePostContent(requestBody));
+            if (!response.IsSuccessStatusCode)
+            {
+                Logger.Log(devEUI, $"error calling the ADR function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                return null;
+            }
+
+            var payload = await response.Content.ReadAsStringAsync();
+            Logger.Log(devEUI, $"ADR Response: '{payload}'", LogLevel.Debug);
+            return JsonConvert.DeserializeObject<LoRaADRResult>(payload);
+        }
+
+        public override async Task<bool> ClearADRCache(string devEUI)
+        {
+            Logger.Log(devEUI, $"clear ADR cache", LogLevel.Debug);
+
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var url = $"{this.URL}ADRFunction/{devEUI}?code={this.AuthCode}";
+
+            var request = new LoRaADRRequest
+            {
+                ClearCache = true
+            };
+
+            var requestBody = JsonConvert.SerializeObject(request);
+
+            var response = await client.PostAsync(url, PreparePostContent(requestBody));
+            if (!response.IsSuccessStatusCode)
+            {
+                Logger.Log(devEUI, $"error calling the ADR reset function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                return false;
+            }
+
+            return true;
+        }
+
+        public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request)
+        {
+            Logger.Log(devEUI, $"Function bundler call", LogLevel.Debug);
+
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
+            var url = $"{this.URL}FunctionBundler/{devEUI}?code={this.AuthCode}";
+
+            var requestBody = JsonConvert.SerializeObject(request);
+
+            var response = await client.PostAsync(url, PreparePostContent(requestBody));
+            if (!response.IsSuccessStatusCode)
+            {
+                Logger.Log(devEUI, $"error calling the ADR function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                return null;
+            }
+
+            var payload = await response.Content.ReadAsStringAsync();
+            Logger.Log(devEUI, $"ADR Response: '{payload}'", LogLevel.Debug);
+            return JsonConvert.DeserializeObject<FunctionBundlerResult>(payload);
         }
 
         public override async Task<bool> ABPFcntCacheResetAsync(string devEUI)

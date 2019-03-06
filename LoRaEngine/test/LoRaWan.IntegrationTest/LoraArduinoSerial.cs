@@ -438,6 +438,8 @@ namespace LoRaWan.IntegrationTest
             else if (physicalType == _physical_type_t.IN865)
                 this.sendCommand("AT+DR=IN865\r\n");
 
+            await this.EnsureSerialAnswerAsync("+DR:", 30);
+
             await Task.Delay(DEFAULT_TIMEWAIT);
 
             string cmd = $"AT+DR={dataRate}\r\n";

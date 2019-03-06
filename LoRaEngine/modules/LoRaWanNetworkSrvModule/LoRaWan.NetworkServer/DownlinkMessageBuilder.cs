@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Mac;
@@ -33,7 +34,8 @@ namespace LoRaWan.NetworkServer
             LoRaOperationTimeWatcher timeWatcher,
             ILoRaCloudToDeviceMessage cloudToDeviceMessage,
             bool fpending,
-            ushort fcntDown)
+            ushort fcntDown,
+            LoRaADRResult loRaADRResult)
         {
             var upstreamPayload = (LoRaPayloadData)request.Payload;
             var rxpk = request.Rxpk;
@@ -47,7 +49,7 @@ namespace LoRaWan.NetworkServer
                 fctrl = (byte)FctrlEnum.Ack;
             }
 
-            var macCommands = PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload.MacCommands, cloudToDeviceMessage?.MacCommands, rxpk);
+            var macCommands = PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload.MacCommands, cloudToDeviceMessage?.MacCommands, rxpk, loRaADRResult);
             byte? fport = null;
             var requiresDeviceAcknowlegement = false;
             var macCommandType = CidEnum.Zero;
@@ -90,6 +92,11 @@ namespace LoRaWan.NetworkServer
             if (fpending)
             {
                 fctrl |= (int)FctrlEnum.FpendingOrClassB;
+            }
+
+            if (upstreamPayload.IsAdrEnabled)
+            {
+                fctrl |= (byte)FctrlEnum.ADR;
             }
 
             var srcDevAddr = upstreamPayload.DevAddr.Span;
@@ -162,7 +169,7 @@ namespace LoRaWan.NetworkServer
             Random rnd = new Random();
             rnd.NextBytes(rndToken);
 
-            PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage.MacCommands, null);
+            PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage.MacCommands, null, null);
 
             var macCommands = cloudToDeviceMessage.MacCommands;
             if (macCommands != null && macCommands.Count > 0)
@@ -234,7 +241,8 @@ namespace LoRaWan.NetworkServer
             string devEUI,
             IEnumerable<MacCommand> requestedMacCommands,
             IEnumerable<MacCommand> serverMacCommands,
-            Rxpk rxpk)
+            Rxpk rxpk,
+            LoRaADRResult loRaADRResult)
         {
             var macCommands = new Dictionary<int, MacCommand>();
 
@@ -251,7 +259,7 @@ namespace LoRaWan.NetworkServer
                                 var linkCheckAnswer = new LinkCheckAnswer(rxpk.GetModulationMargin(), 1);
                                 if (macCommands.TryAdd((int)CidEnum.LinkCheckCmd, linkCheckAnswer))
                                 {
-                                    Logger.Log(devEUI, $"Answering to a Mac Command Request {linkCheckAnswer.ToString()}", LogLevel.Information);
+                                    Logger.Log(devEUI, $"answering to a Mac Command Request {linkCheckAnswer.ToString()}", LogLevel.Information);
                                 }
                             }
 
@@ -284,7 +292,16 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            // TODO Implement ADR control Logic
+            // ADR Part.
+            // Currently only replying on ADR Req
+            if (loRaADRResult?.CanConfirmToDevice == true)
+            {
+                const int placeholderChannel = 25;
+                LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, placeholderChannel, 0, (byte)loRaADRResult.NbRepetition);
+                macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
+                Logger.Log(devEUI, $"performing a rate adaptation: datarate {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetion {loRaADRResult.NbRepetition}", LogLevel.Information);
+            }
+
             return macCommands.Values;
         }
     }

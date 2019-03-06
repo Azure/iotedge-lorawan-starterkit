@@ -88,10 +88,27 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true);
 
             // multi gateway will ask for next fcnt down
-            if (string.IsNullOrEmpty(deviceGatewayID))
+            var isMultigateway = string.IsNullOrEmpty(deviceGatewayID);
+            if (isMultigateway)
             {
                 this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, simulatedDevice.FrmCntDown, payloadFcnt, this.ServerConfiguration.GatewayID))
                     .ReturnsAsync((ushort)(simulatedDevice.FrmCntDown + 1));
+
+                // if we run with ADR, we will combine the call with the bundler
+                this.LoRaDeviceApi
+                    .Setup(x => x.ExecuteFunctionBundlerAsync(devEUI, It.IsAny<FunctionBundlerRequest>()))
+                    .ReturnsAsync(() => new FunctionBundlerResult
+                        {
+                            AdrResult = new LoRaTools.ADR.LoRaADRResult
+                            {
+                                // Todo check
+                                CanConfirmToDevice = false,
+                                FCntDown = simulatedDevice.FrmCntDown + 1,
+                                NbRepetition = 1,
+                                TxPower = 0
+                            },
+                            NextFCntDown = simulatedDevice.FrmCntDown + 1
+                        });
             }
 
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -122,7 +139,10 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsAny<TimeSpan>()), Times.Never());
 
             this.LoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
+            if (isMultigateway && ((LoRaPayloadData)request.Payload).IsAdrEnabled)
+            {
+                this.LoRaDeviceApi.Verify(x => x.ExecuteFunctionBundlerAsync(devEUI, It.IsAny<FunctionBundlerRequest>()));
+            }
         }
 
         [Theory]
@@ -190,7 +210,7 @@ namespace LoRaWan.NetworkServer.Test
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-            Assert.False(payloadDataDown.IsConfirmed());
+            Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
             // 4. Frame counter up was updated
@@ -268,7 +288,7 @@ namespace LoRaWan.NetworkServer.Test
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-            Assert.False(payloadDataDown.IsConfirmed());
+            Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
             // 4. Frame counter up was updated
@@ -362,7 +382,7 @@ namespace LoRaWan.NetworkServer.Test
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
-            Assert.False(payloadDataDown.IsConfirmed());
+            Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
             // 4. Frame counter up was updated
@@ -454,7 +474,7 @@ namespace LoRaWan.NetworkServer.Test
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
-            Assert.False(payloadDataDown.IsConfirmed());
+            Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
             // 4. Frame counter up was updated
@@ -552,7 +572,7 @@ namespace LoRaWan.NetworkServer.Test
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
             payloadDataDown.PerformEncryption(loRaDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), ConversionHelper.StringToByteArray(loRaDevice.DevAddr));
-            Assert.False(payloadDataDown.IsConfirmed());
+            Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
             // 4. Frame counter up was updated
@@ -737,7 +757,7 @@ namespace LoRaWan.NetworkServer.Test
                     loraDevice.AppSKey);
 
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-            Assert.False(payloadDataDown.IsConfirmed());
+            Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
             // 4. Frame counter up was updated
@@ -889,7 +909,7 @@ namespace LoRaWan.NetworkServer.Test
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-            Assert.False(payloadDataDown.IsConfirmed());
+            Assert.False(payloadDataDown.IsConfirmed);
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
             // 4. Frame counter up was updated

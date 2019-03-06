@@ -4,24 +4,25 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using LoRaWan.Shared;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.Azure.WebJobs.Host;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
-    using Newtonsoft.Json;
-    using StackExchange.Redis;
 
-    public static class FCntCacheCheck
+    public class FCntCacheCheck
     {
+        private readonly ILoRaDeviceCacheStore deviceCache;
+
+        public FCntCacheCheck(ILoRaDeviceCacheStore deviceCache)
+        {
+            this.deviceCache = deviceCache;
+        }
+
         [FunctionName("NextFCntDown")]
-        public static IActionResult NextFCntDownInvoke([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
+        public IActionResult NextFCntDownInvoke(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req,
+            ILogger log)
         {
             try
             {
@@ -29,7 +30,7 @@ namespace LoraKeysManagerFacade
             }
             catch (IncompatibleVersionException ex)
             {
-                return new BadRequestObjectResult(ex);
+                return new BadRequestObjectResult(ex.Message);
             }
 
             string devEUI = req.Query["DevEUI"];
@@ -39,31 +40,32 @@ namespace LoraKeysManagerFacade
             string abpFcntCacheReset = req.Query["ABPFcntCacheReset"];
             int newFCntDown = 0;
 
+            EUIValidator.ValidateDevEUI(devEUI);
+
             if (!string.IsNullOrEmpty(abpFcntCacheReset))
             {
-                LoRaDeviceCache.Delete(devEUI, context);
+                this.deviceCache.KeyDelete(devEUI);
                 return (ActionResult)new OkObjectResult(null);
             }
 
             // validate input parameters
             if (!int.TryParse(fCntDown, out int clientFCntDown) ||
                 !int.TryParse(fCntUp, out int clientFCntUp) ||
-                string.IsNullOrEmpty(devEUI) ||
                 string.IsNullOrEmpty(gatewayId))
             {
-                string errorMsg = "Missing DevEUI or FCntDown or FCntUp or GatewayId";
+                string errorMsg = "Missing FCntDown or FCntUp or GatewayId";
                 throw new ArgumentException(errorMsg);
             }
 
-            newFCntDown = GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown, context);
+            newFCntDown = this.GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown);
 
             return (ActionResult)new OkObjectResult(newFCntDown);
         }
 
-        public static int GetNextFCntDown(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown, ExecutionContext context)
+        public int GetNextFCntDown(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown)
         {
             int newFCntDown = 0;
-            using (var deviceCache = LoRaDeviceCache.Create(context, devEUI, gatewayId))
+            using (var deviceCache = new LoRaDeviceCache(this.deviceCache, devEUI, gatewayId))
             {
                 if (deviceCache.TryToLock())
                 {
@@ -73,7 +75,7 @@ namespace LoraKeysManagerFacade
                     }
                     else
                     {
-                        var state = deviceCache.Initialize(clientFCntDown, clientFCntUp);
+                        var state = deviceCache.Initialize(clientFCntUp, clientFCntDown + 1);
                         newFCntDown = state.FCntDown;
                     }
                 }

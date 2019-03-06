@@ -27,34 +27,40 @@ namespace LoRaWan.IntegrationTest
         [Fact]
         public async Task Test_Device_Initiated_Mac_LinkCheckCmd_Should_work()
         {
-            const int MESSAGES_COUNT = 3;
-
-            var device = this.TestFixtureCi.Device22_ABP;
-            this.LogTestStart(device);
-            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
-            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
-            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
-            await this.ArduinoDevice.setPortAsync(0);
-
-            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
-            for (var i = 0; i < MESSAGES_COUNT; ++i)
+            try
             {
-                var msg = "02";
-                this.Log($"{device.DeviceID}: Sending unconfirmed Mac LinkCheckCmd message");
-                await this.ArduinoDevice.transferHexPacketAsync(msg, 10);
-                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+                const int MESSAGES_COUNT = 3;
 
-                // After transferPacket: Expectation from serial
-                // +MSG: Done
-                await AssertUtils.ContainsWithRetriesAsync("+MSGHEX: Done", this.ArduinoDevice.SerialLogs);
+                var device = this.TestFixtureCi.Device22_ABP;
+                this.LogTestStart(device);
+                await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+                await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+                await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
+                await this.ArduinoDevice.setPortAsync(0);
 
-                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+                await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+                for (var i = 0; i < MESSAGES_COUNT; ++i)
+                {
+                    var msg = "02";
+                    this.Log($"{device.DeviceID}: Sending unconfirmed Mac LinkCheckCmd message");
+                    await this.ArduinoDevice.transferHexPacketAsync(msg, 10);
+                    await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: LinkCheckCmd mac command detected in upstream payload:");
+                    // After transferPacket: Expectation from serial
+                    // +MSG: Done
+                    await AssertUtils.ContainsWithRetriesAsync("+MSGHEX: Done", this.ArduinoDevice.SerialLogs);
+
+                    await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+
+                    await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: LinkCheckCmd mac command detected in upstream payload:");
+                }
+
+                await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: answering to a");
             }
-
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: Answering to a");
-            await this.ArduinoDevice.setPortAsync(1);
+            finally
+            {
+                await this.ArduinoDevice.setPortAsync(1);
+            }
 
             this.TestFixtureCi.ClearLogs();
         }

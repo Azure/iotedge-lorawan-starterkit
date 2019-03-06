@@ -33,8 +33,8 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.Cid;
             yield return (byte)this.Status;
+            yield return (byte)this.Cid;
         }
 
         public override string ToString()

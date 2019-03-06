@@ -1,0 +1,8 @@
+﻿{
+  "extensions":[
+    {
+        "name": "Startup",
+        "typeName": "LoraKeysManagerFacade.FacadeStartup, LoraKeysManagerFacade, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+    }
+  ]
+}

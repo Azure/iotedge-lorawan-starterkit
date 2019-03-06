@@ -6,61 +6,61 @@ namespace LoraKeysManagerFacade.Test
     using Microsoft.Azure.WebJobs;
     using Xunit;
 
-    // Ensure tests don't run in parallel since LoRaRegistryManager is shared
-    [Collection("LoraKeysManagerFacade.Test")]
-    public class FCntCacheCheckTest
+    public class FCntCacheCheckTest : FunctionTestBase
     {
+        private readonly FCntCacheCheck fcntCheck;
+
         public FCntCacheCheckTest()
         {
-            LoRaDeviceCache.EnsureCacheStore(new LoRaInMemoryDeviceStore());
+            this.fcntCheck = new FCntCacheCheck(new LoRaInMemoryDeviceStore());
         }
 
         [Fact]
         public void FrameCounter_Down_Initial()
         {
-            const string DeviceEUI = "DevFCntCacheCheckTest1_1";
-            const string GatewayId = "GwFCntCacheCheckTest1_1";
+            var deviceEUI = NewUniqueEUI64();
+            var gatewayId = NewUniqueEUI64();
 
-            var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
+            var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
             Assert.Equal(2, next);
         }
 
         [Fact]
         public void FrameCounter_Down_Update_Server()
         {
-            const string DeviceEUI = "DevFCntCacheCheckTest1_2";
-            const string GatewayId = "GwFCntCacheCheckTest1_2";
+            var deviceEUI = NewUniqueEUI64();
+            var gatewayId = NewUniqueEUI64();
 
-            var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
+            var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
             Assert.Equal(2, next);
 
-            next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 2, 1, new ExecutionContext());
+            next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 2, 1);
             Assert.Equal(3, next);
         }
 
         [Fact]
         public void FrameCounter_Down_Update_Device()
         {
-            const string DeviceEUI = "DevFCntCacheCheckTest1_3";
-            const string GatewayId = "GwFCntCacheCheckTest1_3";
+            var deviceEUI = NewUniqueEUI64();
+            var gatewayId = NewUniqueEUI64();
 
-            var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
+            var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
             Assert.Equal(2, next);
 
-            next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 3, 10, new ExecutionContext());
+            next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 3, 10);
             Assert.Equal(11, next);
         }
 
         [Fact]
         public void FrameCounter_Down_Retry_Increment()
         {
-            const string DeviceEUI = "DevFCntCacheCheckTest1_4";
-            const string GatewayId = "GwFCntCacheCheckTest1_4";
+            var deviceEUI = NewUniqueEUI64();
+            var gatewayId = NewUniqueEUI64();
 
-            var next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
+            var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
             Assert.Equal(2, next);
 
-            next = FCntCacheCheck.GetNextFCntDown(DeviceEUI, GatewayId, 1, 1, new ExecutionContext());
+            next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
             Assert.Equal(3, next);
         }
     }

@@ -4,7 +4,12 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools.ADR;
+    using LoRaWan.NetworkServer.ADR;
 
     /// <summary>
     /// LoRa Device API contract
@@ -66,10 +71,14 @@ namespace LoRaWan.NetworkServer
         /// <param name="devEUI">Device identifier</param>
         /// <param name="fcntUp">frame count of the message we received</param>
         /// <param name="gatewayId">The current processing gateway</param>
-        /// <param name="fcntDown">The frame count down of the client. This is optional and if specified
-        /// will combine the framecount down checks with the message duplication check</param>
-        /// <returns>true if it is a duplicate otherwise false</returns>
-        public abstract Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, int fcntUp, string gatewayId, int? fcntDown = null);
+        /// <param name="fcntDown">The frame count down of the client.</returns>
+        public abstract Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, int fcntUp, string gatewayId, int fcntDown);
+
+        public abstract Task<LoRaADRResult> CalculateADRAndStoreFrameAsync(string devEUI, LoRaADRRequest adrRequest);
+
+        public abstract Task<bool> ClearADRCache(string devEUI);
+
+        public abstract Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request);
 
         protected LoRaDeviceAPIServiceBase()
         {
@@ -79,6 +88,14 @@ namespace LoRaWan.NetworkServer
         {
             this.AuthCode = configuration.FacadeAuthCode;
             this.URL = this.SanitizeApiURL(configuration.FacadeServerUrl);
+        }
+
+        protected static ByteArrayContent PreparePostContent(string requestBody)
+        {
+            var buffer = Encoding.UTF8.GetBytes(requestBody);
+            var byteContent = new ByteArrayContent(buffer);
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            return byteContent;
         }
     }
 }

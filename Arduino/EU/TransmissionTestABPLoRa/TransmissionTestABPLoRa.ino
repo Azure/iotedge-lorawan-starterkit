@@ -43,7 +43,6 @@ void setup(void)
 
   lora.setDeciveMode(LWABP);
   lora.setDataRate(dr, physicalType);
-  lora.setPort(1);
   lora.setChannel(0, 868.1);
   lora.setChannel(1, 868.3);
   lora.setChannel(2, 868.5);

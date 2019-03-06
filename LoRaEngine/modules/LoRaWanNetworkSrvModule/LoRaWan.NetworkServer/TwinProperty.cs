@@ -28,5 +28,9 @@ namespace LoRaWan.NetworkServer
         public const string PreferredWindow = "PreferredWindow"; // (1 or 2)
         public const string Deduplication = "Deduplication"; // None (default), Drop, Mark
         public const string ClassType = "ClassType";
+        // ADR stuff
+        public const string DataRate = "DataRate";
+        public const string TxPower = "TxPower"; // depend on region 0 - 7 EU or 0 - 14 US
+        public const string NbRep = "NbRep"; // 1 - 3
     }
 }

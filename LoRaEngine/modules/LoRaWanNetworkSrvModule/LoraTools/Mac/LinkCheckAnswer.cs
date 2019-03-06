@@ -37,16 +37,16 @@ namespace LoRaTools
         /// </summary>
         public LinkCheckAnswer(Span<byte> input)
         {
-            this.Cid = (CidEnum)input[0];
+            this.Cid = (CidEnum)input[2];
             this.Margin = (uint)input[1];
-            this.GwCnt = (uint)input[2];
+            this.GwCnt = (uint)input[0];
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.Cid;
-            yield return (byte)this.Margin;
             yield return (byte)this.GwCnt;
+            yield return (byte)this.Margin;
+            yield return (byte)this.Cid;
         }
 
         public override string ToString()

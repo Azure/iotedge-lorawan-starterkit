@@ -203,16 +203,26 @@ namespace LoRaWan.Test.Shared
             }
         }
 
-        internal async Task<Twin> ReplaceTwinAsync(string deviceId, Twin updatedTwin, string etag)
+        public async Task InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod method)
+        {
+            using (var sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString))
+            {
+                await sc.InvokeDeviceMethodAsync(deviceId, moduleId, method);
+            }
+        }
+
+        public async Task UpdateReportedTwinAsync(string deviceId, string twinName, int twinValue)
         {
             try
             {
-                return await this.GetRegistryManager().ReplaceTwinAsync(deviceId, updatedTwin, etag);
+                Microsoft.Azure.Devices.Client.DeviceClient device = Microsoft.Azure.Devices.Client.DeviceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString, deviceId);
+                var twinCollection = new TwinCollection();
+                twinCollection[twinName] = twinValue;
+                await device.UpdateReportedPropertiesAsync(twinCollection);
+                device.Dispose();
             }
-            catch (Exception ex)
+            catch (System.InvalidOperationException)
             {
-                TestLogger.Log($"Error replacing twin for device {deviceId}: {ex.ToString()}");
-                throw;
             }
         }
 
