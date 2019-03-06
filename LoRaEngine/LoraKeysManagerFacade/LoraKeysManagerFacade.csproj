@@ -4,9 +4,6 @@
     <AzureFunctionsVersion>v2</AzureFunctionsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="local.settings.json" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Devices" Version="1.17.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
@@ -21,6 +18,10 @@
   <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">	    
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>	      
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>	
     </None>
     <None Include="extensions.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
