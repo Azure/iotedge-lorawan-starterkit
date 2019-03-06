@@ -373,7 +373,7 @@ namespace LoRaWan.NetworkServer
                         Logger.Log(loRaDevice.DevEUI, $"out of time for downstream message, will abandon c2d message id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Information);
                         _ = cloudToDeviceMessage.AbandonAsync();
                     }
-                    else if (confirmDownlinkMessageBuilderResp.AbandonOrReject)
+                    else if (confirmDownlinkMessageBuilderResp.IsMessageTooLong)
                     {
                         Logger.Log(loRaDevice.DevEUI, $"payload will not fit in current receive window, will abandon c2d message id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Information);
                         _ = cloudToDeviceMessage.AbandonAsync();

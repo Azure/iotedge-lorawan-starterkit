@@ -40,7 +40,7 @@ namespace LoRaWan.NetworkServer
             var upstreamPayload = (LoRaPayloadData)request.Payload;
             var rxpk = request.Rxpk;
             var loRaRegion = request.LoRaRegion;
-            bool abandonMessage = false;
+            bool isMessageTooLong = false;
 
             // default fport
             byte fctrl = 0;
@@ -55,8 +55,8 @@ namespace LoRaWan.NetworkServer
             if (receiveWindow == Constants.INVALID_RECEIVE_WINDOW)
             {
                 // No valid receive window. Abandon the message
-                abandonMessage = true;
-                return new DownlinkMessageBuilderResponse(null, abandonMessage);
+                isMessageTooLong = true;
+                return new DownlinkMessageBuilderResponse(null, isMessageTooLong);
             }
 
             byte[] rndToken = new byte[2];
@@ -153,7 +153,7 @@ namespace LoRaWan.NetworkServer
                 {
                     // Flag message to be abandoned and log
                     Logger.Log(loRaDevice.DevEUI, $"C2D message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement} too long for current receive window. Abandoning.", LogLevel.Information);
-                    abandonMessage = true;
+                    isMessageTooLong = true;
                 }
             }
 
@@ -175,7 +175,7 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            if (fpending || abandonMessage)
+            if (fpending || isMessageTooLong)
             {
                 fctrl |= (int)FctrlEnum.FpendingOrClassB;
             }
@@ -207,7 +207,7 @@ namespace LoRaWan.NetworkServer
             Logger.Log(loRaDevice.DevEUI, $"Sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Debug);
             return new DownlinkMessageBuilderResponse(
                 ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI),
-                abandonMessage);
+                isMessageTooLong);
         }
 
         internal static DownlinkMessageBuilderResponse CreateDownlinkMessage(
@@ -225,7 +225,7 @@ namespace LoRaWan.NetworkServer
             Random rnd = new Random();
             rnd.NextBytes(rndToken);
 
-            bool rejectMessage = false;
+            bool isMessageTooLong = false;
 
             // Class C always uses RX2
             string datr;
@@ -264,8 +264,8 @@ namespace LoRaWan.NetworkServer
             // Total C2D payload will NOT fit
             if (availablePayloadSize < totalC2dSize)
             {
-                rejectMessage = true;
-                return new DownlinkMessageBuilderResponse(null, rejectMessage);
+                isMessageTooLong = true;
+                return new DownlinkMessageBuilderResponse(null, isMessageTooLong);
             }
 
             if (macCommands?.Count > 0)
@@ -304,7 +304,7 @@ namespace LoRaWan.NetworkServer
 
             return new DownlinkMessageBuilderResponse(
                 ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI),
-                rejectMessage);
+                isMessageTooLong);
         }
 
         /// <summary>

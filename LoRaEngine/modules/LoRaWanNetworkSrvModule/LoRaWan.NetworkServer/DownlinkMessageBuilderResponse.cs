@@ -10,12 +10,12 @@ namespace LoRaWan.NetworkServer
     {
         internal DownlinkPktFwdMessage DownlinkPktFwdMessage { get; set; }
 
-        internal bool AbandonOrReject { get; set; }
+        internal bool IsMessageTooLong { get; set; }
 
-        internal DownlinkMessageBuilderResponse(DownlinkPktFwdMessage downlinkPktFwdMessage, bool abandonOrReject)
+        internal DownlinkMessageBuilderResponse(DownlinkPktFwdMessage downlinkPktFwdMessage, bool isMessageTooLong)
         {
             this.DownlinkPktFwdMessage = downlinkPktFwdMessage;
-            this.AbandonOrReject = abandonOrReject;
+            this.IsMessageTooLong = isMessageTooLong;
         }
     }
 }

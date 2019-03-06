@@ -87,10 +87,11 @@ namespace LoRaWan.NetworkServer
                     cloudToDeviceMessage,
                     (ushort)fcntDown);
 
-                if (downlinkMessageBuilderResp.AbandonOrReject)
+                if (downlinkMessageBuilderResp.IsMessageTooLong)
                 {
                     Logger.Log(loRaDevice.DevEUI, $"class C cloud to device message too large, rejecting. Id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Information);
-                    _ = cloudToDeviceMessage.RejectAsync();
+                    await cloudToDeviceMessage.RejectAsync();
+                    return false;
                 }
                 else
                 {
