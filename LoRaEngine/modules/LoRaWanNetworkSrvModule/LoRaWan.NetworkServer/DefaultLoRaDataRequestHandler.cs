@@ -129,9 +129,9 @@ namespace LoRaWan.NetworkServer
 
                 // If it is confirmed it require us to update the frame counter down
                 // Multiple gateways: in redis, otherwise in device twin
-                if (!fcntDown.HasValue && requiresConfirmation)
+                if (requiresConfirmation)
                 {
-                    fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, payloadFcnt);
+                    fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcnt, frameCounterStrategy);
 
                     // Failed to update the fcnt down
                     // In multi gateway scenarios it means the another gateway was faster than using, can stop now
