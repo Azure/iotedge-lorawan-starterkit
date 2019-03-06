@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
@@ -17,11 +18,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
     public class FunctionBundlerFunction
     {
-        private FunctionBundlerContext context;
+        private readonly IFunctionBundlerExecutionItem[] executionItems;
 
-        public FunctionBundlerFunction(FunctionBundlerContext context)
+        public FunctionBundlerFunction(
+            IFunctionBundlerExecutionItem[] items)
         {
-            this.context = context;
+            this.executionItems = items.OrderBy(x => x.Priority).ToArray();
         }
 
         [FunctionName("FunctionBundler")]
@@ -55,7 +57,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public async Task<FunctionBundlerResult> HandleFunctionBundlerInvoke(string devEUI, FunctionBundlerRequest request)
         {
-            var pipeline = new FunctionBundlerPipelineExecuter(devEUI, request, this.context);
+            var pipeline = new FunctionBundlerPipelineExecuter(this.executionItems, devEUI, request);
             return await pipeline.Execute();
         }
     }

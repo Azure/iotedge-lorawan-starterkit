@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer.Test
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using LoRaTools.CommonAPI;
     using LoRaWan.NetworkServer;
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices.Client;
@@ -28,6 +29,7 @@ namespace LoRaWan.NetworkServer.Test
                 NwkSKey = simulatedDevice.LoRaDevice.NwkSKey,
                 GatewayID = simulatedDevice.LoRaDevice.GatewayID,
                 IsOurDevice = true,
+                ClassType = (simulatedDevice.ClassType == 'C' || simulatedDevice.ClassType == 'c') ? LoRaDeviceClassType.C : LoRaDeviceClassType.A,
             };
 
             result.SetFcntDown(simulatedDevice.FrmCntDown);
@@ -62,7 +64,10 @@ namespace LoRaWan.NetworkServer.Test
             return twin;
         }
 
-        public static Twin CreateABPTwin(this SimulatedDevice simulatedDevice, Dictionary<string, object> desiredProperties = null)
+        public static Twin CreateABPTwin(
+            this SimulatedDevice simulatedDevice,
+            Dictionary<string, object> desiredProperties = null,
+            Dictionary<string, object> reportedProperties = null)
         {
             var finalDesiredProperties = new Dictionary<string, object>
                 {
@@ -82,16 +87,27 @@ namespace LoRaWan.NetworkServer.Test
                 }
             }
 
-            var reported = new Dictionary<string, object>
+            var finalReportedProperties = new Dictionary<string, object>
             {
                 { TwinProperty.FCntDown, simulatedDevice.FrmCntDown },
                 { TwinProperty.FCntUp, simulatedDevice.FrmCntUp }
             };
 
-            return CreateTwin(desired: finalDesiredProperties, reported: reported);
+            if (reportedProperties != null)
+            {
+                foreach (var kv in reportedProperties)
+                {
+                    finalReportedProperties[kv.Key] = kv.Value;
+                }
+            }
+
+            return CreateTwin(desired: finalDesiredProperties, reported: finalReportedProperties);
         }
 
-        internal static Twin CreateOTAATwin(this SimulatedDevice simulatedDevice, Dictionary<string, object> desiredProperties = null)
+        internal static Twin CreateOTAATwin(
+            this SimulatedDevice simulatedDevice,
+            Dictionary<string, object> desiredProperties = null,
+            Dictionary<string, object> reportedProperties = null)
         {
             var finalDesiredProperties = new Dictionary<string, object>
                 {
@@ -110,7 +126,7 @@ namespace LoRaWan.NetworkServer.Test
                 }
             }
 
-            var reported = new Dictionary<string, object>
+            var finalReportedProperties = new Dictionary<string, object>
             {
                 { TwinProperty.DevAddr, simulatedDevice.DevAddr },
                 { TwinProperty.AppSKey, simulatedDevice.AppSKey },
@@ -121,7 +137,15 @@ namespace LoRaWan.NetworkServer.Test
                 { TwinProperty.FCntUp, simulatedDevice.FrmCntUp }
             };
 
-            return CreateTwin(desired: finalDesiredProperties, reported: reported);
+            if (reportedProperties != null)
+            {
+               foreach (var kv in reportedProperties)
+                {
+                    finalReportedProperties[kv.Key] = kv.Value;
+                }
+            }
+
+            return CreateTwin(desired: finalDesiredProperties, reported: finalReportedProperties);
         }
 
         /// <summary>
@@ -135,6 +159,21 @@ namespace LoRaWan.NetworkServer.Test
             };
 
             return message;
+        }
+
+        public static string GeneratePayload(string allowedChars, int length)
+        {
+            Random random = new Random();
+
+            char[] chars = new char[length];
+            int setLength = allowedChars.Length;
+
+            for (int i = 0; i < length; ++i)
+            {
+                chars[i] = allowedChars[random.Next(setLength)];
+            }
+
+            return new string(chars, 0, length);
         }
     }
 }

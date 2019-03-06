@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools.CommonAPI;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
@@ -47,7 +48,7 @@ namespace LoRaWan.NetworkServer.Test
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
-        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, LoRaCloudToDeviceMessage sentMessage)
+        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
             Assert.NotNull(downlink.Txpk);
@@ -74,8 +75,13 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceApi.Setup(x => x.SearchByDevEUIAsync(devEUI))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
 
+            var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
+                {
+                    { TwinProperty.Region, LoRaRegion.EU868.ToString() }
+                });
+
             this.deviceClient.Setup(x => x.GetTwinAsync())
-                .ReturnsAsync(simDevice.CreateABPTwin());
+                .ReturnsAsync(twin);
 
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
@@ -84,7 +90,7 @@ namespace LoRaWan.NetworkServer.Test
                     .ReturnsAsync((ushort)(simDevice.FrmCntDown + 1));
             }
 
-            var c2dToDeviceMessage = new LoRaCloudToDeviceMessage()
+            var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "hello",
                 DevEUI = devEUI,
@@ -101,7 +107,6 @@ namespace LoRaWan.NetworkServer.Test
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
-                this.loRaRegion,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider);
@@ -127,7 +132,7 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(simDevice.CreateABPTwin());
 
-            var c2dToDeviceMessage = new LoRaCloudToDeviceMessage()
+            var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "hello",
                 DevEUI = devEUI,
@@ -137,7 +142,6 @@ namespace LoRaWan.NetworkServer.Test
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
-                this.loRaRegion,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider);
@@ -152,7 +156,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Fport_Is_Not_Set_Should_Fail()
         {
-            var c2dToDeviceMessage = new LoRaCloudToDeviceMessage()
+            var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "hello",
                 Fport = 10,
@@ -161,7 +165,6 @@ namespace LoRaWan.NetworkServer.Test
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
-                this.loRaRegion,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider);
@@ -185,7 +188,7 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(simDevice.CreateOTAATwin());
 
-            var c2dToDeviceMessage = new LoRaCloudToDeviceMessage()
+            var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "hello",
                 DevEUI = devEUI,
@@ -195,7 +198,6 @@ namespace LoRaWan.NetworkServer.Test
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
-                this.loRaRegion,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider);
@@ -216,10 +218,15 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceApi.Setup(x => x.SearchByDevEUIAsync(devEUI))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
 
-            this.deviceClient.Setup(x => x.GetTwinAsync())
-                .ReturnsAsync(simDevice.CreateABPTwin());
+            var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
+                {
+                    { TwinProperty.Region, LoRaRegion.EU868.ToString() }
+                });
 
-            var c2dToDeviceMessage = new LoRaCloudToDeviceMessage()
+            this.deviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(twin);
+
+            var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "hello",
                 DevEUI = devEUI,
@@ -233,7 +240,60 @@ namespace LoRaWan.NetworkServer.Test
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
-                this.loRaRegion,
+                this.loRaDeviceRegistry,
+                this.packetForwarder.Object,
+                this.frameCounterStrategyProvider);
+
+            Assert.False(await target.SendAsync(c2dToDeviceMessage));
+
+            this.packetForwarder.VerifyAll();
+            this.deviceApi.VerifyAll();
+            this.deviceClient.VerifyAll();
+        }
+
+        [Fact]
+        public async Task When_Message_Is_Invalid_Should_Fail()
+        {
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
+            var devEUI = simDevice.DevEUI;
+
+            var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
+            {
+                Payload = "hello",
+                DevEUI = devEUI,
+                Fport = LoRaFPort.MacCommand,
+                MessageId = Guid.NewGuid().ToString(),
+            };
+
+            var target = new DefaultClassCDevicesMessageSender(
+                this.serverConfiguration,
+                this.loRaDeviceRegistry,
+                this.packetForwarder.Object,
+                this.frameCounterStrategyProvider);
+
+            Assert.False(await target.SendAsync(c2dToDeviceMessage));
+
+            this.packetForwarder.VerifyAll();
+            this.deviceApi.VerifyAll();
+            this.deviceClient.VerifyAll();
+        }
+
+        [Fact]
+        public async Task When_Regions_Is_Not_Defined_Should_Fail()
+        {
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
+            var devEUI = simDevice.DevEUI;
+
+            var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
+            {
+                Payload = "hello",
+                DevEUI = devEUI,
+                Fport = LoRaFPort.MacCommand,
+                MessageId = Guid.NewGuid().ToString(),
+            };
+
+            var target = new DefaultClassCDevicesMessageSender(
+                this.serverConfiguration,
                 this.loRaDeviceRegistry,
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider);

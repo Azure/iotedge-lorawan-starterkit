@@ -19,9 +19,8 @@ namespace LoRaTools.ADR
             this.strategyProvider = strategyProvider;
         }
 
-        protected virtual Task<bool> TryUpdateStateAsync(LoRaADRResult loRaADRResult)
+        protected virtual void UpdateState(LoRaADRResult loRaADRResult)
         {
-            return Task.FromResult<bool>(true);
         }
 
         public virtual async Task StoreADREntryAsync(LoRaADRTableEntry newEntry)
@@ -76,7 +75,7 @@ namespace LoRaTools.ADR
                 table.CurrentNbRep = result.NbRepetition;
                 table.CurrentTxPower = result.TxPower;
                 await this.store.UpdateADRTable(devEUI, table);
-                await this.TryUpdateStateAsync(result);
+                this.UpdateState(result);
                 result.FCntDown = nextFcntDown;
             }
 

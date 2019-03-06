@@ -245,7 +245,7 @@ namespace LoRaWan.NetworkServer.Test
         // Each sending 5 messages
         [Theory]
         [InlineData(200, 300, 100, 20, 10)]
-        [InlineData(200, 500, 100, 100, 1)]
+        // [InlineData(200, 500, 100, 100, 1)]
         public async Task When_Multiple_Devices_And_Conflicting_DevAddr_Send_Telemetry_Queue_Sends_Messages_To_IoTHub(
             int searchDelay,
             int getTwinDelay,
@@ -376,122 +376,6 @@ namespace LoRaWan.NetworkServer.Test
             deviceClient3.Verify(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null), Times.Exactly(messagePerDeviceCount));
             deviceClient4.VerifyAll();
             deviceClient4.Verify(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null), Times.Exactly(messagePerDeviceCount));
-
-            this.LoRaDeviceApi.VerifyAll();
-        }
-
-        // Multiple devices sending multiple messages
-        [Theory]
-        [InlineData(10, 10, 20, 30, 10, 20, 10)]
-        public async Task When_Multiple_Devices_Send_Telemetry_Queue_Sends_Messages_To_IoTHub2(
-            int abpDevicesCount,
-            int ottaDevicesCount,
-            int searchDelay,
-            int getTwinDelay,
-            int sendMessageDelay,
-            int receiveDelay,
-            int delayBetweenMessages)
-        {
-            const int messagePerDeviceCount = 10;
-            const int payloadInitialFcnt = 2;
-
-            var deviceId = 1U;
-            var deviceClients = new List<Mock<ILoRaDeviceClient>>();
-            var devices = new List<SimulatedDevice>();
-            var deviceTelemetryMap = new Dictionary<string, List<LoRaDeviceTelemetry>>();
-            var totalDevices = abpDevicesCount + ottaDevicesCount;
-            for (var i = 0; i < abpDevicesCount; i++)
-            {
-                var device = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(deviceId));
-                devices.Add(device);
-                var deviceTwin = TestUtils.CreateABPTwin(device);
-
-                // Setup calls
-                this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(device.DevAddr))
-                    .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(device.DevAddr, device.DevEUI, "xxxyyyy").AsList()), TimeSpan.FromMilliseconds(searchDelay));
-
-                var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-                var deviceClientTelemetry = new List<LoRaDeviceTelemetry>();
-                deviceClient.Setup(x => x.GetTwinAsync())
-                    .ReturnsAsync(deviceTwin, TimeSpan.FromMilliseconds(getTwinDelay));
-                deviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                    .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) => deviceClientTelemetry.Add(t))
-                    .ReturnsAsync(true, TimeSpan.FromMilliseconds(sendMessageDelay));
-                deviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
-                    .ReturnsAsync((Message)null, TimeSpan.FromMilliseconds(receiveDelay));
-
-                this.LoRaDeviceFactory.SetClient(device.DevEUI, deviceClient.Object);
-                deviceTelemetryMap.Add(device.DevEUI, deviceClientTelemetry);
-                deviceClients.Add(deviceClient);
-
-                deviceId++;
-            }
-
-            for (var i = 0; i < ottaDevicesCount; i++)
-            {
-                var device = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(deviceId));
-                devices.Add(device);
-                device.SetupJoin(
-                    deviceId.ToString("00000000000000000000000000000000"),
-                    deviceId.ToString("00000000000000000000000000000000"),
-                    deviceId.ToString("03000000"));
-
-                var deviceTwin = TestUtils.CreateOTAATwin(device);
-
-                // Setup calls
-                this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(device.DevAddr))
-                    .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(device.DevAddr, device.DevEUI, "xxxyyyy").AsList()), TimeSpan.FromMilliseconds(searchDelay));
-
-                var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-                var deviceClientTelemetry = new List<LoRaDeviceTelemetry>();
-                deviceClient.Setup(x => x.GetTwinAsync())
-                    .ReturnsAsync(deviceTwin, TimeSpan.FromMilliseconds(getTwinDelay));
-                deviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                    .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) => deviceClientTelemetry.Add(t))
-                    .ReturnsAsync(true, TimeSpan.FromMilliseconds(sendMessageDelay));
-                deviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
-                    .ReturnsAsync((Message)null, TimeSpan.FromMilliseconds(receiveDelay));
-
-                this.LoRaDeviceFactory.SetClient(device.DevEUI, deviceClient.Object);
-                deviceTelemetryMap.Add(device.DevEUI, deviceClientTelemetry);
-
-                deviceId++;
-            }
-
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewMemoryCache(), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
-
-            var messageDispatcher = new MessageDispatcher(
-                this.ServerConfiguration,
-                deviceRegistry,
-                this.FrameCounterUpdateStrategyProvider);
-
-            var allRequests = new List<WaitableLoRaRequest>();
-            for (int i = 0; i < totalDevices; i++)
-            {
-                var deviceMessages = await this.SendMessages(devices[i], messageDispatcher, payloadInitialFcnt, delayBetweenMessages, messagePerDeviceCount);
-                allRequests.AddRange(deviceMessages);
-            }
-
-            Assert.Equal(messagePerDeviceCount * totalDevices, allRequests.Count);
-
-            await Task.WhenAll(allRequests.Select(x => x.WaitCompleteAsync()));
-
-            Assert.All(allRequests, m => Assert.True(m.ProcessingSucceeded));
-
-            foreach (var telemetry in deviceTelemetryMap.Values)
-            {
-                Assert.Equal(messagePerDeviceCount, telemetry.Count);
-                for (var i = 0; i < messagePerDeviceCount; ++i)
-                {
-                    Assert.Equal(payloadInitialFcnt + i, telemetry[i].Fcnt);
-                }
-            }
-
-            foreach (var deviceClient in deviceClients)
-            {
-                deviceClient.VerifyAll();
-                deviceClient.Verify(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null), Times.Exactly(messagePerDeviceCount));
-            }
 
             this.LoRaDeviceApi.VerifyAll();
         }

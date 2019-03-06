@@ -6,14 +6,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
     using System.Collections.Generic;
     using LoRaTools.CommonAPI;
 
-    internal interface IPipelineExecutionContext
+    public interface IPipelineExecutionContext
     {
         string DevEUI { get; }
 
         FunctionBundlerRequest Request { get; }
 
         FunctionBundlerResult Result { get; }
-
-        FunctionBundlerContext FunctionContext { get; }
     }
 }

@@ -15,7 +15,8 @@ namespace LoRaWan.NetworkServer
         {
             new FunctionBundlerDeduplicationExecutionItem(),
             new FunctionBundlerADRExecutionItem(),
-            new FunctionBundlerFCntDownExecutionItem()
+            new FunctionBundlerFCntDownExecutionItem(),
+            new FunctionBundlerPreferredGatewayExecutionItem(),
         };
 
         public FunctionBundlerProvider(LoRaDeviceAPIServiceBase deviceApi)
@@ -57,7 +58,7 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            if (qualifyingExecutionItems.Count <= 1)
+            if (qualifyingExecutionItems.Count == 0)
             {
                 return null;
             }
@@ -67,6 +68,7 @@ namespace LoRaWan.NetworkServer
                 ClientFCntDown = context.FCntDown,
                 ClientFCntUp = context.FCntUp,
                 GatewayId = gatewayId,
+                Rssi = context.Request.Rxpk.Rssi,
             };
 
             for (var i = 0; i < qualifyingExecutionItems.Count; i++)

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWanNetworkServer.Test
+namespace LoRaWan.NetworkServer.Test
 {
     using System;
     using System.Collections.Generic;
@@ -169,14 +169,14 @@ namespace LoRaWanNetworkServer.Test
             int twinTxPower = 0;
 
             this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-            .Callback<TwinCollection>((t) =>
-            {
-                if (t.Contains(TwinProperty.DataRate))
-                    twinDR = t[TwinProperty.DataRate];
-                if (t.Contains(TwinProperty.TxPower))
-                    twinTxPower = (int)t[TwinProperty.TxPower];
-            })
-            .ReturnsAsync(true);
+                .Callback<TwinCollection>((t) =>
+                {
+                    if (t.Contains(TwinProperty.DataRate))
+                        twinDR = t[TwinProperty.DataRate];
+                    if (t.Contains(TwinProperty.TxPower))
+                        twinTxPower = (int)t[TwinProperty.TxPower];
+                })
+                .ReturnsAsync(true);
 
             var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 

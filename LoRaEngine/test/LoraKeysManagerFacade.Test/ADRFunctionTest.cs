@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade.Test
 {
     using System;
     using System.Threading.Tasks;
+    using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
     using Moq;
     using Xunit;
@@ -12,7 +13,7 @@ namespace LoraKeysManagerFacade.Test
     public class ADRFunctionTest : FunctionTestBase
     {
         private readonly ILoRaADRManager adrManager;
-        private readonly LoRaADRFunction adrFunction;
+        private readonly ADRExecutionItem adrExecutionItem;
 
         public ADRFunctionTest()
         {
@@ -40,7 +41,7 @@ namespace LoraKeysManagerFacade.Test
                 .Returns(adrStrategy.Object);
 
             this.adrManager = new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, new LoRaInMemoryDeviceStore());
-            this.adrFunction = new LoRaADRFunction(this.adrManager);
+            this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
         }
 
         [Fact]
@@ -51,7 +52,7 @@ namespace LoraKeysManagerFacade.Test
 
             var req = CreateStandardADRRequest(gatewayId);
 
-            var result = await this.adrFunction.HandleADRRequest(deviceEUI, req);
+            var result = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req);
             Assert.NotNull(result);
             Assert.Equal(1, result.NumberOfFrames);
             Assert.True(result.CanConfirmToDevice);
@@ -72,8 +73,8 @@ namespace LoraKeysManagerFacade.Test
             var req = CreateStandardADRRequest(gateway1Id, -10);
             var req2 = CreateStandardADRRequest(gateway2Id, -10);
 
-            _ = await this.adrFunction.HandleADRRequest(deviceEUI, req);
-            _ = await this.adrFunction.HandleADRRequest(deviceEUI, req2);
+            _ = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req);
+            _ = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req2);
 
             // last entry should have 2 and the id should be from gw1
             var last = await this.adrManager.GetLastEntryAsync(deviceEUI);
@@ -81,8 +82,8 @@ namespace LoraKeysManagerFacade.Test
             Assert.Equal(gateway1Id, last.GatewayId);
 
             // reply
-            _ = await this.adrFunction.HandleADRRequest(deviceEUI, req);
-            _ = await this.adrFunction.HandleADRRequest(deviceEUI, req2);
+            _ = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req);
+            _ = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req2);
 
             last = await this.adrManager.GetLastEntryAsync(deviceEUI);
             Assert.Equal(4U, last.GatewayCount);
@@ -90,8 +91,8 @@ namespace LoraKeysManagerFacade.Test
             // add new fcnt and change snr for gw2
             req2.FCntUp = ++req.FCntUp;
             req2.RequiredSnr = -9;
-            _ = await this.adrFunction.HandleADRRequest(deviceEUI, req);
-            _ = await this.adrFunction.HandleADRRequest(deviceEUI, req2);
+            _ = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req);
+            _ = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req2);
 
             last = await this.adrManager.GetLastEntryAsync(deviceEUI);
             Assert.Equal(2U, last.GatewayCount);
@@ -115,8 +116,8 @@ namespace LoraKeysManagerFacade.Test
             // add just 1 under the limit to the table
             for (var i = 0; i < LoRaADRTable.FrameCountCaptureCount - 1; i++)
             {
-                var res1 = await this.adrFunction.HandleADRRequest(deviceEUI, req1);
-                var res2 = await this.adrFunction.HandleADRRequest(deviceEUI, req2);
+                var res1 = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req1);
+                var res2 = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req2);
 
                 var winner = req1.RequiredSnr < req2.RequiredSnr ? gateway2Id : gateway1Id;
                 var last = await this.adrManager.GetLastEntryAsync(deviceEUI);
@@ -133,8 +134,8 @@ namespace LoraKeysManagerFacade.Test
             req2.FCntUp = ++req1.FCntUp;
 
             // first one should win
-            var result1 = await this.adrFunction.HandleADRRequest(deviceEUI, req1);
-            var result2 = await this.adrFunction.HandleADRRequest(deviceEUI, req2);
+            var result1 = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req1);
+            var result2 = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req2);
             Assert.True(result1.CanConfirmToDevice);
             Assert.False(result2.CanConfirmToDevice);
 

@@ -280,7 +280,10 @@ Sending cloud to device messages in the solution uses the following JSON format 
   "fport": integer,
   "confirmed": boolean,
   "payload": "string",
-  "rawPayload": "string"
+  "rawPayload": "string",
+  "macCommands":[
+  	  { "cid": "string" }
+  ]
 }
 ```
 
@@ -289,10 +292,29 @@ Sending cloud to device messages in the solution uses the following JSON format 
 |Field|Type|Description|Required|
 |-|-|-|-|
 |devEUI|String|Device EUI|Only when sending messages to class C devices
-|fport|Integer|Payload fport, must be between 1 and 223|Yes
+|fport|Integer|Payload fport, must be between 1 and 223 if you are sending data. 0 if it is Mac command|Yes
 |confirmed|Boolean|Indicates if an ack is required from the LoRa device. By default `false`|No
 |payload|String|Payload as text|Either `payload` or `rawPayload` must be provided|
 |rawPayload|String|Payload as byte encoded in base64 format|Either `payload` or `rawPayload` must be provided|
+|Mac command cid|String|Mac command identifier. Currently only `DevStatusCmd` is implemented|
+
+### Sending messages using the Azure Function
+
+Sending messages to class A devices is a simple task, since those devices will send an upstream link giving the network server the chance of looking in [Azure IoT Hub cloud to device message queue](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d) for pending downlink messages. Class C devices are complexer because they, for the most part, are only listening for messages. Using the cloud to message queue would not be very effective as it would require the network server to keep a client connection that would rarely be used, wasting resources. In this solution sending messages to class C devices is available through a direct method in the network server. However, in a multiple gateway scenario there is still the need to resolve the closest gateway before calling the relevant network server.
+
+The companion Azure Function deployed with the solution has a HTTP based endpoint to send messages to LoRa devices. It takes away the complexity of figuring out the device type and closest gateway.
+
+The function endpoint looks like `https://YOUR-FUNCTION-NAME.azurewebsites.net/api/cloudtodevicemessage/{devEUI}?code=YOUR-FUNCTION-APP-CODE`
+
+To send a message to a device send a POST request including the content as the body:
+```bash
+curl -d '{"rawPayload": "AAA=","fport": 1}' -H "Content-Type: application/json" https://YOUR-FUNCTION-NAME.azurewebsites.net/api/cloudtodevicemessage/YOUR-DEVEUI?code=YOUR-FUNCTION-APP-CODE
+```
+
+Should return
+```json
+{"devEUI":"47AAC86800430028","messageID":"10c3e09f-0e58-4d28-8da1-37bb3fcf9435","deviceClassType":"A"}
+```
 
 ### Class A devices
 
@@ -332,10 +354,13 @@ The method name is `CloudToDeviceMessage` and the payload is the JSON following 
 
 ## MAC Commands
 
-The Solution has an initial support for MAC Commands. Currently only the command Device Status Command is fully testable. The command will return device status (battery and communication margin). To try it, send a Cloud to Device message on your end device and add the following message properties :
+The Solution has an initial support for MAC Commands. Currently only the command Device Status is available. The command will return the device status (battery and communication margin). To try it, send a Cloud to Device message with the following format:
 
+```json
+{
+  "fport": 0,
+  "macCommands": [
+    { "cid": "DevStatusCmd" }
+  ]
+}
 ```
-CidType : 6
-```
-
-![MacCommand](/Docs/Pictures/MacCommand.PNG)

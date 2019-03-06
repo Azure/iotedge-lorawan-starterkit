@@ -1,16 +1,14 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer
+namespace LoRaTools.CommonAPI
 {
-    using System;
     using System.Collections.Generic;
-    using System.Text;
-    using System.Threading.Tasks;
-    using LoRaTools;
-    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
+    /// <summary>
+    /// Defines the contract for a LoRa cloud to device message
+    /// </summary>
     public class LoRaCloudToDeviceMessage : ILoRaCloudToDeviceMessage
     {
         [JsonProperty("devEUI", NullValueHandling = NullValueHandling.Ignore)]
@@ -42,40 +40,38 @@ namespace LoRaWan.NetworkServer
         [JsonProperty("macCommands", NullValueHandling = NullValueHandling.Ignore)]
         public IList<MacCommand> MacCommands { get; set; }
 
-        public Task<bool> AbandonAsync() => Task.FromResult(true);
-
-        public Task<bool> CompleteAsync() => Task.FromResult(true);
-
-        public Task<bool> RejectAsync() => Task.FromResult(true);
+        /// <summary>
+        /// Gets if the cloud to device message has any payload data (mac commands don't count)
+        /// </summary>
+        protected bool HasPayload() => !string.IsNullOrEmpty(this.Payload) || !string.IsNullOrEmpty(this.RawPayload);
 
         /// <summary>
-        /// Gets the payload bytes
+        /// Identifies if the message is a valid LoRa downstream message
         /// </summary>
-        public byte[] GetPayload()
+        /// <param name="errorMessage">Returns the error message in case it fails</param>
+        /// <returns>True if the message is valid, false otherwise</returns>
+        public virtual bool IsValid(out string errorMessage)
         {
-            if (!string.IsNullOrEmpty(this.Payload))
+            // ensure fport follows LoRa specification
+            // 0    => reserved for mac commands
+            // 224+ => reserved for future applications
+            if (this.Fport >= LoRaFPort.ReservedForFutureAplications)
             {
-                return Encoding.UTF8.GetBytes(this.Payload);
+                errorMessage = $"invalid fport '{this.Fport}' in C2D message '{this.MessageId}'";
+                return false;
             }
 
-            if (!string.IsNullOrEmpty(this.RawPayload))
+            // fport 0 is reserved for mac commands
+            if (this.Fport == LoRaFPort.MacCommand)
             {
-                try
+                // Not valid if there is no mac command or there is a payload
+                if (this.MacCommands?.Count == 0 || this.HasPayload())
                 {
-                    return Convert.FromBase64String(this.RawPayload);
-                }
-                catch (FormatException ex)
-                {
-                    // Invalid base64 string, return empty payload
-                    Logger.Log($"Payload '{this.RawPayload}' is not a valid base64 value: {ex.Message}", LogLevel.Error);
+                    errorMessage = $"invalid mac command fport usage in C2D message '{this.MessageId}'";
+                    return false;
                 }
             }
 
-            return new byte[0];
-        }
-
-        public bool IsValid(out string errorMessage)
-        {
             errorMessage = null;
             return true;
         }

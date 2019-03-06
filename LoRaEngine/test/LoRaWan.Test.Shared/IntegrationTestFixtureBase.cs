@@ -8,6 +8,7 @@ namespace LoRaWan.Test.Shared
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools.CommonAPI;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.EventHubs;
@@ -129,7 +130,7 @@ namespace LoRaWan.Test.Shared
             return await this.GetRegistryManager().GetTwinAsync(deviceId);
         }
 
-        public async Task SendCloudToDeviceMessageAsync(string deviceId, TestLoRaCloudToDeviceMessage message)
+        public async Task SendCloudToDeviceMessageAsync(string deviceId, LoRaCloudToDeviceMessage message)
         {
             var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)));
 

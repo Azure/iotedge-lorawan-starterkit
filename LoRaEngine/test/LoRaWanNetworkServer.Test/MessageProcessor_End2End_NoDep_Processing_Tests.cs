@@ -263,7 +263,7 @@ namespace LoRaWan.NetworkServer.Test
                 })
                 .ReturnsAsync(true);
 
-            var c2d = new LoRaCloudToDeviceMessage()
+            var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "Hello",
                 Fport = 1,
@@ -341,7 +341,7 @@ namespace LoRaWan.NetworkServer.Test
                 })
                 .ReturnsAsync(true);
 
-            var c2dMessage = new LoRaCloudToDeviceMessage()
+            var c2dMessage = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = "Hello",
                 Fport = 1,
@@ -1342,14 +1342,14 @@ namespace LoRaWan.NetworkServer.Test
             }
             else
             {
-                Assert.Equal(10U, loRaDevice1.FCntDown);
+                Assert.Equal(Constants.MAX_FCNT_UNSAVED_DELTA - 1, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);
 
             Assert.True(cachedDevices.TryGetValue(simulatedDevice2.DevEUI, out var loRaDevice2));
             Assert.Equal(0U, loRaDevice2.FCntUp);
-            Assert.Equal(10U, loRaDevice2.FCntDown);
+            Assert.Equal(Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice2.FCntDown);
 
             deviceClient1.VerifyAll();
             deviceClient2.VerifyAll();
@@ -1459,7 +1459,7 @@ namespace LoRaWan.NetworkServer.Test
             }
             else
             {
-                Assert.Equal(10U, loRaDevice1.FCntDown);
+                Assert.Equal(Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);

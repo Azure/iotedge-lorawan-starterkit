@@ -12,5 +12,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
         public LoRaADRResult AdrResult { get; set; }
 
         public uint? NextFCntDown { get; set; }
+
+        public PreferredGatewayResult PreferredGatewayResult { get; set; }
     }
 }

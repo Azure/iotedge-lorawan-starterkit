@@ -25,7 +25,7 @@ namespace LoRaWan.Shared
         /// Gets the latest version released.
         /// Update this once a new API version is released
         /// </summary>
-        public static ApiVersion LatestVersion => Version_2019_02_12_Preview;
+        public static ApiVersion LatestVersion => Version_2019_03_08_Preview;
 
         /// <summary>
         /// Gets the Version from 0.1 and 0.2 had not versioning information
@@ -38,13 +38,21 @@ namespace LoRaWan.Shared
         public static ApiVersion Version_2018_12_16_Preview { get; }
 
         /// <summary>
-        /// Gets Planned Version 0.5
+        /// Gets intermediary Version 0.5
         /// Added GetDeviceByDevEUI method
         /// Backward compatible with <see cref="Version_2018_12_16_Preview" />
         /// </summary>
         public static ApiVersion Version_2019_02_12_Preview { get; }
 
         public static ApiVersion Version_2019_02_20_Preview { get; }
+
+        /// <summary>
+        /// Gets planned Version 0.5
+        /// Added GetPreferredGateway method
+        /// Removed deduplication and adr, both are available in Bundler only
+        /// Not backward compatible
+        /// </summary>
+        public static ApiVersion Version_2019_03_08_Preview { get; }
 
         /// <summary>
         /// Gets the version that is assumed in case none is specified
@@ -60,6 +68,7 @@ namespace LoRaWan.Shared
             yield return Version_2018_12_16_Preview;
             yield return Version_2019_02_12_Preview;
             yield return Version_2019_02_20_Preview;
+            yield return Version_2019_03_08_Preview;
         }
 
         /// <summary>
@@ -97,6 +106,9 @@ namespace LoRaWan.Shared
 
             Version_2019_02_20_Preview = new ApiVersion("2019-02-20-preview");
             Version_2019_02_20_Preview.MinCompatibleVersion = Version_2019_02_20_Preview;
+
+            Version_2019_03_08_Preview = new ApiVersion("2019-03-08-preview");
+            Version_2019_03_08_Preview.MinCompatibleVersion = Version_2019_03_08_Preview;
         }
 
         /// <summary>

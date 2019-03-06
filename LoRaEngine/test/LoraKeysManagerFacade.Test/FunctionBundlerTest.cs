@@ -5,10 +5,13 @@ namespace LoraKeysManagerFacade.Test
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
 
@@ -16,7 +19,7 @@ namespace LoraKeysManagerFacade.Test
     {
         private readonly ILoRaADRManager adrManager;
         private readonly FunctionBundlerFunction functionBundler;
-        private readonly LoRaADRFunction adrFunction;
+        private readonly ADRExecutionItem adrExecutionItem;
 
         public FunctionBundlerTest()
         {
@@ -27,8 +30,17 @@ namespace LoraKeysManagerFacade.Test
 
             var cacheStore = new LoRaInMemoryDeviceStore();
             this.adrManager = new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, cacheStore);
-            this.functionBundler = new FunctionBundlerFunction(new FunctionBundlerContext(new DuplicateMsgCacheCheck(cacheStore), new LoRaADRFunction(this.adrManager), new FCntCacheCheck(cacheStore)));
-            this.adrFunction = new LoRaADRFunction(this.adrManager);
+            this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
+
+            var items = new IFunctionBundlerExecutionItem[]
+            {
+                new DeduplicationExecutionItem(cacheStore),
+                this.adrExecutionItem,
+                new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore)),
+                new PreferredGatewayExecutionItem(cacheStore, new NullLogger<PreferredGatewayExecutionItem>(), null),
+            };
+
+            this.functionBundler = new FunctionBundlerFunction(items);
         }
 
         [Fact]
@@ -295,7 +307,7 @@ namespace LoraKeysManagerFacade.Test
             {
                 foreach (var req in requests)
                 {
-                    var res = await this.adrFunction.HandleADRRequest(deviceEUI, req);
+                    var res = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req);
 
                     req.RequiredSnr = rnd.Next(-20, 20);
                     req.DataRate = 2;
@@ -303,6 +315,29 @@ namespace LoraKeysManagerFacade.Test
                     req.FCntDown = res.FCntDown > 0 ? res.FCntDown : req.FCntDown;
                 }
             }
+        }
+
+        [Fact]
+        public void Execution_Items_Should_Have_Correct_Priority()
+        {
+            var cacheStore = new LoRaInMemoryDeviceStore();
+
+            var items = new IFunctionBundlerExecutionItem[]
+            {
+                new DeduplicationExecutionItem(cacheStore),
+                new ADRExecutionItem(this.adrManager),
+                new NextFCntDownExecutionItem(new FCntCacheCheck(cacheStore)),
+                new PreferredGatewayExecutionItem(cacheStore, new NullLogger<PreferredGatewayExecutionItem>(), null),
+            };
+
+            var sorted = items.OrderBy(x => x.Priority);
+            Assert.IsType<DeduplicationExecutionItem>(sorted.ElementAt(0));
+            Assert.IsType<ADRExecutionItem>(sorted.ElementAt(1));
+            Assert.IsType<NextFCntDownExecutionItem>(sorted.ElementAt(2));
+            Assert.IsType<PreferredGatewayExecutionItem>(sorted.ElementAt(3));
+
+            // Ensure no item has the same priority
+            Assert.Empty(items.GroupBy(x => x.Priority).Where(x => x.Count() > 1));
         }
     }
 }

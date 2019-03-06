@@ -38,16 +38,17 @@ namespace LoraKeysManagerFacade
             var deviceCacheStore = new LoRaDeviceCacheRedisStore(redisCache);
 
             builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(iotHubConnectionString));
+            builder.Services.AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)));
             builder.Services.AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore);
             builder.Services.AddSingleton<ILoRaADRManager>(new LoRaADRServerManager(new LoRaADRRedisStore(redisCache), new LoRaADRStrategyProvider(), deviceCacheStore));
-
-            builder.Services.AddTransient<CreateEdgeDevice>();
-            builder.Services.AddTransient<DeviceGetter>();
-            builder.Services.AddTransient<FCntCacheCheck>();
-            builder.Services.AddTransient<DuplicateMsgCacheCheck>();
-            builder.Services.AddTransient<LoRaADRFunction>();
-            builder.Services.AddTransient<FunctionBundlerFunction>();
-            builder.Services.AddTransient<FunctionBundlerContext>();
+            builder.Services.AddSingleton<CreateEdgeDevice>();
+            builder.Services.AddSingleton<DeviceGetter>();
+            builder.Services.AddSingleton<FCntCacheCheck>();
+            builder.Services.AddSingleton<FunctionBundlerFunction>();
+            builder.Services.AddSingleton<IFunctionBundlerExecutionItem, NextFCntDownExecutionItem>();
+            builder.Services.AddSingleton<IFunctionBundlerExecutionItem, DeduplicationExecutionItem>();
+            builder.Services.AddSingleton<IFunctionBundlerExecutionItem, ADRExecutionItem>();
+            builder.Services.AddSingleton<IFunctionBundlerExecutionItem, PreferredGatewayExecutionItem>();
         }
 
         abstract class ConfigHandler

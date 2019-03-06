@@ -170,7 +170,7 @@ namespace LoRaWan.NetworkServer.Test
                     .ReturnsAsync(true);
             }
 
-            var cloudToDeviceMessageBody = new LoRaCloudToDeviceMessage()
+            var cloudToDeviceMessageBody = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Fport = 1,
                 Payload = "c2d"
@@ -252,7 +252,7 @@ namespace LoRaWan.NetworkServer.Test
                    .ReturnsAsync(true);
             }
 
-            var cloudToDeviceMessage = new LoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
                 .CreateMessage();
 
             this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -328,7 +328,10 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            var cloudToDeviceMessage = new LoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .ReturnsAsync(true);
+
+            var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
                 .CreateMessage();
 
             this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -390,12 +393,12 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(PayloadFcnt, loRaDevice.FCntUp);
 
             // 5. Frame counter down is updated
-            var expectedFcntDown = InitialDeviceFcntDown + 10 + 1; // adding 10 as buffer when creating a new device instance
+            var expectedFcntDown = InitialDeviceFcntDown + Constants.MAX_FCNT_UNSAVED_DELTA; // adding 10 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
             Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
 
             // 6. Frame count has no pending changes
-            Assert.True(loRaDevice.HasFrameCountChanges);
+            Assert.False(loRaDevice.HasFrameCountChanges);
         }
 
         [Fact]
@@ -420,8 +423,11 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true, TimeSpan.FromMilliseconds(1100));
 
-            var cloudToDeviceMessage = new LoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
                 .CreateMessage();
+
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .ReturnsAsync(true);
 
             this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync(cloudToDeviceMessage)
@@ -482,12 +488,12 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(PayloadFcnt, loRaDevice.FCntUp);
 
             // 5. Frame counter down is updated
-            var expectedFcntDown = InitialDeviceFcntDown + 10 + 1; // adding 10 as buffer when creating a new device instance
+            var expectedFcntDown = InitialDeviceFcntDown + Constants.MAX_FCNT_UNSAVED_DELTA; // adding 10 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
             Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
 
-            // 6. Frame count has pending changes
-            Assert.True(loRaDevice.HasFrameCountChanges);
+            // 6. Frame count has no pending changes
+            Assert.False(loRaDevice.HasFrameCountChanges);
         }
 
         [Fact]
@@ -515,10 +521,13 @@ namespace LoRaWan.NetworkServer.Test
 
             this.LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(deviceTwin);
 
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .ReturnsAsync(true);
+
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            var cloudToDeviceMessage = new LoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
                 .CreateMessage();
 
             this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -580,13 +589,13 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(PayloadFcnt, loRaDevice.FCntUp);
 
             // 5. Frame counter down is updated
-            var expectedFcntDown = InitialDeviceFcntDown + 10 + 1; // adding 10 as buffer when creating a new device instance
+            var expectedFcntDown = InitialDeviceFcntDown + Constants.MAX_FCNT_UNSAVED_DELTA - 1 + 1; // adding 9 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
             Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
-            Assert.Equal(1U, loRaDevice.FCntDown - loRaDevice.LastSavedFCntDown);
+            Assert.Equal(0U, loRaDevice.FCntDown - loRaDevice.LastSavedFCntDown);
 
-            // 6. Frame count has pending changes
-            Assert.True(loRaDevice.HasFrameCountChanges);
+            // 6. Frame count has no pending changes
+            Assert.False(loRaDevice.HasFrameCountChanges);
         }
 
         [Theory]
@@ -632,7 +641,7 @@ namespace LoRaWan.NetworkServer.Test
                 sentEventAsyncSetup.ReturnsAsync(true);
             }
 
-            var cloudToDeviceMessage = new LoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
                 .CreateMessage();
 
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsInRange<TimeSpan>(TimeSpan.FromMilliseconds(checkMinDuration), TimeSpan.FromMilliseconds(checkMaxDuration), Range.Inclusive)))
@@ -703,7 +712,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .ReturnsAsync(true);
 
-            var c2d = new LoRaCloudToDeviceMessage()
+            var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = msg,
                 MacCommands = new[]
@@ -869,7 +878,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var decoderResult = new DecodePayloadResult("1")
             {
-                CloudToDeviceMessage = new NetworkServer.LoRaCloudToDeviceMessage()
+                CloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
                 {
                     Fport = 1,
                     MessageId = "123",
@@ -951,7 +960,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            var cloudToDeviceMessage = new LoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
                 .CreateMessage();
 
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -990,7 +999,7 @@ namespace LoRaWan.NetworkServer.Test
             // 3. Device FcntDown did change
             var devices = loRaDeviceRegistry.InternalGetCachedDevicesForDevAddr(simulatedDevice.DevAddr);
             Assert.True(devices.TryGetValue(simulatedDevice.DevEUI, out var loRaDevice));
-            Assert.Equal(InitialDeviceFcntDown + 11, loRaDevice.FCntDown);
+            Assert.Equal(InitialDeviceFcntDown + Constants.MAX_FCNT_UNSAVED_DELTA, loRaDevice.FCntDown);
         }
 
         [Fact]
@@ -1015,7 +1024,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            var cloudToDeviceMessage = new LoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+            var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
                 .CreateMessage();
 
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))

@@ -5,17 +5,12 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
+    using LoRaTools.CommonAPI;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Mac;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer.ADR;
-    using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
@@ -74,7 +69,7 @@ namespace LoRaWan.NetworkServer
             }
 
             // Contains the Cloud to message we need to send
-            ILoRaCloudToDeviceMessage cloudToDeviceMessage = null;
+            IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage = null;
 
             // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
@@ -90,11 +85,16 @@ namespace LoRaWan.NetworkServer
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
 
-            using (new LoRaDeviceFrameCounterSession(loRaDevice, frameCounterStrategy))
+            using (new LoRaDeviceChangeTracker(loRaDevice))
             {
                 var bundlerResult = await this.TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
 
                 loRaADRResult = bundlerResult?.AdrResult;
+
+                if (bundlerResult?.PreferredGatewayResult != null)
+                {
+                    this.HandlePreferredGatewayChanges(request, loRaDevice, bundlerResult);
+                }
 
                 // ADR should be performed before the deduplication
                 // as we still want to collect the signal info, even if we drop
@@ -113,19 +113,18 @@ namespace LoRaWan.NetworkServer
                 if (useMultipleGateways)
                 {
                     // applying the correct deduplication
-                    var deduplicationStrategy = this.deduplicationFactory.Create(loRaDevice);
-                    if (deduplicationStrategy != null)
+                    if (bundlerResult?.DeduplicationResult != null && !bundlerResult.DeduplicationResult.CanProcess)
                     {
-                        deduplicationResult = bundlerResult?.DeduplicationResult
-                                              ?? await deduplicationStrategy.ResolveDeduplication(payloadFcntAdjusted, loRaDevice.FCntDown, this.configuration.GatewayID);
-
-                        if (!deduplicationResult.CanProcess)
-                        {
-                            // duplication strategy is indicating that we do not need to continue processing this message
-                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcntAdjusted}", LogLevel.Information);
-                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
-                        }
+                        // duplication strategy is indicating that we do not need to continue processing this message
+                        Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcnt}", LogLevel.Information);
+                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
                     }
+                }
+                else
+                {
+                    // we must save class C devices regions in order to send c2d messages
+                    if (loRaDevice.ClassType == LoRaDeviceClassType.C && request.LoRaRegion.LoRaRegion != loRaDevice.Region)
+                        loRaDevice.UpdateRegion(request.LoRaRegion.LoRaRegion, acceptChanges: false);
                 }
 
                 // if deduplication already processed the next framecounter down, use that
@@ -147,8 +146,6 @@ namespace LoRaWan.NetworkServer
 
                         return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
                     }
-
-                    Logger.Log(loRaDevice.DevEUI, $"down frame counter: {loRaDevice.FCntDown}", LogLevel.Information);
                 }
 
                 if (!isConfirmedResubmit)
@@ -178,7 +175,7 @@ namespace LoRaWan.NetworkServer
                                 }
                             }
 
-                            if (payloadPort == Constants.LORA_FPORT_RESERVED_MAC_COMMAND)
+                            if (payloadPort == LoRaFPort.MacCommand)
                             {
                                 if (decryptedPayloadData?.Length > 0)
                                 {
@@ -239,9 +236,9 @@ namespace LoRaWan.NetworkServer
                         }
 
                         // In case it is a Mac Command only we don't want to send it to the IoT Hub
-                        if (payloadPort != Constants.LORA_FPORT_RESERVED_MAC_COMMAND)
+                        if (payloadPort != LoRaFPort.MacCommand)
                         {
-                            if (!await this.SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, deduplicationResult, decryptedPayloadData))
+                            if (!await this.SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, bundlerResult?.DeduplicationResult, decryptedPayloadData))
                             {
                                 // failed to send event to IoT Hub, stop now
                                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.IoTHubProblem);
@@ -397,9 +394,40 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        void HandlePreferredGatewayChanges(
+            LoRaRequest request,
+            LoRaDevice loRaDevice,
+            FunctionBundlerResult bundlerResult)
+        {
+            var preferredGatewayResult = bundlerResult.PreferredGatewayResult;
+            if (preferredGatewayResult.IsSuccessful())
+            {
+                var currentIsPreferredGateway = bundlerResult.PreferredGatewayResult.PreferredGatewayID == this.configuration.GatewayID;
+
+                var preferredGatewayChanged = bundlerResult.PreferredGatewayResult.PreferredGatewayID != loRaDevice.PreferredGatewayID;
+                if (preferredGatewayChanged)
+                    Logger.Log(loRaDevice.DevEUI, $"Preferred gateway changed from '{loRaDevice.PreferredGatewayID}' to '{preferredGatewayResult.PreferredGatewayID}'", LogLevel.Information);
+
+                if (preferredGatewayChanged)
+                {
+                    loRaDevice.UpdatePreferredGatewayID(bundlerResult.PreferredGatewayResult.PreferredGatewayID, acceptChanges: !currentIsPreferredGateway);
+                }
+
+                // Save the region if we are the winning gateway and it changed
+                if (request.LoRaRegion.LoRaRegion != loRaDevice.Region)
+                {
+                    loRaDevice.UpdateRegion(request.LoRaRegion.LoRaRegion, acceptChanges: !currentIsPreferredGateway);
+                }
+            }
+            else
+            {
+                Logger.Log(loRaDevice.DevEUI, $"Failed to resolve preferred gateway: {preferredGatewayResult}", LogLevel.Error);
+            }
+        }
+
         internal void SetClassCMessageSender(IClassCDeviceMessageSender classCMessageSender) => this.classCDeviceMessageSender = classCMessageSender;
 
-        void SendClassCDeviceMessage(ILoRaCloudToDeviceMessage cloudToDeviceMessage)
+        void SendClassCDeviceMessage(IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage)
         {
             if (this.classCDeviceMessageSender != null)
             {
@@ -407,17 +435,17 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private async Task<ILoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
+        private async Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
         {
             var actualMessage = await loRaDevice.ReceiveCloudToDeviceAsync(timeAvailableToCheckCloudToDeviceMessages);
             return (actualMessage != null) ? new LoRaCloudToDeviceMessageWrapper(loRaDevice, actualMessage) : null;
         }
 
-        private bool ValidateCloudToDeviceMessage(LoRaDevice loRaDevice, LoRaRequest request, ILoRaCloudToDeviceMessage cloudToDeviceMsg)
+        private bool ValidateCloudToDeviceMessage(LoRaDevice loRaDevice, LoRaRequest request, IReceivedLoRaCloudToDeviceMessage cloudToDeviceMsg)
         {
             if (!cloudToDeviceMsg.IsValid(out var errorMessage))
             {
-                Logger.Log(loRaDevice.DevEUI, $"Invalid cloud to device message: {errorMessage}", LogLevel.Error);
+                Logger.Log(loRaDevice.DevEUI, errorMessage, LogLevel.Error);
                 return false;
             }
 
@@ -461,26 +489,6 @@ namespace LoRaWan.NetworkServer
             {
                 Logger.Log(loRaDevice.DevEUI, $"message payload size ({totalPayload}) exceeds maximum allowed payload size ({maxPayload}) in C2D message", LogLevel.Error);
                 return false;
-            }
-
-            // ensure fport follows LoRa specification
-            // 0    => reserved for mac commands
-            // 224+ => reserved for future applications
-            if (cloudToDeviceMsg.Fport >= Constants.LORA_FPORT_RESERVED_FUTURE_START)
-            {
-                Logger.Log(loRaDevice.DevEUI, $"invalid fport '{cloudToDeviceMsg.Fport}' in C2D message '{cloudToDeviceMsg.MessageId}'", LogLevel.Error);
-                return false;
-            }
-
-            // fport 0 is reserved for mac commands
-            if (cloudToDeviceMsg.Fport == Constants.LORA_FPORT_RESERVED_MAC_COMMAND)
-            {
-                // Not valid if there is no mac command or there is a payload
-                if (cloudToDeviceMsg.MacCommands?.Count == 0 || cloudToDeviceMsg.GetPayload().Length > 0)
-                {
-                    Logger.Log(loRaDevice.DevEUI, $"invalid mac command fport usage in C2D message '{cloudToDeviceMsg.MessageId}'", LogLevel.Error);
-                    return false;
-                }
             }
 
             return true;

@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer.Test
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
-        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, LoRaCloudToDeviceMessage sentMessage)
+        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
             Assert.NotNull(downlink.Txpk);
@@ -97,7 +97,7 @@ namespace LoRaWan.NetworkServer.Test
                 - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
 
             var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
-            var c2d = new LoRaCloudToDeviceMessage()
+            var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 DevEUI = devEUI,
                 Payload = c2dMsgPayload,
@@ -113,7 +113,6 @@ namespace LoRaWan.NetworkServer.Test
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
-                this.loRaRegion,
                 this.loRaDeviceRegistry,
                 this.PacketForwarder,
                 this.frameCounterStrategyProvider);
@@ -183,7 +182,7 @@ namespace LoRaWan.NetworkServer.Test
                 - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
 
             var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
-            var c2d = new LoRaCloudToDeviceMessage()
+            var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 DevEUI = devEUI,
                 Payload = c2dMsgPayload,
@@ -199,7 +198,6 @@ namespace LoRaWan.NetworkServer.Test
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
-                this.loRaRegion,
                 this.loRaDeviceRegistry,
                 this.PacketForwarder,
                 this.frameCounterStrategyProvider);

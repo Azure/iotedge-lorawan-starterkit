@@ -34,14 +34,6 @@ namespace LoRaWan.NetworkServer.Test
             return Task.FromResult(true);
         }
 
-        public async Task<bool> SaveChangesAsync(LoRaDevice loRaDevice)
-        {
-            if (loRaDevice.FCntUp % 10 == 0)
-            {
-                return await loRaDevice.SaveFrameCountChangesAsync();
-            }
-
-            return true;
-        }
+        public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => loRaDevice.SaveChangesAsync();
     }
 }

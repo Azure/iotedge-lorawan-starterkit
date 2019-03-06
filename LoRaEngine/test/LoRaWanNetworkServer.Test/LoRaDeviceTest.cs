@@ -3,8 +3,10 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using LoRaTools.Regions;
     using Microsoft.Azure.Devices.Shared;
     using Moq;
     using Xunit;
@@ -25,7 +27,7 @@ namespace LoRaWan.NetworkServer.Test
         public async Task When_No_Changes_Were_Made_Should_Not_Save_Frame_Counter()
         {
             var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
-            await target.SaveFrameCountChangesAsync();
+            await target.SaveChangesAsync();
         }
 
         [Fact]
@@ -38,7 +40,7 @@ namespace LoRaWan.NetworkServer.Test
 
             Assert.Equal(10U, target.IncrementFcntDown(10));
             Assert.Equal(0U, target.LastSavedFCntDown);
-            await target.SaveFrameCountChangesAsync();
+            await target.SaveChangesAsync();
             Assert.Equal(10U, target.LastSavedFCntDown);
         }
 
@@ -53,7 +55,7 @@ namespace LoRaWan.NetworkServer.Test
             target.SetFcntDown(12);
             Assert.Equal(12U, target.FCntDown);
             Assert.Equal(0U, target.LastSavedFCntDown);
-            await target.SaveFrameCountChangesAsync();
+            await target.SaveChangesAsync();
             Assert.Equal(12U, target.LastSavedFCntDown);
         }
 
@@ -68,7 +70,7 @@ namespace LoRaWan.NetworkServer.Test
             target.SetFcntUp(12);
             Assert.Equal(12U, target.FCntUp);
             Assert.Equal(0U, target.LastSavedFCntUp);
-            await target.SaveFrameCountChangesAsync();
+            await target.SaveChangesAsync();
             Assert.Equal(12U, target.LastSavedFCntUp);
         }
 
@@ -83,7 +85,7 @@ namespace LoRaWan.NetworkServer.Test
             target.SetFcntUp(12);
             Assert.Equal(12U, target.FCntUp);
             Assert.Equal(0U, target.LastSavedFCntUp);
-            await target.SaveFrameCountChangesAsync();
+            await target.SaveChangesAsync();
             Assert.False(target.HasFrameCountChanges);
             Assert.Equal(12U, target.LastSavedFCntUp);
         }
@@ -528,6 +530,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0U, target.FCntDown);
             Assert.Equal(0U, target.LastSavedFCntUp);
             Assert.Equal(2U, target.LastSavedFCntDown);
+            Assert.Empty(target.PreferredGatewayID);
+            Assert.Equal(LoRaRegion.NotSet, target.Region);
 
             Assert.True(target.HasFrameCountChanges);
         }
@@ -565,7 +569,51 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(10U, loRaDevice.LastSavedFCntDown);
             Assert.Equal(20U, loRaDevice.FCntUp);
             Assert.Equal(20U, loRaDevice.LastSavedFCntUp);
+            Assert.Empty(loRaDevice.PreferredGatewayID);
+            Assert.Equal(LoRaRegion.NotSet, loRaDevice.Region);
             Assert.False(loRaDevice.HasFrameCountChanges);
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task When_Initialized_With_PreferredGateway_And_Region_Should_Get_Properties(
+            [CombinatorialValues("EU868", "3132", "eu868", "US915", "us915", "eu")] string regionValue)
+        {
+            var twin = TestUtils.CreateTwin(
+                desired: new Dictionary<string, object>
+                {
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                    { "GatewayID", "mygateway" },
+                    { "SensorDecoder", "DecoderValueSensor" },
+                    { "$version", 1 },
+                },
+                reported: new Dictionary<string, object>
+                {
+                    { "$version", 1 },
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                    { "FCntDown", 10 },
+                    { "FCntUp", 20 },
+                    { "PreferredGatewayID", "gateway1" },
+                    { "Region", regionValue }
+                });
+
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(twin);
+
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
+            await loRaDevice.InitializeAsync();
+            Assert.Equal("gateway1", loRaDevice.PreferredGatewayID);
+
+            if (string.Equals(LoRaRegion.EU868.ToString(), regionValue, StringComparison.InvariantCultureIgnoreCase))
+                Assert.Equal(LoRaRegion.EU868, loRaDevice.Region);
+            else if (string.Equals(LoRaRegion.US915.ToString(), regionValue, StringComparison.InvariantCultureIgnoreCase))
+                Assert.Equal(LoRaRegion.US915, loRaDevice.Region);
+            else
+                Assert.Equal(LoRaRegion.NotSet, loRaDevice.Region);
         }
     }
 }

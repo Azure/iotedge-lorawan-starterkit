@@ -49,12 +49,12 @@ namespace LoRaWan.NetworkServer.ADR
                 RequiredSnr = requiredSnr
             });
 
-            await this.TryUpdateStateAsync(result);
+            this.UpdateState(result);
             Logger.Log(newEntry.DevEUI, $"Calculated ADR: CanConfirmToDevice: {result.CanConfirmToDevice}, TxPower: {result.TxPower}, DataRate: {result.DataRate}", LogLevel.Debug);
             return result;
         }
 
-        protected override async Task<bool> TryUpdateStateAsync(LoRaADRResult loRaADRResult)
+        protected override void UpdateState(LoRaADRResult loRaADRResult)
         {
             if (loRaADRResult != null)
             {
@@ -64,7 +64,7 @@ namespace LoRaWan.NetworkServer.ADR
                 }
             }
 
-            return await base.TryUpdateStateAsync(loRaADRResult);
+            base.UpdateState(loRaADRResult);
         }
     }
 }

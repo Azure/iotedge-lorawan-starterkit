@@ -12,84 +12,105 @@ namespace LoRaWan.NetworkServer
     public class DefaultClassCDevicesMessageSender : IClassCDeviceMessageSender
     {
         private readonly NetworkServerConfiguration configuration;
-        private readonly Region loRaRegion;
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
         private readonly IPacketForwarder packetForwarder;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
 
         public DefaultClassCDevicesMessageSender(
             NetworkServerConfiguration configuration,
-            Region loRaRegion,
             ILoRaDeviceRegistry loRaDeviceRegistry,
             IPacketForwarder packetForwarder,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider)
         {
             this.configuration = configuration;
-            this.loRaRegion = loRaRegion;
             this.loRaDeviceRegistry = loRaDeviceRegistry;
             this.packetForwarder = packetForwarder;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
         }
 
-        public async Task<bool> SendAsync(ILoRaCloudToDeviceMessage cloudToDeviceMessage, CancellationToken cts = default(CancellationToken))
+        public async Task<bool> SendAsync(IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage, CancellationToken cts = default(CancellationToken))
         {
             try
             {
                 if (string.IsNullOrEmpty(cloudToDeviceMessage.DevEUI))
                 {
-                    Logger.Log($"[C2D] DevEUI missing in payload", LogLevel.Error);
+                    Logger.Log($"[class-c] devEUI missing in payload", LogLevel.Error);
+                    return false;
+                }
+
+                if (!cloudToDeviceMessage.IsValid(out var validationErrorMessage))
+                {
+                    Logger.Log(cloudToDeviceMessage.DevEUI, $"[class-c] {validationErrorMessage}", LogLevel.Error);
                     return false;
                 }
 
                 var loRaDevice = await this.loRaDeviceRegistry.GetDeviceByDevEUIAsync(cloudToDeviceMessage.DevEUI);
                 if (loRaDevice == null)
                 {
-                    Logger.Log(cloudToDeviceMessage.DevEUI, $"[C2D] Device {cloudToDeviceMessage.DevEUI} not found", LogLevel.Error);
+                    Logger.Log(cloudToDeviceMessage.DevEUI, $"[class-c] device {cloudToDeviceMessage.DevEUI} not found", LogLevel.Error);
                     return false;
+                }
+
+                Region region;
+                switch (loRaDevice.Region)
+                {
+                    case LoRaRegion.EU868:
+                        region = RegionFactory.CreateEU868Region();
+                        break;
+
+                    case LoRaRegion.US915:
+                        region = RegionFactory.CreateUS915Region();
+                        break;
+
+                    default:
+                        Logger.Log(cloudToDeviceMessage.DevEUI, $"[class-c] device does not have a region assigned. Ensure the device has connected at least once with the network", LogLevel.Error);
+                        return false;
                 }
 
                 if (cts.IsCancellationRequested)
                 {
-                    Logger.Log(cloudToDeviceMessage.DevEUI, $"[C2D] Device {cloudToDeviceMessage.DevEUI} timed out, stopping", LogLevel.Error);
+                    Logger.Log(cloudToDeviceMessage.DevEUI, $"[class-c] device {cloudToDeviceMessage.DevEUI} timed out, stopping", LogLevel.Error);
                     return false;
                 }
 
                 if (string.IsNullOrEmpty(loRaDevice.DevAddr))
                 {
-                    Logger.Log(loRaDevice.DevEUI, "Device devAddr is empty, cannot send cloud to device message", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, "[class-c] devAddr is empty, cannot send cloud to device message. Ensure the device has connected at least once with the network", LogLevel.Information);
                     return false;
                 }
 
                 if (loRaDevice.ClassType != LoRaDeviceClassType.C)
                 {
-                    Logger.Log(loRaDevice.DevEUI, $"Sending cloud to device messages expects a class C device. Class type is {loRaDevice.ClassType}", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, $"[class-c] sending cloud to device messages expects a class C device. Class type is {loRaDevice.ClassType}", LogLevel.Information);
                     return false;
                 }
 
                 var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
                 if (frameCounterStrategy == null)
                 {
-                    Logger.Log(loRaDevice.DevEUI, $"Could not resolve frame count update strategy for device, gateway id: {loRaDevice.GatewayID}", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, $"[class-c] could not resolve frame count update strategy for device, gateway id: {loRaDevice.GatewayID}", LogLevel.Information);
                     return false;
                 }
 
                 var fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, 0);
                 if (fcntDown <= 0)
                 {
-                    Logger.Log(loRaDevice.DevEUI, "Could not obtain fcnt down for class C device", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, "[class-c] could not obtain fcnt down for class C device", LogLevel.Information);
                     return false;
                 }
+
+                Logger.Log(loRaDevice.DevEUI, $"[class-c] down frame counter: {loRaDevice.FCntDown}", LogLevel.Information);
 
                 var downlinkMessageBuilderResp = DownlinkMessageBuilder.CreateDownlinkMessage(
                     this.configuration,
                     loRaDevice, // TODO resolve region from device information
-                    this.loRaRegion ?? RegionFactory.CurrentRegion ?? RegionFactory.CreateEU868Region(),
+                    region,
                     cloudToDeviceMessage,
                     fcntDown);
 
                 if (downlinkMessageBuilderResp.IsMessageTooLong)
                 {
-                    Logger.Log(loRaDevice.DevEUI, $"class C cloud to device message too large, rejecting. Id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, $"[class-c] cloud to device message too large, rejecting. Id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Information);
                     await cloudToDeviceMessage.RejectAsync();
                     return false;
                 }
@@ -103,7 +124,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log(cloudToDeviceMessage.DevEUI, $"Error sending class C cloud to device message. {ex.Message}", LogLevel.Error);
+                Logger.Log(cloudToDeviceMessage.DevEUI, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error);
                 return false;
             }
         }

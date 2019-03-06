@@ -1,13 +1,13 @@
-// Copyright (c) Microsoft. All rights reserved.
+﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer
+namespace LoRaTools.CommonAPI
 {
     using System.Collections.Generic;
-    using System.Text;
-    using System.Threading.Tasks;
-    using LoRaTools;
 
+    /// <summary>
+    /// Defines the data contract for cloud to device messages
+    /// </summary>
     public interface ILoRaCloudToDeviceMessage
     {
         string DevEUI { get; }
@@ -22,14 +22,6 @@ namespace LoRaWan.NetworkServer
         /// Gets list of mac commands that are part of the message
         /// </summary>
         IList<MacCommand> MacCommands { get; }
-
-        byte[] GetPayload();
-
-        Task<bool> CompleteAsync();
-
-        Task<bool> AbandonAsync();
-
-        Task<bool> RejectAsync();
 
         /// <summary>
         /// Identifies if the message is a valid LoRa downstream message

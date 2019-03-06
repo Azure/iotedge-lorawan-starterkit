@@ -63,7 +63,7 @@ namespace LoraKeysManagerFacade.Test
         {
             const string devEUI = "13213123212131";
             var ctx = new DefaultHttpContext();
-            ctx.Request.QueryString = new QueryString($"?devEUI={devEUI}&{ApiVersion.QueryStringParamName}={ApiVersion.Version_2019_02_12_Preview}");
+            ctx.Request.QueryString = new QueryString($"?devEUI={devEUI}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             registryManager.Setup(x => x.GetDeviceAsync(devEUI))
@@ -83,7 +83,7 @@ namespace LoraKeysManagerFacade.Test
             const string devEUI = "13213123212131";
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             var ctx = new DefaultHttpContext();
-            ctx.Request.QueryString = new QueryString($"?devEUI={devEUI}&{ApiVersion.QueryStringParamName}={ApiVersion.Version_2019_02_12_Preview}");
+            ctx.Request.QueryString = new QueryString($"?devEUI={devEUI}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var deviceInfo = new Device(devEUI)

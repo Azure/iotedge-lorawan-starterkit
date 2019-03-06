@@ -8,15 +8,16 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools;
+    using LoRaTools.CommonAPI;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
-    class LoRaCloudToDeviceMessageWrapper : ILoRaCloudToDeviceMessage
+    class LoRaCloudToDeviceMessageWrapper : IReceivedLoRaCloudToDeviceMessage
     {
         private readonly LoRaDevice loRaDevice;
         private readonly Message message;
-        private LoRaCloudToDeviceMessage parseCloudToDeviceMessage;
+        private ReceivedLoRaCloudToDeviceMessage parseCloudToDeviceMessage;
         private string invalidErrorMessage;
 
         public LoRaCloudToDeviceMessageWrapper(LoRaDevice loRaDevice, Message message)
@@ -39,7 +40,7 @@ namespace LoRaWan.NetworkServer
                 json = Encoding.UTF8.GetString(bytes);
                 try
                 {
-                    this.parseCloudToDeviceMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(json);
+                    this.parseCloudToDeviceMessage = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(json);
                 }
                 catch (Exception ex) when (ex is JsonReaderException || ex is JsonSerializationException)
                 {
@@ -110,8 +111,7 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            errorMessage = null;
-            return true;
+            return this.parseCloudToDeviceMessage.IsValid(out errorMessage);
         }
     }
 }

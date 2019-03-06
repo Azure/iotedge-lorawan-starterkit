@@ -121,7 +121,16 @@ namespace LoRaWan.NetworkServer
                 }
 
                 Logger.Log(loRaDevice.DevEUI, $"saving join properties twins", LogLevel.Debug);
-                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(devAddr, nwkSKey, appSKey, appNonce, devNonce, LoRaTools.Utils.ConversionHelper.ByteArrayToString(netId));
+                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(
+                    devAddr,
+                    nwkSKey,
+                    appSKey,
+                    appNonce,
+                    devNonce,
+                    ConversionHelper.ByteArrayToString(netId),
+                    request.LoRaRegion.LoRaRegion,
+                    this.configuration.GatewayID);
+
                 Logger.Log(loRaDevice.DevEUI, $"done saving join properties twins", LogLevel.Debug);
 
                 if (!deviceUpdateSucceeded)

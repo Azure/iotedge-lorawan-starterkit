@@ -41,5 +41,7 @@ namespace LoRaWan.NetworkServer
         public const string ABPRelaxMode = "ABPRelaxMode";
         public const string FCntUpStart = "FCntUpStart";
         public const string FCntDownStart = "FCntDownStart";
+        public const string Region = "Region"; // Defines the region where the device is located
+        public const string PreferredGatewayID = "PreferredGatewayID"; // Defines the preferred gateway for a class C device
     }
 }

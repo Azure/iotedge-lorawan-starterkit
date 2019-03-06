@@ -8,6 +8,7 @@ namespace LoRaWan.IntegrationTest
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools.CommonAPI;
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices;
     using Xunit;
@@ -79,7 +80,7 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            var c2dMessage = new TestLoRaCloudToDeviceMessage()
+            var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
                 Fport = 1,
@@ -188,7 +189,7 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            var c2dMessage = new TestLoRaCloudToDeviceMessage()
+            var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
                 Fport = 1,
@@ -296,7 +297,7 @@ namespace LoRaWan.IntegrationTest
 
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
-            var c2dMessage = new TestLoRaCloudToDeviceMessage()
+            var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
                 Fport = 2,
@@ -404,7 +405,7 @@ namespace LoRaWan.IntegrationTest
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
             var msgId = Guid.NewGuid().ToString();
-            var c2dMessage = new TestLoRaCloudToDeviceMessage()
+            var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
                 Fport = 1,
@@ -511,7 +512,7 @@ namespace LoRaWan.IntegrationTest
             // sends C2D - between 10 and 99
             var c2dMessageBody = (100 + random.Next(90)).ToString();
             var msgId = Guid.NewGuid().ToString();
-            var c2dMessage = new TestLoRaCloudToDeviceMessage()
+            var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
                 Fport = 1,
