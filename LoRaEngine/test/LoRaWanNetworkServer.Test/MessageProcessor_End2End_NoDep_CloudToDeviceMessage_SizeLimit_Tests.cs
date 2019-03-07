@@ -157,7 +157,8 @@ namespace LoRaWan.NetworkServer.Test
 
             if (expectedMacCommandsCount > 0)
             {
-                var macCommands = MacCommand.CreateServerMacCommandFromBytes(simulatedDevice.DevEUI, payloadDataDown.Fopts);
+                // Possible problem: Manually casting payloadDataDown.Fopts to array and reversing it
+                var macCommands = MacCommand.CreateServerMacCommandFromBytes(simulatedDevice.DevEUI, payloadDataDown.Fopts.ToArray().Reverse().ToArray());
                 Assert.Equal(expectedMacCommandsCount, macCommands.Count);
             }
             else
@@ -384,7 +385,8 @@ namespace LoRaWan.NetworkServer.Test
             // Expected Mac command is present
             if (hasMacInUpstream)
             {
-                var frmPayload = payloadDataDown.Frmpayload.ToArray().Reverse().ToArray();
+                // Possible problem: manually casting frmPayload to array. No reversal.
+                var frmPayload = payloadDataDown.Frmpayload.ToArray();
                 var macCommands = MacCommand.CreateServerMacCommandFromBytes(simulatedDevice.DevEUI, frmPayload);
                 Assert.Single(macCommands);
                 Assert.IsType<LinkCheckAnswer>(macCommands.First());
