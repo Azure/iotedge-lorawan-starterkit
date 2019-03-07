@@ -98,7 +98,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (constantElapsedTime.HasValue)
             {
-                Assert.True(RegionFactory.TryResolveRegion(rxpk, out var region));
+                Assert.True(RegionManager.TryResolveRegion(rxpk, out var region));
                 var timeWatcher = new TestLoRaOperationTimeWatcher(region, constantElapsedTime.Value);
                 request.UseTimeWatcher(timeWatcher);
             }

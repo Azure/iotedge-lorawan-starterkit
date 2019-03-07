@@ -115,13 +115,13 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public LoRaDeviceClassType ClassType { get; set; }
 
-        ChangeTrackingProperty<LoRaRegion> region = new ChangeTrackingProperty<LoRaRegion>(TwinProperty.Region, LoRaRegion.NotSet);
+        ChangeTrackingProperty<LoRaRegionEnum> region = new ChangeTrackingProperty<LoRaRegionEnum>(TwinProperty.Region, LoRaRegionEnum.NotSet);
 
         /// <summary>
-        /// Gets the <see cref="LoRaTools.Regions.LoRaRegion"/> of the device
+        /// Gets the <see cref="LoRaTools.Regions.LoRaRegionEnum"/> of the device
         /// Relevant only for <see cref="LoRaDeviceClassType.C"/>
         /// </summary>
-        public LoRaRegion LoRaRegion => this.region.Get();
+        public LoRaRegionEnum LoRaRegion => this.region.Get();
 
         ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
 
@@ -316,15 +316,15 @@ namespace LoRaWan.NetworkServer
                     if (twin.Properties.Reported.Contains(TwinProperty.Region))
                     {
                         var regionValue = twin.Properties.Reported[TwinProperty.Region].Value as string;
-                        if (Enum.TryParse<LoRaRegion>(regionValue, true, out var loRaRegion))
+                        if (Enum.TryParse<LoRaRegionEnum>(regionValue, true, out var loRaRegion))
                         {
-                            if (Enum.IsDefined(typeof(LoRaRegion), loRaRegion))
+                            if (Enum.IsDefined(typeof(LoRaRegionEnum), loRaRegion))
                             {
-                                this.region = new ChangeTrackingProperty<LoRaRegion>(TwinProperty.Region, loRaRegion);
+                                this.region = new ChangeTrackingProperty<LoRaRegionEnum>(TwinProperty.Region, loRaRegion);
                             }
                         }
 
-                        if (this.LoRaRegion == LoRaRegion.NotSet)
+                        if (this.LoRaRegion == LoRaRegionEnum.NotSet)
                         {
                             Logger.Log(this.DevEUI, $"Invalid region value: {regionValue}", LogLevel.Error);
                         }
@@ -729,7 +729,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates device on the server after a join succeeded
         /// </summary>
-        internal async Task<bool> UpdateAfterJoinAsync(string devAddr, string nwkSKey, string appSKey, string appNonce, string devNonce, string netID, LoRaRegion region, string preferredGatewayID)
+        internal async Task<bool> UpdateAfterJoinAsync(string devAddr, string nwkSKey, string appSKey, string appNonce, string devNonce, string netID, LoRaRegionEnum region, string preferredGatewayID)
         {
             var reportedProperties = new TwinCollection();
             reportedProperties[TwinProperty.AppSKey] = appSKey;
@@ -801,12 +801,36 @@ namespace LoRaWan.NetworkServer
                 this.AppNonce = appNonce;
                 this.DevNonce = devNonce;
                 this.NetID = netID;
-                this.ReportedRX1DROffset = this.DesiredRX1DROffset;
-                this.ReportedRX2DataRate = this.DesiredRX2DataRate;
+                if (RegionManager.CurrentRegion.IsValidRX1DROffset(this.DesiredRX1DROffset))
+                {
+                    this.ReportedRX1DROffset = this.DesiredRX1DROffset;
+                }
+                else
+                {
+                    Logger.Log(this.DevEUI, "the provided RX1DROffset is not acceptable", LogLevel.Error);
+                }
+
+                if (RegionManager.CurrentRegion.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
+                {
+                    this.ReportedRX2DataRate = this.DesiredRX2DataRate;
+                }
+                else
+                {
+                    Logger.Log(this.DevEUI, "the provided RX2DataRate is not acceptable", LogLevel.Error);
+                }
+
+                if (RegionManager.CurrentRegion.IsValidRXDelay(this.DesiredRXDelay))
+                {
+                    this.ReportedRXDelay = this.DesiredRXDelay;
+                }
+                else
+                {
+                    Logger.Log(this.DevEUI, "the provided RXDelay is not acceptable", LogLevel.Error);
+                }
+
                 this.region.AcceptChanges();
                 this.preferredGatewayID.AcceptChanges();
 
-                this.ReportedRXDelay = this.DesiredRXDelay;
                 this.ResetFcnt();
                 this.InternalAcceptFrameCountChanges(this.fcntUp, this.fcntDown);
             }
@@ -985,7 +1009,7 @@ namespace LoRaWan.NetworkServer
                 this.preferredGatewayID.AcceptChanges();
         }
 
-        internal void UpdateRegion(LoRaRegion value, bool acceptChanges)
+        internal void UpdateRegion(LoRaRegionEnum value, bool acceptChanges)
         {
             this.region.Set(value);
             if (acceptChanges)

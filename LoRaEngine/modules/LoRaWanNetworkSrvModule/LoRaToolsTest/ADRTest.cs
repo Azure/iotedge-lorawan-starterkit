@@ -25,7 +25,7 @@ namespace LoRaWanTest
         public async System.Threading.Tasks.Task TestADRAsync(string testName, string devEUI, List<LoRaADRTableEntry> tableEntries, Rxpk rxpk, bool expectDefaultAnswer, LoRaADRResult expectedResult)
         {
             this.output.WriteLine($"Starting test {testName}");
-            var region = RegionFactory.CreateEU868Region();
+            var region = RegionManager.EU868;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
             var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider);
             loRaADRManager.CallBase = true;
@@ -64,7 +64,7 @@ namespace LoRaWanTest
         public async System.Threading.Tasks.Task CheckADRReturnsDefaultValueIfCacheCrash()
         {
             string devEUI = "myloratest";
-            var region = RegionFactory.CreateEU868Region();
+            var region = RegionManager.EU868;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
             Rxpk rxpk = new Rxpk();
             rxpk.Datr = "SF7BW125";

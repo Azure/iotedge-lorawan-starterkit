@@ -369,10 +369,10 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Single(this.PacketForwarder.DownlinkMessages);
             var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
             var txpk = downlinkMessage.Txpk;
-            var euRegion = RegionFactory.CreateEU868Region();
-
+            var euRegion = RegionManager.EU868;
+            euRegion.TryGetDownstreamChannelFrequency(rxpk, out double frequency);
             // Ensure we are using second window frequency
-            Assert.Equal(euRegion.GetDownstreamChannelFrequency(rxpk), txpk.Freq);
+            Assert.Equal(frequency, txpk.Freq);
 
             // Ensure we are using second window datr
             Assert.Equal(euRegion.GetDownstreamDR(rxpk), txpk.Datr);
@@ -463,7 +463,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(request.ProcessingSucceeded);
             Assert.Single(this.PacketForwarder.DownlinkMessages);
             var downlinkMessage = this.PacketForwarder.DownlinkMessages.First();
-            var euRegion = RegionFactory.CreateEU868Region();
+            var euRegion = RegionManager.EU868;
             var txpk = downlinkMessage.Txpk;
 
             // Ensure we are using second window frequency
@@ -564,7 +564,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.NotNull(request.ResponseDownlink);
             Assert.Single(this.PacketForwarder.DownlinkMessages);
             var downlinkMessage = this.PacketForwarder.DownlinkMessages.First();
-            var euRegion = RegionFactory.CreateEU868Region();
+            var euRegion = RegionManager.EU868;
             var txpk = downlinkMessage.Txpk;
 
             // Ensure we are using second window frequency
@@ -672,7 +672,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var actualDownlink = this.PacketForwarder.DownlinkMessages.First();
 
-            var euRegion = RegionFactory.CreateEU868Region();
+            var euRegion = RegionManager.EU868;
             if (expectedRX == Constants.RECEIVE_WINDOW_1)
             {
                 // ensure response is for RX1

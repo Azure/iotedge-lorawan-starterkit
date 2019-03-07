@@ -49,7 +49,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
-                    { TwinProperty.Region, LoRaRegion.EU868.ToString() }
+                    { TwinProperty.Region, LoRaRegionEnum.EU868.ToString() }
                 });
 
             this.LoRaDeviceClient.Setup(x => x.GetTwinAsync())
@@ -322,7 +322,7 @@ namespace LoRaWan.NetworkServer.Test
         public async Task When_Joining_Should_Save_Region_And_Preferred_Gateway(
             [CombinatorialValues(null, ServerGatewayID)] string deviceGatewayID,
             [CombinatorialValues(null, ServerGatewayID, "another-gateway")] string initialPreferredGatewayID,
-            [CombinatorialValues(null, LoRaRegion.EU868, LoRaRegion.US915)] LoRaRegion? initialLoRaRegion)
+            [CombinatorialValues(null, LoRaRegionEnum.EU868, LoRaRegionEnum.US915)] LoRaRegionEnum? initialLoRaRegion)
         {
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: deviceGatewayID));
 
@@ -338,7 +338,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(simDevice.CreateOTAATwin(reportedProperties: customReportedProperties));
 
             var shouldSavePreferredGateway = string.IsNullOrEmpty(deviceGatewayID) && initialPreferredGatewayID != ServerGatewayID;
-            var shouldSaveRegion = !initialLoRaRegion.HasValue || initialLoRaRegion.Value != LoRaRegion.EU868;
+            var shouldSaveRegion = !initialLoRaRegion.HasValue || initialLoRaRegion.Value != LoRaRegionEnum.EU868;
 
             var savedAppSKey = string.Empty;
             var savedNwkSKey = string.Empty;
@@ -356,7 +356,7 @@ namespace LoRaWan.NetworkServer.Test
                     Assert.NotEmpty(savedDevAddr);
 
                     if (shouldSaveRegion)
-                        Assert.Equal(LoRaRegion.EU868.ToString(), t[TwinProperty.Region].Value as string);
+                        Assert.Equal(LoRaRegionEnum.EU868.ToString(), t[TwinProperty.Region].Value as string);
                     else
                         Assert.False(t.Contains(TwinProperty.Region));
 
@@ -392,7 +392,7 @@ namespace LoRaWan.NetworkServer.Test
             else
                 Assert.Empty(loRaDevice.PreferredGatewayID);
 
-            Assert.Equal(LoRaRegion.EU868, loRaDevice.LoRaRegion);
+            Assert.Equal(LoRaRegionEnum.EU868, loRaDevice.LoRaRegion);
 
             this.LoRaDeviceApi.VerifyAll();
             this.LoRaDeviceClient.VerifyAll();
@@ -404,7 +404,7 @@ namespace LoRaWan.NetworkServer.Test
             [CombinatorialValues(null, ServerGatewayID)] string deviceGatewayID,
             [CombinatorialValues(null, ServerGatewayID, "another-gateway")] string initialPreferredGatewayID,
             [CombinatorialValues(ServerGatewayID, "another-gateway")] string preferredGatewayID,
-            [CombinatorialValues(null, LoRaRegion.EU868, LoRaRegion.US915)] LoRaRegion? initialLoRaRegion)
+            [CombinatorialValues(null, LoRaRegionEnum.EU868, LoRaRegionEnum.US915)] LoRaRegionEnum? initialLoRaRegion)
         {
             const uint PayloadFcnt = 10;
             const uint InitialDeviceFcntUp = 9;
@@ -421,7 +421,7 @@ namespace LoRaWan.NetworkServer.Test
                 loraDevice.UpdateRegion(initialLoRaRegion.Value, acceptChanges: true);
 
             var shouldSavePreferredGateway = string.IsNullOrEmpty(deviceGatewayID) && initialPreferredGatewayID != preferredGatewayID && preferredGatewayID == ServerGatewayID;
-            var shouldSaveRegion = (!initialLoRaRegion.HasValue || initialLoRaRegion.Value != LoRaRegion.EU868) && (preferredGatewayID == ServerGatewayID || deviceGatewayID != null);
+            var shouldSaveRegion = (!initialLoRaRegion.HasValue || initialLoRaRegion.Value != LoRaRegionEnum.EU868) && (preferredGatewayID == ServerGatewayID || deviceGatewayID != null);
 
             var bundlerResult = new FunctionBundlerResult()
             {
@@ -457,7 +457,7 @@ namespace LoRaWan.NetworkServer.Test
                             Assert.False(savedTwin.Contains(TwinProperty.PreferredGatewayID));
 
                         if (shouldSaveRegion)
-                            Assert.Equal(LoRaRegion.EU868.ToString(), savedTwin[TwinProperty.Region].Value as string);
+                            Assert.Equal(LoRaRegionEnum.EU868.ToString(), savedTwin[TwinProperty.Region].Value as string);
                         else
                             Assert.False(savedTwin.Contains(TwinProperty.Region));
                     })
@@ -498,7 +498,7 @@ namespace LoRaWan.NetworkServer.Test
             else
                 Assert.Equal(preferredGatewayID, loraDevice.PreferredGatewayID);
 
-            Assert.Equal(LoRaRegion.EU868, loraDevice.LoRaRegion);
+            Assert.Equal(LoRaRegionEnum.EU868, loraDevice.LoRaRegion);
         }
 
         [Fact]
@@ -540,7 +540,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Callback<TwinCollection>((savedTwin) =>
                 {
                     Assert.Equal(ServerGatewayID, savedTwin[TwinProperty.PreferredGatewayID].Value as string);
-                    Assert.Equal(LoRaRegion.EU868.ToString(), savedTwin[TwinProperty.Region].Value as string);
+                    Assert.Equal(LoRaRegionEnum.EU868.ToString(), savedTwin[TwinProperty.Region].Value as string);
                     Assert.Equal(PayloadFcnt, (uint)savedTwin[TwinProperty.FCntUp].Value);
                 })
                 .ReturnsAsync(true);
@@ -575,7 +575,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(request.ProcessingSucceeded);
 
             Assert.Equal(ServerGatewayID, loraDevice.PreferredGatewayID);
-            Assert.Equal(LoRaRegion.EU868, loraDevice.LoRaRegion);
+            Assert.Equal(LoRaRegionEnum.EU868, loraDevice.LoRaRegion);
             Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
 
             this.LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()), Times.Once());
