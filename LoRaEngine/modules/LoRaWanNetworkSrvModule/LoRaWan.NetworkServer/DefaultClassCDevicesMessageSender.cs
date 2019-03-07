@@ -80,15 +80,24 @@ namespace LoRaWan.NetworkServer
                     return false;
                 }
 
-                var downlink = DownlinkMessageBuilder.CreateDownlinkMessage(
+                var downlinkMessageBuilderResp = DownlinkMessageBuilder.CreateDownlinkMessage(
                     this.configuration,
                     loRaDevice, // TODO resolve region from device information
                     this.loRaRegion ?? RegionFactory.CurrentRegion ?? RegionFactory.CreateEU868Region(),
                     cloudToDeviceMessage,
                     (ushort)fcntDown);
 
-                await this.packetForwarder.SendDownstreamAsync(downlink);
-                await frameCounterStrategy.SaveChangesAsync(loRaDevice);
+                if (downlinkMessageBuilderResp.IsMessageTooLong)
+                {
+                    Logger.Log(loRaDevice.DevEUI, $"class C cloud to device message too large, rejecting. Id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Information);
+                    await cloudToDeviceMessage.RejectAsync();
+                    return false;
+                }
+                else
+                {
+                    await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                    await frameCounterStrategy.SaveChangesAsync(loRaDevice);
+                }
 
                 return true;
             }

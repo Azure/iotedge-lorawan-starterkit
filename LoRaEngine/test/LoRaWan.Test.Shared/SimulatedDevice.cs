@@ -139,7 +139,7 @@ namespace LoRaWan.Test.Shared
         /// <summary>
         /// Creates request to send unconfirmed data message
         /// </summary>
-        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, int? fcnt = null, byte fport = 1)
+        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, int? fcnt = null, byte fport = 1, bool isHexPayload = false)
         {
             byte[] devAddr = ConversionHelper.StringToByteArray(this.LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
@@ -151,8 +151,22 @@ namespace LoRaWan.Test.Shared
             var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
 
             byte[] fPort = new byte[] { fport };
-            byte[] payload = Encoding.UTF8.GetBytes(data);
-            Array.Reverse(payload);
+
+            byte[] payload = null;
+
+            if (data != null)
+            {
+                if (!isHexPayload)
+                {
+                    payload = Encoding.UTF8.GetBytes(data);
+                }
+                else
+                {
+                    payload = ConversionHelper.StringToByteArray(data);
+                }
+
+                Array.Reverse(payload);
+            }
 
             // 0 = uplink, 1 = downlink
             int direction = 0;

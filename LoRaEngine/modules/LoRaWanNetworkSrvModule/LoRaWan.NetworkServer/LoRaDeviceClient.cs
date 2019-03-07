@@ -252,6 +252,34 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        public async Task<bool> RejectAsync(Message message)
+        {
+            try
+            {
+                this.deviceClient.OperationTimeoutInMilliseconds = 30000;
+
+                this.SetRetry(true);
+
+                Logger.Log(this.devEUI, $"rejecting c2d message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+
+                await this.deviceClient.RejectAsync(message);
+
+                Logger.Log(this.devEUI, $"done rejecting c2d message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(this.devEUI, $"could not reject c2d message (id: {message.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
+                return false;
+            }
+            finally
+            {
+                // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
+                this.SetRetry(false);
+            }
+        }
+
         /// <summary>
         /// Disconnects device client
         /// </summary>

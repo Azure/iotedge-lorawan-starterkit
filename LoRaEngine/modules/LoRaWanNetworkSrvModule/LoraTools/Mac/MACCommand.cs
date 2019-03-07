@@ -43,7 +43,7 @@ namespace LoRaTools
         public abstract IEnumerable<byte> ToBytes();
 
         /// <summary>
-        /// Create a List of Mac commands based on a sequence of bytes.
+        /// Create a List of Mac commands from client based on a sequence of bytes.
         /// </summary>
         public static List<MacCommand> CreateMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input)
         {
@@ -58,7 +58,7 @@ namespace LoRaTools
                     switch (cid)
                     {
                         case CidEnum.LinkCheckCmd:
-                            LinkCheckRequest linkCheck = new LinkCheckRequest();
+                            var linkCheck = new LinkCheckRequest();
                             pointer += linkCheck.Length;
                             macCommands.Add(linkCheck);
                             break;
@@ -105,6 +105,48 @@ namespace LoRaTools
                             break;
                         default:
                             Logger.Log($"A transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
+                            return null;
+                    }
+
+                    MacCommand addedMacCommand = macCommands[macCommands.Count - 1];
+                    Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand.ToString()}", LogLevel.Debug);
+                }
+                catch (MacCommandException ex)
+                {
+                    Logger.Log(deviceId, ex.ToString(), LogLevel.Error);
+                }
+            }
+
+            return macCommands;
+        }
+
+        /// <summary>
+        /// Create a List of Mac commands from server based on a sequence of bytes.
+        /// </summary>
+        public static List<MacCommand> CreateServerMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input)
+        {
+            int pointer = 0;
+            var macCommands = new List<MacCommand>(3);
+
+            while (pointer < input.Length)
+            {
+                try
+                {
+                    CidEnum cid = (CidEnum)input.Span[pointer];
+                    switch (cid)
+                    {
+                        case CidEnum.LinkCheckCmd:
+                            var linkCheck = new LinkCheckAnswer(input.Span.Slice(pointer));
+                            pointer += linkCheck.Length;
+                            macCommands.Add(linkCheck);
+                            break;
+                        case CidEnum.DevStatusCmd:
+                            var devStatusRequest = new DevStatusRequest();
+                            pointer += devStatusRequest.Length;
+                            macCommands.Add(devStatusRequest);
+                            break;
+                        default:
+                            Logger.Log($"A Mac command transmitted from the server, value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
                             return null;
                     }
 

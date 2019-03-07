@@ -27,7 +27,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Creates downlink message with ack for confirmation or cloud to device message
         /// </summary>
-        internal static DownlinkPktFwdMessage CreateDownlinkMessage(
+        internal static DownlinkMessageBuilderResponse CreateDownlinkMessage(
             NetworkServerConfiguration configuration,
             LoRaDevice loRaDevice,
             LoRaRequest request,
@@ -39,7 +39,8 @@ namespace LoRaWan.NetworkServer
         {
             var upstreamPayload = (LoRaPayloadData)request.Payload;
             var rxpk = request.Rxpk;
-            var loraRegion = request.LoRaRegion;
+            var loRaRegion = request.LoRaRegion;
+            bool isMessageTooLong = false;
 
             // default fport
             byte fctrl = 0;
@@ -49,47 +50,132 @@ namespace LoRaWan.NetworkServer
                 fctrl = (byte)FctrlEnum.Ack;
             }
 
-            var macCommands = PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload.MacCommands, cloudToDeviceMessage?.MacCommands, rxpk, loRaADRResult);
-            byte? fport = null;
-            var requiresDeviceAcknowlegement = false;
-            var macCommandType = CidEnum.Zero;
+            // Calculate receive window
+            var receiveWindow = timeWatcher.ResolveReceiveWindowToUse(loRaDevice);
+            if (receiveWindow == Constants.INVALID_RECEIVE_WINDOW)
+            {
+                // No valid receive window. Abandon the message
+                isMessageTooLong = true;
+                return new DownlinkMessageBuilderResponse(null, isMessageTooLong);
+            }
 
             byte[] rndToken = new byte[2];
             Random rnd = new Random();
             rnd.NextBytes(rndToken);
 
+            string datr;
+            double freq;
+            long tmst;
+
+            if (receiveWindow == Constants.RECEIVE_WINDOW_2)
+            {
+                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
+
+                if (string.IsNullOrEmpty(configuration.Rx2DataRate))
+                {
+                    Logger.Log(loRaDevice.DevEUI, "using standard second receive windows", LogLevel.Information);
+                    freq = loRaRegion.RX2DefaultReceiveWindows.frequency;
+                    datr = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
+                }
+                else
+                {
+                    // if specific twins are set, specify second channel to be as specified
+                    freq = configuration.Rx2DataFrequency;
+                    datr = configuration.Rx2DataRate;
+                    Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", LogLevel.Information);
+                }
+            }
+            else
+            {
+                datr = loRaRegion.GetDownstreamDR(rxpk);
+                freq = loRaRegion.GetDownstreamChannelFrequency(rxpk);
+                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow1Delay(loRaDevice) * 1000000;
+            }
+
+            // get max. payload size based on data rate from LoRaRegion
+            var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
+
+            // Deduct 8 bytes from max payload size.
+            maxPayloadSize -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+
+            var availablePayloadSize = maxPayloadSize;
+
+            var macCommands = new List<MacCommand>();
+
+            byte? fport = null;
+            var requiresDeviceAcknowlegement = false;
+            var macCommandType = CidEnum.Zero;
+
             byte[] frmPayload = null;
 
             if (cloudToDeviceMessage != null)
             {
-                if (cloudToDeviceMessage.MacCommands != null && cloudToDeviceMessage.MacCommands.Count > 0)
+                // Get C2D Mac coomands
+                var macCommandsC2d = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage?.MacCommands, rxpk, null);
+
+                // Calculate total C2D payload size
+                var totalC2dSize = cloudToDeviceMessage.GetPayload()?.Length ?? 0;
+                totalC2dSize += macCommandsC2d?.Sum(x => x.Length) ?? 0;
+
+                // Total C2D payload will fit
+                if (availablePayloadSize >= totalC2dSize)
                 {
-                    macCommandType = cloudToDeviceMessage.MacCommands.First().Cid;
-                }
+                    // Add frmPayload
+                    frmPayload = cloudToDeviceMessage.GetPayload();
 
-                if (cloudToDeviceMessage.Confirmed)
+                    // Add C2D Mac commands
+                    if (macCommandsC2d?.Count > 0)
+                    {
+                        foreach (MacCommand macCommand in macCommandsC2d)
+                        {
+                            macCommands.Add(macCommand);
+                        }
+                    }
+
+                    // Deduct frmPayload size from available payload size, continue processing and log
+                    availablePayloadSize -= (uint)totalC2dSize;
+
+                    if (cloudToDeviceMessage.Confirmed)
+                    {
+                        requiresDeviceAcknowlegement = true;
+                        loRaDevice.LastConfirmedC2DMessageID = cloudToDeviceMessage.MessageId ?? Constants.C2D_MSG_ID_PLACEHOLDER;
+                    }
+
+                    if (cloudToDeviceMessage.Fport > 0)
+                    {
+                        fport = cloudToDeviceMessage.Fport;
+                    }
+
+                    Logger.Log(loRaDevice.DevEUI, $"C2D message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}", LogLevel.Information);
+                    Array.Reverse(frmPayload);
+                }
+                else
                 {
-                    requiresDeviceAcknowlegement = true;
-                    loRaDevice.LastConfirmedC2DMessageID = cloudToDeviceMessage.MessageId ?? Constants.C2D_MSG_ID_PLACEHOLDER;
+                    // Flag message to be abandoned and log
+                    Logger.Log(loRaDevice.DevEUI, $"C2D message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement} too long for current receive window. Abandoning.", LogLevel.Information);
+                    isMessageTooLong = true;
                 }
-
-                if (cloudToDeviceMessage.Fport > 0)
-                {
-                    fport = cloudToDeviceMessage.Fport;
-                }
-
-                frmPayload = cloudToDeviceMessage.GetPayload();
-
-                Logger.Log(loRaDevice.DevEUI, $"C2D message: {(frmPayload?.Length == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}", LogLevel.Information);
-
-                // cut to the max payload of lora for any EU datarate
-                if (frmPayload.Length > 51)
-                    Array.Resize(ref frmPayload, 51);
-
-                Array.Reverse(frmPayload);
             }
 
-            if (fpending)
+            // Get request Mac commands
+            var macCommandsRequest = PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload.MacCommands, null, rxpk, loRaADRResult);
+
+            // Calculate request Mac commands size
+            var macCommandsRequestSize = macCommandsRequest?.Sum(x => x.Length) ?? 0;
+
+            // Try adding request Mac commands
+            if (availablePayloadSize >= macCommandsRequestSize)
+            {
+                if (macCommandsRequest?.Count > 0)
+                {
+                    foreach (MacCommand macCommand in macCommandsRequest)
+                    {
+                        macCommands.Add(macCommand);
+                    }
+                }
+            }
+
+            if (fpending || isMessageTooLong)
             {
                 fctrl |= (int)FctrlEnum.FpendingOrClassB;
             }
@@ -117,44 +203,14 @@ namespace LoRaWan.NetworkServer
                 frmPayload,
                 1);
 
-            var receiveWindow = timeWatcher.ResolveReceiveWindowToUse(loRaDevice);
-            if (receiveWindow == Constants.INVALID_RECEIVE_WINDOW)
-                return null;
-
-            string datr;
-            double freq;
-            long tmst;
-            if (receiveWindow == Constants.RECEIVE_WINDOW_2)
-            {
-                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
-
-                if (string.IsNullOrEmpty(configuration.Rx2DataRate))
-                {
-                    Logger.Log(loRaDevice.DevEUI, "using standard second receive windows", LogLevel.Information);
-                    freq = loraRegion.RX2DefaultReceiveWindows.frequency;
-                    datr = loraRegion.DRtoConfiguration[loraRegion.RX2DefaultReceiveWindows.dr].configuration;
-                }
-                else
-                {
-                    // if specific twins are set, specify second channel to be as specified
-                    freq = configuration.Rx2DataFrequency;
-                    datr = configuration.Rx2DataRate;
-                    Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", LogLevel.Information);
-                }
-            }
-            else
-            {
-                datr = loraRegion.GetDownstreamDR(rxpk);
-                freq = loraRegion.GetDownstreamChannelFrequency(rxpk);
-                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow1Delay(loRaDevice) * 1000000;
-            }
-
             // todo: check the device twin preference if using confirmed or unconfirmed down
             Logger.Log(loRaDevice.DevEUI, $"Sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Debug);
-            return ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI);
+            return new DownlinkMessageBuilderResponse(
+                ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI),
+                isMessageTooLong);
         }
 
-        internal static DownlinkPktFwdMessage CreateDownlinkMessage(
+        internal static DownlinkMessageBuilderResponse CreateDownlinkMessage(
             NetworkServerConfiguration configuration,
             LoRaDevice loRaDevice,
             Region loRaRegion,
@@ -169,12 +225,52 @@ namespace LoRaWan.NetworkServer
             Random rnd = new Random();
             rnd.NextBytes(rndToken);
 
-            PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage.MacCommands, null, null);
+            bool isMessageTooLong = false;
 
-            var macCommands = cloudToDeviceMessage.MacCommands;
-            if (macCommands != null && macCommands.Count > 0)
+            // Class C always uses RX2
+            string datr;
+            double freq;
+            var tmst = 0; // immediate mode
+
+            if (string.IsNullOrEmpty(configuration.Rx2DataRate))
             {
-                macCommandType = macCommands[0].Cid;
+                Logger.Log(loRaDevice.DevEUI, $"using standard second receive windows", LogLevel.Information);
+                freq = loRaRegion.RX2DefaultReceiveWindows.frequency;
+                datr = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
+            }
+
+            // if specific twins are set, specify second channel to be as specified
+            else
+            {
+                freq = configuration.Rx2DataFrequency;
+                datr = configuration.Rx2DataRate;
+                Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", LogLevel.Information);
+            }
+
+            // get max. payload size based on data rate from LoRaRegion
+            var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
+
+            // Deduct 8 bytes from max payload size.
+            maxPayloadSize -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+
+            var availablePayloadSize = maxPayloadSize;
+
+            var macCommands = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage.MacCommands, null, null);
+
+            // Calculate total C2D payload size
+            var totalC2dSize = cloudToDeviceMessage.GetPayload()?.Length ?? 0;
+            totalC2dSize += macCommands?.Sum(x => x.Length) ?? 0;
+
+            // Total C2D payload will NOT fit
+            if (availablePayloadSize < totalC2dSize)
+            {
+                isMessageTooLong = true;
+                return new DownlinkMessageBuilderResponse(null, isMessageTooLong);
+            }
+
+            if (macCommands?.Count > 0)
+            {
+                macCommandType = macCommands.First().Cid;
             }
 
             if (cloudToDeviceMessage.Confirmed)
@@ -186,11 +282,6 @@ namespace LoRaWan.NetworkServer
 
             Logger.Log(loRaDevice.DevEUI, $"Sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Debug);
             Logger.Log(loRaDevice.DevEUI, $"C2D message: {Encoding.UTF8.GetString(frmPayload)}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {cloudToDeviceMessage.Fport}, confirmed: {cloudToDeviceMessage.Confirmed}, cidType: {macCommandType}", LogLevel.Information);
-
-            // cut to the max payload of lora for any EU datarate
-            if (frmPayload.Length > 51)
-                Array.Resize(ref frmPayload, 51);
-
             Array.Reverse(frmPayload);
 
             var payloadDevAddr = ConversionHelper.StringToByteArray(loRaDevice.DevAddr);
@@ -211,27 +302,9 @@ namespace LoRaWan.NetworkServer
                 frmPayload,
                 1);
 
-            // Class C uses RX2 always
-            string datr = null;
-            double freq;
-            var tmst = 0; // immediate mode
-
-            if (string.IsNullOrEmpty(configuration.Rx2DataRate))
-            {
-                Logger.Log(loRaDevice.DevEUI, $"using standard second receive windows", LogLevel.Information);
-                freq = loRaRegion.RX2DefaultReceiveWindows.frequency;
-                datr = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
-            }
-
-            // if specific twins are set, specify second channel to be as specified
-            else
-            {
-                freq = configuration.Rx2DataFrequency;
-                datr = configuration.Rx2DataRate;
-                Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", LogLevel.Information);
-            }
-
-            return ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI);
+            return new DownlinkMessageBuilderResponse(
+                ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI),
+                isMessageTooLong);
         }
 
         /// <summary>

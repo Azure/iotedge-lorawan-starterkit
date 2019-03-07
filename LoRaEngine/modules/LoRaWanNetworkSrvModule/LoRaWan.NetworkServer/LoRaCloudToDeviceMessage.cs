@@ -46,6 +46,8 @@ namespace LoRaWan.NetworkServer
 
         public Task<bool> CompleteAsync() => Task.FromResult(true);
 
+        public Task<bool> RejectAsync() => Task.FromResult(true);
+
         /// <summary>
         /// Gets the payload bytes
         /// </summary>

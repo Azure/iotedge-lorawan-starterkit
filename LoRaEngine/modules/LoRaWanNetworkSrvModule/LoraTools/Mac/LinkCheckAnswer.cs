@@ -35,7 +35,7 @@ namespace LoRaTools
         /// Initializes a new instance of the <see cref="LinkCheckAnswer"/> class.
         /// Test Constructor
         /// </summary>
-        public LinkCheckAnswer(Span<byte> input)
+        public LinkCheckAnswer(ReadOnlySpan<byte> input)
         {
             this.Cid = (CidEnum)input[2];
             this.Margin = (uint)input[1];

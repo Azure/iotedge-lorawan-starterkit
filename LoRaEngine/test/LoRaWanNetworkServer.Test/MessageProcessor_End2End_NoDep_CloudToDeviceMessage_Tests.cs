@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
+    using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
@@ -220,7 +221,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(InitialDeviceFcntDown + 1, loraDevice.FCntDown);
             Assert.Equal(InitialDeviceFcntDown + 1, payloadDataDown.GetFcnt());
 
-                        // 6. Frame count has pending changes?
+            // 6. Frame count has pending changes?
             if (needsToSaveFcnt)
                 Assert.False(loraDevice.HasFrameCountChanges);
             else
@@ -821,7 +822,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(cloudToDeviceMessage)
                 .ReturnsAsync((Message)null); // 2nd cloud to device message does not return anything
 
-            this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+            this.LoRaDeviceClient.Setup(x => x.RejectAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
 
             var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);

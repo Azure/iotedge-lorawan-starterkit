@@ -270,7 +270,7 @@ namespace LoRaWan.NetworkServer
                 // - we don't have time to check c2d and send to device we return now
                 if (requiresConfirmation && (!loRaDevice.DownlinkEnabled || timeToSecondWindow.Subtract(LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage) <= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage))
                 {
-                    var downlinkMessage = DownlinkMessageBuilder.CreateDownlinkMessage(
+                    var downlinkMessageBuilderResp = DownlinkMessageBuilder.CreateDownlinkMessage(
                         this.configuration,
                         loRaDevice,
                         request,
@@ -280,12 +280,12 @@ namespace LoRaWan.NetworkServer
                         (ushort)fcntDown,
                         loRaADRResult);
 
-                    if (downlinkMessage != null)
+                    if (downlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
                     {
-                        _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessage);
+                        _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkPktFwdMessage);
                     }
 
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, downlinkMessage);
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, downlinkMessageBuilderResp.DownlinkPktFwdMessage);
                 }
 
                 // Flag indicating if there is another C2D message waiting
@@ -302,9 +302,10 @@ namespace LoRaWan.NetworkServer
                     if (timeAvailableToCheckCloudToDeviceMessages >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
                     {
                         cloudToDeviceMessage = await this.ReceiveCloudToDeviceAsync(loRaDevice, timeAvailableToCheckCloudToDeviceMessages);
-                        if (cloudToDeviceMessage != null && !this.ValidateCloudToDeviceMessage(loRaDevice, cloudToDeviceMessage))
+                        if (cloudToDeviceMessage != null && !this.ValidateCloudToDeviceMessage(loRaDevice, request, cloudToDeviceMessage))
                         {
-                            _ = cloudToDeviceMessage.CompleteAsync();
+                            // Reject cloud to device message based on result from ValidateCloudToDeviceMessage
+                            _ = cloudToDeviceMessage.RejectAsync();
                             cloudToDeviceMessage = null;
                         }
 
@@ -355,7 +356,7 @@ namespace LoRaWan.NetworkServer
                     return new LoRaDeviceRequestProcessResult(loRaDevice, request);
                 }
 
-                var confirmDownstream = DownlinkMessageBuilder.CreateDownlinkMessage(
+                var confirmDownlinkMessageBuilderResp = DownlinkMessageBuilder.CreateDownlinkMessage(
                     this.configuration,
                     loRaDevice,
                     request,
@@ -367,9 +368,14 @@ namespace LoRaWan.NetworkServer
 
                 if (cloudToDeviceMessage != null)
                 {
-                    if (confirmDownstream == null)
+                    if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage == null)
                     {
                         Logger.Log(loRaDevice.DevEUI, $"out of time for downstream message, will abandon c2d message id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Information);
+                        _ = cloudToDeviceMessage.AbandonAsync();
+                    }
+                    else if (confirmDownlinkMessageBuilderResp.IsMessageTooLong)
+                    {
+                        Logger.Log(loRaDevice.DevEUI, $"payload will not fit in current receive window, will abandon c2d message id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Information);
                         _ = cloudToDeviceMessage.AbandonAsync();
                     }
                     else
@@ -378,12 +384,12 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                if (confirmDownstream != null)
+                if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
                 {
-                    _ = request.PacketForwarder.SendDownstreamAsync(confirmDownstream);
+                    _ = request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
                 }
 
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownstream);
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
             }
         }
 
@@ -403,11 +409,53 @@ namespace LoRaWan.NetworkServer
             return (actualMessage != null) ? new LoRaCloudToDeviceMessageWrapper(loRaDevice, actualMessage) : null;
         }
 
-        private bool ValidateCloudToDeviceMessage(LoRaDevice loRaDevice, ILoRaCloudToDeviceMessage cloudToDeviceMsg)
+        private bool ValidateCloudToDeviceMessage(LoRaDevice loRaDevice, LoRaRequest request, ILoRaCloudToDeviceMessage cloudToDeviceMsg)
         {
             if (!cloudToDeviceMsg.IsValid(out var errorMessage))
             {
                 Logger.Log(loRaDevice.DevEUI, $"Invalid cloud to device message: {errorMessage}", LogLevel.Error);
+                return false;
+            }
+
+            var rxpk = request.Rxpk;
+            var loRaRegion = request.LoRaRegion;
+            uint maxPayload;
+
+            // If preferred Window is RX2, this is the max. payload
+            if (loRaDevice.PreferredWindow == Constants.RECEIVE_WINDOW_2)
+            {
+                // Get max. payload size for RX2, considering possilbe user provided Rx2DataRate
+                if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
+                    maxPayload = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].maxPyldSize;
+                else
+                    maxPayload = loRaRegion.GetMaxPayloadSize(this.configuration.Rx2DataRate);
+            }
+
+            // Otherwise, it is RX1.
+            else
+            {
+                maxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDR(rxpk));
+            }
+
+            // Deduct 8 bytes from max payload size.
+            maxPayload -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+
+            // Calculate total C2D message size based on optional C2D Mac commands.
+            var totalPayload = cloudToDeviceMsg.GetPayload()?.Length ?? 0;
+
+            if (cloudToDeviceMsg.MacCommands?.Count > 0)
+            {
+                foreach (MacCommand macCommand in cloudToDeviceMsg.MacCommands)
+                {
+                    totalPayload += macCommand.Length;
+                }
+            }
+
+            // C2D message and optional C2D Mac commands are bigger than max. payload size: REJECT.
+            // This message can never be delivered.
+            if (totalPayload > maxPayload)
+            {
+                Logger.Log(loRaDevice.DevEUI, $"message payload size ({totalPayload}) exceeds maximum allowed payload size ({maxPayload}) in C2D message", LogLevel.Error);
                 return false;
             }
 

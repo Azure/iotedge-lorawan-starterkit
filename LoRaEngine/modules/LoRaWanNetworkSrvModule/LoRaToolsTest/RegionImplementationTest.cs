@@ -208,5 +208,37 @@ namespace LoRaWanTest
                 });
             }
         }
+
+        [Theory]
+        [InlineData("SF12BW125", 59)]
+        [InlineData("SF11BW125", 59)]
+        [InlineData("SF10BW125", 59)]
+        [InlineData("SF9BW125", 123)]
+        [InlineData("SF8BW125", 230)]
+        [InlineData("SF7BW125", 230)]
+        [InlineData("SF7BW250", 230)]
+        [InlineData("50", 230)]
+
+        public void TestMaxPayloadLengthEU(string datr, uint maxPyldSize)
+        {
+            Assert.Equal(RegionFactory.CreateEU868Region().GetMaxPayloadSize(datr), maxPyldSize);
+        }
+
+        [Theory]
+        [InlineData("SF10BW125",  19)]
+        [InlineData("SF9BW125",   61)]
+        [InlineData("SF8BW125",  133)]
+        [InlineData("SF7BW125",  250)]
+        [InlineData("SF8BW500",  250)]
+        [InlineData("SF12BW500",  61)]
+        [InlineData("SF11BW500", 137)]
+        [InlineData("SF10BW500", 250)]
+        [InlineData("SF9BW500",  250)]
+        [InlineData("SF7BW500",  250)]
+
+        public void TestMaxPayloadLengthUS(string datr, uint maxPyldSize)
+        {
+            Assert.Equal(RegionFactory.CreateUS915Region().GetMaxPayloadSize(datr), maxPyldSize);
+        }
     }
 }

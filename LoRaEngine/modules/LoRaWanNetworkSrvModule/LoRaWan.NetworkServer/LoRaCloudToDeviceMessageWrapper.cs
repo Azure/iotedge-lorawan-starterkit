@@ -100,6 +100,8 @@ namespace LoRaWan.NetworkServer
 
         public Task<bool> AbandonAsync() => this.loRaDevice.AbandonCloudToDeviceMessageAsync(this.message);
 
+        public Task<bool> RejectAsync() => this.loRaDevice.RejectCloudToDeviceMessageAsync(this.message);
+
         public bool IsValid(out string errorMessage)
         {
             if (this.parseCloudToDeviceMessage == null)
