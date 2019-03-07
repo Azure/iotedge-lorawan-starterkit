@@ -154,6 +154,11 @@ namespace LoRaWan.NetworkServer
         private volatile uint lastSavedFcntUp;
         private volatile uint lastSavedFcntDown;
         private volatile LoRaRequest runningRequest;
+
+        public ushort ReportedRXDelay { get; set; }
+
+        public ushort DesiredRXDelay { get; set; }
+
         private ILoRaDataRequestHandler dataRequestHandler;
 
         /// <summary>
@@ -288,6 +293,11 @@ namespace LoRaWan.NetworkServer
                     if (twin.Properties.Desired.Contains(TwinProperty.RX1DROffset))
                     {
                         this.DesiredRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value);
+                    }
+
+                    if (twin.Properties.Desired.Contains(TwinProperty.RXDelay))
+                    {
+                        this.DesiredRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RXDelay].Value);
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
@@ -770,6 +780,15 @@ namespace LoRaWan.NetworkServer
                 reportedProperties[this.preferredGatewayID.PropertyName] = preferredGatewayID;
             }
 
+            if (this.DesiredRXDelay != DefaultJoinValues)
+            {
+                reportedProperties[TwinProperty.RXDelay] = this.DesiredRXDelay;
+            }
+            else
+            {
+                reportedProperties[TwinProperty.RXDelay] = null;
+            }
+
             var devAddrBeforeSave = this.DevAddr;
             var succeeded = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
 
@@ -787,6 +806,7 @@ namespace LoRaWan.NetworkServer
                 this.region.AcceptChanges();
                 this.preferredGatewayID.AcceptChanges();
 
+                this.ReportedRXDelay = this.DesiredRXDelay;
                 this.ResetFcnt();
                 this.InternalAcceptFrameCountChanges(this.fcntUp, this.fcntDown);
             }

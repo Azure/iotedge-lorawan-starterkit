@@ -20,6 +20,8 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadJoinAccept : LoRaPayload
     {
+        const ushort MaxRxDelayValue = 16;
+
         /// <summary>
         /// Gets or sets server Nonce aka JoinNonce
         /// </summary>
@@ -54,8 +56,14 @@ namespace LoRaTools.LoRaMessage
 
         public int Rx2Dr => this.DlSettings.Span[0] & 0b00001111;
 
-        public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, byte[] rxDelay, byte[] cfList)
+        public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
         {
+            byte[] rxDelay = new byte[1];
+            if (rxDelayValue >= 0 && rxDelayValue < MaxRxDelayValue)
+            {
+                rxDelay[0] = (byte)rxDelayValue;
+            }
+
             int cfListLength = cfList == null ? 0 : cfList.Length;
             this.RawMessage = new byte[1 + 12 + cfListLength];
             this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
@@ -85,6 +93,7 @@ namespace LoRaTools.LoRaMessage
                 this.NetID.Span.Reverse();
                 this.DevAddr.Span.Reverse();
                 this.DlSettings.Span.Reverse();
+                this.RxDelay.Span.Reverse();
             }
 
             var algoinput = this.Mhdr.ToArray().Concat(this.AppNonce.ToArray()).Concat(this.NetID.ToArray()).Concat(this.DevAddr.ToArray()).Concat(this.DlSettings.ToArray()).Concat(this.RxDelay.ToArray()).ToArray();
@@ -139,7 +148,7 @@ namespace LoRaTools.LoRaMessage
             Array.Copy(inputMessage, 11, dlSettings, 0, 1);
             this.DlSettings = new Memory<byte>(dlSettings);
             var rxDelay = new byte[1];
-            Array.Copy(inputMessage, 11, rxDelay, 0, 1);
+            Array.Copy(inputMessage, 12, rxDelay, 0, 1);
             this.RxDelay = new Memory<byte>(rxDelay);
             // It's the configuration list, it can be empty or up to 15 bytes
             // - 17 = - 1 - 3 - 3 - 4 - 1 - 1 - 4

@@ -226,6 +226,7 @@ namespace LoRaWan.IntegrationTest
                 AppKey = "00000000000000000000000000000009",
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
+                RXDelay = 2
             };
 
             // Device10_OTAA: used for unconfirmed message & C2D
