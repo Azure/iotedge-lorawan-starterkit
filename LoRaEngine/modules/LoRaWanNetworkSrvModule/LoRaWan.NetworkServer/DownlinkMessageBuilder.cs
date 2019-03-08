@@ -71,7 +71,7 @@ namespace LoRaWan.NetworkServer
             {
                 tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
 
-                (freq, datr) = request.Rxpk.GetDownstreamRX2DRAndFreq(loRaDevice.DevEUI, configuration.Rx2DataRate, configuration.Rx2DataFrequency, loRaRegion, loRaDevice.ReportedRX2DataRate);
+                (freq, datr) = loRaRegion.GetDownstreamRX2DRAndFreq(loRaDevice.DevEUI, configuration.Rx2DataRate, configuration.Rx2DataFrequency, loRaDevice.ReportedRX2DataRate);
             }
             else
             {

@@ -122,45 +122,5 @@ namespace LoRaTools.LoRaPhysical
 
             return (uint)signedMargin;
         }
-
-        public (double freq, string datr) GetDownstreamRX2DRAndFreq(string devEUI, string nwkSrvRx2Dr, double nwkSrvRx2Freq, Region loraRegion, int? rx2DrFromTwins)
-        {
-            double freq = 0;
-            string datr = string.Empty;
-
-            if (rx2DrFromTwins == null)
-            {
-                if (string.IsNullOrEmpty(nwkSrvRx2Dr))
-                {
-                    Logger.Log(devEUI, $"using standard second receive windows for join request", LogLevel.Information);
-                    // using EU fix DR for RX2
-                    freq = loraRegion.RX2DefaultReceiveWindows.frequency;
-                    datr = loraRegion.DRtoConfiguration[RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
-                }
-                else
-                {
-                    Logger.Log(devEUI, $"using custom second receive windows for join request", LogLevel.Information);
-                    freq = nwkSrvRx2Freq;
-                    datr = nwkSrvRx2Dr;
-                }
-            }
-            else
-            {
-                uint rx2Dr = (uint)rx2DrFromTwins;
-                if (loraRegion.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(rx2Dr))
-                {
-                    datr = loraRegion.DRtoConfiguration[rx2Dr].configuration;
-                }
-                else
-                {
-                    datr = loraRegion.DRtoConfiguration[RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
-                }
-
-                // Todo add optional frequencies via Mac Commands
-                freq = loraRegion.RX2DefaultReceiveWindows.frequency;
-            }
-
-            return (freq, datr);
-        }
     }
 }

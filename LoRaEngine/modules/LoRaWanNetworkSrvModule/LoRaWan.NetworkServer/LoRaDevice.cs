@@ -145,8 +145,6 @@ namespace LoRaWan.NetworkServer
             this.queueSync = new object();
             this.queuedRequests = new Queue<LoRaRequest>();
             this.classType = LoRaDeviceClassType.A;
-            this.ReportedRX1DROffset = 0;
-            this.ReportedRX2DataRate = 0;
         }
 
         /// <summary>

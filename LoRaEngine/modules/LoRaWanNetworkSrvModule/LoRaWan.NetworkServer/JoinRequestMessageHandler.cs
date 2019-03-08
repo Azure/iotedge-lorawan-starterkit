@@ -155,7 +155,7 @@ namespace LoRaWan.NetworkServer
                     Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Information);
                     tmst = request.Rxpk.Tmst + loraRegion.Join_accept_delay2 * 1000000;
 
-                    (freq, datr) = request.Rxpk.GetDownstreamRX2DRAndFreq(devEUI, this.configuration.Rx2DataRate, this.configuration.Rx2DataFrequency, loraRegion, null);
+                    (freq, datr) = loraRegion.GetDownstreamRX2DRAndFreq(devEUI, this.configuration.Rx2DataRate, this.configuration.Rx2DataFrequency, null);
                 }
 
                 loRaDevice.IsOurDevice = true;
@@ -164,10 +164,9 @@ namespace LoRaWan.NetworkServer
                 // Build join accept downlink message
                 Array.Reverse(netId);
                 Array.Reverse(appNonceBytes);
-                byte[] dlSettings = new byte[1]
-                {
-                    0
-                };
+
+                // Build the DlSettings fields that is a superposition of RX2DR and RX1DROffset field
+                byte[] dlSettings = new byte[1];
 
                 if (request.LoRaRegion.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(loRaDevice.DesiredRX2DataRate))
                 {
@@ -182,14 +181,7 @@ namespace LoRaWan.NetworkServer
                 if (loRaDevice.DesiredRX1DROffset >= 0 && loRaDevice.DesiredRX1DROffset < request.LoRaRegion.RX1DROffsetTable.GetUpperBound(1))
                 {
                     var rx1droffset = (byte)(loRaDevice.DesiredRX1DROffset << 4);
-                    if (dlSettings == null)
-                    {
-                        dlSettings = new byte[1] { rx1droffset };
-                    }
-                    else
-                    {
-                        dlSettings[0] = (byte)(dlSettings[0] + rx1droffset);
-                    }
+                    dlSettings[0] = (byte)(dlSettings[0] + rx1droffset);
                 }
                 else
                 {
