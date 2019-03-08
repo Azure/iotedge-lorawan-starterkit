@@ -37,6 +37,11 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public const int FCNT_DOWN_INCREMENTED_ON_ABP_DEVICE_LOAD = 10;
 
+        /// <summary>
+        /// Max allowed framecount Gap
+        /// </summary>
+        public const uint MAX_FCNT_GAP = 16384;
+
         // Cloud to device message overhead
         public const int LORA_PROTOCOL_OVERHEAD_SIZE = 8;
     }

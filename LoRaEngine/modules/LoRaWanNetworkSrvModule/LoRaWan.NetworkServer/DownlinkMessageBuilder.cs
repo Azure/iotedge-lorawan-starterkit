@@ -24,8 +24,6 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     internal static class DownlinkMessageBuilder
     {
-        const uint Mask16Bit = 0x0000FFFF;
-
         /// <summary>
         /// Creates downlink message with ack for confirmation or cloud to device message
         /// </summary>
@@ -39,7 +37,7 @@ namespace LoRaWan.NetworkServer
             uint fcntDown,
             LoRaADRResult loRaADRResult)
         {
-            var fcntDownToSend = ValidateAndCreate16bitFCnt(fcntDown);
+            var fcntDownToSend = ValidateAndConvert16bitFCnt(fcntDown);
 
             var upstreamPayload = (LoRaPayloadData)request.Payload;
             var rxpk = request.Rxpk;
@@ -205,7 +203,8 @@ namespace LoRaWan.NetworkServer
                 macCommands,
                 fport.HasValue ? new byte[] { fport.Value } : null,
                 frmPayload,
-                1);
+                1,
+                loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
             Logger.Log(loRaDevice.DevEUI, $"Sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Debug);
@@ -214,15 +213,14 @@ namespace LoRaWan.NetworkServer
                 isMessageTooLong);
         }
 
-        private static short ValidateAndCreate16bitFCnt(uint fcntDown)
+        private static ushort ValidateAndConvert16bitFCnt(uint fcntDown)
         {
             if (fcntDown == 0)
             {
                 throw new ArgumentOutOfRangeException("fcntDown");
             }
 
-            var fcntDownToSend = (short)(fcntDown & Mask16Bit);
-            return fcntDownToSend;
+            return (ushort)fcntDown;
         }
 
         internal static DownlinkMessageBuilderResponse CreateDownlinkMessage(
@@ -232,7 +230,7 @@ namespace LoRaWan.NetworkServer
             ILoRaCloudToDeviceMessage cloudToDeviceMessage,
             uint fcntDown)
         {
-            var fcntDownToSend = ValidateAndCreate16bitFCnt(fcntDown);
+            var fcntDownToSend = ValidateAndConvert16bitFCnt(fcntDown);
 
             // default fport
             byte fctrl = 0;
@@ -317,7 +315,8 @@ namespace LoRaWan.NetworkServer
                 macCommands,
                 new byte[] { cloudToDeviceMessage.Fport },
                 frmPayload,
-                1);
+                1,
+                loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
 
             return new DownlinkMessageBuilderResponse(
                 ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI),

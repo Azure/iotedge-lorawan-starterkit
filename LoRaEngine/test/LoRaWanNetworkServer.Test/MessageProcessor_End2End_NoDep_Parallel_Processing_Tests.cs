@@ -124,23 +124,19 @@ namespace LoRaWan.NetworkServer.Test
             uint? fcntUpSavedInTwin = null;
             uint? fcntDownSavedInTwin = null;
 
-            var shouldSaveTwin = (parallelTestConfiguration.DeviceTwinFcntDown ?? 0) != 0 || (parallelTestConfiguration.DeviceTwinFcntUp ?? 0) != 0;
-            if (true || shouldSaveTwin)
-            {
-                this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                    .Returns<TwinCollection>((t) =>
-                    {
-                        fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
-                        fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
-                        var duration = parallelTestConfiguration.UpdateTwinDuration.Next();
-                        Console.WriteLine($"{nameof(this.LoRaDeviceClient.Object.UpdateReportedPropertiesAsync)} sleeping for {duration}");
-                        return Task.Delay(duration)
-                            .ContinueWith((a) => true);
-                    });
-            }
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .Returns<TwinCollection>((t) =>
+                {
+                    fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
+                    fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
+                    var duration = parallelTestConfiguration.UpdateTwinDuration.Next();
+                    Console.WriteLine($"{nameof(this.LoRaDeviceClient.Object.UpdateReportedPropertiesAsync)} sleeping for {duration}");
+                    return Task.Delay(duration)
+                        .ContinueWith((a) => true);
+                });
 
-            // multi gateway will reset the fcnt
-            if (shouldSaveTwin)
+            var shouldReset = (parallelTestConfiguration.DeviceTwinFcntDown ?? 0) != 0 || (parallelTestConfiguration.DeviceTwinFcntUp ?? 0) != 0;
+            if (shouldReset)
             {
                 this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI))
                     .Returns(() =>
@@ -176,8 +172,6 @@ namespace LoRaWan.NetworkServer.Test
             var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedMessageUplink("2", fcnt: 2).Rxpk[0];
             var unconfirmedMessage3 = simulatedDevice.CreateUnconfirmedMessageUplink("3", fcnt: 3).Rxpk[0];
 
-            var packetForwarder = new TestPacketForwarder();
-
             var req1 = new WaitableLoRaRequest(unconfirmedMessage1, this.packetForwarder);
             messageDispatcher.DispatchRequest(req1);
             await Task.Delay(parallelTestConfiguration.BetweenMessageDuration.Next());
@@ -210,13 +204,10 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(3, sentTelemetry[2].Fcnt);
 
             // Ensure that the device twins were saved
-            if (shouldSaveTwin)
-            {
-                Assert.NotNull(fcntDownSavedInTwin);
-                Assert.NotNull(fcntUpSavedInTwin);
-                Assert.Equal(0U, fcntDownSavedInTwin.Value);
-                Assert.Equal(0U, fcntUpSavedInTwin.Value);
-            }
+            Assert.NotNull(fcntDownSavedInTwin);
+            Assert.NotNull(fcntUpSavedInTwin);
+            Assert.Equal(0U, fcntDownSavedInTwin.Value);
+            Assert.Equal(0U, fcntUpSavedInTwin.Value);
 
             // verify that the device in device registry has correct properties and frame counters
             var devicesForDevAddr = deviceRegistry.InternalGetCachedDevicesForDevAddr(devAddr);

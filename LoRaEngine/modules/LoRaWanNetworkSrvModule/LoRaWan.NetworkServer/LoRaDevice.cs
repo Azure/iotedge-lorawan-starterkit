@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.LoRaMessage;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
@@ -68,6 +69,8 @@ namespace LoRaWan.NetworkServer
         public int? ReceiveDelay2 { get; set; }
 
         public bool IsABPRelaxedFrameCounter { get; set; }
+
+        public bool Supports32BitFCnt { get; set; }
 
         public int DataRate { get; set; }
 
@@ -175,7 +178,7 @@ namespace LoRaWan.NetworkServer
 
                         if (twin.Properties.Desired.Contains(TwinProperty.DisableABPRelaxMode))
                         {
-                            this.IsABPRelaxedFrameCounter = !this.GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DisableABPRelaxMode].Value);
+                            this.IsABPRelaxedFrameCounter = !GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DisableABPRelaxMode].Value);
                         }
 
                         this.IsOurDevice = true;
@@ -218,26 +221,17 @@ namespace LoRaWan.NetworkServer
                         this.GatewayID = twin.Properties.Desired[TwinProperty.GatewayID].Value as string;
                     if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
                         this.SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder].Value as string;
-                    if (twin.Properties.Reported.Contains(TwinProperty.FCntUp))
-                    {
-                        this.fcntUp = this.GetTwinPropertyUIntValue(twin.Properties.Reported[TwinProperty.FCntUp].Value);
-                        this.lastSavedFcntUp = this.fcntUp;
-                    }
 
-                    if (twin.Properties.Reported.Contains(TwinProperty.FCntDown))
-                    {
-                        this.fcntDown = this.GetTwinPropertyUIntValue(twin.Properties.Reported[TwinProperty.FCntDown].Value);
-                        this.lastSavedFcntDown = this.fcntDown;
-                    }
+                    this.InitializeFrameCounters(twin);
 
                     if (twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled))
                     {
-                        this.DownlinkEnabled = this.GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value);
+                        this.DownlinkEnabled = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value);
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
                     {
-                        var preferredWindowTwinValue = this.GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
+                        var preferredWindowTwinValue = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
                         if (preferredWindowTwinValue == Constants.RECEIVE_WINDOW_2)
                             this.PreferredWindow = preferredWindowTwinValue;
                     }
@@ -257,6 +251,11 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
+                    if (twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt))
+                    {
+                        this.Supports32BitFCnt = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.Supports32BitFCnt].Value);
+                    }
+
                     return true;
                 }
                 catch (Exception ex)
@@ -269,7 +268,86 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-        int GetTwinPropertyIntValue(dynamic value)
+        private void InitializeFrameCounters(Twin twin)
+        {
+            var toReport = new TwinCollection();
+
+            bool reset = false;
+            // check if there is a reset we need to process
+            if (twin.Properties.Desired.Contains(TwinProperty.FCntResetCounter))
+            {
+                var resetDesired = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.FCntResetCounter].Value);
+                int? resetReported = null;
+                if (twin.Properties.Reported.Contains(TwinProperty.FCntResetCounter))
+                {
+                    resetReported = GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.FCntResetCounter].Value);
+                }
+
+                reset = !resetReported.HasValue || resetReported.Value < resetDesired;
+                if (reset)
+                {
+                    toReport[TwinProperty.FCntResetCounter] = resetDesired;
+                }
+            }
+
+            // up
+            var fcnt = this.InitializeFcnt(twin, reset, TwinProperty.FCntUpStart, TwinProperty.FCntUp, toReport);
+            if (fcnt.HasValue)
+            {
+                this.fcntUp = fcnt.Value;
+                this.lastSavedFcntUp = this.fcntUp;
+            }
+
+            // down
+            fcnt = this.InitializeFcnt(twin, reset, TwinProperty.FCntDownStart, TwinProperty.FCntDown, toReport);
+            if (fcnt.HasValue)
+            {
+                this.fcntDown = fcnt.Value;
+                this.lastSavedFcntDown = this.fcntDown;
+            }
+
+            if (toReport.Count > 0)
+            {
+                _ = this.SaveFrameCountChangesAsync(toReport, true);
+            }
+        }
+
+        private uint? InitializeFcnt(Twin twin, bool reset, string propertyNameStart, string fcntPropertyName, TwinCollection toReport)
+        {
+            var desired = twin.Properties.Desired;
+            var reported = twin.Properties.Reported;
+            uint? newfCnt = null;
+
+            var frameCounterStartDesired = GetUintFromTwin(desired, propertyNameStart);
+            var frameCounterStartReported = GetUintFromTwin(reported, propertyNameStart);
+            if (frameCounterStartDesired.HasValue && (reset || frameCounterStartReported != frameCounterStartDesired))
+            {
+                // force this counter in the start desired
+                newfCnt = frameCounterStartDesired;
+                toReport = toReport ?? new TwinCollection();
+                toReport[propertyNameStart] = newfCnt.Value;
+                this.hasFrameCountChanges = true;
+                Logger.Log(this.DevEUI, $"Set {fcntPropertyName} from {propertyNameStart} with {newfCnt.Value}, reset: {reset}", LogLevel.Information);
+            }
+            else
+            {
+                newfCnt = GetUintFromTwin(reported, fcntPropertyName);
+            }
+
+            return newfCnt;
+        }
+
+        static uint? GetUintFromTwin(TwinCollection collection, string propertyName)
+        {
+            if (!collection.Contains(propertyName))
+            {
+                return null;
+            }
+
+            return GetTwinPropertyUIntValue(collection[propertyName].Value);
+        }
+
+        static int GetTwinPropertyIntValue(dynamic value)
         {
             if (value is string valueString)
             {
@@ -295,7 +373,7 @@ namespace LoRaWan.NetworkServer
             return 0;
         }
 
-        uint GetTwinPropertyUIntValue(dynamic value)
+        static uint GetTwinPropertyUIntValue(dynamic value)
         {
             if (value is string valueString)
             {
@@ -321,7 +399,7 @@ namespace LoRaWan.NetworkServer
             return 0;
         }
 
-        bool GetTwinPropertyBoolValue(dynamic value)
+        static bool GetTwinPropertyBoolValue(dynamic value)
         {
             if (value is string valueString)
             {
@@ -519,7 +597,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         /// <returns><c>true</c>, if resubmit is allowed, <c>false</c> otherwise.</returns>
         /// <param name="payloadFcnt">Payload frame count</param>
-        public bool ValidateConfirmResubmit(ushort payloadFcnt)
+        public bool ValidateConfirmResubmit(uint payloadFcnt)
         {
             lock (this.fcntSync)
             {
@@ -612,11 +690,70 @@ namespace LoRaWan.NetworkServer
                 if (this.queuedRequests.TryDequeue(out var nextRequest))
                 {
                     this.runningRequest = nextRequest;
-
                     // Ensure that this is schedule in a new thread, releasing the lock asap
                     Task.Run(() => { _ = this.RunAndQueueNext(nextRequest); });
                 }
             }
+        }
+
+        internal bool ValidateMic(LoRaPayload payload)
+        {
+            var payloadData = payload as LoRaPayloadData;
+
+            var adjusted32bit = payloadData != null ? this.Get32BitAjustedFcntIfSupported(payloadData) : null;
+            var ret = payload.CheckMic(this.NwkSKey, adjusted32bit);
+            if (!ret && payloadData != null && this.CanRolloverToNext16Bits(payloadData.GetFcnt()))
+            {
+                payloadData.Reset32BitBlockInfo();
+                // if the upper 16bits changed on the client, it can be that we can't decrypt
+                ret = payloadData.CheckMic(this.NwkSKey, this.Get32BitAjustedFcntIfSupported(payloadData, true));
+                if (ret)
+                {
+                    // this is an indication that the lower 16 bits rolled over on the client
+                    // we adjust the server to the new higher 16bits and keep the lower 16bits
+                    this.Rollover32BitFCnt();
+                }
+            }
+
+            return ret;
+        }
+
+        internal uint? Get32BitAjustedFcntIfSupported(LoRaPayloadData payload, bool rollHi = false)
+        {
+            if (!this.Supports32BitFCnt || payload == null)
+                return null;
+
+            var serverValue = this.FCntUp;
+
+            if (rollHi)
+            {
+                serverValue = IncrementUpper16bit(serverValue);
+            }
+
+            return LoRaPayloadData.InferUpper32BitsForClientFcnt(payload.GetFcnt(), serverValue);
+        }
+
+        internal bool CanRolloverToNext16Bits(ushort payloadFcntUp)
+        {
+            if (!this.Supports32BitFCnt)
+            {
+                // rollovers are only supported on 32bit devices
+                return false;
+            }
+
+            var delta = payloadFcntUp + (ushort.MaxValue - (ushort)this.fcntUp);
+            return delta <= Constants.MAX_FCNT_GAP;
+        }
+
+        internal void Rollover32BitFCnt()
+        {
+            this.SetFcntUp(IncrementUpper16bit(this.fcntUp));
+        }
+
+        private static uint IncrementUpper16bit(uint val)
+        {
+            val |= 0x0000FFFF;
+            return ++val;
         }
 
         async Task RunAndQueueNext(LoRaRequest request)

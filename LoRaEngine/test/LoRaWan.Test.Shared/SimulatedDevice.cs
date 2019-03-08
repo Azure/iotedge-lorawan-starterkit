@@ -55,6 +55,12 @@ namespace LoRaWan.Test.Shared
 
         public string DevEUI => this.LoRaDevice.DeviceID;
 
+        public bool Supports32BitFCnt
+        {
+            get { return this.LoRaDevice.Supports32BitFCnt; }
+            set { this.LoRaDevice.Supports32BitFCnt = value; }
+        }
+
         SemaphoreSlim joinFinished;
 
         private bool isFirstJoinRequest = true;
@@ -130,7 +136,17 @@ namespace LoRaWan.Test.Shared
             // 0 = uplink, 1 = downlink
             int direction = 0;
 
-            var payloadData = new LoRaPayloadData(LoRaMessageType.UnconfirmedDataUp, devAddr, fCtrl, fcntBytes, macCommands, fPort, payload, direction);
+            var payloadData = new LoRaPayloadData(
+                LoRaMessageType.UnconfirmedDataUp,
+                devAddr,
+                fCtrl,
+                fcntBytes,
+                macCommands,
+                fPort,
+                payload,
+                direction,
+                this.Supports32BitFCnt ? fcnt : (uint?)null);
+
             return payloadData;
         }
 
@@ -170,7 +186,7 @@ namespace LoRaWan.Test.Shared
 
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, null, fPort, payload, direction);
+            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, null, fPort, payload, direction, this.Supports32BitFCnt ? fcnt : (uint?)null);
 
             return payloadData;
         }

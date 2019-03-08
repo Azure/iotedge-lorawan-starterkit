@@ -12,7 +12,8 @@ namespace LoRaWan.NetworkServer.Test
     {
         private readonly ILoRaDeviceClient loRaDeviceClient;
         private readonly ILoRaDataRequestHandler requestHandler;
-        private readonly Dictionary<string, ILoRaDeviceClient> deviceClientMap;
+        private readonly IDictionary<string, ILoRaDeviceClient> deviceClientMap = new Dictionary<string, ILoRaDeviceClient>();
+        private readonly IDictionary<string, LoRaDevice> deviceMap = new Dictionary<string, LoRaDevice>();
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private readonly IDeduplicationStrategyFactory deduplicationFactory;
@@ -23,14 +24,12 @@ namespace LoRaWan.NetworkServer.Test
         public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient)
         {
             this.loRaDeviceClient = loRaDeviceClient;
-            this.deviceClientMap = new Dictionary<string, ILoRaDeviceClient>();
         }
 
         public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, ILoRaDataRequestHandler requestHandler)
         {
             this.loRaDeviceClient = loRaDeviceClient;
             this.requestHandler = requestHandler;
-            this.deviceClientMap = new Dictionary<string, ILoRaDeviceClient>();
         }
 
         public TestLoRaDeviceFactory(
@@ -64,8 +63,13 @@ namespace LoRaWan.NetworkServer.Test
                 deviceClientToAssign);
 
             loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider));
+
+            this.deviceMap[deviceInfo.DevEUI] = loRaDevice;
+
             return loRaDevice;
         }
+
+        internal bool TryGetLoRaDevice(string devEUI, out LoRaDevice device) => this.deviceMap.TryGetValue(devEUI, out device);
 
         internal void SetClient(string devEUI, ILoRaDeviceClient deviceClient) => this.deviceClientMap[devEUI] = deviceClient;
     }

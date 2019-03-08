@@ -56,10 +56,13 @@ namespace LoRaWan.NetworkServer
             var loraPayload = (LoRaPayloadData)request.Payload;
 
             var payloadFcnt = loraPayload.GetFcnt();
+
+            uint payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
+
             var payloadPort = loraPayload.GetFPort();
             var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
-            LoRaADRResult loRaADRResult = null;
 
+            LoRaADRResult loRaADRResult = null;
             DeduplicationResult deduplicationResult = null;
 
             var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
@@ -74,12 +77,12 @@ namespace LoRaWan.NetworkServer
 
             // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
-            bool isFrameCounterFromNewlyStartedDevice = DetermineIfFramecounterIsFromNewlyStartedDevice(loRaDevice, payloadFcnt, frameCounterStrategy);
+            bool isFrameCounterFromNewlyStartedDevice = DetermineIfFramecounterIsFromNewlyStartedDevice(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
 
             // Reply attack or confirmed reply
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
             // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
-            if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcnt, loRaDevice, requiresConfirmation, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result))
+            if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, requiresConfirmation, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result))
             {
                 return result;
             }
@@ -97,7 +100,7 @@ namespace LoRaWan.NetworkServer
                 // it in the next step
                 if (loRaADRResult == null && loraPayload.IsAdrEnabled)
                 {
-                    loRaADRResult = await this.PerformADR(request, loRaDevice, loraPayload, payloadFcnt, loRaADRResult, frameCounterStrategy);
+                    loRaADRResult = await this.PerformADR(request, loRaDevice, loraPayload, payloadFcntAdjusted, loRaADRResult, frameCounterStrategy);
                 }
 
                 if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrReq)
@@ -113,12 +116,12 @@ namespace LoRaWan.NetworkServer
                     if (deduplicationStrategy != null)
                     {
                         deduplicationResult = bundlerResult?.DeduplicationResult
-                                              ?? await deduplicationStrategy.ResolveDeduplication(payloadFcnt, loRaDevice.FCntDown, this.configuration.GatewayID);
+                                              ?? await deduplicationStrategy.ResolveDeduplication(payloadFcntAdjusted, loRaDevice.FCntDown, this.configuration.GatewayID);
 
                         if (!deduplicationResult.CanProcess)
                         {
                             // duplication strategy is indicating that we do not need to continue processing this message
-                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcnt}", LogLevel.Information);
+                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcntAdjusted}", LogLevel.Information);
                             return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
                         }
                     }
@@ -131,7 +134,7 @@ namespace LoRaWan.NetworkServer
                 // Multiple gateways: in redis, otherwise in device twin
                 if (requiresConfirmation)
                 {
-                    fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcnt, frameCounterStrategy);
+                    fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
                     // Failed to update the fcnt down
                     // In multi gateway scenarios it means the another gateway was faster than using, can stop now
@@ -149,10 +152,10 @@ namespace LoRaWan.NetworkServer
 
                 if (!isConfirmedResubmit)
                 {
-                    var validFcntUp = isFrameCounterFromNewlyStartedDevice || (payloadFcnt > loRaDevice.FCntUp);
+                    var validFcntUp = isFrameCounterFromNewlyStartedDevice || (payloadFcntAdjusted > loRaDevice.FCntUp);
                     if (validFcntUp)
                     {
-                        Logger.Log(loRaDevice.DevEUI, $"valid frame counter, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
+                        Logger.Log(loRaDevice.DevEUI, $"valid frame counter, msg: {payloadFcntAdjusted} server: {loRaDevice.FCntUp}", LogLevel.Information);
 
                         object payloadData = null;
                         byte[] decryptedPayloadData = null;
@@ -183,7 +186,7 @@ namespace LoRaWan.NetworkServer
 
                                 if (loraPayload.IsMacAnswerRequired)
                                 {
-                                    fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcnt, frameCounterStrategy);
+                                    fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
                                     if (!fcntDown.HasValue || fcntDown <= 0)
                                     {
                                         return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
@@ -211,7 +214,7 @@ namespace LoRaWan.NetworkServer
                                         {
                                             // sending c2d to same device
                                             cloudToDeviceMessage = decodePayloadResult.CloudToDeviceMessage;
-                                            fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcnt, frameCounterStrategy);
+                                            fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
                                             if (!fcntDown.HasValue || fcntDown <= 0)
                                             {
@@ -244,11 +247,11 @@ namespace LoRaWan.NetworkServer
                             }
                         }
 
-                        loRaDevice.SetFcntUp(payloadFcnt);
+                        loRaDevice.SetFcntUp(payloadFcntAdjusted);
                     }
                     else
                     {
-                        Logger.Log(loRaDevice.DevEUI, $"invalid frame counter, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
+                        Logger.Log(loRaDevice.DevEUI, $"invalid frame counter, msg: {payloadFcntAdjusted} server: {loRaDevice.FCntUp}", LogLevel.Information);
                     }
                 }
 
@@ -315,7 +318,7 @@ namespace LoRaWan.NetworkServer
                             {
                                 // The message coming from the device was not confirmed, therefore we did not computed the frame count down
                                 // Now we need to increment because there is a C2D message to be sent
-                                fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcnt, frameCounterStrategy);
+                                fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
                                 if (!fcntDown.HasValue || fcntDown <= 0)
                                 {
@@ -589,7 +592,7 @@ namespace LoRaWan.NetworkServer
             return bundlerResult;
         }
 
-        private async Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, ushort payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
+        private async Task<LoRaADRResult> PerformADR(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, uint payloadFcnt, LoRaADRResult loRaADRResult, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
             var loRaADRManager = this.loRaADRManagerFactory.Create(this.loRaADRStrategyProvider, frameCounterStrategy, loRaDevice);
 
@@ -625,10 +628,11 @@ namespace LoRaWan.NetworkServer
             return loRaADRResult;
         }
 
-        private static bool ValidateRequest(LoRaRequest request, bool isFrameCounterFromNewlyStartedDevice, ushort payloadFcnt, LoRaDevice loRaDevice, bool requiresConfirmation, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result)
+        private static bool ValidateRequest(LoRaRequest request, bool isFrameCounterFromNewlyStartedDevice, uint payloadFcnt, LoRaDevice loRaDevice, bool requiresConfirmation, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result)
         {
             isConfirmedResubmit = false;
             result = null;
+
             if (!isFrameCounterFromNewlyStartedDevice && payloadFcnt <= loRaDevice.FCntUp)
             {
                 // if it is confirmed most probably we did not ack in time before or device lost the ack packet so we should continue but not send the msg to iothub
@@ -652,10 +656,21 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            return true;
+            // ensuring the framecount difference between the node and the server
+            // is <= MAX_FCNT_GAP
+            var diff = payloadFcnt > loRaDevice.FCntUp ? payloadFcnt - loRaDevice.FCntUp : loRaDevice.FCntUp - payloadFcnt;
+            var valid = diff <= Constants.MAX_FCNT_GAP;
+
+            if (!valid)
+            {
+                Logger.Log(loRaDevice.DevEUI, $"invalid frame counter (diverges too much), message ignored, msg: {payloadFcnt} server: {loRaDevice.FCntUp}", LogLevel.Information);
+                result = new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.InvalidFrameCounter);
+            }
+
+            return valid;
         }
 
-        private static bool DetermineIfFramecounterIsFromNewlyStartedDevice(LoRaDevice loRaDevice, ushort payloadFcnt, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
+        private static bool DetermineIfFramecounterIsFromNewlyStartedDevice(LoRaDevice loRaDevice, uint payloadFcnt, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
             var isFrameCounterFromNewlyStartedDevice = false;
             if (payloadFcnt <= 1)
