@@ -609,7 +609,7 @@ namespace LoRaWan.NetworkServer.Test
             var beforeJoinValues = 2;
             var afterJoinValues = 3;
             int reportedBeforeJoinRx1DROffsetValue = 0;
-            int reportedAfterJoinRx2DRValue = 0;
+            int reportedBeforeJoinRx2DRValue = 0;
             string deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             string afterJoinAppSKey = null;
@@ -656,7 +656,7 @@ namespace LoRaWan.NetworkServer.Test
                  else
                  {
                      reportedBeforeJoinRx1DROffsetValue = updatedTwin[TwinProperty.RX1DROffset].Value;
-                     reportedAfterJoinRx2DRValue = updatedTwin[TwinProperty.RX2DataRate].Value;
+                     reportedBeforeJoinRx2DRValue = updatedTwin[TwinProperty.RX2DataRate].Value;
                  }
              })
              .ReturnsAsync(true);
@@ -696,7 +696,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(afterJoinValues, joinAccept.Rx2Dr);
             Assert.Equal(afterJoinValues, joinAccept.Rx1DrOffset);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx1DROffsetValue);
-            Assert.Equal(beforeJoinValues, reportedAfterJoinRx2DRValue);
+            Assert.Equal(beforeJoinValues, reportedBeforeJoinRx2DRValue);
         }
 
         [Theory]
