@@ -192,20 +192,14 @@ namespace LoRaWanTest
             var rxpk = GenerateRxpk(datarate, freq);
             if (region == LoRaRegion.EU868)
             {
-                Assert.Throws<RegionLimitException>(() =>
-                {
-                    RegionFactory.CreateEU868Region().GetDownstreamChannelFrequency(rxpk[0]);
-                    RegionFactory.CreateEU868Region().GetDownstreamDR(rxpk[0]);
-                });
+                Assert.True(RegionFactory.CreateEU868Region().GetDownstreamChannelFrequency(rxpk[0]) == 0 ||
+                    RegionFactory.CreateEU868Region().GetDownstreamDR(rxpk[0]) == null);
             }
 
             if (region == LoRaRegion.US915)
             {
-                Assert.Throws<RegionLimitException>(() =>
-                {
-                    RegionFactory.CreateUS915Region().GetDownstreamChannelFrequency(rxpk[0]);
-                    RegionFactory.CreateUS915Region().GetDownstreamDR(rxpk[0]);
-                });
+                Assert.True(RegionFactory.CreateUS915Region().GetDownstreamChannelFrequency(rxpk[0]) == 0 ||
+                    RegionFactory.CreateUS915Region().GetDownstreamDR(rxpk[0]) == null);
             }
         }
 
