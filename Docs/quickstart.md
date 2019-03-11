@@ -168,8 +168,9 @@ This section provide a brief description of the device reported properties you c
 |-|-|-|
 |DataRate|The Device Current Datarate|This value will be only reported if you are using Adaptive Data Rate||
 |TxPower|The Device Current Transmit Power|This value will be only reported if you are using Adaptive Data Rate||
-|DataRate|The Device Current Datarate|This value will be only reported if you are using Adaptive Data Rate||
-|DataRate|The Device Current Datarate|This value will be only reported if you are using Adaptive Data Rate||
+|NbRep|The Device Current repetition when transmitting. E.g. if set to two, the device will transmit twice his upstream messages|This value will be only reported if you are using Adaptive Data Rate||
+|RX2DataRate|The Device Current Rx2Datarate|This value will be only reported if you set a Custom property as specified in the previous section. The two values might differ as a device value is currently updated only as part of the join process.||
+|RX1DROffset|The Device Current RX1DROffset|This value will be only reported if you set a Custom property as specified in the previous section. The two values might differ as a device value is currently updated only as part of the join process.||
 
 ### Decoders
 
