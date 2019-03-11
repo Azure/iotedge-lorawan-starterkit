@@ -13,7 +13,6 @@ namespace LoRaWan.NetworkServer
     {
         private readonly string gatewayID;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
-        private object thelock = new object();
 
         public MultiGatewayFrameCounterUpdateStrategy(string gatewayID, LoRaDeviceAPIServiceBase loRaDeviceAPIService)
         {

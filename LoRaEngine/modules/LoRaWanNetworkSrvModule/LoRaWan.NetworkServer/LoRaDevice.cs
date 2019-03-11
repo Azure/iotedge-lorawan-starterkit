@@ -176,9 +176,9 @@ namespace LoRaWan.NetworkServer
                         if (string.IsNullOrEmpty(this.DevAddr))
                             throw new InvalidLoRaDeviceException("DevAddr is empty");
 
-                        if (twin.Properties.Desired.Contains(TwinProperty.DisableABPRelaxMode))
+                        if (twin.Properties.Desired.Contains(TwinProperty.ABPRelaxMode))
                         {
-                            this.IsABPRelaxedFrameCounter = !GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DisableABPRelaxMode].Value);
+                            this.IsABPRelaxedFrameCounter = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.ABPRelaxMode].Value);
                         }
 
                         this.IsOurDevice = true;

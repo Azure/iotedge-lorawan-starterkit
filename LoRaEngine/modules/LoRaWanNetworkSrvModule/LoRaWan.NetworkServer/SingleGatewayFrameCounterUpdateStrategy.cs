@@ -3,8 +3,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System;
-    using System.Threading;
     using System.Threading.Tasks;
 
     public class SingleGatewayFrameCounterUpdateStrategy : ILoRaDeviceFrameCounterUpdateStrategy, ILoRaDeviceInitializer
@@ -25,8 +23,6 @@ namespace LoRaWan.NetworkServer
         }
 
         public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => this.InternalSaveChangesAsync(loRaDevice, force: false);
-
-        private SemaphoreSlim ss = new SemaphoreSlim(1);
 
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {

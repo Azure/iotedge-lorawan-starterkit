@@ -137,15 +137,15 @@ namespace LoRaWanNetworkServer.Test
         // DR0 with high lsnr will result in move to DR5
         [InlineData(2, 20, "SF12BW125", 5, 7)]
         // DR1 with high lsnr will result in move to DR5
-        // [InlineData(3, 20, "SF11BW125", 5, 7)]
+        [InlineData(3, 20, "SF11BW125", 5, 7)]
         // DR3 with high lsnr will result in move to DR5
-        // [InlineData(4, 20, "SF9BW125", 5, 7)]
+        [InlineData(4, 20, "SF9BW125", 5, 7)]
         // DR5 with high lsnr will result in reduce the TxPower to 7
-        // [InlineData(5, 20, "SF9BW125", 5, 7)]
+        [InlineData(5, 20, "SF9BW125", 5, 7)]
         // DR5 with low lsnr will not try to modify dr and already at maxTxPower
-        // [InlineData(6, -10, "SF7BW125", 5, 0)]
+        [InlineData(6, -10, "SF7BW125", 5, 0)]
         // Device 5 massive increase in txpower due to very bad lsnr
-        // [InlineData(5, -30, "SF9BW125", 3, 0)]
+        [InlineData(5, -30, "SF9BW125", 3, 0)]
         public async Task Perform_DR_Adaptation_When_Needed(uint deviceId, float currentLsnr, string currentDR, int expectedDR, int expectedTxPower)
         {
             int messageCount = 21;
@@ -547,7 +547,7 @@ namespace LoRaWanNetworkServer.Test
             var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             var requestInt = this.CreateWaitableRequest(rxpkInt);
             messageProcessor.DispatchRequest(requestInt);
-            Assert.True(await requestInt.WaitCompleteAsync());
+            Assert.True(await requestInt.WaitCompleteAsync(-1));
             payloadFcnt++;
             return payloadFcnt;
         }

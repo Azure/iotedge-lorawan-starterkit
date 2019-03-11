@@ -45,7 +45,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Theory]
-        // [InlineData(0U)]
+        [InlineData(0U)]
         [InlineData(9U)]
         public async Task When_Device_Has_Up_To_9_Changes_In_Fcnt_Up_Should_Not_Save_Changes(uint startFcntUp)
         {

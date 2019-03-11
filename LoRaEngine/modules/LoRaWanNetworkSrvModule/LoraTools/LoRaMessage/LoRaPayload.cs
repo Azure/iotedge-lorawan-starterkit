@@ -198,7 +198,7 @@ namespace LoRaTools.LoRaMessage
 
         /// <summary>
         /// In 32bit mode, the server needs to infer the upper 16bits by observing
-        /// the traffict between the device and the server. We keep a 32bit counter
+        /// the traffic between the device and the server. We keep a 32bit counter
         /// on the server and combine the upper 16bits with what the client sends us
         /// on the wire (lower 16bits). The result is the inferred counter as we
         /// assume it is on the client.

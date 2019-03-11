@@ -248,7 +248,7 @@ namespace LoRaWan.NetworkServer.Test
             initialTwin.Properties.Desired[TwinProperty.DevAddr] = devAddr;
             initialTwin.Properties.Desired[TwinProperty.SensorDecoder] = simulatedDevice.LoRaDevice.SensorDecoder;
             initialTwin.Properties.Desired[TwinProperty.GatewayID] = simulatedDevice.LoRaDevice.GatewayID;
-            initialTwin.Properties.Desired[TwinProperty.DisableABPRelaxMode] = !abpRelaxed;
+            initialTwin.Properties.Desired[TwinProperty.ABPRelaxMode] = abpRelaxed;
 
             initialTwin.Properties.Desired[TwinProperty.Supports32BitFCnt] = supports32Bit;
 
