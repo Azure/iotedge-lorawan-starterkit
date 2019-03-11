@@ -481,7 +481,7 @@ namespace LoRaWan.IntegrationTest
         /// Ensures that a device that has preferred window set to two receives C2D messages
         /// </summary>
         [Fact]
-        public async Task C2D_When_Device_Has_Preferred_Windows_2_Should_Receive_In_2nd_Window()
+        public async Task C2D_When_Device_Has_Preferred_Windows_2_Should_Receive_In_2nd_Window_With_Custom_DR()
         {
             var device = this.TestFixtureCi.Device21_ABP;
             this.LogTestStart(device);

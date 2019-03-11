@@ -50,6 +50,10 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public Memory<byte> Fcnt { get; set; }
 
+        public int Rx1DrOffset => (this.DlSettings.Span[0] >> 4) & 0b00000111;
+
+        public int Rx2Dr => this.DlSettings.Span[0] & 0b00001111;
+
         public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, byte[] rxDelay, byte[] cfList)
         {
             int cfListLength = cfList == null ? 0 : cfList.Length;
@@ -80,6 +84,7 @@ namespace LoRaTools.LoRaMessage
                 this.AppNonce.Span.Reverse();
                 this.NetID.Span.Reverse();
                 this.DevAddr.Span.Reverse();
+                this.DlSettings.Span.Reverse();
             }
 
             var algoinput = this.Mhdr.ToArray().Concat(this.AppNonce.ToArray()).Concat(this.NetID.ToArray()).Concat(this.DevAddr.ToArray()).Concat(this.DlSettings.ToArray()).Concat(this.RxDelay.ToArray()).ToArray();

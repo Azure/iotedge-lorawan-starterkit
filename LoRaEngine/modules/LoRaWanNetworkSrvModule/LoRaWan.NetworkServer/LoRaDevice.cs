@@ -19,6 +19,11 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal const int MaxConfirmationResubmitCount = 3;
 
+        /// <summary>
+        /// The default values for RX1DROffset, RX2DR, RXDelay
+        /// </summary>
+        internal const ushort DefaultJoinValues = 0;
+
         public string DevAddr { get; set; }
 
         // Gets if a device is activated by personalization
@@ -111,7 +116,16 @@ namespace LoRaWan.NetworkServer
         private readonly object queueSync = new object();
         private readonly Queue<LoRaRequest> queuedRequests = new Queue<LoRaRequest>();
 
+        public ushort DesiredRX2DataRate { get; set; }
+
+        public ushort DesiredRX1DROffset { get; set; }
+
+        public ushort ReportedRX2DataRate { get; set; }
+
+        public ushort ReportedRX1DROffset { get; set; }
+
         private volatile bool hasFrameCountChanges;
+
         private byte confirmationResubmitCount = 0;
         private volatile uint fcntUp;
         private volatile uint fcntDown;
@@ -241,6 +255,16 @@ namespace LoRaWan.NetworkServer
                         var val = twin.Properties.Desired[TwinProperty.Deduplication].Value as string;
                         Enum.TryParse<DeduplicationMode>(val, out DeduplicationMode mode);
                         this.Deduplication = mode;
+                    }
+
+                    if (twin.Properties.Desired.Contains(TwinProperty.RX2DataRate))
+                    {
+                        this.DesiredRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
+                    }
+
+                    if (twin.Properties.Desired.Contains(TwinProperty.RX1DROffset))
+                    {
+                        this.DesiredRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value);
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
@@ -639,6 +663,25 @@ namespace LoRaWan.NetworkServer
             reportedProperties[TwinProperty.NetID] = netID;
             reportedProperties[TwinProperty.DevNonce] = devNonce;
 
+            // Additional Join Property Saved
+            if (this.DesiredRX1DROffset != DefaultJoinValues)
+            {
+                reportedProperties[TwinProperty.RX1DROffset] = this.DesiredRX1DROffset;
+            }
+            else
+            {
+                reportedProperties[TwinProperty.RX1DROffset] = null;
+            }
+
+            if (this.DesiredRX2DataRate != DefaultJoinValues)
+            {
+                reportedProperties[TwinProperty.RX2DataRate] = this.DesiredRX2DataRate;
+            }
+            else
+            {
+                reportedProperties[TwinProperty.RX2DataRate] = null;
+            }
+
             var devAddrBeforeSave = this.DevAddr;
             var succeeded = await this.loRaDeviceClient.UpdateReportedPropertiesAsync(reportedProperties);
 
@@ -651,6 +694,8 @@ namespace LoRaWan.NetworkServer
                 this.AppNonce = appNonce;
                 this.DevNonce = devNonce;
                 this.NetID = netID;
+                this.ReportedRX1DROffset = this.DesiredRX1DROffset;
+                this.ReportedRX2DataRate = this.DesiredRX2DataRate;
                 this.ResetFcnt();
                 this.AcceptFrameCountChanges();
             }

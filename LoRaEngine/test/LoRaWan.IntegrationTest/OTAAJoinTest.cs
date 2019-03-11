@@ -157,7 +157,7 @@ namespace LoRaWan.IntegrationTest
 
         // Performs a OTAA join and sends 1 unconfirmed, 1 confirmed and rejoins
         [Fact]
-        public async Task Test_OTAA_Join_Send_And_Rejoin()
+        public async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR()
         {
             var device = this.TestFixtureCi.Device20_OTAA;
             this.LogTestStart(device);
@@ -211,6 +211,10 @@ namespace LoRaWan.IntegrationTest
             // After transferPacketWithConfirmed: Expectation from serial
             // +CMSG: ACK Received
             await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
+
+            // Checking than the communication occurs on DR 4 and RX2 as part of preferred windows RX2 and custom RX2 DR
+            await AssertUtils.ContainsWithRetriesAsync(x => x.StartsWith("+CMSG: RXWIN2"), this.ArduinoDevice.SerialLogs);
+            await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"datr\":\"SF9BW125\""), null);
 
             // 0000000000000004: decoding with: DecoderValueSensor port: 8
             await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");

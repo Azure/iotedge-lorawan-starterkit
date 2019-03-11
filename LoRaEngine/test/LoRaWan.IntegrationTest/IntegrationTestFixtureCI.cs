@@ -167,6 +167,7 @@ namespace LoRaWan.IntegrationTest
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
+                RX1DROffset = 1
             };
 
             // Device5_ABP: used for ABP confirmed & unconfirmed messaging
@@ -348,6 +349,8 @@ namespace LoRaWan.IntegrationTest
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
+                RX2DataRate = 3,
+                PreferredWindow = 2
             };
 
             // Device21_ABP: Preferred 2nd window
@@ -360,7 +363,7 @@ namespace LoRaWan.IntegrationTest
                 AppSKey = "00000000000000000000000000000021",
                 NwkSKey = "00000000000000000000000000000021",
                 DevAddr = "00000021",
-                PreferredWindow = 2,
+                PreferredWindow = 2
             };
 
             // Device22_ABP: used for mac Command testing

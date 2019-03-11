@@ -8,6 +8,8 @@ namespace LoRaTools.Regions
     using System.Linq;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
+    using LoRaWan;
+    using Microsoft.Extensions.Logging;
 
     public class Region
     {
@@ -234,57 +236,116 @@ namespace LoRaTools.Regions
         /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
         public double GetDownstreamChannelFrequency(Rxpk upstreamChannel)
         {
-            this.EnsureValidRxpk(upstreamChannel);
-            if (this.LoRaRegion == LoRaRegion.EU868)
+            if (this.IsValidRxpk(upstreamChannel))
             {
-                // in case of EU, you respond on same frequency as you sent data.
-                return upstreamChannel.Freq;
-            }
-            else if (this.LoRaRegion == LoRaRegion.US915)
-            {
-                int upstreamChannelNumber;
-                // if DR4 the coding are different.
-                if (upstreamChannel.Datr == "SF8BW500")
+                if (this.LoRaRegion == LoRaRegion.EU868)
                 {
-                    // ==DR4
-                    upstreamChannelNumber = 64 + (int)Math.Round((upstreamChannel.Freq - 903) / 1.6, 0);
+                    // in case of EU, you respond on same frequency as you sent data.
+                    return upstreamChannel.Freq;
                 }
-                else
+                else if (this.LoRaRegion == LoRaRegion.US915)
                 {
-                    // if not DR4 other encoding
-                    upstreamChannelNumber = (int)((upstreamChannel.Freq - 902.3) / 0.2);
-                }
+                    int upstreamChannelNumber;
+                    // if DR4 the coding are different.
+                    if (upstreamChannel.Datr == "SF8BW500")
+                    {
+                        // ==DR4
+                        upstreamChannelNumber = 64 + (int)Math.Round((upstreamChannel.Freq - 903) / 1.6, 0);
+                    }
+                    else
+                    {
+                        // if not DR4 other encoding
+                        upstreamChannelNumber = (int)((upstreamChannel.Freq - 902.3) / 0.2);
+                    }
 
-                return Math.Round(923.3 + upstreamChannelNumber % 8 * 0.6, 1);
+                    return Math.Round(923.3 + upstreamChannelNumber % 8 * 0.6, 1);
+                }
             }
 
             return 0;
         }
 
         /// <summary>
-        /// Implement correct logic to get the downstream data rate based on the region.
+        /// Method to calculate the RX2 DataRate and frequency.
+        /// Those parameters can be set in the device twins, Server Twins, or it could be a regional feature.
         /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
-        public string GetDownstreamDR(Rxpk upstreamChannel)
+        public (double freq, string datr) GetDownstreamRX2DRAndFreq(string devEUI, string nwkSrvRx2Dr, double nwkSrvRx2Freq, int? rx2DrFromTwins)
         {
-            this.EnsureValidRxpk(upstreamChannel);
-            if (this.LoRaRegion == LoRaRegion.EU868)
+            double freq = 0;
+            string datr;
+
+            // If the rx2 property is in twins, it is device specific and take precedence
+            if (rx2DrFromTwins == null)
             {
-                // in case of EU, you respond on same frequency as you sent data.
-                return upstreamChannel.Datr;
-            }
-            else if (this.LoRaRegion == LoRaRegion.US915)
-            {
-                var dr = this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == upstreamChannel.Datr).Key;
-                // TODO take care of rx1droffset
-                if (dr >= 0 && dr < 5)
+                // Otherwise we check if we have some properties set on the server (server Specific)
+                if (string.IsNullOrEmpty(nwkSrvRx2Dr))
                 {
-                    var (configuration, maxPyldSize) = dr != 4 ? this.DRtoConfiguration[10 + dr] : this.DRtoConfiguration[13];
-                    return configuration;
+                    // If not we use the region default.
+                    Logger.Log(devEUI, $"using standard second receive windows for join request", LogLevel.Information);
+                    // using EU fix DR for RX2
+                    freq = this.RX2DefaultReceiveWindows.frequency;
+                    datr = this.DRtoConfiguration[RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
                 }
                 else
                 {
-                    throw new RegionLimitException($"Datarate {upstreamChannel.Datr} in {this.LoRaRegion} region was not within the acceptable range of upstream datarates.", RegionLimitExceptionType.Datarate);
+                    Logger.Log(devEUI, $"using custom second receive windows for join request", LogLevel.Information);
+                    freq = nwkSrvRx2Freq;
+                    datr = nwkSrvRx2Dr;
+                }
+            }
+            else
+            {
+                uint rx2Dr = (uint)rx2DrFromTwins;
+                if (this.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(rx2Dr))
+                {
+                    datr = this.DRtoConfiguration[rx2Dr].configuration;
+                }
+                else
+                {
+                    datr = this.DRtoConfiguration[RegionFactory.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
+                }
+
+                // Todo add optional frequencies via Mac Commands
+                freq = this.RX2DefaultReceiveWindows.frequency;
+            }
+
+            return (freq, datr);
+        }
+
+        /// <summary>
+        /// Implement correct logic to get the downstream data rate based on the region.
+        /// </summary>
+        /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
+        public string GetDownstreamDR(Rxpk upstreamChannel, uint rx1DrOffset = 0)
+        {
+            if (this.IsValidRxpk(upstreamChannel))
+            {
+                if (this.LoRaRegion == LoRaRegion.EU868)
+                {
+                    // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
+                    if (rx1DrOffset < this.RX1DROffsetTable.GetUpperBound(1))
+                    {
+                        // in case of EU, you respond on same frequency as you sent data.
+                        return this.DRtoConfiguration[(uint)this.RX1DROffsetTable[this.GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].configuration;
+                    }
+                    else
+                    {
+                        return upstreamChannel.Datr;
+                    }
+                }
+                else if (this.LoRaRegion == LoRaRegion.US915)
+                {
+                    var dr = this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == upstreamChannel.Datr).Key;
+                    // TODO take care of rx1droffset
+                    if (dr >= 0 && dr < 5)
+                    {
+                        var (configuration, maxPyldSize) = dr != 4 ? this.DRtoConfiguration[10 + dr] : this.DRtoConfiguration[13];
+                        return configuration;
+                    }
+                    else
+                    {
+                        throw new RegionLimitException($"Datarate {upstreamChannel.Datr} in {this.LoRaRegion} region was not within the acceptable range of upstream datarates.", RegionLimitExceptionType.Datarate);
+                    }
                 }
             }
 
@@ -302,34 +363,33 @@ namespace LoRaTools.Regions
             return maxPayloadSize;
         }
 
-        private void EnsureValidRxpk(Rxpk rxpk)
+        /// <summary>
+        /// This method Check that a received packet is within the correct frenquency range and has a valid Datr.
+        /// </summary>
+        private bool IsValidRxpk(Rxpk rxpk)
         {
             if (this.LoRaRegion == LoRaRegion.EU868)
             {
                 if (rxpk.Freq < EU868.RegionLimits.FrequencyRange.min ||
-                    rxpk.Freq > EU868.RegionLimits.FrequencyRange.max)
+                    rxpk.Freq > EU868.RegionLimits.FrequencyRange.max ||
+                    !EU868.RegionLimits.DatarateRange.Contains(rxpk.Datr))
                 {
-                    throw new RegionLimitException($"Frequency {rxpk.Freq} in {this.LoRaRegion} region was not within the acceptable range of frequencies.", RegionLimitExceptionType.Frequency);
-                }
-
-                if (!EU868.RegionLimits.DatarateRange.Contains(rxpk.Datr))
-                {
-                    throw new RegionLimitException($"Datarate {rxpk.Datr} in {this.LoRaRegion} region was not within the acceptable range of upstream datarates.", RegionLimitExceptionType.Datarate);
+                    Logger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
+                    return false;
                 }
             }
             else if (this.LoRaRegion == LoRaRegion.US915)
             {
                 if (rxpk.Freq < US915.RegionLimits.FrequencyRange.min ||
-                    rxpk.Freq > US915.RegionLimits.FrequencyRange.max)
+                    rxpk.Freq > US915.RegionLimits.FrequencyRange.max ||
+                    !US915.RegionLimits.DatarateRange.Contains(rxpk.Datr))
                 {
-                    throw new RegionLimitException($"Frequency {rxpk.Freq} in {this.LoRaRegion} region was not within the acceptable range of frequencies.", RegionLimitExceptionType.Frequency);
-                }
-
-                if (!US915.RegionLimits.DatarateRange.Contains(rxpk.Datr))
-                {
-                    throw new RegionLimitException($"Datarate {rxpk.Datr} in {this.LoRaRegion} region was not within the acceptable range of upstream datarates.", RegionLimitExceptionType.Datarate);
+                    Logger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
+                    return false;
                 }
             }
+
+            return true;
         }
 
         /// <summary>

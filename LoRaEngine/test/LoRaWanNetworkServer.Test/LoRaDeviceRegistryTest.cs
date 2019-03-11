@@ -412,6 +412,7 @@ namespace LoRaWan.NetworkServer.Test
 
             deviceRegistry.GetLoRaRequestQueue(request).Queue(request);
             Assert.True(await request.WaitCompleteAsync());
+            await Task.Delay(50);
             Assert.NotNull(await deviceRegistry.GetDeviceByDevEUIAsync(simDevice.DevEUI));
 
             handlerImplementation.VerifyAll();
