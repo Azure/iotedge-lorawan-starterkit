@@ -166,7 +166,8 @@ namespace LoRaWan.IntegrationTest
                 AppKey = "00000000000000000000000000000004",
                 GatewayID = gatewayID,
                 SensorDecoder = "DecoderValueSensor",
-                IsIoTHubDevice = true
+                IsIoTHubDevice = true,
+                RX1DROffset = 1
             };
 
             // Device5_ABP: used for ABP confirmed & unconfirmed messaging
