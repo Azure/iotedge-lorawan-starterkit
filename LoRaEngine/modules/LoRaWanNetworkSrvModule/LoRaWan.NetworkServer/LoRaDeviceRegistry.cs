@@ -237,7 +237,7 @@ namespace LoRaWan.NetworkServer
             if (string.IsNullOrEmpty(loRaDevice.NwkSKey))
                 return false;
 
-            var checkMicResult = loraPayload.CheckMic(loRaDevice.NwkSKey);
+            var checkMicResult = loRaDevice.ValidateMic(loraPayload);
             if (!checkMicResult && logError)
             {
                 Logger.Log(loRaDevice.DevEUI, $"with devAddr {loRaDevice.DevAddr} check MIC failed", LogLevel.Debug);

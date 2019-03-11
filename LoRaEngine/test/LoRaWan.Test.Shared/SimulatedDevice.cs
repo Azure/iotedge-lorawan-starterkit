@@ -23,9 +23,9 @@ namespace LoRaWan.Test.Shared
     {
         public TestDeviceInfo LoRaDevice { get; internal set; }
 
-        public int FrmCntUp { get; set; }
+        public uint FrmCntUp { get; set; }
 
-        public int FrmCntDown { get; set; }
+        public uint FrmCntDown { get; set; }
 
         public PhysicalPayload LastPayload { get; set; }
 
@@ -55,11 +55,17 @@ namespace LoRaWan.Test.Shared
 
         public string DevEUI => this.LoRaDevice.DeviceID;
 
+        public bool Supports32BitFCnt
+        {
+            get { return this.LoRaDevice.Supports32BitFCnt; }
+            set { this.LoRaDevice.Supports32BitFCnt = value; }
+        }
+
         SemaphoreSlim joinFinished;
 
         private bool isFirstJoinRequest = true;
 
-        public SimulatedDevice(TestDeviceInfo testDeviceInfo, int frmCntDown = 0, int frmCntUp = 0)
+        public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0)
         {
             this.LoRaDevice = testDeviceInfo;
 
@@ -95,18 +101,18 @@ namespace LoRaWan.Test.Shared
             return joinRequest;
         }
 
-        public UplinkPktFwdMessage CreateUnconfirmedMessageUplink(string data, int? fcnt = null, byte fport = 1, byte fctrl = 0x00) => this.CreateUnconfirmedDataUpMessage(data, fcnt, fport, fctrl).SerializeUplink(this.AppSKey, this.NwkSKey);
+        public UplinkPktFwdMessage CreateUnconfirmedMessageUplink(string data, uint? fcnt = null, byte fport = 1, byte fctrl = 0x80) => this.CreateUnconfirmedDataUpMessage(data, fcnt, fport, fctrl).SerializeUplink(this.AppSKey, this.NwkSKey);
 
         /// <summary>
         /// Creates request to send unconfirmed data message
         /// </summary>
-        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, int? fcnt = null, byte fport = 1, byte fctrl = 0x00, bool isHexPayload = false, List<MacCommand> macCommands = null)
+        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, byte fctrl = 0x00, bool isHexPayload = false, List<MacCommand> macCommands = null)
         {
             byte[] devAddr = ConversionHelper.StringToByteArray(this.LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
             byte[] fCtrl = new byte[] { fctrl };
             fcnt = fcnt ?? this.FrmCntUp + 1;
-            this.FrmCntUp = Convert.ToInt32(fcnt);
+            this.FrmCntUp = fcnt.GetValueOrDefault();
 
             var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
 
@@ -130,23 +136,33 @@ namespace LoRaWan.Test.Shared
             // 0 = uplink, 1 = downlink
             int direction = 0;
 
-            var payloadData = new LoRaPayloadData(LoRaMessageType.UnconfirmedDataUp, devAddr, fCtrl, fcntBytes, macCommands, fPort, payload, direction);
+            var payloadData = new LoRaPayloadData(
+                LoRaMessageType.UnconfirmedDataUp,
+                devAddr,
+                fCtrl,
+                fcntBytes,
+                macCommands,
+                fPort,
+                payload,
+                direction,
+                this.Supports32BitFCnt ? fcnt : (uint?)null);
+
             return payloadData;
         }
 
-        public UplinkPktFwdMessage CreateConfirmedMessageUplink(string data, int? fcnt = null, byte fport = 1) => this.CreateConfirmedDataUpMessage(data, fcnt, fport).SerializeUplink(this.AppSKey, this.NwkSKey);
+        public UplinkPktFwdMessage CreateConfirmedMessageUplink(string data, uint? fcnt = null, byte fport = 1) => this.CreateConfirmedDataUpMessage(data, fcnt, fport).SerializeUplink(this.AppSKey, this.NwkSKey);
 
         /// <summary>
         /// Creates request to send unconfirmed data message
         /// </summary>
-        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, int? fcnt = null, byte fport = 1, bool isHexPayload = false)
+        public LoRaPayloadData CreateConfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, bool isHexPayload = false)
         {
             byte[] devAddr = ConversionHelper.StringToByteArray(this.LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
             byte[] fCtrl = new byte[] { 0x80 };
 
             fcnt = fcnt ?? this.FrmCntUp + 1;
-            this.FrmCntUp = Convert.ToInt32(fcnt);
+            this.FrmCntUp = fcnt.GetValueOrDefault();
 
             var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
 
@@ -170,7 +186,7 @@ namespace LoRaWan.Test.Shared
 
             // 0 = uplink, 1 = downlink
             int direction = 0;
-            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, null, fPort, payload, direction);
+            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, null, fPort, payload, direction, this.Supports32BitFCnt ? fcnt : (uint?)null);
 
             return payloadData;
         }

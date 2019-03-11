@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(10, 0)]
         [InlineData(0, 10)]
         [InlineData(22, 22)]
-        public async Task When_Device_Has_No_Changes_To_Fcnt_Should_Not_Save_Changes(int fcntDown, int fcntUp)
+        public async Task When_Device_Has_No_Changes_To_Fcnt_Should_Not_Save_Changes(uint fcntDown, uint fcntUp)
         {
             var target = new MultiGatewayFrameCounterUpdateStrategy(this.gatewayID, this.deviceApi.Object);
 
@@ -45,9 +45,9 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Theory]
-        [InlineData(0)]
-        [InlineData(9)]
-        public async Task When_Device_Has_Up_To_9_Changes_In_Fcnt_Up_Should_Not_Save_Changes(int startFcntUp)
+        [InlineData(0U)]
+        [InlineData(9U)]
+        public async Task When_Device_Has_Up_To_9_Changes_In_Fcnt_Up_Should_Not_Save_Changes(uint startFcntUp)
         {
             var target = new MultiGatewayFrameCounterUpdateStrategy(this.gatewayID, this.deviceApi.Object);
 
@@ -55,7 +55,7 @@ namespace LoRaWan.NetworkServer.Test
             device.SetFcntUp(startFcntUp);
             device.AcceptFrameCountChanges();
 
-            for (var i = 1; i <= 9; ++i)
+            for (uint i = 1; i <= 9; ++i)
             {
                 device.SetFcntUp(i);
                 await target.SaveChangesAsync(device);
@@ -68,7 +68,7 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         [InlineData(0)]
         [InlineData(9)]
-        public async Task When_Device_Has_Up_To_9_Changes_In_Fcnt_Down_Should_Not_Save_Changes(int startFcntDown)
+        public async Task When_Device_Has_Up_To_9_Changes_In_Fcnt_Down_Should_Not_Save_Changes(uint startFcntDown)
         {
             var target = new MultiGatewayFrameCounterUpdateStrategy(this.gatewayID, this.deviceApi.Object);
 
@@ -76,10 +76,10 @@ namespace LoRaWan.NetworkServer.Test
             device.SetFcntDown(startFcntDown);
             device.AcceptFrameCountChanges();
 
-            this.deviceApi.Setup(x => x.NextFCntDownAsync(device.DevEUI, It.IsAny<int>(), It.IsAny<int>(), this.gatewayID))
-                .Returns<string, int, int, string>((devEUI, fcntDown, payloadFcnt, gatewayID) =>
+            this.deviceApi.Setup(x => x.NextFCntDownAsync(device.DevEUI, It.IsAny<uint>(), It.IsAny<uint>(), this.gatewayID))
+                .Returns<string, uint, uint, string>((devEUI, fcntDown, payloadFcnt, gatewayID) =>
                 {
-                    return Task.FromResult((ushort)(fcntDown + 1));
+                    return Task.FromResult(fcntDown + 1);
                 });
 
             for (var i = 1; i <= 9; ++i)
@@ -96,7 +96,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(10)]
         [InlineData(30)]
         [InlineData(1000)]
-        public async Task When_Device_FcntUp_Change_Is_10_Or_More_Should_Save_Changes(int fcntUp)
+        public async Task When_Device_FcntUp_Change_Is_10_Or_More_Should_Save_Changes(uint fcntUp)
         {
             var target = new MultiGatewayFrameCounterUpdateStrategy(this.gatewayID, this.deviceApi.Object);
 
@@ -104,8 +104,8 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true)
                 .Callback<TwinCollection>(t =>
                 {
-                    Assert.Equal(fcntUp, (int)t[TwinProperty.FCntUp]);
-                    Assert.Equal(0, (int)t[TwinProperty.FCntDown]);
+                    Assert.Equal(fcntUp, (uint)t[TwinProperty.FCntUp]);
+                    Assert.Equal(0U, (uint)t[TwinProperty.FCntDown]);
                 });
 
             var device = new LoRaDevice("1", "2", this.deviceClient.Object);
@@ -121,7 +121,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(9, 9)]
         [InlineData(9, 30)]
         [InlineData(10, 30)]
-        public async Task When_Device_FcntDown_Change_Is_10_Or_More_Should_Save_Changes(int startingFcntDown, int startingFcntUp)
+        public async Task When_Device_FcntDown_Change_Is_10_Or_More_Should_Save_Changes(uint startingFcntDown, uint startingFcntUp)
         {
             var target = new MultiGatewayFrameCounterUpdateStrategy(this.gatewayID, this.deviceApi.Object);
 
@@ -129,8 +129,8 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true)
                 .Callback<TwinCollection>(t =>
                 {
-                    Assert.Equal(startingFcntDown + 10, (int)t[TwinProperty.FCntDown]);
-                    Assert.Equal(startingFcntUp, (int)t[TwinProperty.FCntUp]);
+                    Assert.Equal(startingFcntDown + 10, (uint)t[TwinProperty.FCntDown]);
+                    Assert.Equal(startingFcntUp, (uint)t[TwinProperty.FCntUp]);
                 });
 
             var device = new LoRaDevice("1", "2", this.deviceClient.Object);
@@ -138,10 +138,10 @@ namespace LoRaWan.NetworkServer.Test
             device.SetFcntDown(startingFcntDown);
             device.AcceptFrameCountChanges();
 
-            this.deviceApi.Setup(x => x.NextFCntDownAsync(device.DevEUI, It.IsAny<int>(), It.IsAny<int>(), this.gatewayID))
-                .Returns<string, int, int, string>((devEUI, fcntDown, payloadFcnt, gatewayID) =>
+            this.deviceApi.Setup(x => x.NextFCntDownAsync(device.DevEUI, It.IsAny<uint>(), It.IsAny<uint>(), this.gatewayID))
+                .Returns<string, uint, uint, string>((devEUI, fcntDown, payloadFcnt, gatewayID) =>
                 {
-                    return Task.FromResult((ushort)(fcntDown + 1));
+                    return Task.FromResult((uint)(fcntDown + 1));
                 });
 
             for (var i = 1; i <= 15; i++)

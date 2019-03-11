@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer
         Task<bool> ResetAsync(LoRaDevice loRaDevice);
 
         // Resolves next frame down counter
-        ValueTask<int> NextFcntDown(LoRaDevice loRaDevice, int messageFcnt);
+        ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt);
 
         // Save changes to the frame counter
         Task<bool> SaveChangesAsync(LoRaDevice loRaDevice);

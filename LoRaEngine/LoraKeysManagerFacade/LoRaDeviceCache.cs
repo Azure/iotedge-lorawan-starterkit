@@ -56,7 +56,7 @@ namespace LoraKeysManagerFacade
             return true;
         }
 
-        public DeviceCacheInfo Initialize(int fCntUp = 0, int fCntDown = 0)
+        public DeviceCacheInfo Initialize(uint fCntUp = 0, uint fCntDown = 0)
         {
             // it is the first message from this device
             var serverStateForDeviceInfo = new DeviceCacheInfo

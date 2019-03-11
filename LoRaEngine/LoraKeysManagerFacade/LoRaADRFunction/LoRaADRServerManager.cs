@@ -17,7 +17,7 @@ namespace LoraKeysManagerFacade
             this.deviceCacheStore = deviceCacheStore;
         }
 
-        public override Task<int> NextFCntDown(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown)
+        public override Task<uint> NextFCntDown(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
             var fcntCheck = new FCntCacheCheck(this.deviceCacheStore);
             return Task.FromResult(fcntCheck.GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown));

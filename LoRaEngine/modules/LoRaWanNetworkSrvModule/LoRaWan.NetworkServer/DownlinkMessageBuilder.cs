@@ -34,9 +34,11 @@ namespace LoRaWan.NetworkServer
             LoRaOperationTimeWatcher timeWatcher,
             ILoRaCloudToDeviceMessage cloudToDeviceMessage,
             bool fpending,
-            ushort fcntDown,
+            uint fcntDown,
             LoRaADRResult loRaADRResult)
         {
+            var fcntDownToSend = ValidateAndConvert16bitFCnt(fcntDown);
+
             var upstreamPayload = (LoRaPayloadData)request.Payload;
             var rxpk = request.Rxpk;
             var loRaRegion = request.LoRaRegion;
@@ -185,11 +187,12 @@ namespace LoRaWan.NetworkServer
                 msgType,
                 reversedDevAddr,
                 new byte[] { fctrl },
-                BitConverter.GetBytes(fcntDown),
+                BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
                 fport.HasValue ? new byte[] { fport.Value } : null,
                 frmPayload,
-                1);
+                1,
+                loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
             Logger.Log(loRaDevice.DevEUI, $"Sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Debug);
@@ -198,13 +201,25 @@ namespace LoRaWan.NetworkServer
                 isMessageTooLong);
         }
 
+        private static ushort ValidateAndConvert16bitFCnt(uint fcntDown)
+        {
+            if (fcntDown == 0)
+            {
+                throw new ArgumentOutOfRangeException("fcntDown");
+            }
+
+            return (ushort)fcntDown;
+        }
+
         internal static DownlinkMessageBuilderResponse CreateDownlinkMessage(
             NetworkServerConfiguration configuration,
             LoRaDevice loRaDevice,
             Region loRaRegion,
             ILoRaCloudToDeviceMessage cloudToDeviceMessage,
-            ushort fcntDown)
+            uint fcntDown)
         {
+            var fcntDownToSend = ValidateAndConvert16bitFCnt(fcntDown);
+
             // default fport
             byte fctrl = 0;
             CidEnum macCommandType = CidEnum.Zero;
@@ -284,11 +299,12 @@ namespace LoRaWan.NetworkServer
                 msgType,
                 reversedDevAddr,
                 new byte[] { fctrl },
-                BitConverter.GetBytes(fcntDown),
+                BitConverter.GetBytes(fcntDownToSend),
                 macCommands,
                 new byte[] { cloudToDeviceMessage.Fport },
                 frmPayload,
-                1);
+                1,
+                loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
 
             return new DownlinkMessageBuilderResponse(
                 ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI),

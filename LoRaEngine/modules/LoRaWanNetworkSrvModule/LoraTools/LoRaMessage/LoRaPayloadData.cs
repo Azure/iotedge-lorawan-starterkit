@@ -176,7 +176,7 @@ namespace LoRaTools.LoRaMessage
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Downstream Constructor (build a LoRa Message)
         /// </summary>
-        public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction)
+        public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
         {
             List<byte> macBytes = new List<byte>(3);
             if (macCommands != null)
@@ -186,6 +186,8 @@ namespace LoRaTools.LoRaMessage
                     macBytes.AddRange(macCommand.ToBytes());
                 }
             }
+
+            this.Ensure32BitFcntValue(server32bitFcnt);
 
             var fOpts = macBytes.ToArray();
             int fOptsLen = fOpts == null ? 0 : fOpts.Length;
@@ -312,17 +314,21 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         /// <param name="nwskey">the network security key</param>
         /// <returns>if the Mic is valid or not</returns>
-        public override bool CheckMic(string nwskey)
+        public override bool CheckMic(string nwskey, uint? server32BitFcnt = null)
         {
+            this.Ensure32BitFcntValue(server32BitFcnt);
             var byteMsg = this.GetByteMessage();
 
             IMac mac = MacUtilities.GetMac("AESCMAC");
             KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
             mac.Init(key);
+
+            var fcntBytes = this.GetFcntBlockInfo();
+
             byte[] block =
             {
-            0x49, 0x00, 0x00, 0x00, 0x00, (byte)this.Direction, this.DevAddr.Span[3], this.DevAddr.Span[2], this.DevAddr.Span[1],
-            this.DevAddr.Span[0], this.Fcnt.Span[0], this.Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)(byteMsg.Length - 4)
+                0x49, 0x00, 0x00, 0x00, 0x00, (byte)this.Direction, this.DevAddr.Span[3], this.DevAddr.Span[2], this.DevAddr.Span[1],
+                this.DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)(byteMsg.Length - 4)
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
 
@@ -335,13 +341,15 @@ namespace LoRaTools.LoRaMessage
         public void SetMic(string nwskey)
         {
             var byteMsg = this.GetByteMessage();
+            var fcntBytes = this.GetFcntBlockInfo();
+
             IMac mac = MacUtilities.GetMac("AESCMAC");
             KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
             mac.Init(key);
             byte[] block =
                 {
                 0x49, 0x00, 0x00, 0x00, 0x00, (byte)this.Direction, this.DevAddr.Span[3], this.DevAddr.Span[2], this.DevAddr.Span[1],
-                this.DevAddr.Span[0], this.Fcnt.Span[0], this.Fcnt.Span[1], 0x00, 0x00, 0x00, (byte)byteMsg.Length
+                this.DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)byteMsg.Length
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length)).ToArray();
 
@@ -371,11 +379,12 @@ namespace LoRaTools.LoRaMessage
                 AesEngine aesEngine = new AesEngine();
                 byte[] tmp = ConversionHelper.StringToByteArray(appSkey);
                 aesEngine.Init(true, new KeyParameter(tmp));
+                var fcntBytes = this.GetFcntBlockInfo();
 
                 byte[] aBlock =
                     {
                     0x01, 0x00, 0x00, 0x00, 0x00, (byte)this.Direction, this.DevAddr.Span[3], this.DevAddr.Span[2], this.DevAddr.Span[1],
-                    this.DevAddr.Span[0], this.Fcnt.Span[0], this.Fcnt.Span[1], 0x00, 0x00, 0x00, 0x00
+                    this.DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, 0x00
                 };
 
                 byte[] sBlock = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
@@ -477,6 +486,11 @@ namespace LoRaTools.LoRaMessage
             }
 
             this.MacCommands.Add(mac);
+        }
+
+        private byte[] GetFcntBlockInfo()
+        {
+            return (this.Server32BitFcnt != null) ? this.Server32BitFcnt : new byte[] { this.Fcnt.Span[0], this.Fcnt.Span[1], 0x00, 0x00 };
         }
     }
 }

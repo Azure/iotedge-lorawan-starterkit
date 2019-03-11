@@ -22,7 +22,7 @@ namespace LoRaWan.NetworkServer.Test
             this.factory = new DeduplicationStrategyFactory(this.loRaDeviceApi.Object);
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
 
-            this.loRaDeviceApi.Setup(x => x.CheckDuplicateMsgAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()))
+            this.loRaDeviceApi.Setup(x => x.CheckDuplicateMsgAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<string>(), It.IsAny<uint>()))
                 .Returns(() =>
                 {
                     return Task.FromResult<DeduplicationResult>(new DeduplicationResult

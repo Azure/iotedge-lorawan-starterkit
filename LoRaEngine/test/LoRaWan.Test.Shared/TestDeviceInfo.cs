@@ -54,6 +54,8 @@ namespace LoRaWan.Test.Shared
 
         public uint RX1DROffset { get; set; } = 0;
 
+        public bool Supports32BitFCnt { get; set; }
+
         /// <summary>
         /// Gets the desired properties for the <see cref="TestDeviceInfo"/>
         /// </summary>
@@ -96,7 +98,7 @@ namespace LoRaWan.Test.Shared
         /// <summary>
         /// Creates a <see cref="TestDeviceInfo"/> with ABP authentication
         /// </summary>
-        public static TestDeviceInfo CreateABPDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", uint netId = 1, char deviceClassType = 'A')
+        public static TestDeviceInfo CreateABPDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", uint netId = 1, char deviceClassType = 'A', bool supports32BitFcnt = false)
         {
             var value8 = deviceID.ToString("00000000");
             var value16 = deviceID.ToString("0000000000000000");
@@ -119,6 +121,7 @@ namespace LoRaWan.Test.Shared
                 NwkSKey = value32,
                 DevAddr = devAddrValue,
                 ClassType = deviceClassType,
+                Supports32BitFCnt = supports32BitFcnt
             };
 
             return result;

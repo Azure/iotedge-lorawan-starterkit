@@ -191,7 +191,7 @@ namespace LoRaTools.LoRaMessage
             return messageArray.ToArray();
         }
 
-        public override bool CheckMic(string nwskey)
+        public override bool CheckMic(string nwskey, uint? server32BitFcnt = null)
         {
             throw new NotImplementedException();
         }

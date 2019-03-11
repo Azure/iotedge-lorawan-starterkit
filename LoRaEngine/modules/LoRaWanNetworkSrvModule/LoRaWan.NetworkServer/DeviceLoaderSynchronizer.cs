@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
 
@@ -209,7 +210,7 @@ namespace LoRaWan.NetworkServer
                 {
                     foreach (var device in devices)
                     {
-                        if (request.Payload.CheckMic(device.NwkSKey))
+                        if (device.ValidateMic(request.Payload))
                         {
                             this.AddToDeviceQueue(device, request);
                             requestHandled = true;
@@ -252,7 +253,7 @@ namespace LoRaWan.NetworkServer
 
                 foreach (var device in this.existingDevices.Values)
                 {
-                    if (request.Payload.CheckMic(device.NwkSKey))
+                    if (device.ValidateMic(request.Payload))
                     {
                         this.AddToDeviceQueue(device, request);
                         return;

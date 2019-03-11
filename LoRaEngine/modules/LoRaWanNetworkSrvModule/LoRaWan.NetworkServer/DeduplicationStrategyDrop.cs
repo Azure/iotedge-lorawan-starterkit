@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
             Logger.Log(this.loRaDevice.DevEUI, "deduplication Strategy: Drop", LogLevel.Debug);
         }
 
-        public DeduplicationResult Process(DeduplicationResult result, int fCntUp)
+        public DeduplicationResult Process(DeduplicationResult result, uint fCntUp)
         {
             result.CanProcess = !result.IsDuplicate;
 
@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer
             return result;
         }
 
-        public async Task<DeduplicationResult> ResolveDeduplication(int fcntUp, int fcntDown, string gatewayId)
+        public async Task<DeduplicationResult> ResolveDeduplication(uint fcntUp, uint fcntDown, string gatewayId)
         {
             var result = await this.loRaDeviceAPIService.CheckDuplicateMsgAsync(this.loRaDevice.DevEUI, fcntUp, gatewayId, fcntDown);
 

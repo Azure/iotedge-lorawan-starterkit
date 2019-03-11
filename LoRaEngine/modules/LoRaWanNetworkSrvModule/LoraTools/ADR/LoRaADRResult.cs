@@ -13,7 +13,7 @@ namespace LoRaTools.ADR
 
         public bool CanConfirmToDevice { get; set; }
 
-        public int FCntDown { get; set; }
+        public uint FCntDown { get; set; }
 
         public int NumberOfFrames { get; set; }
     }
