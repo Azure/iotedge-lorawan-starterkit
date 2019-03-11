@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(null, 200, 50, 37, 28)]
         [InlineData(null, 0, 0, 0, 23)]
         [InlineData(null, 0, 0, 47, 10000)]
-        public async Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, int initialFcntUp, int initialFcntDown, int startingPayloadFcnt, uint netId)
+        public async Task Join_And_Send_Unconfirmed_And_Confirmed_Messages(string deviceGatewayID, uint initialFcntUp, uint initialFcntDown, uint startingPayloadFcnt, uint netId)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequestPayload = simulatedDevice.CreateJoinRequest();
@@ -62,8 +62,8 @@ namespace LoRaWan.NetworkServer.Test
             string afterJoinAppSKey = null;
             string afterJoinNwkSKey = null;
             string afterJoinDevAddr = null;
-            int afterJoinFcntDown = -1;
-            int afterJoinFcntUp = -1;
+            uint afterJoinFcntDown = 0;
+            uint afterJoinFcntUp = 0;
             this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .Callback<TwinCollection>((updatedTwin) =>
                 {
@@ -144,10 +144,10 @@ namespace LoRaWan.NetworkServer.Test
                 Assert.Equal(deviceGatewayID, loRaDevice.GatewayID);
 
             // fcnt is restarted
-            Assert.Equal(0, afterJoinFcntDown);
-            Assert.Equal(0, afterJoinFcntUp);
-            Assert.Equal(0, loRaDevice.FCntUp);
-            Assert.Equal(0, loRaDevice.FCntDown);
+            Assert.Equal(0U, afterJoinFcntDown);
+            Assert.Equal(0U, afterJoinFcntUp);
+            Assert.Equal(0U, loRaDevice.FCntUp);
+            Assert.Equal(0U, loRaDevice.FCntDown);
             Assert.False(loRaDevice.HasFrameCountChanges);
 
             simulatedDevice.LoRaDevice.AppSKey = afterJoinAppSKey;
@@ -164,7 +164,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // fcnt up was updated
             Assert.Equal(startingPayloadFcnt, loRaDevice.FCntUp);
-            Assert.Equal(0, loRaDevice.FCntDown);
+            Assert.Equal(0U, loRaDevice.FCntDown);
 
             if (startingPayloadFcnt != 0)
             {
@@ -196,7 +196,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // fcnt up was updated
             Assert.Equal(startingPayloadFcnt + 1, loRaDevice.FCntUp);
-            Assert.Equal(1, loRaDevice.FCntDown);
+            Assert.Equal(1U, loRaDevice.FCntDown);
 
             // Frame change flag will be set, only saving every 10 messages
             Assert.True(loRaDevice.HasFrameCountChanges);
@@ -305,8 +305,8 @@ namespace LoRaWan.NetworkServer.Test
                 Assert.Equal(deviceGatewayID, loRaDevice.GatewayID);
 
             // fcnt is restarted
-            Assert.Equal(0, loRaDevice.FCntUp);
-            Assert.Equal(0, loRaDevice.FCntDown);
+            Assert.Equal(0U, loRaDevice.FCntUp);
+            Assert.Equal(0U, loRaDevice.FCntDown);
             Assert.False(loRaDevice.HasFrameCountChanges);
 
             // should get twin 2x (1st failed)

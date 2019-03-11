@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public string AuthCode { get; private set; }
 
-        public abstract Task<ushort> NextFCntDownAsync(string devEUI, int fcntDown, int fcntUp, string gatewayId);
+        public abstract Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId);
 
         public abstract Task<bool> ABPFcntCacheResetAsync(string devEUI);
 
@@ -72,7 +72,7 @@ namespace LoRaWan.NetworkServer
         /// <param name="fcntUp">frame count of the message we received</param>
         /// <param name="gatewayId">The current processing gateway</param>
         /// <param name="fcntDown">The frame count down of the client.</returns>
-        public abstract Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, int fcntUp, string gatewayId, int fcntDown);
+        public abstract Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown);
 
         public abstract Task<LoRaADRResult> CalculateADRAndStoreFrameAsync(string devEUI, LoRaADRRequest adrRequest);
 

@@ -55,8 +55,8 @@ namespace LoraKeysManagerFacade
 
             if (string.IsNullOrEmpty(devEUI) ||
                 string.IsNullOrEmpty(gatewayId) ||
-                !int.TryParse(fCntUp, out int clientFCntUp) ||
-                !int.TryParse(fCntDown, out int clientFCntDown))
+                !uint.TryParse(fCntUp, out uint clientFCntUp) ||
+                !uint.TryParse(fCntDown, out uint clientFCntDown))
             {
                 var errorMsg = $"Missing {QueryParamDevEUI} or {QueryParamFCntUp} or {QueryParamGatewayId}";
                 throw new Exception(errorMsg);
@@ -67,7 +67,7 @@ namespace LoraKeysManagerFacade
             return new OkObjectResult(result);
         }
 
-        public DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown)
+        public DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
             var isDuplicate = true;
             string processedDevice = gatewayId;

@@ -11,9 +11,9 @@ namespace LoRaWan.NetworkServer.ADR
 
         public bool PerformADRCalculation { get; set; }
 
-        public int FCntUp { get; set; }
+        public uint FCntUp { get; set; }
 
-        public int FCntDown { get; set; }
+        public uint FCntDown { get; set; }
 
         public int MinTxPowerIndex { get; set; }
 

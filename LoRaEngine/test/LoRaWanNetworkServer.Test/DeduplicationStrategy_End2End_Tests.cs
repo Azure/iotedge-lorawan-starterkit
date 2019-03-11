@@ -35,8 +35,8 @@ namespace LoRaWan.NetworkServer.Test
             bool messageProcessed = mode == DeduplicationMode.Drop;
             messageProcessed = false;
             this.LoRaDeviceApi
-                .Setup(x => x.CheckDuplicateMsgAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<int>()))
-                .Returns<string, int, string, int?>((dev, fcntup, gateway, fcntdown) =>
+                .Setup(x => x.CheckDuplicateMsgAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<string>(), It.IsAny<uint>()))
+                .Returns<string, uint, string, uint?>((dev, fcntup, gateway, fcntdown) =>
                 {
                     var isDup = messageProcessed;
                     messageProcessed = true;
@@ -47,8 +47,8 @@ namespace LoRaWan.NetworkServer.Test
                 });
 
             this.LoRaDeviceApi
-                .Setup(x => x.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
-                .ReturnsAsync((ushort)(simulatedDevice.FrmCntDown + 1))
+                .Setup(x => x.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
+                .ReturnsAsync((uint)(simulatedDevice.FrmCntDown + 1))
                 .Callback(() =>
                 {
                     // this call should only be made, if we do not have a deduplication strategy

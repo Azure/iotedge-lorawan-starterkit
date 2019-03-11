@@ -80,7 +80,7 @@ namespace LoRaWan.NetworkServer.Test
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
                 // will update the fcnt down
-                this.deviceApi.Setup(x => x.NextFCntDownAsync(devEUI, simDevice.FrmCntDown, -1, this.serverConfiguration.GatewayID))
+                this.deviceApi.Setup(x => x.NextFCntDownAsync(devEUI, simDevice.FrmCntDown, 0, this.serverConfiguration.GatewayID))
                     .ReturnsAsync((ushort)(simDevice.FrmCntDown + 1));
             }
 
@@ -228,7 +228,7 @@ namespace LoRaWan.NetworkServer.Test
             };
 
             // will update the fcnt down
-            this.deviceApi.Setup(x => x.NextFCntDownAsync(devEUI, simDevice.FrmCntDown, -1, this.serverConfiguration.GatewayID))
+            this.deviceApi.Setup(x => x.NextFCntDownAsync(devEUI, simDevice.FrmCntDown, 0, this.serverConfiguration.GatewayID))
                 .ThrowsAsync(new TimeoutException());
 
             var target = new DefaultClassCDevicesMessageSender(

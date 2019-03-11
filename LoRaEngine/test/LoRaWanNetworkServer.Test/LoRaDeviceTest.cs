@@ -36,10 +36,10 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
                 .ReturnsAsync(true);
 
-            Assert.Equal(10, target.IncrementFcntDown(10));
-            Assert.Equal(0, target.LastSavedFCntDown);
+            Assert.Equal(10U, target.IncrementFcntDown(10));
+            Assert.Equal(0U, target.LastSavedFCntDown);
             await target.SaveFrameCountChangesAsync();
-            Assert.Equal(10, target.LastSavedFCntDown);
+            Assert.Equal(10U, target.LastSavedFCntDown);
         }
 
         [Fact]
@@ -51,10 +51,10 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true);
 
             target.SetFcntDown(12);
-            Assert.Equal(12, target.FCntDown);
-            Assert.Equal(0, target.LastSavedFCntDown);
+            Assert.Equal(12U, target.FCntDown);
+            Assert.Equal(0U, target.LastSavedFCntDown);
             await target.SaveFrameCountChangesAsync();
-            Assert.Equal(12, target.LastSavedFCntDown);
+            Assert.Equal(12U, target.LastSavedFCntDown);
         }
 
         [Fact]
@@ -66,10 +66,10 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true);
 
             target.SetFcntUp(12);
-            Assert.Equal(12, target.FCntUp);
-            Assert.Equal(0, target.LastSavedFCntUp);
+            Assert.Equal(12U, target.FCntUp);
+            Assert.Equal(0U, target.LastSavedFCntUp);
             await target.SaveFrameCountChangesAsync();
-            Assert.Equal(12, target.LastSavedFCntUp);
+            Assert.Equal(12U, target.LastSavedFCntUp);
         }
 
         [Fact]
@@ -81,11 +81,11 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true);
 
             target.SetFcntUp(12);
-            Assert.Equal(12, target.FCntUp);
-            Assert.Equal(0, target.LastSavedFCntUp);
+            Assert.Equal(12U, target.FCntUp);
+            Assert.Equal(0U, target.LastSavedFCntUp);
             await target.SaveFrameCountChangesAsync();
             Assert.False(target.HasFrameCountChanges);
-            Assert.Equal(12, target.LastSavedFCntUp);
+            Assert.Equal(12U, target.LastSavedFCntUp);
         }
 
         [Fact]
@@ -114,10 +114,10 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal("ABC02000000000000000000000000009", loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
-            Assert.Equal(0, loRaDevice.FCntDown);
-            Assert.Equal(0, loRaDevice.LastSavedFCntDown);
-            Assert.Equal(0, loRaDevice.FCntUp);
-            Assert.Equal(0, loRaDevice.LastSavedFCntUp);
+            Assert.Equal(0U, loRaDevice.FCntDown);
+            Assert.Equal(0U, loRaDevice.LastSavedFCntDown);
+            Assert.Equal(0U, loRaDevice.FCntUp);
+            Assert.Equal(0U, loRaDevice.LastSavedFCntUp);
             Assert.False(loRaDevice.HasFrameCountChanges);
             Assert.Empty(loRaDevice.AppSKey ?? string.Empty);
             Assert.Empty(loRaDevice.NwkSKey ?? string.Empty);
@@ -198,10 +198,10 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
             Assert.True(loRaDevice.IsABP);
             Assert.True(loRaDevice.IsOurDevice);
-            Assert.Equal(0, loRaDevice.FCntDown);
-            Assert.Equal(0, loRaDevice.LastSavedFCntDown);
-            Assert.Equal(0, loRaDevice.FCntUp);
-            Assert.Equal(0, loRaDevice.LastSavedFCntUp);
+            Assert.Equal(0U, loRaDevice.FCntDown);
+            Assert.Equal(0U, loRaDevice.LastSavedFCntDown);
+            Assert.Equal(0U, loRaDevice.FCntUp);
+            Assert.Equal(0U, loRaDevice.LastSavedFCntUp);
             Assert.False(loRaDevice.HasFrameCountChanges);
             Assert.Equal("ABC02000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.NwkSKey);
             Assert.Equal("ABCD2000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.AppSKey);
@@ -462,8 +462,8 @@ namespace LoRaWan.NetworkServer.Test
             // Setting from 0 to 0 should not trigger changes
             target.ResetFcnt();
             Assert.False(target.HasFrameCountChanges);
-            Assert.Equal(0, target.LastSavedFCntDown);
-            Assert.Equal(0, target.LastSavedFCntUp);
+            Assert.Equal(0U, target.LastSavedFCntDown);
+            Assert.Equal(0U, target.LastSavedFCntUp);
         }
 
         [Fact]
@@ -473,16 +473,16 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
             target.SetFcntUp(1);
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
             Assert.True(target.HasFrameCountChanges);
 
             // Non zero fcnt down
             target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
             target.SetFcntDown(1);
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
             Assert.True(target.HasFrameCountChanges);
 
             // Non zero fcnt down and up
@@ -490,8 +490,8 @@ namespace LoRaWan.NetworkServer.Test
             target.SetFcntDown(1);
             target.SetFcntDown(2);
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
             Assert.True(target.HasFrameCountChanges);
         }
 
@@ -503,8 +503,8 @@ namespace LoRaWan.NetworkServer.Test
             target.SetFcntUp(1);
             target.AcceptFrameCountChanges();
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
             Assert.True(target.HasFrameCountChanges);
 
             // Non zero fcnt down
@@ -512,10 +512,10 @@ namespace LoRaWan.NetworkServer.Test
             target.SetFcntDown(1);
             target.AcceptFrameCountChanges();
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
-            Assert.Equal(0, target.LastSavedFCntUp);
-            Assert.Equal(1, target.LastSavedFCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
+            Assert.Equal(0U, target.LastSavedFCntUp);
+            Assert.Equal(1U, target.LastSavedFCntDown);
             Assert.True(target.HasFrameCountChanges);
 
             // Non zero fcnt down and up
@@ -524,10 +524,10 @@ namespace LoRaWan.NetworkServer.Test
             target.SetFcntDown(2);
             target.AcceptFrameCountChanges();
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
-            Assert.Equal(0, target.LastSavedFCntUp);
-            Assert.Equal(2, target.LastSavedFCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
+            Assert.Equal(0U, target.LastSavedFCntUp);
+            Assert.Equal(2U, target.LastSavedFCntDown);
 
             Assert.True(target.HasFrameCountChanges);
         }
@@ -561,10 +561,10 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
             await loRaDevice.InitializeAsync();
             Assert.True(loRaDevice.IsOurDevice);
-            Assert.Equal(10, loRaDevice.FCntDown);
-            Assert.Equal(10, loRaDevice.LastSavedFCntDown);
-            Assert.Equal(20, loRaDevice.FCntUp);
-            Assert.Equal(20, loRaDevice.LastSavedFCntUp);
+            Assert.Equal(10U, loRaDevice.FCntDown);
+            Assert.Equal(10U, loRaDevice.LastSavedFCntDown);
+            Assert.Equal(20U, loRaDevice.FCntUp);
+            Assert.Equal(20U, loRaDevice.LastSavedFCntUp);
             Assert.False(loRaDevice.HasFrameCountChanges);
         }
     }

@@ -7,9 +7,9 @@ namespace LoRaTools.ADR
     {
         public string DevEUI { get; set; }
 
-        public int FCnt { get; set; }
+        public uint FCnt { get; set; }
 
-        public int GatewayCount { get; set; }
+        public uint GatewayCount { get; set; }
 
         public string GatewayId { get; set; }
 

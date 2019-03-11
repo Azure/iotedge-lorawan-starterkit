@@ -12,7 +12,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
         {
             var adrFunction = context.FunctionContext.LoRaADRFunction;
             context.Result.AdrResult = await adrFunction.HandleADRRequest(context.DevEUI, context.Request.AdrRequest);
-            context.Result.NextFCntDown = context.Result?.AdrResult.FCntDown > 0 ? context.Result.AdrResult.FCntDown : (int?)null;
+            context.Result.NextFCntDown = context.Result?.AdrResult.FCntDown > 0 ? context.Result.AdrResult.FCntDown : (uint?)null;
             return FunctionBundlerExecutionState.Continue;
         }
 

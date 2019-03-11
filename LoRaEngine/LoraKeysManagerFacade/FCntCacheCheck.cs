@@ -38,7 +38,7 @@ namespace LoraKeysManagerFacade
             string fCntUp = req.Query["FCntUp"];
             string gatewayId = req.Query["GatewayId"];
             string abpFcntCacheReset = req.Query["ABPFcntCacheReset"];
-            int newFCntDown = 0;
+            uint newFCntDown = 0;
 
             EUIValidator.ValidateDevEUI(devEUI);
 
@@ -49,8 +49,8 @@ namespace LoraKeysManagerFacade
             }
 
             // validate input parameters
-            if (!int.TryParse(fCntDown, out int clientFCntDown) ||
-                !int.TryParse(fCntUp, out int clientFCntUp) ||
+            if (!uint.TryParse(fCntDown, out uint clientFCntDown) ||
+                !uint.TryParse(fCntUp, out uint clientFCntUp) ||
                 string.IsNullOrEmpty(gatewayId))
             {
                 string errorMsg = "Missing FCntDown or FCntUp or GatewayId";
@@ -62,9 +62,9 @@ namespace LoraKeysManagerFacade
             return (ActionResult)new OkObjectResult(newFCntDown);
         }
 
-        public int GetNextFCntDown(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown)
+        public uint GetNextFCntDown(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
-            int newFCntDown = 0;
+            uint newFCntDown = 0;
             using (var deviceCache = new LoRaDeviceCache(this.deviceCache, devEUI, gatewayId))
             {
                 if (deviceCache.TryToLock())
@@ -84,9 +84,9 @@ namespace LoraKeysManagerFacade
             return newFCntDown;
         }
 
-        internal static int ProcessExistingDeviceInfo(LoRaDeviceCache deviceCache, DeviceCacheInfo cachedDeviceState, string gatewayId, int clientFCntUp, int clientFCntDown)
+        internal static uint ProcessExistingDeviceInfo(LoRaDeviceCache deviceCache, DeviceCacheInfo cachedDeviceState, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
-            int newFCntDown = 0;
+            uint newFCntDown = 0;
 
             if (cachedDeviceState != null)
             {
@@ -95,9 +95,9 @@ namespace LoraKeysManagerFacade
                 {
                     // it is a new message coming up by the first gateway
                     if (clientFCntDown >= cachedDeviceState.FCntDown)
-                        newFCntDown = (int)(clientFCntDown + 1);
+                        newFCntDown = clientFCntDown + 1;
                     else
-                        newFCntDown = (int)(cachedDeviceState.FCntDown + 1);
+                        newFCntDown = cachedDeviceState.FCntDown + 1;
 
                     cachedDeviceState.FCntUp = clientFCntUp;
                     cachedDeviceState.FCntDown = newFCntDown;

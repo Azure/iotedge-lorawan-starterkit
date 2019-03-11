@@ -22,7 +22,7 @@ namespace LoraKeysManagerFacade.Test
             var gatewayId = NewUniqueEUI64();
 
             var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
-            Assert.Equal(2, next);
+            Assert.Equal(2U, next);
         }
 
         [Fact]
@@ -32,10 +32,10 @@ namespace LoraKeysManagerFacade.Test
             var gatewayId = NewUniqueEUI64();
 
             var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
-            Assert.Equal(2, next);
+            Assert.Equal(2U, next);
 
             next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 2, 1);
-            Assert.Equal(3, next);
+            Assert.Equal(3U, next);
         }
 
         [Fact]
@@ -45,10 +45,10 @@ namespace LoraKeysManagerFacade.Test
             var gatewayId = NewUniqueEUI64();
 
             var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
-            Assert.Equal(2, next);
+            Assert.Equal(2U, next);
 
             next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 3, 10);
-            Assert.Equal(11, next);
+            Assert.Equal(11U, next);
         }
 
         [Fact]
@@ -58,10 +58,10 @@ namespace LoraKeysManagerFacade.Test
             var gatewayId = NewUniqueEUI64();
 
             var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
-            Assert.Equal(2, next);
+            Assert.Equal(2U, next);
 
             next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
-            Assert.Equal(3, next);
+            Assert.Equal(3U, next);
         }
     }
 }

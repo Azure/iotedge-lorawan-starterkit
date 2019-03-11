@@ -3,18 +3,15 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using LoRaTools.CommonAPI;
     using LoRaTools.LoRaMessage;
-    using LoRaWan.NetworkServer.ADR;
-    using Microsoft.Extensions.Logging;
 
     public class FunctionBundlerExecutionContext
     {
         public string GatewayId { get; set; }
 
-        public int FCntUp { get; set; }
+        public uint FCntUp { get; set; }
 
-        public int FCntDown { get; set; }
+        public uint FCntDown { get; set; }
 
         public LoRaPayloadData LoRaPayload { get; set; }
 

@@ -45,9 +45,9 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(null, 1, 100, 20)]
         public async Task ABP_Cached_Device_With_Fcnt_1_Or_0_Should_Reset_Fcnt_And_Send_To_IotHub(
             string deviceGatewayID,
-            int payloadFcntUp,
-            int deviceInitialFcntUp,
-            int deviceInitialFcntDown)
+            uint payloadFcntUp,
+            uint deviceInitialFcntUp,
+            uint deviceInitialFcntDown)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             simulatedDevice.FrmCntDown = deviceInitialFcntDown;
@@ -127,7 +127,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(devEUI, loRaDevice.DevEUI);
             Assert.True(loRaDevice.IsABP);
             Assert.Equal(payloadFcntUp, loRaDevice.FCntUp);
-            Assert.Equal(0, loRaDevice.FCntDown); // fctn down will always be set to zero
+            Assert.Equal(0U, loRaDevice.FCntDown); // fctn down will always be set to zero
             if (payloadFcntUp == 0)
                 Assert.False(loRaDevice.HasFrameCountChanges); // no changes
             else
@@ -498,7 +498,7 @@ namespace LoRaWan.NetworkServer.Test
             else
             {
                 Assert.Null(loRaDeviceTelemetry);
-                Assert.Equal(0, loRaDevice.FCntUp);
+                Assert.Equal(0U, loRaDevice.FCntUp);
             }
 
             this.LoRaDeviceClient.VerifyAll();
@@ -511,8 +511,8 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(ServerGatewayID, "test", "idtest")]
         public async Task When_Ack_Message_Received_Should_Be_In_Msg_Properties(string deviceGatewayID, string data, string msgId = null)
         {
-            const int initialFcntUp = 100;
-            const int payloadFcnt = 102;
+            const uint initialFcntUp = 100;
+            const uint payloadFcnt = 102;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             simulatedDevice.FrmCntUp = initialFcntUp;
 
@@ -563,10 +563,10 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(ServerGatewayID, 21)]
         [InlineData(null, 21)]
         [InlineData(null, 30)]
-        public async Task When_ConfirmedUp_Message_With_Same_Fcnt_Should_Return_Ack_And_Not_Send_To_Hub(string deviceGatewayID, int expectedFcntDown)
+        public async Task When_ConfirmedUp_Message_With_Same_Fcnt_Should_Return_Ack_And_Not_Send_To_Hub(string deviceGatewayID, uint expectedFcntDown)
         {
-            const int initialFcntUp = 100;
-            const int initialFcntDown = 20;
+            const uint initialFcntUp = 100;
+            const uint initialFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             simulatedDevice.FrmCntUp = initialFcntUp;
@@ -944,7 +944,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(simulatedDevice.NwkSKey, loRaDevice.NwkSKey);
             Assert.Equal(simulatedDevice.AppSKey, loRaDevice.AppSKey);
             Assert.Equal(devAddr, loRaDevice.DevAddr);
-            Assert.Equal(2, loRaDevice.FCntUp);
+            Assert.Equal(2U, loRaDevice.FCntUp);
 
             this.LoRaDeviceClient.VerifyAll();
             this.LoRaDeviceApi.VerifyAll();
@@ -1012,7 +1012,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck, requestWithWrongMic.ProcessingFailedReason);
 
             // second message should succeed
-            const int secondMessageFcnt = 4;
+            const uint secondMessageFcnt = 4;
             var unconfirmedMessageWithCorrectMic = simulatedDevice.CreateUnconfirmedDataUpMessage("456", fcnt: secondMessageFcnt).SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var requestWithCorrectMic = this.CreateWaitableRequest(unconfirmedMessageWithCorrectMic);
             messageDispatcher.DispatchRequest(requestWithCorrectMic);
@@ -1086,8 +1086,8 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(null)]
         public async Task When_ConfirmedUp_Message_Is_Resubmitted_Should_Ack_3_Times(string deviceGatewayID)
         {
-            const int deviceInitialFcntUp = 100;
-            const int deviceInitialFcntDown = 20;
+            const uint deviceInitialFcntUp = 100;
+            const uint deviceInitialFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             simulatedDevice.FrmCntUp = deviceInitialFcntUp;
@@ -1249,7 +1249,7 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         [InlineData(1)] // ABP with soft reset
         [InlineData(11)]
-        public async Task When_Loading_Multiple_Devices_With_Same_DevAddr_Should_Add_All_To_Cache_And_Process_Message(int payloadFcntUp)
+        public async Task When_Loading_Multiple_Devices_With_Same_DevAddr_Should_Add_All_To_Cache_And_Process_Message(uint payloadFcntUp)
         {
             var isResetingDevice = payloadFcntUp <= 1;
             var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
@@ -1338,18 +1338,18 @@ namespace LoRaWan.NetworkServer.Test
             // If the fcnt made a reset (0-1) the fcntdown is zero
             if (isResetingDevice)
             {
-                Assert.Equal(0, loRaDevice1.FCntDown);
+                Assert.Equal(0U, loRaDevice1.FCntDown);
             }
             else
             {
-                Assert.Equal(10, loRaDevice1.FCntDown);
+                Assert.Equal(10U, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);
 
             Assert.True(cachedDevices.TryGetValue(simulatedDevice2.DevEUI, out var loRaDevice2));
-            Assert.Equal(0, loRaDevice2.FCntUp);
-            Assert.Equal(10, loRaDevice2.FCntDown);
+            Assert.Equal(0U, loRaDevice2.FCntUp);
+            Assert.Equal(10U, loRaDevice2.FCntDown);
 
             deviceClient1.VerifyAll();
             deviceClient2.VerifyAll();
@@ -1365,7 +1365,7 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         [InlineData(1)] // ABP with soft reset
         [InlineData(11)]
-        public async Task When_Loading_Multiple_Devices_With_Same_DevAddr_One_Fails_Should_Add_One_To_Cache_And_Process_Message(int payloadFcntUp)
+        public async Task When_Loading_Multiple_Devices_With_Same_DevAddr_One_Fails_Should_Add_One_To_Cache_And_Process_Message(uint payloadFcntUp)
         {
             var isResetingDevice = payloadFcntUp <= 1;
             var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
@@ -1455,11 +1455,11 @@ namespace LoRaWan.NetworkServer.Test
             // If the fcnt made a reset (0-1) the fcntdown is zero
             if (isResetingDevice)
             {
-                Assert.Equal(0, loRaDevice1.FCntDown);
+                Assert.Equal(0U, loRaDevice1.FCntDown);
             }
             else
             {
-                Assert.Equal(10, loRaDevice1.FCntDown);
+                Assert.Equal(10U, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);
@@ -1534,7 +1534,7 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         [InlineData(10, 9)]
         [InlineData(10, 10)]
-        public async Task When_Upstream_Fcnt_Is_Lower_Or_Equal_To_Device_Should_Discard_Message(int devFcntUp, int payloadFcnt)
+        public async Task When_Upstream_Fcnt_Is_Lower_Or_Equal_To_Device_Should_Discard_Message(uint devFcntUp, uint payloadFcnt)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
             simulatedDevice.FrmCntUp = devFcntUp;
@@ -1568,7 +1568,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(devEUI, loRaDevice.DevEUI);
             Assert.True(loRaDevice.IsABP);
             Assert.Equal(devFcntUp, loRaDevice.FCntUp);
-            Assert.Equal(0, loRaDevice.FCntDown); // fctn down will always be set to zero
+            Assert.Equal(0U, loRaDevice.FCntDown); // fctn down will always be set to zero
             Assert.False(loRaDevice.HasFrameCountChanges); // no changes
 
             this.LoRaDeviceClient.VerifyAll();

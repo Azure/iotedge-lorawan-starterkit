@@ -197,7 +197,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Null(request.ResponseDownlink);
 
             // 3. Frame counter up was updated
-            Assert.Equal(10, loraDevice.FCntUp);
+            Assert.Equal(10U, loraDevice.FCntUp);
         }
 
         [Fact]
@@ -248,19 +248,19 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
 
             // 4. Frame counter up was updated
-            Assert.Equal(1, loraDevice.FCntUp);
+            Assert.Equal(1U, loraDevice.FCntUp);
 
             // 5. Frame counter down was incremented
-            Assert.Equal(1, loraDevice.FCntDown);
+            Assert.Equal(1U, loraDevice.FCntDown);
             Assert.Equal(1, MemoryMarshal.Read<ushort>(payloadDataDown.Fcnt.Span));
         }
 
         [Fact]
         public async Task OTAA_Unconfirmed_Message_With_Fcnt_Change_Of_10_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_Null()
         {
-            const int PayloadFcnt = 19;
-            const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const uint PayloadFcnt = 19;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
@@ -319,7 +319,7 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
-        public async Task When_ABP_Device_With_Relaxed_FrameCounter_Has_FCntUP_Zero_Or_One_Should_Reset_Counter_And_Process_Message(int payloadFCnt)
+        public async Task When_ABP_Device_With_Relaxed_FrameCounter_Has_FCntUP_Zero_Or_One_Should_Reset_Counter_And_Process_Message(uint payloadFCnt)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID));
 
@@ -407,7 +407,7 @@ namespace LoRaWan.NetworkServer.Test
             var cachedDevices = deviceRegistry.InternalGetCachedDevicesForDevAddr(simulatedDevice.DevAddr);
             Assert.Single(cachedDevices);
             Assert.True(cachedDevices.TryGetValue(simulatedDevice.DevEUI, out var cachedDevice));
-            Assert.Equal(9, cachedDevice.FCntUp);
+            Assert.Equal(9U, cachedDevice.FCntUp);
 
             var payload2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 11);
             var rxpk2 = payload2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -428,7 +428,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Single(cachedDevices);
             cachedDevice = null;
             Assert.True(cachedDevices.TryGetValue(simulatedDevice.DevEUI, out cachedDevice));
-            Assert.Equal(9, cachedDevice.FCntUp);
+            Assert.Equal(9U, cachedDevice.FCntUp);
         }
 
         [Fact]
@@ -470,7 +470,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Single(devices);
             Assert.True(devices.TryGetValue(simulatedDevice.DevEUI, out var cachedDevice));
             Assert.True(cachedDevice.IsOurDevice);
-            Assert.Equal(10, cachedDevice.FCntDown);
+            Assert.Equal(10U, cachedDevice.FCntDown);
             Assert.Equal(payload.GetFcnt(), (ushort)cachedDevice.FCntUp);
 
             // Device was searched by DevAddr
@@ -481,16 +481,16 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Theory]
-        [InlineData(0, null, null)]
-        [InlineData(0, 1, 1)]
-        [InlineData(0, 100, 20)]
-        [InlineData(1, null, null)]
-        [InlineData(1, 1, 1)]
-        [InlineData(1, 100, 20)]
+        [InlineData(0U, null, null)]
+        [InlineData(0U, 1U, 1U)]
+        [InlineData(0U, 100U, 20U)]
+        [InlineData(1U, null, null)]
+        [InlineData(1U, 1U, 1U)]
+        [InlineData(1U, 100U, 20U)]
         public async Task When_ABP_New_Loaded_Device_With_Fcnt_1_Or_0_Should_Reset_Fcnt_And_Send_To_IotHub(
-            int payloadFcntUp,
-            int? deviceTwinFcntUp,
-            int? deviceTwinFcntDown)
+            uint payloadFcntUp,
+            uint? deviceTwinFcntUp,
+            uint? deviceTwinFcntDown)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
 
@@ -525,15 +525,15 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(initialTwin);
 
             // twin will be updated with new fcnt
-            int? fcntUpSavedInTwin = null;
-            int? fcntDownSavedInTwin = null;
+            uint? fcntUpSavedInTwin = null;
+            uint? fcntDownSavedInTwin = null;
 
             // Twin will be save (0, 0) only if it was not 0, 0
             this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .Callback<TwinCollection>((t) =>
                 {
-                    fcntUpSavedInTwin = (int)t[TwinProperty.FCntUp];
-                    fcntDownSavedInTwin = (int)t[TwinProperty.FCntDown];
+                    fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
+                    fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
                 })
                 .ReturnsAsync(true);
 
@@ -564,8 +564,8 @@ namespace LoRaWan.NetworkServer.Test
             // Ensure that the device twins were saved
             Assert.NotNull(fcntDownSavedInTwin);
             Assert.NotNull(fcntUpSavedInTwin);
-            Assert.Equal(0, fcntDownSavedInTwin.Value);
-            Assert.Equal(0, fcntUpSavedInTwin.Value);
+            Assert.Equal(0U, fcntDownSavedInTwin.Value);
+            Assert.Equal(0U, fcntUpSavedInTwin.Value);
 
             // Adding the loaded devices to the cache can take a while, give it time
             await Task.Delay(50);
@@ -578,7 +578,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(devEUI, loRaDevice.DevEUI);
             Assert.True(loRaDevice.IsABP);
             Assert.Equal(payloadFcntUp, loRaDevice.FCntUp);
-            Assert.Equal(0, loRaDevice.FCntDown);
+            Assert.Equal(0U, loRaDevice.FCntDown);
             if (payloadFcntUp == 0)
                 Assert.False(loRaDevice.HasFrameCountChanges); // no changes
             else

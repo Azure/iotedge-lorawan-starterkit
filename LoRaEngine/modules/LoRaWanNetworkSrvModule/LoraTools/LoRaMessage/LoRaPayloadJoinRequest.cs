@@ -80,7 +80,7 @@ namespace LoRaTools.LoRaMessage
             this.Mic = default(Memory<byte>);
         }
 
-        public override bool CheckMic(string appKey)
+        public override bool CheckMic(string appKey, uint? server32BitFcnt = null)
         {
             return this.Mic.ToArray().SequenceEqual(this.PerformMic(appKey));
         }

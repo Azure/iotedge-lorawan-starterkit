@@ -77,7 +77,7 @@ namespace LoraKeysManagerFacade.Test
 
             // last entry should have 2 and the id should be from gw1
             var last = await this.adrManager.GetLastEntryAsync(deviceEUI);
-            Assert.Equal(2, last.GatewayCount);
+            Assert.Equal(2U, last.GatewayCount);
             Assert.Equal(gateway1Id, last.GatewayId);
 
             // reply
@@ -85,7 +85,7 @@ namespace LoraKeysManagerFacade.Test
             _ = await this.adrFunction.HandleADRRequest(deviceEUI, req2);
 
             last = await this.adrManager.GetLastEntryAsync(deviceEUI);
-            Assert.Equal(4, last.GatewayCount);
+            Assert.Equal(4U, last.GatewayCount);
 
             // add new fcnt and change snr for gw2
             req2.FCntUp = ++req.FCntUp;
@@ -94,7 +94,7 @@ namespace LoraKeysManagerFacade.Test
             _ = await this.adrFunction.HandleADRRequest(deviceEUI, req2);
 
             last = await this.adrManager.GetLastEntryAsync(deviceEUI);
-            Assert.Equal(2, last.GatewayCount);
+            Assert.Equal(2U, last.GatewayCount);
             Assert.Equal(gateway2Id, last.GatewayId);
             Assert.Equal(-9, last.Snr);
         }
@@ -121,7 +121,7 @@ namespace LoraKeysManagerFacade.Test
                 var winner = req1.RequiredSnr < req2.RequiredSnr ? gateway2Id : gateway1Id;
                 var last = await this.adrManager.GetLastEntryAsync(deviceEUI);
                 Assert.Equal(winner, last.GatewayId);
-                Assert.Equal(2, last.GatewayCount);
+                Assert.Equal(2U, last.GatewayCount);
 
                 req1.RequiredSnr = rnd.Next(-20, 5);
                 req2.RequiredSnr = rnd.Next(-20, 5);
@@ -139,7 +139,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.False(result2.CanConfirmToDevice);
 
             Assert.Equal(req1.FCntDown + 1, result1.FCntDown);
-            Assert.Equal(0, result2.FCntDown);
+            Assert.Equal(0U, result2.FCntDown);
         }
     }
 }

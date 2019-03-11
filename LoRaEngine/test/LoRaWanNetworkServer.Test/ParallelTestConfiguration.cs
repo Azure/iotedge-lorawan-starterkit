@@ -24,8 +24,8 @@ namespace LoRaWan.NetworkServer.Test
 
         public RecordedDuration SearchByDevAddrDuration { get; set; }
 
-        public int? DeviceTwinFcntUp { get; set; }
+        public uint? DeviceTwinFcntUp { get; set; }
 
-        public int? DeviceTwinFcntDown { get; set; }
+        public uint? DeviceTwinFcntDown { get; set; }
     }
 }
