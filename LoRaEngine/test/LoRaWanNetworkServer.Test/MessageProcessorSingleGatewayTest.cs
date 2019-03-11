@@ -401,7 +401,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(LoRaDeviceRequestFailedReason.BelongsToAnotherGateway, request1.ProcessingFailedReason);
 
             // Let loading finish
-            await Task.Delay(10);
+            await Task.Delay(50);
 
             // device should be cached
             var cachedDevices = deviceRegistry.InternalGetCachedDevicesForDevAddr(simulatedDevice.DevAddr);

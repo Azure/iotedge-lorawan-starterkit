@@ -40,7 +40,12 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         public WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder)
-            : base(rxpk, packetForwarder, DateTime.UtcNow)
+            : this(rxpk, packetForwarder, DateTime.UtcNow)
+        {
+        }
+
+        public WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder, DateTime startTime)
+            : base(rxpk, packetForwarder, startTime)
         {
             this.complete = new SemaphoreSlim(0);
         }

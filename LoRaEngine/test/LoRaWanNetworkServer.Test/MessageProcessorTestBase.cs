@@ -89,6 +89,10 @@ namespace LoRaWan.NetworkServer.Test
 
         public LoRaDevice CreateLoRaDevice(SimulatedDevice simulatedDevice) => TestUtils.CreateFromSimulatedDevice(simulatedDevice, this.LoRaDeviceClient.Object, this.RequestHandlerImplementation);
 
-        public WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk, IPacketForwarder packetForwarder = null) => new WaitableLoRaRequest(rxpk, packetForwarder ?? this.PacketForwarder);
+        public WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk, IPacketForwarder packetForwarder = null, TimeSpan? startTimeOffset = null)
+        {
+            var startTime = startTimeOffset.HasValue ? DateTime.UtcNow.Subtract(startTimeOffset.Value) : DateTime.UtcNow;
+            return new WaitableLoRaRequest(rxpk, packetForwarder ?? this.PacketForwarder, startTime);
+        }
     }
 }

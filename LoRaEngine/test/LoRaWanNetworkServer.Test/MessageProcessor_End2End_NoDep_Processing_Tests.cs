@@ -820,7 +820,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(null, 5000)]
         public async Task When_Sending_Unconfirmed_Message_To_IoT_Hub_Takes_Too_Long_Should_Not_Check_For_C2D(
             string deviceGatewayID,
-            int sendMessageDelayInMs)
+            int delayInMs)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
 
@@ -829,12 +829,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // message will be sent
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .Returns(() =>
-                {
-                    var task = Task.Delay(sendMessageDelayInMs).ContinueWith((_) => true);
-                    task.ConfigureAwait(false);
-                    return task;
-                });
+                .ReturnsAsync(true);
 
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
@@ -854,7 +849,7 @@ namespace LoRaWan.NetworkServer.Test
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello");
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder, DateTime.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -1609,7 +1604,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr, request1.ProcessingFailedReason);
 
             // give time for the loader to be removed from cache
-            await Task.Delay(10);
+            await Task.Delay(50);
 
             var request2 = this.CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("2").Rxpk[0]);
             messageDispatcher.DispatchRequest(request2);

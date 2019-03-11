@@ -85,8 +85,12 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(new SearchDevicesResult(
                     new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
 
+            var twin = simulatedDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
+            {
+                { TwinProperty.Region, LoRaRegion.EU868.ToString() }
+            });
             this.deviceClient.Setup(x => x.GetTwinAsync())
-                .ReturnsAsync(simulatedDevice.CreateABPTwin());
+                .ReturnsAsync(twin);
 
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;

@@ -83,6 +83,9 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
 
+            // wait until cache has been updated
+            await Task.Delay(50);
+
             // Adds fcntdown to device, simulating multiple downstream calls
             Assert.True(deviceRegistry.InternalGetCachedDevicesForDevAddr(simDevice.DevAddr).TryGetValue(simDevice.DevEUI, out var loRaDevice));
             loRaDevice.SetFcntDown(fcntDelta + loRaDevice.FCntDown);

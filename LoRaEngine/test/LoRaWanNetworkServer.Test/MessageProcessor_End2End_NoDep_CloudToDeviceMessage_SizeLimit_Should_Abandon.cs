@@ -89,7 +89,7 @@ namespace LoRaWan.NetworkServer.Test
                     this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                         .ReturnsAsync((Message)null);
                 })
-                .ReturnsAsync(cloudToDeviceMessage, TimeSpan.FromSeconds(1));
+                .ReturnsAsync(cloudToDeviceMessage);
 
             this.LoRaDeviceClient.Setup(x => x.AbandonAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
@@ -102,7 +102,7 @@ namespace LoRaWan.NetworkServer.Test
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var request = this.CreateWaitableRequest(rxpk);
+            var request = this.CreateWaitableRequest(rxpk, startTimeOffset: TimeSpan.FromSeconds(1));
             messageProcessor.DispatchRequest(request);
 
             // Expectations

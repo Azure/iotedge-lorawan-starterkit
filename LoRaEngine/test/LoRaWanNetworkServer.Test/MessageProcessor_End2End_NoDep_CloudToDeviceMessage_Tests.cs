@@ -631,15 +631,8 @@ namespace LoRaWan.NetworkServer.Test
             var devAddr = simulatedDevice.DevAddr;
             var devEUI = simulatedDevice.DevEUI;
 
-            var sentEventAsyncSetup = this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null));
-            if (sendEventDurationInMs > 0)
-            {
-                sentEventAsyncSetup.ReturnsAsync(true, TimeSpan.FromMilliseconds(sendEventDurationInMs));
-            }
-            else
-            {
-                sentEventAsyncSetup.ReturnsAsync(true);
-            }
+            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .ReturnsAsync(true);
 
             var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
                 .CreateMessage();
@@ -666,7 +659,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = this.CreateWaitableRequest(rxpk);
+            var request = this.CreateWaitableRequest(rxpk, startTimeOffset: sendEventDurationInMs > 0 ? TimeSpan.FromMilliseconds(sendEventDurationInMs) : TimeSpan.Zero);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);

@@ -94,22 +94,9 @@ namespace LoRaWan.NetworkServer.Test
 
             var cloudToDeviceMessage = c2dMessage.CreateMessage();
 
-            if (isSendingInRx2)
-            {
-                this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
-                    .Callback<TimeSpan>((_) =>
-                    {
-                        this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
-                            .ReturnsAsync((Message)null);
-                    })
-                    .ReturnsAsync(cloudToDeviceMessage, TimeSpan.FromSeconds(1));
-            }
-            else
-            {
-                this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
-                    .ReturnsAsync(cloudToDeviceMessage)
-                    .ReturnsAsync(null);
-            }
+            this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                .ReturnsAsync(cloudToDeviceMessage)
+                .ReturnsAsync(null);
 
             this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
@@ -122,7 +109,7 @@ namespace LoRaWan.NetworkServer.Test
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var request = this.CreateWaitableRequest(rxpk);
+            var request = this.CreateWaitableRequest(rxpk, startTimeOffset: isSendingInRx2 ? TimeSpan.FromSeconds(1) : TimeSpan.Zero);
             messageProcessor.DispatchRequest(request);
 
             // Expectations
