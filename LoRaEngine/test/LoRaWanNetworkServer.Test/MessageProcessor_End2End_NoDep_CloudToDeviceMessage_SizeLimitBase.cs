@@ -66,5 +66,14 @@ namespace LoRaWan.NetworkServer.Test
 
             return rxpk;
         }
+
+        /// <summary>
+        /// Gets the time span used to make the request be answered in 2nd receive window
+        /// </summary>
+        /// <returns></returns>
+        protected TimeSpan GetStartTimeOffsetForSecondWindow()
+        {
+            return TimeSpan.FromMilliseconds(1000 - LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage.TotalMilliseconds + 1);
+        }
     }
 }

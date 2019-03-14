@@ -102,7 +102,7 @@ namespace LoRaWan.NetworkServer.Test
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var request = this.CreateWaitableRequest(rxpk, startTimeOffset: TimeSpan.FromSeconds(1));
+            var request = this.CreateWaitableRequest(rxpk, startTimeOffset: this.GetStartTimeOffsetForSecondWindow());
             messageProcessor.DispatchRequest(request);
 
             // Expectations
