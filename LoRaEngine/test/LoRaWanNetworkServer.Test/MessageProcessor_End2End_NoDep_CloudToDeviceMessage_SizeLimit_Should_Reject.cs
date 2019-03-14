@@ -22,6 +22,7 @@ namespace LoRaWan.NetworkServer.Test
     using Moq;
     using Xunit;
 
+    [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
     public class MessageProcessor_End2End_NoDep_CloudToDeviceMessage_SizeLimit_Should_Reject : MessageProcessor_End2End_NoDep_CloudToDeviceMessage_SizeLimitBase
     {
         [Theory]

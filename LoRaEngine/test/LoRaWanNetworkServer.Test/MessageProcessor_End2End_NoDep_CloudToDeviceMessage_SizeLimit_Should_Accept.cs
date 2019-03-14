@@ -24,6 +24,7 @@ namespace LoRaWan.NetworkServer.Test
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Cloud to device message processing max payload size tests (Join tests are handled in other class)
+    [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
     public class MessageProcessor_End2End_NoDep_CloudToDeviceMessage_SizeLimit_Should_Accept : MessageProcessor_End2End_NoDep_CloudToDeviceMessage_SizeLimitBase
     {
         [Theory]
