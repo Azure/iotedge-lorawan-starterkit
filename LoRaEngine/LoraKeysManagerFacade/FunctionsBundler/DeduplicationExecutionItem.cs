@@ -33,7 +33,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             return Task.CompletedTask;
         }
 
-        internal DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, int clientFCntUp, int clientFCntDown)
+        internal DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
             var isDuplicate = true;
             string processedDevice = gatewayId;

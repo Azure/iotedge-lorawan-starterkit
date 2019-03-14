@@ -30,18 +30,17 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Theory]
-        [InlineData(null, 0, 0)]
-        [InlineData(null, 0, 9)]
-        [InlineData(null, 5, 5)]
-        [InlineData(null, 5, 14)]
-        [InlineData(ServerGatewayID, 0, 0)]
-        [InlineData(ServerGatewayID, 0, 19)]
-        [InlineData(ServerGatewayID, 5, 5)]
-        [InlineData(ServerGatewayID, 5, 24)]
-        public async Task When_ABP_Sends_Upstream_And_DirectMethod_Should_Send_Upstream_And_Downstream(string deviceGatewayID, uint lastSavedFcntDown, uint currentFcntDown)
+        [InlineData(null, 0U, 0U)]
+        [InlineData(null, 0U, 9U)]
+        [InlineData(null, 5U, 5U)]
+        [InlineData(null, 5U, 14U)]
+        [InlineData(ServerGatewayID, 0U, 0U)]
+        [InlineData(ServerGatewayID, 0U, 19U)]
+        [InlineData(ServerGatewayID, 5U, 5U)]
+        [InlineData(ServerGatewayID, 5U, 24U)]
+        public async Task When_ABP_Sends_Upstream_Followed_By_DirectMethod_Should_Send_Upstream_And_Downstream(string deviceGatewayID, uint fcntDownFromTwin, uint fcntDelta)
         {
             const uint payloadFcnt = 2; // to avoid relax mode reset
-            var shouldSaveFcnt = (currentFcntDown - lastSavedFcntDown) + 1 >= Constants.MAX_FCNT_UNSAVED_DELTA;
 
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID, deviceClassType: 'c'), frmCntDown: fcntDownFromTwin);
 
@@ -108,7 +107,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
-                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(simDevice.DevEUI, fcntDownFromTwin + fcntDelta, -1, this.ServerConfiguration.GatewayID))
+                this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(simDevice.DevEUI, fcntDownFromTwin + fcntDelta, 0, this.ServerConfiguration.GatewayID))
                     .ReturnsAsync((ushort)expectedFcntDown);
             }
 
@@ -234,7 +233,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task Unconfirmed_Cloud_To_Device_From_Decoder_Should_Call_ClassC_Message_Sender()
         {
-            const uint payloadFcnt = 10;
+            const uint PayloadFcnt = 10;
             const uint InitialDeviceFcntUp = 9;
             const uint InitialDeviceFcntDown = 20;
 
@@ -287,7 +286,7 @@ namespace LoRaWan.NetworkServer.Test
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt);
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -303,7 +302,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(request.ProcessingSucceeded);
 
             // 4. Frame counter up was updated
-            Assert.Equal(payloadFcnt, loraDevice.FCntUp);
+            Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
 
             // 5. Frame counter down is unchanged
             Assert.Equal(InitialDeviceFcntDown, loraDevice.FCntDown);
@@ -393,7 +392,7 @@ namespace LoRaWan.NetworkServer.Test
             else
                 Assert.Empty(loRaDevice.PreferredGatewayID);
 
-            Assert.Equal(LoRaRegion.EU868, loRaDevice.Region);
+            Assert.Equal(LoRaRegion.EU868, loRaDevice.LoRaRegion);
 
             this.LoRaDeviceApi.VerifyAll();
             this.LoRaDeviceClient.VerifyAll();
@@ -407,9 +406,9 @@ namespace LoRaWan.NetworkServer.Test
             [CombinatorialValues(ServerGatewayID, "another-gateway")] string preferredGatewayID,
             [CombinatorialValues(null, LoRaRegion.EU868, LoRaRegion.US915)] LoRaRegion? initialLoRaRegion)
         {
-            const int PayloadFcnt = 10;
-            const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const uint PayloadFcnt = 10;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID, deviceClassType: 'c'),
@@ -499,15 +498,15 @@ namespace LoRaWan.NetworkServer.Test
             else
                 Assert.Equal(preferredGatewayID, loraDevice.PreferredGatewayID);
 
-            Assert.Equal(LoRaRegion.EU868, loraDevice.Region);
+            Assert.Equal(LoRaRegion.EU868, loraDevice.LoRaRegion);
         }
 
         [Fact]
         public async Task When_Updating_PreferredGateway_And_FcntUp_Should_Save_Twin_Once()
         {
-            const int PayloadFcnt = 10;
-            const int InitialDeviceFcntUp = 9;
-            const int InitialDeviceFcntDown = 20;
+            const uint PayloadFcnt = 10;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, deviceClassType: 'c'),
@@ -542,7 +541,7 @@ namespace LoRaWan.NetworkServer.Test
                 {
                     Assert.Equal(ServerGatewayID, savedTwin[TwinProperty.PreferredGatewayID].Value as string);
                     Assert.Equal(LoRaRegion.EU868.ToString(), savedTwin[TwinProperty.Region].Value as string);
-                    Assert.Equal(PayloadFcnt, (int)savedTwin[TwinProperty.FCntUp].Value);
+                    Assert.Equal(PayloadFcnt, (uint)savedTwin[TwinProperty.FCntUp].Value);
                 })
                 .ReturnsAsync(true);
 
@@ -576,7 +575,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(request.ProcessingSucceeded);
 
             Assert.Equal(ServerGatewayID, loraDevice.PreferredGatewayID);
-            Assert.Equal(LoRaRegion.EU868, loraDevice.Region);
+            Assert.Equal(LoRaRegion.EU868, loraDevice.LoRaRegion);
             Assert.Equal(PayloadFcnt, loraDevice.FCntUp);
 
             this.LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()), Times.Once());

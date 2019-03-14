@@ -29,7 +29,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public async Task<FunctionBundlerResult> Execute()
         {
-            var executionPipeline = new List<IFunctionBundlerExecutionItem>(4);
+            var executionPipeline = new List<IFunctionBundlerExecutionItem>(this.registeredHandlers.Length);
             for (var i = 0; i < this.registeredHandlers.Length; i++)
             {
                 var handler = this.registeredHandlers[i];

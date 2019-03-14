@@ -89,7 +89,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(REQUEST_LIST_CACHE_DURATION_IN_MINUTES));
             this.log.LogInformation("Preferred gateway {devEUI}/{fcnt}: added {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
 
-            // 2. Wait for an specific time (200ms). Optional wait less if another requests already started
+            // 2. Wait for the time specified in receiveInterval (default 200ms). Optional: wait less if another requests already started
             await Task.Delay(this.receiveInterval);
 
             // 3. Check if value was already calculated
@@ -104,17 +104,13 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
             // 4. To calculated need to adquire a lock
             var preferredGatewayLockKey = $"preferredGateway:{devEUI}:lock";
-            var hasLock = false;
-            try
-            {
-                for (var i = 0; i < MAX_ATTEMPTS_TO_RESOLVE_PREFERRED_GATEWAY; i++)
-                {
-                    if (this.cacheStore.LockTake(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200)))
-                    {
-                        // If we get lock, check if result was not yet computed
-                        // If not, create the result, store in cache and return it
-                        hasLock = true;
 
+            for (var i = 0; i < MAX_ATTEMPTS_TO_RESOLVE_PREFERRED_GATEWAY; i++)
+            {
+                if (this.cacheStore.LockTake(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200)))
+                {
+                    try
+                    {
                         preferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEUI);
                         if (preferredGateway == null || preferredGateway.FcntUp < fcntUp)
                         {
@@ -135,33 +131,30 @@ namespace LoraKeysManagerFacade.FunctionBundler
                             this.log.LogInformation("Resolved preferred gateway {devEUI}/{fcnt}: {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
                         }
                     }
-                    else
+                    finally
                     {
-                        // We couldn't get lock
-                        // wait a bit and try to get result
-                        await Task.Delay(Math.Max(50, this.receiveInterval / 4));
-                        preferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, context.DevEUI);
-                    }
-
-                    if (preferredGateway != null)
-                    {
-                        if (preferredGateway.FcntUp >= fcntUp)
-                        {
-                            return new PreferredGatewayResult(devEUI, fcntUp, preferredGateway);
-                        }
+                        this.cacheStore.LockRelease(preferredGatewayLockKey, computationId);
                     }
                 }
-
-                this.log.LogError("Could not resolve closest gateway in {devEUI} and {fcntUp}", devEUI, fcntUp);
-                return new PreferredGatewayResult(devEUI, fcntUp, "Could not resolve closest gateway");
-            }
-            finally
-            {
-                if (hasLock)
+                else
                 {
-                    this.cacheStore.LockRelease(preferredGatewayLockKey, computationId);
+                    // We couldn't get lock
+                    // wait a bit and try to get result
+                    await Task.Delay(Math.Max(50, this.receiveInterval / 4));
+                    preferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, context.DevEUI);
+                }
+
+                if (preferredGateway != null)
+                {
+                    if (preferredGateway.FcntUp >= fcntUp)
+                    {
+                        return new PreferredGatewayResult(devEUI, fcntUp, preferredGateway);
+                    }
                 }
             }
+
+            this.log.LogError("Could not resolve closest gateway in {devEUI} and {fcntUp}", devEUI, fcntUp);
+            return new PreferredGatewayResult(devEUI, fcntUp, "Could not resolve closest gateway");
         }
     }
 }

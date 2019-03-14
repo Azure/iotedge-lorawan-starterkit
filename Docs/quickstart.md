@@ -296,7 +296,7 @@ Sending cloud to device messages in the solution uses the following JSON format 
 |confirmed|Boolean|Indicates if an ack is required from the LoRa device. By default `false`|No
 |payload|String|Payload as text|Either `payload` or `rawPayload` must be provided|
 |rawPayload|String|Payload as byte encoded in base64 format|Either `payload` or `rawPayload` must be provided|
-|Mac command cid|String|Mac command identifier. Currently only `DevStatusCmd` is implemented|
+|Mac command cid|String|Mac command identifier. The mac command `DevStatusCmd` is implemented, allowing you to request a device its status|
 
 ### Sending messages using the Azure Function
 

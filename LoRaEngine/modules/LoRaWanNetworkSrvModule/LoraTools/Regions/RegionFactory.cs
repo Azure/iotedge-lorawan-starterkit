@@ -16,6 +16,26 @@ namespace LoRaTools.Regions
             get; set;
         }
 
+        /// <summary>
+        /// Tries to get the <see cref="LoRaRegion"/> based on <paramref name="value"/>
+        /// </summary>
+        public static bool TryGetRegion(LoRaRegion value, out Region region)
+        {
+            switch (value)
+            {
+                case LoRaRegion.EU868:
+                    region = CreateEU868Region();
+                    return true;
+
+                case LoRaRegion.US915:
+                    region = RegionFactory.CreateUS915Region();
+                    return true;
+            }
+
+            region = null;
+            return false;
+        }
+
         public static bool TryResolveRegion(Rxpk rxpk)
         {
             // EU863-870

@@ -12,10 +12,10 @@ namespace LoraKeysManagerFacade
     {
         public string DevEUI { get; }
 
-        public int RequestFcntUp { get; }
+        public uint RequestFcntUp { get; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public int? CurrentFcntUp { get; }
+        public uint? CurrentFcntUp { get; }
 
         public string PreferredGatewayID { get; }
 
@@ -36,7 +36,7 @@ namespace LoraKeysManagerFacade
         {
         }
 
-        public PreferredGatewayResult(string devEUI, int fcntUp, LoRaDevicePreferredGateway preferredGateway)
+        public PreferredGatewayResult(string devEUI, uint fcntUp, LoRaDevicePreferredGateway preferredGateway)
         {
             this.DevEUI = devEUI;
             this.RequestFcntUp = fcntUp;
@@ -45,7 +45,7 @@ namespace LoraKeysManagerFacade
             this.Conflict = fcntUp != preferredGateway.FcntUp;
         }
 
-        public PreferredGatewayResult(string devEUI, int fcntUp, string errorMessage)
+        public PreferredGatewayResult(string devEUI, uint fcntUp, string errorMessage)
         {
             this.DevEUI = devEUI;
             this.RequestFcntUp = fcntUp;

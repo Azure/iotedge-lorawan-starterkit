@@ -51,20 +51,10 @@ namespace LoRaWan.NetworkServer
                     return false;
                 }
 
-                Region region;
-                switch (loRaDevice.Region)
+                if (!RegionFactory.TryGetRegion(loRaDevice.LoRaRegion, out var region))
                 {
-                    case LoRaRegion.EU868:
-                        region = RegionFactory.CreateEU868Region();
-                        break;
-
-                    case LoRaRegion.US915:
-                        region = RegionFactory.CreateUS915Region();
-                        break;
-
-                    default:
-                        Logger.Log(cloudToDeviceMessage.DevEUI, $"[class-c] device does not have a region assigned. Ensure the device has connected at least once with the network", LogLevel.Error);
-                        return false;
+                    Logger.Log(cloudToDeviceMessage.DevEUI, $"[class-c] device does not have a region assigned. Ensure the device has connected at least once with the network", LogLevel.Error);
+                    return false;
                 }
 
                 if (cts.IsCancellationRequested)

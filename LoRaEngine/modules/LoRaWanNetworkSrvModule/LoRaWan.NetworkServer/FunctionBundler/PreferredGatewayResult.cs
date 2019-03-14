@@ -13,10 +13,10 @@ namespace LoRaWan.NetworkServer
     {
         public string DevEUI { get; set; }
 
-        public int RequestFcntUp { get; set; }
+        public uint RequestFcntUp { get; set; }
 
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
-        public int? CurrentFcntUp { get; set; }
+        public uint? CurrentFcntUp { get; set; }
 
         public string PreferredGatewayID { get; set; }
 

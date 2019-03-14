@@ -118,10 +118,10 @@ namespace LoRaWan.NetworkServer
         ChangeTrackingProperty<LoRaRegion> region = new ChangeTrackingProperty<LoRaRegion>(TwinProperty.Region, LoRaRegion.NotSet);
 
         /// <summary>
-        /// Gets the <see cref="LoRaRegion"/> of the device
+        /// Gets the <see cref="LoRaTools.Regions.LoRaRegion"/> of the device
         /// Relevant only for <see cref="LoRaDeviceClassType.C"/>
         /// </summary>
-        public LoRaRegion Region => this.region.Get();
+        public LoRaRegion LoRaRegion => this.region.Get();
 
         ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
 
@@ -314,7 +314,7 @@ namespace LoRaWan.NetworkServer
                             }
                         }
 
-                        if (this.Region == LoRaRegion.NotSet)
+                        if (this.LoRaRegion == LoRaRegion.NotSet)
                         {
                             Logger.Log(this.DevEUI, $"Invalid region value: {regionValue}", LogLevel.Error);
                         }
@@ -377,7 +377,7 @@ namespace LoRaWan.NetworkServer
 
             if (toReport.Count > 0)
             {
-                _ = this.SaveFrameCountChangesAsync(toReport, true);
+                _ = this.SaveChangesAsync(toReport, true);
             }
         }
 
@@ -496,8 +496,9 @@ namespace LoRaWan.NetworkServer
         /// Saves device changes in reported twin properties
         /// It will only save if required. Frame counters are only saved if the difference since last value is equal or greater than <see cref="Constants.MAX_FCNT_UNSAVED_DELTA"/>
         /// </summary>
+        /// <param name="reportedProperties">Pre populate reported properties</param>
         /// <param name="force">Indicates if changes should be saved even if the difference between last saved and current frame counter are less than <see cref="Constants.MAX_FCNT_UNSAVED_DELTA"/></param>
-        public async Task<bool> SaveChangesAsync(bool force = false)
+        public async Task<bool> SaveChangesAsync(TwinCollection reportedProperties = null, bool force = false)
         {
             try
             {
@@ -507,7 +508,11 @@ namespace LoRaWan.NetworkServer
                 // before checking the current state and update again.
                 await this.syncSave.WaitAsync();
 
-                var reportedProperties = new TwinCollection();
+                if (reportedProperties == null)
+                {
+                    reportedProperties = new TwinCollection();
+                }
+
                 var savedProperties = new List<IChangeTrackingProperty>();
                 foreach (var prop in this.GetTrackableProperties())
                 {

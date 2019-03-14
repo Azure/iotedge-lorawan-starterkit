@@ -10,6 +10,8 @@ namespace LoRaWan.NetworkServer.Test
     {
         public string GatewayID { get; set; }
 
+        public uint? DeviceID { get; set; }
+
         public RecordedDuration BetweenMessageDuration { get; set; }
 
         public RecordedDuration SendEventDuration { get; set; }

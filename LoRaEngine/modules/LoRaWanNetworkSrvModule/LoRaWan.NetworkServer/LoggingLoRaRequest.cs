@@ -19,7 +19,7 @@ namespace LoRaWan.NetworkServer
 
         public override IPacketForwarder PacketForwarder => this.wrappedRequest.PacketForwarder;
 
-        public override Region LoRaRegion => this.wrappedRequest.LoRaRegion;
+        public override Region Region => this.wrappedRequest.Region;
 
         public override LoRaPayload Payload => this.wrappedRequest.Payload;
 

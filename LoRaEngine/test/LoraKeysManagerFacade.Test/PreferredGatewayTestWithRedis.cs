@@ -34,7 +34,7 @@ namespace LoraKeysManagerFacade.Test
         public async Task When_Called_By_Multiple_Gateways_Should_Return_Closest()
         {
             var devEUI = Guid.NewGuid().ToString();
-            const int fcntUp = 1;
+            const uint fcntUp = 1;
 
             var req1 = new FunctionBundlerRequest() { GatewayId = "gateway1", ClientFCntUp = fcntUp, Rssi = -180 };
             var pipeline1 = new FunctionBundlerPipelineExecuter(new IFunctionBundlerExecutionItem[] { this.preferredGatewayExecutionItem }, devEUI, req1);
@@ -73,7 +73,7 @@ namespace LoraKeysManagerFacade.Test
         public async Task When_Calling_Outdated_Fcnt_Should_Return_Conflict()
         {
             var devEUI = Guid.NewGuid().ToString();
-            const int fcntUp = 1;
+            const uint fcntUp = 1;
 
             var req1 = new FunctionBundlerRequest() { GatewayId = "gateway1", ClientFCntUp = fcntUp + 1, Rssi = -180 };
             var pipeline1 = new FunctionBundlerPipelineExecuter(new IFunctionBundlerExecutionItem[] { this.preferredGatewayExecutionItem }, devEUI, req1);
@@ -99,13 +99,14 @@ namespace LoraKeysManagerFacade.Test
         public async Task When_Calling_After_Delay_Should_Return_First_Gateway()
         {
             var devEUI = Guid.NewGuid().ToString();
-            const int fcntUp = 1;
+            const uint staleFcntUp = 1;
+            const uint currentFcntUp = 2;
 
-            var req1 = new FunctionBundlerRequest() { GatewayId = "gateway1", ClientFCntUp = fcntUp + 1, Rssi = -180 };
+            var req1 = new FunctionBundlerRequest() { GatewayId = "gateway1", ClientFCntUp = currentFcntUp, Rssi = -180 };
             var pipeline1 = new FunctionBundlerPipelineExecuter(new IFunctionBundlerExecutionItem[] { this.preferredGatewayExecutionItem }, devEUI, req1);
             await this.preferredGatewayExecutionItem.ExecuteAsync(pipeline1);
 
-            var req2 = new FunctionBundlerRequest() { GatewayId = "gateway2", ClientFCntUp = fcntUp, Rssi = -90 };
+            var req2 = new FunctionBundlerRequest() { GatewayId = "gateway2", ClientFCntUp = staleFcntUp, Rssi = -90 };
             var pipeline2 = new FunctionBundlerPipelineExecuter(new IFunctionBundlerExecutionItem[] { this.preferredGatewayExecutionItem }, devEUI, req2);
             var res2 = await this.preferredGatewayExecutionItem.ExecuteAsync(pipeline2);
 
@@ -127,8 +128,12 @@ namespace LoraKeysManagerFacade.Test
                 Assert.NotNull(pipeline.Result.PreferredGatewayResult);
                 Assert.Equal("gateway1", pipeline.Result.PreferredGatewayResult.PreferredGatewayID);
                 Assert.Equal(pipeline.Request.ClientFCntUp, pipeline.Result.PreferredGatewayResult.RequestFcntUp);
-                Assert.Equal(fcntUp, pipeline.Result.PreferredGatewayResult.CurrentFcntUp);
-                Assert.False(pipeline.Result.PreferredGatewayResult.Conflict);
+                Assert.Equal(currentFcntUp, pipeline.Result.PreferredGatewayResult.CurrentFcntUp);
+
+                if (pipeline.Request.ClientFCntUp == staleFcntUp)
+                    Assert.True(pipeline.Result.PreferredGatewayResult.Conflict);
+                else
+                    Assert.False(pipeline.Result.PreferredGatewayResult.Conflict);
             }
         }
     }

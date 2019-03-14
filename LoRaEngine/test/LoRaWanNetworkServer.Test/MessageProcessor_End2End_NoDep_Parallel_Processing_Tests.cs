@@ -32,6 +32,7 @@ namespace LoRaWan.NetworkServer.Test
             {
                     new ParallelTestConfiguration()
                     {
+                        DeviceID = 1,
                         GatewayID = ServerGatewayID,
                         BetweenMessageDuration = 1000,
                         SearchByDevAddrDuration = 100,
@@ -47,6 +48,7 @@ namespace LoRaWan.NetworkServer.Test
             {
                     new ParallelTestConfiguration()
                     {
+                        DeviceID = 2,
                         GatewayID = ServerGatewayID,
                         BetweenMessageDuration = 1000,
                         SearchByDevAddrDuration = new int[] { 1000, 100 },
@@ -62,6 +64,7 @@ namespace LoRaWan.NetworkServer.Test
             {
                     new ParallelTestConfiguration()
                     {
+                        DeviceID = 3,
                         GatewayID = ServerGatewayID,
                         BetweenMessageDuration = 1000,
                         SearchByDevAddrDuration = new int[] { 5000, 100 },
@@ -78,21 +81,28 @@ namespace LoRaWan.NetworkServer.Test
         public async Task ABP_Load_And_Receiving_Multiple_Unconfirmed_Should_Send_All_ToHub(ParallelTestConfiguration parallelTestConfiguration)
         {
             Console.WriteLine("---");
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: null));
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(parallelTestConfiguration.DeviceID ?? 1, gatewayID: null));
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
             var devAddr = simulatedDevice.LoRaDevice.DevAddr;
 
+            // Using loose mock because sometimes we might call receive async
+            var looseDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Loose);
+            this.LoRaDeviceFactory.SetClient(devEUI, looseDeviceClient.Object);
+
+            looseDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
             // message will be sent
             var sentTelemetry = new List<LoRaDeviceTelemetry>();
-            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+            looseDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Returns<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
                 {
                     sentTelemetry.Add(t);
                     var duration = parallelTestConfiguration.SendEventDuration.Next();
-                    Console.WriteLine($"{nameof(this.LoRaDeviceClient.Object.SendEventAsync)} sleeping for {duration}");
+                    Console.WriteLine($"{nameof(looseDeviceClient.Object.SendEventAsync)} sleeping for {duration}");
                     return Task.Delay(duration)
-                        .ContinueWith((a) => true);
+                        .ContinueWith((a) => true, TaskContinuationOptions.ExecuteSynchronously);
                 });
 
             // twin will be loaded
@@ -111,28 +121,28 @@ namespace LoRaWan.NetworkServer.Test
             if (parallelTestConfiguration.DeviceTwinFcntUp.HasValue)
                 initialTwin.Properties.Reported[TwinProperty.FCntUp] = parallelTestConfiguration.DeviceTwinFcntUp.Value;
 
-            this.LoRaDeviceClient.Setup(x => x.GetTwinAsync())
+            looseDeviceClient.Setup(x => x.GetTwinAsync())
                 .Returns(() =>
                 {
                     var duration = parallelTestConfiguration.LoadTwinDuration.Next();
-                    Console.WriteLine($"{nameof(this.LoRaDeviceClient.Object.GetTwinAsync)} sleeping for {duration}");
+                    Console.WriteLine($"{nameof(looseDeviceClient.Object.GetTwinAsync)} sleeping for {duration}");
                     return Task.Delay(duration)
-                        .ContinueWith(_ => initialTwin);
+                        .ContinueWith(_ => initialTwin, TaskContinuationOptions.ExecuteSynchronously);
                 });
 
             // twin will be updated with new fcnt
             uint? fcntUpSavedInTwin = null;
             uint? fcntDownSavedInTwin = null;
 
-            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            looseDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .Returns<TwinCollection>((t) =>
                 {
                     fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
                     fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
                     var duration = parallelTestConfiguration.UpdateTwinDuration.Next();
-                    Console.WriteLine($"{nameof(this.LoRaDeviceClient.Object.UpdateReportedPropertiesAsync)} sleeping for {duration}");
+                    Console.WriteLine($"{nameof(looseDeviceClient.Object.UpdateReportedPropertiesAsync)} sleeping for {duration}");
                     return Task.Delay(duration)
-                        .ContinueWith((a) => true);
+                        .ContinueWith((a) => true, TaskContinuationOptions.ExecuteSynchronously);
                 });
 
             var shouldReset = (parallelTestConfiguration.DeviceTwinFcntDown ?? 0) != 0 || (parallelTestConfiguration.DeviceTwinFcntUp ?? 0) != 0;
@@ -144,7 +154,7 @@ namespace LoRaWan.NetworkServer.Test
                         var duration = parallelTestConfiguration.DeviceApiResetFcntDuration.Next();
                         Console.WriteLine($"{nameof(this.LoRaDeviceApi.Object.ABPFcntCacheResetAsync)} sleeping for {duration}");
                         return Task.Delay(duration)
-                            .ContinueWith((a) => true);
+                            .ContinueWith((a) => true, TaskContinuationOptions.ExecuteSynchronously);
                     });
             }
 
@@ -155,7 +165,7 @@ namespace LoRaWan.NetworkServer.Test
                     var duration = parallelTestConfiguration.SearchByDevAddrDuration.Next();
                     Console.WriteLine($"{nameof(this.LoRaDeviceApi.Object.SearchByDevAddrAsync)} sleeping for {duration}");
                     return Task.Delay(duration)
-                        .ContinueWith((a) => new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
+                        .ContinueWith((a) => new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()), TaskContinuationOptions.ExecuteSynchronously);
                 });
 
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -184,14 +194,14 @@ namespace LoRaWan.NetworkServer.Test
             messageDispatcher.DispatchRequest(req3);
             await Task.Delay(parallelTestConfiguration.BetweenMessageDuration.Next());
 
-            await Task.WhenAll(req1.WaitCompleteAsync(), req2.WaitCompleteAsync(), req3.WaitCompleteAsync());
+            await Task.WhenAll(req1.WaitCompleteAsync(20000), req2.WaitCompleteAsync(20000), req3.WaitCompleteAsync(20000));
 
-            Assert.Null(req1.ResponseDownlink);
-            Assert.Null(req2.ResponseDownlink);
-            Assert.Null(req3.ResponseDownlink);
+            var allRequests = new[] { req1, req2, req3 };
+            Assert.All(allRequests, x => Assert.Null(x.ResponseDownlink));
+            Assert.All(allRequests, x => Assert.True(x.ProcessingSucceeded));
 
-            this.LoRaDeviceClient.Verify(x => x.GetTwinAsync(), Times.Exactly(1));
-            this.LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Exactly(1));
+            looseDeviceClient.Verify(x => x.GetTwinAsync(), Times.Exactly(1));
+            looseDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Exactly(1));
             // loRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsAny<TimeSpan>()), Times.Exactly(1));
             this.LoRaDeviceApi.Verify(x => x.SearchByDevAddrAsync(devAddr), Times.Once);
 
@@ -220,7 +230,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0U, loRaDevice.FCntDown);
             Assert.True(loRaDevice.HasFrameCountChanges); // should have changes!
 
-            this.LoRaDeviceClient.VerifyAll();
+            // looseDeviceClient.VerifyAll();
             this.LoRaDeviceApi.VerifyAll();
         }
 

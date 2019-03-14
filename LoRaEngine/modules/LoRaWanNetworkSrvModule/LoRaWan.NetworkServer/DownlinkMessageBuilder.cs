@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
 
             var upstreamPayload = (LoRaPayloadData)request.Payload;
             var rxpk = request.Rxpk;
-            var loRaRegion = request.LoRaRegion;
+            var loRaRegion = request.Region;
             bool isMessageTooLong = false;
 
             // default fport

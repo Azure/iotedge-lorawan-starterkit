@@ -921,8 +921,8 @@ namespace LoRaWan.NetworkServer.Test
             var devicesInCache = deviceRegistry.InternalGetCachedDevicesForDevAddr(devAddr);
             Assert.Empty(devicesInCache);
 
-            // Wait 10ms so loader can be removed from cache
-            await Task.Delay(10);
+            // Wait 50ms so loader can be removed from cache
+            await Task.Delay(50);
 
             // sends 2nd unconfirmed message, now get twin will work
             var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2);
@@ -1337,7 +1337,7 @@ namespace LoRaWan.NetworkServer.Test
             }
             else
             {
-                Assert.Equal(Constants.MAX_FCNT_UNSAVED_DELTA - 1, loRaDevice1.FCntDown);
+                Assert.Equal(Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);

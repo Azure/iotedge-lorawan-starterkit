@@ -14,7 +14,7 @@ namespace LoraKeysManagerFacade
     {
         public string GatewayID { get; set; }
 
-        public int FcntUp { get; set; }
+        public uint FcntUp { get; set; }
 
         public long UpdateTime { get; set; }
 
@@ -22,7 +22,7 @@ namespace LoraKeysManagerFacade
         {
         }
 
-        public LoRaDevicePreferredGateway(string gatewayID, int fcntUp)
+        public LoRaDevicePreferredGateway(string gatewayID, uint fcntUp)
         {
             this.GatewayID = gatewayID;
             this.FcntUp = fcntUp;
@@ -48,7 +48,7 @@ namespace LoraKeysManagerFacade
             if (values?.Length != 3)
                 return null;
 
-            if (!int.TryParse(values[1], out var fcntUp))
+            if (!uint.TryParse(values[1], out var fcntUp))
                 return null;
 
             if (!long.TryParse(values[2], out var updateTime))
@@ -64,7 +64,7 @@ namespace LoraKeysManagerFacade
 
         internal static string PreferredGatewayCacheKey(string devEUI) => $"preferredGateway:{devEUI}";
 
-        internal static string PreferredGatewayFcntUpItemListCacheKey(string devEUI, int fcntUp) => $"preferredGateway:{devEUI}:{fcntUp}";
+        internal static string PreferredGatewayFcntUpItemListCacheKey(string devEUI, uint fcntUp) => $"preferredGateway:{devEUI}:{fcntUp}";
 
         internal static LoRaDevicePreferredGateway LoadFromCache(ILoRaDeviceCacheStore cacheStore, string devEUI)
         {

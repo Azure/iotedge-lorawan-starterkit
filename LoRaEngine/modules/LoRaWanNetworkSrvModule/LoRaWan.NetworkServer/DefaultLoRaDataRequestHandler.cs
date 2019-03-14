@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
         {
-            var timeWatcher = new LoRaOperationTimeWatcher(request.LoRaRegion, request.StartTime);
+            var timeWatcher = new LoRaOperationTimeWatcher(request.Region, request.StartTime);
             var loraPayload = (LoRaPayloadData)request.Payload;
 
             var payloadFcnt = loraPayload.GetFcnt();
@@ -59,7 +59,6 @@ namespace LoRaWan.NetworkServer
             var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
 
             LoRaADRResult loRaADRResult = null;
-            DeduplicationResult deduplicationResult = null;
 
             var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
             if (frameCounterStrategy == null)
@@ -123,8 +122,8 @@ namespace LoRaWan.NetworkServer
                 else
                 {
                     // we must save class C devices regions in order to send c2d messages
-                    if (loRaDevice.ClassType == LoRaDeviceClassType.C && request.LoRaRegion.LoRaRegion != loRaDevice.Region)
-                        loRaDevice.UpdateRegion(request.LoRaRegion.LoRaRegion, acceptChanges: false);
+                    if (loRaDevice.ClassType == LoRaDeviceClassType.C && request.Region.LoRaRegion != loRaDevice.LoRaRegion)
+                        loRaDevice.UpdateRegion(request.Region.LoRaRegion, acceptChanges: false);
                 }
 
                 // if deduplication already processed the next framecounter down, use that
@@ -414,9 +413,9 @@ namespace LoRaWan.NetworkServer
                 }
 
                 // Save the region if we are the winning gateway and it changed
-                if (request.LoRaRegion.LoRaRegion != loRaDevice.Region)
+                if (request.Region.LoRaRegion != loRaDevice.LoRaRegion)
                 {
-                    loRaDevice.UpdateRegion(request.LoRaRegion.LoRaRegion, acceptChanges: !currentIsPreferredGateway);
+                    loRaDevice.UpdateRegion(request.Region.LoRaRegion, acceptChanges: !currentIsPreferredGateway);
                 }
             }
             else
@@ -450,7 +449,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var rxpk = request.Rxpk;
-            var loRaRegion = request.LoRaRegion;
+            var loRaRegion = request.Region;
             uint maxPayload;
 
             // If preferred Window is RX2, this is the max. payload
@@ -627,9 +626,9 @@ namespace LoRaWan.NetworkServer
                     payloadFcnt,
                     loRaDevice.FCntDown,
                     (float)request.Rxpk.RequiredSnr,
-                    request.LoRaRegion.GetDRFromFreqAndChan(request.Rxpk.Datr),
-                    request.LoRaRegion.TXPowertoMaxEIRP.Count - 1,
-                    request.LoRaRegion.MaxADRDataRate,
+                    request.Region.GetDRFromFreqAndChan(request.Rxpk.Datr),
+                    request.Region.TXPowertoMaxEIRP.Count - 1,
+                    request.Region.MaxADRDataRate,
                     loRaADRTableEntry);
                 Logger.Log(loRaDevice.DevEUI, $"device sent Adr Ack Request, computing an answer", LogLevel.Information);
             }
