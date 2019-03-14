@@ -175,5 +175,13 @@ namespace LoRaWan.NetworkServer.Test
 
             return new string(chars, 0, length);
         }
+
+        /// <summary>
+        /// Gets the time span delay necessary to make the request be answered in 2nd receive window
+        /// </summary>
+        public static TimeSpan GetStartTimeOffsetForSecondWindow()
+        {
+            return TimeSpan.FromMilliseconds(1000 - LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage.TotalMilliseconds + 1);
+        }
     }
 }
