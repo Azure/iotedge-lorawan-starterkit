@@ -595,11 +595,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(2000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
             if (rx2datarate > 0 && rx2datarate < 8)
             {
-                Assert.Equal(rx2datarate, confirmedRequest.LoRaRegion.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
+                Assert.Equal(rx2datarate, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
             }
             else
             {
-                Assert.Equal(0, confirmedRequest.LoRaRegion.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
+                Assert.Equal(0, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
             }
         }
 
@@ -815,11 +815,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(1000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
             if (rx1offset > 0 && rx1offset < 5)
             {
-                Assert.Equal(expectedDR, confirmedRequest.LoRaRegion.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
+                Assert.Equal(expectedDR, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
             }
             else
             {
-                Assert.Equal(confirmedRequest.LoRaRegion.GetDRFromFreqAndChan(confirmedMessageRxpk.Datr), confirmedRequest.LoRaRegion.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
+                Assert.Equal(confirmedRequest.Region.GetDRFromFreqAndChan(confirmedMessageRxpk.Datr), confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
             }
         }
     }

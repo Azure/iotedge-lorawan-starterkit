@@ -8,6 +8,8 @@ namespace LoRaWan.IntegrationTest
     using System.Text;
     using System.Threading.Tasks;
     using System.Xml;
+    using LoRaTools;
+    using LoRaTools.CommonAPI;
     using LoRaWan.Test.Shared;
     using Newtonsoft.Json.Linq;
     using Xunit;
@@ -67,12 +69,10 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that Mac Commands C2D messages working
         // Uses Device23_OTAA
-        [Theory]
-        [InlineData("")]
-        [InlineData("test")]
-        public async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(string c2dMessageBody)
+        [Fact]
+        public async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands()
         {
-            var device = this.TestFixtureCi.Device10_OTAA;
+            var device = this.TestFixtureCi.Device23_OTAA;
             this.LogTestStart(device);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -86,11 +86,20 @@ namespace LoRaWan.IntegrationTest
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
-            // Sends 2x confirmed messages
-            for (var i = 1; i <= 2; ++i)
+            await this.Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_CommandsImplAsync(device, "test");
+            await this.Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_CommandsImplAsync(device, string.Empty);
+        }
+
+        private async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_CommandsImplAsync(TestDeviceInfo device, string c2dMessageBody)
+        {
+            const int MaxAttempts = 5;
+            const int UnconfirmedMsgCount = 2;
+
+            // Sends 2x unconfirmed messages
+            for (var i = 1; i <= UnconfirmedMsgCount; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
-                this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
+                this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{UnconfirmedMsgCount}");
 
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
@@ -101,22 +110,30 @@ namespace LoRaWan.IntegrationTest
                 this.TestFixtureCi.ClearLogs();
             }
 
-            var c2dMessage = new TestLoRaCloudToDeviceMessage()
+            var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Fport = 1,
                 Payload = c2dMessageBody,
+                MacCommands = new MacCommand[]
+                {
+                    new DevStatusRequest(),
+                }
             };
 
             await this.TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
             this.Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
-            var foundC2DMessage = false;
+            var macCommandReceivedMsg = $"{device.DeviceID}: Cloud to device MAC command DevStatusCmd received";
+            var foundMacCommandReceivedMsg = false;
 
-            // Sends 3x confirmed messages, stopping if C2D message is found
-            for (var i = 3; i <= 6; ++i)
+            var deviceMacCommandResponseMsg = $": DevStatusCmd mac command detected in upstream payload: Type: DevStatusCmd Answer, Battery Level:";
+            var foundDeviceMacCommandResponseMsg = false;
+
+            // Sends 5x unconfirmed messages, stopping if assertions succeeded
+            for (var i = 1; i <= MaxAttempts; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
-                this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
+                this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{MaxAttempts}");
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
@@ -124,46 +141,57 @@ namespace LoRaWan.IntegrationTest
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
                 // check if c2d message was found
-                var c2dLogMessage = $"{device.DeviceID}: Cloud to device MAC command DevStatusCmd received";
-                var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (messageBody) =>
-                    {
-                        return messageBody.StartsWith(c2dLogMessage);
-                    },
-                    new SearchLogOptions
-                    {
-                        Description = c2dLogMessage,
-                        MaxAttempts = 1
-                    });
-
-                // We should only receive the message once
-                if (searchResults.Found)
+                if (!foundMacCommandReceivedMsg)
                 {
-                    this.Log($"{device.DeviceID}: Found Mac C2D message in log (after sending {i}/10) ? {foundC2DMessage}");
+                    var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
+                        (messageBody) =>
+                        {
+                            return messageBody.StartsWith(macCommandReceivedMsg);
+                        },
+                        new SearchLogOptions
+                        {
+                            Description = macCommandReceivedMsg,
+                            MaxAttempts = 1
+                        });
+
+                    // We should only receive the message once
+                    if (searchResults.Found)
+                    {
+                        foundMacCommandReceivedMsg = true;
+                        this.Log($"{device.DeviceID}: Found Mac C2D message in log (after sending {i}/{MaxAttempts}) ? {foundMacCommandReceivedMsg}");
+                    }
                 }
 
-                var macCommandMessage = $"{device.DevAddr}: DevStatusCmd mac command detected in upstream payload: Battery Level";
-                var macSearchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
-                    (messageBody) =>
-                    {
-                        return messageBody.StartsWith(macCommandMessage);
-                    },
-                    new SearchLogOptions
-                    {
-                        Description = c2dLogMessage,
-                        MaxAttempts = 1
-                    });
-
-                // We should only receive the message once
-                if (macSearchResults.Found)
+                if (!foundDeviceMacCommandResponseMsg)
                 {
-                    this.Log($"{device.DeviceID}: Found Mac Command reply in log (after sending {i}/10) ? {foundC2DMessage}");
+                    var macSearchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
+                        (messageBody) =>
+                        {
+                            return messageBody.Contains(deviceMacCommandResponseMsg, StringComparison.InvariantCultureIgnoreCase);
+                        },
+                        new SearchLogOptions
+                        {
+                            Description = deviceMacCommandResponseMsg,
+                            MaxAttempts = 1
+                        });
+
+                    // We should only receive the message once
+                    if (macSearchResults.Found)
+                    {
+                        foundDeviceMacCommandResponseMsg = true;
+                        this.Log($"{device.DeviceID}: Found Mac Command reply in log (after sending {i}/{MaxAttempts}) ? {foundDeviceMacCommandResponseMsg}");
+                    }
                 }
 
                 this.TestFixtureCi.ClearLogs();
-
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+                if (foundDeviceMacCommandResponseMsg && foundMacCommandReceivedMsg)
+                    break;
             }
+
+            Assert.True(foundMacCommandReceivedMsg, $"Did not find in network server logs: '{macCommandReceivedMsg}'");
+            Assert.True(foundDeviceMacCommandResponseMsg, $"Did not find in network server logs: '{deviceMacCommandResponseMsg}'");
         }
 
         private string ToHexString(string str)

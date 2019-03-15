@@ -401,7 +401,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(LoRaDeviceRequestFailedReason.BelongsToAnotherGateway, request1.ProcessingFailedReason);
 
             // Let loading finish
-            await Task.Delay(10);
+            await Task.Delay(50);
 
             // device should be cached
             var cachedDevices = deviceRegistry.InternalGetCachedDevicesForDevAddr(simulatedDevice.DevAddr);
@@ -470,7 +470,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Single(devices);
             Assert.True(devices.TryGetValue(simulatedDevice.DevEUI, out var cachedDevice));
             Assert.True(cachedDevice.IsOurDevice);
-            Assert.Equal(10U, cachedDevice.FCntDown);
+            Assert.Equal(Constants.MAX_FCNT_UNSAVED_DELTA - 1U, cachedDevice.FCntDown);
             Assert.Equal(payload.GetFcnt(), (ushort)cachedDevice.FCntUp);
 
             // Device was searched by DevAddr

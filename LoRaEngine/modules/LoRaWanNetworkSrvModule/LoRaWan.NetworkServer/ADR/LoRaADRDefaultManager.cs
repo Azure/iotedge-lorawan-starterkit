@@ -21,26 +21,12 @@ namespace LoRaWan.NetworkServer.ADR
             this.frameCounterStrategy = frameCounterStrategy;
         }
 
-        protected override async Task<bool> TryUpdateStateAsync(LoRaADRResult loRaADRResult)
+        protected override void UpdateState(LoRaADRResult loRaADRResult)
         {
             if (loRaADRResult != null)
             {
-                this.LoRaDevice.DataRate = loRaADRResult.DataRate;
-                this.LoRaDevice.TxPower = loRaADRResult.TxPower.GetValueOrDefault();
-                this.LoRaDevice.NbRep = loRaADRResult.NbRepetition.GetValueOrDefault();
-                // if a rate adaptation is performed we need to update local cache
-                // todo check serialization and update twin
-                if (loRaADRResult.CanConfirmToDevice)
-                {
-                    if (!await this.LoRaDevice.TrySaveADRPropertiesAsync())
-                    {
-                        Logger.Log(this.LoRaDevice.DevEUI, $"could not save new ADR poperties on twins ", LogLevel.Error);
-                        return false;
-                    }
-                }
+                this.LoRaDevice.UpdatedADRProperties(loRaADRResult.DataRate, loRaADRResult.TxPower.GetValueOrDefault(), loRaADRResult.NbRepetition.GetValueOrDefault());
             }
-
-            return true;
         }
 
         public override Task<uint> NextFCntDown(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)

@@ -25,11 +25,9 @@ namespace LoraKeysManagerFacade
             this.registryManager = registryManager;
         }
 
-        [FunctionName("CreateEdgeDevice")]
+        [FunctionName(nameof(CreateEdgeDevice))]
         public async Task<HttpResponseMessage> CreateEdgeDeviceImp(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
-            HttpRequest req,
-            ILogger log,
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ExecutionContext context)
         {
             // parse query parameter

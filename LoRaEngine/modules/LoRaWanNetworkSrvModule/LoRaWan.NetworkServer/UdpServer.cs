@@ -77,7 +77,7 @@ namespace LoRaWan.NetworkServer
             var udpServer = new UdpServer(configuration, messageDispatcher, loRaDeviceAPIService, loRaDeviceRegistry);
 
             // TODO: review dependencies
-            var classCMessageSender = new DefaultClassCDevicesMessageSender(configuration, null, loRaDeviceRegistry, udpServer, frameCounterStrategyProvider);
+            var classCMessageSender = new DefaultClassCDevicesMessageSender(configuration, loRaDeviceRegistry, udpServer, frameCounterStrategyProvider);
             dataHandlerImplementation.SetClassCMessageSender(classCMessageSender);
 
             udpServer.SetClassCMessageSender(classCMessageSender);
@@ -297,7 +297,7 @@ namespace LoRaWan.NetworkServer
             {
                 return await this.ClearCache(methodRequest, userContext);
             }
-            else if (string.Equals("cloudtodevicemessage", methodRequest.Name, StringComparison.InvariantCultureIgnoreCase))
+            else if (string.Equals(Constants.CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME, methodRequest.Name, StringComparison.InvariantCultureIgnoreCase))
             {
                 return await this.SendCloudToDeviceMessageAsync(methodRequest);
             }
@@ -312,7 +312,7 @@ namespace LoRaWan.NetworkServer
                 return new MethodResponse((int)HttpStatusCode.NotFound);
             }
 
-            var c2d = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
+            var c2d = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
             Logger.Log(c2d.DevEUI, $"Received c2d from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
 
             CancellationToken cts = CancellationToken.None;

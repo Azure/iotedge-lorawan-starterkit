@@ -35,7 +35,7 @@ namespace LoRaWan.NetworkServer
         {
             LoRaDevice loRaDevice = null;
             string devEUI = null;
-            var loraRegion = request.LoRaRegion;
+            var loraRegion = request.Region;
 
             try
             {
@@ -121,7 +121,16 @@ namespace LoRaWan.NetworkServer
                 }
 
                 Logger.Log(loRaDevice.DevEUI, $"saving join properties twins", LogLevel.Debug);
-                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(devAddr, nwkSKey, appSKey, appNonce, devNonce, LoRaTools.Utils.ConversionHelper.ByteArrayToString(netId));
+                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(
+                    devAddr,
+                    nwkSKey,
+                    appSKey,
+                    appNonce,
+                    devNonce,
+                    ConversionHelper.ByteArrayToString(netId),
+                    request.Region.LoRaRegion,
+                    this.configuration.GatewayID);
+
                 Logger.Log(loRaDevice.DevEUI, $"done saving join properties twins", LogLevel.Debug);
 
                 if (!deviceUpdateSucceeded)
@@ -168,7 +177,7 @@ namespace LoRaWan.NetworkServer
                 // Build the DlSettings fields that is a superposition of RX2DR and RX1DROffset field
                 byte[] dlSettings = new byte[1];
 
-                if (request.LoRaRegion.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(loRaDevice.DesiredRX2DataRate))
+                if (request.Region.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(loRaDevice.DesiredRX2DataRate))
                 {
                     dlSettings[0] =
                         (byte)(loRaDevice.DesiredRX2DataRate & 0b00001111);
@@ -178,7 +187,7 @@ namespace LoRaWan.NetworkServer
                     Logger.Log(devEUI, $"twin RX2 datarate values are not within acceptable values", LogLevel.Error);
                 }
 
-                if (loRaDevice.DesiredRX1DROffset >= 0 && loRaDevice.DesiredRX1DROffset < request.LoRaRegion.RX1DROffsetTable.GetUpperBound(1))
+                if (loRaDevice.DesiredRX1DROffset >= 0 && loRaDevice.DesiredRX1DROffset < request.Region.RX1DROffsetTable.GetUpperBound(1))
                 {
                     var rx1droffset = (byte)(loRaDevice.DesiredRX1DROffset << 4);
                     dlSettings[0] = (byte)(dlSettings[0] + rx1droffset);

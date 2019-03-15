@@ -9,12 +9,12 @@ namespace LoraKeysManagerFacade.Test
 
     internal class LoRaInMemoryDeviceStore : ILoRaDeviceCacheStore
     {
-        private readonly Dictionary<string, string> cache;
+        private readonly Dictionary<string, object> cache;
         private readonly Dictionary<string, SemaphoreSlim> locks;
 
         public LoRaInMemoryDeviceStore()
         {
-            this.cache = new Dictionary<string, string>();
+            this.cache = new Dictionary<string, object>();
             this.locks = new Dictionary<string, SemaphoreSlim>();
         }
 
@@ -67,13 +67,37 @@ namespace LoraKeysManagerFacade.Test
         public string StringGet(string key)
         {
             this.cache.TryGetValue(key, out var result);
-            return result;
+            return result as string;
         }
 
-        public bool StringSet(string key, string value, TimeSpan? expiry)
+        public bool StringSet(string key, string value, TimeSpan? expiry, bool onlyIfNotExists)
         {
+            if (onlyIfNotExists)
+            {
+                return this.cache.TryAdd(key, value);
+            }
+
             this.cache[key] = value;
             return true;
+        }
+
+        public long ListAdd(string key, string value, TimeSpan? expiry = null)
+        {
+            this.cache.TryAdd(key, new List<string>());
+            var list = this.cache[key] as List<string>;
+            list.Add(value);
+
+            return list.Count;
+        }
+
+        public IReadOnlyList<string> ListGet(string key)
+        {
+            if (this.cache.TryGetValue(key, out var cachedValue))
+            {
+                return cachedValue as List<string>;
+            }
+
+            return null;
         }
     }
 }

@@ -3,16 +3,17 @@
 
 namespace LoraKeysManagerFacade.Test
 {
+    using LoraKeysManagerFacade.FunctionBundler;
     using Microsoft.Azure.WebJobs;
     using Xunit;
 
     public class MessageDeduplicationTests : FunctionTestBase
     {
-        private readonly DuplicateMsgCacheCheck duplicateMsgCheck;
+        private readonly DeduplicationExecutionItem deduplicationExecutionItem;
 
         public MessageDeduplicationTests()
         {
-            this.duplicateMsgCheck = new DuplicateMsgCacheCheck(new LoRaInMemoryDeviceStore());
+            this.deduplicationExecutionItem = new DeduplicationExecutionItem(new LoRaInMemoryDeviceStore());
         }
 
         [Fact]
@@ -22,11 +23,11 @@ namespace LoraKeysManagerFacade.Test
             string gateway2Id = NewUniqueEUI64();
             string dev1EUI = NewUniqueEUI64();
 
-            var result = this.duplicateMsgCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
+            var result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
 
-            result = this.duplicateMsgCheck.GetDuplicateMessageResult(dev1EUI, gateway2Id, 1, 1);
+            result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway2Id, 1, 1);
             Assert.True(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
         }
@@ -37,11 +38,11 @@ namespace LoraKeysManagerFacade.Test
             string gateway1Id = NewUniqueEUI64();
             string dev1EUI = NewUniqueEUI64();
 
-            var result = this.duplicateMsgCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
+            var result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
 
-            result = this.duplicateMsgCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
+            result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
         }
@@ -54,19 +55,19 @@ namespace LoraKeysManagerFacade.Test
             string dev1EUI = NewUniqueEUI64();
             string dev2EUI = NewUniqueEUI64();
 
-            var result = this.duplicateMsgCheck.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
+            var result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
 
-            result = this.duplicateMsgCheck.GetDuplicateMessageResult(dev1EUI, gateway2Id, 2, 1);
+            result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway2Id, 2, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway2Id, result.GatewayId);
 
-            result = this.duplicateMsgCheck.GetDuplicateMessageResult(dev2EUI, gateway1Id, 1, 1);
+            result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev2EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
 
-            result = this.duplicateMsgCheck.GetDuplicateMessageResult(dev2EUI, gateway2Id, 2, 1);
+            result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev2EUI, gateway2Id, 2, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway2Id, result.GatewayId);
         }

@@ -32,7 +32,7 @@ namespace LoRaWan.NetworkServer
             LoRaDevice loRaDevice,
             LoRaRequest request,
             LoRaOperationTimeWatcher timeWatcher,
-            ILoRaCloudToDeviceMessage cloudToDeviceMessage,
+            IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage,
             bool fpending,
             uint fcntDown,
             LoRaADRResult loRaADRResult)
@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
 
             var upstreamPayload = (LoRaPayloadData)request.Payload;
             var rxpk = request.Rxpk;
-            var loRaRegion = request.LoRaRegion;
+            var loRaRegion = request.Region;
             bool isMessageTooLong = false;
 
             // default fport
@@ -215,7 +215,7 @@ namespace LoRaWan.NetworkServer
             NetworkServerConfiguration configuration,
             LoRaDevice loRaDevice,
             Region loRaRegion,
-            ILoRaCloudToDeviceMessage cloudToDeviceMessage,
+            IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage,
             uint fcntDown)
         {
             var fcntDownToSend = ValidateAndConvert16bitFCnt(fcntDown);

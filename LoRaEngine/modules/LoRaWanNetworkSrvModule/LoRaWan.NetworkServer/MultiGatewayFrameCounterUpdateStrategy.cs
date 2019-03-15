@@ -52,7 +52,7 @@ namespace LoRaWan.NetworkServer
 
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {
-            return await loRaDevice.SaveFrameCountChangesAsync(force);
+            return await loRaDevice.SaveChangesAsync(force: force);
         }
     }
 }

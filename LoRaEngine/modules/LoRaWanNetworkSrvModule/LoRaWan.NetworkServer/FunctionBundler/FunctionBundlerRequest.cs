@@ -14,6 +14,8 @@ namespace LoRaWan.NetworkServer
 
         public uint ClientFCntDown { get; set; }
 
+        public int? Rssi { get; set; }
+
         public LoRaADRRequest AdrRequest { get; set; }
 
         public FunctionBundlerItemType FunctionItems { get; set; }

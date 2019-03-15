@@ -5,12 +5,6 @@ namespace LoRaWan.NetworkServer
 {
     public static class Constants
     {
-        // Fport value reserved for mac commands
-        internal const byte LORA_FPORT_RESERVED_MAC_COMMAND = 0;
-
-        // Starting Fport value reserved for future applications
-        internal const byte LORA_FPORT_RESERVED_FUTURE_START = 224;
-
         // Default value of a C2D message id if missing from the message
         internal const string C2D_MSG_ID_PLACEHOLDER = "ConfirmationC2DMessageWithNoId";
 
@@ -44,5 +38,10 @@ namespace LoRaWan.NetworkServer
 
         // Cloud to device message overhead
         public const int LORA_PROTOCOL_OVERHEAD_SIZE = 8;
+
+        /// <summary>
+        /// Property in decoder json response containing the cloud to the device message
+        /// </summary>
+        public const string CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME = "cloudToDeviceMessage";
     }
 }

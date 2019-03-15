@@ -6,26 +6,34 @@ namespace LoraKeysManagerFacade.FunctionBundler
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
 
-    internal class NextFCntDownExecutionItem : IFunctionBundlerExecutionItem
+    public class NextFCntDownExecutionItem : IFunctionBundlerExecutionItem
     {
-        public Task<FunctionBundlerExecutionState> Execute(IPipelineExecutionContext context)
+        private readonly FCntCacheCheck fCntCacheCheck;
+
+        public NextFCntDownExecutionItem(FCntCacheCheck fCntCacheCheck)
+        {
+            this.fCntCacheCheck = fCntCacheCheck;
+        }
+
+        public Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
             if (!context.Result.NextFCntDown.HasValue)
             {
-                var fCntCacheCheck = context.FunctionContext.FCntCacheCheckFunction;
-                var next = fCntCacheCheck.GetNextFCntDown(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown);
+                var next = this.fCntCacheCheck.GetNextFCntDown(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown);
                 context.Result.NextFCntDown = next > 0 ? next : (uint?)null;
             }
 
             return Task.FromResult(FunctionBundlerExecutionState.Continue);
         }
 
+        public int Priority => 3;
+
         public bool NeedsToExecute(FunctionBundlerItemType item)
         {
             return (item & FunctionBundlerItemType.FCntDown) == FunctionBundlerItemType.FCntDown;
         }
 
-        public Task OnAbortExecution(IPipelineExecutionContext context)
+        public Task OnAbortExecutionAsync(IPipelineExecutionContext context)
         {
             return Task.CompletedTask;
         }

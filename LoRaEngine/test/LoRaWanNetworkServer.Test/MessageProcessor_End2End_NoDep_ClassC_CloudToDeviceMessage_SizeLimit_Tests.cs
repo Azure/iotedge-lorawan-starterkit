@@ -24,6 +24,7 @@ namespace LoRaWan.NetworkServer.Test
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Class CCloud to device message processing max payload size tests (Join tests are handled in other class)
+    [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
     public class MessageProcessor_End2End_NoDep_ClassC_CloudToDeviceMessage_SizeLimit_Tests
     {
         const string ServerGatewayID = "test-gateway";
@@ -54,7 +55,7 @@ namespace LoRaWan.NetworkServer.Test
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
-        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, LoRaCloudToDeviceMessage sentMessage)
+        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
             Assert.NotNull(downlink.Txpk);
@@ -85,8 +86,12 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(new SearchDevicesResult(
                     new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
 
+            var twin = simulatedDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
+            {
+                { TwinProperty.Region, LoRaRegion.EU868.ToString() }
+            });
             this.deviceClient.Setup(x => x.GetTwinAsync())
-                .ReturnsAsync(simulatedDevice.CreateABPTwin());
+                .ReturnsAsync(twin);
 
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
@@ -97,7 +102,7 @@ namespace LoRaWan.NetworkServer.Test
                 - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
 
             var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
-            var c2d = new LoRaCloudToDeviceMessage()
+            var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 DevEUI = devEUI,
                 Payload = c2dMsgPayload,
@@ -113,7 +118,6 @@ namespace LoRaWan.NetworkServer.Test
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
-                this.loRaRegion,
                 this.loRaDeviceRegistry,
                 this.PacketForwarder,
                 this.frameCounterStrategyProvider);
@@ -183,7 +187,7 @@ namespace LoRaWan.NetworkServer.Test
                 - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
 
             var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
-            var c2d = new LoRaCloudToDeviceMessage()
+            var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 DevEUI = devEUI,
                 Payload = c2dMsgPayload,
@@ -199,7 +203,6 @@ namespace LoRaWan.NetworkServer.Test
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
-                this.loRaRegion,
                 this.loRaDeviceRegistry,
                 this.PacketForwarder,
                 this.frameCounterStrategyProvider);

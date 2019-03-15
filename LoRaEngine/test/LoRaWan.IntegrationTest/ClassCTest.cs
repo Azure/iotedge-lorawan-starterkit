@@ -8,6 +8,7 @@ namespace LoRaWan.IntegrationTest
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools.CommonAPI;
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices;
     using Newtonsoft.Json;
@@ -38,7 +39,7 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
             await this.ArduinoDevice.setClassTypeAsync(LoRaArduinoSerial._class_type_t.CLASS_C);
 
-            var c2d = new TestLoRaCloudToDeviceMessage()
+            var c2d = new LoRaCloudToDeviceMessage()
             {
                 DevEUI = device.DeviceID,
                 MessageId = Guid.NewGuid().ToString(),

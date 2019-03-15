@@ -34,15 +34,18 @@ namespace LoRaWan.NetworkServer.Test
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             bool messageProcessed = mode == DeduplicationMode.Drop;
             messageProcessed = false;
-            this.LoRaDeviceApi
-                .Setup(x => x.CheckDuplicateMsgAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<string>(), It.IsAny<uint>()))
-                .Returns<string, uint, string, uint?>((dev, fcntup, gateway, fcntdown) =>
+
+            this.LoRaDeviceApi.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
+                .Returns<string, FunctionBundlerRequest>((dev, req) =>
                 {
                     var isDup = messageProcessed;
                     messageProcessed = true;
-                    return Task.FromResult<DeduplicationResult>(new DeduplicationResult
+                    return Task.FromResult<FunctionBundlerResult>(new FunctionBundlerResult()
                     {
-                        IsDuplicate = isDup
+                        DeduplicationResult = new DeduplicationResult
+                        {
+                            IsDuplicate = isDup
+                        }
                     });
                 });
 

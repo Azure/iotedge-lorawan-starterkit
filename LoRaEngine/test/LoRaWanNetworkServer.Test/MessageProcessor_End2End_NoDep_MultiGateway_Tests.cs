@@ -213,7 +213,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            var c2dMessage = new LoRaCloudToDeviceMessage() { Fport = 1 };
+            var c2dMessage = new ReceivedLoRaCloudToDeviceMessage() { Fport = 1 };
             var cloudToDeviceMessage = c2dMessage.CreateMessage();
             // C2D message will be retrieved
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))

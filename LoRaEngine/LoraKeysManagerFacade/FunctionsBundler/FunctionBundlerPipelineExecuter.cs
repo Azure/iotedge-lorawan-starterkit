@@ -9,12 +9,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
     public class FunctionBundlerPipelineExecuter : IPipelineExecutionContext
     {
-        private static List<IFunctionBundlerExecutionItem> registeredHandlers = new List<IFunctionBundlerExecutionItem>
-        {
-            new DeduplicationExecutionItem(),
-            new ADRExecutionItem(),
-            new NextFCntDownExecutionItem()
-        };
+        private readonly IFunctionBundlerExecutionItem[] registeredHandlers;
 
         public string DevEUI { get; private set; }
 
@@ -22,24 +17,22 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public FunctionBundlerResult Result { get; private set; } = new FunctionBundlerResult();
 
-        public FunctionBundlerContext FunctionContext { get; private set; }
-
         public FunctionBundlerPipelineExecuter(
+                                               IFunctionBundlerExecutionItem[] registeredHandlers,
                                                string devEUI,
-                                               FunctionBundlerRequest request,
-                                               FunctionBundlerContext context)
+                                               FunctionBundlerRequest request)
         {
+            this.registeredHandlers = registeredHandlers;
             this.DevEUI = devEUI;
             this.Request = request;
-            this.FunctionContext = context;
         }
 
         public async Task<FunctionBundlerResult> Execute()
         {
-            var executionPipeline = new List<IFunctionBundlerExecutionItem>(3);
-            for (var i = 0; i < registeredHandlers.Count; i++)
+            var executionPipeline = new List<IFunctionBundlerExecutionItem>(this.registeredHandlers.Length);
+            for (var i = 0; i < this.registeredHandlers.Length; i++)
             {
-                var handler = registeredHandlers[i];
+                var handler = this.registeredHandlers[i];
                 if (handler.NeedsToExecute(this.Request.FunctionItems))
                 {
                     executionPipeline.Add(handler);
@@ -54,10 +47,10 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 switch (state)
                 {
                     case FunctionBundlerExecutionState.Continue:
-                        state = await handler.Execute(this);
+                        state = await handler.ExecuteAsync(this);
                         break;
                     case FunctionBundlerExecutionState.Abort:
-                        await handler.OnAbortExecution(this);
+                        await handler.OnAbortExecutionAsync(this);
                         break;
                 }
             }

@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using LoRaTools.CommonAPI;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -26,8 +27,8 @@ namespace LoRaWan.NetworkServer
         /// Gets or sets a message to be sent to the device (optional)
         /// Assigning a value to <see cref="ILoRaCloudToDeviceMessage.DevEUI"/> will send the message to a class C device
         /// </summary>
-        [JsonProperty("cloudToDeviceMessage", NullValueHandling = NullValueHandling.Ignore)]
-        public LoRaCloudToDeviceMessage CloudToDeviceMessage { get; set; }
+        [JsonProperty(Constants.CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME, NullValueHandling = NullValueHandling.Ignore)]
+        public ReceivedLoRaCloudToDeviceMessage CloudToDeviceMessage { get; set; }
 
         public DecodePayloadResult(object value)
         {

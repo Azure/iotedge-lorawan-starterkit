@@ -30,9 +30,7 @@ namespace LoraKeysManagerFacade.Test
             {
                 (req) => new DeviceGetter(null, null).GetDevice(req, NullLogger.Instance),
                 (req) => Task.Run(() => new FCntCacheCheck(null).NextFCntDownInvoke(req, NullLogger.Instance)),
-                (req) => Task.Run(() => new DuplicateMsgCacheCheck(null).DuplicateMsgCheck(req, NullLogger.Instance, string.Empty)),
-                (req) => Task.Run(() => new LoRaADRFunction(null).ADRFunctionImpl(req, NullLogger.Instance, string.Empty)),
-                (req) => Task.Run(() => new FunctionBundlerFunction(null).FunctionBundlerImpl(req, NullLogger.Instance, string.Empty))
+                (req) => Task.Run(() => new FunctionBundlerFunction(new IFunctionBundlerExecutionItem[0]).FunctionBundlerImpl(req, NullLogger.Instance, string.Empty))
             };
 
             foreach (var apiCall in apiCalls)

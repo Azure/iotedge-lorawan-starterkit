@@ -16,5 +16,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
         public LoRaADRRequest AdrRequest { get; set; }
 
         public FunctionBundlerItemType FunctionItems { get; set; }
+
+        public int? Rssi { get; set; }
     }
 }

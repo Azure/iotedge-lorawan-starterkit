@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
 
         public virtual DateTime StartTime { get; }
 
-        public virtual Region LoRaRegion { get; private set; }
+        public virtual Region Region { get; private set; }
 
         protected LoRaRequest()
         {
@@ -51,6 +51,6 @@ namespace LoRaWan.NetworkServer
 
         internal void SetPayload(LoRaPayload loRaPayload) => this.Payload = loRaPayload;
 
-        internal void SetRegion(Region loRaRegion) => this.LoRaRegion = loRaRegion;
+        internal void SetRegion(Region loRaRegion) => this.Region = loRaRegion;
     }
 }
