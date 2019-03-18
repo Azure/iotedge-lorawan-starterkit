@@ -3,10 +3,12 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
     using System.Collections.Generic;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
+    using Microsoft.Extensions.Caching.Memory;
 
     internal class TestLoRaDeviceFactory : ILoRaDeviceFactory
     {
@@ -20,16 +22,25 @@ namespace LoRaWan.NetworkServer.Test
         private readonly ILoRaADRStrategyProvider adrStrategyProvider;
         private readonly ILoRAADRManagerFactory adrManagerFactory;
         private readonly IFunctionBundlerProvider functionBundlerProvider;
+        private readonly ILoRaDeviceClientConnectionManager connectionManager;
 
-        public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient)
+        public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, ILoRaDeviceClientConnectionManager connectionManager = null)
         {
             this.loRaDeviceClient = loRaDeviceClient;
+            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions
+            {
+                ExpirationScanFrequency = TimeSpan.FromSeconds(5),
+            }));
         }
 
-        public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, ILoRaDataRequestHandler requestHandler)
+        public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, ILoRaDataRequestHandler requestHandler, ILoRaDeviceClientConnectionManager connectionManager = null)
         {
             this.loRaDeviceClient = loRaDeviceClient;
             this.requestHandler = requestHandler;
+            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions
+            {
+                ExpirationScanFrequency = TimeSpan.FromSeconds(5),
+            }));
         }
 
         public TestLoRaDeviceFactory(
@@ -39,7 +50,8 @@ namespace LoRaWan.NetworkServer.Test
             IDeduplicationStrategyFactory deduplicationFactory,
             ILoRaADRStrategyProvider adrStrategyProvider,
             ILoRAADRManagerFactory adrManagerFactory,
-            IFunctionBundlerProvider functionBundlerProvider)
+            IFunctionBundlerProvider functionBundlerProvider,
+            ILoRaDeviceClientConnectionManager connectionManager)
             : this(loRaDeviceClient)
         {
             this.configuration = configuration;
@@ -48,6 +60,7 @@ namespace LoRaWan.NetworkServer.Test
             this.adrStrategyProvider = adrStrategyProvider;
             this.adrManagerFactory = adrManagerFactory;
             this.functionBundlerProvider = functionBundlerProvider;
+            this.connectionManager = connectionManager;
         }
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
@@ -60,7 +73,9 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice = new LoRaDevice(
                 deviceInfo.DevAddr,
                 deviceInfo.DevEUI,
-                deviceClientToAssign);
+                this.connectionManager);
+
+            this.connectionManager.Register(loRaDevice, deviceClientToAssign);
 
             loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider));
 

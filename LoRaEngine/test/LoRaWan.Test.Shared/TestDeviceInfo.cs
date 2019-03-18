@@ -58,6 +58,8 @@ namespace LoRaWan.Test.Shared
 
         public ushort RXDelay { get; set; } = 0;
 
+        public int KeepAliveTimeout { get; set; }
+
         /// <summary>
         /// Gets the desired properties for the <see cref="TestDeviceInfo"/>
         /// </summary>
@@ -95,6 +97,9 @@ namespace LoRaWan.Test.Shared
             desiredProperties[nameof(this.RX2DataRate)] = this.RX2DataRate;
 
             desiredProperties[nameof(this.RXDelay)] = this.RXDelay;
+
+            if (this.KeepAliveTimeout > 0)
+                desiredProperties[nameof(this.KeepAliveTimeout)] = this.KeepAliveTimeout;
 
             return desiredProperties;
         }

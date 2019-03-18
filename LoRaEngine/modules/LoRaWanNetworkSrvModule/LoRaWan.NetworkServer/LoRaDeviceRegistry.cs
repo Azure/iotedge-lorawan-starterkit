@@ -163,7 +163,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Called to sync up list of devices kept by device registry
         /// </summary>
-        void UpdateDeviceRegistration(LoRaDevice loRaDevice)
+        void UpdateDeviceRegistration(LoRaDevice loRaDevice, string oldDevAddr = null)
         {
             var dictionary = this.InternalGetCachedDevicesForDevAddr(loRaDevice.DevAddr);
             dictionary.AddOrUpdate(loRaDevice.DevEUI, loRaDevice, (k, old) =>
@@ -174,15 +174,7 @@ namespace LoRaWan.NetworkServer
 
             Logger.Log(loRaDevice.DevEUI, "device added to cache", LogLevel.Debug);
 
-            this.cache.Set(this.CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice, this.resetCacheChangeToken);
-        }
-
-        /// <summary>
-        /// Called to sync up list of devices kept by device registry
-        /// </summary>
-        async Task UpdateDeviceRegistrationAsync(LoRaDevice loRaDevice, string oldDevAddr = null)
-        {
-            this.UpdateDeviceRegistration(loRaDevice);
+            this.cache.Set(CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice, this.resetCacheChangeToken);
 
             if (!string.IsNullOrEmpty(oldDevAddr) && !string.Equals(oldDevAddr, loRaDevice.DevAddr, StringComparison.InvariantCultureIgnoreCase))
             {
@@ -191,20 +183,20 @@ namespace LoRaWan.NetworkServer
                 {
                     if (!object.ReferenceEquals(oldDevAddrDevice, loRaDevice))
                     {
-                        await oldDevAddrDevice.DisconnectAsync();
+                        oldDevAddrDevice.Disconnect();
                     }
                 }
             }
         }
 
-        private string CacheKeyForDevEUIDevice(string devEUI) => string.Concat("deveui:", devEUI);
+        internal static string CacheKeyForDevEUIDevice(string devEUI) => string.Concat("deveui:", devEUI);
 
         /// <summary>
         /// Gets a device by DevEUI
         /// </summary>
         public async Task<LoRaDevice> GetDeviceByDevEUIAsync(string devEUI)
         {
-            if (this.cache.TryGetValue<LoRaDevice>(this.CacheKeyForDevEUIDevice(devEUI), out var cachedDevice))
+            if (this.cache.TryGetValue<LoRaDevice>(CacheKeyForDevEUIDevice(devEUI), out var cachedDevice))
                 return cachedDevice;
 
             // TODO: keep track of loading
@@ -222,7 +214,7 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            await this.UpdateDeviceRegistrationAsync(loRaDevice);
+            this.UpdateDeviceRegistration(loRaDevice);
 
             return loRaDevice;
         }
@@ -318,13 +310,13 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates a device after a successful login
         /// </summary>
-        public async Task UpdateDeviceAfterJoinAsync(LoRaDevice loRaDevice, string oldDevAddr)
+        public void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, string oldDevAddr)
         {
             // once added, call initializers
             foreach (var initializer in this.initializers)
                 initializer.Initialize(loRaDevice);
 
-            await this.UpdateDeviceRegistrationAsync(loRaDevice, oldDevAddr);
+            this.UpdateDeviceRegistration(loRaDevice, oldDevAddr);
         }
 
         /// <summary>

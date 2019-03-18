@@ -332,7 +332,7 @@ namespace LoRaWan.NetworkServer
 
                     if (!loRaDevice.IsOurDevice)
                     {
-                        await loRaDevice.DisconnectAsync();
+                        loRaDevice.Disconnect();
                     }
 
                     return loRaDevice;
