@@ -33,13 +33,8 @@ namespace LoRaWan.IntegrationTest
         public const string C2D_MSG_PROPERTY_MAC_COMMAND = "CidType";
 
         /// <summary>
-        /// First packet forwarder transmit window
+        /// Convert the time to the packet forward time (millionth of seconds)
         /// </summary>
-        public const uint FIRST_TX_WINDOW = 1000000;
-
-        /// <summary>
-        /// Second packet forwarder transmit window
-        /// </summary>
-        public const uint SECOND_TX_WINDOWS = 2000000;
+        public const uint CONVERT_TO_PKT_FWD_TIME = 1000000;
     }
 }
