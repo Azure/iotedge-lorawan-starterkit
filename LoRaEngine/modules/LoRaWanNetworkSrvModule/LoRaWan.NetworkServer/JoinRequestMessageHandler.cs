@@ -39,7 +39,7 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                var timeWatcher = new LoRaOperationTimeWatcher(loraRegion, request.StartTime);
+                var timeWatcher = request.GetTimeWatcher();
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
                 byte[] udpMsgForPktForwarder = new byte[0];

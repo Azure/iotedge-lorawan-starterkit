@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaTools.LoRaPhysical;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.Test.Shared;
@@ -14,6 +15,7 @@ namespace LoRaWan.NetworkServer.Test
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Moq;
+    using Xunit;
 
     public class MessageProcessorTestBase
     {
@@ -89,10 +91,19 @@ namespace LoRaWan.NetworkServer.Test
 
         public LoRaDevice CreateLoRaDevice(SimulatedDevice simulatedDevice) => TestUtils.CreateFromSimulatedDevice(simulatedDevice, this.LoRaDeviceClient.Object, this.RequestHandlerImplementation);
 
-        public WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk, IPacketForwarder packetForwarder = null, TimeSpan? startTimeOffset = null)
+        public WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk, IPacketForwarder packetForwarder = null, TimeSpan? startTimeOffset = null, TimeSpan? constantElapsedTime = null)
         {
-            var startTime = startTimeOffset.HasValue ? DateTime.UtcNow.Subtract(startTimeOffset.Value) : DateTime.UtcNow;
-            return new WaitableLoRaRequest(rxpk, packetForwarder ?? this.PacketForwarder, startTime);
+            var requestStartTime = startTimeOffset.HasValue ? DateTime.UtcNow.Subtract(startTimeOffset.Value) : DateTime.UtcNow;
+            var request = new WaitableLoRaRequest(rxpk, packetForwarder ?? this.PacketForwarder, requestStartTime);
+
+            if (constantElapsedTime.HasValue)
+            {
+                Assert.True(RegionFactory.TryResolveRegion(rxpk, out var region));
+                var timeWatcher = new TestLoRaOperationTimeWatcher(region, constantElapsedTime.Value);
+                request.UseTimeWatcher(timeWatcher);
+            }
+
+            return request;
         }
     }
 }
