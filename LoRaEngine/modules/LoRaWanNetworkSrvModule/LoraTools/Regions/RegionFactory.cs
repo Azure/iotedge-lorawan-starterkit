@@ -58,6 +58,8 @@ namespace LoRaTools.Regions
         /// <param name="region">Region.</param>
         public static bool TryResolveRegion(Rxpk rxpk, out Region region)
         {
+            region = null;
+
             // EU863-870
             if (rxpk.Freq < 870 && rxpk.Freq > 863)
             {
@@ -70,7 +72,6 @@ namespace LoRaTools.Regions
                 return true;
             }
 
-            region = null;
             return false;
         }
 

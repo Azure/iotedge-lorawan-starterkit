@@ -381,15 +381,15 @@ namespace LoRaWan.NetworkServer
             return macCommands.Values;
         }
 
-        private static long CalculateTime(uint baseTime, int windowsTime, ushort rXDelay)
+        private static long CalculateTime(uint baseTime, int windowTime, ushort rXDelay)
         {
             if (rXDelay > 1 && rXDelay < 16)
             {
-                return baseTime + (windowsTime + rXDelay - 1) * 1000000;
+                return baseTime + (windowTime + rXDelay - 1) * 1000000;
             }
             else
             {
-                return baseTime + windowsTime * 1000000;
+                return baseTime + windowTime * 1000000;
             }
         }
     }

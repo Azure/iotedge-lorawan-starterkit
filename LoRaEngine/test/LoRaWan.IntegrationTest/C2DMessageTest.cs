@@ -112,12 +112,11 @@ namespace LoRaWan.IntegrationTest
                 // Check that RXDelay was correctly used
                 if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN1")).Count() > 0)
                 {
-                    await this.TestFixtureCi.CheckAnswerTimingAsync(2000000, false);
+                    await this.TestFixtureCi.CheckAnswerTimingAsync(Constants.FIRST_TX_WINDOW, false);
                 }
-                else
-                if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN2")).Count() > 0)
+                else if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN2")).Count() > 0)
                 {
-                    await this.TestFixtureCi.CheckAnswerTimingAsync(2000000, false);
+                    await this.TestFixtureCi.CheckAnswerTimingAsync(Constants.SECOND_TX_WINDOWS, true);
                 }
                 else
                 {

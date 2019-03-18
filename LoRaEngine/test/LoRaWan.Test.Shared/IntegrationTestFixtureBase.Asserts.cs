@@ -139,14 +139,14 @@ namespace LoRaWan.Test.Shared
         /// Check for The timing between an upstream message and a downstream one.
         /// The method stop at first occurence found and is not expected to perform against multiple DS/US messages.
         /// </summary>
-        public async Task CheckAnswerTimingAsync(uint rxDelay, bool isSecondWindows)
+        public async Task CheckAnswerTimingAsync(uint rxDelay, bool isSecondWindow)
         {
             var upstreamMessageTimingResult = await this.TryFindMessageTimeAsync("rxpk");
             var downstreamMessageTimingResult = await this.TryFindMessageTimeAsync("txpk");
 
             if (upstreamMessageTimingResult.Success && upstreamMessageTimingResult.Success)
             {
-                Assert.Equal(rxDelay + (isSecondWindows ? 1000000 : 0), downstreamMessageTimingResult.Result - upstreamMessageTimingResult.Result);
+                Assert.Equal(rxDelay + (isSecondWindow ? 1000000 : 0), downstreamMessageTimingResult.Result - upstreamMessageTimingResult.Result);
             }
             else
             {
@@ -172,13 +172,11 @@ namespace LoRaWan.Test.Shared
                 }
             }
 
-            var result = new FindTimeResult()
+            return new FindTimeResult()
             {
                 Success = success,
                 Result = parsedValue
             };
-
-            return result;
         }
 
         async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
