@@ -72,6 +72,10 @@ namespace LoRaWan.NetworkServer.Test
                     afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
                     afterJoinFcntDown = updatedTwin[TwinProperty.FCntDown];
                     afterJoinFcntUp = updatedTwin[TwinProperty.FCntUp];
+
+                    // should not save class C device properties
+                    Assert.False(updatedTwin.Contains(TwinProperty.Region));
+                    Assert.False(updatedTwin.Contains(TwinProperty.PreferredGatewayID));
                 })
                 .ReturnsAsync(true);
 

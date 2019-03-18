@@ -48,6 +48,8 @@ namespace LoRaWan.NetworkServer
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
         {
             var timeWatcher = request.GetTimeWatcher();
+            loRaDevice.EnsureConnected();
+
             var loraPayload = (LoRaPayloadData)request.Payload;
 
             var payloadFcnt = loraPayload.GetFcnt();
@@ -84,7 +86,7 @@ namespace LoRaWan.NetworkServer
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
 
-            using (new LoRaDeviceChangeTracker(loRaDevice))
+            try
             {
                 var bundlerResult = await this.TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
 
@@ -390,6 +392,17 @@ namespace LoRaWan.NetworkServer
                 }
 
                 return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
+            }
+            finally
+            {
+                try
+                {
+                    await loRaDevice.SaveChangesAsync();
+                }
+                catch (Exception saveChangesException)
+                {
+                    Logger.Log(loRaDevice.DevEUI, $"Error updating reported properties. {saveChangesException.Message}", LogLevel.Error);
+                }
             }
         }
 

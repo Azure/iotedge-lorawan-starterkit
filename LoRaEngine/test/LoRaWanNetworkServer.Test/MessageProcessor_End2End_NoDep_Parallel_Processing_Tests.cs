@@ -59,12 +59,30 @@ namespace LoRaWan.NetworkServer.Test
                     }
             };
 
-            // Very slow first calls
+            // Slow first calls with non-zero fcnt counts
             yield return new object[]
             {
                     new ParallelTestConfiguration()
                     {
                         DeviceID = 3,
+                        GatewayID = ServerGatewayID,
+                        BetweenMessageDuration = 1000,
+                        SearchByDevAddrDuration = new int[] { 1000, 100 },
+                        SendEventDuration = new int[] { 1000, 100 },
+                        ReceiveEventDuration = 400,
+                        UpdateTwinDuration = new int[] { 1000, 100 },
+                        LoadTwinDuration = new int[] { 1000, 100 },
+                        DeviceTwinFcntDown = 5,
+                        DeviceTwinFcntUp = 11,
+                    }
+            };
+
+            // Very slow first calls
+            yield return new object[]
+            {
+                    new ParallelTestConfiguration()
+                    {
+                        DeviceID = 4,
                         GatewayID = ServerGatewayID,
                         BetweenMessageDuration = 1000,
                         SearchByDevAddrDuration = new int[] { 5000, 100 },
@@ -131,22 +149,25 @@ namespace LoRaWan.NetworkServer.Test
                 });
 
             // twin will be updated with new fcnt
+            var expectedToSaveTwin = parallelTestConfiguration.DeviceTwinFcntDown > 0 || parallelTestConfiguration.DeviceTwinFcntUp > 0;
             uint? fcntUpSavedInTwin = null;
             uint? fcntDownSavedInTwin = null;
 
-            looseDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Returns<TwinCollection>((t) =>
-                {
-                    fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
-                    fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
-                    var duration = parallelTestConfiguration.UpdateTwinDuration.Next();
-                    Console.WriteLine($"{nameof(looseDeviceClient.Object.UpdateReportedPropertiesAsync)} sleeping for {duration}");
-                    return Task.Delay(duration)
-                        .ContinueWith((a) => true, TaskContinuationOptions.ExecuteSynchronously);
-                });
+            if (expectedToSaveTwin)
+            {
+                looseDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                    .Returns<TwinCollection>((t) =>
+                    {
+                        fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
+                        fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
+                        var duration = parallelTestConfiguration.UpdateTwinDuration.Next();
+                        Console.WriteLine($"{nameof(looseDeviceClient.Object.UpdateReportedPropertiesAsync)} sleeping for {duration}");
+                        return Task.Delay(duration)
+                            .ContinueWith((a) => true, TaskContinuationOptions.ExecuteSynchronously);
+                    });
+            }
 
-            var shouldReset = (parallelTestConfiguration.DeviceTwinFcntDown ?? 0) != 0 || (parallelTestConfiguration.DeviceTwinFcntUp ?? 0) != 0;
-            if (shouldReset)
+            if (expectedToSaveTwin && string.IsNullOrEmpty(parallelTestConfiguration.GatewayID))
             {
                 this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI))
                     .Returns(() =>
@@ -201,8 +222,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.All(allRequests, x => Assert.True(x.ProcessingSucceeded));
 
             looseDeviceClient.Verify(x => x.GetTwinAsync(), Times.Exactly(1));
-            looseDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Exactly(1));
-            // loRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsAny<TimeSpan>()), Times.Exactly(1));
+            if (expectedToSaveTwin)
+            {
+                looseDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Exactly(1));
+            }
+
             this.LoRaDeviceApi.Verify(x => x.SearchByDevAddrAsync(devAddr), Times.Once);
 
             // Ensure that all telemetry was sent
@@ -214,10 +238,13 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(3, sentTelemetry[2].Fcnt);
 
             // Ensure that the device twins were saved
-            Assert.NotNull(fcntDownSavedInTwin);
-            Assert.NotNull(fcntUpSavedInTwin);
-            Assert.Equal(0U, fcntDownSavedInTwin.Value);
-            Assert.Equal(0U, fcntUpSavedInTwin.Value);
+            if (expectedToSaveTwin)
+            {
+                Assert.NotNull(fcntDownSavedInTwin);
+                Assert.NotNull(fcntUpSavedInTwin);
+                Assert.Equal(0U, fcntDownSavedInTwin.Value);
+                Assert.Equal(0U, fcntUpSavedInTwin.Value);
+            }
 
             // verify that the device in device registry has correct properties and frame counters
             var devicesForDevAddr = deviceRegistry.InternalGetCachedDevicesForDevAddr(devAddr);

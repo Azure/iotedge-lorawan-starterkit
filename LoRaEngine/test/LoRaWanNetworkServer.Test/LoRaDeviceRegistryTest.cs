@@ -307,8 +307,8 @@ namespace LoRaWan.NetworkServer.Test
 
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(simulatedDevice.CreateABPTwin());
-            this.loRaDeviceClient.Setup(x => x.DisconnectAsync())
-                .ReturnsAsync(true);
+            this.loRaDeviceClient.Setup(x => x.Disconnect())
+                .Returns(true);
 
             var deviceFactory = new TestLoRaDeviceFactory(this.loRaDeviceClient.Object);
 

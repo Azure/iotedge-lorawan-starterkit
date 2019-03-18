@@ -1247,11 +1247,11 @@ namespace LoRaWan.NetworkServer.Test
         public async Task When_Loading_Multiple_Devices_With_Same_DevAddr_Should_Add_All_To_Cache_And_Process_Message(uint payloadFcntUp)
         {
             var isResetingDevice = payloadFcntUp <= 1;
-            var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
+            var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID), frmCntDown: 5, frmCntUp: 10);
 
             var devAddr = simulatedDevice1.LoRaDevice.DevAddr;
 
-            var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2, gatewayID: ServerGatewayID));
+            var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2, gatewayID: ServerGatewayID), frmCntDown: 6, frmCntUp: 10);
             simulatedDevice2.DevAddr = devAddr;
 
             // message will be sent
@@ -1337,14 +1337,14 @@ namespace LoRaWan.NetworkServer.Test
             }
             else
             {
-                Assert.Equal(Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice1.FCntDown);
+                Assert.Equal(simulatedDevice1.FrmCntDown + Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);
 
             Assert.True(cachedDevices.TryGetValue(simulatedDevice2.DevEUI, out var loRaDevice2));
-            Assert.Equal(0U, loRaDevice2.FCntUp);
-            Assert.Equal(Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice2.FCntDown);
+            Assert.Equal(simulatedDevice2.FrmCntUp, loRaDevice2.FCntUp);
+            Assert.Equal(simulatedDevice2.FrmCntDown + Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice2.FCntDown);
 
             deviceClient1.VerifyAll();
             deviceClient2.VerifyAll();
@@ -1362,7 +1362,6 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(11)]
         public async Task When_Loading_Multiple_Devices_With_Same_DevAddr_One_Fails_Should_Add_One_To_Cache_And_Process_Message(uint payloadFcntUp)
         {
-            var isResetingDevice = payloadFcntUp <= 1;
             var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
 
             var devEUI = simulatedDevice1.LoRaDevice.DeviceID;
@@ -1389,12 +1388,6 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync((Message)null);
 
             deviceClient1.Setup(x => x.GetTwinAsync()).ReturnsAsync(simulatedDevice1.CreateABPTwin());
-
-            if (isResetingDevice)
-            {
-                deviceClient1.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                    .ReturnsAsync(true);
-            }
 
             // Device client 2
             // - Get Twin -> throws TimeoutException
@@ -1448,7 +1441,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(cachedDevices.TryGetValue(simulatedDevice1.DevEUI, out var loRaDevice1));
 
             // If the fcnt made a reset (0-1) the fcntdown is zero
-            if (isResetingDevice)
+            if (payloadFcntUp <= 1)
             {
                 Assert.Equal(0U, loRaDevice1.FCntDown);
             }
@@ -1614,6 +1607,50 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.Verify(x => x.SearchByDevAddrAsync(simDevice.DevAddr), Times.Exactly(2));
             this.LoRaDeviceApi.VerifyAll();
             this.LoRaDeviceClient.VerifyAll();
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task When_Receiving_Relax_Reset_Fcnt_Of_New_Device_Should_Not_Save_Fcnt(
+            [CombinatorialValues(null, ServerGatewayID)] string gatewayID,
+            [CombinatorialValues(0, 1)] uint payloadFcnt)
+        {
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: gatewayID));
+
+            this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
+
+            if (string.IsNullOrEmpty(gatewayID))
+            {
+                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(simDevice.DevEUI))
+                    .ReturnsAsync(true);
+            }
+
+            this.LoRaDeviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(simDevice.CreateABPTwin());
+
+            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .ReturnsAsync(true);
+
+            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewMemoryCache(), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+
+            var messageDispatcher = new MessageDispatcher(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyProvider);
+
+            var request1 = this.CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("1", fcnt: payloadFcnt).Rxpk[0]);
+            messageDispatcher.DispatchRequest(request1);
+            Assert.True(await request1.WaitCompleteAsync());
+            Assert.True(request1.ProcessingSucceeded);
+
+            this.LoRaDeviceApi.VerifyAll();
+            this.LoRaDeviceClient.VerifyAll();
+
+            this.LoRaDeviceClient.Verify(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()), Times.Never);
         }
     }
 }

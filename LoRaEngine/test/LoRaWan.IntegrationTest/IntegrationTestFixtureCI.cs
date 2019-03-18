@@ -83,6 +83,12 @@ namespace LoRaWan.IntegrationTest
         // Device24_ABP: Class C device
         public TestDeviceInfo Device24_ABP { get; private set; }
 
+        // Device25_ABP: Connection timeout
+        public TestDeviceInfo Device25_ABP { get; private set; }
+
+        // Device26_ABP: Connection timeout
+        public TestDeviceInfo Device26_ABP { get; private set; }
+
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice
         {
@@ -401,6 +407,31 @@ namespace LoRaWan.IntegrationTest
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
                 ClassType = 'C',
+            };
+
+            // Device25_ABP: Connection timeout
+            this.Device25_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000025",
+                AppSKey = "00000000000000000000000000000025",
+                NwkSKey = "00000000000000000000000000000025",
+                DevAddr = "00000025",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+                SensorDecoder = "DecoderValueSensor",
+                KeepAliveTimeout = 60,
+            };
+
+            // Device26_ABP: Connection timeout
+            this.Device26_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000026",
+                AppSKey = "00000000000000000000000000000026",
+                NwkSKey = "00000000000000000000000000000026",
+                DevAddr = "00000026",
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+                SensorDecoder = "DecoderValueSensor",
             };
         }
     }

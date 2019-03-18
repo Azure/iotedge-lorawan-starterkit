@@ -120,6 +120,14 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
+                LoRaRegion? regionToSave = null;
+                string preferredGatewayIDToSave = null;
+                if (loRaDevice.ClassType == LoRaDeviceClassType.C)
+                {
+                    regionToSave = request.Region.LoRaRegion;
+                    preferredGatewayIDToSave = this.configuration.GatewayID;
+                }
+
                 Logger.Log(loRaDevice.DevEUI, $"saving join properties twins", LogLevel.Debug);
                 var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(
                     devAddr,
@@ -128,8 +136,8 @@ namespace LoRaWan.NetworkServer
                     appNonce,
                     devNonce,
                     ConversionHelper.ByteArrayToString(netId),
-                    request.Region.LoRaRegion,
-                    this.configuration.GatewayID);
+                    regionToSave,
+                    preferredGatewayIDToSave);
 
                 Logger.Log(loRaDevice.DevEUI, $"done saving join properties twins", LogLevel.Debug);
 
@@ -168,7 +176,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 loRaDevice.IsOurDevice = true;
-                await this.deviceRegistry.UpdateDeviceAfterJoinAsync(loRaDevice, oldDevAddr);
+                this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
 
                 // Build join accept downlink message
                 Array.Reverse(netId);

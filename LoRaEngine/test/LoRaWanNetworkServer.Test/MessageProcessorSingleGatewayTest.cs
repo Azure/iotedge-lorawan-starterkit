@@ -381,8 +381,8 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(TestUtils.CreateABPTwin(simulatedDevice));
 
-            this.LoRaDeviceClient.Setup(x => x.DisconnectAsync())
-                .ReturnsAsync(true);
+            this.LoRaDeviceClient.Setup(x => x.Disconnect())
+                .Returns(true);
 
             var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewMemoryCache(), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
@@ -459,7 +459,7 @@ namespace LoRaWan.NetworkServer.Test
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("11", fcnt: 11);
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             var request = this.CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(request);
@@ -528,14 +528,18 @@ namespace LoRaWan.NetworkServer.Test
             uint? fcntUpSavedInTwin = null;
             uint? fcntDownSavedInTwin = null;
 
-            // Twin will be save (0, 0) only if it was not 0, 0
-            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
-                .Callback<TwinCollection>((t) =>
-                {
-                    fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
-                    fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
-                })
-                .ReturnsAsync(true);
+            var expectedToSaveTwin = deviceTwinFcntDown > 0 || deviceTwinFcntUp > 0;
+            if (expectedToSaveTwin)
+            {
+                // Twin will be save (0, 0) only if it was not 0, 0
+                this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                    .Callback<TwinCollection>((t) =>
+                    {
+                        fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
+                        fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
+                    })
+                    .ReturnsAsync(true);
+            }
 
             // device api will be searched for payload
             this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
@@ -562,10 +566,13 @@ namespace LoRaWan.NetworkServer.Test
             // Assert.Equal(msgPayload, loRaDeviceTelemetry.data);
 
             // Ensure that the device twins were saved
-            Assert.NotNull(fcntDownSavedInTwin);
-            Assert.NotNull(fcntUpSavedInTwin);
-            Assert.Equal(0U, fcntDownSavedInTwin.Value);
-            Assert.Equal(0U, fcntUpSavedInTwin.Value);
+            if (expectedToSaveTwin)
+            {
+                Assert.NotNull(fcntDownSavedInTwin);
+                Assert.NotNull(fcntUpSavedInTwin);
+                Assert.Equal(0U, fcntDownSavedInTwin.Value);
+                Assert.Equal(0U, fcntUpSavedInTwin.Value);
+            }
 
             // Adding the loaded devices to the cache can take a while, give it time
             await Task.Delay(50);

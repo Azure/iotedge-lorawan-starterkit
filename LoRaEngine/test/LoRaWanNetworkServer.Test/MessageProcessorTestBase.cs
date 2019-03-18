@@ -42,6 +42,8 @@ namespace LoRaWan.NetworkServer.Test
 
         protected Task<Message> EmptyAdditionalMessageReceiveAsync => Task.Delay(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage).ContinueWith((_) => (Message)null);
 
+        protected LoRaDeviceClientConnectionManager ConnectionManager { get; }
+
         public MessageProcessorTestBase()
         {
             this.startTime = DateTimeOffset.UtcNow.Ticks;
@@ -70,7 +72,8 @@ namespace LoRaWan.NetworkServer.Test
             var functionBundlerProvider = new FunctionBundlerProvider(this.LoRaDeviceApi.Object);
             this.RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
             this.LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.LoRaDeviceFactory = new TestLoRaDeviceFactory(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.LoRaDeviceClient.Object, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
+            this.ConnectionManager = new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) }));
+            this.LoRaDeviceFactory = new TestLoRaDeviceFactory(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.LoRaDeviceClient.Object, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, this.ConnectionManager);
         }
 
         public MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());
@@ -82,14 +85,23 @@ namespace LoRaWan.NetworkServer.Test
         {
             var cache = new MemoryCache(new MemoryCacheOptions());
 
+            // add by dev addr
             var dictionary = new DevEUIToLoRaDeviceDictionary();
             dictionary.TryAdd(loRaDevice.DevEUI, loRaDevice);
             cache.Set(loRaDevice.DevAddr, dictionary);
 
+            // add device by deveui
+            cache.Set(LoRaDeviceRegistry.CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice);
+
             return cache;
         }
 
-        public LoRaDevice CreateLoRaDevice(SimulatedDevice simulatedDevice) => TestUtils.CreateFromSimulatedDevice(simulatedDevice, this.LoRaDeviceClient.Object, this.RequestHandlerImplementation);
+        public LoRaDevice CreateLoRaDevice(SimulatedDevice simulatedDevice)
+        {
+            var device = TestUtils.CreateFromSimulatedDevice(simulatedDevice, this.LoRaDeviceClient.Object, this.RequestHandlerImplementation, this.ConnectionManager);
+            this.ConnectionManager.Register(device, this.LoRaDeviceClient.Object);
+            return device;
+        }
 
         public WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk, IPacketForwarder packetForwarder = null, TimeSpan? startTimeOffset = null, TimeSpan? constantElapsedTime = null)
         {

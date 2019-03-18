@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
@@ -33,6 +34,8 @@ namespace LoRaWan.NetworkServer.Test
 
         public Mock<ILoRaDeviceClient> SecondLoRaDeviceClient { get; }
 
+        public LoRaDeviceClientConnectionManager SecondConnectionManager { get; }
+
         internal TestLoRaDeviceFactory SecondLoRaDeviceFactory { get; }
 
         LoRaDevice CreateSecondLoRaDevice(SimulatedDevice simulatedDevice) => TestUtils.CreateFromSimulatedDevice(simulatedDevice, this.SecondLoRaDeviceClient.Object, this.secondRequestHandlerImplementation);
@@ -55,7 +58,8 @@ namespace LoRaWan.NetworkServer.Test
             var functionBundlerProvider = new FunctionBundlerProvider(this.SecondLoRaDeviceApi.Object);
             this.secondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.SecondServerConfiguration, this.SecondFrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider);
             this.SecondLoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.SecondLoRaDeviceFactory = new TestLoRaDeviceFactory(this.SecondServerConfiguration, this.SecondFrameCounterUpdateStrategyProvider, this.SecondLoRaDeviceClient.Object, deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider);
+            this.SecondConnectionManager = new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) }));
+            this.SecondLoRaDeviceFactory = new TestLoRaDeviceFactory(this.SecondServerConfiguration, this.SecondFrameCounterUpdateStrategyProvider, this.SecondLoRaDeviceClient.Object, deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider, this.SecondConnectionManager);
         }
 
         [Fact]

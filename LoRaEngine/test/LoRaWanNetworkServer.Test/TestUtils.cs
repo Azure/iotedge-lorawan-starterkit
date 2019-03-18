@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Caching.Memory;
     using Newtonsoft.Json;
 
     internal static class TestUtils
@@ -18,9 +19,10 @@ namespace LoRaWan.NetworkServer.Test
         internal static LoRaDevice CreateFromSimulatedDevice(
             SimulatedDevice simulatedDevice,
             ILoRaDeviceClient loRaDeviceClient,
-            DefaultLoRaDataRequestHandler requestHandler = null)
+            DefaultLoRaDataRequestHandler requestHandler = null,
+            ILoRaDeviceClientConnectionManager connectionManager = null)
         {
-            var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, loRaDeviceClient)
+            var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, connectionManager ?? new SingleDeviceConnectionManager(loRaDeviceClient))
             {
                 AppEUI = simulatedDevice.LoRaDevice.AppEUI,
                 AppKey = simulatedDevice.LoRaDevice.AppKey,
@@ -183,5 +185,10 @@ namespace LoRaWan.NetworkServer.Test
         {
             return TimeSpan.FromMilliseconds(1000 - LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage.TotalMilliseconds + 1);
         }
+
+        /// <summary>
+        /// Helper method for testing
+        /// </summary>
+        public static LoRaDeviceClientConnectionManager CreateConnectionManager() => new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions()));
     }
 }

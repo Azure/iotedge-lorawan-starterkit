@@ -35,9 +35,12 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task Validate_Drop_Strategy()
         {
-            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            var connectionManager = TestUtils.CreateConnectionManager();
+            var target = new LoRaDevice("1231", "12312", connectionManager);
             target.Deduplication = DeduplicationMode.Drop;
             var strategy = this.factory.Create(target);
+
+            connectionManager.Register(target, this.loRaDeviceClient.Object);
 
             Assert.IsType<DeduplicationStrategyDrop>(strategy);
             var result = await strategy.ResolveDeduplication(1, 1, "12345");
@@ -47,8 +50,11 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task Validate_Mark_Strategy()
         {
-            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            var connectionManager = TestUtils.CreateConnectionManager();
+            var target = new LoRaDevice("1231", "12312", connectionManager);
             target.Deduplication = DeduplicationMode.Mark;
+
+            connectionManager.Register(target, this.loRaDeviceClient.Object);
 
             var strategy = this.factory.Create(target);
 
