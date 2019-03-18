@@ -77,8 +77,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public TimeSpan GetRemainingTimeToReceiveSecondWindow(LoRaDevice loRaDevice)
         {
-            var elapsed = DateTimeOffset.UtcNow - this.startTime;
-            return TimeSpan.FromSeconds(this.GetReceiveWindow2Delay(loRaDevice)).Subtract(elapsed);
+            return TimeSpan.FromSeconds(this.GetReceiveWindow2Delay(loRaDevice)).Subtract(this.GetElapsedTime());
         }
 
         /// <summary>
@@ -86,8 +85,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public TimeSpan GetRemainingTimeToReceiveFirstWindow(LoRaDevice loRaDevice)
         {
-            var elapsed = DateTimeOffset.UtcNow - this.startTime;
-            return TimeSpan.FromSeconds(this.GetReceiveWindow1Delay(loRaDevice)).Subtract(elapsed);
+            return TimeSpan.FromSeconds(this.GetReceiveWindow1Delay(loRaDevice)).Subtract(this.GetElapsedTime());
         }
 
         /// <summary>
@@ -113,8 +111,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public bool InTimeForJoinAccept()
         {
-            var elapsed = DateTimeOffset.UtcNow - this.startTime;
-            return elapsed.Add(ExpectedTimeToPackageAndSendMessage) < TimeSpan.FromSeconds(this.loraRegion.Join_accept_delay2);
+            return this.GetElapsedTime().Add(ExpectedTimeToPackageAndSendMessage) < TimeSpan.FromSeconds(this.loraRegion.Join_accept_delay2);
         }
 
         /// <summary>
@@ -122,14 +119,13 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public TimeSpan GetRemainingTimeToJoinAcceptFirstWindow()
         {
-            var elapsed = DateTimeOffset.UtcNow - this.startTime;
-            return TimeSpan.FromSeconds(this.loraRegion.Join_accept_delay1) - elapsed;
+            return TimeSpan.FromSeconds(this.loraRegion.Join_accept_delay1) - this.GetElapsedTime();
         }
 
         /// <summary>
         /// Gets time passed since start
         /// </summary>
-        internal TimeSpan GetElapsedTime() => DateTimeOffset.UtcNow - this.startTime;
+        protected internal virtual TimeSpan GetElapsedTime() => DateTimeOffset.UtcNow - this.startTime;
 
         /// <summary>
         /// Resolves the receive window to use

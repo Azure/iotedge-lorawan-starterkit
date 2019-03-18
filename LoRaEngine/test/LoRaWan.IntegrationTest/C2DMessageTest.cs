@@ -43,9 +43,10 @@ namespace LoRaWan.IntegrationTest
         }
 
         // Ensures that C2D messages are received when working with confirmed messages
+        // RxDelay set up to be 2 seconds
         // Uses Device9_OTAA
         [Fact]
-        public async Task Test_OTAA_Confirmed_Receives_C2D_Message()
+        public async Task Test_OTAA_Confirmed_Receives_C2D_Message_With_RX_Delay_2()
         {
             var device = this.TestFixtureCi.Device9_OTAA;
             this.LogTestStart(device);
@@ -107,6 +108,20 @@ namespace LoRaWan.IntegrationTest
                 // After transferPacketWithConfirmed: Expectation from serial
                 // +CMSG: ACK Received
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
+
+                // Check that RXDelay was correctly used
+                if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN1")).Count() > 0)
+                {
+                    await this.TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, false);
+                }
+                else if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN2")).Count() > 0)
+                {
+                    await this.TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, true);
+                }
+                else
+                {
+                    Assert.True(false, "We were not able to determine in which windows the acknowledgement was submitted");
+                }
 
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58

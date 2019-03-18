@@ -461,7 +461,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("11", fcnt: 11);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = this.CreateWaitableRequest(rxpk);
+            var request = this.CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);

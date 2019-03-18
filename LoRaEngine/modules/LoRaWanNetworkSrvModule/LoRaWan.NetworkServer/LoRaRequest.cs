@@ -52,5 +52,7 @@ namespace LoRaWan.NetworkServer
         internal void SetPayload(LoRaPayload loRaPayload) => this.Payload = loRaPayload;
 
         internal void SetRegion(Region loRaRegion) => this.Region = loRaRegion;
+
+        public virtual LoRaOperationTimeWatcher GetTimeWatcher() => new LoRaOperationTimeWatcher(this.Region, this.StartTime);
     }
 }

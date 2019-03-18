@@ -71,15 +71,14 @@ namespace LoRaWan.NetworkServer
 
             if (receiveWindow == Constants.RECEIVE_WINDOW_2)
             {
-                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow2Delay(loRaDevice) * 1000000;
-
+                tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow2Delay(loRaDevice), loRaDevice.ReportedRXDelay);
                 (freq, datr) = loRaRegion.GetDownstreamRX2DRAndFreq(loRaDevice.DevEUI, configuration.Rx2DataRate, configuration.Rx2DataFrequency, loRaDevice.ReportedRX2DataRate);
             }
             else
             {
                 datr = loRaRegion.GetDownstreamDR(rxpk, (uint)loRaDevice.ReportedRX1DROffset);
                 freq = loRaRegion.GetDownstreamChannelFrequency(rxpk);
-                tmst = rxpk.Tmst + timeWatcher.GetReceiveWindow1Delay(loRaDevice) * 1000000;
+                tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow1Delay(loRaDevice), loRaDevice.ReportedRXDelay);
             }
 
             // get max. payload size based on data rate from LoRaRegion
@@ -380,6 +379,18 @@ namespace LoRaWan.NetworkServer
             }
 
             return macCommands.Values;
+        }
+
+        private static long CalculateTime(int windowTime, ushort rXDelay)
+        {
+            if (rXDelay > 1 && rXDelay < 16)
+            {
+                return (windowTime + rXDelay - 1) * Constants.CONVERT_TO_PKT_FWD_TIME;
+            }
+            else
+            {
+                return windowTime * Constants.CONVERT_TO_PKT_FWD_TIME;
+            }
         }
     }
 }

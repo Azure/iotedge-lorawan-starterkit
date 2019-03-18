@@ -86,5 +86,11 @@ namespace LoRaWan.NetworkServer.Test
 
             return this.complete.WaitAsync(timeout);
         }
+
+        LoRaOperationTimeWatcher fixTimeWacher;
+
+        internal void UseTimeWatcher(LoRaOperationTimeWatcher timeWatcher) => this.fixTimeWacher = timeWatcher;
+
+        public override LoRaOperationTimeWatcher GetTimeWatcher() => this.fixTimeWacher ?? base.GetTimeWatcher();
     }
 }

@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
         {
-            var timeWatcher = new LoRaOperationTimeWatcher(request.Region, request.StartTime);
+            var timeWatcher = request.GetTimeWatcher();
             var loraPayload = (LoRaPayloadData)request.Payload;
 
             var payloadFcnt = loraPayload.GetFcnt();

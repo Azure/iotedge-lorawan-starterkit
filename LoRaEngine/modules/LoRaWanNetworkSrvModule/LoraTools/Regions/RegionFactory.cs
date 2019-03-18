@@ -38,15 +38,9 @@ namespace LoRaTools.Regions
 
         public static bool TryResolveRegion(Rxpk rxpk)
         {
-            // EU863-870
-            if (rxpk.Freq < 870 && rxpk.Freq > 863)
+            if (TryResolveRegion(rxpk, out var region))
             {
-                CurrentRegion = CreateEU868Region();
-                return true;
-            }// US902-928
-            else if (rxpk.Freq <= 928 && rxpk.Freq >= 902)
-            {
-                CurrentRegion = CreateUS915Region();
+                CurrentRegion = region;
                 return true;
             }
             else
@@ -54,6 +48,31 @@ namespace LoRaTools.Regions
                 Logger.Log("RegionFactory", "The current frequency plan is not supported. Currently only EU868 and US915 frequency bands are supported.", LogLevel.Error);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Tries the resolve region.
+        /// </summary>
+        /// <returns><c>true</c>, if a region was resolved, <c>false</c> otherwise.</returns>
+        /// <param name="rxpk">Rxpk.</param>
+        /// <param name="region">Region.</param>
+        public static bool TryResolveRegion(Rxpk rxpk, out Region region)
+        {
+            region = null;
+
+            // EU863-870
+            if (rxpk.Freq < 870 && rxpk.Freq > 863)
+            {
+                region = CreateEU868Region();
+                return true;
+            }// US902-928
+            else if (rxpk.Freq <= 928 && rxpk.Freq >= 902)
+            {
+                region = CreateUS915Region();
+                return true;
+            }
+
+            return false;
         }
 
         public static Region CreateEU868Region()

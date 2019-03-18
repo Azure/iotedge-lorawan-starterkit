@@ -31,5 +31,10 @@ namespace LoRaWan.IntegrationTest
         /// Cloud to device Mac Command property name
         /// </summary>
         public const string C2D_MSG_PROPERTY_MAC_COMMAND = "CidType";
+
+        /// <summary>
+        /// Convert the time to the packet forward time (millionth of seconds)
+        /// </summary>
+        public const uint CONVERT_TO_PKT_FWD_TIME = 1000000;
     }
 }
