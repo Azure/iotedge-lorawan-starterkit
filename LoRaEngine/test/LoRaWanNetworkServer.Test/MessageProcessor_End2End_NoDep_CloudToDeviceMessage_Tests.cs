@@ -421,7 +421,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(deviceTwin);
 
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
-                .ReturnsAsync(true, TestUtils.GetStartTimeOffsetForSecondWindow());
+                .ReturnsAsync(true);
 
             var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
                 .CreateMessage();
@@ -449,7 +449,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = this.CreateWaitableRequest(rxpk);
+            var request = this.CreateWaitableRequest(rxpk, constantElapsedTime: TestUtils.GetStartTimeOffsetForSecondWindow());
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
