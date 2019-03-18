@@ -43,5 +43,10 @@ namespace LoRaWan.NetworkServer
         /// Property in decoder json response containing the cloud to the device message
         /// </summary>
         public const string CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME = "cloudToDeviceMessage";
+
+        /// <summary>
+        /// Convert the time to the packet forward time (millionth of seconds)
+        /// </summary>
+        public const uint CONVERT_TO_PKT_FWD_TIME = 1000000;
     }
 }
