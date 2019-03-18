@@ -159,8 +159,9 @@ namespace LoRaWan.Test.Shared
         /// </summary>
         async Task<FindTimeResult> TryFindMessageTimeAsync(string message)
         {
+            const string token = @"""tmst"":";
             var log = await this.SearchUdpLogs(x => x.Contains(message));
-            int timeIndexStart = log.FoundLogResult.IndexOf(@"""tmst"":") + 7;
+            int timeIndexStart = log.FoundLogResult.IndexOf(token) + token.Length;
             int timeIndexStop = log.FoundLogResult.IndexOf(",", timeIndexStart);
             uint parsedValue = 0;
             bool success = false;
