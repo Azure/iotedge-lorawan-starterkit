@@ -51,7 +51,7 @@ namespace LoRaWan.NetworkServer
                     return false;
                 }
 
-                if (!RegionManager.TryGetRegion(loRaDevice.LoRaRegion, out var region))
+                if (!RegionManager.TranslateToRegion(loRaDevice.LoRaRegion, out var region))
                 {
                     Logger.Log(cloudToDeviceMessage.DevEUI, $"[class-c] device does not have a region assigned. Ensure the device has connected at least once with the network", LogLevel.Error);
                     return false;

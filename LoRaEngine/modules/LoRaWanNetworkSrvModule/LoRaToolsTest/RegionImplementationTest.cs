@@ -24,7 +24,7 @@ namespace LoRaWanTest
             // in EU in standard parameters the expectation is that the reply arrive at same place.
             var expFreq = freq;
             var expDatr = datr;
-            RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency);
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
             Assert.Equal(frequency, expFreq);
             Assert.Equal(RegionManager.EU868.GetDownstreamDR(rxpk[0]), expDatr);
         }
@@ -99,7 +99,7 @@ namespace LoRaWanTest
                     break;
             }
 
-            RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency);
+            Assert.True(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
             Assert.Equal(frequency, expFreq);
             Assert.Equal(RegionManager.US915.GetDownstreamDR(rxpk[0]), expDatr);
         }
@@ -147,7 +147,7 @@ namespace LoRaWanTest
                     break;
             }
 
-            RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency);
+            Assert.True(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
             Assert.Equal(frequency, expFreq);
             Assert.Equal(RegionManager.US915.GetDownstreamDR(rxpk[0]), expDatr);
         }

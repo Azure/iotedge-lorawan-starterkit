@@ -157,6 +157,8 @@ namespace LoRaWan.NetworkServer
                     if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
                     {
                         Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the downstream message packet forwarder settings", LogLevel.Error);
+                        request.NotifyFailed(null, LoRaDeviceRequestFailedReason.InvalidRxpk);
+                        return;
                     }
 
                     // set tmst for the normal case

@@ -265,12 +265,7 @@ namespace LoRaTools.Regions
 
         public bool IsValidRXDelay(ushort desiredRXDelay)
         {
-                if (desiredRXDelay >= 0 && desiredRXDelay <= MAX_RX_DELAY)
-                {
-                    return true;
-                }
-
-                return false;
+            return desiredRXDelay >= 0 && desiredRXDelay <= MAX_RX_DELAY;
         }
     }
 }

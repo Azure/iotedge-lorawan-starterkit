@@ -19,7 +19,7 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Tries to get the <see cref="LoRaRegionEnum"/> based on <paramref name="value"/>
         /// </summary>
-        public static bool TryGetRegion(LoRaRegionEnum value, out Region region)
+        public static bool TranslateToRegion(LoRaRegionEnum value, out Region region)
         {
             region = null;
             switch (value)
