@@ -15,7 +15,7 @@ namespace LoRaTools.Regions
     {
         private const ushort MAX_RX_DELAY = 15;
 
-        public LoRaRegionEnum LoRaRegion { get; set; }
+        public LoRaRegionType LoRaRegion { get; set; }
 
         public byte LoRaSyncWord { get; private set; }
 
@@ -99,7 +99,7 @@ namespace LoRaTools.Regions
         /// </summary>
         public int MaxADRDataRate { get; set; }
 
-        public Region(LoRaRegionEnum regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, uint datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
+        public Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, uint datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
         {
             this.LoRaRegion = regionEnum;
             this.Ack_timeout = ack_timeout;
@@ -127,13 +127,13 @@ namespace LoRaTools.Regions
 
             if (this.IsValidRxpk(upstreamChannel))
             {
-                if (this.LoRaRegion == LoRaRegionEnum.EU868)
+                if (this.LoRaRegion == LoRaRegionType.EU868)
                 {
                     // in case of EU, you respond on same frequency as you sent data.
                     frequency = upstreamChannel.Freq;
                     return true;
                 }
-                else if (this.LoRaRegion == LoRaRegionEnum.US915)
+                else if (this.LoRaRegion == LoRaRegionType.US915)
                 {
                     int upstreamChannelNumber;
                     // if DR4 the coding are different.

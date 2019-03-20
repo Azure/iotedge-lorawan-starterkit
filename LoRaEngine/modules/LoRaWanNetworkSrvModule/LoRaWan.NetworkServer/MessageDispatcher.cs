@@ -51,7 +51,7 @@ namespace LoRaWan.NetworkServer
 
             if (this.loraRegion == null)
             {
-                if (!RegionManager.TryResolveRegion(request.Rxpk))
+                if (!RegionManager.TryResolveRegion(request.Rxpk, out var currentRegion))
                 {
                     // log is generated in Region factory
                     // move here once V2 goes GA
@@ -59,7 +59,7 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                this.loraRegion = RegionManager.CurrentRegion;
+                this.loraRegion = currentRegion;
             }
 
             request.SetPayload(loRaPayload);

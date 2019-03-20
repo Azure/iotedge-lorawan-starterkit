@@ -181,25 +181,25 @@ namespace LoRaWanTest
 
         [Theory]
         // freq, dr
-        [InlineData(800, "SF12BW125", LoRaRegionEnum.EU868)]
-        [InlineData(1023, "SF8BW125", LoRaRegionEnum.EU868)]
-        [InlineData(868.1, "SF0BW125", LoRaRegionEnum.EU868)]
-        [InlineData(869.3, "SF32BW543", LoRaRegionEnum.EU868)]
-        [InlineData(800, "SF0BW125", LoRaRegionEnum.EU868)]
-        [InlineData(700, "SF10BW125", LoRaRegionEnum.US915)]
-        [InlineData(1024, "SF8BW125", LoRaRegionEnum.US915)]
-        [InlineData(915, "SF0BW125", LoRaRegionEnum.US915)]
-        [InlineData(920, "SF30BW400", LoRaRegionEnum.US915)]
-        public void EnsureRegionLimitTestAreWorking(double freq, string datarate, LoRaRegionEnum region)
+        [InlineData(800, "SF12BW125", LoRaRegionType.EU868)]
+        [InlineData(1023, "SF8BW125", LoRaRegionType.EU868)]
+        [InlineData(868.1, "SF0BW125", LoRaRegionType.EU868)]
+        [InlineData(869.3, "SF32BW543", LoRaRegionType.EU868)]
+        [InlineData(800, "SF0BW125", LoRaRegionType.EU868)]
+        [InlineData(700, "SF10BW125", LoRaRegionType.US915)]
+        [InlineData(1024, "SF8BW125", LoRaRegionType.US915)]
+        [InlineData(915, "SF0BW125", LoRaRegionType.US915)]
+        [InlineData(920, "SF30BW400", LoRaRegionType.US915)]
+        public void EnsureRegionLimitTestAreWorking(double freq, string datarate, LoRaRegionType region)
         {
             var rxpk = GenerateRxpk(datarate, freq);
-            if (region == LoRaRegionEnum.EU868)
+            if (region == LoRaRegionType.EU868)
             {
                 Assert.False(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency) &&
                 RegionManager.EU868.GetDownstreamDR(rxpk[0]) != null);
             }
 
-            if (region == LoRaRegionEnum.US915)
+            if (region == LoRaRegionType.US915)
             {
                 Assert.False(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency) &&
                 RegionManager.US915.GetDownstreamDR(rxpk[0]) != null);

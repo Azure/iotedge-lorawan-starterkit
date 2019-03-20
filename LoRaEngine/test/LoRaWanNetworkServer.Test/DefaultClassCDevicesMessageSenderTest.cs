@@ -77,7 +77,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
-                    { TwinProperty.Region, LoRaRegionEnum.EU868.ToString() }
+                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() }
                 });
 
             this.deviceClient.Setup(x => x.GetTwinAsync())
@@ -220,7 +220,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
-                    { TwinProperty.Region, LoRaRegionEnum.EU868.ToString() }
+                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() }
                 });
 
             this.deviceClient.Setup(x => x.GetTwinAsync())

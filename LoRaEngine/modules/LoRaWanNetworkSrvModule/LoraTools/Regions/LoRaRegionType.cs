@@ -3,7 +3,7 @@
 
 namespace LoRaTools.Regions
 {
-    public enum LoRaRegionEnum
+    public enum LoRaRegionType
     {
         NotSet,
         EU868,

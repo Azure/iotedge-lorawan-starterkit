@@ -17,37 +17,23 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Tries to get the <see cref="LoRaRegionEnum"/> based on <paramref name="value"/>
+        /// Tries to get the <see cref="LoRaRegionType"/> based on <paramref name="value"/>
         /// </summary>
-        public static bool TranslateToRegion(LoRaRegionEnum value, out Region region)
+        public static bool TryTranslateToRegion(LoRaRegionType value, out Region region)
         {
             region = null;
             switch (value)
             {
-                case LoRaRegionEnum.EU868:
+                case LoRaRegionType.EU868:
                     region = EU868;
                     return true;
 
-                case LoRaRegionEnum.US915:
+                case LoRaRegionType.US915:
                     region = US915;
                     return true;
             }
 
             return false;
-        }
-
-        public static bool TryResolveRegion(Rxpk rxpk)
-        {
-            if (TryResolveRegion(rxpk, out var region))
-            {
-                CurrentRegion = region;
-                return true;
-            }
-            else
-            {
-                Logger.Log("RegionFactory", "The current frequency plan is not supported. Currently only EU868 and US915 frequency bands are supported.", LogLevel.Error);
-                return false;
-            }
         }
 
         /// <summary>
@@ -93,7 +79,7 @@ namespace LoRaTools.Regions
         private static void CreateEU868Region()
         {
             eu868 = new Region(
-                LoRaRegionEnum.EU868,
+                LoRaRegionType.EU868,
                 0x34,
                 ConversionHelper.StringToByteArray("C194C1"),
                 (frequency: 869.525, datr: 0),
@@ -168,7 +154,7 @@ namespace LoRaTools.Regions
         private static void CreateUS915Region()
         {
             us915 = new Region(
-                LoRaRegionEnum.US915,
+                LoRaRegionType.US915,
                 0x34,
                 null, // no GFSK in US Band
                 (frequency: 923.3, datr: 8),
