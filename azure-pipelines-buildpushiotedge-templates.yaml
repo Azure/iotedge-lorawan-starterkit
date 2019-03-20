@@ -2,6 +2,7 @@
 parameters:
   platform: ''
   deviceID: ''
+  deploymentTemplate: 'deployment.test.template.json'
 
 steps:
 
@@ -37,7 +38,7 @@ steps:
   displayName: 'Azure IoT Edge - Build module ${{ parameters.platform }} images'
   inputs:
     deploymentid: $(IOT_DEPLOYMENT_ID)
-    templateFilePath: ./LoRaEngine/deployment.test.template.json
+    templateFilePath: ./LoRaEngine/${{parameters.deploymentTemplate}}
     defaultPlatform: ${{ parameters.platform }}
 
 # Azure IoT Edge - Push images

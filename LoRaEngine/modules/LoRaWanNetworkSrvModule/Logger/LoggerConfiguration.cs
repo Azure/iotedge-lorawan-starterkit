@@ -35,6 +35,11 @@ namespace LoRaWan
         // Gets/sets udp port to send logs
         public int LogToUdpPort { get; set; } = 6000;
 
+        /// <summary>
+        /// Gets or sets the id of the gateway running the logger
+        /// </summary>
+        public string GatewayId { get; set; }
+
         public static LogLevel InitLogLevel(string logLevelIn)
         {
             LogLevel logLevelOut;
