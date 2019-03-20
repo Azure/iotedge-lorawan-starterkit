@@ -42,11 +42,11 @@ variables:
   PKT_FWD_VERSION: "" # Packet Forward module version
 
 # Enable PR validation on branches master and dev
-pr:
-  branches:
-    include:
-    - master
-    - dev
+# pr:
+#  branches:
+#    include:
+#    - master
+#    - dev
 
 # Enable CI on branches master and dev
 # Batch builds
@@ -54,6 +54,8 @@ trigger:
   batch: true
   branches:
     include:
+    - pat-dev-multi-gw-test
+    exclude:
     - dev
     - master
 
