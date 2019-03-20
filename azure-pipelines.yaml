@@ -152,6 +152,7 @@ jobs:
      echo "Determine ARM build agent IP address"
      BUILD_AGENT_IP_LOCAL=$(ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
      echo "##vso[task.setvariable variable=BUILD_AGENT_IP]$BUILD_AGENT_IP_LOCAL"
+     name: Determine ARM build agent IP
 
 
 # [Job] Build, push and deploy arm32v7 IoT Edge Solution - secondary gateway
