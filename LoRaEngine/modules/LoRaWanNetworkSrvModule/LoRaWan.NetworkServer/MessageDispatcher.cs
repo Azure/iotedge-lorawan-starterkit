@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Collections.Generic;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
@@ -86,7 +87,7 @@ namespace LoRaWan.NetworkServer
         void DispatchLoRaDataMessage(LoRaRequest request)
         {
             var loRaPayload = (LoRaPayloadData)request.Payload;
-            if (!this.IsValidNetId(loRaPayload.GetDevAddrNetID(), this.configuration.NetId))
+            if (!this.IsValidNetId(loRaPayload))
             {
                 Logger.Log(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr), $"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.GetDevAddrNetID()})", LogLevel.Debug);
                 request.NotifyFailed(null, LoRaDeviceRequestFailedReason.InvalidNetId);
@@ -96,9 +97,16 @@ namespace LoRaWan.NetworkServer
             this.deviceRegistry.GetLoRaRequestQueue(request).Queue(request);
         }
 
-        bool IsValidNetId(byte devAddrNwkid, uint netId)
+        bool IsValidNetId(LoRaPayloadData loRaPayload)
         {
-            var netIdBytes = BitConverter.GetBytes(netId);
+            var currentDevAddr = ConversionHelper.ByteArrayToString(loRaPayload.DevAddr);
+            if (this.configuration.AllowedDevAddresses != null && this.configuration.AllowedDevAddresses.Contains(currentDevAddr))
+            {
+                return true;
+            }
+
+            byte devAddrNwkid = loRaPayload.GetDevAddrNetID();
+            var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
             devAddrNwkid = (byte)(devAddrNwkid >> 1);
             return devAddrNwkid == (netIdBytes[0] & 0b01111111);
         }

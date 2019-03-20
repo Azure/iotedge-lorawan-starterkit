@@ -1243,6 +1243,81 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.VerifyAll();
         }
 
+        [Fact]
+        public async Task ABP_Device_With_Invalid_NetId_In_Allowed_DevAdr_Should_Be_Accepted()
+        {
+            string msgPayload = "1234";
+            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: 0, gatewayID: ServerGatewayID));
+
+            var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
+            var devAddr = simulatedDevice.LoRaDevice.DevAddr;
+
+            // Add this device to the allowed dev address list
+            this.ServerConfiguration.AllowedDevAddresses = new HashSet<string>(1)
+            {
+                simulatedDevice.DevAddr
+            };
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewMemoryCache(), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+
+            // Send to message processor
+            var messageDispatcher = new MessageDispatcher(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyProvider);
+
+            // device api will be searched for payload
+            var searchDevicesResult = new SearchDevicesResult(new[]
+            {
+                new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "device1"),
+                new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "device2"),
+            });
+
+            this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
+                .ReturnsAsync(searchDevicesResult);
+
+            deviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(simulatedDevice.CreateABPTwin());
+
+            deviceClient.Setup(x => x.DisconnectAsync())
+               .ReturnsAsync(true);
+
+            deviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+               .ReturnsAsync((Message)null);
+
+            this.LoRaDeviceFactory.SetClient(simulatedDevice.DevEUI, deviceClient.Object);
+            deviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                    .ReturnsAsync(true);
+
+            var device1SentTelemetry = new List<LoRaDeviceTelemetry>();
+            LoRaDeviceTelemetry loRaDeviceTelemetry = null;
+
+            deviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+             .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => device1SentTelemetry.Add(loRaDeviceTelemetry))
+             .ReturnsAsync(true);
+
+            // sends unconfirmed message #1
+            var unconfirmedMessagePayload1 = simulatedDevice.CreateConfirmedDataUpMessage(msgPayload, fcnt: 1);
+            var rxpk1 = unconfirmedMessagePayload1.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+            var request1 = new WaitableLoRaRequest(rxpk1, this.PacketForwarder);
+            messageDispatcher.DispatchRequest(request1);
+            Assert.True(await request1.WaitCompleteAsync());
+            Assert.True(request1.ProcessingSucceeded);
+            Assert.NotNull(request1.ResponseDownlink);
+
+            // sends unconfirmed message #2
+            var unconfirmedMessagePayload2 = simulatedDevice.CreateConfirmedDataUpMessage(msgPayload, fcnt: 2);
+            var rxpk2 = unconfirmedMessagePayload2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+            var request2 = new WaitableLoRaRequest(rxpk2, this.PacketForwarder);
+            messageDispatcher.DispatchRequest(request2);
+            Assert.True(await request2.WaitCompleteAsync());
+            Assert.NotNull(request2.ResponseDownlink);
+            Assert.True(request2.ProcessingSucceeded);
+
+            this.LoRaDeviceClient.VerifyAll();
+            this.LoRaDeviceApi.VerifyAll();
+        }
+
         [Theory]
         [InlineData(1)] // ABP with soft reset
         [InlineData(11)]
