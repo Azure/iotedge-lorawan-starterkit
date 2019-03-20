@@ -141,20 +141,6 @@ jobs:
         platform: arm32v7
         deviceID: $(IoTEdgeDeviceARMPrimary)
 
-- job: full_ci_arm_secondary_prepare
-  displayName: Prepare Secondary Gateway
-  condition: and(ne(variables['IoTEdgeDeviceARMSecondary'], ''), and(ne(variables['RunTestsOnly'], 'true'), and(succeeded(), or(eq(dependencies.build_and_test.outputs['checkPrCILabel.prWithCILabel'], true), or(eq(variables['FullCI'],'true'), in(variables['Build.SourceBranch'], 'refs/heads/master', 'refs/heads/dev'))))))
-  pool:
-    name: Default
-    demands: Agent.OSArchitecture -equals ARM # Run on pi atm
-  steps:
-    - bash: |
-        echo "Determine ARM build agent IP address"
-        BUILD_AGENT_IP_LOCAL=$(ifconfig eth0 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
-        echo "##vso[task.setvariable variable=BUILD_AGENT_IP]$BUILD_AGENT_IP_LOCAL"
-      displayName: Determine ARM build agent IP
-
-
 # [Job] Build, push and deploy arm32v7 IoT Edge Solution - secondary gateway
 - job: full_ci_deploy_arm_secondary
   displayName: Build, push and deploy arm32v7 IoT Edge Solution - Secondary Gateway
@@ -165,9 +151,7 @@ jobs:
     # Defines image version to use in case in ARM architecture
     DEVOPS_AGENT_IMAGE: "$(CONTAINER_REGISTRY_ADDRESS)/azuredevopsagent:$(DEVOPS_AGENT_IMAGE_VERSION)-arm32v7"
     
-  dependsOn: 
-    - build_and_test
-    - full_ci_arm_secondary_prepare
+  dependsOn:  build_and_test
   condition: and(ne(variables['IoTEdgeDeviceARMSecondary'], ''), and(ne(variables['RunTestsOnly'], 'true'), and(succeeded(), or(eq(dependencies.build_and_test.outputs['checkPrCILabel.prWithCILabel'], true), or(eq(variables['FullCI'],'true'), in(variables['Build.SourceBranch'], 'refs/heads/master', 'refs/heads/dev'))))))
   pool:
     # name: docker
