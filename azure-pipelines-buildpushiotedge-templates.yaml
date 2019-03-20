@@ -3,6 +3,7 @@ parameters:
   platform: ''
   deviceID: ''
   deploymentTemplate: 'deployment.test.template.json'
+  deploymentConfigFile: 'deployment.test.json'
 
 steps:
 
@@ -52,7 +53,7 @@ steps:
     deploymentid: $(IOT_DEPLOYMENT_ID)
     azureSubscriptionEndpoint: $(AzureServiceConnectionName)
     azureContainerRegistry: '{"loginServer":"$(CONTAINER_REGISTRY_ADDRESS)", "id" : "/subscriptions/$(AZURE_SUBSCRIPTIONID)/resourceGroups/$(ACR_RG)/providers/Microsoft.ContainerRegistry/registries/$(ACR_NAME)"}'
-    templateFilePath: ./LoRaEngine/deployment.test.template.json
+    templateFilePath: ./LoRaEngine/${{parameters.deploymentTemplate}}
     defaultPlatform: ${{ parameters.platform }}
 
 # Azure IoT Edge - Deploy to test device
@@ -61,7 +62,7 @@ steps:
   inputs:
     action: 'Deploy to IoT Edge devices'
     # In Build: Path of output deployment file.
-    deploymentFilePath: $(Build.ArtifactStagingDirectory)/deployment.test.json
+    deploymentFilePath: $(Build.ArtifactStagingDirectory)/${{parameters.deploymentConfigFile}}
     azureSubscription: $(AzureServiceConnectionName)
     iothubname: $(INTEGRATIONTEST_IOTHUB_NAME)
     deploymentid: $(IOT_DEPLOYMENT_ID)
