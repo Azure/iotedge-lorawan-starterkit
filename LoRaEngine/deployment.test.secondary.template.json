@@ -103,7 +103,7 @@
                 "value": "$NET_SRV_IOTEDGE_TIMEOUT"
               },
               "LOG_TO_UDP_ADDRESS": {
-                "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
+                "value": "$BUILD_AGENT_IP"
               }
             },
             "status": "running",
