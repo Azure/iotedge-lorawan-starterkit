@@ -11,6 +11,8 @@ namespace LoRaTools.Regions
 
     public static class RegionManager
     {
+        private static readonly object RegionLock = new object();
+
         public static Region CurrentRegion
         {
             get; set;
@@ -67,9 +69,12 @@ namespace LoRaTools.Regions
         {
             get
             {
-                if (eu868 == null)
+                lock (RegionLock)
                 {
-                    CreateEU868Region();
+                    if (eu868 == null)
+                    {
+                        CreateEU868Region();
+                    }
                 }
 
                 return eu868;
@@ -142,9 +147,12 @@ namespace LoRaTools.Regions
         {
             get
             {
-                if (us915 == null)
+                lock (RegionLock)
                 {
-                    CreateUS915Region();
+                    if (us915 == null)
+                    {
+                        CreateUS915Region();
+                    }
                 }
 
                 return us915;
