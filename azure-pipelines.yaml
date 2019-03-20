@@ -161,6 +161,7 @@ jobs:
         platform: arm32v7
         deviceID: $(IoTEdgeDeviceARMSecondary)
         deploymentTemplate: deployment.test.secondary.template.json
+        deploymentConfigFile: deployment.test.secondary.json
 
 
 # [Job] Build, push and deploy amd64 IoT Edge Solution 
