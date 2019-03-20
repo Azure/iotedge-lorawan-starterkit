@@ -50,7 +50,7 @@ steps:
   inputs:
     action: 'Push module images'
     deploymentid: $(IOT_DEPLOYMENT_ID)
-    azureSubscriptionEndpoint: $(azureServiceConnectionName)
+    azureSubscriptionEndpoint: $(AzureServiceConnectionName)
     azureContainerRegistry: '{"loginServer":"$(CONTAINER_REGISTRY_ADDRESS)", "id" : "/subscriptions/$(AZURE_SUBSCRIPTIONID)/resourceGroups/$(ACR_RG)/providers/Microsoft.ContainerRegistry/registries/$(ACR_NAME)"}'
     templateFilePath: ./LoRaEngine/deployment.test.template.json
     defaultPlatform: ${{ parameters.platform }}
@@ -62,7 +62,7 @@ steps:
     action: 'Deploy to IoT Edge devices'
     # In Build: Path of output deployment file.
     deploymentFilePath: $(Build.ArtifactStagingDirectory)/deployment.test.json
-    azureSubscription: $(azureServiceConnectionName)
+    azureSubscription: $(AzureServiceConnectionName)
     iothubname: $(INTEGRATIONTEST_IOTHUB_NAME)
     deploymentid: $(IOT_DEPLOYMENT_ID)
     deviceOption: 'Single Device'
@@ -72,7 +72,7 @@ steps:
 - task: AzureCLI@1
   displayName: 'Waiting deployment $(IOT_DEPLOYMENT_ID) to be ready at ${{ parameters.deviceID }}...'
   inputs:
-    azureSubscription: $(azureServiceConnectionName)
+    azureSubscription: $(AzureServiceConnectionName)
     timeoutInMinutes: 30
     scriptLocation: inlineScript
     inlineScript: |

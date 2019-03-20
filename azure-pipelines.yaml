@@ -12,9 +12,6 @@ variables:
 
   buildConfiguration: 'Release'
 
-  # Name of service connection for resource group
-  azureServiceConnectionName: 'IntegrationTestRG'
-
   edgeAgentVersion: 1.0.6
   edgeHubVersion: 1.0.6
   edgeHubRoute: FROM /* INTO $upstream
@@ -210,7 +207,7 @@ jobs:
   - task: AzureRmWebAppDeployment@4
     displayName: 'Deploy Facade Azure Function'
     inputs:
-      azureSubscription: $(azureServiceConnectionName)
+      azureSubscription: $(AzureServiceConnectionName)
       appType: functionapp
       WebAppName: $(FACADE_WEBAPPNAME)
       packageForLinux: '$(Build.ArtifactStagingDirectory)/LoraKeysManagerFacade.zip'
