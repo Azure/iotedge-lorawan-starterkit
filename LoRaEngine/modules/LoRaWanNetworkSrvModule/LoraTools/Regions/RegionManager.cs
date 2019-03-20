@@ -69,11 +69,14 @@ namespace LoRaTools.Regions
         {
             get
             {
-                lock (RegionLock)
+                if (eu868 == null)
                 {
-                    if (eu868 == null)
+                    lock (RegionLock)
                     {
-                        CreateEU868Region();
+                        if (eu868 == null)
+                        {
+                            CreateEU868Region();
+                        }
                     }
                 }
 
@@ -147,11 +150,14 @@ namespace LoRaTools.Regions
         {
             get
             {
-                lock (RegionLock)
+                if (us915 == null)
                 {
-                    if (us915 == null)
+                    lock (RegionLock)
                     {
-                        CreateUS915Region();
+                        if (us915 == null)
+                        {
+                            CreateUS915Region();
+                        }
                     }
                 }
 
