@@ -79,12 +79,12 @@ namespace LoRaWan.Test.Shared
         }
 
         // Asserts network server module log contains
-        public async Task AssertNetworkServerModuleLogStartsWithAsync(string logMessageStart)
+        public async Task<SearchLogResult> AssertNetworkServerModuleLogStartsWithAsync(string logMessageStart)
         {
             if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
-                return;
+                return null;
 
-            await this.AssertNetworkServerModuleLogExistsAsync((input) => input.StartsWith(logMessageStart), new SearchLogOptions(logMessageStart));
+            return await this.AssertNetworkServerModuleLogExistsAsync((input) => input.StartsWith(logMessageStart), new SearchLogOptions(logMessageStart));
         }
 
         public async Task AssertNetworkServerModuleLogStartsWithAsync(string logMessageStart1, string logMessageStart2)
@@ -109,10 +109,10 @@ namespace LoRaWan.Test.Shared
         }
 
         // Asserts Network Server Module log exists. It has built-in retries and delays
-        public async Task AssertNetworkServerModuleLogExistsAsync(Func<string, bool> predicate, SearchLogOptions options)
+        public async Task<SearchLogResult> AssertNetworkServerModuleLogExistsAsync(Func<string, bool> predicate, SearchLogOptions options)
         {
             if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
-                return;
+                return null;
 
             SearchLogResult searchResult;
             if (this.udpLogListener != null)
@@ -136,6 +136,8 @@ namespace LoRaWan.Test.Shared
                     }
                 }
             }
+
+            return searchResult;
         }
 
         /// <summary>
@@ -183,10 +185,10 @@ namespace LoRaWan.Test.Shared
             };
         }
 
-        async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        async Task<SearchLogResult> SearchUdpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
         {
             var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
-            var processedEvents = new HashSet<string>();
+            var processedEvents = new HashSet<SearchLogEvent>();
             for (int i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
@@ -206,10 +208,14 @@ namespace LoRaWan.Test.Shared
 
                 foreach (var item in this.udpLogListener.GetEvents())
                 {
-                    processedEvents.Add(item);
-                    if (predicate(item))
+                    var searchLogEvent = new SearchLogEvent(item);
+                    processedEvents.Add(searchLogEvent);
+                    if (predicate(searchLogEvent))
                     {
-                        return new SearchLogResult(true, processedEvents, item);
+                        return new SearchLogResult(true, processedEvents)
+                        {
+                            MatchedEvent = searchLogEvent
+                        };
                     }
                 }
             }
@@ -217,11 +223,15 @@ namespace LoRaWan.Test.Shared
             return new SearchLogResult(false, processedEvents, string.Empty);
         }
 
-        // Searches IoT Hub for messages
-        async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        {
+            return await this.SearchUdpLogs(evt => predicate(evt.Message), options);
+        }
+
+        async Task<SearchLogResult> SearchIoTHubLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
         {
             var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
-            var processedEvents = new HashSet<string>();
+            var processedEvents = new HashSet<SearchLogEvent>();
             for (int i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
@@ -242,10 +252,19 @@ namespace LoRaWan.Test.Shared
                 foreach (var item in this.IoTHubMessages.GetEvents())
                 {
                     var bodyText = item.Body.Count > 0 ? Encoding.UTF8.GetString(item.Body) : string.Empty;
-                    processedEvents.Add(bodyText);
-                    if (predicate(bodyText))
+                    var searchLogEvent = new SearchLogEvent
                     {
-                        return new SearchLogResult(true, processedEvents, bodyText);
+                        Message = bodyText,
+                        SourceId = item.GetDeviceId()
+                    };
+
+                    processedEvents.Add(searchLogEvent);
+                    if (predicate(searchLogEvent))
+                    {
+                        return new SearchLogResult(true, processedEvents)
+                        {
+                            MatchedEvent = searchLogEvent
+                        };
                     }
                 }
             }
@@ -254,10 +273,16 @@ namespace LoRaWan.Test.Shared
         }
 
         // Searches IoT Hub for messages
+        async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        {
+            return await this.SearchIoTHubLogs(evt => predicate(evt.Message), options);
+        }
+
+        // Searches IoT Hub for messages
         internal async Task<SearchLogResult> SearchIoTHubMessageAsync(Func<EventData, string, string, bool> predicate, SearchLogOptions options = null)
         {
             var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
-            var processedEvents = new HashSet<string>();
+            var processedEvents = new HashSet<SearchLogEvent>();
             for (int i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
@@ -280,7 +305,14 @@ namespace LoRaWan.Test.Shared
                     try
                     {
                         var bodyText = item.Body.Count > 0 ? Encoding.UTF8.GetString(item.Body) : string.Empty;
-                        processedEvents.Add(bodyText);
+                        var searchLogEvent = new SearchLogEvent
+                        {
+                            SourceId = item.GetDeviceId(),
+                            Message = bodyText
+                        };
+
+                        processedEvents.Add(searchLogEvent);
+
                         item.SystemProperties.TryGetValue("iothub-connection-device-id", out var deviceId);
                         if (predicate(item, deviceId?.ToString() ?? string.Empty, bodyText))
                         {
