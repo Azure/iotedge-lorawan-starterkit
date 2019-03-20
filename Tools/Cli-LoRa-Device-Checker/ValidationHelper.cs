@@ -104,6 +104,30 @@ namespace Cli_LoRa_Device_Checker
             return true;
         }
 
+        public static dynamic SetBoolTwinProperty(string property)
+        {
+            property = property.Trim();
+
+            if (string.Equals("true", property, StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals("1", property, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+            else if (string.Equals("false", property, StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals("0", property, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return false;
+            }
+            else if (string.Equals("null", property, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return null;
+            }
+            else
+            {
+                return property;
+            }
+        }
+
         public static bool ValidateBoolTwinProperty(string property, out string error)
         {
             error = string.Empty;
@@ -119,23 +143,37 @@ namespace Cli_LoRa_Device_Checker
             }
             else
             {
-                error = "Property must be 1, True, 0 or False.";
+                error = "Property must be 1, True, 0 or False";
                 return false;
             }
         }
 
-        public static bool SetBoolTwinProperty(string property)
+        public static string SetStringTwinProperty(string property)
         {
             property = property.Trim();
 
-            if (string.Equals("true", property, StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals("1", property, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals("null", property, StringComparison.InvariantCultureIgnoreCase))
             {
-                return true;
+                return null;
             }
             else
             {
-                return false;
+                return property;
+            }
+        }
+
+        public static dynamic SetIntTwinProperty(string property)
+        {
+            if (string.Equals("null", property, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return null;
+            }
+            else
+            {
+                if (int.TryParse(property, out var intProperty))
+                    return intProperty;
+                else
+                    return property;
             }
         }
 
@@ -150,7 +188,7 @@ namespace Cli_LoRa_Device_Checker
                 {
                     if (intProperty < min)
                     {
-                        error = $"Property is smaller then the expected minimum of {min}.";
+                        error = $"Property is smaller then the expected minimum of {min}";
                         isValid = false;
                     }
                 }
@@ -159,14 +197,14 @@ namespace Cli_LoRa_Device_Checker
                 {
                     if (intProperty > max)
                     {
-                        error = $"Property is larger then the expected maximum of {max}.";
+                        error = $"Property is larger then the expected maximum of {max}";
                         isValid = false;
                     }
                 }
             }
             else
             {
-                error = "Property is not a valid integer.";
+                error = "Property is not a valid integer";
                 isValid = false;
             }
 
@@ -180,21 +218,20 @@ namespace Cli_LoRa_Device_Checker
 
             if (!euValidDataranges.Contains(property) && !usValidDataranges.Contains(property))
             {
-                error = $"Property is not a valid data rate.";
+                error = "Property is not a valid data rate";
                 isValid = false;
             }
 
             return isValid;
         }
 
-        public static bool ValidateSensorDecoder(string sensorDecoder, out string error)
+        public static bool ValidateSensorDecoder(string sensorDecoder)
         {
             var isValid = true;
-            error = string.Empty;
 
             if (string.IsNullOrEmpty(sensorDecoder))
             {
-                error += "Info: SensorDecoder is empty. No decoder will be used. ";
+                StatusConsole.WriteLine(MessageType.Info, "SensorDecoder is empty. No decoder will be used.");
                 return isValid;
             }
 
@@ -202,27 +239,27 @@ namespace Cli_LoRa_Device_Checker
             {
                 if (!Uri.TryCreate(sensorDecoder, UriKind.Absolute, out Uri validatedUri))
                 {
-                    error += "Error: SensorDecoder has invalid URL. ";
+                    StatusConsole.WriteLine(MessageType.Error, "SensorDecoder has invalid URL.");
                     isValid = false;
                 }
 
                 // if (validatedUri.Host.Any(char.IsUpper))
                 if (!sensorDecoder.Contains(validatedUri.Host))
                 {
-                    error += "Error: SensorDecoder Hostname must be all lowercase. ";
+                    StatusConsole.WriteLine(MessageType.Error, "SensorDecoder Hostname must be all lowercase.");
                     isValid = false;
                 }
 
                 if (validatedUri.AbsolutePath.IndexOf("/api/") < 0)
                 {
-                    error += "Error: SensorDecoder is missing \"api\" keyword. ";
+                    StatusConsole.WriteLine(MessageType.Error, "SensorDecoder is missing \"api\" keyword.");
                     isValid = false;
                 }
             }
 
             if (!isValid)
             {
-                error += "\nMake sure the URI based SensorDecoder Twin desired property looks like \"http://containername/api/decodername\".";
+                StatusConsole.WriteLine(MessageType.Info, "Make sure the URI based SensorDecoder Twin desired property looks like \"http://containername/api/decodername\".");
             }
 
             return isValid;

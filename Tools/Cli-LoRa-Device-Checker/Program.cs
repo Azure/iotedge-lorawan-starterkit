@@ -13,7 +13,7 @@ namespace Cli_LoRa_Device_Checker
         static ConfigurationHelper configurationHelper = new ConfigurationHelper();
         static IoTDeviceHelper iotDeviceHelper = new IoTDeviceHelper();
 
-        [Verb("list", HelpText = "Lits devices.")]
+        [Verb("list", HelpText = "Lits devices in IoT Hub.")]
         public class ListOptions
         {
             [Option(
@@ -29,7 +29,7 @@ namespace Cli_LoRa_Device_Checker
             public string Total { get; set; }
         }
 
-        [Verb("verify", HelpText = "Verify a single device.")]
+        [Verb("verify", HelpText = "Verify a single device in IoT Hub.")]
         public class VerifyOptions
         {
             [Option(
@@ -49,7 +49,7 @@ namespace Cli_LoRa_Device_Checker
             public string DevEui { get; set; }
         }
 
-        [Verb("add", HelpText = "Add a new device.")]
+        [Verb("add", HelpText = "Add a new device to IoT Hub.")]
         public class AddOptions
         {
             [Option(
@@ -155,7 +155,7 @@ namespace Cli_LoRa_Device_Checker
             public string Supports32BitFCnt { get; set; }
         }
 
-        [Verb("update", HelpText = "Update an existing device.")]
+        [Verb("update", HelpText = "Update an existing device in IoT Hub.")]
         public class UpdateOptions
         {
             [Option(
@@ -255,34 +255,52 @@ namespace Cli_LoRa_Device_Checker
             public string Supports32BitFCnt { get; set; }
         }
 
-        static void Main(string[] args)
+        [Verb("remove", HelpText = "Remove an existing device from IoT Hub.")]
+        public class RemoveOptions
+        {
+            [Option(
+                "deveui",
+                Required = true,
+                HelpText = "DevEUI / Device Id.")]
+            public string DevEui { get; set; }
+        }
+
+        static int Main(string[] args)
         {
             Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Verification Utility.");
             Console.Write("This tool complements ");
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("http://aka.ms/lora \n");
+            Console.WriteLine("http://aka.ms/lora");
+            Console.WriteLine();
             Console.ResetColor();
 
-            var success = Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, AddOptions, UpdateOptions>(args)
+            var success = Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, AddOptions, UpdateOptions, RemoveOptions>(args)
                 .MapResult(
                     (ListOptions opts) => RunListAndReturnExitCode(opts),
                     (QueryOptions opts) => RunQueryAndReturnExitCode(opts),
                     (VerifyOptions opts) => RunVerifyAndReturnExitCode(opts),
                     (AddOptions opts) => RunAddAndReturnExitCode(opts),
                     (UpdateOptions opts) => RunUpdateAndReturnExitCode(opts),
+                    (RemoveOptions opts) => RunRemoveAndReturnExitCode(opts),
                     errs => false);
 
             if ((bool)success)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("\nSuccessfully terminated.");
+                Console.WriteLine();
+                Console.WriteLine("Successfully terminated.");
                 Console.ResetColor();
+
+                return (int)ExitCode.Success;
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("\nTerminated with errors.");
+                Console.WriteLine();
+                Console.WriteLine("Terminated with errors.");
                 Console.ResetColor();
+
+                return (int)ExitCode.Error;
             }
         }
 
@@ -347,7 +365,6 @@ namespace Cli_LoRa_Device_Checker
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine(twinData.ToString());
                 Console.ResetColor();
-                Console.WriteLine();
 
                 return iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, twin);
             }
@@ -431,7 +448,8 @@ namespace Cli_LoRa_Device_Checker
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"\nErrors found in Twin data. Device {opts.DevEui} NOT updated.");
+                    Console.WriteLine();
+                    Console.WriteLine($"Errors found in Twin data. Device {opts.DevEui} NOT updated.");
                     Console.ResetColor();
                 }
             }
@@ -440,6 +458,16 @@ namespace Cli_LoRa_Device_Checker
                 Console.WriteLine($"Could not get data for device {opts.DevEui}. Failed to update.");
                 isSuccess = false;
             }
+
+            return isSuccess;
+        }
+
+        private static object RunRemoveAndReturnExitCode(RemoveOptions opts)
+        {
+            if (!configurationHelper.ReadConfig())
+                return false;
+
+            bool isSuccess = iotDeviceHelper.RemoveDevice(opts.DevEui, configurationHelper).Result;
 
             return isSuccess;
         }

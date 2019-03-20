@@ -30,7 +30,7 @@ namespace Cli_LoRa_Device_Checker
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                StatusConsole.WriteLine(MessageType.Error, $"{ex.Message}");
                 Console.WriteLine("The format should be: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }");
                 return false;
             }
