@@ -228,6 +228,7 @@ namespace LoRaWan.NetworkServer
                         LogToUdp = this.configuration.LogToUdp,
                         LogToUdpPort = this.configuration.LogToUdpPort,
                         LogToUdpAddress = this.configuration.LogToUdpAddress,
+                        GatewayId = this.configuration.GatewayID
                     });
 
                     if (this.configuration.IoTEdgeTimeout > 0)
@@ -278,6 +279,7 @@ namespace LoRaWan.NetworkServer
                         LogToUdp = this.configuration.LogToUdp,
                         LogToUdpPort = this.configuration.LogToUdpPort,
                         LogToUdpAddress = this.configuration.LogToUdpAddress,
+                        GatewayId = this.configuration.GatewayID
                     });
                 }
             }

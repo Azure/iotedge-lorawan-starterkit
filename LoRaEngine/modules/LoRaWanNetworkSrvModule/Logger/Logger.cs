@@ -120,6 +120,11 @@ namespace LoRaWan
         {
             try
             {
+                if (!string.IsNullOrEmpty(configuration.GatewayId))
+                {
+                    message = string.Concat($"[{configuration.GatewayId}] ", message);
+                }
+
                 var messageInBytes = Encoding.UTF8.GetBytes(message);
                 udpClient.Send(messageInBytes, messageInBytes.Length, udpEndpoint);
             }

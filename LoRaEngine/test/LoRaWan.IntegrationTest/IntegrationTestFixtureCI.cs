@@ -89,6 +89,11 @@ namespace LoRaWan.IntegrationTest
         // Device26_ABP: Connection timeout
         public TestDeviceInfo Device26_ABP { get; private set; }
 
+        /// <summary>
+        /// Gets Device24_OTAA: used for OTAA deduplication testing
+        /// </summary>
+        public TestDeviceInfo Device25_OTAA { get; private set; }
+
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice
         {
@@ -171,7 +176,6 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = this.GetKey16(2),
                 AppKey = this.GetKey32(2),
                 GatewayID = gatewayID,
-                SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = false,
             };
 
@@ -182,7 +186,6 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = this.GetKey16(3),
                 AppKey = this.GetKey32(3),
                 GatewayID = gatewayID,
-                SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
             };
 
@@ -193,7 +196,6 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = this.GetKey16(4),
                 AppKey = this.GetKey32(4),
                 GatewayID = gatewayID,
-                SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
                 RX1DROffset = 1
             };
@@ -206,7 +208,6 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = this.GetKey32(5),
                 DevAddr = "0028B1B0",
                 GatewayID = gatewayID,
-                SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
             };
 
@@ -218,7 +219,6 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = this.GetKey32(6),
                 DevAddr = "00000006",
                 GatewayID = gatewayID,
-                SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = false,
             };
 
@@ -230,7 +230,6 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = this.GetKey32(7),
                 DevAddr = "00000007",
                 GatewayID = gatewayID,
-                SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
             };
 
@@ -242,7 +241,6 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = this.GetKey32(8),
                 DevAddr = "00000008",
                 GatewayID = gatewayID,
-                SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
             };
 
@@ -286,7 +284,6 @@ namespace LoRaWan.IntegrationTest
                 AppKey = this.GetKey32(12),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
             };
 
             // Device13_OTAA: used for Join with wrong AppEUI
@@ -297,7 +294,6 @@ namespace LoRaWan.IntegrationTest
                 AppKey = this.GetKey32(13),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
             };
 
             // Device14_OTAA: used for Confirmed C2D message
@@ -308,7 +304,6 @@ namespace LoRaWan.IntegrationTest
                 AppKey = this.GetKey32(14),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
             };
 
             // Device15_OTAA: used for the Fport test
@@ -319,7 +314,6 @@ namespace LoRaWan.IntegrationTest
                 AppKey = this.GetKey32(15),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
             };
             // Device16_ABP: used for same DevAddr test
             this.Device16_ABP = new TestDeviceInfo()
@@ -329,7 +323,6 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = this.GetKey32(16),
                 DevAddr = "00000016",
                 GatewayID = gatewayID,
-                SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
             };
 
@@ -341,7 +334,6 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = this.GetKey32(17),
                 DevAddr = this.Device16_ABP.DevAddr, // MUST match DevAddr from Device16
                 GatewayID = gatewayID,
-                SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
             };
 
@@ -377,7 +369,6 @@ namespace LoRaWan.IntegrationTest
                 AppKey = this.GetKey32(20),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
                 RX2DataRate = 3,
                 PreferredWindow = 2
             };
@@ -403,7 +394,6 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = this.GetKey32(22),
                 DevAddr = "00000022",
                 GatewayID = gatewayID,
-                SensorDecoder = "DecoderValueSensor",
                 IsIoTHubDevice = true,
             };
 
@@ -415,7 +405,6 @@ namespace LoRaWan.IntegrationTest
                 AppKey = this.GetKey32(23),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
             };
 
             // Device24_OTAA: used for C2D mac Command testing
@@ -427,7 +416,6 @@ namespace LoRaWan.IntegrationTest
                 DevAddr = "00000024",
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
                 ClassType = 'C',
             };
 
@@ -454,6 +442,15 @@ namespace LoRaWan.IntegrationTest
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
                 SensorDecoder = "DecoderValueSensor",
+            };
+
+            this.Device25_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000025",
+                AppEUI = "0000000000000025",
+                AppKey = "00000000000000000000000000000025",
+                IsIoTHubDevice = true,
+                Deduplication = "Drop"
             };
         }
     }

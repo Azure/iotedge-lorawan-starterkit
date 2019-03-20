@@ -26,7 +26,23 @@ variables:
   vstsAgentAMD: myAgent-amd64
 
   # Network Server module level: 1 in order to get decoder information
-  networkServerLogLevel: 1  
+  networkServerLogLevel: 1
+
+  # IoT Edge Runtime configuration
+  EDGE_AGENT_VERSION: $(edgeAgentVersion)
+  EDGE_HUB_VERSION: $(edgeHubVersion)
+  EDGEHUB_OPTIMIZEFORPERFORMANCE: false
+  EDGEHUB_MQTTSETTINGS_ENABLED: false
+  EDGEHUB_HTTPSETTINGS_ENABLED: false
+  EDGEHUB_ROUTE: $(edgeHubRoute)
+  # LoRaWan Modules
+  NET_SRV_LOG_LEVEL: $(networkServerLogLevel)  
+  NET_SRV_LOGTO_UDP: true
+  NET_SRV_LOGTO_HUB: false
+  NET_SRV_IOTEDGE_TIMEOUT: 0
+  NET_SRV_VERSION: "" # Network Server module version
+  NET_SRV_LOG_TO_UDP_ADDRESS: AzureDevOpsAgent # Hostname of container where AzureDevOpsAgent will be running for Udp logging sink
+  PKT_FWD_VERSION: "" # Packet Forward module version
 
 # Enable PR validation on branches master and dev
 pr:
@@ -104,32 +120,18 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     name: checkPrCILabel
 
-# [Job] Build, push and deploy arm32v7 IoT Edge Solution
-- job: full_ci_deploy_arm
-  displayName: Build, push and deploy arm32v7 IoT Edge Solution
+# [Job] Build, push and deploy arm32v7 IoT Edge Solution - primary gateway
+- job: full_ci_deploy_arm_primary
+  displayName: Build, push and deploy arm32v7 IoT Edge Solution - Primary Gateway
   variables:
-    IOT_DEPLOYMENT_ID: integrationtestarm
-    # IoT Edge Runtime configuration
-    EDGE_AGENT_VERSION: $(edgeAgentVersion)
-    EDGE_HUB_VERSION: $(edgeHubVersion)
-    EDGEHUB_OPTIMIZEFORPERFORMANCE: false
-    EDGEHUB_MQTTSETTINGS_ENABLED: false
-    EDGEHUB_HTTPSETTINGS_ENABLED: false
-    EDGEHUB_ROUTE: $(edgeHubRoute)
-    # LoRaWan Modules
-    NET_SRV_LOG_LEVEL: $(networkServerLogLevel)  
-    NET_SRV_LOGTO_UDP: true
-    NET_SRV_LOGTO_HUB: false
-    NET_SRV_IOTEDGE_TIMEOUT: 0
-    NET_SRV_VERSION: "" # Network Server module version
-    NET_SRV_LOG_TO_UDP_ADDRESS: AzureDevOpsAgent # Hostname of container where AzureDevOpsAgent will be running for Udp logging sink
-    PKT_FWD_VERSION: "" # Packet Forward module version
+    IOT_DEPLOYMENT_ID: integrationtestarmprimary
     VSTS_AGENT: "$(vstsAgentARM)"
+    RESET_PIN: $(RESET_PIN_PRIMARY)
     # Defines image version to use in case in ARM architecture
     DEVOPS_AGENT_IMAGE: "$(CONTAINER_REGISTRY_ADDRESS)/azuredevopsagent:$(DEVOPS_AGENT_IMAGE_VERSION)-arm32v7"
     
   dependsOn: build_and_test
-  condition: and(ne(variables['IoTEdgeDeviceARM'], ''), and(ne(variables['RunTestsOnly'], 'true'), and(succeeded(), or(eq(dependencies.build_and_test.outputs['checkPrCILabel.prWithCILabel'], true), or(eq(variables['FullCI'],'true'), in(variables['Build.SourceBranch'], 'refs/heads/master', 'refs/heads/dev'))))))
+  condition: and(ne(variables['IoTEdgeDeviceARMPrimary'], ''), and(ne(variables['RunTestsOnly'], 'true'), and(succeeded(), or(eq(dependencies.build_and_test.outputs['checkPrCILabel.prWithCILabel'], true), or(eq(variables['FullCI'],'true'), in(variables['Build.SourceBranch'], 'refs/heads/master', 'refs/heads/dev'))))))
   pool:
     # name: docker
     # demands: Agent.OSArchitecture -equals X64
@@ -138,29 +140,37 @@ jobs:
     - template: azure-pipelines-buildpushiotedge-templates.yaml
       parameters:
         platform: arm32v7
-        deviceID: $(IoTEdgeDeviceARM)
+        deviceID: $(IoTEdgeDeviceARMPrimary)
+
+# [Job] Build, push and deploy arm32v7 IoT Edge Solution - secondary gateway
+- job: full_ci_deploy_arm_secondary
+  displayName: Build, push and deploy arm32v7 IoT Edge Solution - Secondary Gateway
+  variables:
+    IOT_DEPLOYMENT_ID: integrationtestarmsecondary
+    VSTS_AGENT: "$(vstsAgentARM)"
+    RESET_PIN: $(RESET_PIN_SECONDARY)
+    # Defines image version to use in case in ARM architecture
+    DEVOPS_AGENT_IMAGE: "$(CONTAINER_REGISTRY_ADDRESS)/azuredevopsagent:$(DEVOPS_AGENT_IMAGE_VERSION)-arm32v7"
+    
+  dependsOn: build_and_test
+  condition: and(ne(variables['IoTEdgeDeviceARMSecondary'], ''), and(ne(variables['RunTestsOnly'], 'true'), and(succeeded(), or(eq(dependencies.build_and_test.outputs['checkPrCILabel.prWithCILabel'], true), or(eq(variables['FullCI'],'true'), in(variables['Build.SourceBranch'], 'refs/heads/master', 'refs/heads/dev'))))))
+  pool:
+    # name: docker
+    # demands: Agent.OSArchitecture -equals X64
+    vmImage: 'Ubuntu 16.04'   
+  steps:
+    - template: azure-pipelines-buildpushiotedge-templates.yaml
+      parameters:
+        platform: arm32v7
+        deviceID: $(IoTEdgeDeviceARMSecondary)
+        deploymentTemplate: deployment.test.secondary.template.json
+
 
 # [Job] Build, push and deploy amd64 IoT Edge Solution 
 - job: full_ci_deploy_amd
   displayName: Build, push and deploy amd64 IoT Edge Solution
   variables:
     IOT_DEPLOYMENT_ID: integrationtestamd
-    # IoT Edge Runtime configuration
-    EDGE_AGENT_VERSION: $(edgeAgentVersion)
-    EDGE_HUB_VERSION: $(edgeHubVersion)
-    EDGEHUB_OPTIMIZEFORPERFORMANCE: false
-    EDGEHUB_MQTTSETTINGS_ENABLED: false
-    EDGEHUB_HTTPSETTINGS_ENABLED: false
-    EDGEHUB_ROUTE: $(edgeHubRoute)
-    # LoRaWan Modules
-    NET_SRV_LOG_LEVEL: $(networkServerLogLevel)  
-    NET_SRV_LOGTO_UDP: true
-    NET_SRV_LOGTO_HUB: false
-    NET_SRV_IOTEDGE_TIMEOUT: 0
-    NET_SRV_VERSION: "" # Network Server module version
-    PKT_FWD_VERSION: "" # Packet Forward module version
-    NET_SRV_LOG_TO_UDP_ADDRESS: AzureDevOpsAgent # Hostname of container where AzureDevOpsAgent will be running for Udp logging sink
-
     VSTS_AGENT: "$(vstsAgentAMD)"
     # Defines image version to use in case in AMD architecture
     DEVOPS_AGENT_IMAGE: "$(CONTAINER_REGISTRY_ADDRESS)/azuredevopsagent:$(DEVOPS_AGENT_IMAGE_VERSION)-amd64"
@@ -235,9 +245,10 @@ jobs:
 - job: test_runner_arm_eu
   displayName: Run tests in ARM device (EU)
   dependsOn: 
-    - full_ci_deploy_arm
+    - full_ci_deploy_arm_primary
+    - full_ci_deploy_arm_secondary
     - full_ci_deploy_facade_function
-  condition: and(ne(variables['IoTEdgeDeviceARM'], ''), or(succeeded(), eq(variables['RunTestsOnly'], 'true')))
+  condition: and(ne(variables['IoTEdgeDeviceARMPrimary'], ''), or(succeeded(), eq(variables['RunTestsOnly'], 'true')))
   timeoutInMinutes: 120 # Raspberry PI is slow, allow taking 120 minutes
   pool:    
     name: Default
@@ -245,7 +256,7 @@ jobs:
   variables:      
     INTEGRATIONTEST_LeafDeviceSerialPort: "/dev/ttyACM0"
     INTEGRATIONTEST_IoTHubEventHubConsumerGroup: "reserved_integrationtest" 
-    INTEGRATIONTEST_LeafDeviceGatewayID: $(IoTEdgeDeviceARM)
+    INTEGRATIONTEST_LeafDeviceGatewayID: $(IoTEdgeDeviceARMPrimary)
     INTEGRATIONTEST_DevicePrefix: '01'
   
   steps:
