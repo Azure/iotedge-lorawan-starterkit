@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Cli_LoRa_Device_Checker
+namespace Cli_LoRa_Device_Provisioning
 {
     using System;
     using CommandLine;
@@ -41,7 +41,7 @@ namespace Cli_LoRa_Device_Checker
             [Option(
                 "netid",
                 Required = false,
-                HelpText = "Network ID (Only for ABP devices): A 3 bit hex string. Will default to 000001 if left blank. (optional)")]
+                HelpText = "Network ID (Only for ABP devices): A 3 bit hex string. Will default to 000001 or NetId set in settings file if left blank. (optional)")]
             public string NetId { get; set; }
         }
 
@@ -91,7 +91,7 @@ namespace Cli_LoRa_Device_Checker
             [Option(
                 "netid",
                 Required = false,
-                HelpText = "Network ID (Only for ABP devices): A 3 bit hex string. Will default to 000001 if left blank. (optional)")]
+                HelpText = "Network ID (Only for ABP devices): A 3 bit hex string. Will default to 000001 or NetId set in settings file if left blank. (optional)")]
             public string NetId { get; set; }
 
             [Option(
@@ -215,7 +215,7 @@ namespace Cli_LoRa_Device_Checker
             [Option(
                 "netid",
                 Required = false,
-                HelpText = "Network ID (Only for ABP devices): A 3 bit hex string. Will default to 000001 if left blank. (optional)")]
+                HelpText = "Network ID (Only for ABP devices): A 3 bit hex string. Will default to 000001 or NetId set in settings file if left blank. (optional)")]
             public string NetId { get; set; }
 
             [Option(
@@ -321,12 +321,13 @@ namespace Cli_LoRa_Device_Checker
 
         static int Main(string[] args)
         {
-            Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Verification Utility.");
+            WriteAzureLogo();
+            Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Provisioning Utility.");
             Console.Write("This tool complements ");
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("http://aka.ms/lora");
-            Console.WriteLine();
             Console.ResetColor();
+            Console.WriteLine();
 
             var success = Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, AddOptions, UpdateOptions, RemoveOptions>(args)
                 .MapResult(
@@ -525,6 +526,18 @@ namespace Cli_LoRa_Device_Checker
             bool isSuccess = iotDeviceHelper.RemoveDevice(opts.DevEui, configurationHelper).Result;
 
             return isSuccess;
+        }
+
+        private static void WriteAzureLogo()
+        {
+            Console.WriteLine();
+            Console.WriteLine(" █████╗ ███████╗██╗   ██╗██████╗ ███████╗");
+            Console.WriteLine("██╔══██╗╚══███╔╝██║   ██║██╔══██╗██╔════╝");
+            Console.WriteLine("███████║  ███╔╝ ██║   ██║██████╔╝█████╗  ");
+            Console.WriteLine("██╔══██║ ███╔╝  ██║   ██║██╔══██╗██╔══╝  ");
+            Console.WriteLine("██║  ██║███████╗╚██████╔╝██║  ██║███████╗");
+            Console.WriteLine("╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝");
+            Console.WriteLine();
         }
     }
 }

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28701.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cli-LoRa-Device-Checker", "Cli-LoRa-Device-Checker.csproj", "{87A3F193-8161-466F-9157-CCBFE8936DDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cli-LoRa-Device-Provisioning", "Cli-LoRa-Device-Provisioning.csproj", "{87A3F193-8161-466F-9157-CCBFE8936DDE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
