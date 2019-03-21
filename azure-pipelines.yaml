@@ -58,9 +58,8 @@ pr:
 trigger:
   batch: true
   branches:
-    include:
     exclude:
-	- pat-dev-multi-gw-test
+	  - pat-dev-multi-gw-test
     - dev
     - master
 
