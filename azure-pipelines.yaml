@@ -49,7 +49,8 @@ variables:
 #    - dev
 pr:
  branches:
-   include: pat-dev-multi-gw-test
+   include:
+    - pat-dev-multi-gw-test
    exclude:
    - master
    - dev
@@ -59,7 +60,8 @@ pr:
 trigger:
   batch: true
   branches:
-    include: pat-dev-multi-gw-test
+    include:
+    - pat-dev-multi-gw-test
     exclude:
 	  - dev
     - master
