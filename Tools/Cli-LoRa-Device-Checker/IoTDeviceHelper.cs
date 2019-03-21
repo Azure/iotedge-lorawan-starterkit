@@ -32,30 +32,41 @@ namespace Cli_LoRa_Device_Checker
             return twin;
         }
 
-        public bool VerifyDeviceTwin(string devEui, Twin twin)
+        public bool VerifyDeviceTwin(string devEui, string netId, Twin twin, ConfigurationHelper configurationHelper)
         {
             bool isOtaa = false;
             bool isAbp = false;
             bool isValid = true;
             Console.WriteLine();
 
-            var appEui = twin.Properties.Desired.Contains(TwinProperty.AppEUI) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.AppEUI].Value) : null;
-            var appKey = twin.Properties.Desired.Contains(TwinProperty.AppKey) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.AppKey].Value) : null;
+            devEui = ValidationHelper.CleanString(devEui);
 
-            var nwkSKey = twin.Properties.Desired.Contains(TwinProperty.NwkSKey) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.NwkSKey].Value) : null;
-            var appSKey = twin.Properties.Desired.Contains(TwinProperty.AppSKey) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.AppSKey].Value) : null;
-            var devAddr = twin.Properties.Desired.Contains(TwinProperty.DevAddr) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.DevAddr].Value) : null;
+            string appEui = twin.Properties.Desired.Contains(TwinProperty.AppEUI) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.AppEUI].Value) : null;
+            string appKey = twin.Properties.Desired.Contains(TwinProperty.AppKey) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.AppKey].Value) : null;
 
-            var gatewayID = twin.Properties.Desired.Contains(TwinProperty.GatewayID) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.GatewayID].Value) : null;
-            var sensorDecoder = twin.Properties.Desired.Contains(TwinProperty.SensorDecoder) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.SensorDecoder].Value) : null;
-            var classType = twin.Properties.Desired.Contains(TwinProperty.ClassType) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.ClassType].Value) : null;
-            var abpRelaxMode = twin.Properties.Desired.Contains(TwinProperty.ABPRelaxMode) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.ABPRelaxMode].Value) : null;
-            var downlinkEnabled = twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value) : null;
-            var preferredWindow = twin.Properties.Desired.Contains(TwinProperty.PreferredWindow) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value) : null;
-            var deduplication = twin.Properties.Desired.Contains(TwinProperty.Deduplication) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.Deduplication].Value) : null;
-            var rx2DataRate = twin.Properties.Desired.Contains(TwinProperty.RX2DataRate) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value) : null;
-            var rx1DrOffset = twin.Properties.Desired.Contains(TwinProperty.RX1DROffset) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value) : null;
-            var supports32BitFCnt = twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.Supports32BitFCnt].Value) : null;
+            string nwkSKey = twin.Properties.Desired.Contains(TwinProperty.NwkSKey) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.NwkSKey].Value) : null;
+            string appSKey = twin.Properties.Desired.Contains(TwinProperty.AppSKey) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.AppSKey].Value) : null;
+            string devAddr = twin.Properties.Desired.Contains(TwinProperty.DevAddr) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.DevAddr].Value) : null;
+            string abpRelaxMode = twin.Properties.Desired.Contains(TwinProperty.ABPRelaxMode) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.ABPRelaxMode].Value) : null;
+
+            netId = ValidationHelper.CleanNetId(netId);
+
+            string gatewayID = twin.Properties.Desired.Contains(TwinProperty.GatewayID) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.GatewayID].Value) : null;
+            string sensorDecoder = twin.Properties.Desired.Contains(TwinProperty.SensorDecoder) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.SensorDecoder].Value) : null;
+            string classType = twin.Properties.Desired.Contains(TwinProperty.ClassType) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.ClassType].Value) : null;
+            string downlinkEnabled = twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value) : null;
+            string preferredWindow = twin.Properties.Desired.Contains(TwinProperty.PreferredWindow) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value) : null;
+            string deduplication = twin.Properties.Desired.Contains(TwinProperty.Deduplication) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.Deduplication].Value) : null;
+            string rx2DataRate = twin.Properties.Desired.Contains(TwinProperty.RX2DataRate) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value) : null;
+            string rx1DrOffset = twin.Properties.Desired.Contains(TwinProperty.RX1DROffset) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value) : null;
+            string supports32BitFCnt = twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.Supports32BitFCnt].Value) : null;
+            string fCntUpStart = twin.Properties.Desired.Contains(TwinProperty.FCntUpStart) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.FCntUpStart].Value) : null;
+            string fCntDownStart = twin.Properties.Desired.Contains(TwinProperty.FCntDownStart) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.FCntDownStart].Value) : null;
+            string fCntResetCounter = twin.Properties.Desired.Contains(TwinProperty.FCntResetCounter) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.FCntResetCounter].Value) : null;
+
+            string fCntUpStartReported = twin.Properties.Reported.Contains(TwinProperty.FCntUpStart) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Reported[TwinProperty.FCntUpStart].Value) : null;
+            string fCntDownStartReported = twin.Properties.Reported.Contains(TwinProperty.FCntDownStart) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Reported[TwinProperty.FCntDownStart].Value) : null;
+            string fCntResetCounterReported = twin.Properties.Reported.Contains(TwinProperty.FCntResetCounter) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Reported[TwinProperty.FCntResetCounter].Value) : null;
 
             if (!string.IsNullOrEmpty(appEui) || !string.IsNullOrEmpty(appKey))
                 isOtaa = true;
@@ -75,6 +86,7 @@ namespace Cli_LoRa_Device_Checker
                         DevEui = devEui,
                         AppEui = appEui,
                         AppKey = appKey,
+                        NetId = netId,
                         ABPRelaxMode = abpRelaxMode,
                         AppSKey = appSKey,
                         NwkSKey = nwkSKey,
@@ -87,8 +99,15 @@ namespace Cli_LoRa_Device_Checker
                         Deduplication = deduplication,
                         Rx2DataRate = rx2DataRate,
                         Rx1DrOffset = rx1DrOffset,
-                        Supports32BitFCnt = supports32BitFCnt
-                    });
+                        Supports32BitFCnt = supports32BitFCnt,
+                        FCntUpStart = fCntUpStart,
+                        FCntDownStart = fCntDownStart,
+                        FCntResetCounter = fCntResetCounter
+                    },
+                    fCntUpStartReported,
+                    fCntDownStartReported,
+                    fCntResetCounterReported,
+                    configurationHelper);
             }
 
             // OTAA device
@@ -102,6 +121,7 @@ namespace Cli_LoRa_Device_Checker
                         DevEui = devEui,
                         AppEui = appEui,
                         AppKey = appKey,
+                        NetId = netId,
                         ABPRelaxMode = abpRelaxMode,
                         AppSKey = appSKey,
                         NwkSKey = nwkSKey,
@@ -114,8 +134,15 @@ namespace Cli_LoRa_Device_Checker
                         Deduplication = deduplication,
                         Rx2DataRate = rx2DataRate,
                         Rx1DrOffset = rx1DrOffset,
-                        Supports32BitFCnt = supports32BitFCnt
-                    });
+                        Supports32BitFCnt = supports32BitFCnt,
+                        FCntUpStart = fCntUpStart,
+                        FCntDownStart = fCntDownStart,
+                        FCntResetCounter = fCntResetCounter
+                    },
+                    fCntUpStartReported,
+                    fCntDownStartReported,
+                    fCntResetCounterReported,
+                    configurationHelper);
             }
 
             // Unknown device type
@@ -147,58 +174,6 @@ namespace Cli_LoRa_Device_Checker
             return isValid;
         }
 
-        public Program.AddOptions CompleteMissingOptions(Program.AddOptions opts)
-        {
-            Console.WriteLine();
-            Console.WriteLine($"Completing missing options for device...");
-
-            if (string.IsNullOrEmpty(opts.DevEui))
-            {
-                opts.DevEui = Keygen.Generate(8);
-                StatusConsole.WriteLine(MessageType.Info, $"Generating missing DevEUI: {opts.DevEui}");
-            }
-
-            // ABP device specific properties
-            if (string.Equals(opts.Type, "ABP", StringComparison.InvariantCultureIgnoreCase))
-            {
-                if (string.IsNullOrEmpty(opts.NwkSKey))
-                {
-                    opts.NwkSKey = Keygen.Generate(16);
-                    StatusConsole.WriteLine(MessageType.Info, $"Generating missing NwkSKey: {opts.NwkSKey}");
-                }
-
-                if (string.IsNullOrEmpty(opts.AppSKey))
-                {
-                    opts.AppSKey = Keygen.Generate(16);
-                    StatusConsole.WriteLine(MessageType.Info, $"Generating missing AppSKey: {opts.AppSKey}");
-                }
-
-                if (string.IsNullOrEmpty(opts.DevAddr))
-                {
-                    opts.DevAddr = Keygen.Generate(4);
-                    StatusConsole.WriteLine(MessageType.Info, $"Generating missing DevAddr: {opts.DevAddr}");
-                }
-            }
-
-            // OTAA device specific properties
-            else
-            {
-                if (string.IsNullOrEmpty(opts.AppEui))
-                {
-                    opts.AppEui = Keygen.Generate(16);
-                    StatusConsole.WriteLine(MessageType.Info, $"Generating missing AppEUI: {opts.AppEui}");
-                }
-
-                if (string.IsNullOrEmpty(opts.AppKey))
-                {
-                    opts.AppKey = Keygen.Generate(16);
-                    StatusConsole.WriteLine(MessageType.Info, $"Generating missing AppKey: {opts.AppKey}");
-                }
-            }
-
-            return opts;
-        }
-
         public object CleanOptions(object optsObject, bool isNewDevice)
         {
             dynamic opts;
@@ -220,6 +195,9 @@ namespace Cli_LoRa_Device_Checker
 
             if (!string.IsNullOrEmpty(opts.DevAddr))
                 opts.DevAddr = ValidationHelper.CleanString(opts.DevAddr);
+
+            if (!string.IsNullOrEmpty(opts.NetId))
+                opts.NetId = ValidationHelper.CleanNetId(opts.NetId);
 
             if (!string.IsNullOrEmpty(opts.ABPRelaxMode))
                 opts.ABPRelaxMode = ValidationHelper.CleanString(opts.ABPRelaxMode);
@@ -259,10 +237,126 @@ namespace Cli_LoRa_Device_Checker
             if (!string.IsNullOrEmpty(opts.Supports32BitFCnt))
                 opts.Supports32BitFCnt = ValidationHelper.CleanString(opts.Supports32BitFCnt);
 
+            if (!string.IsNullOrEmpty(opts.FCntUpStart))
+                opts.FCntUpStart = ValidationHelper.CleanString(opts.FCntUpStart);
+
+            if (!string.IsNullOrEmpty(opts.FCntDownStart))
+                opts.FCntDownStart = ValidationHelper.CleanString(opts.FCntDownStart);
+
+            if (!string.IsNullOrEmpty(opts.FCntResetCounter))
+                opts.FCntResetCounter = ValidationHelper.CleanString(opts.FCntResetCounter);
+
             return opts as object;
         }
 
-        public bool ValidateDevice(Program.AddOptions opts)
+        public Program.AddOptions CompleteMissingAddOptions(Program.AddOptions opts, ConfigurationHelper configurationHelper)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"Completing missing options for device...");
+
+            if (string.IsNullOrEmpty(opts.DevEui))
+            {
+                opts.DevEui = Keygen.Generate(8);
+                StatusConsole.WriteLine(MessageType.Info, $"Generating missing DevEUI: {opts.DevEui}");
+            }
+
+            // ABP device specific properties
+            if (string.Equals(opts.Type, "ABP", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (string.IsNullOrEmpty(opts.NwkSKey))
+                {
+                    opts.NwkSKey = Keygen.Generate(16);
+                    StatusConsole.WriteLine(MessageType.Info, $"Generating missing NwkSKey: {opts.NwkSKey}");
+                }
+
+                if (string.IsNullOrEmpty(opts.AppSKey))
+                {
+                    opts.AppSKey = Keygen.Generate(16);
+                    StatusConsole.WriteLine(MessageType.Info, $"Generating missing AppSKey: {opts.AppSKey}");
+                }
+
+                if (string.IsNullOrEmpty(opts.DevAddr))
+                {
+                    opts.DevAddr = Keygen.Generate(4);
+                    StatusConsole.WriteLine(MessageType.Info, $"Generating missing DevAddr: {opts.DevAddr}");
+                }
+
+                if (ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out string _))
+                {
+                    var newDevAddr = NetIdHelper.SetNwkIdPart(opts.DevAddr, opts.NetId, configurationHelper);
+                    if (!string.Equals(newDevAddr, opts.DevAddr, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        opts.DevAddr = newDevAddr;
+                        StatusConsole.WriteLine(MessageType.Info, $"Adapting DevAddr: {opts.DevAddr} based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}");
+                    }
+                }
+            }
+
+            // OTAA device specific properties
+            else
+            {
+                if (string.IsNullOrEmpty(opts.AppEui))
+                {
+                    opts.AppEui = Keygen.Generate(16);
+                    StatusConsole.WriteLine(MessageType.Info, $"Generating missing AppEUI: {opts.AppEui}");
+                }
+
+                if (string.IsNullOrEmpty(opts.AppKey))
+                {
+                    opts.AppKey = Keygen.Generate(16);
+                    StatusConsole.WriteLine(MessageType.Info, $"Generating missing AppKey: {opts.AppKey}");
+                }
+            }
+
+            // Shared, non optional device properties
+            if (opts.GatewayId == null)
+            {
+                opts.GatewayId = string.Empty;
+                StatusConsole.WriteLine(MessageType.Info, $"GatewayId is missing. Adding empty property.");
+            }
+
+            if (opts.SensorDecoder == null)
+            {
+                opts.SensorDecoder = string.Empty;
+                StatusConsole.WriteLine(MessageType.Info, $"SensorDecoder is missing. Adding empty property.");
+            }
+
+            return opts;
+        }
+
+        public Program.UpdateOptions CompleteMissingUpdateOptions(Program.UpdateOptions opts, ConfigurationHelper configurationHelper)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"Completing missing options for device...");
+
+            // ABP device specific properties
+            if (!string.IsNullOrEmpty(opts.DevAddr) && ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out string _))
+            {
+                var newDevAddr = NetIdHelper.SetNwkIdPart(opts.DevAddr, opts.NetId, configurationHelper);
+                if (!string.Equals(newDevAddr, opts.DevAddr, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    opts.DevAddr = newDevAddr;
+                    StatusConsole.WriteLine(MessageType.Info, $"Adapting DevAddr: {opts.DevAddr} based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.");
+                }
+            }
+
+            // Shared, non optional device properties
+            if (string.Equals("null", opts.GatewayId, StringComparison.InvariantCultureIgnoreCase))
+            {
+                opts.GatewayId = string.Empty;
+                StatusConsole.WriteLine(MessageType.Info, $"GatewayId is set to \"null\". Adding empty property.");
+            }
+
+            if (string.Equals("null", opts.SensorDecoder, StringComparison.InvariantCultureIgnoreCase))
+            {
+                opts.SensorDecoder = string.Empty;
+                StatusConsole.WriteLine(MessageType.Info, $"SensorDecoder is set to \"null\". Adding empty property.");
+            }
+
+            return opts;
+        }
+
+        public bool ValidateDevice(Program.AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported, ConfigurationHelper configurationHelper)
         {
             string validationError = string.Empty;
             bool isValid = true;
@@ -325,6 +419,20 @@ namespace Cli_LoRa_Device_Checker
                     StatusConsole.WriteLine(MessageType.Info, $"AppSKey {opts.AppSKey} is valid.");
                 }
 
+                // NetId
+                if (!string.IsNullOrEmpty(opts.NetId))
+                {
+                    if (!ValidationHelper.ValidateHexStringTwinProperty(opts.NetId, 3, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"NetId {opts.NetId} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+                    else
+                    {
+                        StatusConsole.WriteLine(MessageType.Info, $"NetId {opts.NetId} is valid.");
+                    }
+                }
+
                 // DevAddr
                 if (string.IsNullOrEmpty(opts.DevAddr))
                 {
@@ -338,7 +446,18 @@ namespace Cli_LoRa_Device_Checker
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"DevAddr {opts.DevAddr} is valid.");
+                    var devAddrCorrect = NetIdHelper.SetNwkIdPart(opts.DevAddr, opts.NetId, configurationHelper);
+
+                    if (string.Equals(devAddrCorrect, opts.DevAddr))
+                    {
+                        StatusConsole.WriteLine(MessageType.Info, $"DevAddr {opts.DevAddr} is valid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.");
+                    }
+                    else
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"DevAddr {opts.DevAddr} is invalid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}");
+                        StatusConsole.WriteLine(MessageType.Warning, $"To stop seeing this error, provid the --netid parameter or set the NetId in the settings file.");
+                        isValid = false;
+                    }
                 }
 
                 // AbpRelaxMode
@@ -353,6 +472,54 @@ namespace Cli_LoRa_Device_Checker
                     {
                         StatusConsole.WriteLine(MessageType.Info, $"ABPRelaxMode {opts.ABPRelaxMode} is valid.");
                     }
+                }
+
+                // FCntUpStart
+                if (!string.IsNullOrEmpty(opts.FCntUpStart))
+                {
+                    if (!ValidationHelper.ValidateUIntTwinProperty(opts.FCntUpStart, 0, uint.MaxValue, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"FCntUpStart {opts.FCntUpStart} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+                    else
+                    {
+                        StatusConsole.WriteLine(MessageType.Info, $"FCntUpStart {opts.FCntUpStart} is valid.");
+                    }
+                }
+
+                // FCntDownStart
+                if (!string.IsNullOrEmpty(opts.FCntDownStart))
+                {
+                    if (!ValidationHelper.ValidateUIntTwinProperty(opts.FCntDownStart, 0, uint.MaxValue, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"FCntDownStart {opts.FCntDownStart} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+                    else
+                    {
+                        StatusConsole.WriteLine(MessageType.Info, $"FCntDownStart {opts.FCntDownStart} is valid.");
+                    }
+                }
+
+                // FCntResetCounter
+                if (!string.IsNullOrEmpty(opts.FCntResetCounter))
+                {
+                    if (!ValidationHelper.ValidateUIntTwinProperty(opts.FCntResetCounter, 0, uint.MaxValue, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"FCntResetCounter {opts.FCntResetCounter} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+                    else
+                    {
+                        StatusConsole.WriteLine(MessageType.Info, $"FCntResetCounter {opts.FCntResetCounter} is valid.");
+                    }
+                }
+
+                // Frame Counter Settings
+                if (!ValidationHelper.ValidateFcntSettings(opts, fCntUpStartReported, fCntDownStartReported, fCntResetCounterReported))
+                {
+                    isValid = false;
                 }
 
                 // ******************************************************************************************
@@ -436,15 +603,39 @@ namespace Cli_LoRa_Device_Checker
                     isValid = false;
                 }
 
+                // NetId
+                if (!string.IsNullOrEmpty(opts.NetId))
+                {
+                    StatusConsole.WriteLine(MessageType.Warning, $"NetId {opts.NetId} is not used in OTAA devices.");
+                }
+
                 // ABPRelaxMode
                 if (!string.IsNullOrEmpty(opts.ABPRelaxMode))
                 {
                     StatusConsole.WriteLine(MessageType.Warning, $"ABPRelaxMode {opts.ABPRelaxMode} is invalid/ignored for OTAA devices.");
                 }
+
+                // FCntUpStart
+                if (!string.IsNullOrEmpty(opts.FCntUpStart))
+                {
+                    StatusConsole.WriteLine(MessageType.Warning, $"FCntUpStart {opts.FCntUpStart} is invalid/ignored for OTAA devices.");
+                }
+
+                // FCntDownStart
+                if (!string.IsNullOrEmpty(opts.FCntDownStart))
+                {
+                    StatusConsole.WriteLine(MessageType.Warning, $"FCntDownStart {opts.FCntDownStart} is invalid/ignored for OTAA devices.");
+                }
+
+                // FCntResetCounter
+                if (!string.IsNullOrEmpty(opts.FCntResetCounter))
+                {
+                    StatusConsole.WriteLine(MessageType.Warning, $"FCntResetCounter {opts.FCntResetCounter} is invalid/ignored for OTAA devices.");
+                }
             }
 
             // ******************************************************************************************
-            // Shared device properties
+            // // Shared, non optional device properties
             // ******************************************************************************************
 
             // SensorDecoder
@@ -452,10 +643,25 @@ namespace Cli_LoRa_Device_Checker
             {
                 isValid = false;
             }
+
+            // GatewayId
+            if (opts.GatewayId == null)
+            {
+                StatusConsole.WriteLine(MessageType.Error, $"GatewayId is missing.");
+                isValid = false;
+            }
+            else if (opts.GatewayId == string.Empty)
+            {
+                StatusConsole.WriteLine(MessageType.Info, $"GatewayId is empty. This is valid.");
+            }
             else
             {
-                StatusConsole.WriteLine(MessageType.Info, $"SensorDecoder {opts.SensorDecoder} is valid.");
+                StatusConsole.WriteLine(MessageType.Info, $"GatewayId {opts.GatewayId} is valid.");
             }
+
+            // ******************************************************************************************
+            // // Shared, optional device properties
+            // ******************************************************************************************
 
             // ClassType
             if (!string.IsNullOrEmpty(opts.ClassType))
@@ -489,7 +695,7 @@ namespace Cli_LoRa_Device_Checker
             // PreferredWindow
             if (!string.IsNullOrEmpty(opts.PreferredWindow))
             {
-                if (!ValidationHelper.ValdateIntTwinProperty(opts.PreferredWindow, 1, 2, out validationError))
+                if (!ValidationHelper.ValidateUIntTwinProperty(opts.PreferredWindow, 1, 2, out validationError))
                 {
                     StatusConsole.WriteLine(MessageType.Error, $"PreferredWindow {opts.PreferredWindow} is invalid: {validationError}");
                     isValid = false;
@@ -519,7 +725,7 @@ namespace Cli_LoRa_Device_Checker
             // Rx2DataRate
             if (!string.IsNullOrEmpty(opts.Rx2DataRate))
             {
-                if (!ValidationHelper.ValdateDataRateTwinProperty(opts.Rx2DataRate, out validationError))
+                if (!ValidationHelper.ValidateDataRateTwinProperty(opts.Rx2DataRate, out validationError))
                 {
                     StatusConsole.WriteLine(MessageType.Error, $"Rx2DataRate {opts.Rx2DataRate} is invalid: {validationError}.");
                     isValid = false;
@@ -533,7 +739,7 @@ namespace Cli_LoRa_Device_Checker
             // Rx1DrOffset
             if (!string.IsNullOrEmpty(opts.Rx1DrOffset))
             {
-                if (!ValidationHelper.ValdateIntTwinProperty(opts.Rx1DrOffset, 0, 15, out validationError))
+                if (!ValidationHelper.ValidateUIntTwinProperty(opts.Rx1DrOffset, 0, 15, out validationError))
                 {
                     StatusConsole.WriteLine(MessageType.Error, $"Rx1DrOffset {opts.Rx1DrOffset} is invalid: {validationError}.");
                     isValid = false;
@@ -575,12 +781,21 @@ namespace Cli_LoRa_Device_Checker
             {
                 Console.WriteLine($"Creating ABP device twin: {opts.DevEui}...");
 
-                twinProperties.Desired[TwinProperty.AppSKey] = opts.AppSKey;
-                twinProperties.Desired[TwinProperty.NwkSKey] = opts.NwkSKey;
-                twinProperties.Desired[TwinProperty.DevAddr] = opts.DevAddr;
+                twinProperties.Desired[TwinProperty.AppSKey] = ValidationHelper.SetStringTwinProperty(opts.AppSKey);
+                twinProperties.Desired[TwinProperty.NwkSKey] = ValidationHelper.SetStringTwinProperty(opts.NwkSKey);
+                twinProperties.Desired[TwinProperty.DevAddr] = ValidationHelper.SetStringTwinProperty(opts.DevAddr);
 
                 if (!string.IsNullOrEmpty(opts.ABPRelaxMode))
                     twinProperties.Desired[TwinProperty.ABPRelaxMode] = ValidationHelper.SetBoolTwinProperty(opts.ABPRelaxMode);
+
+                if (!string.IsNullOrEmpty(opts.FCntUpStart))
+                    twinProperties.Desired[TwinProperty.FCntUpStart] = ValidationHelper.SetUIntTwinProperty(opts.FCntUpStart);
+
+                if (!string.IsNullOrEmpty(opts.FCntDownStart))
+                    twinProperties.Desired[TwinProperty.FCntDownStart] = ValidationHelper.SetUIntTwinProperty(opts.FCntDownStart);
+
+                if (!string.IsNullOrEmpty(opts.FCntResetCounter))
+                    twinProperties.Desired[TwinProperty.FCntResetCounter] = ValidationHelper.SetUIntTwinProperty(opts.FCntResetCounter);
             }
 
             // OTAA device specific properties
@@ -588,32 +803,32 @@ namespace Cli_LoRa_Device_Checker
             {
                 Console.WriteLine($"Creating OTAA device twin: {opts.DevEui}...");
 
-                twinProperties.Desired[TwinProperty.AppEUI] = opts.AppEui;
-                twinProperties.Desired[TwinProperty.AppKey] = opts.AppKey;
+                twinProperties.Desired[TwinProperty.AppEUI] = ValidationHelper.SetStringTwinProperty(opts.AppEui);
+                twinProperties.Desired[TwinProperty.AppKey] = ValidationHelper.SetStringTwinProperty(opts.AppKey);
             }
 
-            // Shared properties
-            twinProperties.Desired[TwinProperty.GatewayID] = opts.GatewayId;
-            twinProperties.Desired[TwinProperty.SensorDecoder] = opts.SensorDecoder;
+            // Shared, non optional properties
+            twinProperties.Desired[TwinProperty.GatewayID] = ValidationHelper.SetStringTwinProperty(opts.GatewayId);
+            twinProperties.Desired[TwinProperty.SensorDecoder] = ValidationHelper.SetStringTwinProperty(opts.SensorDecoder);
 
-            // Shared optional properties
+            // Shared, optional properties
             if (!string.IsNullOrEmpty(opts.ClassType))
-                twinProperties.Desired[TwinProperty.ClassType] = opts.ClassType;
+                twinProperties.Desired[TwinProperty.ClassType] = ValidationHelper.SetStringTwinProperty(opts.ClassType);
 
             if (!string.IsNullOrEmpty(opts.DownlinkEnabled))
                 twinProperties.Desired[TwinProperty.DownlinkEnabled] = ValidationHelper.SetBoolTwinProperty(opts.DownlinkEnabled);
 
             if (!string.IsNullOrEmpty(opts.PreferredWindow))
-                twinProperties.Desired[TwinProperty.PreferredWindow] = Convert.ToInt32(opts.PreferredWindow);
+                twinProperties.Desired[TwinProperty.PreferredWindow] = ValidationHelper.SetUIntTwinProperty(opts.PreferredWindow);
 
             if (!string.IsNullOrEmpty(opts.Deduplication))
-                twinProperties.Desired[TwinProperty.Deduplication] = opts.Deduplication;
+                twinProperties.Desired[TwinProperty.Deduplication] = ValidationHelper.SetStringTwinProperty(opts.Deduplication);
 
             if (!string.IsNullOrEmpty(opts.Rx2DataRate))
-                twinProperties.Desired[TwinProperty.RX2DataRate] = opts.Rx2DataRate;
+                twinProperties.Desired[TwinProperty.RX2DataRate] = ValidationHelper.SetStringTwinProperty(opts.Rx2DataRate);
 
             if (!string.IsNullOrEmpty(opts.Rx1DrOffset))
-                twinProperties.Desired[TwinProperty.RX1DROffset] = Convert.ToInt32(opts.Rx1DrOffset);
+                twinProperties.Desired[TwinProperty.RX1DROffset] = ValidationHelper.SetUIntTwinProperty(opts.Rx1DrOffset);
 
             if (!string.IsNullOrEmpty(opts.Supports32BitFCnt))
                 twinProperties.Desired[TwinProperty.Supports32BitFCnt] = ValidationHelper.SetBoolTwinProperty(opts.Supports32BitFCnt);
@@ -646,6 +861,15 @@ namespace Cli_LoRa_Device_Checker
             if (!string.IsNullOrEmpty(opts.ABPRelaxMode))
                 twin.Properties.Desired[TwinProperty.ABPRelaxMode] = ValidationHelper.SetBoolTwinProperty(opts.ABPRelaxMode);
 
+            if (!string.IsNullOrEmpty(opts.FCntUpStart))
+                twin.Properties.Desired[TwinProperty.FCntUpStart] = ValidationHelper.SetUIntTwinProperty(opts.FCntUpStart);
+
+            if (!string.IsNullOrEmpty(opts.FCntDownStart))
+                twin.Properties.Desired[TwinProperty.FCntDownStart] = ValidationHelper.SetUIntTwinProperty(opts.FCntDownStart);
+
+            if (!string.IsNullOrEmpty(opts.FCntResetCounter))
+                twin.Properties.Desired[TwinProperty.FCntResetCounter] = ValidationHelper.SetUIntTwinProperty(opts.FCntResetCounter);
+
             // OTAA device properties
             if (!string.IsNullOrEmpty(opts.AppEui))
                 twin.Properties.Desired[TwinProperty.AppEUI] = ValidationHelper.SetStringTwinProperty(opts.AppEui);
@@ -653,14 +877,14 @@ namespace Cli_LoRa_Device_Checker
             if (!string.IsNullOrEmpty(opts.AppKey))
                 twin.Properties.Desired[TwinProperty.AppKey] = ValidationHelper.SetStringTwinProperty(opts.AppKey);
 
-            // Shared properties
-            if (!string.IsNullOrEmpty(opts.GatewayId))
+            // Shared, non optional properties
+            if (opts.GatewayId != null)
                 twin.Properties.Desired[TwinProperty.GatewayID] = ValidationHelper.SetStringTwinProperty(opts.GatewayId);
 
-            if (!string.IsNullOrEmpty(opts.SensorDecoder))
+            if (opts.SensorDecoder != null)
                 twin.Properties.Desired[TwinProperty.SensorDecoder] = ValidationHelper.SetStringTwinProperty(opts.SensorDecoder);
 
-            // Shared optional properties
+            // Shared, optional properties
             if (!string.IsNullOrEmpty(opts.ClassType))
                 twin.Properties.Desired[TwinProperty.ClassType] = ValidationHelper.SetStringTwinProperty(opts.ClassType);
 
@@ -668,7 +892,7 @@ namespace Cli_LoRa_Device_Checker
                 twin.Properties.Desired[TwinProperty.DownlinkEnabled] = ValidationHelper.SetBoolTwinProperty(opts.DownlinkEnabled);
 
             if (!string.IsNullOrEmpty(opts.PreferredWindow))
-                twin.Properties.Desired[TwinProperty.PreferredWindow] = ValidationHelper.SetIntTwinProperty(opts.PreferredWindow);
+                twin.Properties.Desired[TwinProperty.PreferredWindow] = ValidationHelper.SetUIntTwinProperty(opts.PreferredWindow);
 
             if (!string.IsNullOrEmpty(opts.Deduplication))
                 twin.Properties.Desired[TwinProperty.Deduplication] = ValidationHelper.SetStringTwinProperty(opts.Deduplication);
@@ -677,7 +901,7 @@ namespace Cli_LoRa_Device_Checker
                 twin.Properties.Desired[TwinProperty.RX2DataRate] = ValidationHelper.SetStringTwinProperty(opts.Rx2DataRate);
 
             if (!string.IsNullOrEmpty(opts.Rx1DrOffset))
-                twin.Properties.Desired[TwinProperty.RX1DROffset] = ValidationHelper.SetIntTwinProperty(opts.Rx1DrOffset);
+                twin.Properties.Desired[TwinProperty.RX1DROffset] = ValidationHelper.SetUIntTwinProperty(opts.Rx1DrOffset);
 
             if (!string.IsNullOrEmpty(opts.Supports32BitFCnt))
                 twin.Properties.Desired[TwinProperty.Supports32BitFCnt] = ValidationHelper.SetBoolTwinProperty(opts.Supports32BitFCnt);

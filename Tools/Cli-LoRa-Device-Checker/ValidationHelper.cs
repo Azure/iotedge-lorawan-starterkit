@@ -73,6 +73,56 @@ namespace Cli_LoRa_Device_Checker
             return outString;
         }
 
+        public static string CleanNetId(string inNetId)
+        {
+            string outNetId = null;
+
+            if (!string.IsNullOrEmpty(inNetId))
+            {
+                outNetId = inNetId.Replace("\'", string.Empty);
+                if (outNetId.Length < 6)
+                    outNetId = string.Concat("000000".Substring(outNetId.Length), outNetId);
+
+                if (outNetId.Length > 6)
+                    outNetId = outNetId.Substring(outNetId.Length - 6);
+            }
+
+            return outNetId;
+        }
+
+        public static string GetTwinPropertyValue(dynamic value)
+        {
+            if (value == null)
+            {
+                return string.Empty;
+            }
+
+            if (value is string valueString)
+            {
+                return valueString.Trim();
+            }
+
+            if (value is bool valueBool)
+            {
+                if (valueBool)
+                    return "true";
+                else
+                    return "false";
+            }
+
+            if (value is uint valueUInt)
+            {
+                return valueUInt.ToString();
+            }
+
+            if (value is int valueInt)
+            {
+                return valueInt.ToString();
+            }
+
+            return value.ToString();
+        }
+
         public static bool ValidateHexStringTwinProperty(string hexString, int byteCount, out string error)
         {
             error = string.Empty;
@@ -162,7 +212,7 @@ namespace Cli_LoRa_Device_Checker
             }
         }
 
-        public static dynamic SetIntTwinProperty(string property)
+        public static dynamic SetUIntTwinProperty(string property)
         {
             if (string.Equals("null", property, StringComparison.InvariantCultureIgnoreCase))
             {
@@ -170,23 +220,31 @@ namespace Cli_LoRa_Device_Checker
             }
             else
             {
-                if (int.TryParse(property, out var intProperty))
-                    return intProperty;
+                if (uint.TryParse(property, out var uintProperty))
+                    return uintProperty;
                 else
                     return property;
             }
         }
 
-        public static bool ValdateIntTwinProperty(string property, int? min, int? max, out string error)
+        public static uint? SetUIntProperty(string property)
+        {
+            if (uint.TryParse(property, out var uintProperty))
+                return uintProperty;
+            else
+                return null;
+        }
+
+        public static bool ValidateUIntTwinProperty(string property, uint? min, uint? max, out string error)
         {
             var isValid = true;
             error = string.Empty;
 
-            if (int.TryParse(property, out var intProperty))
+            if (uint.TryParse(property, out var uintProperty))
             {
                 if (min != null)
                 {
-                    if (intProperty < min)
+                    if (uintProperty < min)
                     {
                         error = $"Property is smaller then the expected minimum of {min}";
                         isValid = false;
@@ -195,7 +253,7 @@ namespace Cli_LoRa_Device_Checker
 
                 if (max != null)
                 {
-                    if (intProperty > max)
+                    if (uintProperty > max)
                     {
                         error = $"Property is larger then the expected maximum of {max}";
                         isValid = false;
@@ -211,7 +269,7 @@ namespace Cli_LoRa_Device_Checker
             return isValid;
         }
 
-        public static bool ValdateDataRateTwinProperty(string property, out string error)
+        public static bool ValidateDataRateTwinProperty(string property, out string error)
         {
             var isValid = true;
             error = string.Empty;
@@ -229,10 +287,16 @@ namespace Cli_LoRa_Device_Checker
         {
             var isValid = true;
 
-            if (string.IsNullOrEmpty(sensorDecoder))
+            if (sensorDecoder == null)
+            {
+                StatusConsole.WriteLine(MessageType.Error, "SensorDecoder is missing.");
+                return false;
+            }
+
+            if (sensorDecoder == string.Empty)
             {
                 StatusConsole.WriteLine(MessageType.Info, "SensorDecoder is empty. No decoder will be used.");
-                return isValid;
+                return true;
             }
 
             if (sensorDecoder.StartsWith("http") || sensorDecoder.Contains('/'))
@@ -261,36 +325,120 @@ namespace Cli_LoRa_Device_Checker
             {
                 StatusConsole.WriteLine(MessageType.Info, "Make sure the URI based SensorDecoder Twin desired property looks like \"http://containername/api/decodername\".");
             }
+            else
+            {
+                StatusConsole.WriteLine(MessageType.Info, $"SensorDecoder {sensorDecoder} is valid.");
+            }
 
             return isValid;
         }
 
-        public static string GetTwinPropertyValue(dynamic value)
+        public static bool ValidateFcntSettings(Program.AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported)
         {
-            if (value == null)
+            var isValid = true;
+
+            var abpRelaxMode = string.IsNullOrEmpty(opts.ABPRelaxMode) ||
+                string.Equals(opts.ABPRelaxMode, "1", StringComparison.InvariantCultureIgnoreCase) ||
+                string.Equals(opts.ABPRelaxMode, "true", StringComparison.InvariantCultureIgnoreCase);
+
+            var fCntUpStart = SetUIntProperty(opts.FCntUpStart);
+            var fCntDownStart = SetUIntProperty(opts.FCntDownStart);
+            var fCntResetCounter = SetUIntProperty(opts.FCntResetCounter);
+
+            var fCntUpStartRep = SetUIntProperty(fCntUpStartReported);
+            var fCntDownStartRep = SetUIntProperty(fCntDownStartReported);
+            var fCntResetCounterRep = SetUIntProperty(fCntResetCounterReported);
+
+            // AbpRelaxMode TRUE
+            if (abpRelaxMode)
             {
-                return string.Empty;
+                if (fCntUpStart != null)
+                {
+                    StatusConsole.WriteLine(MessageType.Warning, $"FCntUpStart {fCntUpStart} is unused if ABPRelaxMode is true or empty.");
+                }
+
+                if (fCntDownStart != null)
+                {
+                    StatusConsole.WriteLine(MessageType.Warning, $"FCntDownStart {fCntDownStart} is unused if ABPRelaxMode is true or empty.");
+                }
+
+                if (fCntResetCounter != null)
+                {
+                    StatusConsole.WriteLine(MessageType.Warning, $"FCntResetCounter {fCntResetCounter} is unused if ABPRelaxMode istrue or empty.");
+                }
             }
 
-            if (value is string valueString)
+            // AbpRelaxMode FALSE
+            else
             {
-                return valueString.Trim();
+                if (!ValidateSingleFcnt(fCntUpStart, fCntUpStartRep, fCntResetCounter, fCntResetCounterRep, "FCntUpStart"))
+                {
+                    isValid = false;
+                }
+
+                if (!ValidateSingleFcnt(fCntDownStart, fCntDownStartRep, fCntResetCounter, fCntResetCounterRep, "FCntDownStart"))
+                {
+                    isValid = false;
+                }
             }
 
-            if (value is bool valueBool)
+            return isValid;
+        }
+
+        private static bool ValidateSingleFcnt(uint? fCntStart, uint? fCntStartRep, uint? fCntResetCounter, uint? fCntResetCounterRep, string fCntStartType)
+        {
+            bool isValid = true;
+
+            if (fCntStart == null)
             {
-                if (valueBool)
-                    return "true";
-                else
-                    return "false";
+                // fCntStart not set. Nothing to do.
+                return isValid;
             }
 
-            if (value is int valueInt)
+            // fCntStartRep not null
+            if (fCntStartRep == null)
             {
-                return valueInt.ToString();
+                StatusConsole.WriteLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
+                return isValid;
             }
 
-            return value.ToString();
+            // fCntStartRep not null, fCntStartRep not null
+            if (fCntStart > fCntStartRep)
+            {
+                StatusConsole.WriteLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
+                return isValid;
+            }
+
+            // fCntStartRep not null, fCntStartRep not null, fCntStart <= fCntStartRep
+            if (fCntResetCounter == null)
+            {
+                StatusConsole.WriteLine(MessageType.Warning, $"{fCntStartType} {fCntStart} will not be set on gateway. Reported {fCntStartType} {fCntStartRep} is larger or equal and FCntResetCounter is not set.");
+                return isValid;
+            }
+
+            // fCntStartRep not null, fCntStartRep not null, fCntStart <= fCntStartRep,
+            // fCntResetCounter not null
+            if (fCntResetCounterRep == null)
+            {
+                StatusConsole.WriteLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
+                return isValid;
+            }
+
+            // fCntStartRep not null, fCntStartRep not null, fCntStart <= fCntStartRep,
+            // fCntResetCounter not null, fCntResetCounterRep not null
+            if (fCntResetCounter > fCntResetCounterRep)
+            {
+                StatusConsole.WriteLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
+                return isValid;
+            }
+
+            // fCntStartRep not null, fCntStartRep not null, fCntStart <= fCntStartRep,
+            // fCntResetCounter not null, fCntResetCounterRep not null, fCntResetCounter <= fCntResetCounterRep
+            else
+            {
+                StatusConsole.WriteLine(MessageType.Warning, $"{fCntStartType} {fCntStart} will not be set on gateway. Reported {fCntStartType} {fCntStartRep} is larger or equal and FCntResetCounter {fCntResetCounter} is not larger than reported FCntResetCounter {fCntResetCounterRep}.");
+                return isValid;
+            }
         }
     }
 }

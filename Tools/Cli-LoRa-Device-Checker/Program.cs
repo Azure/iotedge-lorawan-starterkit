@@ -37,6 +37,12 @@ namespace Cli_LoRa_Device_Checker
                 Required = true,
                 HelpText = "DevEUI / Device Id.")]
             public string DevEui { get; set; }
+
+            [Option(
+                "netid",
+                Required = false,
+                HelpText = "Network ID (Only for ABP devices): A 3 bit hex string. Will default to 000001 if left blank. (optional)")]
+            public string NetId { get; set; }
         }
 
         [Verb("query", HelpText = "Query a device twin.")]
@@ -65,16 +71,28 @@ namespace Cli_LoRa_Device_Checker
             public string DevEui { get; set; }
 
             [Option(
-                "appeui",
+                "appskey",
                 Required = false,
-                HelpText = "AppEUI (only for ABP devices): A 16 bit hex string. Will be randomly generated if left blank.")]
-            public string AppEui { get; set; }
+                HelpText = "AppSKey (Only for ABP devices): A 16 bit hex string. Will be randomly generated if left blank.")]
+            public string AppSKey { get; set; }
 
             [Option(
-                "appkey",
+                "nwkskey",
                 Required = false,
-                HelpText = "AppKey (only for ABP devices): A 16 bit hex string. Will be randomly generated if left blank.")]
-            public string AppKey { get; set; }
+                HelpText = "NwkSKey (Only for ABP devices): A 16 bit hex string. Will be randomly generated if left blank.")]
+            public string NwkSKey { get; set; }
+
+            [Option(
+                "devaddr",
+                Required = false,
+                HelpText = "DevAddr (Only for ABP devices): A 4 bit hex string. Will be randomly generated if left blank.")]
+            public string DevAddr { get; set; }
+
+            [Option(
+                "netid",
+                Required = false,
+                HelpText = "Network ID (Only for ABP devices): A 3 bit hex string. Will default to 000001 if left blank. (optional)")]
+            public string NetId { get; set; }
 
             [Option(
                 "abprelaxmode",
@@ -83,22 +101,16 @@ namespace Cli_LoRa_Device_Checker
             public string ABPRelaxMode { get; set; }
 
             [Option(
-                "appskey",
+                "appeui",
                 Required = false,
-                HelpText = "AppSKey (Only for OTAA devices): A 16 bit hex string. Will be randomly generated if left blank.")]
-            public string AppSKey { get; set; }
+                HelpText = "AppEUI (only for OTAA devices): A 16 bit hex string. Will be randomly generated if left blank.")]
+            public string AppEui { get; set; }
 
             [Option(
-                "nwkskey",
+                "appkey",
                 Required = false,
-                HelpText = "NwkSKey (Only for OTAA devices): A 16 bit hex string. Will be randomly generated if left blank.")]
-            public string NwkSKey { get; set; }
-
-            [Option(
-                "devaddr",
-                Required = false,
-                HelpText = "DevAddr (Only for OTAA devices): A 4 bit hex string. Will be randomly generated if left blank.")]
-            public string DevAddr { get; set; }
+                HelpText = "AppKey (only for OTAA devices): A 16 bit hex string. Will be randomly generated if left blank.")]
+            public string AppKey { get; set; }
 
             [Option(
                 "gatewayid",
@@ -145,7 +157,7 @@ namespace Cli_LoRa_Device_Checker
             [Option(
                 "rx1droffset",
                 Required = false,
-                HelpText = "Rx1DrOffset (Receive window 1 data rate offset): 0 through 15 (optional).")]
+                HelpText = "Rx1DrOffset (Receive window 1 data rate offset): 0 through 15. (optional)")]
             public string Rx1DrOffset { get; set; }
 
             [Option(
@@ -153,6 +165,24 @@ namespace Cli_LoRa_Device_Checker
                 Required = false,
                 HelpText = "Supports32BitFCnt (Support for 32bit frame counter): True or false. (optional)")]
             public string Supports32BitFCnt { get; set; }
+
+            [Option(
+                "fcntupstart",
+                Required = false,
+                HelpText = "FCntUpStart (Frame counter up start value): 0 through 4294967295. (optional)")]
+            public string FCntUpStart { get; set; }
+
+            [Option(
+                "fcntdownstart",
+                Required = false,
+                HelpText = "FCntDownStart (Frame counter down start value): 0 through 4294967295. (optional)")]
+            public string FCntDownStart { get; set; }
+
+            [Option(
+                "fcntresetcounter",
+                Required = false,
+                HelpText = "FCntResetCounter (Frame counter reset counter value): 0 through 4294967295. (optional)")]
+            public string FCntResetCounter { get; set; }
         }
 
         [Verb("update", HelpText = "Update an existing device in IoT Hub.")]
@@ -165,16 +195,28 @@ namespace Cli_LoRa_Device_Checker
             public string DevEui { get; set; }
 
             [Option(
-                "appeui",
+                "appskey",
                 Required = false,
-                HelpText = "AppEUI (only for ABP devices): A 16 bit hex string.")]
-            public string AppEui { get; set; }
+                HelpText = "AppSKey (Only for ABP devices): A 16 bit hex string.")]
+            public string AppSKey { get; set; }
 
             [Option(
-                "appkey",
+                "nwkskey",
                 Required = false,
-                HelpText = "AppKey (only for ABP devices): A 16 bit hex string.")]
-            public string AppKey { get; set; }
+                HelpText = "NwkSKey (Only for ABP devices): A 16 bit hex string.")]
+            public string NwkSKey { get; set; }
+
+            [Option(
+                "devaddr",
+                Required = false,
+                HelpText = "DevAddr (Only for ABP devices): A 4 bit hex string.")]
+            public string DevAddr { get; set; }
+
+            [Option(
+                "netid",
+                Required = false,
+                HelpText = "Network ID (Only for ABP devices): A 3 bit hex string. Will default to 000001 if left blank. (optional)")]
+            public string NetId { get; set; }
 
             [Option(
                 "abprelaxmode",
@@ -183,22 +225,16 @@ namespace Cli_LoRa_Device_Checker
             public string ABPRelaxMode { get; set; }
 
             [Option(
-                "appskey",
+                "appeui",
                 Required = false,
-                HelpText = "AppSKey (Only for OTAA devices): A 16 bit hex string.")]
-            public string AppSKey { get; set; }
+                HelpText = "AppEUI (only for OTAA devices): A 16 bit hex string.")]
+            public string AppEui { get; set; }
 
             [Option(
-                "nwkskey",
+                "appkey",
                 Required = false,
-                HelpText = "NwkSKey (Only for OTAA devices): A 16 bit hex string.")]
-            public string NwkSKey { get; set; }
-
-            [Option(
-                "devaddr",
-                Required = false,
-                HelpText = "DevAddr (Only for OTAA devices): A 4 bit hex string.")]
-            public string DevAddr { get; set; }
+                HelpText = "AppKey (only for OTAA devices): A 16 bit hex string.")]
+            public string AppKey { get; set; }
 
             [Option(
                 "gatewayid",
@@ -253,6 +289,24 @@ namespace Cli_LoRa_Device_Checker
                 Required = false,
                 HelpText = "Supports32BitFCnt (Support for 32bit frame counter): True or false. (optional)")]
             public string Supports32BitFCnt { get; set; }
+
+            [Option(
+                "fcntupstart",
+                Required = false,
+                HelpText = "FCntUpStart (Frame counter up start value): 0 through 4294967295. (optional)")]
+            public string FCntUpStart { get; set; }
+
+            [Option(
+                "fcntdownstart",
+                Required = false,
+                HelpText = "FCntDownStart (Frame counter down start value): 0 through 4294967295. (optional)")]
+            public string FCntDownStart { get; set; }
+
+            [Option(
+                "fcntresetcounter",
+                Required = false,
+                HelpText = "FCntResetCounter (Frame counter reset counter value): 0 through 4294967295. (optional)")]
+            public string FCntResetCounter { get; set; }
         }
 
         [Verb("remove", HelpText = "Remove an existing device from IoT Hub.")]
@@ -366,7 +420,7 @@ namespace Cli_LoRa_Device_Checker
                 Console.WriteLine(twinData.ToString());
                 Console.ResetColor();
 
-                return iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, twin);
+                return iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper);
             }
             else
             {
@@ -382,10 +436,10 @@ namespace Cli_LoRa_Device_Checker
 
             bool isSuccess = false;
 
-            opts = iotDeviceHelper.CompleteMissingOptions(opts);
             opts = iotDeviceHelper.CleanOptions(opts as object, true) as AddOptions;
+            opts = iotDeviceHelper.CompleteMissingAddOptions(opts, configurationHelper);
 
-            if (iotDeviceHelper.ValidateDevice(opts))
+            if (iotDeviceHelper.ValidateDevice(opts, null, null, null, configurationHelper))
             {
                 Twin twin = iotDeviceHelper.CreateDeviceTwin(opts);
                 isSuccess = iotDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, true).Result;
@@ -417,6 +471,7 @@ namespace Cli_LoRa_Device_Checker
             bool isSuccess = false;
 
             opts = iotDeviceHelper.CleanOptions(opts as object, false) as UpdateOptions;
+            opts = iotDeviceHelper.CompleteMissingUpdateOptions(opts, configurationHelper);
 
             var twin = iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper).Result;
 
@@ -424,7 +479,7 @@ namespace Cli_LoRa_Device_Checker
             {
                 twin = iotDeviceHelper.UpdateDeviceTwin(twin, opts);
 
-                if (iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, twin))
+                if (iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper))
                 {
                     isSuccess = iotDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, false).Result;
 

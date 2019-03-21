@@ -1,3 +1,4 @@
 {
-  "IoTHubConnectionString": "HostName=saschachub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=AeVMLayazGTS9QRMJtFGSSNwdhUdYR5VwCjaafc3DL0="
+  "IoTHubConnectionString": "HostName=saschachub.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=AeVMLayazGTS9QRMJtFGSSNwdhUdYR5VwCjaafc3DL0=",
+  "NetId": "1"
 }
