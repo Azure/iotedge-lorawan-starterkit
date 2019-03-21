@@ -63,7 +63,7 @@ trigger:
     include:
     - pat-dev-multi-gw-test
     exclude:
-	  - dev
+    - dev
     - master
 
 jobs:
