@@ -46,7 +46,7 @@ namespace LoRaWan.IntegrationTest
                     var msg = "02";
                     this.Log($"{device.DeviceID}: Sending unconfirmed Mac LinkCheckCmd message");
                     await this.ArduinoDevice.transferHexPacketAsync(msg, 10);
-                    await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+                    await Task.Delay(2 * Constants.DELAY_BETWEEN_MESSAGES);
 
                     // After transferPacket: Expectation from serial
                     // +MSG: Done
