@@ -212,7 +212,7 @@ namespace LoRaWan.Test.Shared
                     processedEvents.Add(searchLogEvent);
                     if (predicate(searchLogEvent))
                     {
-                        return new SearchLogResult(true, processedEvents)
+                        return new SearchLogResult(true, processedEvents, item)
                         {
                             MatchedEvent = searchLogEvent
                         };
@@ -220,7 +220,7 @@ namespace LoRaWan.Test.Shared
                 }
             }
 
-            return new SearchLogResult(false, processedEvents, string.Empty);
+            return new SearchLogResult(false, processedEvents);
         }
 
         async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
@@ -261,7 +261,7 @@ namespace LoRaWan.Test.Shared
                     processedEvents.Add(searchLogEvent);
                     if (predicate(searchLogEvent))
                     {
-                        return new SearchLogResult(true, processedEvents)
+                        return new SearchLogResult(true, processedEvents, bodyText)
                         {
                             MatchedEvent = searchLogEvent
                         };
@@ -269,13 +269,7 @@ namespace LoRaWan.Test.Shared
                 }
             }
 
-            return new SearchLogResult(false, processedEvents, string.Empty);
-        }
-
-        // Searches IoT Hub for messages
-        async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options = null)
-        {
-            return await this.SearchIoTHubLogs(evt => predicate(evt.Message), options);
+            return new SearchLogResult(false, processedEvents);
         }
 
         // Searches IoT Hub for messages
