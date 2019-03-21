@@ -466,6 +466,9 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
 
+            // Wait until loader updates the device cache
+            await Task.Delay(50);
+
             var devices = deviceRegistry.InternalGetCachedDevicesForDevAddr(simulatedDevice.DevAddr);
             Assert.Single(devices);
             Assert.True(devices.TryGetValue(simulatedDevice.DevEUI, out var cachedDevice));
