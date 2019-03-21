@@ -39,7 +39,7 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                var timeWatcher = request.GetTimeWatcher();
+                var timeWatcher = new LoRaOperationTimeWatcher(loraRegion, request.StartTime);
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
                 byte[] udpMsgForPktForwarder = new byte[0];
@@ -154,7 +154,12 @@ namespace LoRaWan.NetworkServer
                 if (windowToUse == Constants.RECEIVE_WINDOW_1)
                 {
                     datr = loraRegion.GetDownstreamDR(request.Rxpk);
-                    freq = loraRegion.GetDownstreamChannelFrequency(request.Rxpk);
+                    if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
+                    {
+                        Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the downstream message packet forwarder settings", LogLevel.Error);
+                        request.NotifyFailed(null, LoRaDeviceRequestFailedReason.InvalidRxpk);
+                        return;
+                    }
 
                     // set tmst for the normal case
                     tmst = request.Rxpk.Tmst + loraRegion.Join_accept_delay1 * 1000000;
@@ -184,30 +189,38 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(devEUI, $"twin RX2 datarate values are not within acceptable values", LogLevel.Error);
+                    Logger.Log(devEUI, $"twin RX2 datarate value are not within acceptable values", LogLevel.Error);
                 }
 
-                if (loRaDevice.DesiredRX1DROffset >= 0 && loRaDevice.DesiredRX1DROffset < request.Region.RX1DROffsetTable.GetUpperBound(1))
+                if (request.Region.IsValidRX1DROffset(loRaDevice.DesiredRX1DROffset))
                 {
                     var rx1droffset = (byte)(loRaDevice.DesiredRX1DROffset << 4);
                     dlSettings[0] = (byte)(dlSettings[0] + rx1droffset);
                 }
                 else
                 {
-                    Logger.Log(devEUI, $"twin Rx1 offset datarate values are not within acceptable values", LogLevel.Error);
+                    Logger.Log(devEUI, $"twin Rx1 offset datarate value are not within acceptable values", LogLevel.Error);
                 }
 
-                var joinAccept = this.CreateJoinAcceptDownlinkMessage(
-                    netId,
-                    loRaDevice.AppKey,
-                    devAddr,
-                    appNonceBytes,
-                    datr,
-                    freq,
-                    tmst,
-                    devEUI,
-                    dlSettings,
-                    loRaDevice.DesiredRXDelay);
+                ushort rxDelay = 0;
+                if (request.Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                {
+                    rxDelay = loRaDevice.DesiredRXDelay;
+                }
+                else
+                {
+                    Logger.Log(devEUI, $"twin RX Delay value are not within acceptable values", LogLevel.Error);
+                }
+
+                var loRaPayloadJoinAccept = new LoRaTools.LoRaMessage.LoRaPayloadJoinAccept(
+               LoRaTools.Utils.ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
+               ConversionHelper.StringToByteArray(devAddr), // todo add device address management
+               appNonceBytes,
+               dlSettings,
+               rxDelay,
+               null);
+
+                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, tmst, devEUI);
 
                 if (joinAccept != null)
                 {
@@ -221,32 +234,6 @@ namespace LoRaWan.NetworkServer
                 Logger.Log(deviceId, $"Failed to handle join request. {ex.Message}", LogLevel.Error);
                 request.NotifyFailed(loRaDevice, ex);
             }
-        }
-
-        /// <summary>
-        /// Creates downlink message for join accept
-        /// </summary>
-        DownlinkPktFwdMessage CreateJoinAcceptDownlinkMessage(
-            ReadOnlyMemory<byte> netId,
-            string appKey,
-            string devAddr,
-            ReadOnlyMemory<byte> appNonce,
-            string datr,
-            double freq,
-            long tmst,
-            string devEUI,
-            byte[] dlSettings,
-            ushort rxDelay)
-        {
-            var loRaPayloadJoinAccept = new LoRaTools.LoRaMessage.LoRaPayloadJoinAccept(
-                LoRaTools.Utils.ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
-                ConversionHelper.StringToByteArray(devAddr), // todo add device address management
-                appNonce.ToArray(),
-                dlSettings,
-                rxDelay,
-                null);
-
-            return loRaPayloadJoinAccept.Serialize(appKey, datr, freq, tmst, devEUI);
         }
     }
 }

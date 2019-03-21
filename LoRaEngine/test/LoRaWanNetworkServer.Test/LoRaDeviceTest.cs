@@ -531,7 +531,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0U, target.LastSavedFCntUp);
             Assert.Equal(2U, target.LastSavedFCntDown);
             Assert.Empty(target.PreferredGatewayID);
-            Assert.Equal(LoRaRegion.NotSet, target.LoRaRegion);
+            Assert.Equal(LoRaRegionType.NotSet, target.LoRaRegion);
 
             Assert.True(target.HasFrameCountChanges);
         }
@@ -570,7 +570,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(20U, loRaDevice.FCntUp);
             Assert.Equal(20U, loRaDevice.LastSavedFCntUp);
             Assert.Empty(loRaDevice.PreferredGatewayID);
-            Assert.Equal(LoRaRegion.NotSet, loRaDevice.LoRaRegion);
+            Assert.Equal(LoRaRegionType.NotSet, loRaDevice.LoRaRegion);
             Assert.False(loRaDevice.HasFrameCountChanges);
         }
 
@@ -608,12 +608,12 @@ namespace LoRaWan.NetworkServer.Test
             await loRaDevice.InitializeAsync();
             Assert.Equal("gateway1", loRaDevice.PreferredGatewayID);
 
-            if (string.Equals(LoRaRegion.EU868.ToString(), regionValue, StringComparison.InvariantCultureIgnoreCase))
-                Assert.Equal(LoRaRegion.EU868, loRaDevice.LoRaRegion);
-            else if (string.Equals(LoRaRegion.US915.ToString(), regionValue, StringComparison.InvariantCultureIgnoreCase))
-                Assert.Equal(LoRaRegion.US915, loRaDevice.LoRaRegion);
+            if (string.Equals(LoRaRegionType.EU868.ToString(), regionValue, StringComparison.InvariantCultureIgnoreCase))
+                Assert.Equal(LoRaRegionType.EU868, loRaDevice.LoRaRegion);
+            else if (string.Equals(LoRaRegionType.US915.ToString(), regionValue, StringComparison.InvariantCultureIgnoreCase))
+                Assert.Equal(LoRaRegionType.US915, loRaDevice.LoRaRegion);
             else
-                Assert.Equal(LoRaRegion.NotSet, loRaDevice.LoRaRegion);
+                Assert.Equal(LoRaRegionType.NotSet, loRaDevice.LoRaRegion);
         }
     }
 }

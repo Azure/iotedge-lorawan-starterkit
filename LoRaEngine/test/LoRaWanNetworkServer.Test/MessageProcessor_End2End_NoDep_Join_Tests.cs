@@ -188,7 +188,8 @@ namespace LoRaWan.NetworkServer.Test
             var downstreamMessage = this.PacketForwarder.DownlinkMessages[1];
 
             // validates txpk according to eu region
-            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannelFrequency(confirmedMessageRxpk), downstreamMessage.Txpk.Freq);
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(confirmedMessageRxpk, out double frequency));
+            Assert.Equal(frequency, downstreamMessage.Txpk.Freq);
             Assert.Equal("4/5", downstreamMessage.Txpk.Codr);
             Assert.False(downstreamMessage.Txpk.Imme);
             Assert.True(downstreamMessage.Txpk.Ipol);
@@ -478,7 +479,8 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkJoinAcceptMessage = this.PacketForwarder.DownlinkMessages[0];
             // validates txpk according to eu region
             Assert.Equal(0U, downlinkJoinAcceptMessage.Txpk.Rfch);
-            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannelFrequency(joinRxpk), downlinkJoinAcceptMessage.Txpk.Freq);
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(joinRxpk, out double receivedFrequency));
+            Assert.Equal(receivedFrequency, downlinkJoinAcceptMessage.Txpk.Freq);
             Assert.Equal("4/5", downlinkJoinAcceptMessage.Txpk.Codr);
             Assert.False(downlinkJoinAcceptMessage.Txpk.Imme);
             Assert.True(downlinkJoinAcceptMessage.Txpk.Ipol);

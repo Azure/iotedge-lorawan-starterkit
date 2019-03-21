@@ -38,7 +38,7 @@ namespace LoRaWan.NetworkServer.Test
                 GatewayID = ServerGatewayID,
             };
 
-            this.loRaRegion = RegionFactory.CreateEU868Region();
+            this.loRaRegion = RegionManager.EU868;
 
             this.packetForwarder = new Mock<IPacketForwarder>(MockBehavior.Strict);
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
@@ -77,7 +77,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
-                    { TwinProperty.Region, LoRaRegion.EU868.ToString() }
+                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() }
                 });
 
             this.deviceClient.Setup(x => x.GetTwinAsync())
@@ -220,7 +220,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var twin = simDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
                 {
-                    { TwinProperty.Region, LoRaRegion.EU868.ToString() }
+                    { TwinProperty.Region, LoRaRegionType.EU868.ToString() }
                 });
 
             this.deviceClient.Setup(x => x.GetTwinAsync())

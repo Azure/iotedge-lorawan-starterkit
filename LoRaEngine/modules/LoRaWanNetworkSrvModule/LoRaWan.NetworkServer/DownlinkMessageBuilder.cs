@@ -77,7 +77,18 @@ namespace LoRaWan.NetworkServer
             else
             {
                 datr = loRaRegion.GetDownstreamDR(rxpk, (uint)loRaDevice.ReportedRX1DROffset);
-                freq = loRaRegion.GetDownstreamChannelFrequency(rxpk);
+                if (datr == null)
+                {
+                    Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the data rate in the downstream message packet forwarder settings", LogLevel.Error);
+                    return new DownlinkMessageBuilderResponse(null, false);
+                }
+
+                if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq))
+                {
+                    Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the frequency in the downstream message packet forwarder settings", LogLevel.Error);
+                    return new DownlinkMessageBuilderResponse(null, false);
+                }
+
                 tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow1Delay(loRaDevice), loRaDevice.ReportedRXDelay);
             }
 

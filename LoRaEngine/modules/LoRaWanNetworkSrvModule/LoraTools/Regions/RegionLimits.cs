@@ -3,10 +3,14 @@
 
 namespace LoRaTools.Regions
 {
+    using System;
     using System.Collections.Generic;
 
     public class RegionLimits
     {
+        /// <summary>
+        /// Gets or sets The maximum and minimum datarate of a given region
+        /// </summary>
         public (double min, double max) FrequencyRange { get; set; }
 
         public List<string> DatarateRange { get; set; }

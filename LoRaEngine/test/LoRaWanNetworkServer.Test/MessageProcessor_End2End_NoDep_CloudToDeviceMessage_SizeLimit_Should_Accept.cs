@@ -59,7 +59,7 @@ namespace LoRaWan.NetworkServer.Test
                     .ReturnsAsync(true);
             }
 
-            var euRegion = RegionFactory.CreateEU868Region();
+            var euRegion = RegionManager.EU868;
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
             var upstreamMessageMacCommandSize = 0;

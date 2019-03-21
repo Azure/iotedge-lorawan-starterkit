@@ -12,24 +12,24 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void When_Using_Enums()
         {
-            var target = new ChangeTrackingProperty<LoRaRegion>(nameof(LoRaRegion));
+            var target = new ChangeTrackingProperty<LoRaRegionType>(nameof(LoRaRegionType));
             Assert.False(target.IsDirty());
 
-            target.Set(LoRaRegion.EU868);
-            Assert.Equal(LoRaRegion.EU868, target);
-            Assert.Equal(LoRaRegion.EU868, target.Get());
+            target.Set(LoRaRegionType.EU868);
+            Assert.Equal(LoRaRegionType.EU868, target);
+            Assert.Equal(LoRaRegionType.EU868, target.Get());
             Assert.True(target.IsDirty());
             target.AcceptChanges();
             Assert.False(target.IsDirty());
 
-            target.Set(LoRaRegion.US915);
-            Assert.Equal(LoRaRegion.US915, target);
-            Assert.Equal(LoRaRegion.US915, target.Get());
+            target.Set(LoRaRegionType.US915);
+            Assert.Equal(LoRaRegionType.US915, target);
+            Assert.Equal(LoRaRegionType.US915, target.Get());
             Assert.True(target.IsDirty());
             target.Rollback();
             Assert.False(target.IsDirty());
-            Assert.Equal(LoRaRegion.EU868, target);
-            Assert.Equal(LoRaRegion.EU868, target.Get());
+            Assert.Equal(LoRaRegionType.EU868, target);
+            Assert.Equal(LoRaRegionType.EU868, target.Get());
         }
 
         [Fact]
