@@ -47,6 +47,11 @@ variables:
 #    include:
 #    - master
 #    - dev
+pr:
+ branches:
+   exclude:
+   - master
+   - dev
 
 # Enable CI on branches master and dev
 # Batch builds
@@ -54,8 +59,8 @@ trigger:
   batch: true
   branches:
     include:
-    - pat-dev-multi-gw-test
     exclude:
+	- pat-dev-multi-gw-test
     - dev
     - master
 
