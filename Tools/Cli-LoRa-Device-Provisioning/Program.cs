@@ -322,7 +322,7 @@ namespace Cli_LoRa_Device_Provisioning
         static int Main(string[] args)
         {
             WriteAzureLogo();
-            Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Provisioning Utility.");
+            Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Provisioning Tool.");
             Console.Write("This tool complements ");
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("http://aka.ms/lora");

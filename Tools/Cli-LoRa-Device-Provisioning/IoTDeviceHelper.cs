@@ -297,7 +297,7 @@ namespace Cli_LoRa_Device_Provisioning
             {
                 if (string.IsNullOrEmpty(opts.AppEui))
                 {
-                    opts.AppEui = Keygen.Generate(16);
+                    opts.AppEui = Keygen.Generate(8);
                     StatusConsole.WriteLine(MessageType.Info, $"Generating missing AppEUI: {opts.AppEui}");
                 }
 
@@ -576,7 +576,7 @@ namespace Cli_LoRa_Device_Provisioning
                     Console.WriteLine("Error: AppEUI is missing.");
                     isValid = false;
                 }
-                else if (!ValidationHelper.ValidateHexStringTwinProperty(opts.AppEui, 16, out validationError))
+                else if (!ValidationHelper.ValidateHexStringTwinProperty(opts.AppEui, 8, out validationError))
                 {
                     StatusConsole.WriteLine(MessageType.Error, $"AppEUI {opts.AppEui} is invalid: {validationError}.");
                     isValid = false;

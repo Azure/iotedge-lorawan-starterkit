@@ -70,7 +70,9 @@ A LoRa device is a normal IoT Hub device with some specific device twin tags. Yo
 
 ### ABP (personalization) and OTAA (over the air) provisioning
 
-You can  provision the devices manually in the Azure portal or use the provided [Command Line Interface Provisioning Tool to list, query, verify add, update, and remove  devices](../Tools/Cli-LoRa-Device-Provisioning). It is also recommended to use the CLI tool to verify manually added or edited LoRa devices in IoT Hub to ensure the settings are correct and will work.
+You can  provision the devices manually in the Azure portal or better use the provided [Command Line Interface Provisioning Tool](../Tools/Cli-LoRa-Device-Provisioning) to **list**, **query**, **verify**, **add**, **update**, and **remove**  devices in IoT Hub.
+
+It is also recommended to use the CLI tool to verify manually added or edited LoRa devices in IoT Hub to ensure the device twin settings are all correct and will work.
 
 To manually provision:
 

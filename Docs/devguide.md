@@ -189,6 +189,15 @@ Device Id: `47AAC86800430010` and Device Twin's deired properties:
   "SensorDecoder": "DecoderValueSensor"
 }
 ```
+You can  provision the device manually in the Azure portal or use the provided [Command Line Interface Provisioning Tool to list, query, verify add, update, and remove  devices](../Tools/Cli-LoRa-Device-Provisioning).
+
+The command to execute is:
+
+```powershell
+dotnet run -- add --type OTAA --deveui 47AAC86800430010 --appeui BE7A0000000014E3 --appkey 8AFE71A145B253E49C3031AD068277A3 --decoder DecoderValueSensor
+```
+
+To manually provision the device in IoT Hub, do the following:
 
 ![Create device in Azure IoT Hub](/Docs/Pictures/CreateDevice.PNG)
 
