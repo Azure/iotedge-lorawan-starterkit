@@ -8,15 +8,27 @@ You can create an platform specific executable by running
 
 ```powershell
 dotnet publish -c Release -r win10-x64
+dotnet publish -c Release -r lunux-x64
+dotnet publish -c Release -r osx-x64
 ```
+
+See the [.NET Core RID Catalog
+](https://docs.microsoft.com/en-us/dotnet/core/rid-catalog) for a list of valid runtime identifiers.
 
 ## Running
 
-You can run the tool from the command line using .NET Core by executing
+You can run the tool from the command line using .NET Core by executing the dotnet run command from the project folder
 
 ```powershell
 dotnet run -- (add verbs and parameters here)
 ```
+
+or dotnet loradeviceprovisioning.dll from the bin folder.
+
+```powershell
+dotnet .\bin\Release\netcoreapp2.1\loradeviceprovisioning.dll -- (add verbs and parameters here)
+```
+
 
 ## Setting up
 
