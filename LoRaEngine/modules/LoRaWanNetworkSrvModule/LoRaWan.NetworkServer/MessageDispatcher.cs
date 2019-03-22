@@ -99,16 +99,23 @@ namespace LoRaWan.NetworkServer
 
         bool IsValidNetId(LoRaPayloadData loRaPayload)
         {
+            // Check if the current dev addr is in our network id
+            byte devAddrNwkid = loRaPayload.GetDevAddrNetID();
+            var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
+            devAddrNwkid = (byte)(devAddrNwkid >> 1);
+            if (devAddrNwkid == (netIdBytes[0] & 0b01111111))
+            {
+                return true;
+            }
+
+            // If not, check if the devaddr is part of the allowed dev address list
             var currentDevAddr = ConversionHelper.ByteArrayToString(loRaPayload.DevAddr);
             if (this.configuration.AllowedDevAddresses != null && this.configuration.AllowedDevAddresses.Contains(currentDevAddr))
             {
                 return true;
             }
 
-            byte devAddrNwkid = loRaPayload.GetDevAddrNetID();
-            var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
-            devAddrNwkid = (byte)(devAddrNwkid >> 1);
-            return devAddrNwkid == (netIdBytes[0] & 0b01111111);
+            return false;
         }
     }
 }
