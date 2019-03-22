@@ -12,11 +12,13 @@ namespace LoRaWan.NetworkServer
     {
         private readonly NetworkServerConfiguration configuration;
         private readonly DefaultLoRaDataRequestHandler dataRequestHandler;
+        private readonly ILoRaDeviceClientConnectionManager connectionManager;
 
-        public LoRaDeviceFactory(NetworkServerConfiguration configuration, DefaultLoRaDataRequestHandler dataRequestHandler)
+        public LoRaDeviceFactory(NetworkServerConfiguration configuration, DefaultLoRaDataRequestHandler dataRequestHandler, ILoRaDeviceClientConnectionManager connectionManager)
         {
             this.configuration = configuration;
             this.dataRequestHandler = dataRequestHandler;
+            this.connectionManager = connectionManager;
         }
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
@@ -24,9 +26,11 @@ namespace LoRaWan.NetworkServer
             var loraDeviceClient = this.CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey);
 
             var loRaDevice = new LoRaDevice(
-                devAddr: deviceInfo.DevAddr,
-                devEUI: deviceInfo.DevEUI,
-                loRaDeviceClient: loraDeviceClient);
+                deviceInfo.DevAddr,
+                deviceInfo.DevEUI,
+                this.connectionManager);
+
+            this.connectionManager.Register(loRaDevice, loraDeviceClient);
 
             loRaDevice.SetRequestHandler(this.dataRequestHandler);
 
@@ -77,8 +81,7 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, transportSettings);
-                return new LoRaDeviceClient(devEUI, deviceClient);
+                return new LoRaDeviceClient(devEUI, deviceConnectionStr, transportSettings);
             }
             catch (Exception ex)
             {

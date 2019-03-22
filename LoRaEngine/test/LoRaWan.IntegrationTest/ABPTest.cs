@@ -362,5 +362,56 @@ namespace LoRaWan.IntegrationTest
                 this.TestFixtureCi.ClearLogs();
             }
         }
+
+        // Verifies that ABP confirmed and unconfirmed messages are working
+        // Uses Device25_ABP and Device26_ABP
+        [Fact]
+        public async Task Test_ABP_Device_With_Connection_Timeout()
+        {
+            this.LogTestStart(new TestDeviceInfo[] { this.TestFixtureCi.Device25_ABP, this.TestFixtureCi.Device26_ABP });
+
+            // Sends 1 message from device 25
+            var device25 = this.TestFixtureCi.Device25_ABP;
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(device25.DevAddr, device25.DeviceID, null);
+            await this.ArduinoDevice.setKeyAsync(device25.NwkSKey, device25.AppSKey, null);
+
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+            await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
+
+            // wait 61 seconds
+            await Task.Delay(TimeSpan.FromSeconds(61));
+
+            // Send 1 message from device 26
+            var device26 = this.TestFixtureCi.Device26_ABP;
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(device26.DevAddr, device26.DeviceID, null);
+            await this.ArduinoDevice.setKeyAsync(device26.NwkSKey, device26.AppSKey, null);
+
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+            await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
+
+            await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+            this.TestFixtureCi.ClearLogs();
+
+            // Send 1 message from device 25 and check that connection was restablished
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(device25.DevAddr, device25.DeviceID, null);
+            await this.ArduinoDevice.setKeyAsync(device25.NwkSKey, device25.AppSKey, null);
+
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+            var expectedMessage = PayloadGenerator.Next().ToString();
+            await this.ArduinoDevice.transferPacketAsync(expectedMessage, 10);
+
+            // After transferPacket: Expectation from serial
+            // +MSG: Done
+            await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
+
+            // 0000000000000005: message '{"value": 51}' sent to hub
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device25.DeviceID}: message '{{\"value\":{expectedMessage}}}' sent to hub");
+
+            // "device client reconnected"
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device25.DeviceID}: device client reconnected");
+        }
     }
 }

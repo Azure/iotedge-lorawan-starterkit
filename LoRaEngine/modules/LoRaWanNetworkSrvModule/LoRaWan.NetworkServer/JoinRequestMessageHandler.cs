@@ -103,6 +103,7 @@ namespace LoRaWan.NetworkServer
                     netIdBytes[1],
                     netIdBytes[2]
                 };
+
                 var appNonce = OTAAKeysGenerator.GetAppNonce();
                 var appNonceBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(appNonce);
                 var appKeyBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(loRaDevice.AppKey);
@@ -120,16 +121,27 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
+                var updatedProperties = new LoRaDeviceJoinUpdateProperties
+                {
+                    DevAddr = devAddr,
+                    NwkSKey = nwkSKey,
+                    AppSKey = appSKey,
+                    AppNonce = appNonce,
+                    DevNonce = devNonce,
+                    NetID = ConversionHelper.ByteArrayToString(netId),
+                    Region = request.Region.LoRaRegion,
+                    PreferredGatewayID = this.configuration.GatewayID,
+                };
+
+                if (loRaDevice.ClassType == LoRaDeviceClassType.C)
+                {
+                    updatedProperties.SavePreferredGateway = true;
+                    updatedProperties.SaveRegion = true;
+                }
+
                 Logger.Log(loRaDevice.DevEUI, $"saving join properties twins", LogLevel.Debug);
-                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(
-                    devAddr,
-                    nwkSKey,
-                    appSKey,
-                    appNonce,
-                    devNonce,
-                    ConversionHelper.ByteArrayToString(netId),
-                    request.Region.LoRaRegion,
-                    this.configuration.GatewayID);
+
+                var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties);
 
                 Logger.Log(loRaDevice.DevEUI, $"done saving join properties twins", LogLevel.Debug);
 
@@ -173,7 +185,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 loRaDevice.IsOurDevice = true;
-                await this.deviceRegistry.UpdateDeviceAfterJoinAsync(loRaDevice, oldDevAddr);
+                this.deviceRegistry.UpdateDeviceAfterJoin(loRaDevice, oldDevAddr);
 
                 // Build join accept downlink message
                 Array.Reverse(netId);

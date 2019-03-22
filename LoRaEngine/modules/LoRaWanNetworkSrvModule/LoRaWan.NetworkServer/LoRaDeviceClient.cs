@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
@@ -18,19 +19,23 @@ namespace LoRaWan.NetworkServer
     public sealed class LoRaDeviceClient : ILoRaDeviceClient
     {
         private readonly string devEUI;
+        private readonly string connectionString;
+        private readonly ITransportSettings[] transportSettings;
         private DeviceClient deviceClient;
 
         // TODO: verify if those are thread safe and can be static
         NoRetry noRetryPolicy;
         ExponentialBackoff exponentialBackoff;
 
-        public LoRaDeviceClient(string devEUI, DeviceClient deviceClient)
+        public LoRaDeviceClient(string devEUI, string connectionString, ITransportSettings[] transportSettings)
         {
             this.devEUI = devEUI;
-            this.deviceClient = deviceClient;
-
             this.noRetryPolicy = new NoRetry();
             this.exponentialBackoff = new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
+
+            this.connectionString = connectionString;
+            this.transportSettings = transportSettings;
+            this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
 
             this.SetRetry(false);
         }
@@ -283,14 +288,21 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Disconnects device client
         /// </summary>
-        public async Task<bool> DisconnectAsync()
+        public bool Disconnect()
         {
             try
             {
-                await this.deviceClient.CloseAsync();
-                this.deviceClient = null;
+                if (this.deviceClient != null)
+                {
+                    this.deviceClient.Dispose();
+                    this.deviceClient = null;
 
-                Logger.Log(this.devEUI, "device client disconnected", LogLevel.Debug);
+                    Logger.Log(this.devEUI, "device client disconnected", LogLevel.Debug);
+                }
+                else
+                {
+                    Logger.Log(this.devEUI, "device client was already disconnected", LogLevel.Debug);
+                }
 
                 return true;
             }
@@ -301,9 +313,34 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        /// <summary>
+        /// Ensures that the connection is open
+        /// </summary>
+        public bool EnsureConnected()
+        {
+            if (this.deviceClient == null)
+            {
+                try
+                {
+                    this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
+                    Logger.Log(this.devEUI, "device client reconnected", LogLevel.Debug);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(this.devEUI, $"could not connect device client with error: {ex.Message}", LogLevel.Error);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         public void Dispose()
         {
-            this.deviceClient.Dispose();
+            this.deviceClient?.Dispose();
+            this.deviceClient = null;
+
+            GC.SuppressFinalize(this);
         }
     }
 }

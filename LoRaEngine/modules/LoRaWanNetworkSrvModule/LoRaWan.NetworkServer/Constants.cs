@@ -48,5 +48,10 @@ namespace LoRaWan.NetworkServer
         /// Convert the time to the packet forward time (millionth of seconds)
         /// </summary>
         public const uint CONVERT_TO_PKT_FWD_TIME = 1000000;
+
+        /// <summary>
+        /// Minimum value for device connection keep alive timeout (1 minute)
+        /// </summary>
+        public const int MIN_KEEP_ALIVE_TIMEOUT = 60;
     }
 }
