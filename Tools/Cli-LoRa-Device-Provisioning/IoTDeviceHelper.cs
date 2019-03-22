@@ -529,15 +529,39 @@ namespace Cli_LoRa_Device_Provisioning
                 // AppEui
                 if (!string.IsNullOrEmpty(opts.AppEui))
                 {
-                    StatusConsole.WriteLine(MessageType.Error, $"AppEUI {opts.AppEui} is invalid for ABP devices.");
+                    StatusConsole.WriteLine(MessageType.Error, $"AppEUI is an invalid property for ABP devices.");
                     isValid = false;
                 }
 
                 // AppKey
                 if (!string.IsNullOrEmpty(opts.AppKey))
                 {
-                    StatusConsole.WriteLine(MessageType.Error, $"AppKey {opts.AppKey} is invalid for ABP devices.");
+                    StatusConsole.WriteLine(MessageType.Error, $"AppKey is an invalid property for ABP devices.");
                     isValid = false;
+                }
+
+                // Rx2DataRate
+                if (!string.IsNullOrEmpty(opts.Rx2DataRate))
+                {
+                    if (!ValidationHelper.ValidateDataRateTwinProperty(opts.Rx2DataRate, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"Rx2DataRate {opts.Rx2DataRate} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+
+                    StatusConsole.WriteLine(MessageType.Warning, $"Rx2DataRate is currently not supported for ABP devices.");
+                }
+
+                // Rx1DrOffset
+                if (!string.IsNullOrEmpty(opts.Rx1DrOffset))
+                {
+                    if (!ValidationHelper.ValidateUIntTwinProperty(opts.Rx1DrOffset, 0, 15, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"Rx1DrOffset {opts.Rx1DrOffset} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+
+                    StatusConsole.WriteLine(MessageType.Warning, $"Rx1DrOffset is currently not supported for ABP devices.");
                 }
             }
 
@@ -578,6 +602,34 @@ namespace Cli_LoRa_Device_Provisioning
                     StatusConsole.WriteLine(MessageType.Info, $"AppKey {opts.AppKey} is valid.");
                 }
 
+                // Rx2DataRate
+                if (!string.IsNullOrEmpty(opts.Rx2DataRate))
+                {
+                    if (!ValidationHelper.ValidateDataRateTwinProperty(opts.Rx2DataRate, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"Rx2DataRate {opts.Rx2DataRate} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+                    else
+                    {
+                        StatusConsole.WriteLine(MessageType.Info, $"Rx2DataRate {opts.Rx2DataRate} is valid.");
+                    }
+                }
+
+                // Rx1DrOffset
+                if (!string.IsNullOrEmpty(opts.Rx1DrOffset))
+                {
+                    if (!ValidationHelper.ValidateUIntTwinProperty(opts.Rx1DrOffset, 0, 15, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"Rx1DrOffset {opts.Rx1DrOffset} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+                    else
+                    {
+                        StatusConsole.WriteLine(MessageType.Info, $"Rx1DrOffset {opts.Rx1DrOffset} is valid.");
+                    }
+                }
+
                 // ******************************************************************************************
                 // Invalid properties for OTAA devices
                 // ******************************************************************************************
@@ -585,52 +637,82 @@ namespace Cli_LoRa_Device_Provisioning
                 // NwkSKey
                 if (!string.IsNullOrEmpty(opts.NwkSKey))
                 {
-                    StatusConsole.WriteLine(MessageType.Error, $"NwkSKey {opts.NwkSKey} is invalid for OTAA devices.");
+                    StatusConsole.WriteLine(MessageType.Error, $"NwkSKey is invalid for OTAA devices.");
                     isValid = false;
                 }
 
                 // AppSKey
                 if (!string.IsNullOrEmpty(opts.AppSKey))
                 {
-                    StatusConsole.WriteLine(MessageType.Error, $"AppSKey {opts.AppSKey} is invalid for OTAA devices.");
+                    StatusConsole.WriteLine(MessageType.Error, $"AppSKey is invalid for OTAA devices.");
                     isValid = false;
                 }
 
                 // DevAddr
                 if (!string.IsNullOrEmpty(opts.DevAddr))
                 {
-                    StatusConsole.WriteLine(MessageType.Error, $"DevAddr {opts.DevAddr} is invalid for OTAA devices.");
+                    StatusConsole.WriteLine(MessageType.Error, $"DevAddr is invalid for OTAA devices.");
                     isValid = false;
                 }
 
                 // NetId
                 if (!string.IsNullOrEmpty(opts.NetId))
                 {
-                    StatusConsole.WriteLine(MessageType.Warning, $"NetId {opts.NetId} is not used in OTAA devices.");
+                    if (!ValidationHelper.ValidateHexStringTwinProperty(opts.NetId, 3, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"NetId {opts.NetId} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+
+                    StatusConsole.WriteLine(MessageType.Warning, $"NetId is not used in OTAA devices.");
                 }
 
                 // ABPRelaxMode
                 if (!string.IsNullOrEmpty(opts.ABPRelaxMode))
                 {
-                    StatusConsole.WriteLine(MessageType.Warning, $"ABPRelaxMode {opts.ABPRelaxMode} is invalid/ignored for OTAA devices.");
+                    if (!ValidationHelper.ValidateBoolTwinProperty(opts.ABPRelaxMode, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"ABPRelaxMode {opts.ABPRelaxMode} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+
+                    StatusConsole.WriteLine(MessageType.Warning, $"ABPRelaxMode is invalid/ignored for OTAA devices.");
                 }
 
                 // FCntUpStart
                 if (!string.IsNullOrEmpty(opts.FCntUpStart))
                 {
-                    StatusConsole.WriteLine(MessageType.Warning, $"FCntUpStart {opts.FCntUpStart} is invalid/ignored for OTAA devices.");
+                    if (!ValidationHelper.ValidateUIntTwinProperty(opts.FCntUpStart, 0, uint.MaxValue, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"FCntUpStart {opts.FCntUpStart} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+
+                    StatusConsole.WriteLine(MessageType.Warning, $"FCntUpStart is invalid/ignored for OTAA devices.");
                 }
 
                 // FCntDownStart
                 if (!string.IsNullOrEmpty(opts.FCntDownStart))
                 {
-                    StatusConsole.WriteLine(MessageType.Warning, $"FCntDownStart {opts.FCntDownStart} is invalid/ignored for OTAA devices.");
+                    if (!ValidationHelper.ValidateUIntTwinProperty(opts.FCntDownStart, 0, uint.MaxValue, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"FCntDownStart {opts.FCntDownStart} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+
+                    StatusConsole.WriteLine(MessageType.Warning, $"FCntDownStart is invalid/ignored for OTAA devices.");
                 }
 
                 // FCntResetCounter
                 if (!string.IsNullOrEmpty(opts.FCntResetCounter))
                 {
-                    StatusConsole.WriteLine(MessageType.Warning, $"FCntResetCounter {opts.FCntResetCounter} is invalid/ignored for OTAA devices.");
+                    if (!ValidationHelper.ValidateUIntTwinProperty(opts.FCntResetCounter, 0, uint.MaxValue, out validationError))
+                    {
+                        StatusConsole.WriteLine(MessageType.Error, $"FCntResetCounter {opts.FCntResetCounter} is invalid: {validationError}.");
+                        isValid = false;
+                    }
+
+                    StatusConsole.WriteLine(MessageType.Warning, $"FCntResetCounter is invalid/ignored for OTAA devices.");
                 }
             }
 
@@ -719,34 +801,6 @@ namespace Cli_LoRa_Device_Provisioning
                 else
                 {
                     StatusConsole.WriteLine(MessageType.Info, $"Deduplication {opts.Deduplication} is valid.");
-                }
-            }
-
-            // Rx2DataRate
-            if (!string.IsNullOrEmpty(opts.Rx2DataRate))
-            {
-                if (!ValidationHelper.ValidateDataRateTwinProperty(opts.Rx2DataRate, out validationError))
-                {
-                    StatusConsole.WriteLine(MessageType.Error, $"Rx2DataRate {opts.Rx2DataRate} is invalid: {validationError}.");
-                    isValid = false;
-                }
-                else
-                {
-                    StatusConsole.WriteLine(MessageType.Info, $"Rx2DataRate {opts.Rx2DataRate} is valid.");
-                }
-            }
-
-            // Rx1DrOffset
-            if (!string.IsNullOrEmpty(opts.Rx1DrOffset))
-            {
-                if (!ValidationHelper.ValidateUIntTwinProperty(opts.Rx1DrOffset, 0, 15, out validationError))
-                {
-                    StatusConsole.WriteLine(MessageType.Error, $"Rx1DrOffset {opts.Rx1DrOffset} is invalid: {validationError}.");
-                    isValid = false;
-                }
-                else
-                {
-                    StatusConsole.WriteLine(MessageType.Info, $"Rx1DrOffset {opts.Rx1DrOffset} is valid.");
                 }
             }
 

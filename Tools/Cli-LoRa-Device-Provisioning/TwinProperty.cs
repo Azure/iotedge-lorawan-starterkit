@@ -3,10 +3,6 @@
 
 namespace Cli_LoRa_Device_Provisioning
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-
     public static class TwinProperty
     {
         public const string AppSKey = "AppSKey";
