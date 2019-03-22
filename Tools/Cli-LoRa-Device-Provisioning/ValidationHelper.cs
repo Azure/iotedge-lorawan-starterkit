@@ -81,7 +81,7 @@ namespace Cli_LoRa_Device_Provisioning
             {
                 outNetId = inNetId.Replace("\'", string.Empty);
                 if (outNetId.Length < 6)
-                    outNetId = string.Concat("000000".Substring(outNetId.Length), outNetId);
+                    outNetId = string.Concat(new string('0', 6).Substring(outNetId.Length), outNetId);
 
                 if (outNetId.Length > 6)
                     outNetId = outNetId.Substring(outNetId.Length - 6);
