@@ -21,8 +21,8 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public class LoRaDeviceRegistry : ILoRaDeviceRegistry
     {
-        // Caches a device making join for 2 minute
-        const int INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES = 2;
+        // Caches a device making join for 30 minutes
+        const int INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES = 30;
 
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceFactory deviceFactory;
@@ -82,7 +82,7 @@ namespace LoRaWan.NetworkServer
             {
                 return this.cache.GetOrCreate<DevEUIToLoRaDeviceDictionary>(devAddr, (cacheEntry) =>
                 {
-                    cacheEntry.SlidingExpiration = TimeSpan.FromDays(1);
+                    cacheEntry.SetAbsoluteExpiration(TimeSpan.FromDays(2));
                     cacheEntry.ExpirationTokens.Add(this.resetCacheChangeToken);
                     return new DevEUIToLoRaDeviceDictionary();
                 });
