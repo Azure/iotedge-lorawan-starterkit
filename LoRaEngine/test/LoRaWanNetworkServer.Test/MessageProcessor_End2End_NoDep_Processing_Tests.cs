@@ -1279,8 +1279,8 @@ namespace LoRaWan.NetworkServer.Test
 
             deviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(simulatedDevice.CreateABPTwin());
 
-            deviceClient.Setup(x => x.DisconnectAsync())
-               .ReturnsAsync(true);
+            deviceClient.Setup(x => x.Disconnect())
+               .Returns(true);
 
             deviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                .ReturnsAsync((Message)null);
