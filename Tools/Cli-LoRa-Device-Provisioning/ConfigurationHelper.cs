@@ -35,6 +35,7 @@ namespace Cli_LoRa_Device_Provisioning
             catch (Exception ex)
             {
                 StatusConsole.WriteLine(MessageType.Error, $"{ex.Message}");
+                StatusConsole.WriteLine(MessageType.Info, "The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }");
                 return false;
             }
 

@@ -8,7 +8,7 @@ You can create an platform specific executable by running
 
 ```powershell
 dotnet publish -c Release -r win10-x64
-dotnet publish -c Release -r lunux-x64
+dotnet publish -c Release -r linux-x64
 dotnet publish -c Release -r osx-x64
 ```
 

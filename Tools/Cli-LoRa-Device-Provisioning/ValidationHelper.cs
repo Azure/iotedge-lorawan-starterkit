@@ -286,6 +286,7 @@ namespace Cli_LoRa_Device_Provisioning
         public static bool ValidateSensorDecoder(string sensorDecoder)
         {
             var isValid = true;
+            var isWarning = false;
 
             if (sensorDecoder == null)
             {
@@ -316,12 +317,12 @@ namespace Cli_LoRa_Device_Provisioning
 
                 if (validatedUri.AbsolutePath.IndexOf("/api/") < 0)
                 {
-                    StatusConsole.WriteLine(MessageType.Error, "SensorDecoder is missing \"api\" keyword.");
-                    isValid = false;
+                    StatusConsole.WriteLine(MessageType.Warning, "SensorDecoder is missing \"api\" keyword.");
+                    isWarning = true;
                 }
             }
 
-            if (!isValid)
+            if (!isValid || isWarning)
             {
                 StatusConsole.WriteLine(MessageType.Info, "Make sure the URI based SensorDecoder Twin desired property looks like \"http://containername/api/decodername\".");
             }
@@ -364,7 +365,7 @@ namespace Cli_LoRa_Device_Provisioning
 
                 if (fCntResetCounter != null)
                 {
-                    StatusConsole.WriteLine(MessageType.Warning, $"FCntResetCounter {fCntResetCounter} is unused if ABPRelaxMode istrue or empty.");
+                    StatusConsole.WriteLine(MessageType.Warning, $"FCntResetCounter {fCntResetCounter} is unused if ABPRelaxMode is true or empty.");
                 }
             }
 
