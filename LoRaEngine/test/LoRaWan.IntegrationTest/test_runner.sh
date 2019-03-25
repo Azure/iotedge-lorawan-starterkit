@@ -40,7 +40,8 @@ declare -a testsToRun=('LoRaWan.IntegrationTest.OTAAJoinTest'
                        'LoRaWan.IntegrationTest.OTAATest'
                        'LoRaWan.IntegrationTest.MacTest'
                        'LoRaWan.IntegrationTest.SensorDecodingTest'
-                       'LoRaWan.IntegrationTest.ClassCTest')
+                       'LoRaWan.IntegrationTest.ClassCTest'
+                       'LoRaWan.IntegrationTest.DeduplicationTest')
 
 testCount=${#testsToRun[@]}
 
