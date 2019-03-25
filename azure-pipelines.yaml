@@ -147,7 +147,6 @@ jobs:
   displayName: Build, push and deploy arm32v7 IoT Edge Solution - Secondary Gateway
   variables:
     IOT_DEPLOYMENT_ID: integrationtestarmsecondary
-    VSTS_AGENT: "$(vstsAgentARM)"
     RESET_PIN: $(RESET_PIN_SECONDARY)
     # Defines image version to use in case in ARM architecture
     DEVOPS_AGENT_IMAGE: "$(CONTAINER_REGISTRY_ADDRESS)/azuredevopsagent:$(DEVOPS_AGENT_IMAGE_VERSION)-arm32v7"
