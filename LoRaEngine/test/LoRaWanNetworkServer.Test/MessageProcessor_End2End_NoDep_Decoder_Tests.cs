@@ -708,5 +708,76 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.VerifyAll();
             this.LoRaDeviceClient.VerifyAll();
         }
+
+        [Fact]
+        public async Task When_Resent_Message_Using_Custom_Decoder_Returns_Complex_Object_Should_Send_Decoded_Value()
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
+            var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
+            loRaDevice.SensorDecoder = "http://customdecoder/test1";
+
+            // message will be sent
+            LoRaDeviceTelemetry loRaDeviceTelemetry = null;
+            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
+                .ReturnsAsync(true);
+
+            // C2D message will be checked
+            // this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+            // .ReturnsAsync((Message)null);
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+
+            // Send to message processor
+            var messageDispatcher = new MessageDispatcher(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyProvider);
+
+            var decodedObject = new { temp = 10, humidity = 22.1, text = "abc", cloudToDeviceMessage = new { test = 1 } };
+
+            var httpMessageHandler = new HttpMessageHandlerMock();
+            httpMessageHandler.SetupHandler((r) =>
+            {
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(decodedObject), Encoding.UTF8, "application/json"),
+                };
+            });
+
+            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(new HttpClient(httpMessageHandler)));
+
+            // sends unconfirmed message
+            var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 10);
+            var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            messageDispatcher.DispatchRequest(request);
+            Assert.True(await request.WaitCompleteAsync());
+            Assert.NotNull(request.ResponseDownlink);
+
+            Assert.NotNull(loRaDeviceTelemetry);
+            var rawPayload = Convert.ToBase64String(Encoding.UTF8.GetBytes("1"));
+            Assert.Equal(rawPayload, loRaDeviceTelemetry.Rawdata);
+
+            // Validate json
+            var actualJsonTelemetry = JsonConvert.SerializeObject(loRaDeviceTelemetry, Formatting.None);
+            var expectedTelemetryJson = $"{{\"time\":null,\"tmms\":0,\"tmst\":0,\"freq\":868.3,\"chan\":0,\"rfch\":1,\"stat\":0,\"modu\":\"LORA\",\"datr\":\"SF10BW125\",\"codr\":\"4/5\",\"rssi\":0,\"lsnr\":0.0,\"size\":{loRaDeviceTelemetry.Size},\"data\":{{\"temp\":10,\"humidity\":22.1,\"text\":\"abc\"}},\"port\":1,\"fcnt\":10,\"rawdata\":\"{rawPayload}\",\"eui\":\"0000000000000001\",\"gatewayid\":\"test-gateway\",\"edgets\":{loRaDeviceTelemetry.Edgets}}}";
+            Assert.Equal(expectedTelemetryJson, actualJsonTelemetry);
+
+            // send a second message with same fcnt to simulate
+            // sends unconfirmed message
+            var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("1", fcnt: 10);
+            var rxpk2 = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+            var request2 = new WaitableLoRaRequest(rxpk2, this.PacketForwarder);
+            messageDispatcher.DispatchRequest(request2);
+            Assert.True(await request2.WaitCompleteAsync());
+            Assert.NotNull(request2.ResponseDownlink);
+            Assert.NotNull(loRaDeviceTelemetry);
+            var rawPayload2 = Convert.ToBase64String(Encoding.UTF8.GetBytes("1"));
+            Assert.Equal(rawPayload, loRaDeviceTelemetry.Rawdata);
+            // Only the first message should be sent
+            this.LoRaDeviceClient.Verify(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null), Times.Once());
+            this.LoRaDeviceApi.VerifyAll();
+            this.LoRaDeviceClient.VerifyAll();
+        }
     }
 }
