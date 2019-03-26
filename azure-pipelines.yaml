@@ -148,8 +148,6 @@ jobs:
   variables:
     IOT_DEPLOYMENT_ID: integrationtestarmsecondary
     RESET_PIN: $(RESET_PIN_SECONDARY)
-    # Defines image version to use in case in ARM architecture
-    DEVOPS_AGENT_IMAGE: "$(CONTAINER_REGISTRY_ADDRESS)/azuredevopsagent:$(DEVOPS_AGENT_IMAGE_VERSION)-arm32v7"
     
   dependsOn:  build_and_test
   condition: and(ne(variables['IoTEdgeDeviceARMSecondary'], ''), and(ne(variables['RunTestsOnly'], 'true'), and(succeeded(), or(eq(dependencies.build_and_test.outputs['checkPrCILabel.prWithCILabel'], true), or(eq(variables['FullCI'],'true'), in(variables['Build.SourceBranch'], 'refs/heads/master', 'refs/heads/dev'))))))
