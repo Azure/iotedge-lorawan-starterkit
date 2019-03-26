@@ -454,8 +454,9 @@ namespace Cli_LoRa_Device_Provisioning
                     }
                     else
                     {
-                        StatusConsole.WriteLine(MessageType.Error, $"DevAddr {opts.DevAddr} is invalid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}");
-                        StatusConsole.WriteLine(MessageType.Warning, $"To stop seeing this error, provid the --netid parameter or set the NetId in the settings file.");
+                        StatusConsole.WriteLine(MessageType.Error, $"DevAddr {opts.DevAddr} is invalid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.");
+                        StatusConsole.WriteLine(MessageType.Warning, $"DevAddr {opts.DevAddr} belongs to NetId ending in byte {NetIdHelper.GetNwkIdPart(opts.DevAddr).ToString("X2")}.");
+                        StatusConsole.WriteLine(MessageType.Info, $"To stop seeing this error, provide the --netid parameter or set the NetId in the settings file.");
                         isValid = false;
                     }
                 }
