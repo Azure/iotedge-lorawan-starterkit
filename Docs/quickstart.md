@@ -3,14 +3,15 @@
 An Azure deployment template is available to deploy all the required Azure infrastructure and get you started quickly.
 If you'd rather deploy it manually please jump directly into the [do it yourself section](devguide.md).
 
-### Prerequisites
+## Prerequisites
+
 The template supports x86 and ARM architectures and will automatically deploy the correct version to your gateway. Make sure to provide your gateway's reset pin in the dialog before the deployment.
 
 Additionally, if your gateway use SPI_DEV version 1 the packet forwarder module will not work out-of-the-box. To fix this, simply add an environment variable 'SPI_DEV' set to the value 1 to the LoRaWanPktFwdModule module (SPI_DEV is set to 2 by default).
 
 The LoRa device demo code in the Arduino folder is built only for Seeduino LoRaWan board and was not test with other Arduino LoRa boards.
 
-### Deployed Azure Infrastructure
+## Deployed Azure Infrastructure
 
 The template will deploy in your Azure subscription the Following resources:
 
@@ -18,7 +19,7 @@ The template will deploy in your Azure subscription the Following resources:
 - [Azure Function](https://azure.microsoft.com/en-us/services/functions/)
 - [Redis Cache](https://azure.microsoft.com/en-us/services/cache/)
 
-### Step-by-step instructions
+## Step-by-step instructions
 
 1. Press on the button here below to start your Azure Deployment.
 
@@ -38,11 +39,11 @@ The template will deploy in your Azure subscription the Following resources:
 
   The deployment would take c.a. 10 minutes to complete.
 
-3.  During this time, you can proceed to [install IoT Edge to your gateway](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm).
+3. During this time, you can proceed to [install IoT Edge to your gateway](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm).
 
-4.  Once the Azure deployment is finished, connect your IoT Edge with the cloud [as described in point 3](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm#configure-the-azure-iot-edge-security-daemon). You can get the connection string by clicking on the deployed IoT Hub -> IoT Edge Devices -> Connection string, as shown in the picture below.
+4. Once the Azure deployment is finished, connect your IoT Edge with the cloud [as described in point 3](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm#configure-the-azure-iot-edge-security-daemon). You can get the connection string by clicking on the deployed IoT Hub -> IoT Edge Devices -> Connection string, as shown in the picture below.
 
-5.  If your gateway is a Raspberry Pi, **don't forget to [enable SPI](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/) , (You need to restart your pi)**.
+5. If your gateway is a Raspberry Pi, **don't forget to [enable SPI](https://www.makeuseof.com/tag/enable-spi-i2c-raspberry-pi/) , (You need to restart your pi)**.
 
 By using the `docker ps` command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the [Arduino folder](/Arduino) to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly "TransmissionTestOTAALoRa.ino" without provisioning the device first.
 
