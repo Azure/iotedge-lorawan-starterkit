@@ -121,7 +121,6 @@ namespace LoRaWan.NetworkServer
             }
 
             var payload = await response.Content.ReadAsStringAsync();
-            Logger.Log(devEUI, $"bundling function response: '{payload}'", LogLevel.Debug);
             return JsonConvert.DeserializeObject<FunctionBundlerResult>(payload);
         }
 

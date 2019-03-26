@@ -76,7 +76,7 @@ namespace LoRaWan.NetworkServer
                 qualifyingExecutionItems[i].Prepare(context, bundlerRequest);
             }
 
-            Logger.Log(loRaDevice.DevEUI, "new FunctionBundler Request: ", bundlerRequest, LogLevel.Debug);
+            Logger.Log(loRaDevice.DevEUI, "FunctionBundler request: ", bundlerRequest, LogLevel.Debug);
 
             return new FunctionBundler(loRaDevice.DevEUI, this.deviceApi, bundlerRequest, qualifyingExecutionItems, context);
         }

@@ -194,7 +194,7 @@ namespace LoRaWan.NetworkServer
                 this.loadingDevicesFailed = true;
             }
 
-            failedRequests.ForEach(x => x.NotifyFailed(null, LoRaDeviceRequestFailedReason.ApplicationError));
+            failedRequests.ForEach(x => x.NotifyFailed(LoRaDeviceRequestFailedReason.ApplicationError));
         }
 
         private void DispatchQueuedItems(List<LoRaDevice> devices)
@@ -221,7 +221,7 @@ namespace LoRaWan.NetworkServer
                 {
                     var failedReason = hasDevicesMatchingDevAddr ? LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck : LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr;
                     this.LogRequestFailed(request, failedReason);
-                    request.NotifyFailed(null, failedReason);
+                    request.NotifyFailed(failedReason);
                 }
             }
 
@@ -262,7 +262,7 @@ namespace LoRaWan.NetworkServer
 
                 this.LogRequestFailed(request, failedReason);
 
-                request.NotifyFailed(null, failedReason);
+                request.NotifyFailed(failedReason);
             }
         }
 

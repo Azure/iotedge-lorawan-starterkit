@@ -139,8 +139,6 @@ namespace LoRaWan.NetworkServer
 
                     await this.deviceClient.SendEventAsync(message);
 
-                    Logger.Log(this.devEUI, $"sent message {messageJson} to hub", LogLevel.Debug);
-
                     return true;
                 }
                 catch (Exception ex)

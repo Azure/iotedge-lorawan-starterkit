@@ -20,7 +20,7 @@ namespace LoraKeysManagerFacade.Test
             var adrStrategy = new Mock<ILoRaADRStrategy>(MockBehavior.Strict);
             adrStrategy
                 .Setup(x => x.ComputeResult(It.IsNotNull<string>(), It.IsNotNull<LoRaADRTable>(), It.IsAny<float>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
-                .Returns((LoRaADRTable table, float snr, int dr, int power, int maxDr) =>
+                .Returns((string devEUI, LoRaADRTable table, float snr, int dr, int power, int maxDr) =>
                 {
                     return table.Entries.Count >= LoRaADRTable.FrameCountCaptureCount
                     ? new LoRaADRResult()

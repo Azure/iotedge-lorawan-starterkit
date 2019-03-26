@@ -129,7 +129,10 @@ namespace LoraKeysManagerFacade.Test
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
                 devEUI,
-                new LoRaCloudToDeviceMessage());
+                new LoRaCloudToDeviceMessage()
+                {
+                    Fport = 1,
+                });
 
             Assert.IsType<ObjectResult>(actual);
             Assert.Equal((int)HttpStatusCode.BadRequest, ((ObjectResult)actual).StatusCode);
@@ -150,7 +153,10 @@ namespace LoraKeysManagerFacade.Test
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
                 devEUI,
-                new LoRaCloudToDeviceMessage());
+                new LoRaCloudToDeviceMessage()
+                {
+                    Fport = 1,
+                });
 
             Assert.IsType<ObjectResult>(actual);
             Assert.Equal((int)HttpStatusCode.InternalServerError, ((ObjectResult)actual).StatusCode);
@@ -174,7 +180,10 @@ namespace LoraKeysManagerFacade.Test
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
                 devEUI,
-                new LoRaCloudToDeviceMessage());
+                new LoRaCloudToDeviceMessage()
+                {
+                    Fport = 1,
+                });
 
             Assert.IsType<BadRequestObjectResult>(actual);
 
@@ -198,7 +207,10 @@ namespace LoraKeysManagerFacade.Test
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
                 devEUI,
-                new LoRaCloudToDeviceMessage());
+                new LoRaCloudToDeviceMessage()
+                {
+                    Fport = 1,
+                });
 
             Assert.IsType<ObjectResult>(actual);
             Assert.Equal((int)HttpStatusCode.InternalServerError, ((ObjectResult)actual).StatusCode);
@@ -223,7 +235,10 @@ namespace LoraKeysManagerFacade.Test
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
                 devEUI,
-                new LoRaCloudToDeviceMessage());
+                new LoRaCloudToDeviceMessage()
+                {
+                    Fport = 1,
+                });
 
             Assert.IsType<NotFoundObjectResult>(actual);
             Assert.Equal((int)HttpStatusCode.NotFound, ((ObjectResult)actual).StatusCode);

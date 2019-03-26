@@ -114,12 +114,6 @@ namespace LoRaWan
             {
                 Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
             }
-#if DEBUG
-            if (System.Diagnostics.Debugger.IsAttached)
-            {
-                System.Diagnostics.Debug.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
-            }
-#endif
         }
 
         static void LogToUdp(string message)

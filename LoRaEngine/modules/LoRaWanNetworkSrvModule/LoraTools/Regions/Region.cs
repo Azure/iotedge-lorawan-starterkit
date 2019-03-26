@@ -175,7 +175,7 @@ namespace LoRaTools.Regions
                     Logger.Log(devEUI, $"using standard second receive windows for join request", LogLevel.Debug);
                     // using EU fix DR for RX2
                     freq = this.RX2DefaultReceiveWindows.frequency;
-                    datr = this.DRtoConfiguration[RegionManager.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
+                    datr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
                 }
                 else
                 {
@@ -193,7 +193,7 @@ namespace LoRaTools.Regions
                 }
                 else
                 {
-                    datr = this.DRtoConfiguration[RegionManager.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
+                    datr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
                 }
 
                 // Todo add optional frequencies via Mac Commands
