@@ -11,7 +11,6 @@ the [Security TechCenter](https://technet.microsoft.com/en-us/security/default).
 
 ## Limitations
 
-- We support multi-gateway but currently you need to implement message de-duplication after IoT Hub, if multiples gateways are used in the same range of the device and you don't want duplicate messages or redundancy we recommend setting the gateway tag "GatewayID" on the device twins with the IoT Edge ID of the preferred gateway for that device.
 - No Class B support
 - Tested only for EU868 and US915 frequency
 - IoT Edge must have internet connectivity, it can work for limited time offline if the device has previously transmitted an upstream message.

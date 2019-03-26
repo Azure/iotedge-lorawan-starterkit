@@ -4,12 +4,14 @@
 
 The code is organized into three sections:
 
-- **LoRaEngine** - a .NET Standard 2.0 solution with the following folders:
+- **LoRaEngine** - a .NET Standard 2.1 solution with the following folders:
   - **modules** - Azure IoT Edge modules.
   - **LoraKeysManagerFacade** - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
   - **LoRaDevTools** - library for dev tools (git submodule)
 - **Arduino** - Examples and references for LoRa Arduino based devices.
 - **Template** - Contain code useful for the "deploy to Azure button"
+- **Tools** - Contains tools that support the LoRaWan Gateway project
+  - **Cli-LoRa-Device-Provisioning** - .NET Core 2.1 Command Line tool that allows to list, query, verify, insert, edit, update and delete LoRa leaf device configurations into IoT Hub
 - **Samples** - Contains sample decoders
 - **Docs** - Additional modules, pictures and documentations
 
@@ -98,7 +100,7 @@ You have the option to either deploy the Azure Function code from your Visual St
 |-|-|
 |WEBSITE_RUN_FROM_ZIP|<https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.0/function-1.0.0.zip>|
 
-![Run Azure Function from Zip file](/Docs/Pictures/FunctionRunFromZip.PNG)
+![Run Azure Function from Zip file](/Docs/Pictures/FunctionRunFromZip.png)
 
 #### Follow these next steps in both cases
 
@@ -196,7 +198,7 @@ lora.setId(NULL, "47AAC86800430010", "BE7A0000000014E3");
 lora.setKey(NULL, NULL, "8AFE71A145B253E49C3031AD068277A3");
 ```
 
-To provisioning a device in Azure IoT Hub with these identifiers and capable to [decode](/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoraDecoders.cs) temperature payload into Json you have to create a device with:
+To provisioning a device in Azure IoT Hub with these identifiers and capable to [decode](/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoraDecoders.cs) simple value payload into Json you have to create a device with:
 
 Device Id: `47AAC86800430010` and Device Twin's deired properties:
 
@@ -222,7 +224,7 @@ As soon as you start your device you should see the following:
 "desired": {
     "AppEUI": "BE7A0000000014E3",
     "AppKey": "8AFE71A145B253E49C3031AD068277A3",
-    "SensorDecoder": "DecoderTemperatureSensor",
+    "SensorDecoder": "DecoderValueSensor",
     "AppSKey": "5E8513F64D99A63753A5F0DBB9FB9F91",
     "NwkSKey": "C0EF4B9495BD4A4C32B42438CD52D4B8",
     "DevAddr": "025DEAAE",
