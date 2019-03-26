@@ -8,8 +8,6 @@ namespace LoRaWan.Test.Shared
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.EventHubs;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -270,6 +268,12 @@ namespace LoRaWan.Test.Shared
             }
 
             return new SearchLogResult(false, processedEvents);
+        }
+
+        // Searches IoT Hub for messages
+        async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        {
+            return await this.SearchIoTHubLogs(evt => predicate(evt.Message), options);
         }
 
         // Searches IoT Hub for messages
