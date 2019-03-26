@@ -16,9 +16,9 @@ namespace LoRaWan.IntegrationTest
     // Tests OTAA requests
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
-    public sealed class DeduplicationTest : IntegrationTestBaseCi
+    public sealed class MultiGatewayTests : IntegrationTestBaseCi
     {
-        public DeduplicationTest(IntegrationTestFixtureCi testFixture)
+        public MultiGatewayTests(IntegrationTestFixtureCi testFixture)
             : base(testFixture)
         {
         }
