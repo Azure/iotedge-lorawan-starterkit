@@ -127,7 +127,7 @@ namespace LoRaWan.NetworkServer
             {
                 UdpReceiveResult receivedResults = await this.udpClient.ReceiveAsync();
                 var startTimeProcessing = DateTime.UtcNow;
-                // Logger.LogAlways($"UDP message received ({receivedResults.Buffer[3]}) from port: {receivedResults.RemoteEndPoint.Port} and IP: {receivedResults.RemoteEndPoint.Address.ToString()}");
+
                 switch (PhysicalPayload.GetIdentifierFromPayload(receivedResults.Buffer))
                 {
                     // In this case we have a keep-alive PULL_DATA packet we don't need to start the engine and can return immediately a response to the challenge
@@ -154,13 +154,13 @@ namespace LoRaWan.NetworkServer
                         {
                             Logger.Log(
                                 "UDP",
-                                $"Packet with id {ConversionHelper.ByteArrayToString(receivedResults.Buffer.RangeSubset(1, 2))} successfully transmitted by the aggregator",
+                                $"packet with id {ConversionHelper.ByteArrayToString(receivedResults.Buffer.RangeSubset(1, 2))} successfully transmitted by the aggregator",
                                 LogLevel.Debug);
                         }
                         else
                         {
                             var logMsg = string.Format(
-                                    "Packet with id {0} had a problem to be transmitted over the air :{1}",
+                                    "packet with id {0} had a problem to be transmitted over the air :{1}",
                                     receivedResults.Buffer.Length > 2 ? ConversionHelper.ByteArrayToString(receivedResults.Buffer.RangeSubset(1, 2)) : string.Empty,
                                     receivedResults.Buffer.Length > 12 ? Encoding.UTF8.GetString(receivedResults.Buffer.RangeSubset(12, receivedResults.Buffer.Length - 12)) : string.Empty);
                             Logger.Log("UDP", logMsg, LogLevel.Error);
@@ -169,7 +169,7 @@ namespace LoRaWan.NetworkServer
                         break;
 
                     default:
-                        Logger.Log("UDP", "Unknown packet type or length being received", LogLevel.Error);
+                        Logger.Log("UDP", "unknown packet type or length being received", LogLevel.Error);
                         break;
                 }
             }
@@ -190,7 +190,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log("UDP", $"Failed to dispatch messages: {ex.Message}", LogLevel.Error);
+                Logger.Log("UDP", $"failed to dispatch messages: {ex.Message}", LogLevel.Error);
             }
         }
 
@@ -233,7 +233,7 @@ namespace LoRaWan.NetworkServer
                     if (this.configuration.IoTEdgeTimeout > 0)
                     {
                         this.ioTHubModuleClient.OperationTimeoutInMilliseconds = this.configuration.IoTEdgeTimeout;
-                        Logger.Log($"Changing timeout to {this.ioTHubModuleClient.OperationTimeoutInMilliseconds} ms", LogLevel.Information);
+                        Logger.Log($"Changing timeout to {this.ioTHubModuleClient.OperationTimeoutInMilliseconds} ms", LogLevel.Debug);
                     }
 
                     Logger.Log("Getting properties from module twin...", LogLevel.Information);
@@ -247,7 +247,7 @@ namespace LoRaWan.NetworkServer
                     }
                     catch (ArgumentOutOfRangeException e)
                     {
-                        Logger.Log("Module twin FacadeServerName not exist", LogLevel.Error);
+                        Logger.Log("Module twin FacadeServerUrl property does not exist", LogLevel.Error);
                         throw e;
                     }
 
@@ -293,8 +293,6 @@ namespace LoRaWan.NetworkServer
 
         async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
         {
-            Logger.Log($"Direct method called {methodRequest?.Name}", LogLevel.Debug);
-
             if (string.Equals("clearcache", methodRequest.Name, StringComparison.InvariantCultureIgnoreCase))
             {
                 return await this.ClearCache(methodRequest, userContext);
@@ -303,6 +301,8 @@ namespace LoRaWan.NetworkServer
             {
                 return await this.SendCloudToDeviceMessageAsync(methodRequest);
             }
+
+            Logger.Log($"Unknown direct method called: {methodRequest?.Name}", LogLevel.Error);
 
             return new MethodResponse(404);
         }
@@ -315,7 +315,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var c2d = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
-            Logger.Log(c2d.DevEUI, $"Received c2d from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
+            Logger.Log(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
 
             CancellationToken cts = CancellationToken.None;
             if (methodRequest.ResponseTimeout.HasValue)
@@ -335,8 +335,6 @@ namespace LoRaWan.NetworkServer
         {
             this.loRaDeviceRegistry.ResetDeviceCache();
 
-            Logger.Log("Cache cleared", LogLevel.Information);
-
             return Task.FromResult(new MethodResponse(200));
         }
 
@@ -354,7 +352,7 @@ namespace LoRaWan.NetworkServer
                     this.loRaDeviceAPIService.SetAuthCode((string)desiredProperties["FacadeAuthCode"]);
                 }
 
-                Logger.Log("Desired property changed", LogLevel.Information);
+                Logger.Log("Desired property changed", LogLevel.Debug);
             }
             catch (AggregateException ex)
             {
@@ -385,20 +383,20 @@ namespace LoRaWan.NetworkServer
                     {
                         Logger.Log("UDP", $"sending message with ID {ConversionHelper.ByteArrayToString(token)}, to {this.pullAckRemoteLoRaAddress}:{this.pullAckRemoteLoRaAggregatorPort}", LogLevel.Debug);
                         await this.UdpSendMessageAsync(pyld.GetMessage(), this.pullAckRemoteLoRaAddress, this.pullAckRemoteLoRaAggregatorPort);
-                        Logger.Log("UDP", $"message sent with ID {ConversionHelper.ByteArrayToString(token)}", LogLevel.Information);
+                        Logger.Log("UDP", $"message sent with ID {ConversionHelper.ByteArrayToString(token)}", LogLevel.Debug);
                     }
                     else
                     {
                         Logger.Log(
                             "UDP",
-                            "Waiting for first pull_ack message from the packet forwarder. The received message was discarded as the network server is still starting.",
+                            "waiting for first pull_ack message from the packet forwarder. The received message was discarded as the network server is still starting.",
                             LogLevel.Debug);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Logger.Log($"Error processing the message {ex.Message}, {ex.StackTrace}", LogLevel.Error);
+                Logger.Log("UDP", $"error processing the message {ex.Message}, {ex.StackTrace}", LogLevel.Error);
             }
         }
 

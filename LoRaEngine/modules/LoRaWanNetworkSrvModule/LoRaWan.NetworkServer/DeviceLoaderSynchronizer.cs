@@ -81,7 +81,7 @@ namespace LoRaWan.NetworkServer
             try
             {
                 // If device was not found, search in the device API, updating local cache
-                Logger.Log(this.devAddr, "querying the registry for device", LogLevel.Information);
+                Logger.Log(this.devAddr, "querying the registry for device", LogLevel.Debug);
 
                 SearchDevicesResult searchDeviceResult = null;
                 try
@@ -93,7 +93,7 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(this.devAddr, $"Error searching device for payload. {ex.Message}", LogLevel.Error);
+                    Logger.Log(this.devAddr, $"error searching device for payload. {ex.Message}", LogLevel.Error);
                     throw;
                 }
 
@@ -106,9 +106,7 @@ namespace LoRaWan.NetworkServer
                 {
                     this.SetState(LoaderState.DispatchingQueuedItems);
 
-                    Logger.Log(this.devAddr, "Dispatching queued items", LogLevel.Debug);
                     this.DispatchQueuedItems(createdDevices);
-                    Logger.Log(this.devAddr, "Finished dispatching queued items", LogLevel.Debug);
 
                     foreach (var device in createdDevices)
                     {
@@ -122,7 +120,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log(this.devAddr, $"Failed to create one or more devices. {ex.Message}", LogLevel.Error);
+                Logger.Log(this.devAddr, $"failed to create one or more devices. {ex.Message}", LogLevel.Error);
                 this.NotifyQueueItemsDueToError();
                 throw;
             }
@@ -153,7 +151,7 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(this.devAddr, $"One or more device initialization failed. {ex.Message}", LogLevel.Error);
+                    Logger.Log(this.devAddr, $"one or more device initialization failed. {ex.Message}", LogLevel.Error);
                 }
             }
 
@@ -242,15 +240,12 @@ namespace LoRaWan.NetworkServer
                     {
                         this.queuedRequests.Add(request);
                         requestAddedToQueue = true;
-                        Logger.Log(this.devAddr, $"Request added to queue. Loader state: {this.state}", LogLevel.Debug);
                     }
                 }
             }
 
             if (!requestAddedToQueue)
             {
-                Logger.Log(this.devAddr, $"Will try to queue request directly into device. Loader state: {this.state}", LogLevel.Debug);
-
                 foreach (var device in this.existingDevices.Values)
                 {
                     if (device.ValidateMic(request.Payload))
@@ -288,7 +283,6 @@ namespace LoRaWan.NetworkServer
         {
             if (this.state != newState)
             {
-                Logger.Log(this.devAddr, $"Loader state changed {this.state} => {newState}", LogLevel.Debug);
                 this.state = newState;
             }
         }
@@ -304,11 +298,11 @@ namespace LoRaWan.NetworkServer
                     break;
 
                 case LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr:
-                    Logger.Log(deviceId, $"device is not our device, ignore message", LogLevel.Information);
+                    Logger.Log(deviceId, $"device is not our device, ignore message", LogLevel.Debug);
                     break;
 
                 case LoRaDeviceRequestFailedReason.ApplicationError:
-                    Logger.Log(deviceId, "problem resolving device", LogLevel.Information);
+                    Logger.Log(deviceId, "problem resolving device", LogLevel.Error);
                     break;
             }
         }
@@ -341,7 +335,7 @@ namespace LoRaWan.NetworkServer
             catch (Exception ex)
             {
                 // device does not have the required properties
-                Logger.Log(loRaDevice.DevEUI ?? this.devAddr, $"Error initializing device {loRaDevice.DevEUI}. {ex.Message}", LogLevel.Error);
+                Logger.Log(loRaDevice.DevEUI ?? this.devAddr, $"error initializing device {loRaDevice.DevEUI}. {ex.Message}", LogLevel.Error);
             }
 
             // instance not used, dispose the connection

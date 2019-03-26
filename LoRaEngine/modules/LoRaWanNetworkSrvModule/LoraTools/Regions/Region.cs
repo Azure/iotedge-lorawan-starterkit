@@ -172,14 +172,14 @@ namespace LoRaTools.Regions
                 if (string.IsNullOrEmpty(nwkSrvRx2Dr))
                 {
                     // If not we use the region default.
-                    Logger.Log(devEUI, $"using standard second receive windows for join request", LogLevel.Information);
+                    Logger.Log(devEUI, $"using standard second receive windows for join request", LogLevel.Debug);
                     // using EU fix DR for RX2
                     freq = this.RX2DefaultReceiveWindows.frequency;
                     datr = this.DRtoConfiguration[RegionManager.CurrentRegion.RX2DefaultReceiveWindows.dr].configuration;
                 }
                 else
                 {
-                    Logger.Log(devEUI, $"using custom second receive windows for join request", LogLevel.Information);
+                    Logger.Log(devEUI, $"using custom second receive windows for join request", LogLevel.Debug);
                     freq = nwkSrvRx2Freq;
                     datr = nwkSrvRx2Dr;
                 }

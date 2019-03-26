@@ -40,11 +40,11 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                Logger.Log(loRaDevice.DevEUI, $"getting twins for OTAA for device", LogLevel.Information);
+                Logger.Log(loRaDevice.DevEUI, $"getting twin for OTAA for device", LogLevel.Debug);
 
                 if (await loRaDevice.InitializeAsync())
                 {
-                    Logger.Log(loRaDevice.DevEUI, $"done getting twins for OTAA device", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, $"done getting twin for OTAA device", LogLevel.Debug);
 
                     return loRaDevice;
                 }

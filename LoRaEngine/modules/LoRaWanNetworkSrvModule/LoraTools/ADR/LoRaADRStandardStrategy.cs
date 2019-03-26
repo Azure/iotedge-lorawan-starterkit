@@ -31,19 +31,19 @@ namespace LoRaTools.ADR
 
         int ILoRaADRStrategy.DefaultNbRep => 1;
 
-        public LoRaADRResult ComputeResult(LoRaADRTable table, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr)
+        public LoRaADRResult ComputeResult(string devEUI, LoRaADRTable table, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr)
         {
             // We do not have enough frame to calculate ADR. We can assume that a crash was the cause.
             if (table == null || table.Entries.Count < 20)
             {
-                Logger.Log("ADR: not enough frames captured. Sending default power values", Microsoft.Extensions.Logging.LogLevel.Debug);
+                Logger.Log(devEUI, "ADR: not enough frames captured. Sending default power values", Microsoft.Extensions.Logging.LogLevel.Debug);
                 return null;
             }
 
             // This is the first contact case to harmonize the txpower state between device and server or the crash case.
             if (!table.CurrentNbRep.HasValue || !table.CurrentTxPower.HasValue)
             {
-                Logger.Log("ADR: Sending the device default power values", Microsoft.Extensions.Logging.LogLevel.Debug);
+                Logger.Log(devEUI, "ADR: Sending the device default power values", Microsoft.Extensions.Logging.LogLevel.Debug);
                 return null;
             }
 

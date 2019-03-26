@@ -117,13 +117,11 @@ namespace LoRaWan.NetworkServer
                                 // wait for 30 seconds for pending requests to go through and avoid additional calls
                                 if (t.IsCompletedSuccessfully && !l.HasLoadingDeviceError && this.DevAddrReloadInterval > TimeSpan.Zero)
                                 {
-                                    Logger.Log(devAddr, $"Scheduled removal of loader in {this.DevAddrReloadInterval}. Dictionary has {destinationDictionary.Count}, from {originalDeviceCount}", LogLevel.Debug);
                                     // remove from cache after 30 seconds
                                     cts.CancelAfter(this.DevAddrReloadInterval);
                                 }
                                 else
                                 {
-                                    Logger.Log(devAddr, $"Removing loader now. Dictionary has {destinationDictionary.Count}, from {originalDeviceCount}. Loader succeeded: {t.IsCompletedSuccessfully}", LogLevel.Debug);
                                     // remove from cache now
                                     cts.Cancel();
                                 }
@@ -270,7 +268,7 @@ namespace LoRaWan.NetworkServer
                 return null;
             }
 
-            Logger.Log(devEUI, "querying the registry for OTAA device", LogLevel.Information);
+            Logger.Log(devEUI, "querying the registry for OTAA device", LogLevel.Debug);
 
             try
             {
@@ -282,7 +280,7 @@ namespace LoRaWan.NetworkServer
 
                 if (searchDeviceResult.IsDevNonceAlreadyUsed)
                 {
-                    Logger.Log(devEUI, $"join refused: DevNonce already used by this device", LogLevel.Information);
+                    Logger.Log(devEUI, $"join refused: DevNonce already used by this device", LogLevel.Debug);
                     return null;
                 }
 
@@ -333,7 +331,7 @@ namespace LoRaWan.NetworkServer
                 oldResetCacheToken.Cancel();
                 oldResetCacheToken.Dispose();
 
-                Logger.Log("device cache cleared", LogLevel.Information);
+                Logger.Log("Device cache cleared", LogLevel.Information);
             }
         }
     }

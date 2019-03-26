@@ -44,12 +44,12 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (Exception ex) when (ex is JsonReaderException || ex is JsonSerializationException)
                 {
-                    this.invalidErrorMessage = $"Could not parse cloud to device message: {json}";
+                    this.invalidErrorMessage = $"could not parse cloud to device message: {json}";
                 }
             }
             else
             {
-                this.invalidErrorMessage = "Cloud message does not have a body";
+                this.invalidErrorMessage = "cloud message does not have a body";
             }
         }
 

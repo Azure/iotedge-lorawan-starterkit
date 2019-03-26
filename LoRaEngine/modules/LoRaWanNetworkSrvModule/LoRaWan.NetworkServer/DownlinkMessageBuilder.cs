@@ -146,13 +146,13 @@ namespace LoRaWan.NetworkServer
                         fport = cloudToDeviceMessage.Fport;
                     }
 
-                    Logger.Log(loRaDevice.DevEUI, $"C2D message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, $"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement}, cidType: {macCommandType}, macCommand: {macCommands.Count > 0}", LogLevel.Debug);
                     Array.Reverse(frmPayload);
                 }
                 else
                 {
                     // Flag message to be abandoned and log
-                    Logger.Log(loRaDevice.DevEUI, $"C2D message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement} too long for current receive window. Abandoning.", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, $"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement} too long for current receive window. Abandoning.", LogLevel.Debug);
                     isMessageTooLong = true;
                 }
             }
@@ -205,7 +205,7 @@ namespace LoRaWan.NetworkServer
                 loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
-            Logger.Log(loRaDevice.DevEUI, $"Sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Debug);
+            Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Information);
             return new DownlinkMessageBuilderResponse(
                 ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI),
                 isMessageTooLong);
@@ -247,7 +247,7 @@ namespace LoRaWan.NetworkServer
 
             if (string.IsNullOrEmpty(configuration.Rx2DataRate))
             {
-                Logger.Log(loRaDevice.DevEUI, $"using standard second receive windows", LogLevel.Information);
+                Logger.Log(loRaDevice.DevEUI, $"using standard second receive window", LogLevel.Debug);
                 freq = loRaRegion.RX2DefaultReceiveWindows.frequency;
                 datr = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
             }
@@ -257,7 +257,7 @@ namespace LoRaWan.NetworkServer
             {
                 freq = configuration.Rx2DataFrequency;
                 datr = configuration.Rx2DataRate;
-                Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive windows freq : {freq}, datr:{datr}", LogLevel.Information);
+                Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive window freq : {freq}, datr:{datr}", LogLevel.Debug);
             }
 
             // get max. payload size based on data rate from LoRaRegion
@@ -293,8 +293,8 @@ namespace LoRaWan.NetworkServer
 
             var frmPayload = cloudToDeviceMessage.GetPayload();
 
-            Logger.Log(loRaDevice.DevEUI, $"Sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Debug);
-            Logger.Log(loRaDevice.DevEUI, $"C2D message: {Encoding.UTF8.GetString(frmPayload)}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {cloudToDeviceMessage.Fport}, confirmed: {cloudToDeviceMessage.Confirmed}, cidType: {macCommandType}", LogLevel.Information);
+            Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Information);
+            Logger.Log(loRaDevice.DevEUI, $"cloud to device message: {Encoding.UTF8.GetString(frmPayload)}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {cloudToDeviceMessage.Fport}, confirmed: {cloudToDeviceMessage.Confirmed}, cidType: {macCommandType}", LogLevel.Debug);
             Array.Reverse(frmPayload);
 
             var payloadDevAddr = ConversionHelper.StringToByteArray(loRaDevice.DevAddr);
@@ -346,7 +346,7 @@ namespace LoRaWan.NetworkServer
                                 var linkCheckAnswer = new LinkCheckAnswer(rxpk.GetModulationMargin(), 1);
                                 if (macCommands.TryAdd((int)CidEnum.LinkCheckCmd, linkCheckAnswer))
                                 {
-                                    Logger.Log(devEUI, $"answering to a Mac Command Request {linkCheckAnswer.ToString()}", LogLevel.Information);
+                                    Logger.Log(devEUI, $"answering to a MAC command request {linkCheckAnswer.ToString()}", LogLevel.Information);
                                 }
                             }
 
@@ -366,10 +366,10 @@ namespace LoRaWan.NetworkServer
                         {
                             if (!macCommands.TryAdd((int)macCmd.Cid, macCmd))
                             {
-                                Logger.Log(devEUI, $"Could not send the C2D Mac Command {macCmd.Cid}, as such a property was already present in the message. Please resend the C2D", LogLevel.Error);
+                                Logger.Log(devEUI, $"could not send the cloud to device MAC command {macCmd.Cid}, as such a property was already present in the message. Please resend the cloud to device message", LogLevel.Error);
                             }
 
-                            Logger.Log(devEUI, $"Cloud to device MAC command {macCmd.Cid} received {macCmd}", LogLevel.Information);
+                            Logger.Log(devEUI, $"cloud to device MAC command {macCmd.Cid} received {macCmd}", LogLevel.Information);
                         }
                         catch (MacCommandException ex)
                         {
@@ -386,7 +386,7 @@ namespace LoRaWan.NetworkServer
                 const int placeholderChannel = 25;
                 LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, placeholderChannel, 0, (byte)loRaADRResult.NbRepetition);
                 macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
-                Logger.Log(devEUI, $"performing a rate adaptation: datarate {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetion {loRaADRResult.NbRepetition}", LogLevel.Information);
+                Logger.Log(devEUI, $"performing a rate adaptation: DR {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetition {loRaADRResult.NbRepetition}", LogLevel.Information);
             }
 
             return macCommands.Values;

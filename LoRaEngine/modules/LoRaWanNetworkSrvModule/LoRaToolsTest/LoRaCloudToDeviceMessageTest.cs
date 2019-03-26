@@ -20,7 +20,7 @@ namespace LoRaWanTest
             };
 
             Assert.False(payloadC2d.IsValid(out var errorMessage));
-            Assert.Equal("invalid mac command fport usage in C2D message '01'", errorMessage);
+            Assert.Equal("invalid MAC command fport usage in cloud to device message '01'", errorMessage);
 
             var rawPayloadC2d = new LoRaCloudToDeviceMessage()
             {
@@ -30,7 +30,7 @@ namespace LoRaWanTest
             };
 
             Assert.False(rawPayloadC2d.IsValid(out errorMessage));
-            Assert.Equal("invalid mac command fport usage in C2D message '01'", errorMessage);
+            Assert.Equal("invalid MAC command fport usage in cloud to device message '01'", errorMessage);
         }
 
         [Fact]
@@ -44,7 +44,7 @@ namespace LoRaWanTest
             };
 
             Assert.False(payloadC2d.IsValid(out var errorMessage));
-            Assert.Equal("invalid fport '224' in C2D message '01'", errorMessage);
+            Assert.Equal("invalid fport '224' in cloud to device message '01'", errorMessage);
 
             var rawPayloadC2d = new LoRaCloudToDeviceMessage()
             {
@@ -54,7 +54,7 @@ namespace LoRaWanTest
             };
 
             Assert.False(rawPayloadC2d.IsValid(out errorMessage));
-            Assert.Equal("invalid fport '225' in C2D message '02'", errorMessage);
+            Assert.Equal("invalid fport '225' in cloud to device message '02'", errorMessage);
         }
 
         [Fact]
@@ -145,7 +145,7 @@ namespace LoRaWanTest
             };
 
             Assert.False(payloadC2d.IsValid(out var errorMessage));
-            Assert.Equal("invalid mac command fport usage in C2D message '01'", errorMessage);
+            Assert.Equal("invalid MAC command fport usage in cloud to device message '01'", errorMessage);
 
             var rawPayloadC2d = new LoRaCloudToDeviceMessage()
             {
@@ -159,7 +159,15 @@ namespace LoRaWanTest
             };
 
             Assert.False(rawPayloadC2d.IsValid(out errorMessage));
-            Assert.Equal("invalid mac command fport usage in C2D message '02'", errorMessage);
+            Assert.Equal("invalid MAC command fport usage in cloud to device message '02'", errorMessage);
+        }
+
+        [Fact]
+        public void When_Fport_0_And_Payload_Is_Empty_Should_Be_Invalid()
+        {
+            var c2d = new LoRaCloudToDeviceMessage();
+            Assert.False(c2d.IsValid(out var errorMessage));
+            Assert.Equal("invalid MAC command fport usage in cloud to device message ''", errorMessage);
         }
     }
 }

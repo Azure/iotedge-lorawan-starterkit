@@ -125,7 +125,7 @@ namespace LoRaWan.IntegrationTest
 
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
-                var c2dLogMessage = $"{device.DeviceID}: C2D message: {c2dMessageBody}";
+                var c2dLogMessage = $"{device.DeviceID}: cloud to device message: {c2dMessageBody}";
                 var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                     (messageBody) =>
                     {
@@ -340,7 +340,7 @@ namespace LoRaWan.IntegrationTest
 
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
-                var c2dLogMessage = $"{device.DeviceID}: C2D message: {c2dMessageBody}";
+                var c2dLogMessage = $"{device.DeviceID}: cloud to device message: {c2dMessageBody}";
                 var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                     (messageBody) =>
                     {
@@ -356,7 +356,7 @@ namespace LoRaWan.IntegrationTest
                 if (searchResults.Found)
                 {
                     this.Log($"{device.DeviceID}: Found C2D message in log (after sending {i}/10) ? {foundC2DMessage}");
-                    Assert.False(foundC2DMessage, "Cloud to Device message should have been detected in Network Service module only once");
+                    Assert.False(foundC2DMessage, "Cloud to device message should have been detected in Network Service module only once");
                     foundC2DMessage = true;
                 }
 
@@ -435,7 +435,7 @@ namespace LoRaWan.IntegrationTest
             var foundReceivePacket = false;
             var expectedRxSerial = $"+MSG: PORT: 1; RX: \"{this.ToHexString(c2dMessageBody)}\"";
             var expectedUDPMessageV1 = $"{device.DevAddr}: ConfirmedDataDown";
-            var expectedUDPMessageV2 = $"{device.DeviceID}: C2D message: {c2dMessageBody}, id: {msgId}, fport: 1, confirmed: True";
+            var expectedUDPMessageV2 = $"{device.DeviceID}: cloud to device message: {c2dMessageBody}, id: {msgId}, fport: 1, confirmed: True";
             this.Log($"Expected C2D received log is: {expectedRxSerial}");
             this.Log($"Expected UDP log starting with: {expectedUDPMessageV1} or {expectedUDPMessageV2}");
 
@@ -545,7 +545,7 @@ namespace LoRaWan.IntegrationTest
             var expectedRxSerial1 = $"+MSG: PORT: 1; RX: \"{this.ToHexString(c2dMessageBody)}\"";
             var expectedRxSerial2 = $"+MSG: RXWIN2";
             var expectedUDPMessageV1 = $"{device.DevAddr}: ConfirmedDataDown";
-            var expectedUDPMessageV2 = $"{device.DeviceID}: C2D message: {c2dMessageBody}, id: {msgId}, fport: 1, confirmed: True";
+            var expectedUDPMessageV2 = $"{device.DeviceID}: cloud to device message: {c2dMessageBody}, id: {msgId}, fport: 1, confirmed: True";
             this.Log($"Expected C2D received log is: {expectedRxSerial1} and {expectedRxSerial2}");
             this.Log($"Expected UDP log starting with: {expectedUDPMessageV1} or {expectedUDPMessageV2}");
 

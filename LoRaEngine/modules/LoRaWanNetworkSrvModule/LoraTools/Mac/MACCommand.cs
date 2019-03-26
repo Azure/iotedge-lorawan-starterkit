@@ -104,7 +104,7 @@ namespace LoRaTools
                             macCommands.Add(rxTimingSetup);
                             break;
                         default:
-                            Logger.Log($"A transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
+                            Logger.Log(deviceId, $"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
                             return null;
                     }
 
@@ -146,7 +146,7 @@ namespace LoRaTools
                             macCommands.Add(devStatusRequest);
                             break;
                         default:
-                            Logger.Log($"A Mac command transmitted from the server, value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
+                            Logger.Log(deviceId, $"a Mac command transmitted from the server, value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
                             return null;
                     }
 

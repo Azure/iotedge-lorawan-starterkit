@@ -60,39 +60,47 @@ namespace LoRaWan.NetworkServer
                 if (string.IsNullOrEmpty(loRaDevice.AppKey))
                 {
                     Logger.Log(loRaDevice.DevEUI, "join refused: missing AppKey for OTAA device", LogLevel.Error);
-                    request.NotifyFailed(null, LoRaDeviceRequestFailedReason.InvalidJoinRequest);
+                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidJoinRequest);
                     return;
                 }
 
                 if (loRaDevice.AppEUI != appEUI)
                 {
                     Logger.Log(devEUI, "join refused: AppEUI for OTAA does not match device", LogLevel.Error);
-                    request.NotifyFailed(null, LoRaDeviceRequestFailedReason.InvalidJoinRequest);
+                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidJoinRequest);
                     return;
                 }
 
                 if (!joinReq.CheckMic(loRaDevice.AppKey))
                 {
                     Logger.Log(devEUI, "join refused: invalid MIC", LogLevel.Error);
-                    request.NotifyFailed(null, LoRaDeviceRequestFailedReason.JoinMicCheckFailed);
+                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.JoinMicCheckFailed);
                     return;
                 }
 
                 // Make sure that is a new request and not a replay
                 if (!string.IsNullOrEmpty(loRaDevice.DevNonce) && loRaDevice.DevNonce == devNonce)
                 {
-                    Logger.Log(devEUI, "join refused: DevNonce already used by this device", LogLevel.Information);
+                    if (string.IsNullOrEmpty(loRaDevice.GatewayID))
+                    {
+                        Logger.Log(devEUI, "join refused: join already processed by another gateway", LogLevel.Debug);
+                    }
+                    else
+                    {
+                        Logger.Log(devEUI, "join refused: DevNonce already used by this device", LogLevel.Error);
+                    }
+
                     loRaDevice.IsOurDevice = false;
-                    request.NotifyFailed(null, LoRaDeviceRequestFailedReason.JoinDevNonceAlreadyUsed);
+                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.JoinDevNonceAlreadyUsed);
                     return;
                 }
 
                 // Check that the device is joining through the linked gateway and not another
                 if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Logger.Log(devEUI, $"join refused: trying to join not through its linked gateway, ignoring join request", LogLevel.Information);
+                    Logger.Log(devEUI, $"join refused: trying to join not through its linked gateway, ignoring join request", LogLevel.Debug);
                     loRaDevice.IsOurDevice = false;
-                    request.NotifyFailed(null, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
                     return;
                 }
 
@@ -117,7 +125,7 @@ namespace LoRaWan.NetworkServer
                 {
                     // in this case it's too late, we need to break and avoid saving twins
                     Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", LogLevel.Information);
-                    request.NotifyFailed(null, LoRaDeviceRequestFailedReason.ReceiveWindowMissed);
+                    request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ReceiveWindowMissed);
                     return;
                 }
 
@@ -139,15 +147,15 @@ namespace LoRaWan.NetworkServer
                     updatedProperties.SaveRegion = true;
                 }
 
-                Logger.Log(loRaDevice.DevEUI, $"saving join properties twins", LogLevel.Debug);
+                Logger.Log(loRaDevice.DevEUI, $"saving join properties twin", LogLevel.Debug);
 
                 var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties);
 
-                Logger.Log(loRaDevice.DevEUI, $"done saving join properties twins", LogLevel.Debug);
+                Logger.Log(loRaDevice.DevEUI, $"done saving join properties twin", LogLevel.Debug);
 
                 if (!deviceUpdateSucceeded)
                 {
-                    Logger.Log(devEUI, $"join refused: join request could not save twins", LogLevel.Error);
+                    Logger.Log(devEUI, $"join refused: join request could not save twin", LogLevel.Error);
                     request.NotifyFailed(null, LoRaDeviceRequestFailedReason.ApplicationError);
                     return;
                 }
@@ -168,7 +176,7 @@ namespace LoRaWan.NetworkServer
                     datr = loraRegion.GetDownstreamDR(request.Rxpk);
                     if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
                     {
-                        Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the downstream message packet forwarder settings", LogLevel.Error);
+                        Logger.Log(loRaDevice.DevEUI, "could not resolve DR and/or frequency for downstream", LogLevel.Error);
                         request.NotifyFailed(null, LoRaDeviceRequestFailedReason.InvalidRxpk);
                         return;
                     }
@@ -178,7 +186,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Information);
+                    Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Debug);
                     tmst = request.Rxpk.Tmst + loraRegion.Join_accept_delay2 * 1000000;
 
                     (freq, datr) = loraRegion.GetDownstreamRX2DRAndFreq(devEUI, this.configuration.Rx2DataRate, this.configuration.Rx2DataFrequency, null);
@@ -201,7 +209,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(devEUI, $"twin RX2 datarate value are not within acceptable values", LogLevel.Error);
+                    Logger.Log(devEUI, $"twin RX2 DR value is not within acceptable values", LogLevel.Error);
                 }
 
                 if (request.Region.IsValidRX1DROffset(loRaDevice.DesiredRX1DROffset))
@@ -211,7 +219,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(devEUI, $"twin Rx1 offset datarate value are not within acceptable values", LogLevel.Error);
+                    Logger.Log(devEUI, $"twin RX1 offset DR value is not within acceptable values", LogLevel.Error);
                 }
 
                 ushort rxDelay = 0;
@@ -221,7 +229,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    Logger.Log(devEUI, $"twin RX Delay value are not within acceptable values", LogLevel.Error);
+                    Logger.Log(devEUI, $"twin RX delay value is not within acceptable values", LogLevel.Error);
                 }
 
                 var loRaPayloadJoinAccept = new LoRaTools.LoRaMessage.LoRaPayloadJoinAccept(
@@ -243,7 +251,7 @@ namespace LoRaWan.NetworkServer
             catch (Exception ex)
             {
                 var deviceId = devEUI ?? ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
-                Logger.Log(deviceId, $"Failed to handle join request. {ex.Message}", LogLevel.Error);
+                Logger.Log(deviceId, $"failed to handle join request. {ex.Message}", LogLevel.Error);
                 request.NotifyFailed(loRaDevice, ex);
             }
         }

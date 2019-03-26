@@ -93,11 +93,11 @@ namespace LoRaWan.NetworkServer
                 toCall = $"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport.ToString()}&payload={payloadEncoded}";
 
                 // Call SensorDecoderModule
-                return await this.CallSensorDecoderModule(toCall, payload);
+                return await this.CallSensorDecoderModule(devEUI, toCall, payload);
             }
         }
 
-        async Task<DecodePayloadResult> CallSensorDecoderModule(string sensorDecoderModuleUrl, byte[] payload)
+        async Task<DecodePayloadResult> CallSensorDecoderModule(string devEUI, string sensorDecoderModuleUrl, byte[] payload)
         {
             var base64Payload = ((payload?.Length ?? 0) == 0) ? string.Empty : Convert.ToBase64String(payload);
 
@@ -155,7 +155,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log($"Error in decoder handling: {ex.Message}", LogLevel.Error);
+                Logger.Log(devEUI, $"error in decoder handling: {ex.Message}", LogLevel.Error);
 
                 return new DecodePayloadResult()
                 {

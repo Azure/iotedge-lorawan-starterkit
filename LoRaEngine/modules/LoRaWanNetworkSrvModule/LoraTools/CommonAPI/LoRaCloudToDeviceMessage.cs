@@ -57,7 +57,7 @@ namespace LoRaTools.CommonAPI
             // 224+ => reserved for future applications
             if (this.Fport >= LoRaFPort.ReservedForFutureAplications)
             {
-                errorMessage = $"invalid fport '{this.Fport}' in C2D message '{this.MessageId}'";
+                errorMessage = $"invalid fport '{this.Fport}' in cloud to device message '{this.MessageId}'";
                 return false;
             }
 
@@ -65,9 +65,9 @@ namespace LoRaTools.CommonAPI
             if (this.Fport == LoRaFPort.MacCommand)
             {
                 // Not valid if there is no mac command or there is a payload
-                if (this.MacCommands?.Count == 0 || this.HasPayload())
+                if ((this.MacCommands?.Count ?? 0) == 0 || this.HasPayload())
                 {
-                    errorMessage = $"invalid mac command fport usage in C2D message '{this.MessageId}'";
+                    errorMessage = $"invalid MAC command fport usage in cloud to device message '{this.MessageId}'";
                     return false;
                 }
             }

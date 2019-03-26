@@ -51,11 +51,11 @@ namespace LoRaWan.NetworkServer
             if (this.configuration.EnableGateway)
             {
                 connectionString += $"GatewayHostName={this.configuration.GatewayHostName};";
-                Logger.Log(devEUI, $"using edgeHub local queue", LogLevel.Information);
+                Logger.Log(devEUI, $"using edgeHub local queue", LogLevel.Debug);
             }
             else
             {
-                Logger.Log(devEUI, $"using iotHub directly, no edgeHub queue", LogLevel.Information);
+                Logger.Log(devEUI, $"using iotHub directly, no edgeHub queue", LogLevel.Debug);
             }
 
             return connectionString;
@@ -85,7 +85,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (Exception ex)
             {
-                Logger.Log(devEUI, $"could not create IoT Hub DeviceClient with error: {ex.Message}", LogLevel.Error);
+                Logger.Log(devEUI, $"could not create IoT Hub device client with error: {ex.Message}", LogLevel.Error);
                 throw;
             }
         }
