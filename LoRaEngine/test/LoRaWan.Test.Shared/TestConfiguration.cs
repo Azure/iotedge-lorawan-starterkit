@@ -45,6 +45,9 @@ namespace LoRaWan.Test.Shared
         // Device prefix to be used
         public string DevicePrefix { get; set; }
 
+        // Device key format. Must be at maximum 16 character long
+        public string DeviceKeyFormat { get; set; }
+
         public bool CreateDevices { get; set; } = true;
 
         public LogValidationAssertLevel NetworkServerModuleLogAssertLevel { get; set; } = LogValidationAssertLevel.Warning;

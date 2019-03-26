@@ -1,6 +1,6 @@
 FROM microsoft/dotnet:2.1-sdk-stretch
 
-ENV VSTS_POOL=default VSTS_AGENT=myAgent VSTS_AGENT_VERSION=2.147.0
+ENV VSTS_POOL=default VSTS_AGENT=myAgent VSTS_AGENT_VERSION=2.148.2
 
 # Install curl, wget and git
 RUN apt-get update && apt-get install -y \
