@@ -4,7 +4,7 @@
 
 This sample allows you to create and run your own LoRa message decoder in an independent container running on your LoRa gateway without having to edit the main LoRa Engine. It is based on the sample decoder. 
 
-## Trying the decoder
+## How to use the sample decoder
 
 This decode takes a Lora payload and decode it based on the [Cayenne encoding specification](https://github.com/myDevicesIoT/cayenne-docs/blob/master/docs/LORA.md).
 
