@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RootNamespace>LoRaWan.Tools.CLI</RootNamespace>
+    <AssemblyName>loradeviceprovisioning</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.4.3" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="1.17.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+  </ItemGroup>
+
+    <!-- StyleCop Setup -->
+    <ItemGroup>
+        <AdditionalFiles Include="../../stylecop.json" Link="stylecop.json" />
+    </ItemGroup>
+    <PropertyGroup>
+        <CodeAnalysisRuleSet>../../stylecop.ruleset</CodeAnalysisRuleSet><Authors>Sascha Corti (saschac@microsoft.com)</Authors><Version>0.0.1.0</Version><Company>Microsoft</Company><Product>Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Provisioning Utility.</Product><Description>This tool complements http://aka.ms/lora</Description><Copyright>Copyright (c) 2019 Microsoft. All rights reserved.</Copyright><PackageLicenseExpression>Licensed under the MIT license. See LICENSE file in the project GitHub repo root for full license information.</PackageLicenseExpression><PackageProjectUrl>https://github.com/Azure/iotedge-lorawan-starterkit</PackageProjectUrl><RepositoryUrl>https://github.com/Azure/iotedge-lorawan-starterkit</RepositoryUrl>
+    </PropertyGroup>
+    <Import Project="../../stylecop.props" />
+
+</Project>
