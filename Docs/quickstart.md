@@ -227,14 +227,6 @@ The `"DecoderValueSensor"` decoder is not a best practice but it makes it easier
 
 if the SensorDecoder tag has a "http" in it's string value, it will forward the decoding call to an external decoder, as described in option 2 above, using standard Http. The call expects a return value with the same format as the json here above or an error string.
 
-There is an unsupported [repository](https://github.com/TechPreacher/iotedge-lorawan-starterkit-decoders) containing sample implementations for the following, commercially available LoRaWAN sensors, based on the DecoderSample contained in this repo:
-
-- [AAEON LoRa EndNode](https://www.aaeon.com/en/p/iot-node-system-edge-rf)
-- [ASCOEL CO868LR](http://www.ascoel.it/index.php/products/all-products/93-ambiental-control/18-co868lr)
-- [DecentLab DL-PR26](https://www.catsensors.com/media/Decentlab/DL-PR26-datasheet.pdf)
-- [Netvox R311W](http://www.netvox.com.tw/products.asp?pro=r311w)
-- [Nke Sensors using ZCL Payload](http://www.nke-watteco.com/gamme/lora-range/)
-
 ### Cache Clearing
 
 Due to the gateway caching the device information (tags) for 1 day, if the device tries to connect before you have provisioned it, it will not be able to connect because it will be considered a device for another LoRa network.
