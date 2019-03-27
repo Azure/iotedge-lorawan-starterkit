@@ -4,12 +4,14 @@
 
 The code is organized into three sections:
 
-- **LoRaEngine** - a .NET Standard 2.0 solution with the following folders:
+- **LoRaEngine** - a .NET Standard 2.1 solution with the following folders:
   - **modules** - Azure IoT Edge modules.
   - **LoraKeysManagerFacade** - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
   - **LoRaDevTools** - library for dev tools (git submodule)
 - **Arduino** - Examples and references for LoRa Arduino based devices.
 - **Template** - Contain code useful for the "deploy to Azure button"
+- **Tools** - Contains tools that support the LoRaWan Gateway project
+  - **Cli-LoRa-Device-Provisioning** - .NET Core 2.1 Command Line tool that allows to list, query, verify, insert, edit, update and delete LoRa leaf device configurations into IoT Hub
 - **Samples** - Contains sample decoders
 - **Docs** - Additional modules, pictures and documentations
 
@@ -56,7 +58,7 @@ Another view of the architecture and a more message driven view is the following
 
 The following guide describes the necessary steps to build and deploy the LoRaEngine to an [Azure IoT Edge](https://azure.microsoft.com/en-us/services/iot-edge/) installation on a LoRaWAN antenna gateway.
 
-If you want to update a LoRa Gateway running a previous version fo our software to the current preview release, follow [this guide](/README.md#updating-existing-installations)
+If you want to update a LoRa Gateway running a previous version fo our software to the current release, follow [this guide](/README.md#updating-existing-installations)
 
 ### Used Azure services
 
@@ -80,9 +82,27 @@ If you want to update a LoRa Gateway running a previous version fo our software 
 
 ### Setup Azure function facade and [Azure Container registry](https://azure.microsoft.com/en-us/services/container-registry/)
 
+You have the option to either deploy the Azure Function code from your Visual Studio Code to Azure or create an empty Azure Function that points to a Zip file hosted by us, containing the function code. Follow one of the two sets of instructions that follow:
+
+#### If you choose to deploy manually using Visual Studio Code
+
 - Build and deploy the [Azure function](LoraKeysManagerFacade). The best way is to open the  [Azure function folder](LoraKeysManagerFacade) with Visual Studio Code with the [Azure Functions Plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) installed. Now run the command `Azure Functions: Deploy to function app...` and provide the name of the Azure function to deploy to. If prompted, select  environment `C#` and  version `V2`.
 
 - If you want to just deploy the function from Visual Studio Code with the root project folder `iotedge-lorawan-starterkit` open (of which the Function is a subfolder `/LoRaEngine/LoraKeysManagerFacade`), you need to run the Visual Studio Command `Azure Functions: Deploy to function app...` and then **manually** choose the folder `LoraKeysManagerFacade/bin/Release/netstandard2.0/publish`. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.
+
+#### If you choose to create an empty Azure Function pointing to our Zipped code
+
+- Using the Azure Portal, create a new "Function App" in the resource group and location you chose for the deployment, using the default creation settings.
+- Once the function is created, navigate to the `Application settings` from the Overview page.
+- Add a new `Application Setting` with:
+
+|App Settings Name|Value|
+|-|-|
+|WEBSITE_RUN_FROM_ZIP|<https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.0/function-1.0.0.zip>|
+
+![Run Azure Function from Zip file](/Docs/Pictures/FunctionRunFromZip.png)
+
+#### Follow these next steps in both cases
 
 - Configure IoT Hub and Redis connection strings in the function:
 
@@ -178,7 +198,7 @@ lora.setId(NULL, "47AAC86800430010", "BE7A0000000014E3");
 lora.setKey(NULL, NULL, "8AFE71A145B253E49C3031AD068277A3");
 ```
 
-To provisioning a device in Azure IoT Hub with these identifiers and capable to [decode](/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoraDecoders.cs) temperature payload into Json you have to create a device with:
+To provisioning a device in Azure IoT Hub with these identifiers and capable to [decode](/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoraDecoders.cs) simple value payload into Json you have to create a device with:
 
 Device Id: `47AAC86800430010` and Device Twin's deired properties:
 
@@ -204,7 +224,7 @@ As soon as you start your device you should see the following:
 "desired": {
     "AppEUI": "BE7A0000000014E3",
     "AppKey": "8AFE71A145B253E49C3031AD068277A3",
-    "SensorDecoder": "DecoderTemperatureSensor",
+    "SensorDecoder": "DecoderValueSensor",
     "AppSKey": "5E8513F64D99A63753A5F0DBB9FB9F91",
     "NwkSKey": "C0EF4B9495BD4A4C32B42438CD52D4B8",
     "DevAddr": "025DEAAE",
