@@ -121,8 +121,8 @@ namespace LoRaWan.IntegrationTest
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: ADR Ack request received");
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: performing a rate adaptation: datarate");
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: ADR ack request received");
+            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: performing a rate adaptation: DR");
 
             // Check the messages are now sent on DR5
             for (var i = 0; i < 2; ++i)
