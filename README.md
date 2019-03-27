@@ -36,11 +36,11 @@ We plan to support the following key features of LoRaWAN 1.0.2 specification, ho
 - Confirmed and unconfirmed upstream messages.
 - Confirmed and unconfirmed downstream messages.
 - Multi-gateways.
-- Message de-duplication
-- Support of MAC commands.*
-- ADR Support.*
+- Message de-duplication.
+- Support of MAC commands.
+- ADR Support.
 
-  **Planned features*
+
 ## Prerequisites
 The following should be completed before proceeding with the LoRaWAN starter kit development or deployment in your environment.
 
