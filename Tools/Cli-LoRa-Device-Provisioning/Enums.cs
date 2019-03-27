@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Cli_LoRa_Device_Provisioning
+namespace LoRaWan.Tools.CLI
 {
     public enum MessageType
     {
@@ -17,9 +17,5 @@ namespace Cli_LoRa_Device_Provisioning
         InvalidLogin = 1,
         InvalidFilename = 2,
         UnknownError = 10
-    }
-
-    class Enums
-    {
     }
 }

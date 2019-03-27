@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RootNamespace>Cli_LoRa_Device_Provisioning</RootNamespace>
+    <RootNamespace>LoRaWan.Tools.CLI</RootNamespace>
     <AssemblyName>loradeviceprovisioning</AssemblyName>
   </PropertyGroup>
 

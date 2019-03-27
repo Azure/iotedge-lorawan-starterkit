@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Cli_LoRa_Device_Provisioning
+namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
 
@@ -12,12 +12,18 @@ namespace Cli_LoRa_Device_Provisioning
         /// </summary>
         public static string SetNwkIdPart(string currentDevAddr, string networkId, ConfigurationHelper configurationHelper)
         {
-            var netIdLastByte = configurationHelper.NetId.Substring(configurationHelper.NetId.Length - 2, 2);
-            uint netId = uint.Parse(netIdLastByte, System.Globalization.NumberStyles.HexNumber);
+            string netIdLastByte;
+            uint netId = 1;
+
+            if (ValidationHelper.ValidateHexStringTwinProperty(configurationHelper.NetId, 3, out _))
+            {
+                netIdLastByte = configurationHelper.NetId.Substring(configurationHelper.NetId.Length - 2, 2);
+                netId = uint.Parse(netIdLastByte, System.Globalization.NumberStyles.HexNumber);
+            }
 
             if (!string.IsNullOrEmpty(networkId))
             {
-                if (ValidationHelper.ValidateHexStringTwinProperty(networkId, 3, out string _))
+                if (ValidationHelper.ValidateHexStringTwinProperty(networkId, 3, out _))
                 {
                     netIdLastByte = networkId.Substring(networkId.Length - 2, 2);
                     netId = uint.Parse(netIdLastByte, System.Globalization.NumberStyles.HexNumber);
@@ -33,7 +39,7 @@ namespace Cli_LoRa_Device_Provisioning
             int nwkPart = netId[0] << 1;
             byte[] deviceIdBytes = ConversionHelper.StringToByteArray(currentDevAddr);
             deviceIdBytes[0] = (byte)((nwkPart & 0b11111110) | (deviceIdBytes[0] & 0b00000001));
-            return ConversionHelper.ByteArrayToString(deviceIdBytes);
+            return ConversionHelper.ByteArrayToHexString(deviceIdBytes);
         }
 
         public static uint GetNwkIdPart(string devAddr)

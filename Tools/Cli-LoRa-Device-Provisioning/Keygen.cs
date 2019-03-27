@@ -1,24 +1,26 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Cli_LoRa_Device_Provisioning
+namespace LoRaWan.Tools.CLI
 {
     using System;
+    using System.Text;
 
     public static class Keygen
     {
+        private static Random rnd = new Random();
+
         public static string Generate(int keyLength)
         {
-            var randomKey = string.Empty;
-            var rnd = new Random();
+            var randomKey = new StringBuilder(keyLength * 2);
 
             for (int i = 0; i < keyLength; i++)
             {
-                var newKey = rnd.Next(0, 255);
-                randomKey += newKey.ToString("X2");
+                var newKey = rnd.Next(0, 256);
+                randomKey.Append(newKey.ToString("X2"));
             }
 
-            return randomKey;
+            return randomKey.ToString();
         }
     }
 }

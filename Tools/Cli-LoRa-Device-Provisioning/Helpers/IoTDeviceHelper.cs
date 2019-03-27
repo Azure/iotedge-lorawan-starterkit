@@ -1,17 +1,20 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Cli_LoRa_Device_Provisioning
+namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using LoRaWan.Tools.CLI.Options;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Newtonsoft.Json.Linq;
 
     public class IoTDeviceHelper
     {
+        private string[] classTypes = { "A", "C" };
+
         public async Task<Twin> QueryDeviceTwin(string devEui, ConfigurationHelper configurationHelper)
         {
             Console.WriteLine();
@@ -29,6 +32,7 @@ namespace Cli_LoRa_Device_Provisioning
                 return null;
             }
 
+            Console.WriteLine("done.");
             return twin;
         }
 
@@ -38,49 +42,47 @@ namespace Cli_LoRa_Device_Provisioning
             bool isAbp = false;
             bool isValid = true;
             Console.WriteLine();
+            Console.WriteLine($"Analyzing device {devEui}...");
 
             devEui = ValidationHelper.CleanString(devEui);
 
-            string appEui = twin.Properties.Desired.Contains(TwinProperty.AppEUI) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.AppEUI].Value) : null;
-            string appKey = twin.Properties.Desired.Contains(TwinProperty.AppKey) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.AppKey].Value) : null;
+            string appEui = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppEUI);
+            string appKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppKey);
 
-            string nwkSKey = twin.Properties.Desired.Contains(TwinProperty.NwkSKey) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.NwkSKey].Value) : null;
-            string appSKey = twin.Properties.Desired.Contains(TwinProperty.AppSKey) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.AppSKey].Value) : null;
-            string devAddr = twin.Properties.Desired.Contains(TwinProperty.DevAddr) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.DevAddr].Value) : null;
-            string abpRelaxMode = twin.Properties.Desired.Contains(TwinProperty.ABPRelaxMode) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.ABPRelaxMode].Value) : null;
+            string nwkSKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.NwkSKey);
+            string appSKey = this.ReadTwin(twin.Properties.Desired, TwinProperty.AppSKey);
+            string devAddr = this.ReadTwin(twin.Properties.Desired, TwinProperty.DevAddr);
+            string abpRelaxMode = this.ReadTwin(twin.Properties.Desired, TwinProperty.ABPRelaxMode);
 
             netId = ValidationHelper.CleanNetId(netId);
 
-            string gatewayID = twin.Properties.Desired.Contains(TwinProperty.GatewayID) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.GatewayID].Value) : null;
-            string sensorDecoder = twin.Properties.Desired.Contains(TwinProperty.SensorDecoder) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.SensorDecoder].Value) : null;
-            string classType = twin.Properties.Desired.Contains(TwinProperty.ClassType) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.ClassType].Value) : null;
-            string downlinkEnabled = twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value) : null;
-            string preferredWindow = twin.Properties.Desired.Contains(TwinProperty.PreferredWindow) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value) : null;
-            string deduplication = twin.Properties.Desired.Contains(TwinProperty.Deduplication) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.Deduplication].Value) : null;
-            string rx2DataRate = twin.Properties.Desired.Contains(TwinProperty.RX2DataRate) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value) : null;
-            string rx1DrOffset = twin.Properties.Desired.Contains(TwinProperty.RX1DROffset) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value) : null;
-            string supports32BitFCnt = twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.Supports32BitFCnt].Value) : null;
-            string fCntUpStart = twin.Properties.Desired.Contains(TwinProperty.FCntUpStart) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.FCntUpStart].Value) : null;
-            string fCntDownStart = twin.Properties.Desired.Contains(TwinProperty.FCntDownStart) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.FCntDownStart].Value) : null;
-            string fCntResetCounter = twin.Properties.Desired.Contains(TwinProperty.FCntResetCounter) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Desired[TwinProperty.FCntResetCounter].Value) : null;
+            string gatewayID = this.ReadTwin(twin.Properties.Desired, TwinProperty.GatewayID);
+            string sensorDecoder = this.ReadTwin(twin.Properties.Desired, TwinProperty.SensorDecoder);
+            string classType = this.ReadTwin(twin.Properties.Desired, TwinProperty.ClassType);
+            string downlinkEnabled = this.ReadTwin(twin.Properties.Desired, TwinProperty.DownlinkEnabled);
+            string preferredWindow = this.ReadTwin(twin.Properties.Desired, TwinProperty.PreferredWindow);
+            string deduplication = this.ReadTwin(twin.Properties.Desired, TwinProperty.Deduplication);
+            string rx2DataRate = this.ReadTwin(twin.Properties.Desired, TwinProperty.RX2DataRate);
+            string rx1DrOffset = this.ReadTwin(twin.Properties.Desired, TwinProperty.RX1DROffset);
+            string supports32BitFCnt = this.ReadTwin(twin.Properties.Desired, TwinProperty.Supports32BitFCnt);
+            string fCntUpStart = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntUpStart);
+            string fCntDownStart = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntDownStart);
+            string fCntResetCounter = this.ReadTwin(twin.Properties.Desired, TwinProperty.FCntResetCounter);
 
-            string fCntUpStartReported = twin.Properties.Reported.Contains(TwinProperty.FCntUpStart) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Reported[TwinProperty.FCntUpStart].Value) : null;
-            string fCntDownStartReported = twin.Properties.Reported.Contains(TwinProperty.FCntDownStart) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Reported[TwinProperty.FCntDownStart].Value) : null;
-            string fCntResetCounterReported = twin.Properties.Reported.Contains(TwinProperty.FCntResetCounter) ? ValidationHelper.GetTwinPropertyValue(twin.Properties.Reported[TwinProperty.FCntResetCounter].Value) : null;
+            string fCntUpStartReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntUpStart);
+            string fCntDownStartReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntDownStart);
+            string fCntResetCounterReported = this.ReadTwin(twin.Properties.Reported, TwinProperty.FCntResetCounter);
 
-            if (!string.IsNullOrEmpty(appEui) || !string.IsNullOrEmpty(appKey))
-                isOtaa = true;
-
-            if (!string.IsNullOrEmpty(nwkSKey) || !string.IsNullOrEmpty(appSKey) || !string.IsNullOrEmpty(devAddr))
-                isAbp = true;
+            isOtaa = !string.IsNullOrEmpty(appEui) || !string.IsNullOrEmpty(appKey);
+            isAbp = !string.IsNullOrEmpty(nwkSKey) || !string.IsNullOrEmpty(appSKey) || !string.IsNullOrEmpty(devAddr);
 
             // ABP device
             if (isAbp && !isOtaa)
             {
-                Console.WriteLine("ABP device configuration detected.");
+                StatusConsole.WriteLine(MessageType.Info, "ABP device configuration detected.");
 
-                isValid = this.ValidateDevice(
-                    new Program.AddOptions()
+                isValid = this.VerifyDevice(
+                    new AddOptions()
                     {
                         Type = "ABP",
                         DevEui = devEui,
@@ -113,9 +115,9 @@ namespace Cli_LoRa_Device_Provisioning
             // OTAA device
             else if (isOtaa && !isAbp)
             {
-                Console.WriteLine("OTAA device configuration detected.");
-                isValid = this.ValidateDevice(
-                    new Program.AddOptions()
+                StatusConsole.WriteLine(MessageType.Info, "OTAA device configuration detected.");
+                isValid = this.VerifyDevice(
+                    new AddOptions()
                     {
                         Type = "OTAA",
                         DevEui = devEui,
@@ -154,24 +156,25 @@ namespace Cli_LoRa_Device_Provisioning
                 isValid = false;
             }
 
+            Console.WriteLine();
+            Console.WriteLine("Verification Result:");
+
             if (isValid)
             {
-                Console.WriteLine();
-                Console.Write($"The configuration for device {devEui} ");
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("is valid.");
-                Console.ResetColor();
+                StatusConsole.WriteLine(MessageType.Info, $"The configuration for device {devEui} is valid.");
             }
             else
             {
-                Console.WriteLine();
-                Console.Write($"Error: The configuration for device {devEui} ");
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("is NOT valid.");
-                Console.ResetColor();
+                StatusConsole.WriteLine(MessageType.Error, $"The configuration for device {devEui} is not valid.");
             }
 
+            Console.WriteLine("done.");
             return isValid;
+        }
+
+        public string ReadTwin(TwinCollection collection, string property)
+        {
+            return collection.Contains(property) ? ValidationHelper.GetTwinPropertyValue(collection[property]) : null;
         }
 
         public object CleanOptions(object optsObject, bool isNewDevice)
@@ -179,9 +182,9 @@ namespace Cli_LoRa_Device_Provisioning
             dynamic opts;
 
             if (isNewDevice)
-                opts = optsObject as Program.AddOptions;
+                opts = optsObject as AddOptions;
             else
-                opts = optsObject as Program.UpdateOptions;
+                opts = optsObject as UpdateOptions;
 
             if (!string.IsNullOrEmpty(opts.DevEui))
                 opts.DevEui = ValidationHelper.CleanString(opts.DevEui);
@@ -246,10 +249,10 @@ namespace Cli_LoRa_Device_Provisioning
             if (!string.IsNullOrEmpty(opts.FCntResetCounter))
                 opts.FCntResetCounter = ValidationHelper.CleanString(opts.FCntResetCounter);
 
-            return opts as object;
+            return (object)opts;
         }
 
-        public Program.AddOptions CompleteMissingAddOptions(Program.AddOptions opts, ConfigurationHelper configurationHelper)
+        public AddOptions CompleteMissingAddOptions(AddOptions opts, ConfigurationHelper configurationHelper)
         {
             Console.WriteLine();
             Console.WriteLine($"Completing missing options for device...");
@@ -261,7 +264,7 @@ namespace Cli_LoRa_Device_Provisioning
             }
 
             // ABP device specific properties
-            if (string.Equals(opts.Type, "ABP", StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(opts.Type, "ABP", StringComparison.OrdinalIgnoreCase))
             {
                 if (string.IsNullOrEmpty(opts.NwkSKey))
                 {
@@ -284,10 +287,10 @@ namespace Cli_LoRa_Device_Provisioning
                 if (ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out string _))
                 {
                     var newDevAddr = NetIdHelper.SetNwkIdPart(opts.DevAddr, opts.NetId, configurationHelper);
-                    if (!string.Equals(newDevAddr, opts.DevAddr, StringComparison.InvariantCultureIgnoreCase))
+                    if (!string.Equals(newDevAddr, opts.DevAddr, StringComparison.OrdinalIgnoreCase))
                     {
                         opts.DevAddr = newDevAddr;
-                        StatusConsole.WriteLine(MessageType.Info, $"Adapting DevAddr: {opts.DevAddr} based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}");
+                        StatusConsole.WriteLine(MessageType.Info, $"Adapting DevAddr to: {opts.DevAddr} based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}");
                     }
                 }
             }
@@ -321,10 +324,11 @@ namespace Cli_LoRa_Device_Provisioning
                 StatusConsole.WriteLine(MessageType.Info, $"SensorDecoder is missing. Adding empty property.");
             }
 
+            Console.WriteLine("done.");
             return opts;
         }
 
-        public Program.UpdateOptions CompleteMissingUpdateOptions(Program.UpdateOptions opts, ConfigurationHelper configurationHelper)
+        public UpdateOptions CompleteMissingUpdateOptions(UpdateOptions opts, ConfigurationHelper configurationHelper)
         {
             Console.WriteLine();
             Console.WriteLine($"Completing missing options for device...");
@@ -333,30 +337,31 @@ namespace Cli_LoRa_Device_Provisioning
             if (!string.IsNullOrEmpty(opts.DevAddr) && ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out string _))
             {
                 var newDevAddr = NetIdHelper.SetNwkIdPart(opts.DevAddr, opts.NetId, configurationHelper);
-                if (!string.Equals(newDevAddr, opts.DevAddr, StringComparison.InvariantCultureIgnoreCase))
+                if (!string.Equals(newDevAddr, opts.DevAddr, StringComparison.OrdinalIgnoreCase))
                 {
                     opts.DevAddr = newDevAddr;
-                    StatusConsole.WriteLine(MessageType.Info, $"Adapting DevAddr: {opts.DevAddr} based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.");
+                    StatusConsole.WriteLine(MessageType.Warning, $"Adapting DevAddr: {opts.DevAddr} based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.");
                 }
             }
 
             // Shared, non optional device properties
-            if (string.Equals("null", opts.GatewayId, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals("null", opts.GatewayId, StringComparison.OrdinalIgnoreCase))
             {
                 opts.GatewayId = string.Empty;
                 StatusConsole.WriteLine(MessageType.Info, $"GatewayId is set to \"null\". Adding empty property.");
             }
 
-            if (string.Equals("null", opts.SensorDecoder, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals("null", opts.SensorDecoder, StringComparison.OrdinalIgnoreCase))
             {
                 opts.SensorDecoder = string.Empty;
                 StatusConsole.WriteLine(MessageType.Info, $"SensorDecoder is set to \"null\". Adding empty property.");
             }
 
+            Console.WriteLine("done.");
             return opts;
         }
 
-        public bool ValidateDevice(Program.AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported, ConfigurationHelper configurationHelper)
+        public bool VerifyDevice(AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported, ConfigurationHelper configurationHelper)
         {
             string validationError = string.Empty;
             bool isValid = true;
@@ -385,7 +390,7 @@ namespace Cli_LoRa_Device_Provisioning
             // ******************************************************************************************
             // ABP device specific properties
             // ******************************************************************************************
-            if (string.Equals(opts.Type, "ABP", StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(opts.Type, "ABP", StringComparison.OrdinalIgnoreCase))
             {
                 // NwkSKey
                 if (string.IsNullOrEmpty(opts.NwkSKey))
@@ -574,7 +579,7 @@ namespace Cli_LoRa_Device_Provisioning
                 // AppEui
                 if (string.IsNullOrEmpty(opts.AppEui))
                 {
-                    Console.WriteLine("Error: AppEUI is missing.");
+                    StatusConsole.WriteLine(MessageType.Error, "AppEUI is missing.");
                     isValid = false;
                 }
                 else if (!ValidationHelper.ValidateHexStringTwinProperty(opts.AppEui, 8, out validationError))
@@ -590,7 +595,7 @@ namespace Cli_LoRa_Device_Provisioning
                 // AppKey
                 if (string.IsNullOrEmpty(opts.AppKey))
                 {
-                    Console.WriteLine("Error: AppKey is missing.");
+                    StatusConsole.WriteLine(MessageType.Error, "AppKey is missing.");
                     isValid = false;
                 }
                 else if (!ValidationHelper.ValidateHexStringTwinProperty(opts.AppKey, 16, out validationError))
@@ -749,8 +754,7 @@ namespace Cli_LoRa_Device_Provisioning
             // ClassType
             if (!string.IsNullOrEmpty(opts.ClassType))
             {
-                if (!(string.Equals(opts.ClassType, "A", StringComparison.InvariantCultureIgnoreCase) ||
-                    string.Equals(opts.ClassType, "C", StringComparison.InvariantCultureIgnoreCase)))
+                if (!Array.Exists(this.classTypes, classType => string.Equals(classType, opts.ClassType, StringComparison.OrdinalIgnoreCase)))
                 {
                     StatusConsole.WriteLine(MessageType.Error, $"ClassType {opts.ClassType} is invalid: If set, it needs to be \"A\" or \"C\".");
                     isValid = false;
@@ -792,9 +796,9 @@ namespace Cli_LoRa_Device_Provisioning
             // Deduplication
             if (!string.IsNullOrEmpty(opts.Deduplication))
             {
-                if (!(string.Equals(opts.Deduplication, "None", StringComparison.InvariantCultureIgnoreCase) ||
-                    string.Equals(opts.Deduplication, "Drop", StringComparison.InvariantCultureIgnoreCase) ||
-                    string.Equals(opts.Deduplication, "Mark", StringComparison.InvariantCultureIgnoreCase)))
+                if (!(string.Equals(opts.Deduplication, "None", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(opts.Deduplication, "Drop", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(opts.Deduplication, "Mark", StringComparison.OrdinalIgnoreCase)))
                 {
                     StatusConsole.WriteLine(MessageType.Error, $"Deduplication {opts.Deduplication} is invalid: If set, it needs to be \"None\", \"Drop\" or \"Mark\".");
                     isValid = false;
@@ -819,10 +823,11 @@ namespace Cli_LoRa_Device_Provisioning
                 }
             }
 
+            Console.WriteLine("done.");
             return isValid;
         }
 
-        public Twin CreateDeviceTwin(Program.AddOptions opts)
+        public Twin CreateDeviceTwin(AddOptions opts)
         {
             var twinProperties = new TwinProperties();
             Console.WriteLine();
@@ -832,25 +837,25 @@ namespace Cli_LoRa_Device_Provisioning
             // ******************************************************************************************
 
             // ABP device specific properties
-            if (string.Equals(opts.Type, "ABP", StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(opts.Type, "ABP", StringComparison.OrdinalIgnoreCase))
             {
                 Console.WriteLine($"Creating ABP device twin: {opts.DevEui}...");
 
-                twinProperties.Desired[TwinProperty.AppSKey] = ValidationHelper.SetStringTwinProperty(opts.AppSKey);
-                twinProperties.Desired[TwinProperty.NwkSKey] = ValidationHelper.SetStringTwinProperty(opts.NwkSKey);
-                twinProperties.Desired[TwinProperty.DevAddr] = ValidationHelper.SetStringTwinProperty(opts.DevAddr);
+                twinProperties.Desired[TwinProperty.AppSKey] = ValidationHelper.ConvertToStringTwinProperty(opts.AppSKey);
+                twinProperties.Desired[TwinProperty.NwkSKey] = ValidationHelper.ConvertToStringTwinProperty(opts.NwkSKey);
+                twinProperties.Desired[TwinProperty.DevAddr] = ValidationHelper.ConvertToStringTwinProperty(opts.DevAddr);
 
                 if (!string.IsNullOrEmpty(opts.ABPRelaxMode))
-                    twinProperties.Desired[TwinProperty.ABPRelaxMode] = ValidationHelper.SetBoolTwinProperty(opts.ABPRelaxMode);
+                    twinProperties.Desired[TwinProperty.ABPRelaxMode] = ValidationHelper.ConvertToBoolTwinProperty(opts.ABPRelaxMode);
 
                 if (!string.IsNullOrEmpty(opts.FCntUpStart))
-                    twinProperties.Desired[TwinProperty.FCntUpStart] = ValidationHelper.SetUIntTwinProperty(opts.FCntUpStart);
+                    twinProperties.Desired[TwinProperty.FCntUpStart] = ValidationHelper.ConvertToUIntTwinProperty(opts.FCntUpStart);
 
                 if (!string.IsNullOrEmpty(opts.FCntDownStart))
-                    twinProperties.Desired[TwinProperty.FCntDownStart] = ValidationHelper.SetUIntTwinProperty(opts.FCntDownStart);
+                    twinProperties.Desired[TwinProperty.FCntDownStart] = ValidationHelper.ConvertToUIntTwinProperty(opts.FCntDownStart);
 
                 if (!string.IsNullOrEmpty(opts.FCntResetCounter))
-                    twinProperties.Desired[TwinProperty.FCntResetCounter] = ValidationHelper.SetUIntTwinProperty(opts.FCntResetCounter);
+                    twinProperties.Desired[TwinProperty.FCntResetCounter] = ValidationHelper.ConvertToUIntTwinProperty(opts.FCntResetCounter);
             }
 
             // OTAA device specific properties
@@ -858,43 +863,44 @@ namespace Cli_LoRa_Device_Provisioning
             {
                 Console.WriteLine($"Creating OTAA device twin: {opts.DevEui}...");
 
-                twinProperties.Desired[TwinProperty.AppEUI] = ValidationHelper.SetStringTwinProperty(opts.AppEui);
-                twinProperties.Desired[TwinProperty.AppKey] = ValidationHelper.SetStringTwinProperty(opts.AppKey);
+                twinProperties.Desired[TwinProperty.AppEUI] = ValidationHelper.ConvertToStringTwinProperty(opts.AppEui);
+                twinProperties.Desired[TwinProperty.AppKey] = ValidationHelper.ConvertToStringTwinProperty(opts.AppKey);
             }
 
             // Shared, non optional properties
-            twinProperties.Desired[TwinProperty.GatewayID] = ValidationHelper.SetStringTwinProperty(opts.GatewayId);
-            twinProperties.Desired[TwinProperty.SensorDecoder] = ValidationHelper.SetStringTwinProperty(opts.SensorDecoder);
+            twinProperties.Desired[TwinProperty.GatewayID] = ValidationHelper.ConvertToStringTwinProperty(opts.GatewayId);
+            twinProperties.Desired[TwinProperty.SensorDecoder] = ValidationHelper.ConvertToStringTwinProperty(opts.SensorDecoder);
 
             // Shared, optional properties
             if (!string.IsNullOrEmpty(opts.ClassType))
-                twinProperties.Desired[TwinProperty.ClassType] = ValidationHelper.SetStringTwinProperty(opts.ClassType);
+                twinProperties.Desired[TwinProperty.ClassType] = ValidationHelper.ConvertToStringTwinProperty(opts.ClassType);
 
             if (!string.IsNullOrEmpty(opts.DownlinkEnabled))
-                twinProperties.Desired[TwinProperty.DownlinkEnabled] = ValidationHelper.SetBoolTwinProperty(opts.DownlinkEnabled);
+                twinProperties.Desired[TwinProperty.DownlinkEnabled] = ValidationHelper.ConvertToBoolTwinProperty(opts.DownlinkEnabled);
 
             if (!string.IsNullOrEmpty(opts.PreferredWindow))
-                twinProperties.Desired[TwinProperty.PreferredWindow] = ValidationHelper.SetUIntTwinProperty(opts.PreferredWindow);
+                twinProperties.Desired[TwinProperty.PreferredWindow] = ValidationHelper.ConvertToUIntTwinProperty(opts.PreferredWindow);
 
             if (!string.IsNullOrEmpty(opts.Deduplication))
-                twinProperties.Desired[TwinProperty.Deduplication] = ValidationHelper.SetStringTwinProperty(opts.Deduplication);
+                twinProperties.Desired[TwinProperty.Deduplication] = ValidationHelper.ConvertToStringTwinProperty(opts.Deduplication);
 
             if (!string.IsNullOrEmpty(opts.Rx2DataRate))
-                twinProperties.Desired[TwinProperty.RX2DataRate] = ValidationHelper.SetStringTwinProperty(opts.Rx2DataRate);
+                twinProperties.Desired[TwinProperty.RX2DataRate] = ValidationHelper.ConvertToStringTwinProperty(opts.Rx2DataRate);
 
             if (!string.IsNullOrEmpty(opts.Rx1DrOffset))
-                twinProperties.Desired[TwinProperty.RX1DROffset] = ValidationHelper.SetUIntTwinProperty(opts.Rx1DrOffset);
+                twinProperties.Desired[TwinProperty.RX1DROffset] = ValidationHelper.ConvertToUIntTwinProperty(opts.Rx1DrOffset);
 
             if (!string.IsNullOrEmpty(opts.Supports32BitFCnt))
-                twinProperties.Desired[TwinProperty.Supports32BitFCnt] = ValidationHelper.SetBoolTwinProperty(opts.Supports32BitFCnt);
+                twinProperties.Desired[TwinProperty.Supports32BitFCnt] = ValidationHelper.ConvertToBoolTwinProperty(opts.Supports32BitFCnt);
 
-            var twin = new Twin();
-            twin.Properties = twinProperties;
-
-            return twin;
+            Console.WriteLine("done.");
+            return new Twin
+            {
+                Properties = twinProperties
+            };
         }
 
-        public Twin UpdateDeviceTwin(Twin twin, Program.UpdateOptions opts)
+        public Twin UpdateDeviceTwin(Twin twin, UpdateOptions opts)
         {
             Console.WriteLine();
             Console.WriteLine($"Applying changes to device {opts.DevEui} twin...");
@@ -905,62 +911,63 @@ namespace Cli_LoRa_Device_Provisioning
 
             // ABP device properties
             if (!string.IsNullOrEmpty(opts.AppSKey))
-                twin.Properties.Desired[TwinProperty.AppSKey] = ValidationHelper.SetStringTwinProperty(opts.AppSKey);
+                twin.Properties.Desired[TwinProperty.AppSKey] = ValidationHelper.ConvertToStringTwinProperty(opts.AppSKey);
 
             if (!string.IsNullOrEmpty(opts.NwkSKey))
-                twin.Properties.Desired[TwinProperty.NwkSKey] = ValidationHelper.SetStringTwinProperty(opts.NwkSKey);
+                twin.Properties.Desired[TwinProperty.NwkSKey] = ValidationHelper.ConvertToStringTwinProperty(opts.NwkSKey);
 
             if (!string.IsNullOrEmpty(opts.DevAddr))
-                twin.Properties.Desired[TwinProperty.DevAddr] = ValidationHelper.SetStringTwinProperty(opts.DevAddr);
+                twin.Properties.Desired[TwinProperty.DevAddr] = ValidationHelper.ConvertToStringTwinProperty(opts.DevAddr);
 
             if (!string.IsNullOrEmpty(opts.ABPRelaxMode))
-                twin.Properties.Desired[TwinProperty.ABPRelaxMode] = ValidationHelper.SetBoolTwinProperty(opts.ABPRelaxMode);
+                twin.Properties.Desired[TwinProperty.ABPRelaxMode] = ValidationHelper.ConvertToBoolTwinProperty(opts.ABPRelaxMode);
 
             if (!string.IsNullOrEmpty(opts.FCntUpStart))
-                twin.Properties.Desired[TwinProperty.FCntUpStart] = ValidationHelper.SetUIntTwinProperty(opts.FCntUpStart);
+                twin.Properties.Desired[TwinProperty.FCntUpStart] = ValidationHelper.ConvertToUIntTwinProperty(opts.FCntUpStart);
 
             if (!string.IsNullOrEmpty(opts.FCntDownStart))
-                twin.Properties.Desired[TwinProperty.FCntDownStart] = ValidationHelper.SetUIntTwinProperty(opts.FCntDownStart);
+                twin.Properties.Desired[TwinProperty.FCntDownStart] = ValidationHelper.ConvertToUIntTwinProperty(opts.FCntDownStart);
 
             if (!string.IsNullOrEmpty(opts.FCntResetCounter))
-                twin.Properties.Desired[TwinProperty.FCntResetCounter] = ValidationHelper.SetUIntTwinProperty(opts.FCntResetCounter);
+                twin.Properties.Desired[TwinProperty.FCntResetCounter] = ValidationHelper.ConvertToUIntTwinProperty(opts.FCntResetCounter);
 
             // OTAA device properties
             if (!string.IsNullOrEmpty(opts.AppEui))
-                twin.Properties.Desired[TwinProperty.AppEUI] = ValidationHelper.SetStringTwinProperty(opts.AppEui);
+                twin.Properties.Desired[TwinProperty.AppEUI] = ValidationHelper.ConvertToStringTwinProperty(opts.AppEui);
 
             if (!string.IsNullOrEmpty(opts.AppKey))
-                twin.Properties.Desired[TwinProperty.AppKey] = ValidationHelper.SetStringTwinProperty(opts.AppKey);
+                twin.Properties.Desired[TwinProperty.AppKey] = ValidationHelper.ConvertToStringTwinProperty(opts.AppKey);
 
             // Shared, non optional properties
             if (opts.GatewayId != null)
-                twin.Properties.Desired[TwinProperty.GatewayID] = ValidationHelper.SetStringTwinProperty(opts.GatewayId);
+                twin.Properties.Desired[TwinProperty.GatewayID] = ValidationHelper.ConvertToStringTwinProperty(opts.GatewayId);
 
             if (opts.SensorDecoder != null)
-                twin.Properties.Desired[TwinProperty.SensorDecoder] = ValidationHelper.SetStringTwinProperty(opts.SensorDecoder);
+                twin.Properties.Desired[TwinProperty.SensorDecoder] = ValidationHelper.ConvertToStringTwinProperty(opts.SensorDecoder);
 
             // Shared, optional properties
             if (!string.IsNullOrEmpty(opts.ClassType))
-                twin.Properties.Desired[TwinProperty.ClassType] = ValidationHelper.SetStringTwinProperty(opts.ClassType);
+                twin.Properties.Desired[TwinProperty.ClassType] = ValidationHelper.ConvertToStringTwinProperty(opts.ClassType);
 
             if (!string.IsNullOrEmpty(opts.DownlinkEnabled))
-                twin.Properties.Desired[TwinProperty.DownlinkEnabled] = ValidationHelper.SetBoolTwinProperty(opts.DownlinkEnabled);
+                twin.Properties.Desired[TwinProperty.DownlinkEnabled] = ValidationHelper.ConvertToBoolTwinProperty(opts.DownlinkEnabled);
 
             if (!string.IsNullOrEmpty(opts.PreferredWindow))
-                twin.Properties.Desired[TwinProperty.PreferredWindow] = ValidationHelper.SetUIntTwinProperty(opts.PreferredWindow);
+                twin.Properties.Desired[TwinProperty.PreferredWindow] = ValidationHelper.ConvertToUIntTwinProperty(opts.PreferredWindow);
 
             if (!string.IsNullOrEmpty(opts.Deduplication))
-                twin.Properties.Desired[TwinProperty.Deduplication] = ValidationHelper.SetStringTwinProperty(opts.Deduplication);
+                twin.Properties.Desired[TwinProperty.Deduplication] = ValidationHelper.ConvertToStringTwinProperty(opts.Deduplication);
 
             if (!string.IsNullOrEmpty(opts.Rx2DataRate))
-                twin.Properties.Desired[TwinProperty.RX2DataRate] = ValidationHelper.SetStringTwinProperty(opts.Rx2DataRate);
+                twin.Properties.Desired[TwinProperty.RX2DataRate] = ValidationHelper.ConvertToStringTwinProperty(opts.Rx2DataRate);
 
             if (!string.IsNullOrEmpty(opts.Rx1DrOffset))
-                twin.Properties.Desired[TwinProperty.RX1DROffset] = ValidationHelper.SetUIntTwinProperty(opts.Rx1DrOffset);
+                twin.Properties.Desired[TwinProperty.RX1DROffset] = ValidationHelper.ConvertToUIntTwinProperty(opts.Rx1DrOffset);
 
             if (!string.IsNullOrEmpty(opts.Supports32BitFCnt))
-                twin.Properties.Desired[TwinProperty.Supports32BitFCnt] = ValidationHelper.SetBoolTwinProperty(opts.Supports32BitFCnt);
+                twin.Properties.Desired[TwinProperty.Supports32BitFCnt] = ValidationHelper.ConvertToBoolTwinProperty(opts.Supports32BitFCnt);
 
+            Console.WriteLine("done.");
             return twin;
         }
 
@@ -987,11 +994,11 @@ namespace Cli_LoRa_Device_Provisioning
 
                 if (result.IsSuccessful)
                 {
-                    Console.WriteLine($"Success!");
+                    StatusConsole.WriteLine(MessageType.Info, "Success!");
                 }
                 else
                 {
-                    Console.WriteLine($"Error adding device:");
+                    StatusConsole.WriteLine(MessageType.Error, "Adding device failed:");
                     foreach (var error in result.Errors)
                     {
                         Console.WriteLine($"Device Id: {error.DeviceId}, Code: {error.ErrorCode}, Error: {error.ErrorStatus}");
@@ -1010,11 +1017,14 @@ namespace Cli_LoRa_Device_Provisioning
                 }
                 catch (Exception ex)
                 {
-                    StatusConsole.WriteLine(MessageType.Error, ex.Message);
+                    StatusConsole.WriteLine(MessageType.Error, "Updating device failed: " + ex.Message);
                     return false;
                 }
+
+                StatusConsole.WriteLine(MessageType.Info, $"Device {devEui} updated.");
             }
 
+            Console.WriteLine("done.");
             return true;
         }
 
@@ -1023,6 +1033,8 @@ namespace Cli_LoRa_Device_Provisioning
             var count = 0;
             IEnumerable<string> currentPage;
             string totalString = (total == -1) ? "all" : total.ToString();
+
+            page = Math.Max(1, page);
 
             Console.WriteLine();
             Console.WriteLine($"Listing devices...");
@@ -1066,6 +1078,7 @@ namespace Cli_LoRa_Device_Provisioning
                 Console.ReadKey();
             }
 
+            Console.WriteLine("done.");
             return true;
         }
 
@@ -1074,7 +1087,7 @@ namespace Cli_LoRa_Device_Provisioning
             Device device;
 
             Console.WriteLine();
-            Console.WriteLine($"Finding existing device {devEui} on IoT Hub...");
+            Console.WriteLine($"Finding existing device {devEui} in IoT Hub...");
 
             try
             {
@@ -1088,7 +1101,7 @@ namespace Cli_LoRa_Device_Provisioning
 
             if (device != null)
             {
-                Console.WriteLine($"Removing device {devEui} from IoT Hub...");
+                StatusConsole.WriteLine(MessageType.Info, $"Removing device {devEui} from IoT Hub...");
 
                 try
                 {
@@ -1102,11 +1115,12 @@ namespace Cli_LoRa_Device_Provisioning
             }
             else
             {
-                Console.WriteLine($"Device {devEui} not found in IoT Hub. Aborting.");
+                StatusConsole.WriteLine(MessageType.Error, $"Device {devEui} not found in IoT Hub. Aborting.");
                 return false;
             }
 
-            Console.WriteLine($"Success!");
+            StatusConsole.WriteLine(MessageType.Info, "Success!");
+            Console.WriteLine("done.");
             return true;
         }
     }

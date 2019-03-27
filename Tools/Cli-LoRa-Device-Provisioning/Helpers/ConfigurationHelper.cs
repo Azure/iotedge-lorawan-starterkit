@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Cli_LoRa_Device_Provisioning
+namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
     using System.IO;
@@ -16,10 +16,9 @@ namespace Cli_LoRa_Device_Provisioning
 
         public bool ReadConfig()
         {
-            var connectionString = string.Empty;
-            var netId = string.Empty;
+            string connectionString, netId;
 
-            Console.WriteLine("Reading configuration file \"settings.json\".");
+            Console.WriteLine("Reading configuration file \"settings.json\"...");
 
             // Read configuration file settings.json
             try
@@ -47,7 +46,16 @@ namespace Cli_LoRa_Device_Provisioning
             }
             else
             {
-                StatusConsole.WriteLine(MessageType.Info, $"Using IoT Hub connection string: {connectionString}.");
+                // Just show IoT Hub Hostname
+                if (this.GetHostFromConnectionString(connectionString, out string hostName))
+                {
+                    StatusConsole.WriteLine(MessageType.Info, $"Using IoT Hub: {hostName}");
+                }
+                else
+                {
+                    StatusConsole.WriteLine(MessageType.Error, "Invalid connection string in settings.json. Can not find \"HostName=\". The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }.");
+                    return false;
+                }
             }
 
             // Validate NetId setting
@@ -88,7 +96,29 @@ namespace Cli_LoRa_Device_Provisioning
                 return false;
             }
 
+            Console.WriteLine("done.");
             return true;
+        }
+
+        public bool GetHostFromConnectionString(string connectionString, out string hostName)
+        {
+            hostName = string.Empty;
+
+            var from = connectionString.IndexOf("HostName=");
+            var fromOffset = "HostName=".Length;
+
+            var to = connectionString.IndexOf("azure-devices.net");
+            var length = to - from - fromOffset + "azure-devices.net".Length;
+
+            if (from == -1 || to == -1)
+            {
+                return false;
+            }
+            else
+            {
+                hostName = connectionString.Substring(from + fromOffset, length);
+                return true;
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Cli_LoRa_Device_Provisioning
+namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
     using System.Text;
@@ -15,13 +15,19 @@ namespace Cli_LoRa_Device_Provisioning
         public static byte[] StringToByteArray(string hex)
         {
             int numberChars = hex.Length;
-            byte[] bytes = new byte[numberChars / 2];
-            for (int i = 0; i < numberChars; i += 2)
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+
+            byte[] bytes = new byte[numberChars >> 1];
+
+            if (numberChars % 2 == 0)
+            {
+                for (int i = 0; i < numberChars; i += 2)
+                    bytes[i >> 1] = Convert.ToByte(hex.Substring(i, 2), 16);
+            }
+
             return bytes;
         }
 
-        public static string ByteArrayToString(ReadOnlyMemory<byte> bytes)
+        public static string ByteArrayToHexString(ReadOnlyMemory<byte> bytes)
         {
             var byteSpan = bytes.Span;
             var result = new StringBuilder(bytes.Length * 2);
@@ -35,7 +41,7 @@ namespace Cli_LoRa_Device_Provisioning
             return result.ToString();
         }
 
-        public static string ReverseByteArrayToString(ReadOnlyMemory<byte> bytes)
+        public static string ReverseByteArrayToHexString(ReadOnlyMemory<byte> bytes)
         {
             var byteSpan = bytes.Span;
             var result = new StringBuilder(bytes.Length * 2);
@@ -51,7 +57,7 @@ namespace Cli_LoRa_Device_Provisioning
 
         static string ByteArrayToString(byte[] bytes)
         {
-            StringBuilder result = new StringBuilder(bytes.Length * 2);
+            var result = new StringBuilder(bytes.Length * 2);
 
             foreach (byte b in bytes)
             {

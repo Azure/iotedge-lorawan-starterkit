@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Cli_LoRa_Device_Provisioning
+namespace LoRaWan.Tools.CLI.Helpers
 {
     using System;
     using System.Collections.Generic;
+    using System.Text;
+    using LoRaWan.Tools.CLI.Options;
 
     public static class ValidationHelper
     {
@@ -35,42 +37,36 @@ namespace Cli_LoRa_Device_Provisioning
                 "SF8BW500" // 13
             };
 
-        public static string GetEUDataRates()
+        public static string GetDataRatesforLocale(string locale)
         {
-            string result = "EU: ";
+            StringBuilder result = new StringBuilder();
+            result.Append(locale + ": ");
 
-            foreach (string dr in euValidDataranges)
-                result += dr + ", ";
-
-            result += ".";
-
-            result = result.Substring(0, result.Length - 2);
-            return result;
-        }
-
-        public static string GetUSDataRates()
-        {
-            string result = "US: ";
-
-            foreach (string dr in usValidDataranges)
-                result += dr + ", ";
-
-            result = result.Substring(0, result.Length - 2);
-            result += ".";
-
-            return result;
-        }
-
-        public static string CleanString(string inString)
-        {
-            string outString = null;
-
-            if (!string.IsNullOrEmpty(inString))
+            if (string.Equals(locale, "EU", StringComparison.OrdinalIgnoreCase))
             {
-                outString = inString.Replace("\'", string.Empty);
+                foreach (string dr in euValidDataranges)
+                    result.Append(dr + ", ");
+            }
+            else
+            {
+                foreach (string dr in usValidDataranges)
+                    result.Append(dr + ", ");
             }
 
-            return outString;
+            result.Remove(result.Length - 2, 2);
+            result.Append(".");
+
+            return result.ToString();
+        }
+
+        public static string CleanString(string workString)
+        {
+            if (!string.IsNullOrEmpty(workString))
+            {
+                workString = workString.Trim().Replace("\'", string.Empty);
+            }
+
+            return workString;
         }
 
         public static string CleanNetId(string inNetId)
@@ -79,7 +75,7 @@ namespace Cli_LoRa_Device_Provisioning
 
             if (!string.IsNullOrEmpty(inNetId))
             {
-                outNetId = inNetId.Replace("\'", string.Empty);
+                outNetId = inNetId.Trim().Replace("\'", string.Empty);
                 if (outNetId.Length < 6)
                     outNetId = string.Concat(new string('0', 6).Substring(outNetId.Length), outNetId);
 
@@ -104,20 +100,7 @@ namespace Cli_LoRa_Device_Provisioning
 
             if (value is bool valueBool)
             {
-                if (valueBool)
-                    return "true";
-                else
-                    return "false";
-            }
-
-            if (value is uint valueUInt)
-            {
-                return valueUInt.ToString();
-            }
-
-            if (value is int valueInt)
-            {
-                return valueInt.ToString();
+                return valueBool ? bool.TrueString.ToLower() : bool.FalseString.ToLower();
             }
 
             return value.ToString();
@@ -125,7 +108,7 @@ namespace Cli_LoRa_Device_Provisioning
 
         public static bool ValidateHexStringTwinProperty(string hexString, int byteCount, out string error)
         {
-            error = string.Empty;
+            error = null;
 
             // hexString not dividable by 2.
             if (hexString.Length % 2 > 0)
@@ -135,14 +118,14 @@ namespace Cli_LoRa_Device_Provisioning
             }
 
             // hexString doesn't contain byteCount bytes.
-            if (hexString.Length / 2 != byteCount)
+            if (hexString.Length >> 1 != byteCount)
             {
                 error = $"Hex string doesn't contain the expected number of {byteCount} bytes";
                 return false;
             }
 
             // Verify each individual byte for validity.
-            for (int i = 0; i < hexString.Length; i += 2)
+            for (int i = 0; i + 1 < hexString.Length; i += 2)
             {
                 if (!int.TryParse(hexString.Substring(i, 2), System.Globalization.NumberStyles.HexNumber, null, out _))
                 {
@@ -154,21 +137,21 @@ namespace Cli_LoRa_Device_Provisioning
             return true;
         }
 
-        public static dynamic SetBoolTwinProperty(string property)
+        public static dynamic ConvertToBoolTwinProperty(string property)
         {
             property = property.Trim();
 
-            if (string.Equals("true", property, StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals("1", property, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(bool.TrueString, property, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals("1", property, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
-            else if (string.Equals("false", property, StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals("0", property, StringComparison.InvariantCultureIgnoreCase))
+            else if (string.Equals(bool.FalseString, property, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals("0", property, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
-            else if (string.Equals("null", property, StringComparison.InvariantCultureIgnoreCase))
+            else if (string.Equals("null", property, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -180,29 +163,35 @@ namespace Cli_LoRa_Device_Provisioning
 
         public static bool ValidateBoolTwinProperty(string property, out string error)
         {
-            error = string.Empty;
+            error = null;
 
-            property = property.Trim();
+            if (!string.IsNullOrEmpty(property))
+            {
+                property = property.Trim();
+            }
 
-            if (string.Equals("true", property, StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals("false", property, StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals("1", property, StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals("0", property, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(bool.TrueString, property, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(bool.FalseString, property, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals("1", property, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals("0", property, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
             else
             {
-                error = "Property must be 1, True, 0 or False";
+                error = "Property must be \"1\", \"True\", \"0\" or \"False\" - or \"null\" to clear.";
                 return false;
             }
         }
 
-        public static string SetStringTwinProperty(string property)
+        public static string ConvertToStringTwinProperty(string property)
         {
-            property = property.Trim();
+            if (!string.IsNullOrEmpty(property))
+            {
+                property = property.Trim();
+            }
 
-            if (string.Equals("null", property, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals("null", property, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -212,9 +201,11 @@ namespace Cli_LoRa_Device_Provisioning
             }
         }
 
-        public static dynamic SetUIntTwinProperty(string property)
+        public static dynamic ConvertToUIntTwinProperty(string property)
         {
-            if (string.Equals("null", property, StringComparison.InvariantCultureIgnoreCase))
+            // This method is just used for casting, not for validation.
+            // In case the value passed is not a valid uint, the original string is to be returned.
+            if (string.Equals("null", property, StringComparison.OrdinalIgnoreCase))
             {
                 return null;
             }
@@ -227,7 +218,7 @@ namespace Cli_LoRa_Device_Provisioning
             }
         }
 
-        public static uint? SetUIntProperty(string property)
+        public static uint? ConvertToUIntProperty(string property)
         {
             if (uint.TryParse(property, out var uintProperty))
                 return uintProperty;
@@ -238,7 +229,7 @@ namespace Cli_LoRa_Device_Provisioning
         public static bool ValidateUIntTwinProperty(string property, uint? min, uint? max, out string error)
         {
             var isValid = true;
-            error = string.Empty;
+            error = null;
 
             if (uint.TryParse(property, out var uintProperty))
             {
@@ -262,7 +253,7 @@ namespace Cli_LoRa_Device_Provisioning
             }
             else
             {
-                error = "Property is not a valid integer";
+                error = "Property is not a valid. Needs to be a non-negative number.";
                 isValid = false;
             }
 
@@ -271,16 +262,15 @@ namespace Cli_LoRa_Device_Provisioning
 
         public static bool ValidateDataRateTwinProperty(string property, out string error)
         {
-            var isValid = true;
-            error = string.Empty;
+            error = null;
 
             if (!euValidDataranges.Contains(property) && !usValidDataranges.Contains(property))
             {
                 error = "Property is not a valid data rate";
-                isValid = false;
+                return false;
             }
 
-            return isValid;
+            return true;
         }
 
         public static bool ValidateSensorDecoder(string sensorDecoder)
@@ -300,16 +290,17 @@ namespace Cli_LoRa_Device_Provisioning
                 return true;
             }
 
-            if (sensorDecoder.StartsWith("http") || sensorDecoder.Contains('/'))
+            if (sensorDecoder.StartsWith("http", StringComparison.OrdinalIgnoreCase) || sensorDecoder.Contains('/'))
             {
                 if (!Uri.TryCreate(sensorDecoder, UriKind.Absolute, out Uri validatedUri))
                 {
-                    StatusConsole.WriteLine(MessageType.Error, "SensorDecoder has invalid URL.");
+                    StatusConsole.WriteLine(MessageType.Error, "SensorDecoder has an invalid URL.");
                     isValid = false;
                 }
 
                 // if (validatedUri.Host.Any(char.IsUpper))
-                if (!sensorDecoder.Contains(validatedUri.Host))
+                if (!sensorDecoder.StartsWith(validatedUri.Scheme, StringComparison.OrdinalIgnoreCase)
+                    || sensorDecoder.IndexOf(validatedUri.Host) != validatedUri.Scheme.Length + 3)
                 {
                     StatusConsole.WriteLine(MessageType.Error, "SensorDecoder Hostname must be all lowercase.");
                     isValid = false;
@@ -334,53 +325,27 @@ namespace Cli_LoRa_Device_Provisioning
             return isValid;
         }
 
-        public static bool ValidateFcntSettings(Program.AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported)
+        public static bool ValidateFcntSettings(AddOptions opts, string fCntUpStartReportedString, string fCntDownStartReportedString, string fCntResetCounterReportedString)
         {
             var isValid = true;
 
             var abpRelaxMode = string.IsNullOrEmpty(opts.ABPRelaxMode) ||
-                string.Equals(opts.ABPRelaxMode, "1", StringComparison.InvariantCultureIgnoreCase) ||
-                string.Equals(opts.ABPRelaxMode, "true", StringComparison.InvariantCultureIgnoreCase);
+                string.Equals(opts.ABPRelaxMode, "1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(opts.ABPRelaxMode, "true", StringComparison.OrdinalIgnoreCase);
 
-            var fCntUpStart = SetUIntProperty(opts.FCntUpStart);
-            var fCntDownStart = SetUIntProperty(opts.FCntDownStart);
-            var fCntResetCounter = SetUIntProperty(opts.FCntResetCounter);
+            var fCntUpStart = ConvertToUIntProperty(opts.FCntUpStart);
+            var fCntDownStart = ConvertToUIntProperty(opts.FCntDownStart);
+            var fCntResetCounter = ConvertToUIntProperty(opts.FCntResetCounter);
 
-            var fCntUpStartRep = SetUIntProperty(fCntUpStartReported);
-            var fCntDownStartRep = SetUIntProperty(fCntDownStartReported);
-            var fCntResetCounterRep = SetUIntProperty(fCntResetCounterReported);
-
-            // AbpRelaxMode TRUE
-            if (abpRelaxMode)
-            {
-                if (fCntUpStart != null)
-                {
-                    StatusConsole.WriteLine(MessageType.Warning, $"FCntUpStart {fCntUpStart} is unused if ABPRelaxMode is true or empty.");
-                }
-
-                if (fCntDownStart != null)
-                {
-                    StatusConsole.WriteLine(MessageType.Warning, $"FCntDownStart {fCntDownStart} is unused if ABPRelaxMode is true or empty.");
-                }
-
-                if (fCntResetCounter != null)
-                {
-                    StatusConsole.WriteLine(MessageType.Warning, $"FCntResetCounter {fCntResetCounter} is unused if ABPRelaxMode is true or empty.");
-                }
-            }
+            var fCntUpStartReported = ConvertToUIntProperty(fCntUpStartReportedString);
+            var fCntDownStartReported = ConvertToUIntProperty(fCntDownStartReportedString);
+            var fCntResetCounterReported = ConvertToUIntProperty(fCntResetCounterReportedString);
 
             // AbpRelaxMode FALSE
-            else
+            if (!abpRelaxMode)
             {
-                if (!ValidateSingleFcnt(fCntUpStart, fCntUpStartRep, fCntResetCounter, fCntResetCounterRep, "FCntUpStart"))
-                {
-                    isValid = false;
-                }
-
-                if (!ValidateSingleFcnt(fCntDownStart, fCntDownStartRep, fCntResetCounter, fCntResetCounterRep, "FCntDownStart"))
-                {
-                    isValid = false;
-                }
+                isValid &= ValidateSingleFcnt(fCntUpStart, fCntUpStartReported, fCntResetCounter, fCntResetCounterReported, "FCntUpStart");
+                isValid &= ValidateSingleFcnt(fCntDownStart, fCntDownStartReported, fCntResetCounter, fCntResetCounterReported, "FCntDownStart");
             }
 
             return isValid;
@@ -388,58 +353,38 @@ namespace Cli_LoRa_Device_Provisioning
 
         private static bool ValidateSingleFcnt(uint? fCntStart, uint? fCntStartRep, uint? fCntResetCounter, uint? fCntResetCounterRep, string fCntStartType)
         {
-            bool isValid = true;
-
             if (fCntStart == null)
             {
                 // fCntStart not set. Nothing to do.
-                return isValid;
+                return true;
             }
 
             // fCntStartRep not null
-            if (fCntStartRep == null)
+            if (fCntStartRep == null || fCntStart > fCntStartRep)
             {
                 StatusConsole.WriteLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
-                return isValid;
-            }
-
-            // fCntStartRep not null, fCntStartRep not null
-            if (fCntStart > fCntStartRep)
-            {
-                StatusConsole.WriteLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
-                return isValid;
+                return true;
             }
 
             // fCntStartRep not null, fCntStartRep not null, fCntStart <= fCntStartRep
             if (fCntResetCounter == null)
             {
                 StatusConsole.WriteLine(MessageType.Warning, $"{fCntStartType} {fCntStart} will not be set on gateway. Reported {fCntStartType} {fCntStartRep} is larger or equal and FCntResetCounter is not set.");
-                return isValid;
+                return true;
             }
 
             // fCntStartRep not null, fCntStartRep not null, fCntStart <= fCntStartRep,
             // fCntResetCounter not null
-            if (fCntResetCounterRep == null)
+            if (fCntResetCounterRep == null || fCntResetCounter > fCntResetCounterRep)
             {
                 StatusConsole.WriteLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
-                return isValid;
-            }
-
-            // fCntStartRep not null, fCntStartRep not null, fCntStart <= fCntStartRep,
-            // fCntResetCounter not null, fCntResetCounterRep not null
-            if (fCntResetCounter > fCntResetCounterRep)
-            {
-                StatusConsole.WriteLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
-                return isValid;
+                return true;
             }
 
             // fCntStartRep not null, fCntStartRep not null, fCntStart <= fCntStartRep,
             // fCntResetCounter not null, fCntResetCounterRep not null, fCntResetCounter <= fCntResetCounterRep
-            else
-            {
-                StatusConsole.WriteLine(MessageType.Warning, $"{fCntStartType} {fCntStart} will not be set on gateway. Reported {fCntStartType} {fCntStartRep} is larger or equal and FCntResetCounter {fCntResetCounter} is not larger than reported FCntResetCounter {fCntResetCounterRep}.");
-                return isValid;
-            }
+            StatusConsole.WriteLine(MessageType.Warning, $"{fCntStartType} {fCntStart} will not be set on gateway. Reported {fCntStartType} {fCntStartRep} is larger or equal and FCntResetCounter {fCntResetCounter} is not larger than reported FCntResetCounter {fCntResetCounterRep}.");
+            return true;
         }
     }
 }
