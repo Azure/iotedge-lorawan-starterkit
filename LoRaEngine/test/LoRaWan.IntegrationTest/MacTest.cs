@@ -123,7 +123,7 @@ namespace LoRaWan.IntegrationTest
             await this.TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);
             this.Log($"Message {c2dMessageBody} sent to device, need to check if it receives");
 
-            var macCommandReceivedMsg = $"{device.DeviceID}: Cloud to device MAC command DevStatusCmd received";
+            var macCommandReceivedMsg = $"{device.DeviceID}: cloud to device MAC command DevStatusCmd received";
             var foundMacCommandReceivedMsg = false;
 
             var deviceMacCommandResponseMsg = $": DevStatusCmd mac command detected in upstream payload: Type: DevStatusCmd Answer, Battery Level:";
