@@ -14,6 +14,7 @@ namespace LoRaWan.Tools.CLI.Helpers
     public class IoTDeviceHelper
     {
         private string[] classTypes = { "A", "C" };
+        private string[] deduplicationModes = { "None", "Drop", "Mark" };
 
         public async Task<Twin> QueryDeviceTwin(string devEui, ConfigurationHelper configurationHelper)
         {
@@ -36,7 +37,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return twin;
         }
 
-        public bool VerifyDeviceTwin(string devEui, string netId, Twin twin, ConfigurationHelper configurationHelper)
+        public bool VerifyDeviceTwin(string devEui, string netId, Twin twin, ConfigurationHelper configurationHelper, bool isVerbose)
         {
             bool isOtaa = false;
             bool isAbp = false;
@@ -109,7 +110,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                     fCntUpStartReported,
                     fCntDownStartReported,
                     fCntResetCounterReported,
-                    configurationHelper);
+                    configurationHelper,
+                    isVerbose);
             }
 
             // OTAA device
@@ -144,20 +146,28 @@ namespace LoRaWan.Tools.CLI.Helpers
                     fCntUpStartReported,
                     fCntDownStartReported,
                     fCntResetCounterReported,
-                    configurationHelper);
+                    configurationHelper,
+                    isVerbose);
             }
 
             // Unknown device type
             else
             {
                 StatusConsole.WriteLine(MessageType.Error, "Can't determine if ABP or OTAA device.");
-                Console.WriteLine("ABP devices should contain NwkSKey, AppSKey and DevAddr, not AppEUI and AppKey.");
-                Console.WriteLine("OTAA devices should contain AppEUI and AppKey, not NwkSKey, AppSKey and DevAddr.");
+                if (isVerbose)
+                {
+                    Console.WriteLine("ABP devices should contain NwkSKey, AppSKey and DevAddr, not AppEUI and AppKey.");
+                    Console.WriteLine("OTAA devices should contain AppEUI and AppKey, not NwkSKey, AppSKey and DevAddr.");
+                }
+
                 isValid = false;
             }
 
-            Console.WriteLine();
-            Console.WriteLine("Verification Result:");
+            if (isVerbose)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Verification Result:");
+            }
 
             if (isValid)
             {
@@ -168,7 +178,9 @@ namespace LoRaWan.Tools.CLI.Helpers
                 StatusConsole.WriteLine(MessageType.Error, $"The configuration for device {devEui} is not valid.");
             }
 
-            Console.WriteLine("done.");
+            if (isVerbose)
+                Console.WriteLine("done.");
+
             return isValid;
         }
 
@@ -361,13 +373,16 @@ namespace LoRaWan.Tools.CLI.Helpers
             return opts;
         }
 
-        public bool VerifyDevice(AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported, ConfigurationHelper configurationHelper)
+        public bool VerifyDevice(AddOptions opts, string fCntUpStartReported, string fCntDownStartReported, string fCntResetCounterReported, ConfigurationHelper configurationHelper, bool isVerbose)
         {
             string validationError = string.Empty;
             bool isValid = true;
 
-            Console.WriteLine();
-            Console.WriteLine($"Verifying device {opts.DevEui} twin data...");
+            if (isVerbose)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"Verifying device {opts.DevEui} twin data...");
+            }
 
             // ******************************************************************************************
             // DevEui
@@ -384,7 +399,8 @@ namespace LoRaWan.Tools.CLI.Helpers
             }
             else
             {
-                StatusConsole.WriteLine(MessageType.Info, $"DevEui {opts.DevEui} is valid.");
+                if (isVerbose)
+                    StatusConsole.WriteLine(MessageType.Info, $"DevEui {opts.DevEui} is valid.");
             }
 
             // ******************************************************************************************
@@ -405,7 +421,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"NwkSKey {opts.NwkSKey} is valid.");
+                    if (isVerbose)
+                        StatusConsole.WriteLine(MessageType.Info, $"NwkSKey {opts.NwkSKey} is valid.");
                 }
 
                 // AppSKey
@@ -421,7 +438,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"AppSKey {opts.AppSKey} is valid.");
+                    if (isVerbose)
+                        StatusConsole.WriteLine(MessageType.Info, $"AppSKey {opts.AppSKey} is valid.");
                 }
 
                 // NetId
@@ -434,7 +452,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                     }
                     else
                     {
-                        StatusConsole.WriteLine(MessageType.Info, $"NetId {opts.NetId} is valid.");
+                        if (isVerbose)
+                            StatusConsole.WriteLine(MessageType.Info, $"NetId {opts.NetId} is valid.");
                     }
                 }
 
@@ -455,13 +474,19 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                     if (string.Equals(devAddrCorrect, opts.DevAddr))
                     {
-                        StatusConsole.WriteLine(MessageType.Info, $"DevAddr {opts.DevAddr} is valid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.");
+                        if (isVerbose)
+                            StatusConsole.WriteLine(MessageType.Info, $"DevAddr {opts.DevAddr} is valid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.");
                     }
                     else
                     {
                         StatusConsole.WriteLine(MessageType.Error, $"DevAddr {opts.DevAddr} is invalid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.");
-                        StatusConsole.WriteLine(MessageType.Warning, $"DevAddr {opts.DevAddr} belongs to NetId ending in byte {NetIdHelper.GetNwkIdPart(opts.DevAddr).ToString("X2")}.");
-                        StatusConsole.WriteLine(MessageType.Info, $"To stop seeing this error, provide the --netid parameter or set the NetId in the settings file.");
+
+                        if (isVerbose)
+                        {
+                            StatusConsole.WriteLine(MessageType.Warning, $"DevAddr {opts.DevAddr} belongs to NetId ending in byte {NetIdHelper.GetNwkIdPart(opts.DevAddr).ToString("X2")}.");
+                            StatusConsole.WriteLine(MessageType.Info, $"To stop seeing this error, provide the --netid parameter or set the NetId in the settings file.");
+                        }
+
                         isValid = false;
                     }
                 }
@@ -476,7 +501,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                     }
                     else
                     {
-                        StatusConsole.WriteLine(MessageType.Info, $"ABPRelaxMode {opts.ABPRelaxMode} is valid.");
+                        if (isVerbose)
+                            StatusConsole.WriteLine(MessageType.Info, $"ABPRelaxMode {opts.ABPRelaxMode} is valid.");
                     }
                 }
 
@@ -490,7 +516,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                     }
                     else
                     {
-                        StatusConsole.WriteLine(MessageType.Info, $"FCntUpStart {opts.FCntUpStart} is valid.");
+                        if (isVerbose)
+                            StatusConsole.WriteLine(MessageType.Info, $"FCntUpStart {opts.FCntUpStart} is valid.");
                     }
                 }
 
@@ -504,7 +531,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                     }
                     else
                     {
-                        StatusConsole.WriteLine(MessageType.Info, $"FCntDownStart {opts.FCntDownStart} is valid.");
+                        if (isVerbose)
+                            StatusConsole.WriteLine(MessageType.Info, $"FCntDownStart {opts.FCntDownStart} is valid.");
                     }
                 }
 
@@ -518,14 +546,18 @@ namespace LoRaWan.Tools.CLI.Helpers
                     }
                     else
                     {
-                        StatusConsole.WriteLine(MessageType.Info, $"FCntResetCounter {opts.FCntResetCounter} is valid.");
+                        if (isVerbose)
+                            StatusConsole.WriteLine(MessageType.Info, $"FCntResetCounter {opts.FCntResetCounter} is valid.");
                     }
                 }
 
                 // Frame Counter Settings
-                if (!ValidationHelper.ValidateFcntSettings(opts, fCntUpStartReported, fCntDownStartReported, fCntResetCounterReported))
+                if (isVerbose)
                 {
-                    isValid = false;
+                    if (!ValidationHelper.ValidateFcntSettings(opts, fCntUpStartReported, fCntDownStartReported, fCntResetCounterReported))
+                    {
+                        isValid = false;
+                    }
                 }
 
                 // ******************************************************************************************
@@ -589,7 +621,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"AppEui {opts.AppEui} is valid.");
+                    if (isVerbose)
+                        StatusConsole.WriteLine(MessageType.Info, $"AppEui {opts.AppEui} is valid.");
                 }
 
                 // AppKey
@@ -605,7 +638,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"AppKey {opts.AppKey} is valid.");
+                    if (isVerbose)
+                        StatusConsole.WriteLine(MessageType.Info, $"AppKey {opts.AppKey} is valid.");
                 }
 
                 // Rx2DataRate
@@ -618,7 +652,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                     }
                     else
                     {
-                        StatusConsole.WriteLine(MessageType.Info, $"Rx2DataRate {opts.Rx2DataRate} is valid.");
+                        if (isVerbose)
+                            StatusConsole.WriteLine(MessageType.Info, $"Rx2DataRate {opts.Rx2DataRate} is valid.");
                     }
                 }
 
@@ -632,7 +667,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                     }
                     else
                     {
-                        StatusConsole.WriteLine(MessageType.Info, $"Rx1DrOffset {opts.Rx1DrOffset} is valid.");
+                        if (isVerbose)
+                            StatusConsole.WriteLine(MessageType.Info, $"Rx1DrOffset {opts.Rx1DrOffset} is valid.");
                     }
                 }
 
@@ -727,7 +763,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             // ******************************************************************************************
 
             // SensorDecoder
-            if (!ValidationHelper.ValidateSensorDecoder(opts.SensorDecoder))
+            if (!ValidationHelper.ValidateSensorDecoder(opts.SensorDecoder, isVerbose))
             {
                 isValid = false;
             }
@@ -740,11 +776,13 @@ namespace LoRaWan.Tools.CLI.Helpers
             }
             else if (opts.GatewayId == string.Empty)
             {
-                StatusConsole.WriteLine(MessageType.Info, $"GatewayId is empty. This is valid.");
+                if (isVerbose)
+                    StatusConsole.WriteLine(MessageType.Info, $"GatewayId is empty. This is valid.");
             }
             else
             {
-                StatusConsole.WriteLine(MessageType.Info, $"GatewayId {opts.GatewayId} is valid.");
+                if (isVerbose)
+                    StatusConsole.WriteLine(MessageType.Info, $"GatewayId {opts.GatewayId} is valid.");
             }
 
             // ******************************************************************************************
@@ -754,14 +792,16 @@ namespace LoRaWan.Tools.CLI.Helpers
             // ClassType
             if (!string.IsNullOrEmpty(opts.ClassType))
             {
-                if (!Array.Exists(this.classTypes, classType => string.Equals(classType, opts.ClassType, StringComparison.OrdinalIgnoreCase)))
+                if (!Array.Exists(this.classTypes, classType => string.Equals(
+                    classType, opts.ClassType, StringComparison.OrdinalIgnoreCase)))
                 {
                     StatusConsole.WriteLine(MessageType.Error, $"ClassType {opts.ClassType} is invalid: If set, it needs to be \"A\" or \"C\".");
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"ClassType {opts.ClassType} is valid.");
+                    if (isVerbose)
+                        StatusConsole.WriteLine(MessageType.Info, $"ClassType {opts.ClassType} is valid.");
                 }
             }
 
@@ -775,7 +815,8 @@ namespace LoRaWan.Tools.CLI.Helpers
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"DownlinkEnabled {opts.DownlinkEnabled} is valid.");
+                    if (isVerbose)
+                        StatusConsole.WriteLine(MessageType.Info, $"DownlinkEnabled {opts.DownlinkEnabled} is valid.");
                 }
             }
 
@@ -789,23 +830,24 @@ namespace LoRaWan.Tools.CLI.Helpers
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"PreferredWindow {opts.PreferredWindow} is valid.");
+                    if (isVerbose)
+                        StatusConsole.WriteLine(MessageType.Info, $"PreferredWindow {opts.PreferredWindow} is valid.");
                 }
             }
 
             // Deduplication
             if (!string.IsNullOrEmpty(opts.Deduplication))
             {
-                if (!(string.Equals(opts.Deduplication, "None", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(opts.Deduplication, "Drop", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(opts.Deduplication, "Mark", StringComparison.OrdinalIgnoreCase)))
+                if (!Array.Exists(this.deduplicationModes, deduplicationMode => string.Equals(
+                    deduplicationMode, opts.Deduplication, StringComparison.OrdinalIgnoreCase)))
                 {
                     StatusConsole.WriteLine(MessageType.Error, $"Deduplication {opts.Deduplication} is invalid: If set, it needs to be \"None\", \"Drop\" or \"Mark\".");
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"Deduplication {opts.Deduplication} is valid.");
+                    if (isVerbose)
+                        StatusConsole.WriteLine(MessageType.Info, $"Deduplication {opts.Deduplication} is valid.");
                 }
             }
 
@@ -819,11 +861,14 @@ namespace LoRaWan.Tools.CLI.Helpers
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"Supports32BitFCnt {opts.Supports32BitFCnt} is valid.");
+                    if (isVerbose)
+                        StatusConsole.WriteLine(MessageType.Info, $"Supports32BitFCnt {opts.Supports32BitFCnt} is valid.");
                 }
             }
 
-            Console.WriteLine("done.");
+            if (isVerbose)
+                Console.WriteLine("done.");
+
             return isValid;
         }
 
@@ -1047,7 +1092,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             {
                 try
                 {
-                    currentPage = await query.GetNextAsJsonAsync(); // .GetNextAsTwinAsync();
+                    currentPage = await query.GetNextAsJsonAsync();
                 }
                 catch (Exception ex)
                 {
@@ -1074,12 +1119,58 @@ namespace LoRaWan.Tools.CLI.Helpers
                         return true;
                 }
 
+                Console.WriteLine();
                 Console.WriteLine("Press any key to continue.");
                 Console.ReadKey();
             }
 
             Console.WriteLine("done.");
             return true;
+        }
+
+        public async Task<bool> QueryDevicesAndVerify(ConfigurationHelper configurationHelper, int page, int total)
+        {
+            var count = 0;
+            bool isValid = true;
+            IEnumerable<Twin> currentPage;
+            string totalString = (total == -1) ? "all" : total.ToString();
+
+            page = Math.Max(1, page);
+
+            Console.WriteLine();
+            Console.WriteLine($"Bulk Verifying devices...");
+            Console.WriteLine($"Page: {page}, Total: {totalString}");
+
+            var query = configurationHelper.RegistryManager.CreateQuery(
+                "SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) OR is_defined(properties.desired.AppSKey)", page);
+
+            while (query.HasMoreResults)
+            {
+                try
+                {
+                    currentPage = await query.GetNextAsTwinAsync();
+                }
+                catch (Exception ex)
+                {
+                    StatusConsole.WriteLine(MessageType.Error, ex.Message);
+                    return false;
+                }
+
+                foreach (var twin in currentPage)
+                {
+                    if (!this.VerifyDeviceTwin(twin.DeviceId, null, twin, configurationHelper, false))
+                        isValid = false;
+
+                    if (count++ >= total - 1 && total >= 0)
+                        return isValid;
+                }
+
+                Console.WriteLine();
+                Console.WriteLine("Press any key to continue.");
+                Console.ReadKey();
+            }
+
+            return isValid;
         }
 
         public async Task<bool> RemoveDevice(string devEui, ConfigurationHelper configurationHelper)

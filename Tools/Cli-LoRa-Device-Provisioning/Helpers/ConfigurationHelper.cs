@@ -26,6 +26,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 var configurationBuilder = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("settings.json", optional: false, reloadOnChange: true)
+                    .AddJsonFile("settings.local.json", optional: true, reloadOnChange: true)
                     .Build();
 
                 connectionString = configurationBuilder["IoTHubConnectionString"];

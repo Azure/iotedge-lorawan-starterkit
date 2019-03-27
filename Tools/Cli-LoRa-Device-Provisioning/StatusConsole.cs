@@ -4,6 +4,8 @@
 namespace LoRaWan.Tools.CLI
 {
     using System;
+    using Microsoft.Azure.Devices.Shared;
+    using Newtonsoft.Json.Linq;
 
     public static class StatusConsole
     {
@@ -22,6 +24,23 @@ namespace LoRaWan.Tools.CLI
             Console.Write("]: ");
 
             Console.WriteLine(message);
+        }
+
+        public static void WriteTwin(string devEui, Twin twin)
+        {
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine($"DevEUI: {devEui}");
+            Console.WriteLine(TwinToString(twin));
+            Console.ResetColor();
+        }
+
+        public static string TwinToString(Twin twin)
+        {
+            var twinData = JObject.Parse(twin.Properties.Desired.ToJson());
+            twinData.Remove("$metadata");
+            twinData.Remove("$version");
+            return twinData.ToString();
         }
     }
 }

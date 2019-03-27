@@ -273,7 +273,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return true;
         }
 
-        public static bool ValidateSensorDecoder(string sensorDecoder)
+        public static bool ValidateSensorDecoder(string sensorDecoder, bool isVerbose)
         {
             var isValid = true;
             var isWarning = false;
@@ -286,7 +286,9 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             if (sensorDecoder == string.Empty)
             {
-                StatusConsole.WriteLine(MessageType.Info, "SensorDecoder is empty. No decoder will be used.");
+                if (isVerbose)
+                    StatusConsole.WriteLine(MessageType.Info, "SensorDecoder is empty. No decoder will be used.");
+
                 return true;
             }
 
@@ -308,18 +310,23 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 if (validatedUri.AbsolutePath.IndexOf("/api/") < 0)
                 {
-                    StatusConsole.WriteLine(MessageType.Warning, "SensorDecoder is missing \"api\" keyword.");
+                    if (isVerbose)
+                        StatusConsole.WriteLine(MessageType.Warning, "SensorDecoder is missing \"api\" keyword.");
+
                     isWarning = true;
                 }
             }
 
-            if (!isValid || isWarning)
+            if (isVerbose)
             {
-                StatusConsole.WriteLine(MessageType.Info, "Make sure the URI based SensorDecoder Twin desired property looks like \"http://containername/api/decodername\".");
-            }
-            else
-            {
-                StatusConsole.WriteLine(MessageType.Info, $"SensorDecoder {sensorDecoder} is valid.");
+                if (!isValid || isWarning)
+                {
+                    StatusConsole.WriteLine(MessageType.Info, "Make sure the URI based SensorDecoder Twin desired property looks like \"http://containername/api/decodername\".");
+                }
+                else
+                {
+                    StatusConsole.WriteLine(MessageType.Info, $"SensorDecoder {sensorDecoder} is valid.");
+                }
             }
 
             return isValid;

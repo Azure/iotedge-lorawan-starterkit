@@ -25,11 +25,12 @@ namespace LoRaWan.Tools.CLI
             Console.ResetColor();
             Console.WriteLine();
 
-            var success = Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, AddOptions, UpdateOptions, RemoveOptions>(args)
+            var success = Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions>(args)
                 .MapResult(
                     (ListOptions opts) => RunListAndReturnExitCode(opts),
                     (QueryOptions opts) => RunQueryAndReturnExitCode(opts),
                     (VerifyOptions opts) => RunVerifyAndReturnExitCode(opts),
+                    (BulkVerifyOptions opts) => RunBulkVerifyAndReturnExitCode(opts),
                     (AddOptions opts) => RunAddAndReturnExitCode(opts),
                     (UpdateOptions opts) => RunUpdateAndReturnExitCode(opts),
                     (RemoveOptions opts) => RunRemoveAndReturnExitCode(opts),
@@ -83,11 +84,7 @@ namespace LoRaWan.Tools.CLI
 
             if (twin != null)
             {
-                Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"DevEUI: {opts.DevEui}");
-                Console.WriteLine(TwinToString(twin));
-                Console.ResetColor();
+                StatusConsole.WriteTwin(opts.DevEui, twin);
                 return true;
             }
             else
@@ -106,19 +103,43 @@ namespace LoRaWan.Tools.CLI
 
             if (twin != null)
             {
-                Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"DevEUI: {opts.DevEui}");
-                Console.WriteLine(TwinToString(twin));
-                Console.ResetColor();
-
-                return iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper);
+                StatusConsole.WriteTwin(opts.DevEui, twin);
+                return iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper, true);
             }
             else
             {
                 StatusConsole.WriteLine(MessageType.Error, $"Could not get data for device {opts.DevEui}.");
                 return false;
             }
+        }
+
+        private static object RunBulkVerifyAndReturnExitCode(BulkVerifyOptions opts)
+        {
+            int page;
+            int total;
+
+            if (!configurationHelper.ReadConfig())
+                return false;
+
+            if (!int.TryParse(opts.Page, out page))
+                page = 10;
+
+            if (!int.TryParse(opts.Total, out total))
+                total = -1;
+
+            var isSuccess = iotDeviceHelper.QueryDevicesAndVerify(configurationHelper, page, total).Result;
+
+            Console.WriteLine();
+            if (isSuccess)
+            {
+                StatusConsole.WriteLine(MessageType.Info, "No errors were encountered.");
+            }
+            else
+            {
+                StatusConsole.WriteLine(MessageType.Error, "Errors detected in devices.");
+            }
+
+            return isSuccess;
         }
 
         private static object RunAddAndReturnExitCode(AddOptions opts)
@@ -131,7 +152,7 @@ namespace LoRaWan.Tools.CLI
             opts = iotDeviceHelper.CleanOptions(opts as object, true) as AddOptions;
             opts = iotDeviceHelper.CompleteMissingAddOptions(opts, configurationHelper);
 
-            if (iotDeviceHelper.VerifyDevice(opts, null, null, null, configurationHelper))
+            if (iotDeviceHelper.VerifyDevice(opts, null, null, null, configurationHelper, true))
             {
                 Twin twin = iotDeviceHelper.CreateDeviceTwin(opts);
                 isSuccess = iotDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, true).Result;
@@ -144,11 +165,7 @@ namespace LoRaWan.Tools.CLI
             if (isSuccess)
             {
                 var twin = iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper).Result;
-                Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"DevEUI: {opts.DevEui}");
-                Console.WriteLine(TwinToString(twin));
-                Console.ResetColor();
+                StatusConsole.WriteTwin(opts.DevEui, twin);
             }
 
             return isSuccess;
@@ -170,18 +187,14 @@ namespace LoRaWan.Tools.CLI
             {
                 twin = iotDeviceHelper.UpdateDeviceTwin(twin, opts);
 
-                if (iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper))
+                if (iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper, true))
                 {
                     isSuccess = iotDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, false).Result;
 
                     if (isSuccess)
                     {
                         var newTwin = iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper).Result;
-                        Console.WriteLine();
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine($"DevEUI: {opts.DevEui}");
-                        Console.WriteLine(TwinToString(newTwin));
-                        Console.ResetColor();
+                        StatusConsole.WriteTwin(opts.DevEui, twin);
                     }
                     else
                     {
@@ -203,14 +216,6 @@ namespace LoRaWan.Tools.CLI
             }
 
             return isSuccess;
-        }
-
-        private static string TwinToString(Twin twin)
-        {
-            var twinData = JObject.Parse(twin.Properties.Desired.ToJson());
-            twinData.Remove("$metadata");
-            twinData.Remove("$version");
-            return twinData.ToString();
         }
 
         private static object RunRemoveAndReturnExitCode(RemoveOptions opts)
