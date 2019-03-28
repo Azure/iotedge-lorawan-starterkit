@@ -74,10 +74,6 @@ namespace LoRaWan.NetworkServer
         /// <param name="fcntDown">The frame count down of the client.</returns>
         public abstract Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown);
 
-        public abstract Task<LoRaADRResult> CalculateADRAndStoreFrameAsync(string devEUI, LoRaADRRequest adrRequest);
-
-        public abstract Task<bool> ClearADRCache(string devEUI);
-
         public abstract Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request);
 
         protected LoRaDeviceAPIServiceBase()

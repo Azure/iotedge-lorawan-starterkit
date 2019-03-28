@@ -27,6 +27,13 @@ namespace LoRaWan.NetworkServer
 
         public void ProcessResult(FunctionBundlerExecutionContext context, FunctionBundlerResult result)
         {
+            if (result.AdrResult != null)
+            {
+                if (result.AdrResult.CanConfirmToDevice && result.AdrResult.FCntDown > 0)
+                {
+                    context.LoRaDevice.SetFcntDown(context.LoRaDevice.FCntDown);
+                }
+            }
         }
 
         public bool RequiresExecution(FunctionBundlerExecutionContext context)

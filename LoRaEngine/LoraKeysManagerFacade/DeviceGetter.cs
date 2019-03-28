@@ -84,9 +84,14 @@ namespace LoraKeysManagerFacade
                 string cacheKey = devEUI + devNonce;
                 using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId, cacheKey))
                 {
+                    if (deviceCache.HasValue())
+                    {
+                        throw new DeviceNonceUsedException();
+                    }
+
                     if (deviceCache.TryToLock(cacheKey + "joinlock"))
                     {
-                        if (deviceCache.TryGetValue(out _))
+                        if (deviceCache.HasValue())
                         {
                             throw new DeviceNonceUsedException();
                         }
@@ -106,6 +111,10 @@ namespace LoraKeysManagerFacade
 
                             this.cacheStore.KeyDelete(devEUI);
                         }
+                    }
+                    else
+                    {
+                        throw new DeviceNonceUsedException();
                     }
                 }
             }

@@ -17,13 +17,11 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaDeviceAPIService : LoRaDeviceAPIServiceBase
     {
-        private readonly NetworkServerConfiguration configuration;
         private readonly IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider;
 
         public LoRaDeviceAPIService(NetworkServerConfiguration configuration, IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider)
             : base(configuration)
         {
-            this.configuration = configuration;
             this.serviceFacadeHttpClientProvider = serviceFacadeHttpClientProvider;
         }
 
@@ -63,47 +61,6 @@ namespace LoRaWan.NetworkServer
             var payload = await response.Content.ReadAsStringAsync();
             Logger.Log(devEUI, $"deduplication response: '{payload}'", LogLevel.Debug);
             return JsonConvert.DeserializeObject<DeduplicationResult>(payload);
-        }
-
-        public override async Task<LoRaADRResult> CalculateADRAndStoreFrameAsync(string devEUI, LoRaADRRequest adrRequest)
-        {
-            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = $"{this.URL}ADRFunction/{devEUI}?code={this.AuthCode}";
-
-            var requestBody = JsonConvert.SerializeObject(adrRequest);
-
-            var response = await client.PostAsync(url, PreparePostContent(requestBody));
-            if (!response.IsSuccessStatusCode)
-            {
-                Logger.Log(devEUI, $"error calling the ADR function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
-                return null;
-            }
-
-            var payload = await response.Content.ReadAsStringAsync();
-            Logger.Log(devEUI, $"ADR response: '{payload}'", LogLevel.Debug);
-            return JsonConvert.DeserializeObject<LoRaADRResult>(payload);
-        }
-
-        public override async Task<bool> ClearADRCache(string devEUI)
-        {
-            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = $"{this.URL}ADRFunction/{devEUI}?code={this.AuthCode}";
-
-            var request = new LoRaADRRequest
-            {
-                ClearCache = true
-            };
-
-            var requestBody = JsonConvert.SerializeObject(request);
-
-            var response = await client.PostAsync(url, PreparePostContent(requestBody));
-            if (!response.IsSuccessStatusCode)
-            {
-                Logger.Log(devEUI, $"error calling the ADR reset function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
-                return false;
-            }
-
-            return true;
         }
 
         public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request)

@@ -20,48 +20,19 @@ namespace LoRaWan.NetworkServer.ADR
 
         public override Task<bool> ResetAsync(string devEUI)
         {
-            return this.deviceApi.ClearADRCache(devEUI);
+            // needs to be called on the function bundler
+            return Task.FromResult<bool>(false);
         }
 
-        public async override Task StoreADREntryAsync(LoRaADRTableEntry newEntry)
+        public override Task StoreADREntryAsync(LoRaADRTableEntry newEntry)
         {
-            await this.deviceApi.CalculateADRAndStoreFrameAsync(newEntry.DevEUI, new LoRaADRRequest
-            {
-                FCntUp = newEntry.FCnt,
-                GatewayId = newEntry.GatewayId,
-                RequiredSnr = newEntry.Snr
-            });
+            // function bundler is executing this request
+            return Task.CompletedTask;
         }
 
-        public async override Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr, LoRaADRTableEntry newEntry = null)
+        public override Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr, LoRaADRTableEntry newEntry = null)
         {
-            var result = await this.deviceApi.CalculateADRAndStoreFrameAsync(devEUI, new LoRaADRRequest
-            {
-                DataRate = upstreamDataRate,
-                FCntDown = fCntDown,
-                FCntUp = fCntUp,
-                GatewayId = gatewayId,
-                MinTxPowerIndex = minTxPower,
-                PerformADRCalculation = true,
-                RequiredSnr = requiredSnr
-            });
-
-            this.UpdateState(result);
-            Logger.Log(newEntry.DevEUI, $"calculated ADR: CanConfirmToDevice: {result.CanConfirmToDevice}, TxPower: {result.TxPower}, DataRate: {result.DataRate}", LogLevel.Debug);
-            return result;
-        }
-
-        protected override void UpdateState(LoRaADRResult loRaADRResult)
-        {
-            if (loRaADRResult != null)
-            {
-                if (loRaADRResult.CanConfirmToDevice && loRaADRResult.FCntDown > 0)
-                {
-                    this.LoRaDevice.SetFcntDown(this.LoRaDevice.FCntDown);
-                }
-            }
-
-            base.UpdateState(loRaADRResult);
+            return Task.FromResult<LoRaADRResult>(null);
         }
     }
 }
