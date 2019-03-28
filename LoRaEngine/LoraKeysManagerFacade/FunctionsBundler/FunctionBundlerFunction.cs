@@ -29,7 +29,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
         [FunctionName("FunctionBundler")]
         public async Task<IActionResult> FunctionBundlerImpl(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "FunctionBundler/{devEUI}")]HttpRequest req,
-            ILogger log,
+            ILogger logger,
             string devEUI)
         {
             try
@@ -50,14 +50,14 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
 
             var functionBundlerRequest = JsonConvert.DeserializeObject<FunctionBundlerRequest>(requestBody);
-            var result = await this.HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest);
+            var result = await this.HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest, logger);
 
             return new OkObjectResult(result);
         }
 
-        public async Task<FunctionBundlerResult> HandleFunctionBundlerInvoke(string devEUI, FunctionBundlerRequest request)
+        public async Task<FunctionBundlerResult> HandleFunctionBundlerInvoke(string devEUI, FunctionBundlerRequest request, ILogger logger = null)
         {
-            var pipeline = new FunctionBundlerPipelineExecuter(this.executionItems, devEUI, request);
+            var pipeline = new FunctionBundlerPipelineExecuter(this.executionItems, devEUI, request, logger);
             return await pipeline.Execute();
         }
     }

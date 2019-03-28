@@ -67,5 +67,9 @@ namespace LoRaWan.Test.Shared
 
         // Gets/sets the network server module identifier
         public string NetworkServerModuleID { get; set; } = "LoRaWanNetworkSrvModule";
+
+        public string FunctionAppCode { get; set; }
+
+        public string FunctionAppBaseUrl { get; set; }
     }
 }

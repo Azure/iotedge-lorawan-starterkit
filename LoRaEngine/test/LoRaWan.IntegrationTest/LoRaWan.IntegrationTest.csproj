@@ -41,6 +41,10 @@
   <ItemGroup>
     <AdditionalFiles Include="../../../stylecop.json" Link="stylecop.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\ApiVersion.cs" Link="ApiVersion.cs" />
+    <Compile Include="..\..\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\ServiceFacadeHttpClientHandler.cs" Link="ServiceFacadeHttpClientHandler.cs" />
+  </ItemGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>../../../stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>

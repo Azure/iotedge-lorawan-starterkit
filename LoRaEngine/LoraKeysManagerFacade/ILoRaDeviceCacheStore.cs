@@ -31,6 +31,8 @@ namespace LoraKeysManagerFacade
 
         bool KeyDelete(string key);
 
+        bool KeyExists(string key);
+
         bool LockRelease(string key, string value);
 
         long ListAdd(string key, string value, TimeSpan? expiration = null);

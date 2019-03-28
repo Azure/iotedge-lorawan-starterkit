@@ -79,7 +79,7 @@ namespace LoraKeysManagerFacade
 
         public bool KeyDelete(string key)
         {
-            return this.redisCache.KeyDelete(key);
+            return this.redisCache.KeyDelete(key, CommandFlags.DemandMaster);
         }
 
         public bool LockRelease(string key, string value)
