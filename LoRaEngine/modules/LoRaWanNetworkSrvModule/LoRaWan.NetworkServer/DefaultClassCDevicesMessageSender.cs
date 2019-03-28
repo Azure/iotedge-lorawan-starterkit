@@ -65,31 +65,31 @@ namespace LoRaWan.NetworkServer
 
                 if (string.IsNullOrEmpty(loRaDevice.DevAddr))
                 {
-                    Logger.Log(loRaDevice.DevEUI, "[class-c] devAddr is empty, cannot send cloud to device message. Ensure the device has connected at least once with the network", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, "[class-c] devAddr is empty, cannot send cloud to device message. Ensure the device has connected at least once with the network", LogLevel.Error);
                     return false;
                 }
 
                 if (loRaDevice.ClassType != LoRaDeviceClassType.C)
                 {
-                    Logger.Log(loRaDevice.DevEUI, $"[class-c] sending cloud to device messages expects a class C device. Class type is {loRaDevice.ClassType}", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, $"[class-c] sending cloud to device messages expects a class C device. Class type is {loRaDevice.ClassType}", LogLevel.Error);
                     return false;
                 }
 
                 var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
                 if (frameCounterStrategy == null)
                 {
-                    Logger.Log(loRaDevice.DevEUI, $"[class-c] could not resolve frame count update strategy for device, gateway id: {loRaDevice.GatewayID}", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, $"[class-c] could not resolve frame count update strategy for device, gateway id: {loRaDevice.GatewayID}", LogLevel.Error);
                     return false;
                 }
 
                 var fcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, 0);
                 if (fcntDown <= 0)
                 {
-                    Logger.Log(loRaDevice.DevEUI, "[class-c] could not obtain fcnt down for class C device", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, "[class-c] could not obtain fcnt down for class C device", LogLevel.Error);
                     return false;
                 }
 
-                Logger.Log(loRaDevice.DevEUI, $"[class-c] down frame counter: {loRaDevice.FCntDown}", LogLevel.Information);
+                Logger.Log(loRaDevice.DevEUI, $"[class-c] down frame counter: {loRaDevice.FCntDown}", LogLevel.Debug);
 
                 var downlinkMessageBuilderResp = DownlinkMessageBuilder.CreateDownlinkMessage(
                     this.configuration,
@@ -100,7 +100,7 @@ namespace LoRaWan.NetworkServer
 
                 if (downlinkMessageBuilderResp.IsMessageTooLong)
                 {
-                    Logger.Log(loRaDevice.DevEUI, $"[class-c] cloud to device message too large, rejecting. Id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Information);
+                    Logger.Log(loRaDevice.DevEUI, $"[class-c] cloud to device message too large, rejecting. Id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Error);
                     await cloudToDeviceMessage.RejectAsync();
                     return false;
                 }

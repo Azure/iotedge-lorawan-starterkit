@@ -29,7 +29,7 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId)
         {
-            Logger.Log(devEUI, $"syncing FCntDown for multigateway", LogLevel.Information);
+            Logger.Log(devEUI, $"syncing FCntDown for multigateway", LogLevel.Debug);
 
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = $"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}";
@@ -50,8 +50,6 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown)
         {
-            Logger.Log(devEUI, $"check for duplicate message", LogLevel.Debug);
-
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = $"{this.URL}DuplicateMsgCheck/{devEUI}?code={this.AuthCode}&FCntUp={fcntUp}&GatewayId={gatewayId}&FCntDown={fcntDown}";
 
@@ -69,8 +67,6 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<LoRaADRResult> CalculateADRAndStoreFrameAsync(string devEUI, LoRaADRRequest adrRequest)
         {
-            Logger.Log(devEUI, $"calculate ADR and store frame info", LogLevel.Debug);
-
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = $"{this.URL}ADRFunction/{devEUI}?code={this.AuthCode}";
 
@@ -84,14 +80,12 @@ namespace LoRaWan.NetworkServer
             }
 
             var payload = await response.Content.ReadAsStringAsync();
-            Logger.Log(devEUI, $"ADR Response: '{payload}'", LogLevel.Debug);
+            Logger.Log(devEUI, $"ADR response: '{payload}'", LogLevel.Debug);
             return JsonConvert.DeserializeObject<LoRaADRResult>(payload);
         }
 
         public override async Task<bool> ClearADRCache(string devEUI)
         {
-            Logger.Log(devEUI, $"clear ADR cache", LogLevel.Debug);
-
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = $"{this.URL}ADRFunction/{devEUI}?code={this.AuthCode}";
 
@@ -114,8 +108,6 @@ namespace LoRaWan.NetworkServer
 
         public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request)
         {
-            Logger.Log(devEUI, $"Function bundler call", LogLevel.Debug);
-
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = $"{this.URL}FunctionBundler/{devEUI}?code={this.AuthCode}";
 
@@ -124,18 +116,16 @@ namespace LoRaWan.NetworkServer
             var response = await client.PostAsync(url, PreparePostContent(requestBody));
             if (!response.IsSuccessStatusCode)
             {
-                Logger.Log(devEUI, $"error calling the ADR function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
+                Logger.Log(devEUI, $"error calling the bundling function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
                 return null;
             }
 
             var payload = await response.Content.ReadAsStringAsync();
-            Logger.Log(devEUI, $"ADR Response: '{payload}'", LogLevel.Debug);
             return JsonConvert.DeserializeObject<FunctionBundlerResult>(payload);
         }
 
         public override async Task<bool> ABPFcntCacheResetAsync(string devEUI)
         {
-            Logger.Log(devEUI, $"ABP FCnt cache reset for multigateway", LogLevel.Information);
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = $"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true";
             var response = await client.GetAsync(url);
@@ -206,7 +196,6 @@ namespace LoRaWan.NetworkServer
 
                     if (!string.IsNullOrEmpty(badReqResult) && string.Equals(badReqResult, "UsedDevNonce", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        Logger.Log(devEUI ?? string.Empty, $"DevNonce already used by this device", LogLevel.Information);
                         return new SearchDevicesResult
                         {
                             IsDevNonceAlreadyUsed = true,
@@ -214,7 +203,7 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                Logger.Log(devAddr, $"error calling façade api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
+                Logger.Log(devAddr, $"error calling get device function api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
 
                 // TODO: FBE check if we return null or throw exception
                 return new SearchDevicesResult();
@@ -248,7 +237,7 @@ namespace LoRaWan.NetworkServer
                     return new SearchDevicesResult();
                 }
 
-                Logger.Log(devEUI, $"error calling façade api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
+                Logger.Log(devEUI, $"error calling get device by devEUI api: {response.ReasonPhrase}, status: {response.StatusCode}, check the azure function log", LogLevel.Error);
 
                 return new SearchDevicesResult();
             }

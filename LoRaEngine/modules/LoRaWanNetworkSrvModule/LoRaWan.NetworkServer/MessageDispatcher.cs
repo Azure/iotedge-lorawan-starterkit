@@ -46,7 +46,7 @@ namespace LoRaWan.NetworkServer
             if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out LoRaPayload loRaPayload))
             {
                 Logger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);
-                request.NotifyFailed(null, LoRaDeviceRequestFailedReason.InvalidRxpk);
+                request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRxpk);
                 return;
             }
 
@@ -56,7 +56,7 @@ namespace LoRaWan.NetworkServer
                 {
                     // log is generated in Region factory
                     // move here once V2 goes GA
-                    request.NotifyFailed(null, LoRaDeviceRequestFailedReason.InvalidRegion);
+                    request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRegion);
                     return;
                 }
 
@@ -90,7 +90,7 @@ namespace LoRaWan.NetworkServer
             if (!this.IsValidNetId(loRaPayload))
             {
                 Logger.Log(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr), $"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.GetDevAddrNetID()})", LogLevel.Debug);
-                request.NotifyFailed(null, LoRaDeviceRequestFailedReason.InvalidNetId);
+                request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidNetId);
                 return;
             }
 

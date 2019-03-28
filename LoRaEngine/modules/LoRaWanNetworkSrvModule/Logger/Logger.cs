@@ -97,22 +97,23 @@ namespace LoRaWan
                 }
 
                 if (configuration.LogToConsole)
-                    LogToConsole(msg);
+                    LogToConsole(msg, logLevel);
 
                 if (udpClient != null)
                     LogToUdp(msg);
             }
         }
 
-        static void LogToConsole(string message)
+        static void LogToConsole(string message, LogLevel logLevel = LogLevel.Information)
         {
-            Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
-#if DEBUG
-            if (System.Diagnostics.Debugger.IsAttached)
+            if (logLevel == LogLevel.Error)
             {
-                System.Diagnostics.Debug.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+                Console.Error.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
             }
-#endif
+            else
+            {
+                Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+            }
         }
 
         static void LogToUdp(string message)
@@ -124,7 +125,7 @@ namespace LoRaWan
             }
             catch (Exception ex)
             {
-                LogToConsole(string.Concat(" Error logging to UDP: ", ex.ToString()));
+                LogToConsole(string.Concat(" Error logging to UDP: ", ex.ToString()), LogLevel.Error);
             }
         }
 
@@ -163,7 +164,7 @@ namespace LoRaWan
                             var addresses = Dns.GetHostAddresses(configuration.LogToUdpAddress);
                             if (addresses == null || addresses.Length == 0)
                             {
-                                LogToConsole($"Could not resolve ip address from '{configuration.LogToUdpAddress}'");
+                                LogToConsole($"Could not resolve ip address from '{configuration.LogToUdpAddress}'", LogLevel.Error);
                             }
                             else
                             {
@@ -172,7 +173,7 @@ namespace LoRaWan
                         }
                         catch (Exception ex)
                         {
-                            LogToConsole($"Could not resolve ip address from '{configuration.LogToUdpAddress}'. {ex.Message}");
+                            LogToConsole($"Could not resolve ip address from '{configuration.LogToUdpAddress}'. {ex.Message}", LogLevel.Error);
                         }
                     }
                 }
@@ -195,7 +196,7 @@ namespace LoRaWan
             }
             catch (Exception ex)
             {
-                LogToConsole(string.Concat("Error starting UDP logging: ", ex.ToString()));
+                LogToConsole(string.Concat("Error starting UDP logging: ", ex.ToString()), LogLevel.Error);
             }
             finally
             {

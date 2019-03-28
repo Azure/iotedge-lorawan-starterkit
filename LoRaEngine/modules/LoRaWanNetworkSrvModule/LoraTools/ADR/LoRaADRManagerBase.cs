@@ -47,7 +47,7 @@ namespace LoRaTools.ADR
 
             var currentStrategy = this.strategyProvider.GetStrategy();
 
-            var result = currentStrategy.ComputeResult(table, requiredSnr, upstreamDataRate, minTxPower, maxDr);
+            var result = currentStrategy.ComputeResult(devEUI, table, requiredSnr, upstreamDataRate, minTxPower, maxDr);
 
             if (result == null)
             {

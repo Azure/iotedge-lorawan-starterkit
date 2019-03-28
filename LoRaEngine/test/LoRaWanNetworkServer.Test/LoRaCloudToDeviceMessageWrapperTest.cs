@@ -29,7 +29,7 @@ namespace LoRaWan.NetworkServer.Test
             var message = new Message();
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.False(target.IsValid(out var errorMessage));
-            Assert.Equal("Cloud message does not have a body", errorMessage);
+            Assert.Equal("cloud message does not have a body", errorMessage);
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace LoRaWan.NetworkServer.Test
             var message = new Message(Encoding.UTF8.GetBytes(string.Empty));
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.False(target.IsValid(out var errorMessage));
-            Assert.Equal("Cloud message does not have a body", errorMessage);
+            Assert.Equal("cloud message does not have a body", errorMessage);
         }
 
         [Theory]
@@ -48,7 +48,7 @@ namespace LoRaWan.NetworkServer.Test
             var message = new Message(Encoding.UTF8.GetBytes(json));
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.False(target.IsValid(out var errorMessage));
-            Assert.Equal($"Could not parse cloud to device message: {json}", errorMessage);
+            Assert.Equal($"could not parse cloud to device message: {json}", errorMessage);
         }
 
         [Theory]
@@ -59,7 +59,7 @@ namespace LoRaWan.NetworkServer.Test
             var message = new Message(Encoding.UTF8.GetBytes(json));
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.False(target.IsValid(out var errorMessage));
-            Assert.Equal($"Could not parse cloud to device message: {json}", errorMessage);
+            Assert.Equal($"could not parse cloud to device message: {json}", errorMessage);
         }
 
         [Theory]

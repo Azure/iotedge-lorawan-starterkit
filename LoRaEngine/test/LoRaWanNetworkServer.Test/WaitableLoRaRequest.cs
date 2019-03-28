@@ -25,8 +25,6 @@ namespace LoRaWan.NetworkServer.Test
 
         public bool ProcessingFailed { get; private set; }
 
-        public LoRaDevice LoRaDevice { get; private set; }
-
         public LoRaDeviceRequestFailedReason ProcessingFailedReason { get; private set; }
 
         public DownlinkPktFwdMessage ResponseDownlink { get; private set; }
@@ -50,12 +48,11 @@ namespace LoRaWan.NetworkServer.Test
             this.complete = new SemaphoreSlim(0);
         }
 
-        public override void NotifyFailed(LoRaDevice loRaDevice, LoRaDeviceRequestFailedReason reason, Exception exception = null)
+        public override void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)
         {
-            base.NotifyFailed(loRaDevice, reason, exception);
+            base.NotifyFailed(deviceId, reason, exception);
 
             this.ProcessingFailed = true;
-            this.LoRaDevice = loRaDevice;
             this.ProcessingFailedReason = reason;
             this.complete.Release();
         }
@@ -64,7 +61,6 @@ namespace LoRaWan.NetworkServer.Test
         {
             base.NotifySucceeded(loRaDevice, downlink);
 
-            this.LoRaDevice = loRaDevice;
             this.ResponseDownlink = downlink;
             this.ProcessingSucceeded = true;
             this.complete.Release();

@@ -25,7 +25,7 @@ namespace LoRaWan.Shared
         /// Gets the latest version released.
         /// Update this once a new API version is released
         /// </summary>
-        public static ApiVersion LatestVersion => Version_2019_03_08_Preview;
+        public static ApiVersion LatestVersion => Version_2019_03_26;
 
         /// <summary>
         /// Gets the Version from 0.1 and 0.2 had not versioning information
@@ -38,21 +38,31 @@ namespace LoRaWan.Shared
         public static ApiVersion Version_2018_12_16_Preview { get; }
 
         /// <summary>
+        /// Gets 2018-12-16-preview version
         /// Gets intermediary Version 0.5
         /// Added GetDeviceByDevEUI method
         /// Backward compatible with <see cref="Version_2018_12_16_Preview" />
         /// </summary>
         public static ApiVersion Version_2019_02_12_Preview { get; }
 
+        /// <summary>
+        /// Gets 2019-02-20-preview version
+        /// </summary>
         public static ApiVersion Version_2019_02_20_Preview { get; }
 
         /// <summary>
-        /// Gets planned Version 0.5
+        /// Gets 2019-03-08-preview version
         /// Added GetPreferredGateway method
         /// Removed deduplication and adr, both are available in Bundler only
         /// Not backward compatible
         /// </summary>
         public static ApiVersion Version_2019_03_08_Preview { get; }
+
+        /// <summary>
+        /// Gets release 1.0.0 version
+        /// Not backward compatible
+        /// </summary>
+        public static ApiVersion Version_2019_03_26 { get; }
 
         /// <summary>
         /// Gets the version that is assumed in case none is specified
@@ -69,6 +79,7 @@ namespace LoRaWan.Shared
             yield return Version_2019_02_12_Preview;
             yield return Version_2019_02_20_Preview;
             yield return Version_2019_03_08_Preview;
+            yield return Version_2019_03_26;
         }
 
         /// <summary>
@@ -109,6 +120,9 @@ namespace LoRaWan.Shared
 
             Version_2019_03_08_Preview = new ApiVersion("2019-03-08-preview");
             Version_2019_03_08_Preview.MinCompatibleVersion = Version_2019_03_08_Preview;
+
+            Version_2019_03_26 = new ApiVersion("2019-03-26");
+            Version_2019_03_26.MinCompatibleVersion = Version_2019_03_26;
         }
 
         /// <summary>

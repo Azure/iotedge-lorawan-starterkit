@@ -69,13 +69,6 @@ namespace LoraKeysManagerFacade.Test
         }
 
         [Fact]
-        public void Version_2019_02_12_Should_Be_Newer_As_All()
-        {
-            Assert.True(ApiVersion.Version_2019_02_12_Preview > ApiVersion.Version_2018_12_16_Preview);
-            Assert.True(ApiVersion.Version_2019_02_12_Preview > ApiVersion.Version_0_2_Or_Earlier);
-        }
-
-        [Fact]
         public void Empty_String_Should_Parse_To_Version_02()
         {
             var actual = ApiVersion.Parse(string.Empty);
@@ -145,6 +138,25 @@ namespace LoraKeysManagerFacade.Test
         public void Version_2019_02_12_Preview_Is_Not_Compatible_With_0_2_Or_Earlier()
         {
             Assert.False(ApiVersion.Version_2019_02_12_Preview.SupportsVersion(ApiVersion.Version_0_2_Or_Earlier));
+        }
+
+        [Fact]
+        public void Version_2019_02_12_Preview_Is_Not_Compatible_With_2019_03_08_Preview()
+        {
+            Assert.False(ApiVersion.Version_2019_03_26.SupportsVersion(ApiVersion.Version_2019_03_08_Preview));
+        }
+
+        [Fact]
+        public void LatestVersion_Should_Be_Newer_As_All()
+        {
+            var latest = ApiVersion.LatestVersion;
+            Assert.All(ApiVersion.GetApiVersions(), v =>
+            {
+                if (v != latest)
+                {
+                    Assert.True(latest > v);
+                }
+            });
         }
     }
 }

@@ -11,7 +11,6 @@ namespace LoRaWan.NetworkServer
         public void Prepare(FunctionBundlerExecutionContext context, FunctionBundlerRequest request)
         {
             request.FunctionItems |= FunctionBundlerItemType.Deduplication;
-            Logger.Log(context.LoRaDevice.DevEUI, "FunctionBundler Deduplication request finished preparing.", LogLevel.Debug);
         }
 
         public bool RequiresExecution(FunctionBundlerExecutionContext context)

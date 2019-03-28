@@ -32,22 +32,22 @@ namespace LoRaWan.NetworkServer
             this.wrappedRequest = wrappedRequest;
         }
 
-        public override void NotifyFailed(LoRaDevice loRaDevice, LoRaDeviceRequestFailedReason reason, Exception exception = null)
+        public override void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)
         {
-            this.wrappedRequest.NotifyFailed(loRaDevice, reason, exception);
-            this.LogProcessingTime(loRaDevice);
+            this.wrappedRequest.NotifyFailed(deviceId, reason, exception);
+            this.LogProcessingTime(deviceId);
         }
 
         public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkPktFwdMessage downlink)
         {
             this.wrappedRequest.NotifySucceeded(loRaDevice, downlink);
-            this.LogProcessingTime(loRaDevice);
+            this.LogProcessingTime(loRaDevice?.DevEUI);
         }
 
-        private void LogProcessingTime(LoRaDevice loRaDevice)
+        private void LogProcessingTime(string deviceId)
         {
-            var deviceId = loRaDevice?.DevEUI ?? ConversionHelper.ByteArrayToString(this.wrappedRequest.Payload.DevAddr);
-            Logger.Log(deviceId, $"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}", LogLevel.Information);
+            deviceId = deviceId ?? ConversionHelper.ByteArrayToString(this.wrappedRequest.Payload.DevAddr);
+            Logger.Log(deviceId, $"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}", LogLevel.Debug);
         }
 
         public override LoRaOperationTimeWatcher GetTimeWatcher() => this.wrappedRequest.GetTimeWatcher();

@@ -23,8 +23,6 @@ namespace LoRaWan.NetworkServer
             };
 
             request.FunctionItems |= FunctionBundlerItemType.ADR;
-
-            Logger.Log(context.LoRaDevice.DevEUI, "FunctionBundler ADR request finished preparing.", LogLevel.Debug);
         }
 
         public void ProcessResult(FunctionBundlerExecutionContext context, FunctionBundlerResult result)

@@ -214,22 +214,7 @@ namespace LoRaTools.LoRaMessage
             this.CalculateMic(appKey, algoinput);
             this.PerformEncryption(appKey);
 
-            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
-            if (Logger.LoggerLevel < LogLevel.Information)
-            {
-                var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
-
-                if (devEUI.Length != 0)
-                {
-                    Logger.Log(devEUI, $"{((LoRaMessageType)this.Mhdr.Span[0]).ToString()} {jsonMsg}", LogLevel.Debug);
-                }
-                else
-                {
-                    Logger.Log(ConversionHelper.ByteArrayToString(this.DevAddr.Span.ToArray()), $"{((LoRaMessageType)this.Mhdr.Span[0]).ToString()} {jsonMsg}", LogLevel.Debug);
-                }
-            }
-
-            return downlinkPktFwdMessage;
+            return new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
         }
     }
 }
