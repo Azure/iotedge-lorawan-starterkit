@@ -29,15 +29,20 @@ namespace LoraKeysManagerFacade
             return this.redisCache.StringGet(key, CommandFlags.DemandMaster);
         }
 
-        public bool StringSet(string key, string value, TimeSpan? expiry, bool onlyIfNotExists)
+        public bool StringSet(string key, string value, TimeSpan? expiry, bool onlyIfNotExists = false)
         {
             var when = onlyIfNotExists ? When.NotExists : When.Always;
             return this.redisCache.StringSet(key, value, expiry, when, CommandFlags.DemandMaster);
         }
 
+        public bool KeyExists(string key)
+        {
+            return this.redisCache.KeyExists(key, CommandFlags.DemandMaster);
+        }
+
         public bool KeyDelete(string key)
         {
-            return this.redisCache.KeyDelete(key);
+            return this.redisCache.KeyDelete(key, CommandFlags.DemandMaster);
         }
 
         public bool LockRelease(string key, string value)

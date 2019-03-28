@@ -24,9 +24,9 @@ namespace LoRaWan.IntegrationTest
         }
 
         [Fact]
-        public async Task Test_Deduplication_Drop()
+        public async Task Test_MultiGW_OTTA_Join_Single()
         {
-            var device = this.TestFixtureCi.Device25_OTAA;
+            var device = this.TestFixtureCi.Device27_OTAA;
             this.LogTestStart(device);
 
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
@@ -47,44 +47,48 @@ namespace LoRaWan.IntegrationTest
             const string devNonceAlreadyUsed = "DevNonce already used by this device";
             var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(devNonceAlreadyUsed) != -1, new SearchLogOptions(devNonceAlreadyUsed));
             Assert.True(joinRefused.Found);
+        }
 
-            this.TestFixtureCi.ClearLogs();
+        [Fact]
+        public async Task Test_Deduplication_Drop()
+        {
+            var device = this.TestFixtureCi.Device28_ABP;
+            this.LogTestStart(device);
 
-            var devAddr = joinConfirm.Substring(joinConfirm.LastIndexOf(' ') + 1);
-            devAddr = devAddr.Replace(":", string.Empty);
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
 
-            // wait for the twins to be stored and published -> all GW need the same state
-            const int DelayForJoinTwinStore = 20 * 1000;
-            const string DevAddrProperty = "DevAddr";
-            const int MaxRuns = 3;
-            bool reported = false;
-            for (var i = 0; i < MaxRuns && !reported; i++)
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+
+            for (int i = 0; i < 10; i++)
             {
-                await Task.Delay(DelayForJoinTwinStore);
+                Assert.True(await this.TestFixtureCi.ResetDeviceCache(device.DeviceID));
 
-                var twins = await this.TestFixtureCi.GetTwinAsync(device.DeviceID);
-                if (twins.Properties.Reported.Contains(DevAddrProperty))
-                {
-                    reported = devAddr.Equals(twins.Properties.Reported[DevAddrProperty].Value as string, StringComparison.InvariantCultureIgnoreCase);
-                }
+                await Task.Delay(30000);
+
+                var msg = PayloadGenerator.Next().ToString();
+                await this.ArduinoDevice.transferPacketAsync(msg, 10);
+
+                await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
+
+                await Task.Delay(5000);
+
+                // After transferPacket: Expectation from serial
+                // +MSG: Done
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
+
+                var notDuplicate = "{\"isDuplicate\":false";
+                var resultProcessed = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(logmsg => logmsg.IndexOf(notDuplicate) != -1, new SearchLogOptions(notDuplicate));
+                var resultDroped = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf("duplication strategy indicated to not process message") != -1);
+
+                Assert.NotNull(resultProcessed.MatchedEvent);
+                Assert.NotNull(resultDroped.MatchedEvent);
+
+                Assert.NotEqual(resultProcessed.MatchedEvent.SourceId, resultDroped.MatchedEvent.SourceId);
+
+                this.TestFixtureCi.ClearLogs();
             }
-
-            Assert.True(reported);
-
-            var msg = PayloadGenerator.Next().ToString();
-            await this.ArduinoDevice.transferPacketAsync(msg, 10);
-
-            await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
-
-            // After transferPacket: Expectation from serial
-            // +MSG: Done
-            await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
-
-            var notDuplicate = "{\"isDuplicate\":false";
-            var resultProcessed = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(logmsg => logmsg.IndexOf(notDuplicate) != -1, new SearchLogOptions(notDuplicate));
-            var resultDroped = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf("duplication strategy indicated to not process message") != -1);
-
-            Assert.NotEqual(resultProcessed.MatchedEvent.SourceId, resultDroped.MatchedEvent.SourceId);
         }
     }
 }

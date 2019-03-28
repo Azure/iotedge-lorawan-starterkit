@@ -73,7 +73,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                     {
                         // initialize
                         isDuplicate = false;
-                        var state = deviceCache.Initialize(clientFCntUp, clientFCntDown);
+                        deviceCache.Initialize(clientFCntUp, clientFCntDown);
                     }
                 }
             }

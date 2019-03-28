@@ -99,5 +99,10 @@ namespace LoraKeysManagerFacade.Test
 
             return null;
         }
+
+        public bool KeyExists(string key)
+        {
+            return this.cache.ContainsKey(key);
+        }
     }
 }

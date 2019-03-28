@@ -4,7 +4,6 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using Microsoft.Azure.WebJobs;
     using Newtonsoft.Json;
 
     public sealed class LoRaDeviceCache : IDisposable
@@ -78,6 +77,11 @@ namespace LoraKeysManagerFacade
             return value != null;
         }
 
+        public bool Exists()
+        {
+            return this.cacheStore.KeyExists(this.cacheKey);
+        }
+
         public bool HasValue()
         {
             return this.cacheStore.StringGet(this.cacheKey) != null;
@@ -98,10 +102,10 @@ namespace LoraKeysManagerFacade
             return info != null;
         }
 
-        public void StoreInfo(DeviceCacheInfo info)
+        public bool StoreInfo(DeviceCacheInfo info)
         {
             this.EnsureLockOwner();
-            this.cacheStore.StringSet(this.cacheKey, JsonConvert.SerializeObject(info), new TimeSpan(30, 0, 0, 0));
+            return this.cacheStore.StringSet(this.cacheKey, JsonConvert.SerializeObject(info), new TimeSpan(30, 0, 0, 0));
         }
 
         public void SetValue(string value, TimeSpan? expiry = null)
@@ -113,6 +117,12 @@ namespace LoraKeysManagerFacade
             }
 
             this.cacheStore.StringSet(this.cacheKey, value, expiry);
+        }
+
+        public void ClearCache()
+        {
+            this.EnsureLockOwner();
+            this.cacheStore.KeyDelete(this.cacheKey);
         }
 
         private void EnsureLockOwner()

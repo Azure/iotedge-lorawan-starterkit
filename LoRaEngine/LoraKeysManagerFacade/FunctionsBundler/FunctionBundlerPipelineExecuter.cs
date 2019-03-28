@@ -6,6 +6,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
+    using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Logging.Abstractions;
 
     public class FunctionBundlerPipelineExecuter : IPipelineExecutionContext
     {
@@ -17,14 +19,18 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public FunctionBundlerResult Result { get; private set; } = new FunctionBundlerResult();
 
+        public ILogger Logger { get; private set; }
+
         public FunctionBundlerPipelineExecuter(
                                                IFunctionBundlerExecutionItem[] registeredHandlers,
                                                string devEUI,
-                                               FunctionBundlerRequest request)
+                                               FunctionBundlerRequest request,
+                                               ILogger logger = null)
         {
             this.registeredHandlers = registeredHandlers;
             this.DevEUI = devEUI;
             this.Request = request;
+            this.Logger = logger ?? NullLogger.Instance;
         }
 
         public async Task<FunctionBundlerResult> Execute()
