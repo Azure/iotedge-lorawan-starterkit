@@ -16,6 +16,12 @@ If you have deployed the solution and with it the Azure Function through the Azu
 https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.0/function-1.0.0.zip
 ```
 
+Edit the Function's `Application settings` and change the `FUNCTIONS_EXTENSION_VERSION` App setting from `~2` to `2.0.12342.0`
+
+|App Settings Name|Value|
+|-|-|
+|FUNCTIONS_EXTENSION_VERSION|**2.0.12342.0**|
+
 Make sure the IoT Hub and Redis connection strings are properly configured in the function.
 
 ## Updating existing installations from 0.3.0-preview to 0.4.0-preview
