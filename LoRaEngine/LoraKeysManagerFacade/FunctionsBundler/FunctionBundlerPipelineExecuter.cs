@@ -22,11 +22,13 @@ namespace LoraKeysManagerFacade.FunctionBundler
         public FunctionBundlerPipelineExecuter(
                                                IFunctionBundlerExecutionItem[] registeredHandlers,
                                                string devEUI,
-                                               FunctionBundlerRequest request)
+                                               FunctionBundlerRequest request,
+                                               ILogger logger = null)
         {
             this.registeredHandlers = registeredHandlers;
             this.DevEUI = devEUI;
             this.Request = request;
+            this.Logger = logger ?? NullLogger.Instance;
         }
 
         public async Task<FunctionBundlerResult> Execute()

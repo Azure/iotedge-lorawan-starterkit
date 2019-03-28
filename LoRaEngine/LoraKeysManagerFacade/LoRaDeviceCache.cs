@@ -79,6 +79,11 @@ namespace LoraKeysManagerFacade
             return value != null;
         }
 
+        public bool Exists()
+        {
+            return this.cacheStore.KeyExists(this.cacheKey);
+        }
+
         public bool HasValue()
         {
             return this.cacheStore.StringGet(this.cacheKey) != null;

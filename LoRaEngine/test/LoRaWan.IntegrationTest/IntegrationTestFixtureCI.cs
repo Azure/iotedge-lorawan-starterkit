@@ -90,9 +90,14 @@ namespace LoRaWan.IntegrationTest
         public TestDeviceInfo Device26_ABP { get; private set; }
 
         /// <summary>
-        /// Gets Device24_OTAA: used for OTAA deduplication testing
+        /// Gets Device27_OTAA: used for multi GW OTAA testing
         /// </summary>
-        public TestDeviceInfo Device25_OTAA { get; private set; }
+        public TestDeviceInfo Device27_OTAA { get; private set; }
+
+        /// <summary>
+        /// Gets Device27_ABP: used for multi GW deduplication drop testing
+        /// </summary>
+        public TestDeviceInfo Device28_ABP { get; private set; }
 
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice
@@ -114,6 +119,8 @@ namespace LoRaWan.IntegrationTest
             {
                 TestLogger.Log("[WARN] Not serial port defined for test");
             }
+
+            LoRaAPIHelper.Initialize(this.Configuration.FunctionAppCode, this.Configuration.FunctionAppBaseUrl);
         }
 
         public override void ClearLogs()
@@ -131,6 +138,11 @@ namespace LoRaWan.IntegrationTest
                 this.arduinoDevice?.Dispose();
                 this.arduinoDevice = null;
             }
+        }
+
+        public async Task<bool> ResetDeviceCache(string devEUI)
+        {
+            return await LoRaAPIHelper.ResetDeviceCache(devEUI);
         }
 
         public string GetKey16(int deviceId)
@@ -345,8 +357,7 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = this.GetKey32(18),
                 DevAddr = "00000018",
                 GatewayID = gatewayID,
-                IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
+                IsIoTHubDevice = true
             };
 
             // Device19_ABP: used for C2D invalid fport testing
@@ -357,8 +368,7 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = this.GetKey32(19),
                 DevAddr = "00000019",
                 GatewayID = gatewayID,
-                IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
+                IsIoTHubDevice = true
             };
 
             // Device20_OTAA: used for join and rejoin test
@@ -382,7 +392,6 @@ namespace LoRaWan.IntegrationTest
                 DevAddr = "00000021",
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
                 PreferredWindow = 2
             };
 
@@ -428,8 +437,7 @@ namespace LoRaWan.IntegrationTest
                 DevAddr = "00000025",
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
-                KeepAliveTimeout = 60,
+                KeepAliveTimeout = 60
             };
 
             // Device26_ABP: Connection timeout
@@ -440,15 +448,23 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = "00000000000000000000000000000026",
                 DevAddr = "00000026",
                 GatewayID = gatewayID,
-                IsIoTHubDevice = true,
-                SensorDecoder = "DecoderValueSensor",
+                IsIoTHubDevice = true
             };
 
-            this.Device25_OTAA = new TestDeviceInfo()
+            this.Device27_OTAA = new TestDeviceInfo()
             {
-                DeviceID = "0000000000000025",
-                AppEUI = "0000000000000025",
-                AppKey = "00000000000000000000000000000025",
+                DeviceID = "0000000000000027",
+                AppEUI = "0000000000000027",
+                AppKey = "00000000000000000000000000000027",
+                IsIoTHubDevice = true
+            };
+
+            this.Device28_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000028",
+                AppSKey = "00000000000000000000000000000028",
+                NwkSKey = "00000000000000000000000000000028",
+                DevAddr = "00000027",
                 IsIoTHubDevice = true,
                 Deduplication = "Drop"
             };
