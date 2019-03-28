@@ -11,7 +11,6 @@ the [Security TechCenter](https://technet.microsoft.com/en-us/security/default).
 
 ## Limitations
 
-- No Class B support
 - Tested only for EU868 and US915 frequency
 - IoT Edge must have internet connectivity, it can work for limited time offline if the device has previously transmitted an upstream message.
 - The [network server Azure IoT Edge module](/LoRaEngine/modules/LoRaWanNetworkSrvModule) and the [Facade function](/LoRaEngine/LoraKeysManagerFacade) have an API dependency on each other. its generally recommended for the deployments on the same source level.
