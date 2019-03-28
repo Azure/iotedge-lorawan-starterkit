@@ -78,6 +78,11 @@ namespace LoraKeysManagerFacade
             return value != null;
         }
 
+        public bool HasValue()
+        {
+            return this.cacheStore.StringGet(this.cacheKey) != null;
+        }
+
         public bool TryGetInfo(out DeviceCacheInfo info)
         {
             info = null;
