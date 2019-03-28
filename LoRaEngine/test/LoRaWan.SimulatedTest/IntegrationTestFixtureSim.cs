@@ -27,18 +27,18 @@ namespace LoRaWan.SimulatedTest
             get { return this.deviceRange1000_ABP; }
         }
 
-        List<TestDeviceInfo> deviceRange1200_100_ABP = new List<TestDeviceInfo>();
+        List<TestDeviceInfo> deviceRange2000_500_ABP = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1200_100_ABP
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange2000_500_ABP
         {
-            get { return this.deviceRange1200_100_ABP; }
+            get { return this.deviceRange2000_500_ABP; }
         }
 
-        List<TestDeviceInfo> deviceRange1300_10_OTAA = new List<TestDeviceInfo>();
+        List<TestDeviceInfo> deviceRange3000_10_OTAA = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1300_10_OTAA
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange3000_10_OTAA
         {
-            get { return this.deviceRange1300_10_OTAA; }
+            get { return this.deviceRange3000_10_OTAA; }
         }
 
         public override void SetupTestDevices()
@@ -98,26 +98,27 @@ namespace LoRaWan.SimulatedTest
                     });
             }
 
-            // Range of 100 ABP devices from 1200 to 1299: Used for load testing
-            for (int deviceID = 1200; deviceID <= 1299; deviceID++)
+            // Range of 100 ABP devices from 2000 to 2499: Used for load testing
+            for (int deviceID = 2000; deviceID <= 2499; deviceID++)
             {
-                this.deviceRange1200_100_ABP.Add(
+                this.deviceRange2000_500_ABP.Add(
                     new TestDeviceInfo
                     {
                         DeviceID = deviceID.ToString("0000000000000000"),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
+                        KeepAliveTimeout = 60,
                         AppSKey = deviceID.ToString("00000000000000000000000000000000"),
                         NwkSKey = deviceID.ToString("00000000000000000000000000000000"),
                         DevAddr = deviceID.ToString("00000000"),
                     });
             }
 
-            // Range of 10 OTAA devices from 1300 to 1309: Used for load testing
-            for (int deviceID = 1300; deviceID <= 1309; deviceID++)
+            // Range of 10 OTAA devices from 3000 to 3009: Used for load testing
+            for (int deviceID = 3000; deviceID <= 3009; deviceID++)
             {
-                this.deviceRange1300_10_OTAA.Add(
+                this.deviceRange3000_10_OTAA.Add(
                     new TestDeviceInfo
                     {
                         DeviceID = deviceID.ToString("0000000000000000"),

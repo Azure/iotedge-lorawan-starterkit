@@ -167,7 +167,8 @@ namespace LoRaWan.SimulatedTest
         public async Task Multiple_ABP_and_OTAA_Simulated_Devices_Unconfirmed()
         {
             // amount of devices to test with. Maximum is 89
-            int scenarioDeviceNumber = 20; // Default: 20
+            // Do go beyond 100 deviceClients in IoT Edge, use edgeHub env var 'MaxConnectedClients'
+            int scenarioDeviceNumber = 250; // Default: 20
 
             // amount of messages to send per device (without warm-up phase)
             int scenarioMessagesPerDevice = 10; // Default: 10
@@ -184,16 +185,22 @@ namespace LoRaWan.SimulatedTest
             // amount of Unconfirmed messges to send before Confirmed message is to occur
             int messagesBeforeConfirmed = 5; // Default: 5
 
+            // amount of seconds to wait between sends in warmup phase
+            int delayWarmup = 5 * 1000; // Default 5 * 1000
+
+            // amount of seconds to wait between sends in main phase
+            int delayMessageSending = 5 * 1000; // Default 5 * 1000
+
             // amount of miliseconds to wait before checking LoRaWanNetworkSrvModule
             // for successful sending of messages to IoT Hub.
             // delay for 100 devices: 2 * 60 * 1000
             // delay for 20 devices: 15 * 1000
-            int delayNetworkServerCheck = 15 * 1000;
+            int delayNetworkServerCheck = 30 * 60 * 1000;
 
             // amount of miliseconds to wait before checking of messages in IoT Hub
             // delay for 100 devices: 1 * 60 * 1000
             // delay for 20 devices: 15 * 1000
-            int delayIoTHubCheck = 15 * 1000;
+            int delayIoTHubCheck = 15 * 60 * 1000;
 
             // Get random number seed
             Random rnd = new Random();
@@ -201,9 +208,9 @@ namespace LoRaWan.SimulatedTest
 
             int count = 0;
             List<SimulatedDevice> listSimulatedDevices = new List<SimulatedDevice>();
-            foreach (TestDeviceInfo device in this.TestFixtureSim.DeviceRange1200_100_ABP)
+            foreach (TestDeviceInfo device in this.TestFixtureSim.DeviceRange2000_500_ABP)
             {
-                if (count < scenarioDeviceNumber && count < 100)
+                if (count < scenarioDeviceNumber)
                 {
                     SimulatedDevice simulatedDevice = new SimulatedDevice(device);
                     listSimulatedDevices.Add(simulatedDevice);
@@ -216,7 +223,7 @@ namespace LoRaWan.SimulatedTest
             int totalJoins = 0;
 
             List<SimulatedDevice> listSimulatedJoinDevices = new List<SimulatedDevice>();
-            foreach (TestDeviceInfo joinDevice in this.TestFixtureSim.DeviceRange1300_10_OTAA)
+            foreach (TestDeviceInfo joinDevice in this.TestFixtureSim.DeviceRange3000_10_OTAA)
             {
                 SimulatedDevice simulatedJoinDevice = new SimulatedDevice(joinDevice);
                 listSimulatedJoinDevices.Add(simulatedJoinDevice);
@@ -243,7 +250,7 @@ namespace LoRaWan.SimulatedTest
                     }
 
                     await Task.WhenAll(tasks);
-                    await Task.Delay(5000);
+                    await Task.Delay(delayWarmup);
 
                     i += warmUpDeviceStepSize;
                 }
@@ -296,7 +303,7 @@ namespace LoRaWan.SimulatedTest
                         }
 
                         await Task.WhenAll(tasks);
-                        await Task.Delay(5000);
+                        await Task.Delay(delayMessageSending);
 
                         i += scenarioDeviceStepSize;
                     }
