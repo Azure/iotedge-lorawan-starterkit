@@ -46,7 +46,7 @@
         "storageAccountType": "Standard_LRS",
         "functionAppName": "[concat(parameters('uniqueSolutionPrefix'), 'function')]",
         "gitUsername": "Azure",
-        "functionZipBinary": "https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v0.4.0-preview/function-0.4-preview.zip",
+        "functionZipBinary": "https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.0/function-1.0.0.zip",
         "gitBranch": "master",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "iotHubOwnerPolicyName": "iothubowner",
@@ -129,7 +129,7 @@
                         },
                         {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "~2"
+                            "value": "2.0.12342.0"
                         },
                         {
                             "name": "AzureWebJobsSecretStorageType",
