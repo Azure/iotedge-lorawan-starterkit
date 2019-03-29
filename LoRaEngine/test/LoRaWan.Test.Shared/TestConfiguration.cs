@@ -71,5 +71,7 @@ namespace LoRaWan.Test.Shared
         public string FunctionAppCode { get; set; }
 
         public string FunctionAppBaseUrl { get; set; }
+
+        public int NumberOfGateways { get; set; } = 2;
     }
 }

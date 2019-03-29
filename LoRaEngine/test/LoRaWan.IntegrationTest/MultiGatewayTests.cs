@@ -66,26 +66,27 @@ namespace LoRaWan.IntegrationTest
                 Assert.True(await this.TestFixtureCi.ResetDeviceCache(device.DeviceID));
 
                 await Task.Delay(30000);
-
                 var msg = PayloadGenerator.Next().ToString();
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
-                await Task.Delay(5000);
-
                 // After transferPacket: Expectation from serial
                 // +MSG: Done
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
-                var notDuplicate = "{\"isDuplicate\":false";
-                var resultProcessed = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(logmsg => logmsg.IndexOf(notDuplicate) != -1, new SearchLogOptions(notDuplicate));
-                var resultDroped = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf("duplication strategy indicated to not process message") != -1);
+                var allGwGotIt = await this.TestFixtureCi.ValidateMultiGatewaySources((log) => log.IndexOf("deduplication Strategy: Drop", StringComparison.OrdinalIgnoreCase) != -1);
+                if (allGwGotIt)
+                {
+                    var notDuplicate = "{\"isDuplicate\":false";
+                    var resultProcessed = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(logmsg => logmsg.IndexOf(notDuplicate) != -1, new SearchLogOptions(notDuplicate));
+                    var resultDroped = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf("duplication strategy indicated to not process message") != -1);
 
-                Assert.NotNull(resultProcessed.MatchedEvent);
-                Assert.NotNull(resultDroped.MatchedEvent);
+                    Assert.NotNull(resultProcessed.MatchedEvent);
+                    Assert.NotNull(resultDroped.MatchedEvent);
 
-                Assert.NotEqual(resultProcessed.MatchedEvent.SourceId, resultDroped.MatchedEvent.SourceId);
+                    Assert.NotEqual(resultProcessed.MatchedEvent.SourceId, resultDroped.MatchedEvent.SourceId);
+                }
 
                 this.TestFixtureCi.ClearLogs();
             }
