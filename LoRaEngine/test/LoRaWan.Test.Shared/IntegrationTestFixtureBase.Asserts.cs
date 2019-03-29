@@ -106,6 +106,39 @@ namespace LoRaWan.Test.Shared
             return searchResult;
         }
 
+        public async Task<bool> ValidateMultiGatewaySources(Func<string, bool> predicate, int maxAttempts = 2)
+        {
+            int numberOfGw = this.Configuration.NumberOfGateways;
+            var sourceIds = new HashSet<string>(numberOfGw);
+            for (int i = 0; i < maxAttempts && sourceIds.Count < numberOfGw; i++)
+            {
+                if (i > 0)
+                {
+                    var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
+                    await Task.Delay(TimeSpan.FromSeconds(timeToWait));
+                }
+
+                foreach (var item in this.udpLogListener.GetEvents())
+                {
+                    if (predicate(item))
+                    {
+                        var parsed = SearchLogEvent.Parse(item);
+                        if (!string.IsNullOrEmpty(parsed.SourceId))
+                        {
+                            sourceIds.Add(parsed.SourceId);
+                        }
+
+                        if (sourceIds.Count == numberOfGw)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return sourceIds.Count == numberOfGw;
+        }
+
         // Asserts Network Server Module log exists. It has built-in retries and delays
         public async Task<SearchLogResult> AssertNetworkServerModuleLogExistsAsync(Func<string, bool> predicate, SearchLogOptions options)
         {
