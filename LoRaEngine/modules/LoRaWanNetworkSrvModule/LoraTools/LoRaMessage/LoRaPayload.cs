@@ -12,33 +12,6 @@ namespace LoRaTools.LoRaMessage
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
-    public enum LoRaPayloadKeyType
-    {
-        NwkSkey = 1,
-        AppSKey = 2
-    }
-
-    public enum LoRaMessageType : byte
-    {
-        // Request sent by device to join
-        JoinRequest,
-
-        // Response to a join request sent to device
-        JoinAccept = 32,
-
-        // Device to cloud message, no confirmation expected
-        UnconfirmedDataUp = 64,
-
-        // Cloud to device message, no confirmation expected
-        UnconfirmedDataDown = 96,
-
-        // Device to cloud message, confirmation required
-        ConfirmedDataUp = 128,
-
-        // Cloud to device message, confirmation required
-        ConfirmedDataDown = 160
-    }
-
     /// <summary>
     /// The LoRaPayloadWrapper class wraps all the information any LoRa message share in common
     /// </summary>
@@ -67,6 +40,12 @@ namespace LoRaTools.LoRaMessage
         public Memory<byte> DevAddr { get; set; }
 
         /// <summary>
+        /// Gets the representation of the 32bit Frame counter to be used
+        /// in the block if we are in 32bit mode
+        /// </summary>
+        protected byte[] Server32BitFcnt { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayload"/> class.
         /// Wrapper of a LoRa message, consisting of the MIC and MHDR, common to all LoRa messages
         /// This is used for uplink / decoding
@@ -91,14 +70,14 @@ namespace LoRaTools.LoRaMessage
         /// Method to take the different fields and assemble them in the message bytes
         /// </summary>
         /// <returns>the message bytes</returns>
-        [Obsolete("This method is planned to be deprecated in the next versions. Please use LoRaPayload instead.")]
         public abstract byte[] GetByteMessage();
 
         /// <summary>
         /// Method to check a Mic
         /// </summary>
         /// <param name="nwskey">The Network Secret Key</param>
-        public abstract bool CheckMic(string nwskey);
+        /// <param name="server32BitFcnt">Explicit 32bit count to use for calculating the block.</param>
+        public abstract bool CheckMic(string nwskey, uint? server32BitFcnt = null);
 
         /// <summary>
         /// Method to calculate the encrypted version of the payload
@@ -202,6 +181,40 @@ namespace LoRaTools.LoRaMessage
 
             loRaPayload = null;
             return false;
+        }
+
+        public void Reset32BitBlockInfo()
+        {
+            this.Server32BitFcnt = null;
+        }
+
+        public void Ensure32BitFcntValue(uint? server32bitFcnt)
+        {
+            if (this.Server32BitFcnt == null && server32bitFcnt.HasValue)
+            {
+                this.Server32BitFcnt = BitConverter.GetBytes(server32bitFcnt.Value);
+            }
+        }
+
+        /// <summary>
+        /// In 32bit mode, the server needs to infer the upper 16bits by observing
+        /// the traffic between the device and the server. We keep a 32bit counter
+        /// on the server and combine the upper 16bits with what the client sends us
+        /// on the wire (lower 16bits). The result is the inferred counter as we
+        /// assume it is on the client.
+        /// </summary>
+        /// <param name="payloadFcnt">16bits counter sent in the package</param>
+        /// <param name="fcnt">Current server frame counter holding 32bits</param>
+        /// <returns>The inferred 32bit framecounter value, with the higher 16bits holding the server
+        /// observed counter information and the lower 16bits the information we got on the wire</returns>
+        public static uint InferUpper32BitsForClientFcnt(ushort payloadFcnt, uint fcnt)
+        {
+            const uint MaskHigher16 = 0xFFFF0000;
+
+            // server represents the counter in 32bit so does the client, but only sends the lower 16bits
+            // infering the upper 16bits from the current count
+            var fcntServerUpper = fcnt & MaskHigher16;
+            return fcntServerUpper | payloadFcnt;
         }
     }
 }

@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Collections.Generic;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
@@ -71,6 +72,9 @@ namespace LoRaWan.NetworkServer
         [JsonProperty("edgets")]
         public long Edgets { get; set; }
 
+        [JsonProperty("dupmsg", DefaultValueHandling = DefaultValueHandling.Ignore)]
+        public bool? DupMsg { get; set; }
+
         [JsonExtensionData]
         public Dictionary<string, object> ExtraData { get; } = new Dictionary<string, object>();
 
@@ -78,7 +82,7 @@ namespace LoRaWan.NetworkServer
         {
         }
 
-        public LoRaDeviceTelemetry(Rxpk rxpk, LoRaPayloadData loRaPayloadData, object payloadData)
+        public LoRaDeviceTelemetry(Rxpk rxpk, LoRaPayloadData upstreamPayload, object payloadData, byte[] decryptedPayloadData)
         {
             if (rxpk.ExtraData != null)
                 this.ExtraData = new Dictionary<string, object>(rxpk.ExtraData);
@@ -86,7 +90,7 @@ namespace LoRaWan.NetworkServer
             this.Chan = rxpk.Chan;
             this.Codr = rxpk.Codr;
             this.Data = payloadData;
-            this.Rawdata = rxpk.Data;
+            this.Rawdata = decryptedPayloadData?.Length > 0 ? Convert.ToBase64String(decryptedPayloadData) : string.Empty;
             this.Datr = rxpk.Datr;
             this.Freq = rxpk.Freq;
             this.Lsnr = rxpk.Lsnr;
@@ -98,8 +102,8 @@ namespace LoRaWan.NetworkServer
             this.Time = rxpk.Time;
             this.Tmms = rxpk.Tmms;
             this.Tmst = rxpk.Tmst;
-            this.Fcnt = loRaPayloadData.GetFcnt();
-            this.Port = loRaPayloadData.GetFPort();
+            this.Fcnt = upstreamPayload.GetFcnt();
+            this.Port = upstreamPayload.GetFPort();
         }
     }
 }

@@ -3,8 +3,10 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using LoRaTools.Regions;
     using Microsoft.Azure.Devices.Shared;
     using Moq;
     using Xunit;
@@ -24,60 +26,68 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_No_Changes_Were_Made_Should_Not_Save_Frame_Counter()
         {
-            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
-            await target.SaveFrameCountChangesAsync();
+            var target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
+            await target.SaveChangesAsync();
         }
 
         [Fact]
         public async Task When_Incrementing_FcntDown_Should_Save_Frame_Counter()
         {
-            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            var target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
 
             this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
                 .ReturnsAsync(true);
 
-            Assert.Equal(10, target.IncrementFcntDown(10));
-            await target.SaveFrameCountChangesAsync();
+            Assert.Equal(10U, target.IncrementFcntDown(10));
+            Assert.Equal(0U, target.LastSavedFCntDown);
+            await target.SaveChangesAsync();
+            Assert.Equal(10U, target.LastSavedFCntDown);
         }
 
         [Fact]
         public async Task When_Setting_FcntDown_Should_Save_Frame_Counter()
         {
-            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            var target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
 
             this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
                 .ReturnsAsync(true);
 
             target.SetFcntDown(12);
-            Assert.Equal(12, target.FCntDown);
-            await target.SaveFrameCountChangesAsync();
+            Assert.Equal(12U, target.FCntDown);
+            Assert.Equal(0U, target.LastSavedFCntDown);
+            await target.SaveChangesAsync();
+            Assert.Equal(12U, target.LastSavedFCntDown);
         }
 
         [Fact]
         public async Task When_Setting_FcntUp_Should_Save_Frame_Counter()
         {
-            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            var target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
 
             this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
                 .ReturnsAsync(true);
 
             target.SetFcntUp(12);
-            Assert.Equal(12, target.FCntUp);
-            await target.SaveFrameCountChangesAsync();
+            Assert.Equal(12U, target.FCntUp);
+            Assert.Equal(0U, target.LastSavedFCntUp);
+            await target.SaveChangesAsync();
+            Assert.Equal(12U, target.LastSavedFCntUp);
         }
 
         [Fact]
         public async Task After_Saving_Frame_Counter_Changes_Should_Not_Have_Pending_Changes()
         {
-            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            var target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
 
             this.loRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>()))
                 .ReturnsAsync(true);
 
             target.SetFcntUp(12);
-            Assert.Equal(12, target.FCntUp);
-            await target.SaveFrameCountChangesAsync();
+            Assert.Equal(12U, target.FCntUp);
+            Assert.Equal(0U, target.LastSavedFCntUp);
+            await target.SaveChangesAsync();
             Assert.False(target.HasFrameCountChanges);
+            Assert.Equal(12U, target.LastSavedFCntUp);
         }
 
         [Fact]
@@ -100,12 +110,17 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
-            var loRaDevice = new LoRaDevice(string.Empty, "ABC0200000000009", this.loRaDeviceClient.Object);
+            var loRaDevice = new LoRaDevice(string.Empty, "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             await loRaDevice.InitializeAsync();
             Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
             Assert.Equal("ABC02000000000000000000000000009", loRaDevice.AppKey);
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
+            Assert.Equal(0U, loRaDevice.FCntDown);
+            Assert.Equal(0U, loRaDevice.LastSavedFCntDown);
+            Assert.Equal(0U, loRaDevice.FCntUp);
+            Assert.Equal(0U, loRaDevice.LastSavedFCntUp);
+            Assert.False(loRaDevice.HasFrameCountChanges);
             Assert.Empty(loRaDevice.AppSKey ?? string.Empty);
             Assert.Empty(loRaDevice.NwkSKey ?? string.Empty);
             Assert.Empty(loRaDevice.DevAddr ?? string.Empty);
@@ -139,7 +154,7 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
-            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             await loRaDevice.InitializeAsync();
             Assert.Equal("ABC0200000000009", loRaDevice.AppEUI);
             Assert.Equal("ABC02000000000000000000000000009", loRaDevice.AppKey);
@@ -177,7 +192,7 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
-            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             await loRaDevice.InitializeAsync();
             Assert.Empty(loRaDevice.AppEUI ?? string.Empty);
             Assert.Empty(loRaDevice.AppKey ?? string.Empty);
@@ -185,6 +200,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal("DecoderValueSensor", loRaDevice.SensorDecoder);
             Assert.True(loRaDevice.IsABP);
             Assert.True(loRaDevice.IsOurDevice);
+            Assert.Equal(0U, loRaDevice.FCntDown);
+            Assert.Equal(0U, loRaDevice.LastSavedFCntDown);
+            Assert.Equal(0U, loRaDevice.FCntUp);
+            Assert.Equal(0U, loRaDevice.LastSavedFCntUp);
+            Assert.False(loRaDevice.HasFrameCountChanges);
             Assert.Equal("ABC02000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.NwkSKey);
             Assert.Equal("ABCD2000000000000000000000000009ABC02000000000000000000000000009", loRaDevice.AppSKey);
             Assert.Empty(loRaDevice.DevNonce ?? string.Empty);
@@ -222,7 +242,7 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
-            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             await loRaDevice.InitializeAsync();
             Assert.False(loRaDevice.DownlinkEnabled);
         }
@@ -257,7 +277,7 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
-            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             await loRaDevice.InitializeAsync();
             Assert.True(loRaDevice.DownlinkEnabled);
         }
@@ -286,7 +306,7 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
-            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             await loRaDevice.InitializeAsync();
             Assert.True(loRaDevice.DownlinkEnabled);
         }
@@ -321,7 +341,7 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
-            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             await loRaDevice.InitializeAsync();
             Assert.Equal(1, loRaDevice.PreferredWindow);
         }
@@ -354,7 +374,7 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
-            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             await loRaDevice.InitializeAsync();
             Assert.Equal(2, loRaDevice.PreferredWindow);
         }
@@ -383,7 +403,7 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
-            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", this.loRaDeviceClient.Object);
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             await loRaDevice.InitializeAsync();
             Assert.Equal(1, loRaDevice.PreferredWindow);
         }
@@ -391,19 +411,19 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void New_LoRaDevice_Should_Have_C2D_Enabled()
         {
-            Assert.True(new LoRaDevice("12312", "31231", new Mock<ILoRaDeviceClient>().Object).DownlinkEnabled);
+            Assert.True(new LoRaDevice("12312", "31231", new SingleDeviceConnectionManager(new Mock<ILoRaDeviceClient>().Object)).DownlinkEnabled);
         }
 
         [Fact]
         public void New_LoRaDevice_Should_Have_PreferredWindow_As_1()
         {
-            Assert.Equal(1, new LoRaDevice("12312", "31231", new Mock<ILoRaDeviceClient>().Object).PreferredWindow);
+            Assert.Equal(1, new LoRaDevice("12312", "31231", new SingleDeviceConnectionManager(new Mock<ILoRaDeviceClient>().Object)).PreferredWindow);
         }
 
         [Fact]
         public void After_3_Resubmits_Should_Not_Be_Valid_To_Resend_Ack()
         {
-            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            var target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
 
             // 1st time
             target.SetFcntUp(12);
@@ -439,39 +459,44 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void When_ResetFcnt_In_New_Instance_Should_Have_HasFrameCountChanges_False()
         {
-            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            var target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
 
             // Setting from 0 to 0 should not trigger changes
             target.ResetFcnt();
             Assert.False(target.HasFrameCountChanges);
+            Assert.Equal(0U, target.LastSavedFCntDown);
+            Assert.Equal(0U, target.LastSavedFCntUp);
         }
 
         [Fact]
         public void When_ResetFcnt_In_Device_With_Pending_Changes_Should_Have_HasFrameCountChanges_True()
         {
             // Non zero fcnt up
-            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            var target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             target.SetFcntUp(1);
+            target.AcceptFrameCountChanges();
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
             Assert.True(target.HasFrameCountChanges);
 
             // Non zero fcnt down
-            target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             target.SetFcntDown(1);
+            target.AcceptFrameCountChanges();
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
             Assert.True(target.HasFrameCountChanges);
 
             // Non zero fcnt down and up
-            target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             target.SetFcntDown(1);
             target.SetFcntDown(2);
+            target.AcceptFrameCountChanges();
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
             Assert.True(target.HasFrameCountChanges);
         }
 
@@ -479,32 +504,154 @@ namespace LoRaWan.NetworkServer.Test
         public void When_ResetFcnt_In_NonZero_FcntUp_Or_FcntDown_Should_Have_HasFrameCountChanges_True()
         {
             // Non zero fcnt up
-            var target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            var target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             target.SetFcntUp(1);
             target.AcceptFrameCountChanges();
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
             Assert.True(target.HasFrameCountChanges);
 
             // Non zero fcnt down
-            target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             target.SetFcntDown(1);
             target.AcceptFrameCountChanges();
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
+            Assert.Equal(0U, target.LastSavedFCntUp);
+            Assert.Equal(1U, target.LastSavedFCntDown);
             Assert.True(target.HasFrameCountChanges);
 
             // Non zero fcnt down and up
-            target = new LoRaDevice("1231", "12312", this.loRaDeviceClient.Object);
+            target = new LoRaDevice("1231", "12312", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             target.SetFcntDown(1);
             target.SetFcntDown(2);
             target.AcceptFrameCountChanges();
             target.ResetFcnt();
-            Assert.Equal(0, target.FCntUp);
-            Assert.Equal(0, target.FCntDown);
+            Assert.Equal(0U, target.FCntUp);
+            Assert.Equal(0U, target.FCntDown);
+            Assert.Equal(0U, target.LastSavedFCntUp);
+            Assert.Equal(2U, target.LastSavedFCntDown);
+            Assert.Empty(target.PreferredGatewayID);
+            Assert.Equal(LoRaRegionType.NotSet, target.LoRaRegion);
+
             Assert.True(target.HasFrameCountChanges);
+        }
+
+        [Fact]
+        public async Task When_Initialized_ABP_Device_Has_Fcnt_Should_Have_Non_Zero_Fcnt_Values()
+        {
+            var twin = TestUtils.CreateTwin(
+                desired: new Dictionary<string, object>
+                {
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                    { "GatewayID", "mygateway" },
+                    { "SensorDecoder", "DecoderValueSensor" },
+                    { "$version", 1 },
+                },
+                reported: new Dictionary<string, object>
+                {
+                    { "$version", 1 },
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                    { "FCntDown", 10 },
+                    { "FCntUp", 20 },
+                });
+
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(twin);
+
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
+            await loRaDevice.InitializeAsync();
+            Assert.True(loRaDevice.IsOurDevice);
+            Assert.Equal(10U, loRaDevice.FCntDown);
+            Assert.Equal(10U, loRaDevice.LastSavedFCntDown);
+            Assert.Equal(20U, loRaDevice.FCntUp);
+            Assert.Equal(20U, loRaDevice.LastSavedFCntUp);
+            Assert.Empty(loRaDevice.PreferredGatewayID);
+            Assert.Equal(LoRaRegionType.NotSet, loRaDevice.LoRaRegion);
+            Assert.False(loRaDevice.HasFrameCountChanges);
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task When_Initialized_With_PreferredGateway_And_Region_Should_Get_Properties(
+            [CombinatorialValues("EU868", "3132", "eu868", "US915", "us915", "eu")] string regionValue)
+        {
+            var twin = TestUtils.CreateTwin(
+                desired: new Dictionary<string, object>
+                {
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                    { "GatewayID", "mygateway" },
+                    { "SensorDecoder", "DecoderValueSensor" },
+                    { "$version", 1 },
+                },
+                reported: new Dictionary<string, object>
+                {
+                    { "$version", 1 },
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                    { "FCntDown", 10 },
+                    { "FCntUp", 20 },
+                    { "PreferredGatewayID", "gateway1" },
+                    { "Region", regionValue }
+                });
+
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(twin);
+
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
+            await loRaDevice.InitializeAsync();
+            Assert.Equal("gateway1", loRaDevice.PreferredGatewayID);
+
+            if (string.Equals(LoRaRegionType.EU868.ToString(), regionValue, StringComparison.InvariantCultureIgnoreCase))
+                Assert.Equal(LoRaRegionType.EU868, loRaDevice.LoRaRegion);
+            else if (string.Equals(LoRaRegionType.US915.ToString(), regionValue, StringComparison.InvariantCultureIgnoreCase))
+                Assert.Equal(LoRaRegionType.US915, loRaDevice.LoRaRegion);
+            else
+                Assert.Equal(LoRaRegionType.NotSet, loRaDevice.LoRaRegion);
+        }
+
+        [Theory]
+        [InlineData("dasda", 0)]
+        [InlineData(0, 0)]
+        [InlineData("59", 60)] // min => 60
+        [InlineData(59, 60)] // min => 60
+        [InlineData(120, 120)]
+        public async Task When_Initialized_With_Keep_Alive_Should_Read_Value_From_Twin(object keepAliveTimeoutValue, int expectedKeepAliveTimeout)
+        {
+            var twin = TestUtils.CreateTwin(
+                desired: new Dictionary<string, object>
+                {
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                    { "GatewayID", "mygateway" },
+                    { "SensorDecoder", "DecoderValueSensor" },
+                    { "KeepAliveTimeout", keepAliveTimeoutValue },
+                    { "$version", 1 },
+                },
+                reported: new Dictionary<string, object>
+                {
+                    { "$version", 1 },
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" }
+                });
+
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(twin);
+
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
+            await loRaDevice.InitializeAsync();
+            Assert.Equal(expectedKeepAliveTimeout, loRaDevice.KeepAliveTimeout);
         }
     }
 }

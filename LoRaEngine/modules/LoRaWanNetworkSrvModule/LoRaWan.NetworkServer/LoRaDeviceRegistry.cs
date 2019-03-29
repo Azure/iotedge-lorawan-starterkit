@@ -21,16 +21,28 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public class LoRaDeviceRegistry : ILoRaDeviceRegistry
     {
-        // Caches a device making join for 2 minute
-        const int INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES = 2;
+        // Caches a device making join for 30 minutes
+        const int INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES = 30;
 
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceFactory deviceFactory;
         private readonly HashSet<ILoRaDeviceInitializer> initializers;
         private readonly NetworkServerConfiguration configuration;
+        readonly object getOrCreateLoadingDevicesRequestQueueLock;
+        readonly object getOrCreateJoinDeviceLoaderLock;
+
+        readonly object devEUIToLoRaDeviceDictionaryLock;
 
         private volatile IMemoryCache cache;
+
+        private CancellationChangeToken resetCacheChangeToken;
         private CancellationTokenSource resetCacheToken;
+
+        /// <summary>
+        /// Gets or sets the interval in which devices will be loaded
+        /// Only affect reload attempts for same DevAddr
+        /// </summary>
+        public TimeSpan DevAddrReloadInterval { get; set; }
 
         public LoRaDeviceRegistry(
             NetworkServerConfiguration configuration,
@@ -40,10 +52,15 @@ namespace LoRaWan.NetworkServer
         {
             this.configuration = configuration;
             this.resetCacheToken = new CancellationTokenSource();
+            this.resetCacheChangeToken = new CancellationChangeToken(this.resetCacheToken.Token);
             this.cache = cache;
             this.loRaDeviceAPIService = loRaDeviceAPIService;
             this.deviceFactory = deviceFactory;
             this.initializers = new HashSet<ILoRaDeviceInitializer>();
+            this.DevAddrReloadInterval = TimeSpan.FromSeconds(30);
+            this.getOrCreateLoadingDevicesRequestQueueLock = new object();
+            this.getOrCreateJoinDeviceLoaderLock = new object();
+            this.devEUIToLoRaDeviceDictionaryLock = new object();
         }
 
         /// <summary>
@@ -57,122 +74,147 @@ namespace LoRaWan.NetworkServer
         /// <remarks>
         /// This method is internal in order to allow test assembly to used it!
         /// </remarks>
-        internal DevEUIToLoRaDeviceDictionary InternalGetCachedDevicesForDevAddr(string devAddr)
+        internal DevEUIToLoRaDeviceDictionary InternalGetCachedDevicesForDevAddr(string devAddr, bool createIfNotExists = true)
         {
-            return this.cache.GetOrCreate<DevEUIToLoRaDeviceDictionary>(devAddr, (cacheEntry) =>
+            if (createIfNotExists)
             {
-                cacheEntry.SlidingExpiration = TimeSpan.FromDays(1);
-                cacheEntry.ExpirationTokens.Add(new CancellationChangeToken(this.resetCacheToken.Token));
-                return new DevEUIToLoRaDeviceDictionary();
-            });
+                // Need to get and ensure it has started since the GetOrAdd can create multiple objects
+                // https://github.com/aspnet/Extensions/issues/708
+                lock (this.devEUIToLoRaDeviceDictionaryLock)
+                {
+                    return this.cache.GetOrCreate<DevEUIToLoRaDeviceDictionary>(devAddr, (cacheEntry) =>
+                    {
+                        cacheEntry.SetAbsoluteExpiration(TimeSpan.FromDays(2));
+                        cacheEntry.ExpirationTokens.Add(this.resetCacheChangeToken);
+                        return new DevEUIToLoRaDeviceDictionary();
+                    });
+                }
+            }
+
+            this.cache.TryGetValue<DevEUIToLoRaDeviceDictionary>(devAddr, out var cachedValue);
+            return cachedValue;
         }
 
-        /// <summary>
-        /// Finds a device based on the <see cref="LoRaPayloadData"/>
-        /// </summary>
-        public async Task<LoRaDevice> GetDeviceForPayloadAsync(LoRaPayloadData loraPayload)
+        DeviceLoaderSynchronizer GetOrCreateLoadingDevicesRequestQueue(string devAddr)
         {
-            var devAddr = ConversionHelper.ByteArrayToString(loraPayload.DevAddr.ToArray());
+            // Need to get and ensure it has started since the GetOrAdd can create multiple objects
+            // https://github.com/aspnet/Extensions/issues/708
+            lock (this.getOrCreateLoadingDevicesRequestQueueLock)
+            {
+                return this.cache.GetOrCreate<DeviceLoaderSynchronizer>(
+                    $"devaddrloader:{devAddr}",
+                    (ce) =>
+                    {
+                        var cts = new CancellationTokenSource();
+                        ce.ExpirationTokens.Add(new CancellationChangeToken(cts.Token));
+
+                        var destinationDictionary = this.InternalGetCachedDevicesForDevAddr(devAddr);
+                        var originalDeviceCount = destinationDictionary.Count;
+                        var loader = new DeviceLoaderSynchronizer(
+                            devAddr,
+                            this.loRaDeviceAPIService,
+                            this.deviceFactory,
+                            destinationDictionary,
+                            this.initializers,
+                            this.configuration,
+                            (t, l) =>
+                            {
+                                // If the operation to load was successfull
+                                // wait for 30 seconds for pending requests to go through and avoid additional calls
+                                if (t.IsCompletedSuccessfully && !l.HasLoadingDeviceError && this.DevAddrReloadInterval > TimeSpan.Zero)
+                                {
+                                    // remove from cache after 30 seconds
+                                    cts.CancelAfter(this.DevAddrReloadInterval);
+                                }
+                                else
+                                {
+                                    // remove from cache now
+                                    cts.Cancel();
+                                }
+                            },
+                            (l) => this.UpdateDeviceRegistration(l));
+
+                        return loader;
+                    });
+            }
+        }
+
+        public ILoRaDeviceRequestQueue GetLoRaRequestQueue(LoRaRequest request)
+        {
+            var devAddr = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
             var devicesMatchingDevAddr = this.InternalGetCachedDevicesForDevAddr(devAddr);
 
             // If already in cache, return quickly
             if (devicesMatchingDevAddr.Count > 0)
             {
-                var matchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => this.IsValidDeviceForPayload(x, loraPayload, logError: false));
-                if (matchingDevice != null)
+                var cachedMatchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => this.IsValidDeviceForPayload(x, (LoRaPayloadData)request.Payload, logError: false));
+                if (cachedMatchingDevice != null)
                 {
-                    if (matchingDevice.IsOurDevice)
+                    Logger.Log(cachedMatchingDevice.DevEUI, "device in cache", LogLevel.Debug);
+                    if (cachedMatchingDevice.IsOurDevice)
                     {
-                        Logger.Log(matchingDevice.DevEUI, "device in cache", LogLevel.Debug);
-                        return matchingDevice;
+                        return cachedMatchingDevice;
                     }
-                    else
-                    {
-                        Logger.Log(matchingDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", LogLevel.Information);
-                        return null;
-                    }
+
+                    return new ExternalGatewayLoRaRequestQueue(cachedMatchingDevice);
                 }
             }
 
-            // If device was not found, search in the device API, updating local cache
-            Logger.Log(devAddr, "querying the registry for device", LogLevel.Information);
+            // not in cache, need to make a single search by dev addr
+            return this.GetOrCreateLoadingDevicesRequestQueue(devAddr);
+        }
 
-            SearchDevicesResult searchDeviceResult = null;
-            try
+        /// <summary>
+        /// Called to sync up list of devices kept by device registry
+        /// </summary>
+        void UpdateDeviceRegistration(LoRaDevice loRaDevice, string oldDevAddr = null)
+        {
+            var dictionary = this.InternalGetCachedDevicesForDevAddr(loRaDevice.DevAddr);
+            dictionary.AddOrUpdate(loRaDevice.DevEUI, loRaDevice, (k, old) =>
             {
-                searchDeviceResult = await this.loRaDeviceAPIService.SearchByDevAddrAsync(devAddr);
+                return loRaDevice;
+            });
+
+            this.cache.Set(CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice, this.resetCacheChangeToken);
+            Logger.Log(loRaDevice.DevEUI, "device added to cache", LogLevel.Debug);
+
+            if (!string.IsNullOrEmpty(oldDevAddr))
+            {
+                var oldDevAddrDictionary = this.InternalGetCachedDevicesForDevAddr(oldDevAddr, createIfNotExists: false);
+                if (oldDevAddrDictionary != null && oldDevAddrDictionary.TryRemove(loRaDevice.DevEUI, out var existingDevice))
+                {
+                    Logger.Log(loRaDevice.DevEUI, $"previous device devAddr ({oldDevAddr}) removed from cache.", LogLevel.Debug);
+                }
             }
-            catch (Exception ex)
-            {
-                Logger.Log(devAddr, $"Error searching device for payload. {ex.Message}", LogLevel.Error);
+        }
+
+        internal static string CacheKeyForDevEUIDevice(string devEUI) => string.Concat("deveui:", devEUI);
+
+        /// <summary>
+        /// Gets a device by DevEUI
+        /// </summary>
+        public async Task<LoRaDevice> GetDeviceByDevEUIAsync(string devEUI)
+        {
+            if (this.cache.TryGetValue<LoRaDevice>(CacheKeyForDevEUIDevice(devEUI), out var cachedDevice))
+                return cachedDevice;
+
+            var deviceInfo = await this.loRaDeviceAPIService.SearchByDevEUIAsync(devEUI);
+            if (deviceInfo?.Devices == null || deviceInfo.Devices.Count == 0)
                 return null;
-            }
 
-            if (searchDeviceResult?.Devices != null)
+            var loRaDevice = this.deviceFactory.Create(deviceInfo.Devices[0]);
+            await loRaDevice.InitializeAsync();
+            if (this.initializers != null)
             {
-                foreach (var foundDevice in searchDeviceResult.Devices)
+                foreach (var initializers in this.initializers)
                 {
-                    var loRaDevice = this.deviceFactory.Create(foundDevice);
-                    if (loRaDevice != null && devicesMatchingDevAddr.TryAdd(loRaDevice.DevEUI, loRaDevice))
-                    {
-                        try
-                        {
-                            // Calling initialize async here to avoid making async calls in the concurrent dictionary
-                            // Since only one device will be added, we guarantee that initialization only happens once
-                            if (await loRaDevice.InitializeAsync())
-                            {
-                                loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
-
-                                // once added, call initializers
-                                foreach (var initializer in this.initializers)
-                                    initializer.Initialize(loRaDevice);
-
-                                if (loRaDevice.DevEUI != null)
-                                    Logger.Log(loRaDevice.DevEUI, "device added to cache", LogLevel.Debug);
-
-                                // TODO: stop if we found the matching device?
-                                // If we continue we can cache for later usage, but then do it in a new thread
-                                if (this.IsValidDeviceForPayload(loRaDevice, loraPayload, logError: false))
-                                {
-                                    if (!loRaDevice.IsOurDevice)
-                                    {
-                                        Logger.Log(loRaDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", LogLevel.Information);
-                                        return null;
-                                    }
-
-                                    return loRaDevice;
-                                }
-                            }
-                            else
-                            {
-                                // could not initialize device
-                                // remove it from cache since it does not have required properties
-                                devicesMatchingDevAddr.TryRemove(loRaDevice.DevEUI, out _);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            // problem initializing the device (get twin timeout, etc)
-                            // remove it from the cache
-                            Logger.Log(loRaDevice.DevEUI ?? devAddr, $"Error initializing device {loRaDevice.DevEUI}. {ex.Message}", LogLevel.Error);
-
-                            devicesMatchingDevAddr.TryRemove(loRaDevice.DevEUI, out _);
-                        }
-                    }
+                    initializers.Initialize(loRaDevice);
                 }
-
-                // try now with updated cache
-                var matchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => this.IsValidDeviceForPayload(x, loraPayload, logError: true));
-                if (matchingDevice != null && !matchingDevice.IsOurDevice)
-                {
-                    Logger.Log(matchingDevice.DevEUI ?? devAddr, $"device is not our device, ignore message", LogLevel.Information);
-                    return null;
-                }
-
-                return matchingDevice;
             }
 
-            return null;
+            this.UpdateDeviceRegistration(loRaDevice);
+
+            return loRaDevice;
         }
 
         /// <summary>
@@ -185,7 +227,7 @@ namespace LoRaWan.NetworkServer
             if (string.IsNullOrEmpty(loRaDevice.NwkSKey))
                 return false;
 
-            var checkMicResult = loraPayload.CheckMic(loRaDevice.NwkSKey);
+            var checkMicResult = loRaDevice.ValidateMic(loraPayload);
             if (!checkMicResult && logError)
             {
                 Logger.Log(loRaDevice.DevEUI, $"with devAddr {loRaDevice.DevAddr} check MIC failed", LogLevel.Debug);
@@ -201,13 +243,18 @@ namespace LoRaWan.NetworkServer
         void RemoveJoinDeviceLoader(string devEUI) => this.cache.Remove(this.GetJoinDeviceLoaderCacheKey(devEUI));
 
         // Gets or adds a join device loader to the memory cache
-        JoinDeviceLoader GetOrAddJoinDeviceLoader(IoTHubDeviceInfo ioTHubDeviceInfo)
+        JoinDeviceLoader GetOrCreateJoinDeviceLoader(IoTHubDeviceInfo ioTHubDeviceInfo)
         {
-            return this.cache.GetOrCreate(this.GetJoinDeviceLoaderCacheKey(ioTHubDeviceInfo.DevEUI), (entry) =>
+            // Need to get and ensure it has started since the GetOrAdd can create multiple objects
+            // https://github.com/aspnet/Extensions/issues/708
+            lock (this.getOrCreateJoinDeviceLoaderLock)
             {
-                entry.SlidingExpiration = TimeSpan.FromMinutes(INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES);
-                return new JoinDeviceLoader(ioTHubDeviceInfo, this.deviceFactory);
-            });
+                return this.cache.GetOrCreate(this.GetJoinDeviceLoaderCacheKey(ioTHubDeviceInfo.DevEUI), (entry) =>
+                {
+                    entry.SlidingExpiration = TimeSpan.FromMinutes(INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES);
+                    return new JoinDeviceLoader(ioTHubDeviceInfo, this.deviceFactory);
+                });
+            }
         }
 
         /// <summary>
@@ -221,7 +268,7 @@ namespace LoRaWan.NetworkServer
                 return null;
             }
 
-            Logger.Log(devEUI, "querying the registry for OTTA device", LogLevel.Information);
+            Logger.Log(devEUI, "querying the registry for OTAA device", LogLevel.Debug);
 
             try
             {
@@ -233,18 +280,18 @@ namespace LoRaWan.NetworkServer
 
                 if (searchDeviceResult.IsDevNonceAlreadyUsed)
                 {
-                    Logger.Log(devEUI, $"join refused: DevNonce already used by this device", LogLevel.Information);
+                    Logger.Log(devEUI, $"join refused: DevNonce already used by this device", LogLevel.Debug);
                     return null;
                 }
 
-                if (searchDeviceResult.Devices?.Count == 0)
+                if (searchDeviceResult?.Devices == null || searchDeviceResult.Devices.Count == 0)
                 {
                     Logger.Log(devEUI, "join refused: no devices found matching join request", LogLevel.Information);
                     return null;
                 }
 
                 var matchingDeviceInfo = searchDeviceResult.Devices[0];
-                var loader = this.GetOrAddJoinDeviceLoader(matchingDeviceInfo);
+                var loader = this.GetOrCreateJoinDeviceLoader(matchingDeviceInfo);
                 var loRaDevice = await loader.WaitCompleteAsync();
                 if (!loader.CanCache)
                     this.RemoveJoinDeviceLoader(devEUI);
@@ -261,25 +308,13 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Updates a device after a successful login
         /// </summary>
-        public void UpdateDeviceAfterJoin(LoRaDevice loRaDevice)
+        public void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, string oldDevAddr)
         {
-            var devicesMatchingDevAddr = this.cache.GetOrCreate<DevEUIToLoRaDeviceDictionary>(loRaDevice.DevAddr, (cacheEntry) =>
-            {
-                cacheEntry.SlidingExpiration = TimeSpan.FromDays(1);
-                cacheEntry.ExpirationTokens.Add(new CancellationChangeToken(this.resetCacheToken.Token));
-                return new DevEUIToLoRaDeviceDictionary();
-            });
-
-            // if there is an instance, overwrite it
-            devicesMatchingDevAddr.AddOrUpdate(loRaDevice.DevEUI, loRaDevice, (key, existing) => loRaDevice);
-
-            // don't remove from pending joins because the device can try again if there was
-            // a problem in the transmission
-            // TryRemoveJoinDeviceLoader(loRaDevice.DevEUI);
-
             // once added, call initializers
             foreach (var initializer in this.initializers)
                 initializer.Initialize(loRaDevice);
+
+            this.UpdateDeviceRegistration(loRaDevice, oldDevAddr);
         }
 
         /// <summary>
@@ -289,13 +324,14 @@ namespace LoRaWan.NetworkServer
         {
             var oldResetCacheToken = this.resetCacheToken;
             this.resetCacheToken = new CancellationTokenSource();
+            this.resetCacheChangeToken = new CancellationChangeToken(this.resetCacheToken.Token);
 
             if (oldResetCacheToken != null && !oldResetCacheToken.IsCancellationRequested && oldResetCacheToken.Token.CanBeCanceled)
             {
                 oldResetCacheToken.Cancel();
                 oldResetCacheToken.Dispose();
 
-                Logger.Log("device cache cleared", LogLevel.Information);
+                Logger.Log("Device cache cleared", LogLevel.Information);
             }
         }
     }

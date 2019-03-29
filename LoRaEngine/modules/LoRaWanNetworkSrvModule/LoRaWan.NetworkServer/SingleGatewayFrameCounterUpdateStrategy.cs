@@ -17,21 +17,16 @@ namespace LoRaWan.NetworkServer
             return await this.InternalSaveChangesAsync(loRaDevice, force: true);
         }
 
-        public ValueTask<int> NextFcntDown(LoRaDevice loRaDevice, int messageFcnt)
+        public ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt)
         {
-            return new ValueTask<int>(loRaDevice.IncrementFcntDown(1));
+            return new ValueTask<uint>(loRaDevice.IncrementFcntDown(1));
         }
 
         public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => this.InternalSaveChangesAsync(loRaDevice, force: false);
 
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {
-            if (loRaDevice.FCntUp % 10 == 0 || force)
-            {
-                return await loRaDevice.SaveFrameCountChangesAsync();
-            }
-
-            return true;
+            return await loRaDevice.SaveChangesAsync(force: force);
         }
 
         // Initializes a device instance created
@@ -41,7 +36,8 @@ namespace LoRaWan.NetworkServer
             // In order to handle a scenario where the network server is restarted and the fcntDown was not yet saved (we save every 10)
             if (loRaDevice.IsABP)
             {
-                loRaDevice.IncrementFcntDown(10);
+                // Increment so that the next frame count down causes the count to be saved
+                loRaDevice.IncrementFcntDown(Constants.MAX_FCNT_UNSAVED_DELTA - 1);
             }
         }
     }

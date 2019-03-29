@@ -70,6 +70,11 @@ namespace LoRaWan.NetworkServer
         // Gets/sets gateway NetId
         public uint NetId { get; set; } = 1;
 
+        /// <summary>
+        /// Gets list of allowed dev addresses
+        /// </summary>
+        public HashSet<string> AllowedDevAddresses { get; internal set; }
+
         // Creates a new instance of NetworkServerConfiguration
         public NetworkServerConfiguration()
         {
@@ -101,6 +106,7 @@ namespace LoRaWan.NetworkServer
             config.LogToUdpAddress = envVars.GetEnvVar("LOG_TO_UDP_ADDRESS", string.Empty);
             config.LogToUdpPort = envVars.GetEnvVar("LOG_TO_UDP_PORT", config.LogToUdpPort);
             config.NetId = envVars.GetEnvVar("NETID", config.NetId);
+            config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
 
             return config;
         }

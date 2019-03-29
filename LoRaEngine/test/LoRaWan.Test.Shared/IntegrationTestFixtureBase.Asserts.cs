@@ -135,6 +135,51 @@ namespace LoRaWan.Test.Shared
             }
         }
 
+        /// <summary>
+        /// Check for The timing between an upstream message and a downstream one.
+        /// The method stop at first occurence found and is not expected to perform against multiple DS/US messages.
+        /// </summary>
+        public async Task CheckAnswerTimingAsync(uint rxDelay, bool isSecondWindow)
+        {
+            var upstreamMessageTimingResult = await this.TryFindMessageTimeAsync("rxpk");
+            var downstreamMessageTimingResult = await this.TryFindMessageTimeAsync("txpk");
+
+            if (upstreamMessageTimingResult.Success && upstreamMessageTimingResult.Success)
+            {
+                Assert.Equal(rxDelay + (isSecondWindow ? 1000000 : 0), downstreamMessageTimingResult.Result - upstreamMessageTimingResult.Result);
+            }
+            else
+            {
+                Assert.True(false, "Could not procees with timestamp message search.");
+            }
+        }
+
+        /// <summary>
+        /// Helper method to find the time of the message that contain the message argument.
+        /// </summary>
+        async Task<FindTimeResult> TryFindMessageTimeAsync(string message)
+        {
+            const string token = @"""tmst"":";
+            var log = await this.SearchUdpLogs(x => x.Contains(message));
+            int timeIndexStart = log.FoundLogResult.IndexOf(token) + token.Length;
+            int timeIndexStop = log.FoundLogResult.IndexOf(",", timeIndexStart);
+            uint parsedValue = 0;
+            bool success = false;
+            if (timeIndexStart > 0 && timeIndexStop > 0)
+            {
+                if (uint.TryParse(log.FoundLogResult.Substring(timeIndexStart, timeIndexStop - timeIndexStart), out parsedValue))
+                {
+                    success = true;
+                }
+            }
+
+            return new FindTimeResult()
+            {
+                Success = success,
+                Result = parsedValue
+            };
+        }
+
         async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
         {
             var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
@@ -161,12 +206,12 @@ namespace LoRaWan.Test.Shared
                     processedEvents.Add(item);
                     if (predicate(item))
                     {
-                        return new SearchLogResult(true, processedEvents);
+                        return new SearchLogResult(true, processedEvents, item);
                     }
                 }
             }
 
-            return new SearchLogResult(false, processedEvents);
+            return new SearchLogResult(false, processedEvents, string.Empty);
         }
 
         // Searches IoT Hub for messages
@@ -197,12 +242,12 @@ namespace LoRaWan.Test.Shared
                     processedEvents.Add(bodyText);
                     if (predicate(bodyText))
                     {
-                        return new SearchLogResult(true, processedEvents);
+                        return new SearchLogResult(true, processedEvents, bodyText);
                     }
                 }
             }
 
-            return new SearchLogResult(false, processedEvents);
+            return new SearchLogResult(false, processedEvents, string.Empty);
         }
 
         // Searches IoT Hub for messages
@@ -236,7 +281,7 @@ namespace LoRaWan.Test.Shared
                         item.SystemProperties.TryGetValue("iothub-connection-device-id", out var deviceId);
                         if (predicate(item, deviceId?.ToString() ?? string.Empty, bodyText))
                         {
-                            return new SearchLogResult(true, processedEvents);
+                            return new SearchLogResult(true, processedEvents, bodyText);
                         }
                     }
                     catch (Exception ex)
@@ -246,7 +291,7 @@ namespace LoRaWan.Test.Shared
                 }
             }
 
-            return new SearchLogResult(false, processedEvents);
+            return new SearchLogResult(false, processedEvents, string.Empty);
         }
     }
 }

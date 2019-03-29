@@ -11,10 +11,10 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Decodes a LoRa device message data payload
         /// </summary>
+        /// <param name="devEUI">Device identifier</param>
         /// <param name="payload">Data payload received from the device</param>
         /// <param name="fport">FPort used</param>
         /// <param name="sensorDecoder">Decoder configured in the device</param>
-        /// <returns></returns>
-        ValueTask<JObject> DecodeMessageAsync(byte[] payload, byte fport, string sensorDecoder);
+        ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, byte fport, string sensorDecoder);
     }
 }

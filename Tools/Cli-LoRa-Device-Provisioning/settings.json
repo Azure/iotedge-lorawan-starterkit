@@ -1,0 +1,4 @@
+{
+  "IoTHubConnectionString": "Your IoT Hub Connection String (iothubowner) here.",
+  "NetId": "1"
+}

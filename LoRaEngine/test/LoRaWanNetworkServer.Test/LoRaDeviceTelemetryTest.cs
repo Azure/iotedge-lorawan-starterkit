@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
     using LoRaWan.NetworkServer;
     using LoRaWan.Test.Shared;
     using Xunit;
@@ -13,17 +14,17 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(1, 1)]
         [InlineData(2, 10)]
         [InlineData(100, 2)]
-        public void When_Creating_Should_Copy_Values_From_Rxpk_And_Payload(int fcnt, byte fport)
+        public void When_Creating_Should_Copy_Values_From_Rxpk_And_Payload(uint fcnt, byte fport)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: fcnt, fport: fport);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var decodedValue = new { value=1 };
+            var decodedValue = new { value = 1 };
 
-            var target = new LoRaDeviceTelemetry(rxpk, payload, decodedValue);
+            var target = new LoRaDeviceTelemetry(rxpk, payload, decodedValue, payload.GetDecryptedPayload(simulatedDevice.AppSKey));
             Assert.Equal(rxpk.Chan, target.Chan);
             Assert.Equal(rxpk.Codr, target.Codr);
-            Assert.Equal(rxpk.Data, target.Rawdata);
+            Assert.Equal(Convert.ToBase64String(payload.GetDecryptedPayload(simulatedDevice.AppSKey)), target.Rawdata);
             Assert.Equal(decodedValue, target.Data);
             Assert.Equal(rxpk.Datr, target.Datr);
             Assert.Equal(rxpk.Freq, target.Freq);

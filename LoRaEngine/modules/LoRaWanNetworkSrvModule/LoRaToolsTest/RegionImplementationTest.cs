@@ -24,8 +24,9 @@ namespace LoRaWanTest
             // in EU in standard parameters the expectation is that the reply arrive at same place.
             var expFreq = freq;
             var expDatr = datr;
-            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamChannelFrequency(rxpk[0]), expFreq);
-            Assert.Equal(RegionFactory.CreateEU868Region().GetDownstreamDR(rxpk[0]), expDatr);
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
+            Assert.Equal(frequency, expFreq);
+            Assert.Equal(RegionManager.EU868.GetDownstreamDR(rxpk[0]), expDatr);
         }
 
         [Theory]
@@ -98,8 +99,9 @@ namespace LoRaWanTest
                     break;
             }
 
-            Assert.Equal(RegionFactory.CreateUS915Region().GetDownstreamChannelFrequency(rxpk[0]), expFreq);
-            Assert.Equal(RegionFactory.CreateUS915Region().GetDownstreamDR(rxpk[0]), expDatr);
+            Assert.True(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
+            Assert.Equal(frequency, expFreq);
+            Assert.Equal(RegionManager.US915.GetDownstreamDR(rxpk[0]), expDatr);
         }
 
         [Theory]
@@ -145,8 +147,9 @@ namespace LoRaWanTest
                     break;
             }
 
-            Assert.Equal(RegionFactory.CreateUS915Region().GetDownstreamChannelFrequency(rxpk[0]), expFreq);
-            Assert.Equal(RegionFactory.CreateUS915Region().GetDownstreamDR(rxpk[0]), expDatr);
+            Assert.True(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
+            Assert.Equal(frequency, expFreq);
+            Assert.Equal(RegionManager.US915.GetDownstreamDR(rxpk[0]), expDatr);
         }
 
         private static List<Rxpk> GenerateRxpk(string datr, double freq)
@@ -178,35 +181,61 @@ namespace LoRaWanTest
 
         [Theory]
         // freq, dr
-        [InlineData(800, "SF12BW125", LoRaRegion.EU868)]
-        [InlineData(1023, "SF8BW125", LoRaRegion.EU868)]
-        [InlineData(868.1, "SF0BW125", LoRaRegion.EU868)]
-        [InlineData(869.3, "SF32BW543", LoRaRegion.EU868)]
-        [InlineData(800, "SF0BW125", LoRaRegion.EU868)]
-        [InlineData(700, "SF10BW125", LoRaRegion.US915)]
-        [InlineData(1024, "SF8BW125", LoRaRegion.US915)]
-        [InlineData(915, "SF0BW125", LoRaRegion.US915)]
-        [InlineData(920, "SF30BW400", LoRaRegion.US915)]
-        public void EnsureRegionLimitTestAreWorking(double freq, string datarate, LoRaRegion region)
+        [InlineData(800, "SF12BW125", LoRaRegionType.EU868)]
+        [InlineData(1023, "SF8BW125", LoRaRegionType.EU868)]
+        [InlineData(868.1, "SF0BW125", LoRaRegionType.EU868)]
+        [InlineData(869.3, "SF32BW543", LoRaRegionType.EU868)]
+        [InlineData(800, "SF0BW125", LoRaRegionType.EU868)]
+        [InlineData(700, "SF10BW125", LoRaRegionType.US915)]
+        [InlineData(1024, "SF8BW125", LoRaRegionType.US915)]
+        [InlineData(915, "SF0BW125", LoRaRegionType.US915)]
+        [InlineData(920, "SF30BW400", LoRaRegionType.US915)]
+        public void EnsureRegionLimitTestAreWorking(double freq, string datarate, LoRaRegionType region)
         {
             var rxpk = GenerateRxpk(datarate, freq);
-            if (region == LoRaRegion.EU868)
+            if (region == LoRaRegionType.EU868)
             {
-                Assert.Throws<RegionLimitException>(() =>
-                {
-                    RegionFactory.CreateEU868Region().GetDownstreamChannelFrequency(rxpk[0]);
-                    RegionFactory.CreateEU868Region().GetDownstreamDR(rxpk[0]);
-                });
+                Assert.False(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency) &&
+                RegionManager.EU868.GetDownstreamDR(rxpk[0]) != null);
             }
 
-            if (region == LoRaRegion.US915)
+            if (region == LoRaRegionType.US915)
             {
-                Assert.Throws<RegionLimitException>(() =>
-                {
-                    RegionFactory.CreateUS915Region().GetDownstreamChannelFrequency(rxpk[0]);
-                    RegionFactory.CreateUS915Region().GetDownstreamDR(rxpk[0]);
-                });
+                Assert.False(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency) &&
+                RegionManager.US915.GetDownstreamDR(rxpk[0]) != null);
             }
+        }
+
+        [Theory]
+        [InlineData("SF12BW125", 59)]
+        [InlineData("SF11BW125", 59)]
+        [InlineData("SF10BW125", 59)]
+        [InlineData("SF9BW125", 123)]
+        [InlineData("SF8BW125", 230)]
+        [InlineData("SF7BW125", 230)]
+        [InlineData("SF7BW250", 230)]
+        [InlineData("50", 230)]
+
+        public void TestMaxPayloadLengthEU(string datr, uint maxPyldSize)
+        {
+            Assert.Equal(RegionManager.EU868.GetMaxPayloadSize(datr), maxPyldSize);
+        }
+
+        [Theory]
+        [InlineData("SF10BW125",  19)]
+        [InlineData("SF9BW125",   61)]
+        [InlineData("SF8BW125",  133)]
+        [InlineData("SF7BW125",  250)]
+        [InlineData("SF8BW500",  250)]
+        [InlineData("SF12BW500",  61)]
+        [InlineData("SF11BW500", 137)]
+        [InlineData("SF10BW500", 250)]
+        [InlineData("SF9BW500",  250)]
+        [InlineData("SF7BW500",  250)]
+
+        public void TestMaxPayloadLengthUS(string datr, uint maxPyldSize)
+        {
+            Assert.Equal(RegionManager.US915.GetMaxPayloadSize(datr), maxPyldSize);
         }
     }
 }

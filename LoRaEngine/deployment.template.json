@@ -98,6 +98,9 @@
               },
               "IOTEDGE_TIMEOUT": {
                 "value": "$NET_SRV_IOTEDGE_TIMEOUT"
+              },
+              "LOG_TO_UDP_ADDRESS": {
+                "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
               }
             },
             "status": "running",
@@ -126,8 +129,8 @@
               "REGION": {
                 "value": "$REGION"
               },
-              "PKT_FWD_SPI_DEV":{
-                "value":"$SPI_DEV"
+              "SPI_DEV":{
+                "value":"$PKT_FWD_SPI_DEV"
               }
             },
             "version": "1.0",

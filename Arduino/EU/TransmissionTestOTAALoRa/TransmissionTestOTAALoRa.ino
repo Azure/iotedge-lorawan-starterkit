@@ -5,7 +5,7 @@ bool confirmed=true;
 //application information, should be similar to what was provisiionned in the device twins
 char * deviceId ="47AAC86800430028";
 char * appKey="8AFE71A145B253E49C3031AD068277A1";
-char* appEui ="BE7A0000000014E2";
+char * appEui ="BE7A0000000014E2";
 
 /*
 iot hub OTAA tags for deviceid: 47AAC86800430028 
@@ -33,6 +33,8 @@ void setup(void)
     SerialUSB.begin(115200);
     while(!SerialUSB);    
     lora.init();    
+    lora.setDeviceDefault();
+
     lora.setId(NULL,deviceId , appEui);
     lora.setKey(NULL, NULL, appKey);
     
@@ -89,7 +91,7 @@ void loop(void)
             SerialUSB.print("Data is: ");
             for(unsigned char i = 0; i < length; i ++)
             {
-                            SerialUSB.print( char(buffer[i]));
+                SerialUSB.print( char(buffer[i]));
 
             }
             SerialUSB.println();

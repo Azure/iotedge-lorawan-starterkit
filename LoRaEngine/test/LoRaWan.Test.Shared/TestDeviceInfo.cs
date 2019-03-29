@@ -48,6 +48,18 @@ namespace LoRaWan.Test.Shared
 
         public int PreferredWindow { get; set; } = 1;
 
+        public char ClassType { get; set; } = 'A';
+
+        public int RX2DataRate { get; set; } = 0;
+
+        public uint RX1DROffset { get; set; } = 0;
+
+        public bool Supports32BitFCnt { get; set; }
+
+        public ushort RXDelay { get; set; } = 0;
+
+        public int KeepAliveTimeout { get; set; }
+
         /// <summary>
         /// Gets the desired properties for the <see cref="TestDeviceInfo"/>
         /// </summary>
@@ -77,13 +89,25 @@ namespace LoRaWan.Test.Shared
 
             desiredProperties[nameof(this.PreferredWindow)] = this.PreferredWindow;
 
+            if (char.ToLower(this.ClassType) != 'a')
+                desiredProperties[nameof(this.ClassType)] = this.ClassType.ToString();
+
+            desiredProperties[nameof(this.RX1DROffset)] = this.RX1DROffset;
+
+            desiredProperties[nameof(this.RX2DataRate)] = this.RX2DataRate;
+
+            desiredProperties[nameof(this.RXDelay)] = this.RXDelay;
+
+            if (this.KeepAliveTimeout > 0)
+                desiredProperties[nameof(this.KeepAliveTimeout)] = this.KeepAliveTimeout;
+
             return desiredProperties;
         }
 
         /// <summary>
         /// Creates a <see cref="TestDeviceInfo"/> with ABP authentication
         /// </summary>
-        public static TestDeviceInfo CreateABPDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", uint netId = 1)
+        public static TestDeviceInfo CreateABPDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", uint netId = 1, char deviceClassType = 'A', bool supports32BitFcnt = false)
         {
             var value8 = deviceID.ToString("00000000");
             var value16 = deviceID.ToString("0000000000000000");
@@ -105,6 +129,8 @@ namespace LoRaWan.Test.Shared
                 AppSKey = value32,
                 NwkSKey = value32,
                 DevAddr = devAddrValue,
+                ClassType = deviceClassType,
+                Supports32BitFCnt = supports32BitFcnt
             };
 
             return result;
@@ -114,7 +140,7 @@ namespace LoRaWan.Test.Shared
         /// Creates a <see cref="TestDeviceInfo"/> with OTAA authentication
         /// </summary>
         /// <param name="deviceID">Device identifier. It will padded with 0's</param>
-        public static TestDeviceInfo CreateOTAADevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor")
+        public static TestDeviceInfo CreateOTAADevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", char deviceClassType = 'A')
         {
             var value16 = deviceID.ToString("0000000000000000");
             var value32 = deviceID.ToString("00000000000000000000000000000000");
@@ -132,6 +158,7 @@ namespace LoRaWan.Test.Shared
                 AppKey = value32,
                 GatewayID = gatewayID,
                 SensorDecoder = sensorDecoder,
+                ClassType = deviceClassType,
             };
 
             return result;

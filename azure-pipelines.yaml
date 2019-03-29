@@ -2,12 +2,10 @@ name: $(Build.SourceBranchName)_$(Build.Reason)_$(majorVersion).$(Build.BuildId)
 variables:
 
   # Major version
-  # Dev    = 0.3.0
-  # Master = 0.2.0
-  majorVersion: 0.3.0
+  majorVersion: 1.0.0
 
-  # image tag prefix for master branch (0.2.0-preview)
-  MASTER_IMAGE_TAG: preview
+  # image tag prefix for master branch (0.2.0)
+  MASTER_IMAGE_TAG: ''
 
   # image tag prefix for dev branch (0.3.0-dev)
   DEV_IMAGE_TAG: dev

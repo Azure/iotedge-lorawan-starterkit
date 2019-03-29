@@ -26,13 +26,12 @@ namespace LoRaWan.IntegrationTest
         // - frame counter validation is done
         // - Message is decoded
         [Fact]
-        public async Task Test_OTAA_Confirmed_And_Unconfirmed_Message()
+        public async Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset()
         {
             const int MESSAGES_COUNT = 10;
 
             var device = this.TestFixtureCi.Device4_OTAA;
             this.LogTestStart(device);
-
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
@@ -80,7 +79,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 10x confirmed messages
             for (var i = 0; i < MESSAGES_COUNT; ++i)
             {
-                Console.WriteLine($"Starting sending OTTA confirmed message {i + 1}/{MESSAGES_COUNT}");
+                Console.WriteLine($"Starting sending OTAA confirmed message {i + 1}/{MESSAGES_COUNT}");
                 this.TestFixtureCi.ClearLogs();
 
                 var msg = PayloadGenerator.Next().ToString();
@@ -97,6 +96,9 @@ namespace LoRaWan.IntegrationTest
 
                 // 0000000000000004: message '{"value": 51}' sent to hub
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+
+                // Expect that the response is done on DR4 as the RX1 offset is 1 on this device.
+                await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains("\"datr\":\"SF8BW125\""), null);
 
                 // Ensure device payload is available
                 // Data: {"value": 51}

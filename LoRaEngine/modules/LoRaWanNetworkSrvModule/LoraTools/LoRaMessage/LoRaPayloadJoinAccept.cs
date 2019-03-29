@@ -20,6 +20,8 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadJoinAccept : LoRaPayload
     {
+        const ushort MaxRxDelayValue = 16;
+
         /// <summary>
         /// Gets or sets server Nonce aka JoinNonce
         /// </summary>
@@ -50,8 +52,18 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public Memory<byte> Fcnt { get; set; }
 
-        public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, byte[] rxDelay, byte[] cfList)
+        public int Rx1DrOffset => (this.DlSettings.Span[0] >> 4) & 0b00000111;
+
+        public int Rx2Dr => this.DlSettings.Span[0] & 0b00001111;
+
+        public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
         {
+            byte[] rxDelay = new byte[1];
+            if (rxDelayValue >= 0 && rxDelayValue < MaxRxDelayValue)
+            {
+                rxDelay[0] = (byte)rxDelayValue;
+            }
+
             int cfListLength = cfList == null ? 0 : cfList.Length;
             this.RawMessage = new byte[1 + 12 + cfListLength];
             this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
@@ -80,52 +92,13 @@ namespace LoRaTools.LoRaMessage
                 this.AppNonce.Span.Reverse();
                 this.NetID.Span.Reverse();
                 this.DevAddr.Span.Reverse();
+                this.DlSettings.Span.Reverse();
+                this.RxDelay.Span.Reverse();
             }
 
             var algoinput = this.Mhdr.ToArray().Concat(this.AppNonce.ToArray()).Concat(this.NetID.ToArray()).Concat(this.DevAddr.ToArray()).Concat(this.DlSettings.ToArray()).Concat(this.RxDelay.ToArray()).ToArray();
             if (!this.CfList.Span.IsEmpty)
                 algoinput = algoinput.Concat(this.CfList.ToArray()).ToArray();
-        }
-
-        [Obsolete("To be discontinued as part of messageProcessor refactor")]
-        public LoRaPayloadJoinAccept(string netId, string appKey, byte[] devAddr, byte[] appNonce, byte[] dlSettings, byte[] rxDelay, byte[] cfList)
-        {
-            int cfListLength = cfList == null ? 0 : cfList.Length;
-            this.RawMessage = new byte[1 + 12 + cfListLength];
-            this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
-            Array.Copy(new byte[] { 32 }, 0, this.RawMessage, 0, 1);
-            this.AppNonce = new Memory<byte>(this.RawMessage, 1, 3);
-            Array.Copy(appNonce, 0, this.RawMessage, 1, 3);
-            this.NetID = new Memory<byte>(this.RawMessage, 4, 3);
-            Array.Copy(ConversionHelper.StringToByteArray(netId), 0, this.RawMessage, 4, 3);
-            this.DevAddr = new Memory<byte>(this.RawMessage, 7, 4);
-            Array.Copy(devAddr, 0, this.RawMessage, 7, 4);
-            this.DlSettings = new Memory<byte>(this.RawMessage, 11, 1);
-            Array.Copy(dlSettings, 0, this.RawMessage, 11, 1);
-            this.RxDelay = new Memory<byte>(this.RawMessage, 12, 1);
-            Array.Copy(rxDelay, 0, this.RawMessage, 12, 1);
-            // set payload Wrapper fields
-            if (cfListLength > 0)
-            {
-                this.CfList = new Memory<byte>(this.RawMessage, 13, cfListLength);
-                Array.Copy(cfList, 0, this.RawMessage, 13, cfListLength);
-            }
-
-            // cfList = StringToByteArray("184F84E85684B85E84886684586E8400");
-            this.Fcnt = BitConverter.GetBytes(0x01);
-            if (BitConverter.IsLittleEndian)
-            {
-                this.AppNonce.Span.Reverse();
-                this.NetID.Span.Reverse();
-                this.DevAddr.Span.Reverse();
-            }
-
-            var algoinput = this.Mhdr.ToArray().Concat(this.AppNonce.ToArray()).Concat(this.NetID.ToArray()).Concat(this.DevAddr.ToArray()).Concat(this.DlSettings.ToArray()).Concat(this.RxDelay.ToArray()).ToArray();
-            if (!this.CfList.Span.IsEmpty)
-                algoinput = algoinput.Concat(this.CfList.ToArray()).ToArray();
-
-            this.CalculateMic(appKey, algoinput);
-            this.PerformEncryption(appKey);
         }
 
         public LoRaPayloadJoinAccept(byte[] inputMessage, string appKey)
@@ -175,7 +148,7 @@ namespace LoRaTools.LoRaMessage
             Array.Copy(inputMessage, 11, dlSettings, 0, 1);
             this.DlSettings = new Memory<byte>(dlSettings);
             var rxDelay = new byte[1];
-            Array.Copy(inputMessage, 11, rxDelay, 0, 1);
+            Array.Copy(inputMessage, 12, rxDelay, 0, 1);
             this.RxDelay = new Memory<byte>(rxDelay);
             // It's the configuration list, it can be empty or up to 15 bytes
             // - 17 = - 1 - 3 - 3 - 4 - 1 - 1 - 4
@@ -218,7 +191,6 @@ namespace LoRaTools.LoRaMessage
             return encryptedPayload;
         }
 
-        [Obsolete("Must override")]
         public override byte[] GetByteMessage()
         {
             List<byte> messageArray = new List<byte>();
@@ -228,7 +200,7 @@ namespace LoRaTools.LoRaMessage
             return messageArray.ToArray();
         }
 
-        public override bool CheckMic(string nwskey)
+        public override bool CheckMic(string nwskey, uint? server32BitFcnt = null)
         {
             throw new NotImplementedException();
         }
@@ -242,22 +214,7 @@ namespace LoRaTools.LoRaMessage
             this.CalculateMic(appKey, algoinput);
             this.PerformEncryption(appKey);
 
-            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
-            if (Logger.LoggerLevel < LogLevel.Information)
-            {
-                var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
-
-                if (devEUI.Length != 0)
-                {
-                    Logger.Log(devEUI, $"{((LoRaMessageType)this.Mhdr.Span[0]).ToString()} {jsonMsg}", LogLevel.Debug);
-                }
-                else
-                {
-                    Logger.Log(ConversionHelper.ByteArrayToString(this.DevAddr.Span.ToArray()), $"{((LoRaMessageType)this.Mhdr.Span[0]).ToString()} {jsonMsg}", LogLevel.Debug);
-                }
-            }
-
-            return downlinkPktFwdMessage;
+            return new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
         }
     }
 }

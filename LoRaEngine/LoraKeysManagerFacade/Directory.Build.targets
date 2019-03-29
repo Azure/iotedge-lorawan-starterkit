@@ -1,0 +1,9 @@
+<Project>
+  <Target Name="CopyExtensionsJson" AfterTargets="_GenerateFunctionsAndCopyContentFiles">
+    <Message Importance="High" Text="Overwritting extensions.json file with one from build." />
+
+     <Copy SourceFiles="$(PublishDir)extensions.json"
+          DestinationFiles="$(PublishDir)bin\extensions.json"
+          OverwriteReadOnlyFiles="true" />
+  </Target>
+</Project>

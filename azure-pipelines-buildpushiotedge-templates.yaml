@@ -6,7 +6,7 @@ parameters:
 steps:
 
 # Find out the image tag
-# master        -> majorVersion-preview-buildId
+# master        -> majorVersion-buildId
 # dev           -> majorVersion-preview-buildId
 # pr            -> pr-prId-buildId
 # custom branch -> custom-branchname-buildId
@@ -16,7 +16,7 @@ steps:
     IMAGE_TAG="$DEV_IMAGE_TAG-"
     elif [ "$BUILD_SOURCEBRANCH" = "refs/heads/master" ]; then
     echo "master"
-    IMAGE_TAG="$MASTER_IMAGE_TAG-"
+    IMAGE_TAG="$MASTER_IMAGE_TAG"
     elif [ "$SYSTEM_PULLREQUEST_PULLREQUESTNUMBER" != "" ]; then
     echo "pull request"
     IMAGE_TAG="pr-$SYSTEM_PULLREQUEST_PULLREQUESTNUMBER-"

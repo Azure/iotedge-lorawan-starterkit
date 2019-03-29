@@ -13,7 +13,6 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets the <see cref="HttpClient"/> to access the function
         /// </summary>
-        /// <returns></returns>
         HttpClient GetHttpClient();
     }
 }

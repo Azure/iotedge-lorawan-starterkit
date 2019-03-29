@@ -80,7 +80,7 @@ namespace LoRaTools.LoRaMessage
             this.Mic = default(Memory<byte>);
         }
 
-        public override bool CheckMic(string appKey)
+        public override bool CheckMic(string appKey, uint? server32BitFcnt = null)
         {
             return this.Mic.ToArray().SequenceEqual(this.PerformMic(appKey));
         }
@@ -116,7 +116,6 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] PerformEncryption(string appSkey) => throw new NotImplementedException("The payload is not encrypted in case of a join message");
 
-        [Obsolete("ad")]
         public override byte[] GetByteMessage()
         {
             List<byte> messageArray = new List<byte>(23);

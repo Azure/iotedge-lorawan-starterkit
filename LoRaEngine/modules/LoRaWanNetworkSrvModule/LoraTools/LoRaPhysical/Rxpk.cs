@@ -3,8 +3,11 @@
 
 namespace LoRaTools.LoRaPhysical
 {
+    using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
+    using LoRaTools.Regions;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -53,12 +56,16 @@ namespace LoRaTools.LoRaPhysical
         [JsonProperty("data")]
         public string Data { get; set; }
 
+        public double RequiredSnr => this.SpreadFactorToSNR[this.SpreadingFactor];
+
+        public int SpreadingFactor => int.Parse(this.Datr.Substring(this.Datr.IndexOf("SF") + 2, this.Datr.IndexOf("BW") - this.Datr.IndexOf("SF") - 2));
+
         /// <summary>
-        /// Required Signal-to-noise ratio to demodulate a LoRa signal given a spread Factor
+        /// Gets required Signal-to-noise ratio to demodulate a LoRa signal given a spread Factor
         /// Spreading Factor -> Required SNR
         /// taken from https://www.semtech.com/uploads/documents/DS_SX1276-7-8-9_W_APP_V5.pdf
         /// </summary>
-        private readonly Dictionary<int, double> spreadFactorToSNR = new Dictionary<int, double>()
+        private Dictionary<int, double> SpreadFactorToSNR { get; } = new Dictionary<int, double>()
          {
             { 6,  -5 },
             { 7, -7.5 },
@@ -71,21 +78,6 @@ namespace LoRaTools.LoRaPhysical
 
         [JsonExtensionData]
         public Dictionary<string, object> ExtraData { get; } = new Dictionary<string, object>();
-
-        /// <summary>
-        /// Get the modulation margin for MAC Commands LinkCheck
-        /// </summary>
-        /// <param name="input">the input physical rxpk from the packet</param>
-        public uint GetModulationMargin()
-        {
-            // required SNR:
-            var requiredSNR = this.spreadFactorToSNR[int.Parse(this.Datr.Substring(this.Datr.IndexOf("SF") + 2, this.Datr.IndexOf("BW") - 1 - this.Datr.IndexOf("SF") + 2))];
-            // get the minimum
-            uint margin = (uint)(this.Lsnr - requiredSNR);
-            if (margin < 0)
-                margin = 0;
-            return margin;
-        }
 
         /// <summary>
         /// Method to create a Rxpk object from a byte array.
@@ -118,6 +110,17 @@ namespace LoRaTools.LoRaPhysical
             }
 
             return new List<Rxpk>();
+        }
+
+        public uint GetModulationMargin()
+        {
+            // required SNR:
+            var requiredSNR = this.SpreadFactorToSNR[this.SpreadingFactor];
+
+            // get the link budget
+            int signedMargin = Math.Max(0, (int)(this.Lsnr - requiredSNR));
+
+            return (uint)signedMargin;
         }
     }
 }

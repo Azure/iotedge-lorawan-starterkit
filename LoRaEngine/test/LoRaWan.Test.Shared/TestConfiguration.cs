@@ -45,6 +45,9 @@ namespace LoRaWan.Test.Shared
         // Device prefix to be used
         public string DevicePrefix { get; set; }
 
+        // Device key format. Must be at maximum 16 character long
+        public string DeviceKeyFormat { get; set; }
+
         public bool CreateDevices { get; set; } = true;
 
         public LogValidationAssertLevel NetworkServerModuleLogAssertLevel { get; set; } = LogValidationAssertLevel.Warning;
@@ -61,5 +64,8 @@ namespace LoRaWan.Test.Shared
 
         // Gets/sets gateway NetId
         public uint NetId { get; set; } = 1;
+
+        // Gets/sets the network server module identifier
+        public string NetworkServerModuleID { get; set; } = "LoRaWanNetworkSrvModule";
     }
 }

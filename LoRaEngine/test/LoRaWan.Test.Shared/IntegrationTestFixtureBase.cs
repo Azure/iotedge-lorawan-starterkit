@@ -8,6 +8,7 @@ namespace LoRaWan.Test.Shared
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using LoRaTools.CommonAPI;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.EventHubs;
@@ -26,9 +27,13 @@ namespace LoRaWan.Test.Shared
 
         public EventHubDataCollector IoTHubMessages { get; private set; }
 
+        Lazy<ServiceClient> serviceClient;
+        Microsoft.Azure.Devices.Client.ModuleClient moduleClient;
+
         public IntegrationTestFixtureBase()
         {
             this.Configuration = TestConfiguration.GetConfiguration();
+            this.serviceClient = new Lazy<ServiceClient>(() => ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString));
             TestLogger.Log($"[INFO] {nameof(this.Configuration.IoTHubAssertLevel)}: {this.Configuration.IoTHubAssertLevel}");
             TestLogger.Log($"[INFO] {nameof(this.Configuration.NetworkServerModuleLogAssertLevel)}: {this.Configuration.NetworkServerModuleLogAssertLevel}");
 
@@ -69,7 +74,10 @@ namespace LoRaWan.Test.Shared
                 }
                 else
                 {
-                    d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(d.DevAddr, this.Configuration.NetId);
+                    if (!string.IsNullOrEmpty(d.DevAddr))
+                    {
+                        d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(d.DevAddr, this.Configuration.NetId);
+                    }
                 }
             }
         }
@@ -122,9 +130,21 @@ namespace LoRaWan.Test.Shared
             return await this.GetRegistryManager().GetTwinAsync(deviceId);
         }
 
-        public Task SendCloudToDeviceMessage(string deviceId, string messageText, Dictionary<string, string> messageProperties = null) => this.SendCloudToDeviceMessage(deviceId, null, messageText, messageProperties);
+        public async Task SendCloudToDeviceMessageAsync(string deviceId, LoRaCloudToDeviceMessage message)
+        {
+            var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)));
 
-        public async Task SendCloudToDeviceMessage(string deviceId, string messageId, string messageText, Dictionary<string, string> messageProperties = null)
+            if (!string.IsNullOrEmpty(message.MessageId))
+            {
+                msg.MessageId = message.MessageId;
+            }
+
+            await this.SendCloudToDeviceMessageAsync(deviceId, msg);
+        }
+
+        public Task SendCloudToDeviceMessageAsync(string deviceId, string messageText, Dictionary<string, string> messageProperties = null) => this.SendCloudToDeviceMessageAsync(deviceId, null, messageText, messageProperties);
+
+        public async Task SendCloudToDeviceMessageAsync(string deviceId, string messageId, string messageText, Dictionary<string, string> messageProperties = null)
         {
             var msg = new Message(Encoding.UTF8.GetBytes(messageText));
             if (messageProperties != null)
@@ -140,26 +160,70 @@ namespace LoRaWan.Test.Shared
                 msg.MessageId = messageId;
             }
 
-            await this.SendCloudToDeviceMessage(deviceId, msg);
+            await this.SendCloudToDeviceMessageAsync(deviceId, msg);
         }
 
-        public async Task SendCloudToDeviceMessage(string deviceId, Message message)
+        ServiceClient GetServiceClient() => this.serviceClient.Value;
+
+        public async Task SendCloudToDeviceMessageAsync(string deviceId, Message message)
         {
-            ServiceClient sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString);
-
-            await sc.SendAsync(deviceId, message);
+            await this.GetServiceClient().SendAsync(deviceId, message);
         }
 
-        internal async Task<Twin> ReplaceTwinAsync(string deviceId, Twin updatedTwin, string etag)
+        /// <summary>
+        /// Singleton for the module client
+        /// Does not have to be thread-safe as CI does not run tests in parallel
+        /// </summary>
+        public async Task<Microsoft.Azure.Devices.Client.ModuleClient> GetModuleClientAsync()
+        {
+            if (this.moduleClient == null)
+            {
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")) &&
+                    !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID")) &&
+                    !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("IOTEDGE_APIVERSION")))
+                {
+                    this.moduleClient = await Microsoft.Azure.Devices.Client.ModuleClient.CreateFromEnvironmentAsync();
+                }
+            }
+
+            return this.moduleClient;
+        }
+
+        public async Task InvokeModuleDirectMethodAsync(string edgeDeviceId, string moduleId, string methodName, object body)
         {
             try
             {
-                return await this.GetRegistryManager().ReplaceTwinAsync(deviceId, updatedTwin, etag);
+                var c2d = new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                c2d.SetPayloadJson(JsonConvert.SerializeObject(body));
+                await this.GetServiceClient().InvokeDeviceMethodAsync(edgeDeviceId, moduleId, c2d);
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error replacing twin for device {deviceId}: {ex.ToString()}");
+                TestLogger.Log($"[ERROR] Failed to call direct method, deviceId: {edgeDeviceId}, moduleId: {moduleId}, method: {methodName}: {ex.Message}");
                 throw;
+            }
+        }
+
+        public async Task InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod method)
+        {
+            using (var sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString))
+            {
+                await sc.InvokeDeviceMethodAsync(deviceId, moduleId, method);
+            }
+        }
+
+        public async Task UpdateReportedTwinAsync(string deviceId, string twinName, int twinValue)
+        {
+            try
+            {
+                Microsoft.Azure.Devices.Client.DeviceClient device = Microsoft.Azure.Devices.Client.DeviceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString, deviceId);
+                var twinCollection = new TwinCollection();
+                twinCollection[twinName] = twinValue;
+                await device.UpdateReportedPropertiesAsync(twinCollection);
+                device.Dispose();
+            }
+            catch (System.InvalidOperationException)
+            {
             }
         }
 

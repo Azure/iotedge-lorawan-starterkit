@@ -64,6 +64,24 @@ namespace LoRaWan
             Log(null, message, logLevel);
         }
 
+        /// <summary>
+        /// Use this if you want to serialize an object to JSON and
+        /// append it to the message. The serialization will only take place
+        /// if the logLevel is larger or equal to the configured level
+        /// </summary>
+        /// <param name="deviceId">DeviceEUI</param>
+        /// <param name="message">The message that should be prepended to the serialized string</param>
+        /// <param name="toJson">The object to serialize</param>
+        /// <param name="logLevel">The desired <see cref="LogLevel"/></param>
+        public static void Log(string deviceId, string message, object toJson, LogLevel logLevel)
+        {
+            if (logLevel >= configuration.LogLevel)
+            {
+                var serializedObj = Newtonsoft.Json.JsonConvert.SerializeObject(toJson);
+                Log(deviceId, string.Concat(message, serializedObj), logLevel);
+            }
+        }
+
         public static void Log(string deviceId, string message, LogLevel logLevel)
         {
             if (logLevel >= configuration.LogLevel)
@@ -79,16 +97,23 @@ namespace LoRaWan
                 }
 
                 if (configuration.LogToConsole)
-                    LogToConsole(msg);
+                    LogToConsole(msg, logLevel);
 
                 if (udpClient != null)
                     LogToUdp(msg);
             }
         }
 
-        static void LogToConsole(string message)
+        static void LogToConsole(string message, LogLevel logLevel = LogLevel.Information)
         {
-            Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+            if (logLevel == LogLevel.Error)
+            {
+                Console.Error.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+            }
+            else
+            {
+                Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+            }
         }
 
         static void LogToUdp(string message)
@@ -100,7 +125,7 @@ namespace LoRaWan
             }
             catch (Exception ex)
             {
-                LogToConsole(string.Concat(" Error logging to UDP: ", ex.ToString()));
+                LogToConsole(string.Concat(" Error logging to UDP: ", ex.ToString()), LogLevel.Error);
             }
         }
 
@@ -139,7 +164,7 @@ namespace LoRaWan
                             var addresses = Dns.GetHostAddresses(configuration.LogToUdpAddress);
                             if (addresses == null || addresses.Length == 0)
                             {
-                                LogToConsole($"Could not resolve ip address from '{configuration.LogToUdpAddress}'");
+                                LogToConsole($"Could not resolve ip address from '{configuration.LogToUdpAddress}'", LogLevel.Error);
                             }
                             else
                             {
@@ -148,7 +173,7 @@ namespace LoRaWan
                         }
                         catch (Exception ex)
                         {
-                            LogToConsole($"Could not resolve ip address from '{configuration.LogToUdpAddress}'. {ex.Message}");
+                            LogToConsole($"Could not resolve ip address from '{configuration.LogToUdpAddress}'. {ex.Message}", LogLevel.Error);
                         }
                     }
                 }
@@ -171,7 +196,7 @@ namespace LoRaWan
             }
             catch (Exception ex)
             {
-                LogToConsole(string.Concat("Error starting UDP logging: ", ex.ToString()));
+                LogToConsole(string.Concat("Error starting UDP logging: ", ex.ToString()), LogLevel.Error);
             }
             finally
             {

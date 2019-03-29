@@ -5,85 +5,80 @@ namespace LoraKeysManagerFacade.Test
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Text;
-    using System.Threading.Tasks;
-    using LoRaWan.Shared;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Http.Internal;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Extensions.Logging.Abstractions;
+    using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Shared;
+    using Moq;
     using Xunit;
 
-    public class DeviceGetterTest
+    public class DeviceGetterTest : FunctionTestBase
     {
+        private const string PrimaryKey = "ABCDEFGH1234567890";
+
         [Fact]
-        public async Task Version_2018_12_16_Preview_Returns_Bad_Request_If_Version_0_2_Is_Requested()
+        public async void DeviceGetter_OTAA_Join()
         {
-            var request = new DefaultHttpRequest(new DefaultHttpContext())
-            {
-                Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
-                {
-                }),
-            };
+            string devEUI = NewUniqueEUI64();
+            string devEUI2 = NewUniqueEUI64();
+            string gatewayId = NewUniqueEUI64();
 
-            var actual = await DeviceGetter.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
-            Assert.NotNull(actual);
-            Assert.IsType<BadRequestObjectResult>(actual);
-            var badRequestResult = (BadRequestObjectResult)actual;
+            var deviceGetter = new DeviceGetter(this.InitRegistryManager(devEUI, devEUI2), new LoRaInMemoryDeviceStore());
+            var items = await deviceGetter.GetDeviceList(devEUI, gatewayId, "ABCD", null);
 
-            Assert.Equal("Incompatible versions (requested: '0.2 or earlier', current: '2018-12-16-preview')", badRequestResult.Value.ToString());
-
-            // Ensure current version is added to response
-            Assert.Contains(ApiVersion.HttpHeaderName, request.HttpContext.Response.Headers);
-            Assert.Equal("2018-12-16-preview", request.HttpContext.Response.Headers[ApiVersion.HttpHeaderName].FirstOrDefault());
+            Assert.Single(items);
+            Assert.Equal(devEUI, items[0].DevEUI);
         }
 
         [Fact]
-        public async Task Version_2018_12_16_Preview_Returns_Bad_Request_If_Unknown_Version_Is_Requested()
+        public async void DeviceGetter_ABP_Join()
         {
-            var request = new DefaultHttpRequest(new DefaultHttpContext())
-            {
-                Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
-                {
-                    { ApiVersion.QueryStringParamName, "zyx" }
-                }),
-            };
+            string devEUI = NewUniqueEUI64();
+            string devEUI2 = NewUniqueEUI64();
+            string gatewayId = NewUniqueEUI64();
 
-            var actual = await DeviceGetter.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
-            Assert.NotNull(actual);
-            Assert.IsType<BadRequestObjectResult>(actual);
-            var badRequestResult = (BadRequestObjectResult)actual;
+            var deviceGetter = new DeviceGetter(this.InitRegistryManager(devEUI, devEUI2), new LoRaInMemoryDeviceStore());
+            var items = await deviceGetter.GetDeviceList(null, gatewayId, "ABCD", "DevAddr1");
 
-            Assert.Equal("Incompatible versions (requested: 'zyx', current: '2018-12-16-preview')", badRequestResult.Value.ToString());
-
-            // Ensure current version is added to response
-            Assert.Contains(ApiVersion.HttpHeaderName, request.HttpContext.Response.Headers);
-            Assert.Equal("2018-12-16-preview", request.HttpContext.Response.Headers[ApiVersion.HttpHeaderName].FirstOrDefault());
+            Assert.Equal(2, items.Count);
+            Assert.Equal(devEUI, items[0].DevEUI);
+            Assert.Equal(devEUI2, items[1].DevEUI);
         }
 
-        [Fact]
-        public async Task Version_2018_12_16_Preview_Returns_Bad_Request_If_Version_2019_01_30_Preview_Is_Requested()
+        private RegistryManager InitRegistryManager(string devEui1, string devEui2)
         {
-            var request = new DefaultHttpRequest(new DefaultHttpContext())
+            var mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
+            mockRegistryManager
+                .Setup(x => x.GetDeviceAsync(It.IsAny<string>()))
+                .ReturnsAsync((string deviceId) => new Device(deviceId) { Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } } });
+
+            const int numberOfDevices = 2;
+            int deviceCount = 0;
+
+            var queryMock = new Mock<IQuery>(MockBehavior.Loose);
+            queryMock
+                .Setup(x => x.HasMoreResults)
+                .Returns(() => (deviceCount < numberOfDevices));
+
+            string[] deviceIds = new string[numberOfDevices] { devEui1, devEui2 };
+
+            IEnumerable<Twin> Twins()
             {
-                Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
+                while (deviceCount < numberOfDevices)
                 {
-                    { ApiVersion.QueryStringParamName, ApiVersion.Version_2019_01_30_Preview.Version }
-                }),
-            };
+                    yield return new Twin(deviceIds[deviceCount++]);
+                }
+            }
 
-            var actual = await DeviceGetter.Run(request, NullLogger.Instance, new ExecutionContext(), ApiVersion.Version_2018_12_16_Preview);
-            Assert.NotNull(actual);
-            Assert.IsType<BadRequestObjectResult>(actual);
-            var badRequestResult = (BadRequestObjectResult)actual;
+            queryMock
+                .Setup(x => x.GetNextAsTwinAsync())
+                .ReturnsAsync(Twins());
 
-            Assert.Equal("Incompatible versions (requested: '2019-01-30-preview', current: '2018-12-16-preview')", badRequestResult.Value.ToString());
+            mockRegistryManager
+                .Setup(x => x.CreateQuery(It.IsAny<string>(), 100))
+                .Returns(queryMock.Object);
 
-            // Ensure current version is added to response
-            Assert.Contains(ApiVersion.HttpHeaderName, request.HttpContext.Response.Headers);
-            Assert.Equal("2018-12-16-preview", request.HttpContext.Response.Headers[ApiVersion.HttpHeaderName].FirstOrDefault());
+            return mockRegistryManager.Object;
         }
     }
 }

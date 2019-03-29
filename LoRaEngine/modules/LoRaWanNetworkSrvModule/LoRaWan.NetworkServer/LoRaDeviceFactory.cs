@@ -11,10 +11,14 @@ namespace LoRaWan.NetworkServer
     public class LoRaDeviceFactory : ILoRaDeviceFactory
     {
         private readonly NetworkServerConfiguration configuration;
+        private readonly DefaultLoRaDataRequestHandler dataRequestHandler;
+        private readonly ILoRaDeviceClientConnectionManager connectionManager;
 
-        public LoRaDeviceFactory(NetworkServerConfiguration configuration)
+        public LoRaDeviceFactory(NetworkServerConfiguration configuration, DefaultLoRaDataRequestHandler dataRequestHandler, ILoRaDeviceClientConnectionManager connectionManager)
         {
             this.configuration = configuration;
+            this.dataRequestHandler = dataRequestHandler;
+            this.connectionManager = connectionManager;
         }
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
@@ -22,9 +26,13 @@ namespace LoRaWan.NetworkServer
             var loraDeviceClient = this.CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey);
 
             var loRaDevice = new LoRaDevice(
-                devAddr: deviceInfo.DevAddr,
-                devEUI: deviceInfo.DevEUI,
-                loRaDeviceClient: loraDeviceClient);
+                deviceInfo.DevAddr,
+                deviceInfo.DevEUI,
+                this.connectionManager);
+
+            this.connectionManager.Register(loRaDevice, loraDeviceClient);
+
+            loRaDevice.SetRequestHandler(this.dataRequestHandler);
 
             return loRaDevice;
         }
@@ -43,11 +51,11 @@ namespace LoRaWan.NetworkServer
             if (this.configuration.EnableGateway)
             {
                 connectionString += $"GatewayHostName={this.configuration.GatewayHostName};";
-                Logger.Log(devEUI, $"using edgeHub local queue", LogLevel.Information);
+                Logger.Log(devEUI, $"using edgeHub local queue", LogLevel.Debug);
             }
             else
             {
-                Logger.Log(devEUI, $"using iotHub directly, no edgeHub queue", LogLevel.Information);
+                Logger.Log(devEUI, $"using iotHub directly, no edgeHub queue", LogLevel.Debug);
             }
 
             return connectionString;
@@ -63,22 +71,21 @@ namespace LoRaWan.NetworkServer
                 // Enabling AMQP multiplexing
                 var transportSettings = new ITransportSettings[]
                 {
-                new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
-                {
-                    AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                    new AmqpTransportSettings(TransportType.Amqp_Tcp_Only)
                     {
-                        Pooling = true,
-                        MaxPoolSize = 1
+                        AmqpConnectionPoolSettings = new AmqpConnectionPoolSettings()
+                        {
+                            Pooling = true,
+                            MaxPoolSize = 1
+                        }
                     }
-                }
                 };
 
-                var deviceClient = DeviceClient.CreateFromConnectionString(deviceConnectionStr, transportSettings);
-                return new LoRaDeviceClient(devEUI, deviceClient);
+                return new LoRaDeviceClient(devEUI, deviceConnectionStr, transportSettings);
             }
             catch (Exception ex)
             {
-                Logger.Log(devEUI, $"could not create IoT Hub DeviceClient with error: {ex.Message}", LogLevel.Error);
+                Logger.Log(devEUI, $"could not create IoT Hub device client with error: {ex.Message}", LogLevel.Error);
                 throw;
             }
         }

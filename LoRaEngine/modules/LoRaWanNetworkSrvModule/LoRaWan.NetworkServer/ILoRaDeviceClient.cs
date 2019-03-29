@@ -44,5 +44,20 @@ namespace LoRaWan.NetworkServer
         /// Abandon a cloud to device message
         /// </summary>
         Task<bool> AbandonAsync(Message cloudToDeviceMessage);
+
+        /// <summary>
+        /// Reject a cloud to device message
+        /// </summary>
+        Task<bool> RejectAsync(Message cloudToDeviceMessage);
+
+        /// <summary>
+        /// Disconnects device client
+        /// </summary>
+        bool Disconnect();
+
+        /// <summary>
+        /// Ensures the device client is connected
+        /// </summary>
+        bool EnsureConnected();
     }
 }

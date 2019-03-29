@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void After_One_Second_Join_First_Window_Should_Be_Greater_Than_3sec()
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(1)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(1)));
             var actual = target.GetRemainingTimeToJoinAcceptFirstWindow();
             Assert.InRange(actual.TotalMilliseconds, 3500, 5000);
         }
@@ -22,7 +22,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void After_5_Seconds_Join_First_Window_Should_Be_Negative()
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(5)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(5)));
             var actual = target.GetRemainingTimeToJoinAcceptFirstWindow();
             Assert.True(actual.TotalMilliseconds < 0, $"First window is over, value should be negative");
         }
@@ -30,21 +30,21 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void After_3_Seconds_Should_Be_In_Time_For_Join()
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(3)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(3)));
             Assert.True(target.InTimeForJoinAccept());
         }
 
         [Fact]
         public void After_5_Seconds_Should_Be_In_Time_For_Join()
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(5)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(5)));
             Assert.True(target.InTimeForJoinAccept());
         }
 
         [Fact]
         public void After_6_Seconds_Should_Not_Be_In_Time_For_Join()
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(6)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromSeconds(6)));
             Assert.False(target.InTimeForJoinAccept());
         }
 
@@ -54,13 +54,13 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(1690)]
         public void When_In_Time_For_First_Window_But_Device_Preferes_Seconds_Should_Resolve_Window_2(int delayInMs)
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null)
             {
-                PreferredWindow = 2,
+                PreferredWindow = Constants.RECEIVE_WINDOW_2,
             };
 
-            Assert.Equal(2, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.RECEIVE_WINDOW_2, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -68,10 +68,10 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(690)]
         public void When_In_Time_For_First_Window_Should_Resolve_Window_1(int delayInMs)
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null);
 
-            Assert.Equal(1, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.RECEIVE_WINDOW_1, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -80,10 +80,10 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(1690)]
         public void When_In_Time_For_Second_Window_Should_Resolve_Window_2(int delayInMs)
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null);
 
-            Assert.Equal(2, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.RECEIVE_WINDOW_2, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -92,10 +92,10 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(4000)]
         public void When_Missed_Both_Windows_Should_Resolve_Window_0(int delayInMs)
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null);
 
-            Assert.Equal(0, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.INVALID_RECEIVE_WINDOW, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -107,7 +107,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(4690)]
         public void When_In_Time_For_Join_Accept_First_Window_Should_Resolve_Window_1(int delayInMs)
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null);
 
             Assert.Equal(1, target.ResolveJoinAcceptWindowToUse(loRaDevice));
@@ -119,7 +119,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(5690)]
         public void When_In_Time_For_Join_Accept_Second_Window_Should_Resolve_Window_2(int delayInMs)
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null);
 
             Assert.Equal(2, target.ResolveJoinAcceptWindowToUse(loRaDevice));
@@ -131,7 +131,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(8000)]
         public void When_Out_Of_Time_For_Join_Accept_Second_Window_Should_Resolve_Window_0(int delayInMs)
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("31312", "312321321", null);
 
             Assert.Equal(0, target.ResolveJoinAcceptWindowToUse(loRaDevice));
@@ -151,7 +151,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(3000, 0, 0)]
         public void When_Device_PreferredWindow1_In_Time_For_First_Window_Should_Get_Check_C2D_Avaible_Time_Correctly(int delayInMs, int expectedMinMs, int expectedMaxMs)
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("1111", "2222", null);
 
             // Will be around 1000 - delay - 400
@@ -171,7 +171,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(3000, 0, 0)]
         public void When_Device_PreferredWindow2_In_Time_For_First_Window_Should_Get_Check_C2D_Avaible_Time_Correctly(int delayInMs, int expectedMinMs, int expectedMaxMs)
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("1111", "2222", null)
             {
                 PreferredWindow = 2,
@@ -192,7 +192,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(2000, 2)]
         public void When_Device_Out_Of_Time_For_C2D_Receive_Should_Return_TimeSpan_Zero(int delayInMs, int devicePreferredReceiveWindow)
         {
-            var target = new LoRaOperationTimeWatcher(RegionFactory.CreateEU868Region(), DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
+            var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             var loRaDevice = new LoRaDevice("1111", "2222", null)
             {
                 PreferredWindow = devicePreferredReceiveWindow,

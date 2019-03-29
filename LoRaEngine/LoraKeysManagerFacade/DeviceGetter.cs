@@ -17,132 +17,115 @@ namespace LoraKeysManagerFacade
     using Newtonsoft.Json;
     using StackExchange.Redis;
 
-    public static class DeviceGetter
+    public class DeviceGetter
     {
-        static IDatabase redisCache;
+        private readonly RegistryManager registryManager;
+        private readonly ILoRaDeviceCacheStore cacheStore;
 
-        static RegistryManager registryManager;
-
-        public class IoTHubDeviceInfo
+        public DeviceGetter(RegistryManager registryManager, ILoRaDeviceCacheStore cacheStore)
         {
-            public string DevAddr { get; set; }
-
-            public string DevEUI { get; set; }
-
-            public string PrimaryKey { get; set; }
+            this.registryManager = registryManager;
+            this.cacheStore = cacheStore;
         }
 
         /// <summary>
         /// Entry point function for getting devices
         /// </summary>
         [FunctionName(nameof(GetDevice))]
-        public static async Task<IActionResult> GetDevice([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req, ILogger log, ExecutionContext context)
+        public async Task<IActionResult> GetDevice(
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req,
+            ILogger log)
         {
-            return await Run(req, log, context, ApiVersion.LatestVersion);
-        }
-
-        // Runner
-        public static async Task<IActionResult> Run(HttpRequest req, ILogger log, ExecutionContext context, ApiVersion currentApiVersion)
-        {
-            // Set the current version in the response header
-            req.HttpContext.Response.Headers.Add(ApiVersion.HttpHeaderName, currentApiVersion.Version);
-
-            var requestedVersion = req.GetRequestedVersion();
-            if (requestedVersion == null || !currentApiVersion.SupportsVersion(requestedVersion))
+            try
             {
-                return new BadRequestObjectResult($"Incompatible versions (requested: '{requestedVersion.Name ?? string.Empty}', current: '{currentApiVersion.Name}')");
+                VersionValidator.Validate(req);
+            }
+            catch (IncompatibleVersionException ex)
+            {
+                return new BadRequestObjectResult(ex.Message);
             }
 
-            // ABP Case
+            // ABP parameters
             string devAddr = req.Query["DevAddr"];
-            // OTAA Case
+
+            // OTAA parameters
             string devEUI = req.Query["DevEUI"];
             string devNonce = req.Query["DevNonce"];
-
             string gatewayId = req.Query["GatewayId"];
 
-            if (redisCache == null || registryManager == null)
-            {
-                lock (typeof(FCntCacheCheck))
-                {
-                    if (redisCache == null || registryManager == null)
-                    {
-                        var config = new ConfigurationBuilder()
-                          .SetBasePath(context.FunctionAppDirectory)
-                          .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                          .AddEnvironmentVariables()
-                          .Build();
-                        string connectionString = config.GetConnectionString("IoTHubConnectionString");
-
-                        if (connectionString == null)
-                        {
-                            string errorMsg = "Missing IoTHubConnectionString in settings";
-                            throw new Exception(errorMsg);
-                        }
-
-                        string redisConnectionString = config.GetConnectionString("RedisConnectionString");
-                        if (redisConnectionString == null)
-                        {
-                            string errorMsg = "Missing RedisConnectionString in settings";
-                            throw new Exception(errorMsg);
-                        }
-
-                        registryManager = RegistryManager.CreateFromConnectionString(connectionString);
-
-                        var redis = ConnectionMultiplexer.Connect(redisConnectionString);
-                        redisCache = redis.GetDatabase();
-                    }
-                }
-            }
-
-            List<IoTHubDeviceInfo> results = new List<IoTHubDeviceInfo>();
-
-            // OTAA join
             if (devEUI != null)
             {
+                EUIValidator.ValidateDevEUI(devEUI);
+            }
+
+            try
+            {
+                var results = await this.GetDeviceList(devEUI, gatewayId, devNonce, devAddr);
+                string json = JsonConvert.SerializeObject(results);
+                return new OkObjectResult(json);
+            }
+            catch (DeviceNonceUsedException)
+            {
+                return new BadRequestObjectResult("UsedDevNonce");
+            }
+            catch (ArgumentException ex)
+            {
+                return new BadRequestObjectResult(ex.Message);
+            }
+        }
+
+        public async Task<List<IoTHubDeviceInfo>> GetDeviceList(string devEUI, string gatewayId, string devNonce, string devAddr)
+        {
+            var results = new List<IoTHubDeviceInfo>();
+
+            if (devEUI != null)
+            {
+                // OTAA join
                 string cacheKey = devEUI + devNonce;
-
-                try
+                using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId, cacheKey))
                 {
-                    if (redisCache.LockTake(cacheKey + "joinlock", gatewayId, new TimeSpan(0, 0, 10)))
+                    if (deviceCache.HasValue())
                     {
-                        // check if we already got the same devEUI and devNonce it can be a reaply attack or a multigateway setup recieving the same join.We are rfusing all other than the first one.
-                        string cachedDevNonce = redisCache.StringGet(cacheKey, CommandFlags.DemandMaster);
+                        throw new DeviceNonceUsedException();
+                    }
 
-                        if (!string.IsNullOrEmpty(cachedDevNonce))
+                    if (deviceCache.TryToLock(cacheKey + "joinlock"))
+                    {
+                        if (deviceCache.HasValue())
                         {
-                            return (ActionResult)new BadRequestObjectResult("UsedDevNonce");
+                            throw new DeviceNonceUsedException();
                         }
 
-                        redisCache.StringSet(cacheKey, devNonce, new TimeSpan(0, 1, 0), When.Always, CommandFlags.DemandMaster);
+                        deviceCache.SetValue(devNonce, TimeSpan.FromMinutes(1));
 
-                        IoTHubDeviceInfo iotHubDeviceInfo = new IoTHubDeviceInfo();
-                        var device = await registryManager.GetDeviceAsync(devEUI);
+                        var device = await this.registryManager.GetDeviceAsync(devEUI);
 
                         if (device != null)
                         {
-                            iotHubDeviceInfo.DevEUI = devEUI;
-                            iotHubDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
+                            var iotHubDeviceInfo = new IoTHubDeviceInfo
+                            {
+                                DevEUI = devEUI,
+                                PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey
+                            };
                             results.Add(iotHubDeviceInfo);
 
-                            // clear device FCnt cache after join
-                            redisCache.KeyDelete(devEUI);
+                            this.cacheStore.KeyDelete(devEUI);
                         }
                     }
-                }
-                finally
-                {
-                    redisCache.LockRelease(cacheKey + "joinlock", gatewayId);
+                    else
+                    {
+                        throw new DeviceNonceUsedException();
+                    }
                 }
             }
-
-            // ABP or normal message
             else if (devAddr != null)
             {
+                // ABP or normal message
+
                 // TODO check for sql injection
                 devAddr = devAddr.Replace('\'', ' ');
 
-                var query = registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{devAddr}' OR properties.reported.DevAddr ='{devAddr}'", 100);
+                var query = this.registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{devAddr}' OR properties.reported.DevAddr ='{devAddr}'", 100);
                 while (query.HasMoreResults)
                 {
                     var page = await query.GetNextAsTwinAsync();
@@ -151,11 +134,13 @@ namespace LoraKeysManagerFacade
                     {
                         if (twin.DeviceId != null)
                         {
-                            IoTHubDeviceInfo iotHubDeviceInfo = new IoTHubDeviceInfo();
-                            iotHubDeviceInfo.DevAddr = devAddr;
-                            var device = await registryManager.GetDeviceAsync(twin.DeviceId);
-                            iotHubDeviceInfo.DevEUI = twin.DeviceId;
-                            iotHubDeviceInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
+                            var device = await this.registryManager.GetDeviceAsync(twin.DeviceId);
+                            var iotHubDeviceInfo = new IoTHubDeviceInfo
+                            {
+                                DevAddr = devAddr,
+                                DevEUI = twin.DeviceId,
+                                PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey
+                            };
                             results.Add(iotHubDeviceInfo);
                         }
                     }
@@ -163,12 +148,10 @@ namespace LoraKeysManagerFacade
             }
             else
             {
-                string errorMsg = "Missing devEUI or devAddr";
-                throw new Exception(errorMsg);
+                throw new Exception("Missing devEUI or devAddr");
             }
 
-            string json = JsonConvert.SerializeObject(results);
-            return (ActionResult)new OkObjectResult(json);
+            return results;
         }
     }
 }
