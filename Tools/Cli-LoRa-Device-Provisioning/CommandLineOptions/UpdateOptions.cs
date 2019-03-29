@@ -105,6 +105,18 @@ namespace LoRaWan.Tools.CLI.Options
         public string Rx1DrOffset { get; set; }
 
         [Option(
+            "rxdelay",
+            Required = false,
+            HelpText = "RXDelay (???): ???. (optional)")]
+        public string RxDelay { get; set; }
+
+        [Option(
+            "keepalivetimeout",
+            Required = false,
+            HelpText = "KeepAliveTimeout (Timeout before device client connection is closed): ???. (optional)")]
+        public string KeepAliveTimeout { get; set; }
+
+        [Option(
             "supports32bitfcnt",
             Required = false,
             HelpText = "Supports32BitFCnt (Support for 32bit frame counter): True or false. (optional)")]

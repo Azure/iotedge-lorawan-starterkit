@@ -89,7 +89,7 @@ namespace LoRaWan.Tools.CLI
             }
             else
             {
-                StatusConsole.WriteLine(MessageType.Error, $"Could not get data for device {opts.DevEui}.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Could not get data for device {opts.DevEui}.");
                 return false;
             }
         }
@@ -108,7 +108,7 @@ namespace LoRaWan.Tools.CLI
             }
             else
             {
-                StatusConsole.WriteLine(MessageType.Error, $"Could not get data for device {opts.DevEui}.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Could not get data for device {opts.DevEui}.");
                 return false;
             }
         }
@@ -127,16 +127,16 @@ namespace LoRaWan.Tools.CLI
             if (!int.TryParse(opts.Total, out total))
                 total = -1;
 
-            var isSuccess = iotDeviceHelper.QueryDevicesAndVerify(configurationHelper, page, total).Result;
+            var isSuccess = iotDeviceHelper.QueryDevicesAndVerify(configurationHelper).Result;
 
             Console.WriteLine();
             if (isSuccess)
             {
-                StatusConsole.WriteLine(MessageType.Info, "No errors were encountered.");
+                StatusConsole.WriteLogLine(MessageType.Info, "No errors were encountered.");
             }
             else
             {
-                StatusConsole.WriteLine(MessageType.Error, "Errors detected in devices.");
+                StatusConsole.WriteLogLine(MessageType.Error, "Errors detected in devices.");
             }
 
             return isSuccess;
@@ -159,7 +159,7 @@ namespace LoRaWan.Tools.CLI
             }
             else
             {
-                StatusConsole.WriteLine(MessageType.Error, $"Can not add {opts.Type.ToUpper()} device.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Can not add {opts.Type.ToUpper()} device.");
             }
 
             if (isSuccess)
@@ -199,19 +199,19 @@ namespace LoRaWan.Tools.CLI
                     else
                     {
                         Console.WriteLine();
-                        StatusConsole.WriteLine(MessageType.Error, $"Can not update device {opts.DevEui}.");
+                        StatusConsole.WriteLogLine(MessageType.Error, $"Can not update device {opts.DevEui}.");
                     }
                 }
                 else
                 {
                     Console.WriteLine();
-                    StatusConsole.WriteLine(MessageType.Error, $"Errors found in Twin data. Device {opts.DevEui} was not updated.");
+                    StatusConsole.WriteLogLine(MessageType.Error, $"Errors found in Twin data. Device {opts.DevEui} was not updated.");
                 }
             }
             else
             {
                 Console.WriteLine();
-                StatusConsole.WriteLine(MessageType.Error, $"Could not get data for device {opts.DevEui}. Failed to update.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Could not get data for device {opts.DevEui}. Failed to update.");
                 isSuccess = false;
             }
 

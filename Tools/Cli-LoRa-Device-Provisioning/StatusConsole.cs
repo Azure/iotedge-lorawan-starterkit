@@ -9,7 +9,50 @@ namespace LoRaWan.Tools.CLI
 
     public static class StatusConsole
     {
-        public static void WriteLine(MessageType type, string message)
+        public static void Write(string message, bool isVerbose)
+        {
+            if (isVerbose)
+            {
+                Console.Write(message);
+            }
+        }
+
+        public static void WriteLine(string message, bool isVerbose)
+        {
+            if (isVerbose)
+            {
+                Console.WriteLine(message);
+            }
+        }
+
+        public static void WriteLogLine(MessageType type, string message)
+        {
+            WriteMessageType(type);
+            Console.WriteLine(message);
+        }
+
+        public static void WriteLogLine(MessageType type, string message, bool isVerbose)
+        {
+            if (isVerbose)
+            {
+                WriteMessageType(type);
+                Console.WriteLine(message);
+            }
+        }
+
+        public static void WriteLogLine(MessageType type, string message, string devEui, bool isVerbose)
+        {
+            WriteMessageType(type);
+
+            if (!isVerbose)
+            {
+                Console.Write($"Device: {devEui} ");
+            }
+
+            Console.WriteLine(message);
+        }
+
+        private static void WriteMessageType(MessageType type)
         {
             Console.Write("[");
             if (type == MessageType.Info)
@@ -21,9 +64,7 @@ namespace LoRaWan.Tools.CLI
 
             Console.Write(type);
             Console.ResetColor();
-            Console.Write("]: ");
-
-            Console.WriteLine(message);
+            Console.Write("] ");
         }
 
         public static void WriteTwin(string devEui, Twin twin)
@@ -35,7 +76,7 @@ namespace LoRaWan.Tools.CLI
             Console.ResetColor();
         }
 
-        public static string TwinToString(Twin twin)
+        private static string TwinToString(Twin twin)
         {
             var twinData = JObject.Parse(twin.Properties.Desired.ToJson());
             twinData.Remove("$metadata");

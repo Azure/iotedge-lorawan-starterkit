@@ -36,5 +36,12 @@ namespace LoRaWan.Tools.CLI
         public const string FCntDownStart = "FCntDownStart";
         public const string Region = "Region"; // Defines the region where the device is located
         public const string PreferredGatewayID = "PreferredGatewayID"; // Defines the preferred gateway for a class C device
+
+        public const string RXDelay = "RXDelay";
+
+        /// <summary>
+        /// Defines the connection keep alive timeout
+        /// </summary>
+        public const string KeepAliveTimeout = "KeepAliveTimeout";
     }
 }

@@ -226,7 +226,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 return null;
         }
 
-        public static bool ValidateUIntTwinProperty(string property, uint? min, uint? max, out string error)
+        public static bool ValidateUIntRangeTwinProperty(string property, uint? min, uint? max, out string error)
         {
             var isValid = true;
             error = null;
@@ -237,7 +237,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (uintProperty < min)
                     {
-                        error = $"Property is smaller then the expected minimum of {min}";
+                        error = $"Property is smaller then the expected minimum of {min}.";
                         isValid = false;
                     }
                 }
@@ -246,16 +246,39 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (uintProperty > max)
                     {
-                        error = $"Property is larger then the expected maximum of {max}";
+                        error = $"Property is larger then the expected maximum of {max}.";
                         isValid = false;
                     }
                 }
             }
             else
             {
-                error = "Property is not a valid. Needs to be a non-negative number.";
+                error = $"Property is not valid. Needs to be a non-negative number between {min} and {max}.";
                 isValid = false;
             }
+
+            return isValid;
+        }
+
+        public static bool ValidateUIntTwinProperty(string property, uint expected, out string error)
+        {
+            var isValid = true;
+            error = null;
+
+            if (uint.TryParse(property, out var uintProperty))
+            {
+                if (uintProperty != expected)
+                {
+                    isValid = false;
+                }
+            }
+            else
+            {
+                isValid = false;
+            }
+
+            if (!isValid)
+                error = $"Property is not the expected value of {expected}.";
 
             return isValid;
         }
@@ -280,14 +303,14 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             if (sensorDecoder == null)
             {
-                StatusConsole.WriteLine(MessageType.Error, "SensorDecoder is missing.");
+                StatusConsole.WriteLogLine(MessageType.Error, "SensorDecoder is missing.");
                 return false;
             }
 
             if (sensorDecoder == string.Empty)
             {
                 if (isVerbose)
-                    StatusConsole.WriteLine(MessageType.Info, "SensorDecoder is empty. No decoder will be used.");
+                    StatusConsole.WriteLogLine(MessageType.Info, "SensorDecoder is empty. No decoder will be used.");
 
                 return true;
             }
@@ -296,7 +319,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             {
                 if (!Uri.TryCreate(sensorDecoder, UriKind.Absolute, out Uri validatedUri))
                 {
-                    StatusConsole.WriteLine(MessageType.Error, "SensorDecoder has an invalid URL.");
+                    StatusConsole.WriteLogLine(MessageType.Error, "SensorDecoder has an invalid URL.");
                     isValid = false;
                 }
 
@@ -304,14 +327,14 @@ namespace LoRaWan.Tools.CLI.Helpers
                 if (!sensorDecoder.StartsWith(validatedUri.Scheme, StringComparison.OrdinalIgnoreCase)
                     || sensorDecoder.IndexOf(validatedUri.Host) != validatedUri.Scheme.Length + 3)
                 {
-                    StatusConsole.WriteLine(MessageType.Error, "SensorDecoder Hostname must be all lowercase.");
+                    StatusConsole.WriteLogLine(MessageType.Error, "SensorDecoder Hostname must be all lowercase.");
                     isValid = false;
                 }
 
                 if (validatedUri.AbsolutePath.IndexOf("/api/") < 0)
                 {
                     if (isVerbose)
-                        StatusConsole.WriteLine(MessageType.Warning, "SensorDecoder is missing \"api\" keyword.");
+                        StatusConsole.WriteLogLine(MessageType.Warning, "SensorDecoder is missing \"api\" keyword.");
 
                     isWarning = true;
                 }
@@ -321,11 +344,11 @@ namespace LoRaWan.Tools.CLI.Helpers
             {
                 if (!isValid || isWarning)
                 {
-                    StatusConsole.WriteLine(MessageType.Info, "Make sure the URI based SensorDecoder Twin desired property looks like \"http://containername/api/decodername\".");
+                    StatusConsole.WriteLogLine(MessageType.Info, "Make sure the URI based SensorDecoder Twin desired property looks like \"http://containername/api/decodername\".");
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"SensorDecoder {sensorDecoder} is valid.");
+                    StatusConsole.WriteLogLine(MessageType.Info, $"SensorDecoder {sensorDecoder} is valid.");
                 }
             }
 
@@ -369,14 +392,14 @@ namespace LoRaWan.Tools.CLI.Helpers
             // fCntStartRep not null
             if (fCntStartRep == null || fCntStart > fCntStartRep)
             {
-                StatusConsole.WriteLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
+                StatusConsole.WriteLogLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
                 return true;
             }
 
             // fCntStartRep not null, fCntStartRep not null, fCntStart <= fCntStartRep
             if (fCntResetCounter == null)
             {
-                StatusConsole.WriteLine(MessageType.Warning, $"{fCntStartType} {fCntStart} will not be set on gateway. Reported {fCntStartType} {fCntStartRep} is larger or equal and FCntResetCounter is not set.");
+                StatusConsole.WriteLogLine(MessageType.Warning, $"{fCntStartType} {fCntStart} will not be set on gateway. Reported {fCntStartType} {fCntStartRep} is larger or equal and FCntResetCounter is not set.");
                 return true;
             }
 
@@ -384,13 +407,13 @@ namespace LoRaWan.Tools.CLI.Helpers
             // fCntResetCounter not null
             if (fCntResetCounterRep == null || fCntResetCounter > fCntResetCounterRep)
             {
-                StatusConsole.WriteLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
+                StatusConsole.WriteLogLine(MessageType.Info, $"{fCntStartType} {fCntStart} will be set on gateway.");
                 return true;
             }
 
             // fCntStartRep not null, fCntStartRep not null, fCntStart <= fCntStartRep,
             // fCntResetCounter not null, fCntResetCounterRep not null, fCntResetCounter <= fCntResetCounterRep
-            StatusConsole.WriteLine(MessageType.Warning, $"{fCntStartType} {fCntStart} will not be set on gateway. Reported {fCntStartType} {fCntStartRep} is larger or equal and FCntResetCounter {fCntResetCounter} is not larger than reported FCntResetCounter {fCntResetCounterRep}.");
+            StatusConsole.WriteLogLine(MessageType.Warning, $"{fCntStartType} {fCntStart} will not be set on gateway. Reported {fCntStartType} {fCntStartRep} is larger or equal and FCntResetCounter {fCntResetCounter} is not larger than reported FCntResetCounter {fCntResetCounterRep}.");
             return true;
         }
     }
