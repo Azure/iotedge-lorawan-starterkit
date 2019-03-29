@@ -11,22 +11,34 @@ namespace LoRaWan.Test.Shared
 
         public SearchLogEvent(string rawMessage)
         {
+            var parsedMessage = Parse(rawMessage);
+            this.Message = parsedMessage.Message;
+            this.SourceId = parsedMessage.SourceId;
+        }
+
+        internal static (string Message, string SourceId) Parse(string rawMessage)
+        {
+            string message = null;
+            string sourceId = null;
+
             if (!string.IsNullOrEmpty(rawMessage))
             {
-                this.Message = rawMessage.Trim();
-                if (rawMessage.StartsWith('['))
+                message = rawMessage.Trim();
+                if (message.StartsWith('['))
                 {
-                    var idxEnd = rawMessage.IndexOf(']');
+                    var idxEnd = message.IndexOf(']');
                     if (idxEnd != -1)
                     {
-                        if (rawMessage.Length >= idxEnd + 1)
+                        if (message.Length >= idxEnd + 1)
                         {
-                            this.SourceId = rawMessage.Substring(1, idxEnd - 1);
-                            this.Message = rawMessage.Substring(idxEnd + 1).TrimStart();
+                            sourceId = message.Substring(1, idxEnd - 1);
+                            message = message.Substring(idxEnd + 1).TrimStart();
                         }
                     }
                 }
             }
+
+            return (message, sourceId);
         }
 
         public string Message { get; set; }
