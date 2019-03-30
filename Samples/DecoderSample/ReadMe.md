@@ -7,17 +7,26 @@ This sample allows you to create and run your own LoRa message decoder in an ind
 
 To add a new decoder, simply copy or reuse  the sample ```DecoderValueSensor``` method from the ```LoraDecoders``` class in [LoraDecoder.cs](/Samples/DecoderSample/Classes/LoraDecoder.cs). You can name the method whatever you like and can create as many decoders as you need by adding new, individual methods to the ```LoraDecoders``` class.
 
-The payload sent to the decoder is passed as byte[] ```payload``` and uint ```fport```.
+The payload sent to the decoder is passed as string ```devEui```, byte[] ```payload``` and uint ```fport```.
 
 After writing the code that decodes your message, your method should return a **string containing valid JSON** containing the response to be sent upstream.
 
 ```cs
 internal static class LoraDecoders
 {
-    private static string DecoderValueSensor(byte[] payload, uint fport)
+    private static string DecoderValueSensor(string devEUI, byte[] payload, byte fport)
     {
-        var result = Encoding.ASCII.GetString(payload);
+        // EITHER: Convert a payload containing a string back to string format for further processing
+        var result = Encoding.UTF8.GetString(payload);
+
+        // OR: Convert a payload containing binary data to HEX string for further processing
+        var result_binary = ConversionHelper.ByteArrayToString(payload);
+
+        // Write code that decodes the payload here.
+
+        // Return a JSON string containing the decoded data
         return JsonConvert.SerializeObject(new { value = result });
+
     }
 }
 ```
@@ -38,13 +47,12 @@ For example, to test a payload of `ABCDE12345`, you:
 For the built-in sample decoder ```DecoderValueSensor``` with Visual Studio (Code)'s default settings this would be:
 
 ```
-http://localhost:5000/api/DecoderValueSensor?fport=1&payload=QUJDREUxMjM0NQ%3D%3D
+http://localhost:5000/api/DecoderValueSensor?devEui=0000000000000000&fport=1&payload=QUJDREUxMjM0NQ%3D%3D
 `````
-
 You can call your decoder at:
 
 ```
-http://localhost:yourPort/api/<decodername>?fport=<1>&payload=<QUJDREUxMjM0NQ%3D%3D>
+http://localhost:yourPort/api/<decodername>?devEui=0000000000000000&fport=<1>&payload=<QUJDREUxMjM0NQ%3D%3D>
 ```
 
 You should see the result as JSON string.
@@ -81,7 +89,7 @@ docker run --rm -it -p 8881:80 --name decodersample <container registry>/<image>
 You can then use a browser to navigate to:
 
 ```
-http://localhost:8881/api/DecoderValueSensor?fport=1&payload=QUJDREUxMjM0NQ%3D%3D
+http://localhost:8881/api/DecoderValueSensor?devEui=0000000000000000&fport=1&payload=QUJDREUxMjM0NQ%3D%3D
 ```
 
 ### Deploying to IoT Edge
