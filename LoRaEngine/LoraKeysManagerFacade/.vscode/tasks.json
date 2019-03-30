@@ -32,13 +32,12 @@
       "problemMatcher": "$msCompile"
     },
     {
-      "label": "runFunctionsHost",
-      "type": "shell",
+      "type": "func",
       "dependsOn": "build",
       "options": {
         "cwd": "${workspaceFolder}/bin/Debug/netstandard2.0"
       },
-      "command": "func host start",
+      "command": "host start",
       "isBackground": true,
       "problemMatcher": "$func-watch"
     }
