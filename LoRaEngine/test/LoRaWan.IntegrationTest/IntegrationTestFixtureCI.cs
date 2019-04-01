@@ -99,6 +99,11 @@ namespace LoRaWan.IntegrationTest
         /// </summary>
         public TestDeviceInfo Device28_ABP { get; private set; }
 
+        /// <summary>
+        /// Gets Device27_ABP: used for multi GW deduplication mark testing
+        /// </summary>
+        public TestDeviceInfo Device29_ABP { get; private set; }
+
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice
         {
@@ -467,6 +472,16 @@ namespace LoRaWan.IntegrationTest
                 DevAddr = "00000027",
                 IsIoTHubDevice = true,
                 Deduplication = "Drop"
+            };
+
+            this.Device29_ABP = new TestDeviceInfo()
+            {
+                DeviceID = "0000000000000029",
+                AppSKey = "00000000000000000000000000000029",
+                NwkSKey = "00000000000000000000000000000029",
+                DevAddr = "00000029",
+                IsIoTHubDevice = true,
+                Deduplication = "Mark"
             };
         }
     }
