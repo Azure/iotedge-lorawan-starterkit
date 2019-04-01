@@ -63,9 +63,6 @@ namespace LoRaWan.IntegrationTest
 
             for (int i = 0; i < 10; i++)
             {
-                Assert.True(await this.TestFixtureCi.ResetDeviceCache(device.DeviceID));
-
-                await Task.Delay(30000);
                 var msg = PayloadGenerator.Next().ToString();
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
@@ -78,7 +75,7 @@ namespace LoRaWan.IntegrationTest
                 var allGwGotIt = await this.TestFixtureCi.ValidateMultiGatewaySources((log) => log.IndexOf("deduplication Strategy: Drop", StringComparison.OrdinalIgnoreCase) != -1);
                 if (allGwGotIt)
                 {
-                    var notDuplicate = "{\"isDuplicate\":false";
+                    var notDuplicate = "\"IsDuplicate\":false";
                     var resultProcessed = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(logmsg => logmsg.IndexOf(notDuplicate) != -1, new SearchLogOptions(notDuplicate));
                     var resultDroped = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf("duplication strategy indicated to not process message") != -1);
 
@@ -86,6 +83,49 @@ namespace LoRaWan.IntegrationTest
                     Assert.NotNull(resultDroped.MatchedEvent);
 
                     Assert.NotEqual(resultProcessed.MatchedEvent.SourceId, resultDroped.MatchedEvent.SourceId);
+                }
+
+                this.TestFixtureCi.ClearLogs();
+            }
+        }
+
+        [Fact]
+        public async Task Test_Deduplication_Mark()
+        {
+            var device = this.TestFixtureCi.Device29_ABP;
+            this.LogTestStart(device);
+
+            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
+
+            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+
+            for (int i = 0; i < 10; i++)
+            {
+                var msg = PayloadGenerator.Next().ToString();
+                await this.ArduinoDevice.transferPacketAsync(msg, 10);
+                await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
+
+                // After transferPacket: Expectation from serial
+                // +MSG: Done
+                await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
+
+                var allGwGotIt = await this.TestFixtureCi.ValidateMultiGatewaySources((log) => log.IndexOf("deduplication Strategy: Mark", StringComparison.OrdinalIgnoreCase) != -1);
+                if (allGwGotIt)
+                {
+                    var notDuplicate = "\"IsDuplicate\":false";
+                    var isDuplicate = "\"IsDuplicate\":true";
+
+                    var notDuplicateResult = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(notDuplicate) != -1);
+                    var duplicateResult = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(isDuplicate) != -1);
+
+                    Assert.NotNull(notDuplicateResult.MatchedEvent);
+                    Assert.NotNull(duplicateResult.MatchedEvent);
+
+                    Assert.NotEqual(duplicateResult.MatchedEvent.SourceId, notDuplicateResult.MatchedEvent.SourceId);
+
+                    // await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, "\"dupmsg\":true");
                 }
 
                 this.TestFixtureCi.ClearLogs();

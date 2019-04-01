@@ -106,7 +106,7 @@ namespace LoRaWan.Test.Shared
             return searchResult;
         }
 
-        public async Task<bool> ValidateMultiGatewaySources(Func<string, bool> predicate, int maxAttempts = 2)
+        public async Task<bool> ValidateMultiGatewaySources(Func<string, bool> predicate, int maxAttempts = 5)
         {
             int numberOfGw = this.Configuration.NumberOfGateways;
             var sourceIds = new HashSet<string>(numberOfGw);
