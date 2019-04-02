@@ -3,7 +3,7 @@
 
 namespace LoraKeysManagerFacade.Test
 {
-    using Microsoft.Azure.WebJobs;
+    using System.Threading.Tasks;
     using Xunit;
 
     public class FCntCacheCheckTest : FunctionTestBase
@@ -16,51 +16,51 @@ namespace LoraKeysManagerFacade.Test
         }
 
         [Fact]
-        public void FrameCounter_Down_Initial()
+        public async Task FrameCounter_Down_Initial()
         {
             var deviceEUI = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
 
-            var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
+            var next = await this.fcntCheck.GetNextFCntDownAsync(deviceEUI, gatewayId, 1, 1);
             Assert.Equal(2U, next);
         }
 
         [Fact]
-        public void FrameCounter_Down_Update_Server()
+        public async Task FrameCounter_Down_Update_Server()
         {
             var deviceEUI = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
 
-            var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
+            var next = await this.fcntCheck.GetNextFCntDownAsync(deviceEUI, gatewayId, 1, 1);
             Assert.Equal(2U, next);
 
-            next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 2, 1);
+            next = await this.fcntCheck.GetNextFCntDownAsync(deviceEUI, gatewayId, 2, 1);
             Assert.Equal(3U, next);
         }
 
         [Fact]
-        public void FrameCounter_Down_Update_Device()
+        public async Task FrameCounter_Down_Update_Device()
         {
             var deviceEUI = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
 
-            var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
+            var next = await this.fcntCheck.GetNextFCntDownAsync(deviceEUI, gatewayId, 1, 1);
             Assert.Equal(2U, next);
 
-            next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 3, 10);
+            next = await this.fcntCheck.GetNextFCntDownAsync(deviceEUI, gatewayId, 3, 10);
             Assert.Equal(11U, next);
         }
 
         [Fact]
-        public void FrameCounter_Down_Retry_Increment()
+        public async Task FrameCounter_Down_Retry_Increment()
         {
             var deviceEUI = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
 
-            var next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
+            var next = await this.fcntCheck.GetNextFCntDownAsync(deviceEUI, gatewayId, 1, 1);
             Assert.Equal(2U, next);
 
-            next = this.fcntCheck.GetNextFCntDown(deviceEUI, gatewayId, 1, 1);
+            next = await this.fcntCheck.GetNextFCntDownAsync(deviceEUI, gatewayId, 1, 1);
             Assert.Equal(3U, next);
         }
     }

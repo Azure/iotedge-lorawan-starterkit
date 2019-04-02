@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
+    using Microsoft.Extensions.Logging;
 
     public class DeduplicationExecutionItem : IFunctionBundlerExecutionItem
     {
@@ -15,10 +16,10 @@ namespace LoraKeysManagerFacade.FunctionBundler
             this.cacheStore = cacheStore;
         }
 
-        public Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
+        public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
-            context.Result.DeduplicationResult = this.GetDuplicateMessageResult(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown);
-            return Task.FromResult(context.Result.DeduplicationResult.IsDuplicate ? FunctionBundlerExecutionState.Abort : FunctionBundlerExecutionState.Continue);
+            context.Result.DeduplicationResult = await this.GetDuplicateMessageResultAsync(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.Logger);
+            return context.Result.DeduplicationResult.IsDuplicate ? FunctionBundlerExecutionState.Abort : FunctionBundlerExecutionState.Continue;
         }
 
         public int Priority => 1;
@@ -33,14 +34,14 @@ namespace LoraKeysManagerFacade.FunctionBundler
             return Task.CompletedTask;
         }
 
-        internal DuplicateMsgResult GetDuplicateMessageResult(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
+        internal async Task<DuplicateMsgResult> GetDuplicateMessageResultAsync(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown, ILogger logger = null)
         {
             var isDuplicate = true;
             string processedDevice = gatewayId;
 
             using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId))
             {
-                if (deviceCache.TryToLock())
+                if (await deviceCache.TryToLockAsync())
                 {
                     // we are owning the lock now
                     if (deviceCache.TryGetInfo(out DeviceCacheInfo cachedDeviceState))
@@ -73,8 +74,14 @@ namespace LoraKeysManagerFacade.FunctionBundler
                     {
                         // initialize
                         isDuplicate = false;
-                        deviceCache.Initialize(clientFCntUp, clientFCntDown);
+                        var state = deviceCache.Initialize(clientFCntUp, clientFCntDown);
+                        logger?.LogDebug("initialized state for {id}:{gwid} = {state}", devEUI, gatewayId, state);
                     }
+                }
+                else
+                {
+                    processedDevice = "[unknown]";
+                    logger?.LogWarning("Failed to acquire lock");
                 }
             }
 

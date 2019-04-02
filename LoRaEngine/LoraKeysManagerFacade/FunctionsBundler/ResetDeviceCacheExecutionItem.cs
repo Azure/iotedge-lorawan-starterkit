@@ -17,13 +17,14 @@ namespace LoraKeysManagerFacade.FunctionBundler
             this.deviceCacheStore = deviceCacheStore;
         }
 
-        public Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
+        public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
             using (var deviceCache = new LoRaDeviceCache(this.deviceCacheStore, context.DevEUI, context.Request.GatewayId))
             {
-                if (deviceCache.TryToLock())
+                if (await deviceCache.TryToLockAsync())
                 {
                     deviceCache.ClearCache();
+                    context.Logger.LogDebug("Cleared the device cache");
                 }
                 else
                 {
@@ -31,7 +32,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 }
             }
 
-            return Task.FromResult(FunctionBundlerExecutionState.Continue);
+            return FunctionBundlerExecutionState.Continue;
         }
 
         public int Priority => 0;

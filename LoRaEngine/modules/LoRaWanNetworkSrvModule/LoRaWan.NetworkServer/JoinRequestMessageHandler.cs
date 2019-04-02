@@ -55,7 +55,7 @@ namespace LoRaWan.NetworkServer
                 if (loRaDevice == null)
                 {
                     request.NotifyFailed(devEUI, LoRaDeviceRequestFailedReason.UnknownDevice);
-                    Logger.Log(devEUI, "join refused: unknown device", LogLevel.Information);
+                    Logger.Log(devEUI, "join refused", LogLevel.Information);
                     return;
                 }
 

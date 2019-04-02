@@ -88,7 +88,7 @@ namespace LoRaWan.NetworkServer.Test
             var shouldReset = payloadFcntUp == 0 && abpRelaxed;
             if (shouldReset)
             {
-                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI)).ReturnsAsync(true);
+                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI, It.IsAny<uint>(), It.IsNotNull<string>())).ReturnsAsync(true);
             }
 
             this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))

@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer
     public interface ILoRaDeviceFrameCounterUpdateStrategy
     {
         // Resets the frame count
-        Task<bool> ResetAsync(LoRaDevice loRaDevice);
+        Task<bool> ResetAsync(LoRaDevice loRaDevice, uint fcntUp, string gatewayId);
 
         // Resolves next frame down counter
         ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt);

@@ -6,22 +6,33 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Extensions.Configuration;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Newtonsoft.Json;
     using StackExchange.Redis;
 
     public class LoRaDeviceCacheRedisStore : ILoRaDeviceCacheStore
     {
         private IDatabase redisCache;
+        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(10);
 
         public LoRaDeviceCacheRedisStore(IDatabase redisCache)
         {
             this.redisCache = redisCache;
         }
 
-        public bool LockTake(string key, string value, TimeSpan timeout)
+        public async Task<bool> LockTakeAsync(string key, string lockOwner, TimeSpan expiration, bool block = false)
         {
-            return this.redisCache.LockTake(key, value, timeout);
+            var start = DateTime.UtcNow;
+            var taken = false;
+            while (!(taken = this.redisCache.LockTake(key, lockOwner, expiration)) && block)
+            {
+                if (DateTime.UtcNow - start > LockTimeout)
+                    break;
+                await Task.Delay(100);
+            }
+
+            return taken;
         }
 
         public string StringGet(string key)
@@ -29,10 +40,36 @@ namespace LoraKeysManagerFacade
             return this.redisCache.StringGet(key, CommandFlags.DemandMaster);
         }
 
+        public T GetObject<T>(string key)
+            where T : class
+        {
+            var str = this.StringGet(key);
+            if (string.IsNullOrEmpty(str))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(str);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public bool StringSet(string key, string value, TimeSpan? expiry, bool onlyIfNotExists = false)
         {
             var when = onlyIfNotExists ? When.NotExists : When.Always;
             return this.redisCache.StringSet(key, value, expiry, when, CommandFlags.DemandMaster);
+        }
+
+        public bool ObjectSet<T>(string key, T value, TimeSpan? expiration, bool onlyIfNotExists = false)
+            where T : class
+        {
+            var str = value != null ? JsonConvert.SerializeObject(value) : null;
+            return this.StringSet(key, str, expiration, onlyIfNotExists);
         }
 
         public bool KeyExists(string key)

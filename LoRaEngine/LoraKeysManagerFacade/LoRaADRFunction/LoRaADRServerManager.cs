@@ -17,10 +17,10 @@ namespace LoraKeysManagerFacade
             this.deviceCacheStore = deviceCacheStore;
         }
 
-        public override Task<uint> NextFCntDown(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
+        public override async Task<uint> NextFCntDown(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
             var fcntCheck = new FCntCacheCheck(this.deviceCacheStore);
-            return Task.FromResult(fcntCheck.GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown));
+            return await fcntCheck.GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);
         }
     }
 }

@@ -20,13 +20,13 @@ namespace LoRaWan.NetworkServer
             this.loRaDeviceAPIService = loRaDeviceAPIService;
         }
 
-        public async Task<bool> ResetAsync(LoRaDevice loRaDevice)
+        public async Task<bool> ResetAsync(LoRaDevice loRaDevice, uint fcntUp, string gatewayId)
         {
             loRaDevice.ResetFcnt();
 
             if (await this.InternalSaveChangesAsync(loRaDevice, force: true))
             {
-                return await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI);
+                return await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI, fcntUp, gatewayId);
             }
 
             return false;

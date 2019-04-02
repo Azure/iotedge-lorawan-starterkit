@@ -25,7 +25,7 @@ namespace LoRaWan.Shared
         /// Gets the latest version released.
         /// Update this once a new API version is released
         /// </summary>
-        public static ApiVersion LatestVersion => Version_2019_03_26;
+        public static ApiVersion LatestVersion => Version_2019_04_02;
 
         /// <summary>
         /// Gets the Version from 0.1 and 0.2 had not versioning information
@@ -65,6 +65,12 @@ namespace LoRaWan.Shared
         public static ApiVersion Version_2019_03_26 { get; }
 
         /// <summary>
+        /// Gets Version_2019_04_02 version: 1.0.1
+        /// Not backward compatible
+        /// </summary>
+        public static ApiVersion Version_2019_04_02 { get; }
+
+        /// <summary>
         /// Gets the version that is assumed in case none is specified
         /// </summary>
         public static ApiVersion DefaultVersion => Version_0_2_Or_Earlier;
@@ -80,6 +86,7 @@ namespace LoRaWan.Shared
             yield return Version_2019_02_20_Preview;
             yield return Version_2019_03_08_Preview;
             yield return Version_2019_03_26;
+            yield return Version_2019_04_02;
         }
 
         /// <summary>
@@ -123,6 +130,9 @@ namespace LoRaWan.Shared
 
             Version_2019_03_26 = new ApiVersion("2019-03-26");
             Version_2019_03_26.MinCompatibleVersion = Version_2019_03_26;
+
+            Version_2019_04_02 = new ApiVersion("2019-04-02");
+            Version_2019_04_02.MinCompatibleVersion = Version_2019_04_02;
         }
 
         /// <summary>
