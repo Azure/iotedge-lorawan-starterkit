@@ -61,6 +61,14 @@ namespace LoRaWan.IntegrationTest
             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
 
+            // find the gateway that accepted the join
+            var joinAccept = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf("JoinAccept") != -1);
+            Assert.NotNull(joinAccept);
+            Assert.NotNull(joinAccept.MatchedEvent);
+
+            var targetGw = joinAccept.MatchedEvent.SourceId;
+            Assert.Equal(device.GatewayID, targetGw);
+
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
@@ -113,11 +121,11 @@ namespace LoRaWan.IntegrationTest
                 // Check that RXDelay was correctly used
                 if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN1")).Count() > 0)
                 {
-                    await this.TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, false);
+                    await this.TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, false, device.GatewayID);
                 }
                 else if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN2")).Count() > 0)
                 {
-                    await this.TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, true);
+                    await this.TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, true, device.GatewayID);
                 }
                 else
                 {
@@ -126,7 +134,7 @@ namespace LoRaWan.IntegrationTest
 
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
-                var c2dLogMessage = $"{device.DeviceID}: cloud to device message: {this.ToHexString(c2dMessageBody)}";
+                var c2dLogMessage = $"{device.DeviceID}: done completing cloud to device message, id: {c2dMessage.MessageId}";
                 var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                     (messageBody) =>
                     {
