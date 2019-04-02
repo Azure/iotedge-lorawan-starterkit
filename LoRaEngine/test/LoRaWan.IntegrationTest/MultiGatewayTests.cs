@@ -44,8 +44,8 @@ namespace LoRaWan.IntegrationTest
             Assert.NotNull(joinConfirm);
 
             // validate that one GW refused the join
-            const string devNonceAlreadyUsed = "DevNonce already used by this device";
-            var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(devNonceAlreadyUsed) != -1, new SearchLogOptions(devNonceAlreadyUsed));
+            const string joinRefusedMsg = "join refused";
+            var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg) != -1, new SearchLogOptions(joinRefusedMsg));
             Assert.True(joinRefused.Found);
         }
 
