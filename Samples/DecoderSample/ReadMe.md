@@ -52,7 +52,7 @@ http://localhost:5000/api/DecoderValueSensor?devEui=0000000000000000&fport=1&pay
 You can call your decoder at:
 
 ```
-http://localhost:yourPort/api/<decodername>?devEui=0000000000000000&fport=<1>&payload=<QUJDREUxMjM0NQ%3D%3D>
+http://localhost:yourPort/api/<decodername>?devEui=0000000000000000&fport=1&payload=<QUJDREUxMjM0NQ%3D%3D>
 ```
 
 You should see the result as JSON string.
