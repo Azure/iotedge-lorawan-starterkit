@@ -110,6 +110,12 @@ namespace LoraKeysManagerFacade
             this.cacheStore.StringSet(this.cacheKey, value, expiry);
         }
 
+        public void ClearCache()
+        {
+            this.EnsureLockOwner();
+            this.cacheStore.KeyDelete(this.cacheKey);
+        }
+
         private void EnsureLockOwner()
         {
             if (!this.IsLockOwner)
