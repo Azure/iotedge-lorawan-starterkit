@@ -221,7 +221,6 @@ namespace LoraKeysManagerFacade.Test
 
             foreach (var req in requests)
             {
-                // functionBundlerResults.Add(await ExecuteRequest(devEUI, req));
                 tasks.Add(Task.Run(async () =>
                 {
                     functionBundlerResults.Add(await this.ExecuteRequest(devEUI, req));
