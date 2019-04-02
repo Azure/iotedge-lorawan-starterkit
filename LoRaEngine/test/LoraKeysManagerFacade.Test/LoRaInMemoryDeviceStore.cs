@@ -92,6 +92,25 @@ namespace LoraKeysManagerFacade.Test
             }
         }
 
+        public T GetObject<T>(string key)
+            where T : class
+        {
+            var str = this.StringGet(key);
+            if (string.IsNullOrEmpty(str))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(str);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public bool StringSet(string key, string value, TimeSpan? expiry, bool onlyIfNotExists)
         {
             if (onlyIfNotExists)
