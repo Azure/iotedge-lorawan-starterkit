@@ -93,7 +93,7 @@ namespace LoraKeysManagerFacade
                     var cacheKeyDevNonce = string.Concat(devEUI, ":", devNonce);
                     var lockKeyDevNonce = string.Concat(cacheKeyDevNonce, ":joinlockdevnonce");
 
-                    if (await this.cacheStore.LockTakeAsync(lockKeyDevNonce, gatewayId, TimeSpan.FromSeconds(10)))
+                    if (await this.cacheStore.LockTakeAsync(lockKeyDevNonce, gatewayId, TimeSpan.FromSeconds(10), block: false))
                     {
                         try
                         {
@@ -199,23 +199,24 @@ namespace LoraKeysManagerFacade
                         this.cacheStore.ObjectSet(cacheKeyJoinInfo, joinInfo, TimeSpan.FromMinutes(60));
                         log?.LogDebug("updated cache with join info '{key}':{gwid}", devEUI, gatewayId);
                     }
-
-                    if (string.IsNullOrEmpty(joinInfo.PrimaryKey))
-                    {
-                        throw new JoinRefusedException("Not in our network.");
-                    }
-
-                    if (!string.IsNullOrEmpty(joinInfo.DesiredGateway) && gatewayId != joinInfo.DesiredGateway)
-                    {
-                        throw new JoinRefusedException("Not the owning gateway");
-                    }
-
-                    log?.LogDebug("got LogInfo '{key}':{gwid} attached gw: {desiredgw}", devEUI, gatewayId, joinInfo.DesiredGateway);
                 }
                 finally
                 {
                     var released = this.cacheStore.LockRelease(lockKeyJoinInfo, gatewayId);
                 }
+
+                if (string.IsNullOrEmpty(joinInfo.PrimaryKey))
+                {
+                    throw new JoinRefusedException("Not in our network.");
+                }
+
+                if (!string.IsNullOrEmpty(joinInfo.DesiredGateway) &&
+                    !joinInfo.DesiredGateway.Equals(gatewayId, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new JoinRefusedException($"Not the owning gateway. Owning gateway is '{joinInfo.DesiredGateway}'");
+                }
+
+                log?.LogDebug("got LogInfo '{key}':{gwid} attached gw: {desiredgw}", devEUI, gatewayId, joinInfo.DesiredGateway);
             }
             else
             {

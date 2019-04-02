@@ -14,6 +14,7 @@ namespace LoraKeysManagerFacade.Test
         private static readonly char[] ValidChars = new char[] { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 'A', 'B', 'C', 'D', 'E', 'F' };
         private static readonly List<string> UsedEUI64 = new List<string>();
         private static readonly Random Rnd = new Random(Environment.TickCount);
+        private static readonly object RndLock = new object();
 
         protected static string NewUniqueEUI64()
         {
@@ -21,7 +22,13 @@ namespace LoraKeysManagerFacade.Test
 
             for (var i = 0; i < EUI64BitStringLength; i++)
             {
-                sb.Append(ValidChars[Rnd.Next(0, ValidChars.Length)]);
+                int n = 0;
+                lock (RndLock)
+                {
+                    n = Rnd.Next(0, ValidChars.Length);
+                }
+
+                sb.Append(ValidChars[n]);
             }
 
             var result = sb.ToString();

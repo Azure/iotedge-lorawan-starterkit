@@ -120,17 +120,20 @@ namespace LoRaWan.Test.Shared
             else
                 searchResult = await this.SearchIoTHubLogs(predicate, options);
 
-            if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Error)
+            if (!searchResult.Found)
             {
-                var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                Assert.True(searchResult.Found, $"Searching for {options?.Description ?? "??"} failed. Current log content: [{logs}]");
-            }
-            else if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Warning)
-            {
-                if (!searchResult.Found)
+                if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Error)
                 {
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                    TestLogger.Log($"[WARN] '{options?.Description ?? "??"}' found in logs? {searchResult.Found}. Logs: [{logs}]");
+                    Assert.True(searchResult.Found, $"Searching for {options?.Description ?? "??"} failed. Current log content: [{logs}]");
+                }
+                else if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Warning)
+                {
+                    if (!searchResult.Found)
+                    {
+                        var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
+                        TestLogger.Log($"[WARN] '{options?.Description ?? "??"}' found in logs? {searchResult.Found}. Logs: [{logs}]");
+                    }
                 }
             }
         }

@@ -57,7 +57,7 @@ namespace LoraKeysManagerFacade
                     {
                         if (deviceCache.TryGetInfo(out var deviceInfo))
                         {
-                            // only reset the cache if the current valud is larger
+                            // only reset the cache if the current value is larger
                             // than 1 otherwise we likely reset it from another device
                             // and continued processing
                             if (deviceInfo.FCntUp > 1)

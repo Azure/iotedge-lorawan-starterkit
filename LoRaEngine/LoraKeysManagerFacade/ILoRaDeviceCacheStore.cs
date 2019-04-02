@@ -17,7 +17,7 @@ namespace LoraKeysManagerFacade
         /// <param name="expiration">expiration timestamp, this specifies how long the lock will be held before automatically releasing</param>
         /// <param name="block">true to retry getting the lock in contention cases, false to try once and return the result</param>
         /// <returns>true if the lock was acquired otherwise false.</returns>
-        Task<bool> LockTakeAsync(string key, string owner, TimeSpan expiration, bool block = false);
+        Task<bool> LockTakeAsync(string key, string owner, TimeSpan expiration, bool block = true);
 
         string StringGet(string key);
 

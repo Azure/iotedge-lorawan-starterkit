@@ -11,7 +11,7 @@ namespace LoraKeysManagerFacade.Test
 
     internal class LoRaInMemoryDeviceStore : ILoRaDeviceCacheStore
     {
-        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(15);
         private readonly Dictionary<string, object> cache;
         private readonly Dictionary<string, SemaphoreSlim> locks;
 
