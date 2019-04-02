@@ -195,12 +195,12 @@ namespace LoRaWan.SimulatedTest
             // for successful sending of messages to IoT Hub.
             // delay for 100 devices: 2 * 60 * 1000
             // delay for 20 devices: 15 * 1000
-            int delayNetworkServerCheck = 30 * 60 * 1000;
+            int delayNetworkServerCheck = 15 * 60 * 1000;
 
             // amount of miliseconds to wait before checking of messages in IoT Hub
             // delay for 100 devices: 1 * 60 * 1000
             // delay for 20 devices: 15 * 1000
-            int delayIoTHubCheck = 15 * 60 * 1000;
+            int delayIoTHubCheck = 5 * 60 * 1000;
 
             // Get random number seed
             Random rnd = new Random();
@@ -208,7 +208,7 @@ namespace LoRaWan.SimulatedTest
 
             int count = 0;
             List<SimulatedDevice> listSimulatedDevices = new List<SimulatedDevice>();
-            foreach (TestDeviceInfo device in this.TestFixtureSim.DeviceRange2000_500_ABP)
+            foreach (TestDeviceInfo device in this.TestFixtureSim.DeviceRange2000_1000_ABP)
             {
                 if (count < scenarioDeviceNumber)
                 {

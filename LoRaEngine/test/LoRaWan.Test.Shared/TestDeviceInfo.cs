@@ -98,8 +98,8 @@ namespace LoRaWan.Test.Shared
 
             desiredProperties[nameof(this.RXDelay)] = this.RXDelay;
 
-            if (this.KeepAliveTimeout > 0)
-                desiredProperties[nameof(this.KeepAliveTimeout)] = this.KeepAliveTimeout;
+            // if (this.KeepAliveTimeout > 0)
+            desiredProperties[nameof(this.KeepAliveTimeout)] = this.KeepAliveTimeout;
 
             return desiredProperties;
         }

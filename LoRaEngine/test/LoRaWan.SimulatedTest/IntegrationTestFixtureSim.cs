@@ -27,11 +27,11 @@ namespace LoRaWan.SimulatedTest
             get { return this.deviceRange1000_ABP; }
         }
 
-        List<TestDeviceInfo> deviceRange2000_500_ABP = new List<TestDeviceInfo>();
+        List<TestDeviceInfo> deviceRange2000_1000_ABP = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange2000_500_ABP
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange2000_1000_ABP
         {
-            get { return this.deviceRange2000_500_ABP; }
+            get { return this.deviceRange2000_1000_ABP; }
         }
 
         List<TestDeviceInfo> deviceRange3000_10_OTAA = new List<TestDeviceInfo>();
@@ -98,17 +98,17 @@ namespace LoRaWan.SimulatedTest
                     });
             }
 
-            // Range of 100 ABP devices from 2000 to 2499: Used for load testing
-            for (int deviceID = 2000; deviceID <= 2499; deviceID++)
+            // Range of 1000 ABP devices from 2000 to 2999: Used for load testing
+            for (int deviceID = 2000; deviceID <= 2999; deviceID++)
             {
-                this.deviceRange2000_500_ABP.Add(
+                this.deviceRange2000_1000_ABP.Add(
                     new TestDeviceInfo
                     {
                         DeviceID = deviceID.ToString("0000000000000000"),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
-                        KeepAliveTimeout = 60,
+                        KeepAliveTimeout = 0,
                         AppSKey = deviceID.ToString("00000000000000000000000000000000"),
                         NwkSKey = deviceID.ToString("00000000000000000000000000000000"),
                         DevAddr = deviceID.ToString("00000000"),
