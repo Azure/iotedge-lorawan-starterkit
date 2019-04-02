@@ -43,8 +43,8 @@ namespace LoRaWan.Tools.CLI.Helpers
             bool isAbp = false;
             bool isValid = true;
 
-            StatusConsole.WriteLine(null, isVerbose);
-            StatusConsole.WriteLine($"Analyzing device {devEui}...", isVerbose);
+            StatusConsole.WriteLineIfVerbose(null, isVerbose);
+            StatusConsole.WriteLineIfVerbose($"Analyzing device {devEui}...", isVerbose);
 
             devEui = ValidationHelper.CleanString(devEui);
 
@@ -83,7 +83,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             // ABP device
             if (isAbp && !isOtaa)
             {
-                StatusConsole.WriteLogLine(MessageType.Info, "ABP device configuration detected.", isVerbose);
+                StatusConsole.WriteLogLineIfVerbose(MessageType.Info, "ABP device configuration detected.", isVerbose);
                 isValid = this.VerifyDevice(
                     new AddOptions()
                     {
@@ -121,7 +121,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             // OTAA device
             else if (isOtaa && !isAbp)
             {
-                StatusConsole.WriteLogLine(MessageType.Info, "OTAA device configuration detected.", isVerbose);
+                StatusConsole.WriteLogLineIfVerbose(MessageType.Info, "OTAA device configuration detected.", isVerbose);
                 isValid = this.VerifyDevice(
                     new AddOptions()
                     {
@@ -159,29 +159,29 @@ namespace LoRaWan.Tools.CLI.Helpers
             // Unknown device type
             else
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"Can't determine if ABP or OTAA device.", devEui, isVerbose);
-                StatusConsole.WriteLogLine(MessageType.Info, "ABP devices should contain NwkSKey, AppSKey and DevAddr, not AppEUI and AppKey.", isVerbose);
-                StatusConsole.WriteLogLine(MessageType.Info, "OTAA devices should contain AppEUI and AppKey, not NwkSKey, AppSKey and DevAddr.", isVerbose);
+                StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"Can't determine if ABP or OTAA device.", devEui, isVerbose);
+                StatusConsole.WriteLogLineIfVerbose(MessageType.Info, "ABP devices should contain NwkSKey, AppSKey and DevAddr, not AppEUI and AppKey.", isVerbose);
+                StatusConsole.WriteLogLineIfVerbose(MessageType.Info, "OTAA devices should contain AppEUI and AppKey, not NwkSKey, AppSKey and DevAddr.", isVerbose);
 
                 // Add blank line only if not verbose
-                StatusConsole.WriteLine(null, !isVerbose);
+                StatusConsole.WriteLineIfVerbose(null, !isVerbose);
 
                 isValid = false;
             }
 
-            StatusConsole.WriteLine(null, isVerbose);
-            StatusConsole.WriteLine("Verification Result:", isVerbose);
+            StatusConsole.WriteLineIfVerbose(null, isVerbose);
+            StatusConsole.WriteLineIfVerbose("Verification Result:", isVerbose);
 
             if (isValid)
             {
-                StatusConsole.WriteLogLine(MessageType.Info, $"Device {devEui}: configuration is valid.", isVerbose);
+                StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"Device {devEui}: configuration is valid.", isVerbose);
             }
             else
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"Device {devEui}: configuration is not valid.", isVerbose);
+                StatusConsole.WriteLogLineIfVerbose(MessageType.Error, $"Device {devEui}: configuration is not valid.", isVerbose);
             }
 
-            StatusConsole.WriteLine("done.", isVerbose);
+            StatusConsole.WriteLineIfVerbose("done.", isVerbose);
 
             return isValid;
         }
@@ -386,8 +386,8 @@ namespace LoRaWan.Tools.CLI.Helpers
             string validationError = string.Empty;
             bool isValid = true;
 
-            StatusConsole.WriteLine(null, isVerbose);
-            StatusConsole.WriteLine($"Verifying device {opts.DevEui} twin data...", isVerbose);
+            StatusConsole.WriteLineIfVerbose(null, isVerbose);
+            StatusConsole.WriteLineIfVerbose($"Verifying device {opts.DevEui} twin data...", isVerbose);
 
             // ******************************************************************************************
             // DevEui
@@ -399,12 +399,12 @@ namespace LoRaWan.Tools.CLI.Helpers
             }
             else if (!ValidationHelper.ValidateHexStringTwinProperty(opts.DevEui, 8, out validationError))
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"DevEui {opts.DevEui} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"DevEui {opts.DevEui} is invalid: {validationError}.", opts.DevEui, isVerbose);
                 isValid = false;
             }
             else
             {
-                StatusConsole.WriteLogLine(MessageType.Info, $"DevEui {opts.DevEui} is valid.", isVerbose);
+                StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"DevEui {opts.DevEui} is valid.", isVerbose);
             }
 
             // ******************************************************************************************
@@ -415,33 +415,33 @@ namespace LoRaWan.Tools.CLI.Helpers
                 // NwkSKey
                 if (string.IsNullOrEmpty(opts.NwkSKey))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, "NwkSKey is missing.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, "NwkSKey is missing.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else if (!ValidationHelper.ValidateHexStringTwinProperty(opts.NwkSKey, 16, out validationError))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"NwkSKey {opts.NwkSKey} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"NwkSKey {opts.NwkSKey} is invalid: {validationError}.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"NwkSKey {opts.NwkSKey} is valid.", isVerbose);
+                    StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"NwkSKey {opts.NwkSKey} is valid.", isVerbose);
                 }
 
                 // AppSKey
                 if (string.IsNullOrEmpty(opts.AppSKey))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, "AppSKey is missing.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, "AppSKey is missing.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else if (!ValidationHelper.ValidateHexStringTwinProperty(opts.AppSKey, 16, out validationError))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"AppSKey {opts.AppSKey} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"AppSKey {opts.AppSKey} is invalid: {validationError}.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"AppSKey {opts.AppSKey} is valid.", isVerbose);
+                    StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"AppSKey {opts.AppSKey} is valid.", isVerbose);
                 }
 
                 // NetId
@@ -449,24 +449,24 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateHexStringTwinProperty(opts.NetId, 3, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"NetId {opts.NetId} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"NetId {opts.NetId} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
                     else
                     {
-                        StatusConsole.WriteLogLine(MessageType.Info, $"NetId {opts.NetId} is valid.", isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"NetId {opts.NetId} is valid.", isVerbose);
                     }
                 }
 
                 // DevAddr
                 if (string.IsNullOrEmpty(opts.DevAddr))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, "DevAddr is missing.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, "DevAddr is missing.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else if (!ValidationHelper.ValidateHexStringTwinProperty(opts.DevAddr, 4, out validationError))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"DevAddr {opts.DevAddr} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"DevAddr {opts.DevAddr} is invalid: {validationError}.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else
@@ -475,13 +475,13 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                     if (string.Equals(devAddrCorrect, opts.DevAddr))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Info, $"DevAddr {opts.DevAddr} is valid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.", isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"DevAddr {opts.DevAddr} is valid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.", isVerbose);
                     }
                     else
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"DevAddr {opts.DevAddr} is invalid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.", opts.DevEui, isVerbose);
-                        StatusConsole.WriteLogLine(MessageType.Warning, $"DevAddr {opts.DevAddr} belongs to NetId ending in byte {NetIdHelper.GetNwkIdPart(opts.DevAddr).ToString("X2")}.", isVerbose);
-                        StatusConsole.WriteLogLine(MessageType.Info, $"To stop seeing this error, provide the --netid parameter or set the NetId in the settings file.", isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"DevAddr {opts.DevAddr} is invalid based on NetId {(string.IsNullOrEmpty(opts.NetId) ? configurationHelper.NetId : opts.NetId)}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Warning, $"DevAddr {opts.DevAddr} belongs to NetId ending in byte {NetIdHelper.GetNwkIdPart(opts.DevAddr).ToString("X2")}.", isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"To stop seeing this error, provide the --netid parameter or set the NetId in the settings file.", isVerbose);
 
                         isValid = false;
                     }
@@ -492,12 +492,12 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateBoolTwinProperty(opts.ABPRelaxMode, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"ABPRelaxMode {opts.ABPRelaxMode} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"ABPRelaxMode {opts.ABPRelaxMode} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
                     else
                     {
-                        StatusConsole.WriteLogLine(MessageType.Info, $"ABPRelaxMode {opts.ABPRelaxMode} is valid.", isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"ABPRelaxMode {opts.ABPRelaxMode} is valid.", isVerbose);
                     }
                 }
 
@@ -506,12 +506,12 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateUIntRangeTwinProperty(opts.FCntUpStart, 0, uint.MaxValue, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"FCntUpStart {opts.FCntUpStart} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"FCntUpStart {opts.FCntUpStart} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
                     else
                     {
-                        StatusConsole.WriteLogLine(MessageType.Info, $"FCntUpStart {opts.FCntUpStart} is valid.", isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"FCntUpStart {opts.FCntUpStart} is valid.", isVerbose);
                     }
                 }
 
@@ -520,12 +520,12 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateUIntRangeTwinProperty(opts.FCntDownStart, 0, uint.MaxValue, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"FCntDownStart {opts.FCntDownStart} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"FCntDownStart {opts.FCntDownStart} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
                     else
                     {
-                        StatusConsole.WriteLogLine(MessageType.Info, $"FCntDownStart {opts.FCntDownStart} is valid.", isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"FCntDownStart {opts.FCntDownStart} is valid.", isVerbose);
                     }
                 }
 
@@ -534,12 +534,12 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateUIntRangeTwinProperty(opts.FCntResetCounter, 0, uint.MaxValue, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"FCntResetCounter {opts.FCntResetCounter} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"FCntResetCounter {opts.FCntResetCounter} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
                     else
                     {
-                        StatusConsole.WriteLogLine(MessageType.Info, $"FCntResetCounter {opts.FCntResetCounter} is valid.", isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"FCntResetCounter {opts.FCntResetCounter} is valid.", isVerbose);
                     }
                 }
 
@@ -560,14 +560,14 @@ namespace LoRaWan.Tools.CLI.Helpers
                 // AppEui
                 if (!string.IsNullOrEmpty(opts.AppEui))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"AppEUI is an invalid property for ABP devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"AppEUI is an invalid property for ABP devices.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
 
                 // AppKey
                 if (!string.IsNullOrEmpty(opts.AppKey))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"AppKey is an invalid property for ABP devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"AppKey is an invalid property for ABP devices.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
 
@@ -576,11 +576,11 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateDataRateTwinProperty(opts.Rx2DataRate, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"Rx2DataRate {opts.Rx2DataRate} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"Rx2DataRate {opts.Rx2DataRate} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
 
-                    StatusConsole.WriteLogLine(MessageType.Warning, $"Rx2DataRate is currently not supported for ABP devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Warning, $"Rx2DataRate is currently not supported for ABP devices.", opts.DevEui, isVerbose);
                 }
 
                 // Rx1DrOffset
@@ -588,11 +588,11 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateUIntRangeTwinProperty(opts.Rx1DrOffset, 0, 15, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"Rx1DrOffset {opts.Rx1DrOffset} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"Rx1DrOffset {opts.Rx1DrOffset} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
 
-                    StatusConsole.WriteLogLine(MessageType.Warning, $"Rx1DrOffset is currently not supported for ABP devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Warning, $"Rx1DrOffset is currently not supported for ABP devices.", opts.DevEui, isVerbose);
                 }
 
                 // RxDelay
@@ -600,11 +600,11 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateUIntRangeTwinProperty(opts.RxDelay, 0, 15, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"RxDelay {opts.RxDelay} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"RxDelay {opts.RxDelay} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
 
-                    StatusConsole.WriteLogLine(MessageType.Warning, $"RxDelay is currently not supported for ABP devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Warning, $"RxDelay is currently not supported for ABP devices.", opts.DevEui, isVerbose);
                 }
             }
 
@@ -616,33 +616,33 @@ namespace LoRaWan.Tools.CLI.Helpers
                 // AppEui
                 if (string.IsNullOrEmpty(opts.AppEui))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, "AppEUI is missing.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, "AppEUI is missing.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else if (!ValidationHelper.ValidateHexStringTwinProperty(opts.AppEui, 8, out validationError))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"AppEUI {opts.AppEui} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"AppEUI {opts.AppEui} is invalid: {validationError}.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"AppEui {opts.AppEui} is valid.", isVerbose);
+                    StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"AppEui {opts.AppEui} is valid.", isVerbose);
                 }
 
                 // AppKey
                 if (string.IsNullOrEmpty(opts.AppKey))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, "AppKey is missing.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, "AppKey is missing.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else if (!ValidationHelper.ValidateHexStringTwinProperty(opts.AppKey, 16, out validationError))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"AppKey {opts.AppKey} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"AppKey {opts.AppKey} is invalid: {validationError}.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"AppKey {opts.AppKey} is valid.", isVerbose);
+                    StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"AppKey {opts.AppKey} is valid.", isVerbose);
                 }
 
                 // Rx2DataRate
@@ -650,12 +650,12 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateDataRateTwinProperty(opts.Rx2DataRate, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"Rx2DataRate {opts.Rx2DataRate} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"Rx2DataRate {opts.Rx2DataRate} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
                     else
                     {
-                        StatusConsole.WriteLogLine(MessageType.Info, $"Rx2DataRate {opts.Rx2DataRate} is valid.", isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"Rx2DataRate {opts.Rx2DataRate} is valid.", isVerbose);
                     }
                 }
 
@@ -664,12 +664,12 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateUIntRangeTwinProperty(opts.Rx1DrOffset, 0, 15, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"Rx1DrOffset {opts.Rx1DrOffset} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"Rx1DrOffset {opts.Rx1DrOffset} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
                     else
                     {
-                        StatusConsole.WriteLogLine(MessageType.Info, $"Rx1DrOffset {opts.Rx1DrOffset} is valid.", isVerbose);
+                        StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"Rx1DrOffset {opts.Rx1DrOffset} is valid.", isVerbose);
                     }
                 }
 
@@ -678,11 +678,11 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateUIntRangeTwinProperty(opts.RxDelay, 0, 15, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"RxDelay {opts.RxDelay} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"RxDelay {opts.RxDelay} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
 
-                    StatusConsole.WriteLogLine(MessageType.Info, $"RxDelay {opts.RxDelay} is valid.", isVerbose);
+                    StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"RxDelay {opts.RxDelay} is valid.", isVerbose);
                 }
 
                 // ******************************************************************************************
@@ -692,21 +692,21 @@ namespace LoRaWan.Tools.CLI.Helpers
                 // NwkSKey
                 if (!string.IsNullOrEmpty(opts.NwkSKey))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"NwkSKey is invalid for OTAA devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"NwkSKey is invalid for OTAA devices.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
 
                 // AppSKey
                 if (!string.IsNullOrEmpty(opts.AppSKey))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"AppSKey is invalid for OTAA devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"AppSKey is invalid for OTAA devices.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
 
                 // DevAddr
                 if (!string.IsNullOrEmpty(opts.DevAddr))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"DevAddr is invalid for OTAA devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"DevAddr is invalid for OTAA devices.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
 
@@ -715,11 +715,11 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateHexStringTwinProperty(opts.NetId, 3, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"NetId {opts.NetId} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"NetId {opts.NetId} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
 
-                    StatusConsole.WriteLogLine(MessageType.Warning, $"NetId is not used in OTAA devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Warning, $"NetId is not used in OTAA devices.", opts.DevEui, isVerbose);
                 }
 
                 // ABPRelaxMode
@@ -727,11 +727,11 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateBoolTwinProperty(opts.ABPRelaxMode, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"ABPRelaxMode {opts.ABPRelaxMode} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"ABPRelaxMode {opts.ABPRelaxMode} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
 
-                    StatusConsole.WriteLogLine(MessageType.Warning, $"ABPRelaxMode is invalid/ignored for OTAA devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Warning, $"ABPRelaxMode is invalid/ignored for OTAA devices.", opts.DevEui, isVerbose);
                 }
 
                 // FCntUpStart
@@ -739,11 +739,11 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateUIntRangeTwinProperty(opts.FCntUpStart, 0, uint.MaxValue, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"FCntUpStart {opts.FCntUpStart} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"FCntUpStart {opts.FCntUpStart} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
 
-                    StatusConsole.WriteLogLine(MessageType.Warning, $"FCntUpStart is invalid/ignored for OTAA devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Warning, $"FCntUpStart is invalid/ignored for OTAA devices.", opts.DevEui, isVerbose);
                 }
 
                 // FCntDownStart
@@ -751,11 +751,11 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateUIntRangeTwinProperty(opts.FCntDownStart, 0, uint.MaxValue, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"FCntDownStart {opts.FCntDownStart} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"FCntDownStart {opts.FCntDownStart} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
 
-                    StatusConsole.WriteLogLine(MessageType.Warning, $"FCntDownStart is invalid/ignored for OTAA devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Warning, $"FCntDownStart is invalid/ignored for OTAA devices.", opts.DevEui, isVerbose);
                 }
 
                 // FCntResetCounter
@@ -763,11 +763,11 @@ namespace LoRaWan.Tools.CLI.Helpers
                 {
                     if (!ValidationHelper.ValidateUIntRangeTwinProperty(opts.FCntResetCounter, 0, uint.MaxValue, out validationError))
                     {
-                        StatusConsole.WriteLogLine(MessageType.Error, $"FCntResetCounter {opts.FCntResetCounter} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                        StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"FCntResetCounter {opts.FCntResetCounter} is invalid: {validationError}.", opts.DevEui, isVerbose);
                         isValid = false;
                     }
 
-                    StatusConsole.WriteLogLine(MessageType.Warning, $"FCntResetCounter is invalid/ignored for OTAA devices.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Warning, $"FCntResetCounter is invalid/ignored for OTAA devices.", opts.DevEui, isVerbose);
                 }
             }
 
@@ -784,16 +784,16 @@ namespace LoRaWan.Tools.CLI.Helpers
             // GatewayId
             if (opts.GatewayId == null)
             {
-                StatusConsole.WriteLogLine(MessageType.Error, $"GatewayId is missing.", opts.DevEui, isVerbose);
+                StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"GatewayId is missing.", opts.DevEui, isVerbose);
                 isValid = false;
             }
             else if (opts.GatewayId == string.Empty)
             {
-                StatusConsole.WriteLogLine(MessageType.Info, $"GatewayId is empty. This is valid.", isVerbose);
+                StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"GatewayId is empty. This is valid.", isVerbose);
             }
             else
             {
-                StatusConsole.WriteLogLine(MessageType.Info, $"GatewayId {opts.GatewayId} is valid.", isVerbose);
+                StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"GatewayId {opts.GatewayId} is valid.", isVerbose);
             }
 
             // ******************************************************************************************
@@ -806,12 +806,12 @@ namespace LoRaWan.Tools.CLI.Helpers
                 if (!Array.Exists(this.classTypes, classType => string.Equals(
                     classType, opts.ClassType, StringComparison.OrdinalIgnoreCase)))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"ClassType {opts.ClassType} is invalid: If set, it needs to be \"A\" or \"C\".", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"ClassType {opts.ClassType} is invalid: If set, it needs to be \"A\" or \"C\".", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"ClassType {opts.ClassType} is valid.", isVerbose);
+                    StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"ClassType {opts.ClassType} is valid.", isVerbose);
                 }
             }
 
@@ -820,12 +820,12 @@ namespace LoRaWan.Tools.CLI.Helpers
             {
                 if (!ValidationHelper.ValidateBoolTwinProperty(opts.DownlinkEnabled, out validationError))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"DownlinkEnabled {opts.DownlinkEnabled} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"DownlinkEnabled {opts.DownlinkEnabled} is invalid: {validationError}.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"DownlinkEnabled {opts.DownlinkEnabled} is valid.", isVerbose);
+                    StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"DownlinkEnabled {opts.DownlinkEnabled} is valid.", isVerbose);
                 }
             }
 
@@ -834,12 +834,12 @@ namespace LoRaWan.Tools.CLI.Helpers
             {
                 if (!ValidationHelper.ValidateUIntRangeTwinProperty(opts.PreferredWindow, 1, 2, out validationError))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"PreferredWindow {opts.PreferredWindow} is invalid: {validationError}", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"PreferredWindow {opts.PreferredWindow} is invalid: {validationError}", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"PreferredWindow {opts.PreferredWindow} is valid.", isVerbose);
+                    StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"PreferredWindow {opts.PreferredWindow} is valid.", isVerbose);
                 }
             }
 
@@ -849,12 +849,12 @@ namespace LoRaWan.Tools.CLI.Helpers
                 if (!Array.Exists(this.deduplicationModes, deduplicationMode => string.Equals(
                     deduplicationMode, opts.Deduplication, StringComparison.OrdinalIgnoreCase)))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"Deduplication {opts.Deduplication} is invalid: If set, it needs to be \"None\", \"Drop\" or \"Mark\".", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"Deduplication {opts.Deduplication} is invalid: If set, it needs to be \"None\", \"Drop\" or \"Mark\".", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"Deduplication {opts.Deduplication} is valid.", isVerbose);
+                    StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"Deduplication {opts.Deduplication} is valid.", isVerbose);
                 }
             }
 
@@ -863,12 +863,12 @@ namespace LoRaWan.Tools.CLI.Helpers
             {
                 if (!ValidationHelper.ValidateBoolTwinProperty(opts.Supports32BitFCnt, out validationError))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"Supports32BitFCnt {opts.Supports32BitFCnt} is invalid: {validationError}.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"Supports32BitFCnt {opts.Supports32BitFCnt} is invalid: {validationError}.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"Supports32BitFCnt {opts.Supports32BitFCnt} is valid.", isVerbose);
+                    StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"Supports32BitFCnt {opts.Supports32BitFCnt} is valid.", isVerbose);
                 }
             }
 
@@ -878,21 +878,21 @@ namespace LoRaWan.Tools.CLI.Helpers
                 if (!(ValidationHelper.ValidateUIntTwinProperty(opts.RxDelay, 0, out validationError)
                     || ValidationHelper.ValidateUIntRangeTwinProperty(opts.RxDelay, 60, uint.MaxValue, out validationError)))
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, $"RxDelay {opts.RxDelay} is invalid: Needs to be a number, either 0 or 60 and above.", opts.DevEui, isVerbose);
+                    StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"RxDelay {opts.RxDelay} is invalid: Needs to be a number, either 0 or 60 and above.", opts.DevEui, isVerbose);
                     isValid = false;
                 }
                 else
                 {
-                    StatusConsole.WriteLogLine(MessageType.Info, $"RxDelay {opts.RxDelay} is valid.", isVerbose);
+                    StatusConsole.WriteLogLineIfVerbose(MessageType.Info, $"RxDelay {opts.RxDelay} is valid.", isVerbose);
                 }
             }
 
-            StatusConsole.WriteLine("done.", isVerbose);
+            StatusConsole.WriteLineIfVerbose("done.", isVerbose);
 
             // Add blank line only if not verbose and not valid
             if (!isValid)
             {
-                StatusConsole.WriteLine(null, !isVerbose);
+                StatusConsole.WriteLineIfVerbose(null, !isVerbose);
             }
 
             return isValid;
@@ -1201,6 +1201,12 @@ namespace LoRaWan.Tools.CLI.Helpers
                     else
                     {
                         countValid++;
+                    }
+
+                    if (countInvalid % 10 == 0)
+                    {
+                        Console.WriteLine("Press any key to continue...");
+                        Console.ReadKey();
                     }
                 }
             }

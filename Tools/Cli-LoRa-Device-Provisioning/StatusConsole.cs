@@ -9,7 +9,7 @@ namespace LoRaWan.Tools.CLI
 
     public static class StatusConsole
     {
-        public static void Write(string message, bool isVerbose)
+        public static void WriteIfVerbose(string message, bool isVerbose)
         {
             if (isVerbose)
             {
@@ -17,7 +17,7 @@ namespace LoRaWan.Tools.CLI
             }
         }
 
-        public static void WriteLine(string message, bool isVerbose)
+        public static void WriteLineIfVerbose(string message, bool isVerbose)
         {
             if (isVerbose)
             {
@@ -31,7 +31,7 @@ namespace LoRaWan.Tools.CLI
             Console.WriteLine(message);
         }
 
-        public static void WriteLogLine(MessageType type, string message, bool isVerbose)
+        public static void WriteLogLineIfVerbose(MessageType type, string message, bool isVerbose)
         {
             if (isVerbose)
             {
@@ -40,7 +40,7 @@ namespace LoRaWan.Tools.CLI
             }
         }
 
-        public static void WriteLogLine(MessageType type, string message, string devEui, bool isVerbose)
+        public static void WriteLogLineWithDevEuiWhenVerbose(MessageType type, string message, string devEui, bool isVerbose)
         {
             WriteMessageType(type);
 
