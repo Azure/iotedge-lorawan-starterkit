@@ -175,10 +175,10 @@ namespace LoRaWan.Test.Shared
         /// Check for The timing between an upstream message and a downstream one.
         /// The method stop at first occurence found and is not expected to perform against multiple DS/US messages.
         /// </summary>
-        public async Task CheckAnswerTimingAsync(uint rxDelay, bool isSecondWindow)
+        public async Task CheckAnswerTimingAsync(uint rxDelay, bool isSecondWindow, string gatewayId)
         {
-            var upstreamMessageTimingResult = await this.TryFindMessageTimeAsync("rxpk");
-            var downstreamMessageTimingResult = await this.TryFindMessageTimeAsync("txpk");
+            var upstreamMessageTimingResult = await this.TryFindMessageTimeAsync("rxpk", gatewayId);
+            var downstreamMessageTimingResult = await this.TryFindMessageTimeAsync("txpk", gatewayId);
 
             if (upstreamMessageTimingResult.Success && upstreamMessageTimingResult.Success)
             {
@@ -193,10 +193,10 @@ namespace LoRaWan.Test.Shared
         /// <summary>
         /// Helper method to find the time of the message that contain the message argument.
         /// </summary>
-        async Task<FindTimeResult> TryFindMessageTimeAsync(string message)
+        async Task<FindTimeResult> TryFindMessageTimeAsync(string message, string sourceIdFilter)
         {
             const string token = @"""tmst"":";
-            var log = await this.SearchUdpLogs(x => x.Contains(message));
+            var log = await this.SearchUdpLogs(x => x.Contains(message), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
             int timeIndexStart = log.FoundLogResult.IndexOf(token) + token.Length;
             int timeIndexStop = log.FoundLogResult.IndexOf(",", timeIndexStart);
             uint parsedValue = 0;
@@ -237,10 +237,17 @@ namespace LoRaWan.Test.Shared
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
+                var sourceIdFilter = options?.SourceIdFilter;
+
                 foreach (var item in this.udpLogListener.GetEvents())
                 {
                     var searchLogEvent = new SearchLogEvent(item);
                     processedEvents.Add(searchLogEvent);
+                    if (!string.IsNullOrEmpty(sourceIdFilter) && !sourceIdFilter.Equals(searchLogEvent.SourceId))
+                    {
+                        continue;
+                    }
+
                     if (predicate(searchLogEvent))
                     {
                         return new SearchLogResult(true, processedEvents, item)
