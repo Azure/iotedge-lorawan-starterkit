@@ -3,8 +3,8 @@
 
 namespace LoraKeysManagerFacade.Test
 {
+    using System.Threading.Tasks;
     using LoraKeysManagerFacade.FunctionBundler;
-    using Microsoft.Azure.WebJobs;
     using Xunit;
 
     public class MessageDeduplicationTests : FunctionTestBase
@@ -17,57 +17,57 @@ namespace LoraKeysManagerFacade.Test
         }
 
         [Fact]
-        public void MessageDeduplication_Duplicates_Found()
+        public async Task MessageDeduplication_Duplicates_Found()
         {
             string gateway1Id = NewUniqueEUI64();
             string gateway2Id = NewUniqueEUI64();
             string dev1EUI = NewUniqueEUI64();
 
-            var result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
+            var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
 
-            result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway2Id, 1, 1);
+            result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway2Id, 1, 1);
             Assert.True(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
         }
 
         [Fact]
-        public void MessageDeduplication_Resubmit_Allowed()
+        public async Task MessageDeduplication_Resubmit_Allowed()
         {
             string gateway1Id = NewUniqueEUI64();
             string dev1EUI = NewUniqueEUI64();
 
-            var result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
+            var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
 
-            result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
+            result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
         }
 
         [Fact]
-        public void MessageDeduplication_DifferentDevices_Allowed()
+        public async Task MessageDeduplication_DifferentDevices_Allowed()
         {
             string gateway1Id = NewUniqueEUI64();
             string gateway2Id = NewUniqueEUI64();
             string dev1EUI = NewUniqueEUI64();
             string dev2EUI = NewUniqueEUI64();
 
-            var result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway1Id, 1, 1);
+            var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
 
-            result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev1EUI, gateway2Id, 2, 1);
+            result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway2Id, 2, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway2Id, result.GatewayId);
 
-            result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev2EUI, gateway1Id, 1, 1);
+            result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev2EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway1Id, result.GatewayId);
 
-            result = this.deduplicationExecutionItem.GetDuplicateMessageResult(dev2EUI, gateway2Id, 2, 1);
+            result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev2EUI, gateway2Id, 2, 1);
             Assert.False(result.IsDuplicate);
             Assert.Equal(gateway2Id, result.GatewayId);
         }

@@ -20,6 +20,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public bool IsDevNonceAlreadyUsed { get; set; }
 
+        public string RefusedMessage { get; set; }
+
         public SearchDevicesResult()
         {
         }

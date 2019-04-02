@@ -4,6 +4,7 @@
 namespace LoraKeysManagerFacade
 {
     using System;
+    using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
@@ -20,7 +21,7 @@ namespace LoraKeysManagerFacade
         }
 
         [FunctionName("NextFCntDown")]
-        public IActionResult NextFCntDownInvoke(
+        public async Task<IActionResult> NextFCntDownInvoke(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req,
             ILogger log)
         {
@@ -42,32 +43,54 @@ namespace LoraKeysManagerFacade
 
             EUIValidator.ValidateDevEUI(devEUI);
 
+            if (!uint.TryParse(fCntUp, out uint clientFCntUp))
+            {
+                string errorMsg = "Missing FCntUp";
+                throw new ArgumentException(errorMsg);
+            }
+
             if (!string.IsNullOrEmpty(abpFcntCacheReset))
             {
-                this.deviceCache.KeyDelete(devEUI);
+                using (var deviceCache = new LoRaDeviceCache(this.deviceCache, devEUI, gatewayId))
+                {
+                    if (await deviceCache.TryToLockAsync())
+                    {
+                        if (deviceCache.TryGetInfo(out var deviceInfo))
+                        {
+                            // only reset the cache if the current valud is larger
+                            // than 1 otherwise we likely reset it from another device
+                            // and continued processing
+                            if (deviceInfo.FCntUp > 1)
+                            {
+                                log.LogDebug("Resetting cache. FCntUp: {fcntup}", deviceInfo.FCntUp);
+                                deviceCache.ClearCache();
+                            }
+                        }
+                    }
+                }
+
                 return (ActionResult)new OkObjectResult(null);
             }
 
             // validate input parameters
             if (!uint.TryParse(fCntDown, out uint clientFCntDown) ||
-                !uint.TryParse(fCntUp, out uint clientFCntUp) ||
                 string.IsNullOrEmpty(gatewayId))
             {
-                string errorMsg = "Missing FCntDown or FCntUp or GatewayId";
+                string errorMsg = "Missing FCntDown or GatewayId";
                 throw new ArgumentException(errorMsg);
             }
 
-            newFCntDown = this.GetNextFCntDown(devEUI, gatewayId, clientFCntUp, clientFCntDown);
+            newFCntDown = await this.GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);
 
             return (ActionResult)new OkObjectResult(newFCntDown);
         }
 
-        public uint GetNextFCntDown(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
+        public async Task<uint> GetNextFCntDownAsync(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
             uint newFCntDown = 0;
             using (var deviceCache = new LoRaDeviceCache(this.deviceCache, devEUI, gatewayId))
             {
-                if (deviceCache.TryToLock())
+                if (await deviceCache.TryToLockAsync())
                 {
                     if (deviceCache.TryGetInfo(out DeviceCacheInfo serverStateForDeviceInfo))
                     {
@@ -75,8 +98,8 @@ namespace LoraKeysManagerFacade
                     }
                     else
                     {
-                        var state = deviceCache.Initialize(clientFCntUp, clientFCntDown + 1);
-                        newFCntDown = state.FCntDown;
+                        newFCntDown = clientFCntDown + 1;
+                        var state = deviceCache.Initialize(clientFCntUp, newFCntDown);
                     }
                 }
             }

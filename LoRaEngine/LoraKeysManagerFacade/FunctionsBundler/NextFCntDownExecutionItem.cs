@@ -15,15 +15,15 @@ namespace LoraKeysManagerFacade.FunctionBundler
             this.fCntCacheCheck = fCntCacheCheck;
         }
 
-        public Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
+        public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
             if (!context.Result.NextFCntDown.HasValue)
             {
-                var next = this.fCntCacheCheck.GetNextFCntDown(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown);
+                var next = await this.fCntCacheCheck.GetNextFCntDownAsync(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown);
                 context.Result.NextFCntDown = next > 0 ? next : (uint?)null;
             }
 
-            return Task.FromResult(FunctionBundlerExecutionState.Continue);
+            return FunctionBundlerExecutionState.Continue;
         }
 
         public int Priority => 3;

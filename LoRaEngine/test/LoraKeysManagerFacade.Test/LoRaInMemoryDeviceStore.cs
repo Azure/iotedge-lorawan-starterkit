@@ -6,9 +6,12 @@ namespace LoraKeysManagerFacade.Test
     using System;
     using System.Collections.Generic;
     using System.Threading;
+    using System.Threading.Tasks;
+    using Newtonsoft.Json;
 
     internal class LoRaInMemoryDeviceStore : ILoRaDeviceCacheStore
     {
+        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(10);
         private readonly Dictionary<string, object> cache;
         private readonly Dictionary<string, SemaphoreSlim> locks;
 
@@ -39,7 +42,7 @@ namespace LoraKeysManagerFacade.Test
             }
         }
 
-        public bool LockTake(string key, string value, TimeSpan timeout)
+        public async Task<bool> LockTakeAsync(string key, string value, TimeSpan expiration, bool block = true)
         {
             SemaphoreSlim waiter = null;
 
@@ -52,7 +55,7 @@ namespace LoraKeysManagerFacade.Test
                 }
             }
 
-            if (waiter.Wait((int)timeout.TotalMilliseconds))
+            if (block && await waiter.WaitAsync((int)LockTimeout.TotalMilliseconds))
             {
                 lock (this.locks)
                 {
@@ -70,6 +73,25 @@ namespace LoraKeysManagerFacade.Test
             return result as string;
         }
 
+        public T GetObject<T>(string key)
+            where T : class
+        {
+            var str = this.StringGet(key);
+            if (string.IsNullOrEmpty(str))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(str);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public bool StringSet(string key, string value, TimeSpan? expiry, bool onlyIfNotExists)
         {
             if (onlyIfNotExists)
@@ -79,6 +101,13 @@ namespace LoraKeysManagerFacade.Test
 
             this.cache[key] = value;
             return true;
+        }
+
+        public bool ObjectSet<T>(string key, T value, TimeSpan? expiration, bool onlyIfNotExists = false)
+            where T : class
+        {
+            var str = value != null ? JsonConvert.SerializeObject(value) : null;
+            return this.StringSet(key, str, expiration, onlyIfNotExists);
         }
 
         public long ListAdd(string key, string value, TimeSpan? expiry = null)
