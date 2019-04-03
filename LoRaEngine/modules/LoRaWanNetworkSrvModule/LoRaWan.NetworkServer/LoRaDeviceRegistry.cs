@@ -280,7 +280,7 @@ namespace LoRaWan.NetworkServer
 
                 if (searchDeviceResult.IsDevNonceAlreadyUsed)
                 {
-                    Logger.Log(devEUI, $"join refused: DevNonce already used by this device", LogLevel.Debug);
+                    Logger.Log(devEUI, $"join refused: DevNonce already used for this device", LogLevel.Information);
                     return null;
                 }
 

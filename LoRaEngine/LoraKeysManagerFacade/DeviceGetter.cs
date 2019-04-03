@@ -85,25 +85,18 @@ namespace LoraKeysManagerFacade
 
             if (devEUI != null)
             {
+                var joinInfo = await this.TryGetJoinInfoAndValidateAsync(devEUI, gatewayId, log);
+
                 // OTAA join
                 using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId))
                 {
-                    var joinInfo = await this.GetJoinInfoAsync(devEUI, gatewayId, log);
-
                     var cacheKeyDevNonce = string.Concat(devEUI, ":", devNonce);
                     var lockKeyDevNonce = string.Concat(cacheKeyDevNonce, ":joinlockdevnonce");
 
-                    if (await this.cacheStore.LockTakeAsync(lockKeyDevNonce, gatewayId, TimeSpan.FromSeconds(10), block: false))
+                    if (this.cacheStore.StringSet(cacheKeyDevNonce, devNonce, TimeSpan.FromMinutes(5), onlyIfNotExists: true))
                     {
                         try
                         {
-                            var freshValue = this.cacheStore.StringSet(cacheKeyDevNonce, devNonce, TimeSpan.FromMinutes(5), onlyIfNotExists: true);
-                            if (!freshValue)
-                            {
-                                log?.LogDebug("dev nonce already used. Ignore request '{key}':{gwid}", devEUI, gatewayId);
-                                throw new DeviceNonceUsedException();
-                            }
-
                             var iotHubDeviceInfo = new IoTHubDeviceInfo
                             {
                                 DevEUI = devEUI,
@@ -129,6 +122,7 @@ namespace LoraKeysManagerFacade
                     }
                     else
                     {
+                        log?.LogDebug("dev nonce already used. Ignore request '{key}':{gwid}", devEUI, gatewayId);
                         throw new DeviceNonceUsedException();
                     }
                 }
@@ -169,7 +163,7 @@ namespace LoraKeysManagerFacade
             return results;
         }
 
-        private async Task<JoinInfo> GetJoinInfoAsync(string devEUI, string gatewayId, ILogger log)
+        private async Task<JoinInfo> TryGetJoinInfoAndValidateAsync(string devEUI, string gatewayId, ILogger log)
         {
             var cacheKeyJoinInfo = string.Concat(devEUI, ":joininfo");
             var lockKeyJoinInfo = string.Concat(devEUI, ":joinlockjoininfo");
