@@ -4,7 +4,6 @@
 namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System.Threading.Tasks;
-    using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
     using Microsoft.Extensions.Logging;
 
@@ -17,11 +16,11 @@ namespace LoraKeysManagerFacade.FunctionBundler
             this.deviceCacheStore = deviceCacheStore;
         }
 
-        public Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
+        public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
             using (var deviceCache = new LoRaDeviceCache(this.deviceCacheStore, context.DevEUI, context.Request.GatewayId))
             {
-                if (deviceCache.TryToLock())
+                if (await deviceCache.TryToLockAsync())
                 {
                     deviceCache.ClearCache();
                 }
@@ -31,7 +30,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 }
             }
 
-            return Task.FromResult(FunctionBundlerExecutionState.Continue);
+            return FunctionBundlerExecutionState.Continue;
         }
 
         public int Priority => 0;
