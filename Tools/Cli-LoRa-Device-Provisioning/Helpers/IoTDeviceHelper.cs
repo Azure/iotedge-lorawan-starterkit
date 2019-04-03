@@ -1124,7 +1124,9 @@ namespace LoRaWan.Tools.CLI.Helpers
             Console.WriteLine($"Page: {page}, Total: {totalString}");
             Console.WriteLine();
 
-            var query = configurationHelper.RegistryManager.CreateQuery("SELECT * FROM devices", page);
+            var query = configurationHelper.RegistryManager.CreateQuery(
+                "SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) OR is_defined(properties.desired.AppSKey) OR is_defined(properties.desired.NwkSKey)",
+                page);
 
             while (query.HasMoreResults)
             {
@@ -1154,12 +1156,22 @@ namespace LoRaWan.Tools.CLI.Helpers
                     Console.WriteLine();
 
                     if (count++ >= total - 1 && total >= 0)
+                    {
+                        Console.WriteLine("done.");
                         return true;
+                    }
                 }
 
-                Console.WriteLine();
-                Console.WriteLine("Press any key to continue.");
-                Console.ReadKey();
+                if (count > 0)
+                {
+                    Console.WriteLine("Press any key to continue.");
+                    Console.ReadKey();
+                    Console.WriteLine();
+                }
+                else
+                {
+                    Console.WriteLine("No devices with LoRa twin properties found in IoT hub.");
+                }
             }
 
             Console.WriteLine("done.");

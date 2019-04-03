@@ -107,13 +107,13 @@ namespace LoRaWan.Tools.CLI.Options
         [Option(
             "rxdelay",
             Required = false,
-            HelpText = "RXDelay (???): ???. (optional)")]
+            HelpText = "RxDelay (Delay in seconds for sending downstream messages, currently only supported for OTAA devices): 0 through 15. (optional)")]
         public string RxDelay { get; set; }
 
         [Option(
             "keepalivetimeout",
             Required = false,
-            HelpText = "KeepAliveTimeout (Timeout before device client connection is closed): ???. (optional)")]
+            HelpText = "KeepAliveTimeout (Timeout in seconds before device client connection is closed): 0 or 60 and above. (optional)")]
         public string KeepAliveTimeout { get; set; }
 
         [Option(
