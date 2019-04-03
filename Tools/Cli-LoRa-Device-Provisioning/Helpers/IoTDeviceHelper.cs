@@ -1166,7 +1166,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             return true;
         }
 
-        public async Task<bool> QueryDevicesAndVerify(ConfigurationHelper configurationHelper)
+        public async Task<bool> QueryDevicesAndVerify(ConfigurationHelper configurationHelper, int page)
         {
             var countValid = 0;
             var countInvalid = 0;
@@ -1197,16 +1197,20 @@ namespace LoRaWan.Tools.CLI.Helpers
                     {
                         isValid = false;
                         countInvalid++;
+
+                        if (page > 0)
+                        {
+                            if (countInvalid % page == 0)
+                            {
+                                Console.WriteLine("Press any key to continue...");
+                                Console.ReadKey();
+                                Console.WriteLine();
+                            }
+                        }
                     }
                     else
                     {
                         countValid++;
-                    }
-
-                    if (countInvalid % 10 == 0)
-                    {
-                        Console.WriteLine("Press any key to continue...");
-                        Console.ReadKey();
                     }
                 }
             }

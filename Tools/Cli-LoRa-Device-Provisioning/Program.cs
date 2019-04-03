@@ -116,18 +116,14 @@ namespace LoRaWan.Tools.CLI
         private static object RunBulkVerifyAndReturnExitCode(BulkVerifyOptions opts)
         {
             int page;
-            int total;
 
             if (!configurationHelper.ReadConfig())
                 return false;
 
             if (!int.TryParse(opts.Page, out page))
-                page = 10;
+                page = 0;
 
-            if (!int.TryParse(opts.Total, out total))
-                total = -1;
-
-            var isSuccess = iotDeviceHelper.QueryDevicesAndVerify(configurationHelper).Result;
+            var isSuccess = iotDeviceHelper.QueryDevicesAndVerify(configurationHelper, page).Result;
 
             Console.WriteLine();
             if (isSuccess)

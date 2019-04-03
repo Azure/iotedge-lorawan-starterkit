@@ -11,13 +11,7 @@ namespace LoRaWan.Tools.CLI.Options
         [Option(
             "page",
             Required = false,
-            HelpText = "Devices per page. Default is 10.")]
+            HelpText = "Errors listed per page. Default is all.")]
         public string Page { get; set; }
-
-        [Option(
-            "total",
-            Required = false,
-            HelpText = "Maximum number of devices to list. Default is all.")]
-        public string Total { get; set; }
     }
 }
