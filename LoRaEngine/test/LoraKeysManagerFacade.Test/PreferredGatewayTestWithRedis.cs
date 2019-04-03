@@ -26,11 +26,7 @@ namespace LoraKeysManagerFacade.Test
             this.preferredGatewayExecutionItem = new PreferredGatewayExecutionItem(this.cache, new NullLogger<PreferredGatewayExecutionItem>(), null);
         }
 
-#if IS_REDIS_RUNNING
         [Fact]
-#else
-        [Fact(Skip = "Requires a docker running in localhost:6379")]
-#endif
         public async Task When_Called_By_Multiple_Gateways_Should_Return_Closest()
         {
             var devEUI = Guid.NewGuid().ToString();
@@ -65,11 +61,7 @@ namespace LoraKeysManagerFacade.Test
             }
         }
 
-#if IS_REDIS_RUNNING
         [Fact]
-#else
-        [Fact(Skip = "Requires a docker running in localhost:6379")]
-#endif
         public async Task When_Calling_Outdated_Fcnt_Should_Return_Conflict()
         {
             var devEUI = Guid.NewGuid().ToString();
@@ -91,11 +83,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.True(pipeline2.Result.PreferredGatewayResult.Conflict);
         }
 
-#if IS_REDIS_RUNNING
         [Fact]
-#else
-        [Fact(Skip = "Requires a docker running in localhost:6379")]
-#endif
         public async Task When_Calling_After_Delay_Should_Return_First_Gateway()
         {
             var devEUI = Guid.NewGuid().ToString();

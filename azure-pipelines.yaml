@@ -80,8 +80,11 @@ jobs:
 
   # build LoRa Simulator
   - script: dotnet build --configuration $(buildConfiguration) ./LoRaEngine/modules/LoRaSimulator/LoRaSimulator.sln
-    displayName: Build LoRa Simulator    
-    
+    displayName: Build LoRa Simulator
+
+ # Pull Redis Cache docker image
+  - script: docker pull redis:5.0.4-alpine  
+    displayName: Pulling Redis Cache image
 
   # Run unit tests
   - script: |

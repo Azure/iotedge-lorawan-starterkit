@@ -13,6 +13,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
     using StackExchange.Redis;
 
     public class FacadeStartup : IWebJobsStartup
@@ -49,6 +50,7 @@ namespace LoraKeysManagerFacade
             builder.Services.AddSingleton<IFunctionBundlerExecutionItem, DeduplicationExecutionItem>();
             builder.Services.AddSingleton<IFunctionBundlerExecutionItem, ADRExecutionItem>();
             builder.Services.AddSingleton<IFunctionBundlerExecutionItem, PreferredGatewayExecutionItem>();
+            builder.Services.AddSingleton<IHostedService, DevAddressCacheManager>();
         }
 
         abstract class ConfigHandler
