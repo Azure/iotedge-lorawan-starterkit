@@ -4,13 +4,14 @@
 namespace LoraKeysManagerFacade
 {
     using System;
+    using System.Threading.Tasks;
     using Microsoft.Azure.WebJobs;
     using Newtonsoft.Json;
 
     public sealed class LoRaDeviceCache : IDisposable
     {
         private const string CacheKeyLockSuffix = "msglock";
-        private static readonly TimeSpan LockWaitingTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan LockExpiry = TimeSpan.FromSeconds(10);
 
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly string gatewayId;
@@ -21,7 +22,7 @@ namespace LoraKeysManagerFacade
 
         private string lockKey;
 
-        public LoRaDeviceCache(ILoRaDeviceCacheStore cacheStore, string devEUI, string gatewayId, string cacheKey = null)
+        public LoRaDeviceCache(ILoRaDeviceCacheStore cacheStore, string devEUI, string gatewayId)
         {
             if (string.IsNullOrEmpty(devEUI))
             {
@@ -36,27 +37,28 @@ namespace LoraKeysManagerFacade
             this.cacheStore = cacheStore;
             this.devEUI = devEUI;
             this.gatewayId = gatewayId;
-            this.cacheKey = cacheKey ?? devEUI;
+            this.cacheKey = devEUI;
         }
 
-        public bool TryToLock(string lockKey = null)
+        public async Task<bool> TryToLockAsync(string lockKey = null, bool block = true)
         {
             if (this.IsLockOwner)
             {
                 return true;
             }
 
-            this.lockKey = lockKey ?? this.devEUI + CacheKeyLockSuffix;
-            if (!this.cacheStore.LockTake(this.lockKey, this.gatewayId, LockWaitingTimeout))
+            var lk = lockKey ?? this.devEUI + CacheKeyLockSuffix;
+
+            if (this.IsLockOwner = await this.cacheStore.LockTakeAsync(lk, this.gatewayId, LockExpiry, block))
             {
-                return false;
+                // store the used key
+                this.lockKey = lk;
             }
 
-            this.IsLockOwner = true;
-            return true;
+            return this.IsLockOwner;
         }
 
-        public DeviceCacheInfo Initialize(uint fCntUp = 0, uint fCntDown = 0)
+        public bool Initialize(uint fCntUp = 0, uint fCntDown = 0)
         {
             // it is the first message from this device
             var serverStateForDeviceInfo = new DeviceCacheInfo
@@ -66,8 +68,7 @@ namespace LoraKeysManagerFacade
                 GatewayId = this.gatewayId
             };
 
-            this.StoreInfo(serverStateForDeviceInfo);
-            return serverStateForDeviceInfo;
+            return this.StoreInfo(serverStateForDeviceInfo, true);
         }
 
         public bool TryGetValue(out string value)
@@ -88,20 +89,14 @@ namespace LoraKeysManagerFacade
             info = null;
             this.EnsureLockOwner();
 
-            string cachedFCnt = this.cacheStore.StringGet(this.cacheKey);
-            if (string.IsNullOrEmpty(cachedFCnt))
-            {
-                return false;
-            }
-
-            info = JsonConvert.DeserializeObject<DeviceCacheInfo>(cachedFCnt);
+            info = this.cacheStore.GetObject<DeviceCacheInfo>(this.cacheKey);
             return info != null;
         }
 
-        public void StoreInfo(DeviceCacheInfo info)
+        public bool StoreInfo(DeviceCacheInfo info, bool initialize = false)
         {
             this.EnsureLockOwner();
-            this.cacheStore.StringSet(this.cacheKey, JsonConvert.SerializeObject(info), new TimeSpan(30, 0, 0, 0));
+            return this.cacheStore.StringSet(this.cacheKey, JsonConvert.SerializeObject(info), new TimeSpan(1, 0, 0, 0), initialize);
         }
 
         public void SetValue(string value, TimeSpan? expiry = null)
@@ -113,6 +108,12 @@ namespace LoraKeysManagerFacade
             }
 
             this.cacheStore.StringSet(this.cacheKey, value, expiry);
+        }
+
+        public void ClearCache()
+        {
+            this.EnsureLockOwner();
+            this.cacheStore.KeyDelete(this.cacheKey);
         }
 
         private void EnsureLockOwner()

@@ -74,7 +74,7 @@ namespace LoRaWan.NetworkServer
 
             // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
-            bool isFrameCounterFromNewlyStartedDevice = DetermineIfFramecounterIsFromNewlyStartedDevice(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
+            bool isFrameCounterFromNewlyStartedDevice = await this.DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
 
             // Reply attack or confirmed reply
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
@@ -694,7 +694,7 @@ namespace LoRaWan.NetworkServer
             return valid;
         }
 
-        private static bool DetermineIfFramecounterIsFromNewlyStartedDevice(LoRaDevice loRaDevice, uint payloadFcnt, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
+        private async Task<bool> DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(LoRaDevice loRaDevice, uint payloadFcnt, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
             var isFrameCounterFromNewlyStartedDevice = false;
             if (payloadFcnt <= 1)
@@ -704,7 +704,9 @@ namespace LoRaWan.NetworkServer
                     if (loRaDevice.IsABPRelaxedFrameCounter && loRaDevice.FCntUp >= 0 && payloadFcnt <= 1)
                     {
                         // known problem when device restarts, starts fcnt from zero
-                        _ = frameCounterStrategy.ResetAsync(loRaDevice);
+                        // We need to await this reset to avoid races on the server with deduplication and
+                        // fcnt down calculations
+                        await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
                         isFrameCounterFromNewlyStartedDevice = true;
                     }
                 }

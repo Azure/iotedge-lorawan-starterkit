@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
 
         public abstract Task<uint> NextFCntDownAsync(string devEUI, uint fcntDown, uint fcntUp, string gatewayId);
 
-        public abstract Task<bool> ABPFcntCacheResetAsync(string devEUI);
+        public abstract Task<bool> ABPFcntCacheResetAsync(string devEUI, uint fcntUp, string gatewayId);
 
         /// <summary>
         /// Searchs devices based on devAddr

@@ -280,13 +280,14 @@ namespace LoRaWan.NetworkServer
 
                 if (searchDeviceResult.IsDevNonceAlreadyUsed)
                 {
-                    Logger.Log(devEUI, $"join refused: DevNonce already used by this device", LogLevel.Debug);
+                    Logger.Log(devEUI, $"join refused: Join already processed by another gateway.", LogLevel.Information);
                     return null;
                 }
 
                 if (searchDeviceResult?.Devices == null || searchDeviceResult.Devices.Count == 0)
                 {
-                    Logger.Log(devEUI, "join refused: no devices found matching join request", LogLevel.Information);
+                    var msg = searchDeviceResult.RefusedMessage ?? "join refused: no devices found matching join request";
+                    Logger.Log(devEUI, msg, LogLevel.Information);
                     return null;
                 }
 

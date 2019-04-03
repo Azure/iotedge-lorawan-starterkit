@@ -5,7 +5,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using LoRaTools.CommonAPI;
+    using Microsoft.Extensions.Logging;
 
     public class FunctionBundlerPipelineExecuter : IPipelineExecutionContext
     {
@@ -16,6 +16,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
         public FunctionBundlerRequest Request { get; private set; }
 
         public FunctionBundlerResult Result { get; private set; } = new FunctionBundlerResult();
+
+        public ILogger Logger { get; private set; }
 
         public FunctionBundlerPipelineExecuter(
                                                IFunctionBundlerExecutionItem[] registeredHandlers,

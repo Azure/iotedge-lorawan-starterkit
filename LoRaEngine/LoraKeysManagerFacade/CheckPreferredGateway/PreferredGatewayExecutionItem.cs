@@ -107,7 +107,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
             for (var i = 0; i < MAX_ATTEMPTS_TO_RESOLVE_PREFERRED_GATEWAY; i++)
             {
-                if (this.cacheStore.LockTake(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200)))
+                if (await this.cacheStore.LockTakeAsync(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200), block: false))
                 {
                     try
                     {

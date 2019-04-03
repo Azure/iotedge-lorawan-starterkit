@@ -161,10 +161,10 @@ namespace LoRaWan.NetworkServer.Test
             var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
 
             // will reset the cloud cache
-            this.deviceApi.Setup(x => x.ABPFcntCacheResetAsync(device.DevEUI))
+            this.deviceApi.Setup(x => x.ABPFcntCacheResetAsync(device.DevEUI, It.IsAny<uint>(), It.IsNotNull<string>()))
                 .ReturnsAsync(true);
 
-            await target.ResetAsync(device);
+            await target.ResetAsync(device, 1U, this.gatewayID);
             Assert.False(device.HasFrameCountChanges);
 
             this.deviceClient.VerifyAll();

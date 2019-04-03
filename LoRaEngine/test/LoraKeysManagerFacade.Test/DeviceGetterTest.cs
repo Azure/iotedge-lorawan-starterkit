@@ -52,6 +52,10 @@ namespace LoraKeysManagerFacade.Test
                 .Setup(x => x.GetDeviceAsync(It.IsAny<string>()))
                 .ReturnsAsync((string deviceId) => new Device(deviceId) { Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } } });
 
+            mockRegistryManager
+                .Setup(x => x.GetTwinAsync(It.IsNotNull<string>()))
+                .ReturnsAsync((string deviceId) => new Twin(deviceId));
+
             const int numberOfDevices = 2;
             int deviceCount = 0;
 
