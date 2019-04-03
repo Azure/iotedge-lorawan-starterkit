@@ -104,6 +104,11 @@ namespace LoRaWan.IntegrationTest
         /// </summary>
         public TestDeviceInfo Device29_ABP { get; private set; }
 
+        /// <summary>
+        /// Gets Device30_OTAA used for C2D messages in multi gateway scenario
+        /// </summary>
+        public TestDeviceInfo Device30_OTAA { get; private set; }
+
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice
         {
@@ -482,6 +487,14 @@ namespace LoRaWan.IntegrationTest
                 DevAddr = "00000029",
                 IsIoTHubDevice = true,
                 Deduplication = "Mark"
+            };
+
+            this.Device30_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = this.GetKey16(10),
+                AppEUI = this.GetKey16(10),
+                AppKey = this.GetKey32(10),
+                IsIoTHubDevice = true
             };
         }
     }
