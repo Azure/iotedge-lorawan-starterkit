@@ -97,6 +97,11 @@ namespace LoRaWan.NetworkServer
                     this.HandlePreferredGatewayChanges(request, loRaDevice, bundlerResult);
                 }
 
+                if (loraPayload.IsAdrReq)
+                {
+                    Logger.Log(loRaDevice.DevEUI, $"ADR ack request received", LogLevel.Debug);
+                }
+
                 // ADR should be performed before the deduplication
                 // as we still want to collect the signal info, even if we drop
                 // it in the next step
@@ -129,7 +134,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 // if deduplication already processed the next framecounter down, use that
-                uint? fcntDown = loRaADRResult?.FCntDown > 0 ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
+                uint? fcntDown = loRaADRResult?.FCntDown != null ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
 
                 // If it is confirmed it require us to update the frame counter down
                 // Multiple gateways: in redis, otherwise in device twin
@@ -141,8 +146,6 @@ namespace LoRaWan.NetworkServer
                     // In multi gateway scenarios it means the another gateway was faster than using, can stop now
                     if (fcntDown <= 0)
                     {
-                        Logger.Log(loRaDevice.DevEUI, "another gateway has already sent ack or downlink msg", LogLevel.Debug);
-
                         return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
                     }
                 }
@@ -576,14 +579,17 @@ namespace LoRaWan.NetworkServer
             uint payloadFcnt,
             ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy)
         {
-            if (fcntDown > 0)
+            if (fcntDown.HasValue)
+            {
+                // if it was previously calculated, use that value
                 return fcntDown.Value;
+            }
 
             var newFcntDown = await frameCounterStrategy.NextFcntDown(loRaDevice, payloadFcnt);
 
             // Failed to update the fcnt down
             // In multi gateway scenarios it means the another gateway was faster than using, can stop now
-            if (newFcntDown <= 0)
+            if (newFcntDown > 0)
             {
                 Logger.Log(loRaDevice.DevEUI, "another gateway has already sent ack or downlink msg", LogLevel.Debug);
             }
@@ -635,7 +641,6 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                Logger.Log(loRaDevice.DevEUI, $"ADR ack request received", LogLevel.Debug);
                 loRaADRResult = await loRaADRManager.CalculateADRResultAndAddEntryAsync(
                     loRaDevice.DevEUI,
                     this.configuration.GatewayID,
