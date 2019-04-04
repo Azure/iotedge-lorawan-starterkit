@@ -572,9 +572,9 @@ namespace LoRaWan.NetworkServer
                 var fcntDownDelta = this.FCntDown >= this.LastSavedFCntDown ? this.FCntDown - this.LastSavedFCntDown : this.LastSavedFCntDown - this.FCntDown;
 
                 if (reportedProperties.Count > 0 ||
-                            fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
-                            fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
-                            (this.hasFrameCountChanges && force))
+                fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
+                fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
+                (this.hasFrameCountChanges && force))
                 {
                     var savedFcntDown = this.FCntDown;
                     var savedFcntUp = this.FCntUp;
