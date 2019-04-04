@@ -20,12 +20,20 @@ namespace LoRaWan.IntegrationTest
 
         // Verifies that ABP confirmed and unconfirmed messages are working
         // Uses Device5_ABP
-        [Fact]
-        public async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR()
+        [Theory]
+        [InlineData("Device5_ABP")]
+        [InlineData("Device5_ABP_MultiGw")]
+        public async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(string devicePropertyName)
         {
+            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
+
+            if (string.IsNullOrEmpty(device.GatewayID))
+            {
+                Assert.True(await LoRaAPIHelper.ResetADRCache(device.DeviceID));
+            }
+
             await this.ArduinoDevice.setDeviceDefaultAsync();
             const int MESSAGES_COUNT = 10;
-            var device = this.TestFixtureCi.Device5_ABP;
             this.LogTestStart(device);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
@@ -122,7 +130,19 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: ADR ack request received");
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: performing a rate adaptation: DR");
+
+            var searchTokenADRRateAdaptation = $"{device.DeviceID}: performing a rate adaptation: DR";
+            var received = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRRateAdaptation, StringComparison.OrdinalIgnoreCase));
+            Assert.NotNull(received.MatchedEvent);
+
+            if (string.IsNullOrEmpty(device.GatewayID))
+            {
+                var searchTokenADRAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
+                var ignored = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRAlreadySent, StringComparison.OrdinalIgnoreCase));
+
+                Assert.NotNull(ignored.MatchedEvent);
+                Assert.NotEqual(received.MatchedEvent.SourceId, ignored.MatchedEvent.SourceId);
+            }
 
             // Check the messages are now sent on DR5
             for (var i = 0; i < 2; ++i)

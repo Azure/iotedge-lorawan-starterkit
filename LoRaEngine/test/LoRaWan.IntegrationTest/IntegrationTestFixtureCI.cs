@@ -23,8 +23,12 @@ namespace LoRaWan.IntegrationTest
         // Device4_OTAA: used for OTAA confirmed & unconfirmed messaging
         public TestDeviceInfo Device4_OTAA { get; private set; }
 
+        public TestDeviceInfo Device4_OTAA_MultiGw { get; private set; }
+
         // Device5_ABP: used for ABP confirmed & unconfirmed messaging
         public TestDeviceInfo Device5_ABP { get; private set; }
+
+        public TestDeviceInfo Device5_ABP_MultiGw { get; private set; }
 
         // Device6_ABP: used for ABP wrong devaddr
         public TestDeviceInfo Device6_ABP { get; private set; }
@@ -53,8 +57,12 @@ namespace LoRaWan.IntegrationTest
         // Device14_OTAA: used for test confirmed C2D
         public TestDeviceInfo Device14_OTAA { get; private set; }
 
+        public TestDeviceInfo Device14_OTAA_MultiGw { get; private set; }
+
         // Device15_OTAA: used for test fport C2D
         public TestDeviceInfo Device15_OTAA { get; private set; }
+
+        public TestDeviceInfo Device15_OTAA_MultiGw { get; private set; }
 
         // Device16_ABP: used for test on multiple device with same devaddr
         public TestDeviceInfo Device16_ABP { get; private set; }
@@ -71,6 +79,8 @@ namespace LoRaWan.IntegrationTest
         // Device20_OTAA: used for OTAA confirmed & unconfirmed messaging
         public TestDeviceInfo Device20_OTAA { get; private set; }
 
+        public TestDeviceInfo Device20_OTAA_MultiGw { get; private set; }
+
         // Device21_ABP: Preferred 2nd window
         public TestDeviceInfo Device21_ABP { get; private set; }
 
@@ -79,6 +89,8 @@ namespace LoRaWan.IntegrationTest
 
         // Device23_OTAA: used for OTAA C2D Mac Commands testing
         public TestDeviceInfo Device23_OTAA { get; private set; }
+
+        public TestDeviceInfo Device23_OTAA_MultiGw { get; private set; }
 
         // Device24_ABP: Class C device
         public TestDeviceInfo Device24_ABP { get; private set; }
@@ -155,9 +167,11 @@ namespace LoRaWan.IntegrationTest
             return await LoRaAPIHelper.ResetDeviceCache(devEUI);
         }
 
-        public string GetKey16(int deviceId)
+        public string GetKey16(int deviceId, bool multiGw = false)
         {
-            var format = string.IsNullOrEmpty(this.Configuration.DeviceKeyFormat) ? "0000000000000000" : this.Configuration.DeviceKeyFormat;
+            var target = multiGw ? this.Configuration.DeviceKeyFormatMultiGW : this.Configuration.DeviceKeyFormat;
+            var format = string.IsNullOrEmpty(target) ? "0000000000000000" : target;
+
             if (format.Length < 16)
             {
                 format = format.PadLeft(16, '0');
@@ -166,9 +180,10 @@ namespace LoRaWan.IntegrationTest
             return deviceId.ToString(format);
         }
 
-        public string GetKey32(int deviceId)
+        public string GetKey32(int deviceId, bool multiGw = false)
         {
-            var format = string.IsNullOrEmpty(this.Configuration.DeviceKeyFormat) ? "00000000000000000000000000000000" : this.Configuration.DeviceKeyFormat;
+            var target = multiGw ? this.Configuration.DeviceKeyFormatMultiGW : this.Configuration.DeviceKeyFormat;
+            var format = string.IsNullOrEmpty(target) ? "00000000000000000000000000000000" : target;
             if (format.Length < 32)
             {
                 format = format.PadLeft(32, '0');
@@ -222,6 +237,15 @@ namespace LoRaWan.IntegrationTest
                 RX1DROffset = 1
             };
 
+            this.Device4_OTAA_MultiGw = new TestDeviceInfo()
+            {
+                DeviceID = this.GetKey16(4, true),
+                AppEUI = this.GetKey16(4, true),
+                AppKey = this.GetKey32(4, true),
+                IsIoTHubDevice = true,
+                RX1DROffset = 1
+            };
+
             // Device5_ABP: used for ABP confirmed & unconfirmed messaging
             this.Device5_ABP = new TestDeviceInfo()
             {
@@ -230,6 +254,15 @@ namespace LoRaWan.IntegrationTest
                 NwkSKey = this.GetKey32(5),
                 DevAddr = "0028B1B0",
                 GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+            };
+
+            this.Device5_ABP_MultiGw = new TestDeviceInfo()
+            {
+                DeviceID = this.GetKey16(5, true),
+                AppSKey = this.GetKey32(5, true),
+                NwkSKey = this.GetKey32(5, true),
+                DevAddr = "0028B1B0",
                 IsIoTHubDevice = true,
             };
 
@@ -328,6 +361,14 @@ namespace LoRaWan.IntegrationTest
                 IsIoTHubDevice = true,
             };
 
+            this.Device14_OTAA_MultiGw = new TestDeviceInfo()
+            {
+                DeviceID = this.GetKey16(14, true),
+                AppEUI = this.GetKey16(14, true),
+                AppKey = this.GetKey32(14, true),
+                IsIoTHubDevice = true,
+            };
+
             // Device15_OTAA: used for the Fport test
             this.Device15_OTAA = new TestDeviceInfo()
             {
@@ -335,6 +376,14 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = this.GetKey16(15),
                 AppKey = this.GetKey32(15),
                 GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+            };
+
+            this.Device15_OTAA_MultiGw = new TestDeviceInfo()
+            {
+                DeviceID = this.GetKey16(15, true),
+                AppEUI = this.GetKey16(15, true),
+                AppKey = this.GetKey32(15, true),
                 IsIoTHubDevice = true,
             };
             // Device16_ABP: used for same DevAddr test
@@ -393,6 +442,16 @@ namespace LoRaWan.IntegrationTest
                 PreferredWindow = 2
             };
 
+            this.Device20_OTAA_MultiGw = new TestDeviceInfo()
+            {
+                DeviceID = this.GetKey16(20, true),
+                AppEUI = this.GetKey16(20, true),
+                AppKey = this.GetKey32(20, true),
+                IsIoTHubDevice = true,
+                RX2DataRate = 3,
+                PreferredWindow = 2
+            };
+
             // Device21_ABP: Preferred 2nd window
             this.Device21_ABP = new TestDeviceInfo()
             {
@@ -424,6 +483,14 @@ namespace LoRaWan.IntegrationTest
                 AppKey = this.GetKey32(23),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
+            };
+
+            this.Device23_OTAA_MultiGw = new TestDeviceInfo()
+            {
+                DeviceID = this.GetKey16(23, true),
+                AppEUI = this.GetKey16(23, true),
+                AppKey = this.GetKey32(23, true),
+                IsIoTHubDevice = true
             };
 
             // Device24_OTAA: used for C2D mac Command testing
@@ -491,9 +558,9 @@ namespace LoRaWan.IntegrationTest
 
             this.Device30_OTAA = new TestDeviceInfo()
             {
-                DeviceID = this.GetKey16(10),
-                AppEUI = this.GetKey16(10),
-                AppKey = this.GetKey32(10),
+                DeviceID = this.GetKey16(30),
+                AppEUI = this.GetKey16(30),
+                AppKey = this.GetKey32(30),
                 IsIoTHubDevice = true
             };
         }

@@ -21,7 +21,7 @@ namespace LoRaWan.Test.Shared
             return actualMessageIdentifier?.ToString();
         }
 
-        bool IsDeviceMessage(string expectedDeviceID, string expectedDataValue, EventData eventData, string eventDeviceID, string eventDataMessageBody)
+        bool IsDeviceMessage(string expectedDeviceID, string jsonPropertyToValidate, string expectedValue, string eventDeviceID, string eventDataMessageBody)
         {
             if (eventDeviceID != null && eventDeviceID == expectedDeviceID)
             {
@@ -30,8 +30,8 @@ namespace LoRaWan.Test.Shared
                     var messageJson = JObject.Parse(eventDataMessageBody);
                     if (messageJson != null)
                     {
-                        var data = messageJson["data"];
-                        return data != null && data.ToString(Formatting.None) == expectedDataValue;
+                        var data = messageJson[jsonPropertyToValidate];
+                        return data != null && data.ToString(Formatting.None) == expectedValue;
                     }
                 }
                 catch (Exception ex)
@@ -43,8 +43,7 @@ namespace LoRaWan.Test.Shared
             return false;
         }
 
-        // Asserts leaf device message payload exists. It searches inside the payload "data" property. Has built-in retries
-        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string expectedDataValue, SearchLogOptions options = null)
+        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string targetJsonProperty, string expectedJsonValue, SearchLogOptions options = null)
         {
             var assertionLevel = this.Configuration.IoTHubAssertLevel;
             if (options != null && options.TreatAsError.HasValue)
@@ -54,26 +53,32 @@ namespace LoRaWan.Test.Shared
                 return;
 
             var searchResult = await this.SearchIoTHubMessageAsync(
-                (eventData, eventDeviceID, eventDataMessageBody) => this.IsDeviceMessage(deviceID, expectedDataValue, eventData, eventDeviceID, eventDataMessageBody),
+                (eventData, eventDeviceID, eventDataMessageBody) => this.IsDeviceMessage(deviceID, targetJsonProperty, expectedJsonValue, eventDeviceID, eventDataMessageBody),
                 new SearchLogOptions
                 {
-                    Description = options?.Description ?? expectedDataValue,
+                    Description = options?.Description ?? $"\"{targetJsonProperty}\": {expectedJsonValue}",
                     TreatAsError = options?.TreatAsError,
                 });
 
             if (assertionLevel == LogValidationAssertLevel.Error)
             {
                 var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                Assert.True(searchResult.Found, $"Searching for {expectedDataValue} failed for device {deviceID}. Current log content: [{logs}]");
+                Assert.True(searchResult.Found, $"Searching for \"{targetJsonProperty}\": {expectedJsonValue} failed for device {deviceID}. Current log content: [{logs}]");
             }
             else if (assertionLevel == LogValidationAssertLevel.Warning)
             {
                 if (!searchResult.Found)
                 {
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                    TestLogger.Log($"[WARN] '{expectedDataValue}' for device {deviceID} found in logs? {searchResult.Found}. Logs: [{logs}]");
+                    TestLogger.Log($"[WARN] \"{targetJsonProperty}\": {expectedJsonValue} for device {deviceID} found in logs? {searchResult.Found}. Logs: [{logs}]");
                 }
             }
+        }
+
+        // Asserts leaf device message payload exists. It searches inside the payload "data" property. Has built-in retries
+        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string expectedDataValue, SearchLogOptions options = null)
+        {
+            await this.AssertIoTHubDeviceMessageExistsAsync(deviceID, "data", expectedDataValue, options);
         }
 
         // Asserts network server module log contains
@@ -106,6 +111,39 @@ namespace LoRaWan.Test.Shared
             return searchResult;
         }
 
+        public async Task<bool> ValidateSingleGatewaySources(Func<string, bool> predicate, int maxAttempts = 5)
+        {
+            int numberOfGw = this.Configuration.NumberOfGateways;
+            var sourceIds = new HashSet<string>(numberOfGw);
+            for (int i = 0; i < maxAttempts && sourceIds.Count < numberOfGw; i++)
+            {
+                if (i > 0)
+                {
+                    var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
+                    await Task.Delay(TimeSpan.FromSeconds(timeToWait));
+                }
+
+                foreach (var item in this.udpLogListener.GetEvents())
+                {
+                    var parsed = SearchLogEvent.Parse(item);
+                    if (predicate(parsed.Message))
+                    {
+                        if (!string.IsNullOrEmpty(parsed.SourceId))
+                        {
+                            sourceIds.Add(parsed.SourceId);
+                        }
+                    }
+                }
+
+                if (sourceIds.Count == 1)
+                {
+                    return true;
+                }
+            }
+
+            return sourceIds.Count == 1;
+        }
+
         public async Task<bool> ValidateMultiGatewaySources(Func<string, bool> predicate, int maxAttempts = 5)
         {
             int numberOfGw = this.Configuration.NumberOfGateways;
@@ -120,9 +158,9 @@ namespace LoRaWan.Test.Shared
 
                 foreach (var item in this.udpLogListener.GetEvents())
                 {
-                    if (predicate(item))
+                    var parsed = SearchLogEvent.Parse(item);
+                    if (predicate(parsed.Message))
                     {
-                        var parsed = SearchLogEvent.Parse(item);
                         if (!string.IsNullOrEmpty(parsed.SourceId))
                         {
                             sourceIds.Add(parsed.SourceId);
