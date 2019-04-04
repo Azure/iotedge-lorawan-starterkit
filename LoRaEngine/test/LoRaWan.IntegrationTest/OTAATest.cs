@@ -4,6 +4,7 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
     using System.Xml;
     using LoRaWan.Test.Shared;
@@ -25,12 +26,14 @@ namespace LoRaWan.IntegrationTest
         // - device message is available on IoT Hub
         // - frame counter validation is done
         // - Message is decoded
-        [Fact]
-        public async Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset()
+        [Theory]
+        [InlineData("Device4_OTAA")]
+        [InlineData("Device4_OTAA_MultiGw")]
+        public async Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(string devicePropertyName)
         {
+            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             const int MESSAGES_COUNT = 10;
 
-            var device = this.TestFixtureCi.Device4_OTAA;
             this.LogTestStart(device);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -87,9 +90,16 @@ namespace LoRaWan.IntegrationTest
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
+                if (string.IsNullOrEmpty(device.GatewayID))
+                {
+                    // multi gw, make sure one ignored the message
+                    var confirmedLog = $"{device.DeviceID}: sending a downstream message";
+                    Assert.True(await this.TestFixtureCi.ValidateSingleGatewaySources(log => log.StartsWith(confirmedLog, StringComparison.OrdinalIgnoreCase)));
+                }
+
                 // After transferPacketWithConfirmed: Expectation from serial
                 // +CMSG: ACK Received
-                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
+                await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs, maxAttempts: 5, interval: TimeSpan.FromSeconds(10));
 
                 // 0000000000000004: decoding with: DecoderValueSensor port: 8
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
@@ -97,8 +107,11 @@ namespace LoRaWan.IntegrationTest
                 // 0000000000000004: message '{"value": 51}' sent to hub
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
-                // Expect that the response is done on DR4 as the RX1 offset is 1 on this device.
-                await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains("\"datr\":\"SF8BW125\""), null);
+                if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN1")).Count() > 0)
+                {
+                    // Expect that the response is done on DR4 as the RX1 offset is 1 on this device.
+                    await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains("\"datr\":\"SF8BW125\""), null);
+                }
 
                 // Ensure device payload is available
                 // Data: {"value": 51}

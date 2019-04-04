@@ -30,19 +30,6 @@ namespace LoRaWan.IntegrationTest
         {
         }
 
-        private string ToHexString(string str)
-        {
-            var sb = new StringBuilder();
-
-            var bytes = Encoding.UTF8.GetBytes(str);
-            foreach (var t in bytes)
-            {
-                sb.Append(t.ToString("X2"));
-            }
-
-            return sb.ToString(); // returns: "48656C6C6F20776F726C64" for "Hello world"
-        }
-
         // Ensures that C2D messages are received when working with confirmed messages
         // RxDelay set up to be 2 seconds
         // Uses Device9_OTAA
@@ -286,10 +273,12 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device15_OTAA
-        [Fact]
-        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message()
+        [Theory]
+        [InlineData("Device15_OTAA")]
+        [InlineData("Device15_OTAA_MultiGw")]
+        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(string devicePropertyName)
         {
-            var device = this.TestFixtureCi.Device15_OTAA;
+            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -394,10 +383,12 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device10_OTAA
-        [Fact]
-        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message()
+        [Theory]
+        [InlineData("Device14_OTAA")]
+        [InlineData("Device14_OTAA_MultiGw")]
+        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(string devicePropertyName)
         {
-            var device = this.TestFixtureCi.Device14_OTAA;
+            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);

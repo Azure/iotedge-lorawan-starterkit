@@ -156,10 +156,12 @@ namespace LoRaWan.IntegrationTest
         }
 
         // Performs a OTAA join and sends 1 unconfirmed, 1 confirmed and rejoins
-        [Fact]
-        public async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR()
+        [Theory]
+        [InlineData("Device20_OTAA")]
+        [InlineData("Device20_OTAA_MultiGw")]
+        public async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(string devicePropertyName)
         {
-            var device = this.TestFixtureCi.Device20_OTAA;
+            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
