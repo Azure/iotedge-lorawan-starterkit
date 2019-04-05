@@ -31,9 +31,9 @@ dotnet .\bin\Release\netcoreapp2.1\loradeviceprovisioning.dll -- (add verbs and 
 
 ## Setting up
 
-[settings.json](/settings.json) needs to be in the same directory as the cli-lora-device-provisioning binary (verifyloradevice.dll or verifyloradevice.exe).
+[appsettings.json](/appsettings.json) needs to be in the same directory as the cli-lora-device-provisioning binary (verifyloradevice.dll or verifyloradevice.exe).
 
-[settings.json](/settings.json) needs to contain a connection string from the Azure IoT Hub you want to work with. This connection string needs to belong to a shared access policy with **registry read**, **registry write** and **service connect** permissions enabled. You can use the default policy named **iothubowner**.
+[appsettings.json](/appsettings.json) needs to contain a connection string from the Azure IoT Hub you want to work with. This connection string needs to belong to a shared access policy with **registry read**, **registry write** and **service connect** permissions enabled. You can use the default policy named **iothubowner**.
 
 ```json
 {
@@ -41,7 +41,7 @@ dotnet .\bin\Release\netcoreapp2.1\loradeviceprovisioning.dll -- (add verbs and 
 }
 ```
 
-[settings.json](/settings.json) may **optionally** contain a Network Id (NetId) in case your solution does not use the default Network Id 000001. Since just the last byte from this 3 hex string byte array (6 characters) are used to create a valid DevAddr for ABP LoRa devices, the setting can be either the full 3 bytes (000000 to FFFFFF) or just the shortened, last byte (0 to FF).
+[appsettings.json](/appsettings.json) may **optionally** contain a Network Id (NetId) in case your solution does not use the default Network Id 000001. Since just the last byte from this 3 hex string byte array (6 characters) are used to create a valid DevAddr for ABP LoRa devices, the setting can be either the full 3 bytes (000000 to FFFFFF) or just the shortened, last byte (0 to FF).
 
 ```json
 {
@@ -50,7 +50,7 @@ dotnet .\bin\Release\netcoreapp2.1\loradeviceprovisioning.dll -- (add verbs and 
 }
 ```
 
-If NetId is not set, the default 000001 is used. If you have a NetId set in settings.json, you can always override it by calling a command of this utility with the --netid option.
+If NetId is not set, the default 000001 is used. If you have a NetId set in appsettings.json, you can always override it by calling a command of this utility with the --netid option.
 
 To learn more about what each of the settings in the LoRa device twin does, refer to the [Quick Start Guide](/Docs/quickstart.md#optional-device-properties).
 

@@ -20,7 +20,7 @@ namespace LoRaWan.Tools.CLI.Helpers
 
             Console.WriteLine("Reading configuration file \"appsettings.json\"...");
 
-            // Read configuration file settings.json
+            // Read configuration file appsettings.json
             try
             {
                 var configurationBuilder = new ConfigurationBuilder()
@@ -54,7 +54,7 @@ namespace LoRaWan.Tools.CLI.Helpers
                 }
                 else
                 {
-                    StatusConsole.WriteLogLine(MessageType.Error, "Invalid connection string in settings.json. Can not find \"HostName=\". The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }.");
+                    StatusConsole.WriteLogLine(MessageType.Error, "Invalid connection string in appsettings.json. Can not find \"HostName=\". The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }.");
                     return false;
                 }
             }
