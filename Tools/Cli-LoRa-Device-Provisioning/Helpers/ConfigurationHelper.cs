@@ -18,14 +18,15 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             string connectionString, netId;
 
-            Console.WriteLine("Reading configuration file \"settings.json\"...");
+            Console.WriteLine("Reading configuration file \"appsettings.json\"...");
 
-            // Read configuration file settings.json
+            // Read configuration file appsettings.json
             try
             {
                 var configurationBuilder = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("settings.json", optional: false, reloadOnChange: true)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                    .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: false)
                     .Build();
 
                 connectionString = configurationBuilder["IoTHubConnectionString"];
@@ -33,15 +34,15 @@ namespace LoRaWan.Tools.CLI.Helpers
             }
             catch (Exception ex)
             {
-                StatusConsole.WriteLine(MessageType.Error, $"{ex.Message}");
-                StatusConsole.WriteLine(MessageType.Info, "The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }");
+                StatusConsole.WriteLogLine(MessageType.Error, $"{ex.Message}");
+                StatusConsole.WriteLogLine(MessageType.Info, "The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }");
                 return false;
             }
 
             // Validate connection setting
             if (string.IsNullOrEmpty(connectionString))
             {
-                StatusConsole.WriteLine(MessageType.Error, "Connection string not found in settings file. The format should be: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }.");
+                StatusConsole.WriteLogLine(MessageType.Error, "Connection string not found in settings file. The format should be: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }.");
                 return false;
             }
             else
@@ -49,11 +50,11 @@ namespace LoRaWan.Tools.CLI.Helpers
                 // Just show IoT Hub Hostname
                 if (this.GetHostFromConnectionString(connectionString, out string hostName))
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"Using IoT Hub: {hostName}");
+                    StatusConsole.WriteLogLine(MessageType.Info, $"Using IoT Hub: {hostName}");
                 }
                 else
                 {
-                    StatusConsole.WriteLine(MessageType.Error, "Invalid connection string in settings.json. Can not find \"HostName=\". The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }.");
+                    StatusConsole.WriteLogLine(MessageType.Error, "Invalid connection string in appsettings.json. Can not find \"HostName=\". The file should have the following structure: { \"IoTHubConnectionString\" : \"HostName=xxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx\" }.");
                     return false;
                 }
             }
@@ -62,7 +63,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             if (string.IsNullOrEmpty(netId))
             {
                 netId = ValidationHelper.CleanNetId(Constants.DefaultNetId.ToString());
-                StatusConsole.WriteLine(MessageType.Info, $"NetId is not set in settings file. Using default {netId}.");
+                StatusConsole.WriteLogLine(MessageType.Info, $"NetId is not set in settings file. Using default {netId}.");
             }
             else
             {
@@ -70,18 +71,18 @@ namespace LoRaWan.Tools.CLI.Helpers
 
                 if (ValidationHelper.ValidateHexStringTwinProperty(netId, 3, out string customError))
                 {
-                    StatusConsole.WriteLine(MessageType.Info, $"Using NetId {netId} from settings file.");
+                    StatusConsole.WriteLogLine(MessageType.Info, $"Using NetId {netId} from settings file.");
                 }
                 else
                 {
                     var netIdBad = netId;
                     netId = ValidationHelper.CleanNetId(Constants.DefaultNetId.ToString());
-                    StatusConsole.WriteLine(MessageType.Warning, $"NetId {netIdBad} in settings file is invalid. {customError}.");
-                    StatusConsole.WriteLine(MessageType.Warning, $"Using default NetId {netId} instead.");
+                    StatusConsole.WriteLogLine(MessageType.Warning, $"NetId {netIdBad} in settings file is invalid. {customError}.");
+                    StatusConsole.WriteLogLine(MessageType.Warning, $"Using default NetId {netId} instead.");
                 }
             }
 
-            StatusConsole.WriteLine(MessageType.Info, $"To override, use --netid parameter.");
+            StatusConsole.WriteLogLine(MessageType.Info, $"To override, use --netid parameter.");
 
             this.NetId = netId;
 
@@ -92,7 +93,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             }
             catch (Exception ex)
             {
-                StatusConsole.WriteLine(MessageType.Error, $"Can not connect to IoT Hub (possible error in connection string): {ex.Message}.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Can not connect to IoT Hub (possible error in connection string): {ex.Message}.");
                 return false;
             }
 
