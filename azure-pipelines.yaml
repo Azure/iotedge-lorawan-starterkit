@@ -233,8 +233,8 @@ jobs:
     INTEGRATIONTEST_LeafDeviceSerialPort: "/dev/ttyACM0"
     INTEGRATIONTEST_IoTHubEventHubConsumerGroup: "reserved_integrationtest_amd" 
     INTEGRATIONTEST_LeafDeviceGatewayID: $(IoTEdgeDeviceAMD)
-    INTEGRATIONTEST_FunctionAppBaseUrl: $(FunctionAppServerUrl)
-    INTEGRATIONTEST_FunctionAppCode: $(FunctionAppAuthCode)
+    INTEGRATIONTEST_FunctionAppBaseUrl: $(FACADE_SERVER_URL)
+    INTEGRATIONTEST_FunctionAppCode: $(FACADE_AUTH_CODE)
     INTEGRATIONTEST_DevicePrefix: ''
   steps:
   - template: azure-pipeline-integration-test-steps-template.yaml
@@ -258,8 +258,8 @@ jobs:
     INTEGRATIONTEST_IoTHubEventHubConsumerGroup: "reserved_integrationtest" 
     INTEGRATIONTEST_LeafDeviceGatewayID: $(IoTEdgeDeviceARMPrimary)
     INTEGRATIONTEST_DevicePrefix: '01'
-    INTEGRATIONTEST_FunctionAppBaseUrl: $(FunctionAppServerUrl)
-    INTEGRATIONTEST_FunctionAppCode: $(FunctionAppAuthCode)
+    INTEGRATIONTEST_FunctionAppBaseUrl: $(FACADE_SERVER_URL)
+    INTEGRATIONTEST_FunctionAppCode: $(FACADE_AUTH_CODE)
   
   steps:
   - template: azure-pipeline-integration-test-steps-template.yaml
