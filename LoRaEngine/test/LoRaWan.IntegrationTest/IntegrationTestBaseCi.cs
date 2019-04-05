@@ -8,11 +8,14 @@ namespace LoRaWan.IntegrationTest
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Text;
+    using System.Threading.Tasks;
     using LoRaWan.Test.Shared;
     using Xunit;
 
     public class IntegrationTestBaseCi : IntegrationTestBase, IClassFixture<IntegrationTestFixtureCi>, IDisposable
     {
+        private bool isDisposed; // To detect redundant calls
+
         protected IntegrationTestFixtureCi TestFixtureCi
         {
             get { return (IntegrationTestFixtureCi)this.TestFixture; }
@@ -31,23 +34,6 @@ namespace LoRaWan.IntegrationTest
             this.arduinoDevice = testFixture.ArduinoDevice;
         }
 
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!this.disposedValue)
-            {
-                if (disposing)
-                {
-                    // Before starting a new test, wait 5 seconds to ensure serial port is not receiving dirty data
-                    if (this.arduinoDevice != null)
-                        this.arduinoDevice.WaitForIdleAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
-                }
-
-                this.disposedValue = true;
-            }
-        }
-
         protected string ToHexString(string str)
         {
             var sb = new StringBuilder();
@@ -59,6 +45,21 @@ namespace LoRaWan.IntegrationTest
             }
 
             return sb.ToString(); // returns: "48656C6C6F20776F726C64" for "Hello world"
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.isDisposed)
+            {
+                if (disposing)
+                {
+                    // Before starting a new test, wait 5 seconds to ensure serial port is not receiving dirty data
+                    if (this.arduinoDevice != null)
+                        this.arduinoDevice.WaitForIdleAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+                }
+
+                this.isDisposed = true;
+            }
         }
 
         // This code added to correctly implement the disposable pattern.

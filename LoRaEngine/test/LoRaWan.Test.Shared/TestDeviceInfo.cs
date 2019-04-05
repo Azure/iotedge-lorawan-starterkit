@@ -62,6 +62,8 @@ namespace LoRaWan.Test.Shared
 
         public int KeepAliveTimeout { get; set; }
 
+        public bool IsMultiGw => string.IsNullOrEmpty(this.GatewayID);
+
         /// <summary>
         /// Gets the desired properties for the <see cref="TestDeviceInfo"/>
         /// </summary>

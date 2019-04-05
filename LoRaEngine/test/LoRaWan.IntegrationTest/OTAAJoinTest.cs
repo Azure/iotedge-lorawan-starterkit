@@ -175,7 +175,12 @@ namespace LoRaWan.IntegrationTest
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
-            // Sends 10x unconfirmed messages
+            if (device.IsMultiGw)
+            {
+                await this.TestFixtureCi.AssertTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
+            }
+
+            // Sends 1x unconfirmed messages
             this.TestFixtureCi.ClearLogs();
 
             var msg = PayloadGenerator.Next().ToString();
@@ -231,12 +236,20 @@ namespace LoRaWan.IntegrationTest
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
+            // rejoin
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
             var joinSucceeded2 = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded2, "Rejoin failed");
+
+            if (device.IsMultiGw)
+            {
+                const string joinRefusedMsg = "join refused";
+                var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg) != -1, new SearchLogOptions(joinRefusedMsg));
+                Assert.True(joinRefused.Found);
+            }
         }
     }
 }

@@ -41,34 +41,12 @@ namespace LoRaWan.IntegrationTest
             Assert.True(joinSucceeded, "Join failed");
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
-            var joinConfirm = this.ArduinoDevice.SerialLogs.FirstOrDefault(s => s.StartsWith("+JOIN: NetID"));
-            Assert.NotNull(joinConfirm);
-
             // validate that one GW refused the join
             const string joinRefusedMsg = "join refused";
             var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg) != -1, new SearchLogOptions(joinRefusedMsg));
             Assert.True(joinRefused.Found);
 
-            var devAddr = joinConfirm.Substring(joinConfirm.LastIndexOf(' ') + 1);
-            devAddr = devAddr.Replace(":", string.Empty);
-
-            // wait for the twins to be stored and published -> all GW need the same state
-            const int DelayForJoinTwinStore = 20 * 1000;
-            const string DevAddrProperty = "DevAddr";
-            const int MaxRuns = 4;
-            bool reported = false;
-            for (var i = 0; i < MaxRuns && !reported; i++)
-            {
-                await Task.Delay(DelayForJoinTwinStore);
-
-                var twins = await this.TestFixtureCi.GetTwinAsync(device.DeviceID);
-                if (twins.Properties.Reported.Contains(DevAddrProperty))
-                {
-                    reported = devAddr.Equals(twins.Properties.Reported[DevAddrProperty].Value as string, StringComparison.InvariantCultureIgnoreCase);
-                }
-            }
-
-            Assert.True(reported);
+            await this.TestFixtureCi.AssertTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
 
             // expecting both gw to start picking up messages
             // and sending to IoT hub.
