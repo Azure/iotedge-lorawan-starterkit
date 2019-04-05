@@ -24,6 +24,9 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     internal static class DownlinkMessageBuilder
     {
+        private static readonly Random RndDownlinkMessageBuilder = new Random();
+        private static readonly object RndLock = new object();
+
         /// <summary>
         /// Creates downlink message with ack for confirmation or cloud to device message
         /// </summary>
@@ -62,8 +65,11 @@ namespace LoRaWan.NetworkServer
             }
 
             byte[] rndToken = new byte[2];
-            Random rnd = new Random();
-            rnd.NextBytes(rndToken);
+
+            lock (RndLock)
+            {
+                RndDownlinkMessageBuilder.NextBytes(rndToken);
+            }
 
             string datr;
             double freq;
@@ -235,8 +241,11 @@ namespace LoRaWan.NetworkServer
             CidEnum macCommandType = CidEnum.Zero;
 
             byte[] rndToken = new byte[2];
-            Random rnd = new Random();
-            rnd.NextBytes(rndToken);
+
+            lock (RndLock)
+            {
+                RndDownlinkMessageBuilder.NextBytes(rndToken);
+            }
 
             bool isMessageTooLong = false;
 
