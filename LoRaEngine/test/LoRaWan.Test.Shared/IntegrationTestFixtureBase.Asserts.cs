@@ -111,39 +111,15 @@ namespace LoRaWan.Test.Shared
             return searchResult;
         }
 
-        public async Task<bool> ValidateSingleGatewaySources(Func<string, bool> predicate, int maxAttempts = 5)
-        {
-            int numberOfGw = this.Configuration.NumberOfGateways;
-            var sourceIds = new HashSet<string>(numberOfGw);
-            for (int i = 0; i < maxAttempts && sourceIds.Count < numberOfGw; i++)
-            {
-                if (i > 0)
-                {
-                    var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
-                    await Task.Delay(TimeSpan.FromSeconds(timeToWait));
-                }
-
-                foreach (var item in this.udpLogListener.GetEvents())
-                {
-                    var parsed = SearchLogEvent.Parse(item);
-                    if (predicate(parsed.Message))
-                    {
-                        if (!string.IsNullOrEmpty(parsed.SourceId))
-                        {
-                            sourceIds.Add(parsed.SourceId);
-                        }
-                    }
-                }
-
-                if (sourceIds.Count == 1)
-                {
-                    return true;
-                }
-            }
-
-            return sourceIds.Count == 1;
-        }
-
+        /// <summary>
+        /// Searches the UDP log, matching the passed in predicate to
+        /// ensure a particular message got reported by all gateways.
+        /// The number of gateways can be driven by configuration.
+        /// <see cref="TestConfiguration.NumberOfGateways"/>
+        /// </summary>
+        /// <param name="predicate">predicate used to match the log entries</param>
+        /// <param name="maxAttempts">max retry attempts if the message is not found on all Gateways</param>
+        /// <returns>true, if it was found on all configured gateways otherwise false</returns>
         public async Task<bool> ValidateMultiGatewaySources(Func<string, bool> predicate, int maxAttempts = 5)
         {
             int numberOfGw = this.Configuration.NumberOfGateways;
@@ -175,6 +151,73 @@ namespace LoRaWan.Test.Shared
             }
 
             return sourceIds.Count == numberOfGw;
+        }
+
+        public async Task AssertSingleGatewaySource(Func<string, bool> predicate, int maxAttempts = 5)
+        {
+            int numberOfGw = this.Configuration.NumberOfGateways;
+            var sourceIds = new HashSet<string>(numberOfGw);
+            for (int i = 0; i < maxAttempts && sourceIds.Count < numberOfGw; i++)
+            {
+                if (i > 0)
+                {
+                    var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
+                    await Task.Delay(TimeSpan.FromSeconds(timeToWait));
+                }
+
+                foreach (var item in this.udpLogListener.GetEvents())
+                {
+                    var parsed = SearchLogEvent.Parse(item);
+                    if (predicate(parsed.Message))
+                    {
+                        if (!string.IsNullOrEmpty(parsed.SourceId))
+                        {
+                            sourceIds.Add(parsed.SourceId);
+                        }
+                    }
+                }
+
+                if (sourceIds.Count == 1)
+                {
+                    return;
+                }
+            }
+
+            Assert.True(sourceIds.Count == 1, $"Not 1 source, but {sourceIds.Count}");
+        }
+
+        /// <summary>
+        /// This makes sure that after a join, the DevAddr is
+        /// available from the twins. Call this in case of an OTTA join with
+        /// a multi GW setup, where you want to make sure both GW will be able
+        /// to process the next message
+        /// </summary>
+        /// <param name="serialLog">serial log from the attached device</param>
+        /// <param name="devEUI">The device EUI of the current device</param>
+        public async Task AssertTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, string devEUI)
+        {
+            var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID"));
+            Assert.NotNull(joinConfirmMsg);
+            var devAddr = joinConfirmMsg.Substring(joinConfirmMsg.LastIndexOf(' ') + 1);
+            devAddr = devAddr.Replace(":", string.Empty);
+
+            // wait for the twins to be stored and published -> all GW need the same state
+            const int DelayForJoinTwinStore = 20 * 1000;
+            const string DevAddrProperty = "DevAddr";
+            const int MaxRuns = 10;
+            bool reported = false;
+            for (var i = 0; i < MaxRuns && !reported; i++)
+            {
+                await Task.Delay(DelayForJoinTwinStore);
+
+                var twins = await this.GetTwinAsync(devEUI);
+                if (twins.Properties.Reported.Contains(DevAddrProperty))
+                {
+                    reported = devAddr.Equals(twins.Properties.Reported[DevAddrProperty].Value as string, StringComparison.InvariantCultureIgnoreCase);
+                }
+            }
+
+            Assert.True(reported);
         }
 
         // Asserts Network Server Module log exists. It has built-in retries and delays

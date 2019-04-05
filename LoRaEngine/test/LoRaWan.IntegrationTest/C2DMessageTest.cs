@@ -293,6 +293,11 @@ namespace LoRaWan.IntegrationTest
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
+            if (device.IsMultiGw)
+            {
+                await this.TestFixtureCi.AssertTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
+            }
+
             // Sends 2x unconfirmed messages
             for (var i = 1; i <= 2; ++i)
             {
@@ -325,7 +330,7 @@ namespace LoRaWan.IntegrationTest
             var expectedRxSerial = $"+MSG: PORT: 2; RX: \"{this.ToHexString(c2dMessageBody)}\"";
             this.Log($"Expected C2D start with: {expectedRxSerial}");
 
-            // Sends 8x confirmed messages, stopping if C2D message is found
+            // Sends 8x unconfirmed messages, stopping if C2D message is found
             for (var i = 3; i <= 10; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
@@ -402,6 +407,11 @@ namespace LoRaWan.IntegrationTest
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
+            if (device.IsMultiGw)
+            {
+                await this.TestFixtureCi.AssertTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
+            }
+
             // Sends 2x unconfirmed messages
             for (var i = 1; i <= 2; ++i)
             {
@@ -439,14 +449,14 @@ namespace LoRaWan.IntegrationTest
             this.Log($"Expected C2D received log is: {expectedRxSerial}");
             this.Log($"Expected UDP log starting with: {expectedUDPMessageV1} or {expectedUDPMessageV2}");
 
-            // Sends 8x confirmed messages, stopping if C2D message is found
+            // Sends 8x unconfirmed messages, stopping if C2D message is found
             for (var i = 3; i <= 10; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
-                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+                await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 

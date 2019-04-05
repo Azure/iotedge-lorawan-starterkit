@@ -47,6 +47,11 @@ namespace LoRaWan.IntegrationTest
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
+            if (device.IsMultiGw)
+            {
+                await this.TestFixtureCi.AssertTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
+            }
+
             // Sends 10x unconfirmed messages
             for (var i = 0; i < MESSAGES_COUNT; ++i)
             {
@@ -90,11 +95,11 @@ namespace LoRaWan.IntegrationTest
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
-                if (string.IsNullOrEmpty(device.GatewayID))
+                if (device.IsMultiGw)
                 {
                     // multi gw, make sure one ignored the message
                     var confirmedLog = $"{device.DeviceID}: sending a downstream message";
-                    Assert.True(await this.TestFixtureCi.ValidateSingleGatewaySources(log => log.StartsWith(confirmedLog, StringComparison.OrdinalIgnoreCase)));
+                    await this.TestFixtureCi.AssertSingleGatewaySource(log => log.StartsWith(confirmedLog, StringComparison.OrdinalIgnoreCase));
                 }
 
                 // After transferPacketWithConfirmed: Expectation from serial

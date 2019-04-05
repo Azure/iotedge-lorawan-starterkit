@@ -27,7 +27,7 @@ namespace LoRaWan.IntegrationTest
         {
             var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
 
-            if (string.IsNullOrEmpty(device.GatewayID))
+            if (device.IsMultiGw)
             {
                 Assert.True(await LoRaAPIHelper.ResetADRCache(device.DeviceID));
             }
@@ -88,6 +88,19 @@ namespace LoRaWan.IntegrationTest
                 // 0000000000000005: message '{"value": 51}' sent to hub
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
+                if (device.IsMultiGw)
+                {
+                    var searchTokenSending = $"{device.DeviceID}: sending a downstream message";
+                    var sending = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase));
+                    Assert.NotNull(sending.MatchedEvent);
+
+                    var searchTokenAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
+                    var ignored = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenAlreadySent, StringComparison.OrdinalIgnoreCase));
+                    Assert.NotNull(ignored.MatchedEvent);
+
+                    Assert.NotEqual(sending.MatchedEvent.SourceId, ignored.MatchedEvent.SourceId);
+                }
+
                 this.TestFixtureCi.ClearLogs();
             }
 
@@ -135,7 +148,7 @@ namespace LoRaWan.IntegrationTest
             var received = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRRateAdaptation, StringComparison.OrdinalIgnoreCase));
             Assert.NotNull(received.MatchedEvent);
 
-            if (string.IsNullOrEmpty(device.GatewayID))
+            if (device.IsMultiGw)
             {
                 var searchTokenADRAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
                 var ignored = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRAlreadySent, StringComparison.OrdinalIgnoreCase));
