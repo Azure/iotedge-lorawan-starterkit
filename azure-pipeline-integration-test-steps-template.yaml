@@ -14,7 +14,7 @@ steps:
   condition: eq(variables['AdditionalIntegrationTestArguments'], '')
   workingDirectory: ./LoRaEngine/test/LoRaWan.IntegrationTest
   failOnStderr: true
-  timeoutInMinutes: 60 # up to 1 hour, increase if we need more
+  timeoutInMinutes: 120 # up to 1 hour, increase if we need more
 
 # Run integration test with filters only, no built-in retries
 - task: DotNetCoreCLI@2

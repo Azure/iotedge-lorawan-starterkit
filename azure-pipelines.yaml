@@ -233,6 +233,8 @@ jobs:
     INTEGRATIONTEST_LeafDeviceSerialPort: "/dev/ttyACM0"
     INTEGRATIONTEST_IoTHubEventHubConsumerGroup: "reserved_integrationtest_amd" 
     INTEGRATIONTEST_LeafDeviceGatewayID: $(IoTEdgeDeviceAMD)
+    INTEGRATIONTEST_FunctionAppBaseUrl: $(FunctionAppServerUrl)
+    INTEGRATIONTEST_FunctionAppCode: $(FunctionAppAuthCode)
     INTEGRATIONTEST_DevicePrefix: ''
   steps:
   - template: azure-pipeline-integration-test-steps-template.yaml
@@ -247,7 +249,7 @@ jobs:
     - full_ci_deploy_arm_secondary
     - full_ci_deploy_facade_function
   condition: and(ne(variables['IoTEdgeDeviceARMPrimary'], ''), or(succeeded(), eq(variables['RunTestsOnly'], 'true')))
-  timeoutInMinutes: 120 # Raspberry PI is slow, allow taking 120 minutes
+  timeoutInMinutes: 125 # Raspberry PI is slow, allow taking 125 minutes
   pool:    
     name: Default
     demands: Agent.OSArchitecture -equals ARM # Run on pi atm
@@ -256,6 +258,8 @@ jobs:
     INTEGRATIONTEST_IoTHubEventHubConsumerGroup: "reserved_integrationtest" 
     INTEGRATIONTEST_LeafDeviceGatewayID: $(IoTEdgeDeviceARMPrimary)
     INTEGRATIONTEST_DevicePrefix: '01'
+    INTEGRATIONTEST_FunctionAppBaseUrl: $(FunctionAppServerUrl)
+    INTEGRATIONTEST_FunctionAppCode: $(FunctionAppAuthCode)
   
   steps:
   - template: azure-pipeline-integration-test-steps-template.yaml
