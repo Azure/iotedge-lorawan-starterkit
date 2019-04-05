@@ -13,8 +13,8 @@ namespace LoRaWan.Tools.CLI.Helpers
 
     public class IoTDeviceHelper
     {
-        private readonly string[] classTypes = { "A", "C" };
-        private readonly string[] deduplicationModes = { "None", "Drop", "Mark" };
+        private static readonly string[] ClassTypes = { "A", "C" };
+        private static readonly string[] DeduplicationModes = { "None", "Drop", "Mark" };
 
         public async Task<Twin> QueryDeviceTwin(string devEui, ConfigurationHelper configurationHelper)
         {
@@ -803,7 +803,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             // ClassType
             if (!string.IsNullOrEmpty(opts.ClassType))
             {
-                if (!Array.Exists(this.classTypes, classType => string.Equals(
+                if (!Array.Exists(ClassTypes, classType => string.Equals(
                     classType, opts.ClassType, StringComparison.OrdinalIgnoreCase)))
                 {
                     StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"ClassType {opts.ClassType} is invalid: If set, it needs to be \"A\" or \"C\".", opts.DevEui, isVerbose);
@@ -846,7 +846,7 @@ namespace LoRaWan.Tools.CLI.Helpers
             // Deduplication
             if (!string.IsNullOrEmpty(opts.Deduplication))
             {
-                if (!Array.Exists(this.deduplicationModes, deduplicationMode => string.Equals(
+                if (!Array.Exists(DeduplicationModes, deduplicationMode => string.Equals(
                     deduplicationMode, opts.Deduplication, StringComparison.OrdinalIgnoreCase)))
                 {
                     StatusConsole.WriteLogLineWithDevEuiWhenVerbose(MessageType.Error, $"Deduplication {opts.Deduplication} is invalid: If set, it needs to be \"None\", \"Drop\" or \"Mark\".", opts.DevEui, isVerbose);

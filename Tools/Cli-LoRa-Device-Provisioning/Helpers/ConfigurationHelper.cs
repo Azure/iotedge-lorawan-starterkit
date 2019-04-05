@@ -18,15 +18,15 @@ namespace LoRaWan.Tools.CLI.Helpers
         {
             string connectionString, netId;
 
-            Console.WriteLine("Reading configuration file \"settings.json\"...");
+            Console.WriteLine("Reading configuration file \"appsettings.json\"...");
 
             // Read configuration file settings.json
             try
             {
                 var configurationBuilder = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("settings.json", optional: false, reloadOnChange: true)
-                    .AddJsonFile("settings.local.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                    .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: false)
                     .Build();
 
                 connectionString = configurationBuilder["IoTHubConnectionString"];
