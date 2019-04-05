@@ -589,7 +589,7 @@ namespace LoRaWan.NetworkServer
 
             // Failed to update the fcnt down
             // In multi gateway scenarios it means the another gateway was faster than using, can stop now
-            if (newFcntDown > 0)
+            if (newFcntDown <= 0)
             {
                 Logger.Log(loRaDevice.DevEUI, "another gateway has already sent ack or downlink msg", LogLevel.Debug);
             }

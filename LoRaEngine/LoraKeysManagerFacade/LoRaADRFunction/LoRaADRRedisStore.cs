@@ -21,6 +21,7 @@ namespace LoraKeysManagerFacade
         sealed class RedisLockWrapper : IDisposable
         {
             private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(10);
+            private static readonly TimeSpan LockDuration = TimeSpan.FromSeconds(15);
             private string lockKey;
             private string owner;
             private IDatabase redisCache;
@@ -36,7 +37,7 @@ namespace LoraKeysManagerFacade
             internal async Task<bool> TakeLockAsync()
             {
                 var start = DateTime.UtcNow;
-                while (!(this.ownsLock = await this.redisCache.LockTakeAsync(this.lockKey, this.owner, TimeSpan.FromSeconds(10))))
+                while (!(this.ownsLock = await this.redisCache.LockTakeAsync(this.lockKey, this.owner, LockDuration)))
                 {
                     if (DateTime.UtcNow - start > LockTimeout)
                         break;
