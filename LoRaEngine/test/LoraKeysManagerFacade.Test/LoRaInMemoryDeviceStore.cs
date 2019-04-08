@@ -11,7 +11,7 @@ namespace LoraKeysManagerFacade.Test
 
     internal class LoRaInMemoryDeviceStore : ILoRaDeviceCacheStore
     {
-        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(15);
+        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(60);
         private readonly Dictionary<string, object> cache;
         private readonly Dictionary<string, SemaphoreSlim> locks;
 
@@ -37,7 +37,7 @@ namespace LoraKeysManagerFacade.Test
                 }
                 else
                 {
-                    return false;
+                    return true;
                 }
             }
         }
@@ -45,23 +45,18 @@ namespace LoraKeysManagerFacade.Test
         public async Task<bool> LockTakeAsync(string key, string value, TimeSpan expiration, bool block = true)
         {
             SemaphoreSlim waiter = null;
-
             lock (this.locks)
             {
                 if (!this.locks.TryGetValue(key, out waiter))
                 {
-                    this.locks[key] = new SemaphoreSlim(0);
+                    this.locks[key] = new SemaphoreSlim(0, 1);
                     return true;
                 }
             }
 
             if (block && await waiter.WaitAsync((int)LockTimeout.TotalMilliseconds))
             {
-                lock (this.locks)
-                {
-                    this.locks[key] = new SemaphoreSlim(0);
-                    return true;
-                }
+                return true;
             }
 
             return false;
