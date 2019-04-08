@@ -139,7 +139,7 @@ namespace LoRaWan.NetworkServer
         /// Used to synchronize the async save operation to the twins for this particular device.
         /// </summary>
         private readonly SemaphoreSlim syncSave = new SemaphoreSlim(1, 1);
-        private readonly object queueSync = new object();
+        private readonly object processingSyncLock = new object();
         private readonly Queue<LoRaRequest> queuedRequests = new Queue<LoRaRequest>();
 
         public ushort DesiredRX2DataRate { get; set; }
@@ -179,7 +179,16 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets a value indicating whether the <see cref="LoRaDevice"/> is processing a request from its queue
         /// </summary>
-        public bool IsProcessingRequest => this.runningRequest != null;
+        public bool IsProcessingRequest
+        {
+            get
+            {
+                lock (this.processingSyncLock)
+                {
+                    return this.runningRequest != null;
+                }
+            }
+        }
 
         public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
         {
@@ -191,7 +200,6 @@ namespace LoRaWan.NetworkServer
             this.PreferredWindow = 1;
             this.hasFrameCountChanges = false;
             this.confirmationResubmitCount = 0;
-            this.queueSync = new object();
             this.queuedRequests = new Queue<LoRaRequest>();
             this.ClassType = LoRaDeviceClassType.A;
         }
@@ -724,7 +732,13 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Ensures that the device is connected. Calls the connection manager that keeps track of device connection lifetime.
         /// </summary>
-        internal bool EnsureConnected() => this.connectionManager.EnsureConnected(this);
+        internal bool EnsureConnected()
+        {
+            lock (this.processingSyncLock)
+            {
+                return this.connectionManager.EnsureConnected(this);
+            }
+        }
 
         /// <summary>
         /// Disconnects device from IoT Hub
@@ -910,7 +924,7 @@ namespace LoRaWan.NetworkServer
         {
             // Access to runningRequest and queuedRequests must be
             // thread safe
-            lock (this.queueSync)
+            lock (this.processingSyncLock)
             {
                 if (this.runningRequest == null)
                 {
@@ -930,7 +944,7 @@ namespace LoRaWan.NetworkServer
         {
             // Access to runningRequest and queuedRequests must be
             // thread safe
-            lock (this.queueSync)
+            lock (this.processingSyncLock)
             {
                 this.runningRequest = null;
                 if (this.queuedRequests.TryDequeue(out var nextRequest))
@@ -1085,6 +1099,20 @@ namespace LoRaWan.NetworkServer
             foreach (var prop in this.GetTrackableProperties())
             {
                 prop.AcceptChanges();
+            }
+        }
+
+        internal bool DisconnectIfNotProcessing()
+        {
+            lock (this.processingSyncLock)
+            {
+                if (!this.IsProcessingRequest)
+                {
+                    this.Disconnect();
+                    return true;
+                }
+
+                return false;
             }
         }
     }
