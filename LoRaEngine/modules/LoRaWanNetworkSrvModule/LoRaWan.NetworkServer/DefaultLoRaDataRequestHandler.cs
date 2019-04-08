@@ -48,11 +48,11 @@ namespace LoRaWan.NetworkServer
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
         {
             var timeWatcher = request.GetTimeWatcher();
-            using (var reservedConnection = loRaDevice.ReserveConnection())
+            using (var deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity())
             {
-                if (reservedConnection == null)
+                if (deviceConnectionActivity == null)
                 {
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceConnectionProblem);
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
                 }
 
                 var loraPayload = (LoRaPayloadData)request.Payload;

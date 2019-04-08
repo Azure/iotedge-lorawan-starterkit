@@ -22,6 +22,6 @@ namespace LoRaWan.NetworkServer
         InvalidFrameCounter,
         IoTHubProblem,
         DeduplicationDrop,
-        DeviceConnectionProblem
+        DeviceClientConnectionFailed
     }
 }
