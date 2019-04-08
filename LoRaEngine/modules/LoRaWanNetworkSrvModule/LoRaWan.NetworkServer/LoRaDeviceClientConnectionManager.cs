@@ -80,6 +80,7 @@ namespace LoRaWan.NetworkServer
             if (managedConnection.LoRaDevice.IsProcessingRequest)
             {
                 // add item to schedule once again
+                Logger.Log(managedConnection.LoRaDevice.DevEUI, "client is processing request. Not disconnecting.", LogLevel.Debug);
                 this.SetupSchedule(managedConnection);
             }
             else

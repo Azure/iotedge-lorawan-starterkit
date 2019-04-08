@@ -412,6 +412,8 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
             await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
 
+            await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith($"{device25.DeviceID}: processing time"));
+
             // wait 61 seconds
             await Task.Delay(TimeSpan.FromSeconds(61));
 
