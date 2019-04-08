@@ -95,29 +95,22 @@ namespace LoraKeysManagerFacade
 
                     if (this.cacheStore.StringSet(cacheKeyDevNonce, devNonce, TimeSpan.FromMinutes(5), onlyIfNotExists: true))
                     {
-                        try
+                        var iotHubDeviceInfo = new IoTHubDeviceInfo
                         {
-                            var iotHubDeviceInfo = new IoTHubDeviceInfo
-                            {
-                                DevEUI = devEUI,
-                                PrimaryKey = joinInfo.PrimaryKey
-                            };
+                            DevEUI = devEUI,
+                            PrimaryKey = joinInfo.PrimaryKey
+                        };
 
-                            results.Add(iotHubDeviceInfo);
+                        results.Add(iotHubDeviceInfo);
 
-                            if (await deviceCache.TryToLockAsync())
-                            {
-                                this.cacheStore.KeyDelete(devEUI);
-                                log?.LogDebug("Removed key '{key}':{gwid}", devEUI, gatewayId);
-                            }
-                            else
-                            {
-                                log?.LogWarning("Failed to acquire lock for '{key}'", devEUI);
-                            }
+                        if (await deviceCache.TryToLockAsync())
+                        {
+                            this.cacheStore.KeyDelete(devEUI);
+                            log?.LogDebug("Removed key '{key}':{gwid}", devEUI, gatewayId);
                         }
-                        finally
+                        else
                         {
-                            this.cacheStore.LockRelease(lockKeyDevNonce, gatewayId);
+                            log?.LogWarning("Failed to acquire lock for '{key}'", devEUI);
                         }
                     }
                     else
