@@ -77,14 +77,11 @@ namespace LoRaWan.NetworkServer
         void OnScheduledDisconnect(object key, object value, EvictionReason reason, object state)
         {
             var managedConnection = (ManagedConnection)value;
-            if (managedConnection.LoRaDevice.IsProcessingRequest)
+
+            if (!managedConnection.LoRaDevice.DisconnectIfNotProcessing())
             {
                 // add item to schedule once again
                 this.SetupSchedule(managedConnection);
-            }
-            else
-            {
-                managedConnection.DeviceClient.Disconnect();
             }
         }
 
