@@ -165,6 +165,8 @@ namespace LoRaWan.NetworkServer
 
         private ILoRaDataRequestHandler dataRequestHandler;
 
+        private int connectionCounter;
+
         /// <summary>
         ///  Gets or sets a value indicating whether cloud to device messages are enabled for the device
         ///  By default it is enabled. To disable, set the desired property "EnableC2D" to false
@@ -543,7 +545,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                // We only ever want a single save operation per device
+                // We only ever want a single save operation per device
                 // to happen. The save to the twins can be delayed for multiple
                 // seconds, subsequent updates should be waiting for this to complete
                 // before checking the current state and update again.
@@ -579,7 +581,7 @@ namespace LoRaWan.NetworkServer
                     reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
 
                     // For class C devices this might be the only moment the connection is established
-                    if (!this.connectionManager.EnsureConnected(this))
+                    if (!this.EnsureConnected())
                     {
                         // Logging as information because the real error was logged as error
                         Logger.Log(this.DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
@@ -732,12 +734,18 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Ensures that the device is connected. Calls the connection manager that keeps track of device connection lifetime.
         /// </summary>
-        internal bool EnsureConnected()
+        internal IDisposable ReserveConnection()
         {
             lock (this.processingSyncLock)
             {
-                return this.connectionManager.EnsureConnected(this);
+                if (this.connectionManager.EnsureConnected(this))
+                {
+                    this.connectionCounter++;
+                    return new ConnectionActivityCounter(this);
+                }
             }
+
+            return null;
         }
 
         /// <summary>
@@ -1113,6 +1121,29 @@ namespace LoRaWan.NetworkServer
                 }
 
                 return false;
+            }
+        }
+
+        private class ConnectionActivityCounter : IDisposable
+        {
+            private readonly LoRaDevice loRaDevice;
+
+            internal ConnectionActivityCounter(LoRaDevice loRaDevice)
+            {
+                this.loRaDevice = loRaDevice;
+            }
+
+            public void Dispose()
+            {
+                this.loRaDevice.DecrementConnectionCounter();
+            }
+        }
+
+        private void DecrementConnectionCounter()
+        {
+            lock (this.processingSyncLock)
+            {
+                this.connectionCounter--;
             }
         }
     }
