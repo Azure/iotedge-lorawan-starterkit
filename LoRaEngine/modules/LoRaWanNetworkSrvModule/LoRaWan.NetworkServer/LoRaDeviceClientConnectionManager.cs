@@ -77,14 +77,13 @@ namespace LoRaWan.NetworkServer
         void OnScheduledDisconnect(object key, object value, EvictionReason reason, object state)
         {
             var managedConnection = (ManagedConnection)value;
-            if (managedConnection.LoRaDevice.IsProcessingRequest)
+
+            if (!managedConnection.LoRaDevice.TryDisconnect())
             {
+                Logger.Log(managedConnection.LoRaDevice.DevEUI, $"scheduled device disconnection has been postponed. Device client connection is active", LogLevel.Information);
+
                 // add item to schedule once again
                 this.SetupSchedule(managedConnection);
-            }
-            else
-            {
-                managedConnection.DeviceClient.Disconnect();
             }
         }
 
@@ -122,6 +121,7 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Tries to trigger scanning of expired items
+        /// For tests only
         /// </summary>
         public void TryScanExpiredItems()
         {

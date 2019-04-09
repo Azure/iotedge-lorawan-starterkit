@@ -118,7 +118,7 @@ namespace LoRaWan.NetworkServer
         ChangeTrackingProperty<LoRaRegionType> region = new ChangeTrackingProperty<LoRaRegionType>(TwinProperty.Region, LoRaRegionType.NotSet);
 
         /// <summary>
-        /// Gets the <see cref="LoRaTools.Regions.LoRaRegionType"/> of the device
+        /// Gets or sets the <see cref="LoRaTools.Regions.LoRaRegionType"/> of the device
         /// Relevant only for <see cref="LoRaDeviceClassType.C"/>
         /// </summary>
         public LoRaRegionType LoRaRegion
@@ -139,7 +139,7 @@ namespace LoRaWan.NetworkServer
         /// Used to synchronize the async save operation to the twins for this particular device.
         /// </summary>
         private readonly SemaphoreSlim syncSave = new SemaphoreSlim(1, 1);
-        private readonly object queueSync = new object();
+        private readonly object processingSyncLock = new object();
         private readonly Queue<LoRaRequest> queuedRequests = new Queue<LoRaRequest>();
 
         public ushort DesiredRX2DataRate { get; set; }
@@ -165,6 +165,8 @@ namespace LoRaWan.NetworkServer
 
         private ILoRaDataRequestHandler dataRequestHandler;
 
+        private volatile int deviceClientConnectionActivityCounter;
+
         /// <summary>
         ///  Gets or sets a value indicating whether cloud to device messages are enabled for the device
         ///  By default it is enabled. To disable, set the desired property "EnableC2D" to false
@@ -176,11 +178,6 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public int KeepAliveTimeout { get; set; }
 
-        /// <summary>
-        /// Gets a value indicating whether the <see cref="LoRaDevice"/> is processing a request from its queue
-        /// </summary>
-        public bool IsProcessingRequest => this.runningRequest != null;
-
         public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
         {
             this.DevAddr = devAddr;
@@ -191,7 +188,6 @@ namespace LoRaWan.NetworkServer
             this.PreferredWindow = 1;
             this.hasFrameCountChanges = false;
             this.confirmationResubmitCount = 0;
-            this.queueSync = new object();
             this.queuedRequests = new Queue<LoRaRequest>();
             this.ClassType = LoRaDeviceClassType.A;
         }
@@ -535,7 +531,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                // We only ever want a single save operation per device
+                // We only ever want a single save operation per device
                 // to happen. The save to the twins can be delayed for multiple
                 // seconds, subsequent updates should be waiting for this to complete
                 // before checking the current state and update again.
@@ -571,28 +567,31 @@ namespace LoRaWan.NetworkServer
                     reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
 
                     // For class C devices this might be the only moment the connection is established
-                    if (!this.connectionManager.EnsureConnected(this))
+                    using (var deviceClientActivityScope = this.BeginDeviceClientConnectionActivity())
                     {
-                        // Logging as information because the real error was logged as error
-                        Logger.Log(this.DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
-                        return false;
-                    }
+                        if (deviceClientActivityScope == null)
+                        {
+                            // Logging as information because the real error was logged as error
+                            Logger.Log(this.DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
+                            return false;
+                        }
 
-                    var result = await this.connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
-                    if (result)
-                    {
-                        this.InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
+                        var result = await this.connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
+                        if (result)
+                        {
+                            this.InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
 
-                        for (int i = 0; i < savedProperties.Count; i++)
-                            savedProperties[i].AcceptChanges();
-                    }
-                    else
-                    {
-                        for (int i = 0; i < savedProperties.Count; i++)
-                            savedProperties[i].Rollback();
-                    }
+                            for (int i = 0; i < savedProperties.Count; i++)
+                                savedProperties[i].AcceptChanges();
+                        }
+                        else
+                        {
+                            for (int i = 0; i < savedProperties.Count; i++)
+                                savedProperties[i].Rollback();
+                        }
 
-                    return result;
+                        return result;
+                    }
                 }
 
                 return true;
@@ -724,12 +723,26 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Ensures that the device is connected. Calls the connection manager that keeps track of device connection lifetime.
         /// </summary>
-        internal bool EnsureConnected() => this.connectionManager.EnsureConnected(this);
+        internal IDisposable BeginDeviceClientConnectionActivity()
+        {
+            // Most devices won't have a connection timeout
+            // In that case check without lock and return a cached disposable
+            if (this.KeepAliveTimeout == 0)
+            {
+                return NullDisposable.Instance;
+            }
 
-        /// <summary>
-        /// Disconnects device from IoT Hub
-        /// </summary>
-        public bool Disconnect() => this.connectionManager.Get(this).Disconnect();
+            lock (this.processingSyncLock)
+            {
+                if (this.connectionManager.EnsureConnected(this))
+                {
+                    this.deviceClientConnectionActivityCounter++;
+                    return new ScopedDeviceClientConnection(this);
+                }
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Indicates whether or not we can resubmit an ack for the confirmation up message
@@ -837,71 +850,74 @@ namespace LoRaWan.NetworkServer
                 reportedProperties[TwinProperty.RXDelay] = null;
             }
 
-            if (!this.connectionManager.EnsureConnected(this))
+            using (var activityScope = this.BeginDeviceClientConnectionActivity())
             {
-                // Logging as information because the real error was logged as error
-                Logger.Log(this.DevEUI, "failed to update twin after join, could not reconnect", LogLevel.Debug);
-                return false;
-            }
-
-            var devAddrBeforeSave = this.DevAddr;
-            var succeeded = await this.connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
-
-            // Only save if the devAddr remains the same, otherwise ignore the save
-            if (succeeded && devAddrBeforeSave == this.DevAddr)
-            {
-                this.DevAddr = updateProperties.DevAddr;
-                this.NwkSKey = updateProperties.NwkSKey;
-                this.AppSKey = updateProperties.AppSKey;
-                this.AppNonce = updateProperties.AppNonce;
-                this.DevNonce = updateProperties.DevNonce;
-                this.NetID = updateProperties.NetID;
-
-                if (!RegionManager.TryTranslateToRegion(updateProperties.Region, out var currentRegion))
+                if (activityScope == null)
                 {
-                    Logger.Log(this.DevEUI, "the region provided in the device twin is not a valid value", LogLevel.Error);
+                    // Logging as information because the real error was logged as error
+                    Logger.Log(this.DevEUI, "failed to update twin after join, could not reconnect", LogLevel.Debug);
+                    return false;
                 }
 
-                if (currentRegion.IsValidRX1DROffset(this.DesiredRX1DROffset))
+                var devAddrBeforeSave = this.DevAddr;
+                var succeeded = await this.connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
+
+                // Only save if the devAddr remains the same, otherwise ignore the save
+                if (succeeded && devAddrBeforeSave == this.DevAddr)
                 {
-                    this.ReportedRX1DROffset = this.DesiredRX1DROffset;
+                    this.DevAddr = updateProperties.DevAddr;
+                    this.NwkSKey = updateProperties.NwkSKey;
+                    this.AppSKey = updateProperties.AppSKey;
+                    this.AppNonce = updateProperties.AppNonce;
+                    this.DevNonce = updateProperties.DevNonce;
+                    this.NetID = updateProperties.NetID;
+
+                    if (!RegionManager.TryTranslateToRegion(updateProperties.Region, out var currentRegion))
+                    {
+                        Logger.Log(this.DevEUI, "the region provided in the device twin is not a valid value", LogLevel.Error);
+                    }
+
+                    if (currentRegion.IsValidRX1DROffset(this.DesiredRX1DROffset))
+                    {
+                        this.ReportedRX1DROffset = this.DesiredRX1DROffset;
+                    }
+                    else
+                    {
+                        Logger.Log(this.DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
+                    }
+
+                    if (currentRegion.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
+                    {
+                        this.ReportedRX2DataRate = this.DesiredRX2DataRate;
+                    }
+                    else
+                    {
+                        Logger.Log(this.DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
+                    }
+
+                    if (currentRegion.IsValidRXDelay(this.DesiredRXDelay))
+                    {
+                        this.ReportedRXDelay = this.DesiredRXDelay;
+                    }
+                    else
+                    {
+                        Logger.Log(this.DevEUI, "the provided RXDelay is not valid", LogLevel.Error);
+                    }
+
+                    this.region.AcceptChanges();
+                    this.preferredGatewayID.AcceptChanges();
+
+                    this.ResetFcnt();
+                    this.InternalAcceptFrameCountChanges(this.fcntUp, this.fcntDown);
                 }
                 else
                 {
-                    Logger.Log(this.DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
+                    this.region.Rollback();
+                    this.preferredGatewayID.Rollback();
                 }
 
-                if (currentRegion.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
-                {
-                    this.ReportedRX2DataRate = this.DesiredRX2DataRate;
-                }
-                else
-                {
-                    Logger.Log(this.DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
-                }
-
-                if (currentRegion.IsValidRXDelay(this.DesiredRXDelay))
-                {
-                    this.ReportedRXDelay = this.DesiredRXDelay;
-                }
-                else
-                {
-                    Logger.Log(this.DevEUI, "the provided RXDelay is not valid", LogLevel.Error);
-                }
-
-                this.region.AcceptChanges();
-                this.preferredGatewayID.AcceptChanges();
-
-                this.ResetFcnt();
-                this.InternalAcceptFrameCountChanges(this.fcntUp, this.fcntDown);
+                return succeeded;
             }
-            else
-            {
-                this.region.Rollback();
-                this.preferredGatewayID.Rollback();
-            }
-
-            return succeeded;
         }
 
         internal void SetRequestHandler(ILoRaDataRequestHandler dataRequestHandler) => this.dataRequestHandler = dataRequestHandler;
@@ -910,7 +926,7 @@ namespace LoRaWan.NetworkServer
         {
             // Access to runningRequest and queuedRequests must be
             // thread safe
-            lock (this.queueSync)
+            lock (this.processingSyncLock)
             {
                 if (this.runningRequest == null)
                 {
@@ -930,7 +946,7 @@ namespace LoRaWan.NetworkServer
         {
             // Access to runningRequest and queuedRequests must be
             // thread safe
-            lock (this.queueSync)
+            lock (this.processingSyncLock)
             {
                 this.runningRequest = null;
                 if (this.queuedRequests.TryDequeue(out var nextRequest))
@@ -1085,6 +1101,64 @@ namespace LoRaWan.NetworkServer
             foreach (var prop in this.GetTrackableProperties())
             {
                 prop.AcceptChanges();
+            }
+        }
+
+        /// <summary>
+        /// Ends a device client connection activity
+        /// Called by <see cref="ScopedDeviceClientConnection.Dispose"/>
+        /// </summary>
+        private void EndDeviceClientConnectionActivity()
+        {
+            lock (this.processingSyncLock)
+            {
+                if (this.deviceClientConnectionActivityCounter == 0)
+                {
+                    throw new InvalidOperationException("Cannot decrement count, already at zero");
+                }
+
+                this.deviceClientConnectionActivityCounter--;
+            }
+        }
+
+        /// <summary>
+        /// Disconnects the <see cref="ILoRaDeviceClient"/> if there is no pending activity
+        /// </summary>
+        internal bool TryDisconnect()
+        {
+            lock (this.processingSyncLock)
+            {
+                if (this.deviceClientConnectionActivityCounter == 0)
+                {
+                    this.connectionManager.Get(this).Disconnect();
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Defines a <see cref="ILoRaDeviceClient"/> scope.
+        /// While a connection activity is open the connection cannot be closed
+        /// </summary>
+        private class ScopedDeviceClientConnection : IDisposable
+        {
+            private readonly LoRaDevice loRaDevice;
+
+            internal ScopedDeviceClientConnection(LoRaDevice loRaDevice)
+            {
+                if (loRaDevice.KeepAliveTimeout == 0)
+                {
+                    throw new InvalidOperationException("Scoped device client connection can be created only for devices with a connection timeout");
+                }
+
+                this.loRaDevice = loRaDevice;
+            }
+
+            public void Dispose()
+            {
+                this.loRaDevice.EndDeviceClientConnectionActivity();
             }
         }
     }

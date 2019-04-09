@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Threading.Tasks;
     using LoRaTools.Regions;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
 
@@ -652,6 +653,96 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
             await loRaDevice.InitializeAsync();
             Assert.Equal(expectedKeepAliveTimeout, loRaDevice.KeepAliveTimeout);
+        }
+
+        [Fact]
+        public void When_Device_Has_No_Connection_Timeout_Should_Disconnect()
+        {
+            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var manager = new LoRaDeviceClientConnectionManager(cache);
+            var device = new LoRaDevice("00000000", "0123456789", manager);
+            manager.Register(device, deviceClient.Object);
+
+            var activity = device.BeginDeviceClientConnectionActivity();
+            Assert.NotNull(activity);
+
+            deviceClient.Setup(x => x.Disconnect())
+                .Returns(true);
+
+            Assert.True(device.TryDisconnect());
+
+            deviceClient.Verify(x => x.Disconnect(), Times.Once());
+        }
+
+        [Fact]
+        public void When_Device_Connection_Not_In_Use_Should_Disconnect()
+        {
+            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var manager = new LoRaDeviceClientConnectionManager(cache);
+            var device = new LoRaDevice("00000000", "0123456789", manager);
+            device.KeepAliveTimeout = 60;
+            manager.Register(device, deviceClient.Object);
+
+            deviceClient.Setup(x => x.EnsureConnected())
+                .Returns(true);
+
+            var activity1 = device.BeginDeviceClientConnectionActivity();
+            Assert.NotNull(activity1);
+
+            Assert.False(device.TryDisconnect());
+
+            var activity2 = device.BeginDeviceClientConnectionActivity();
+            Assert.NotNull(activity2);
+
+            Assert.False(device.TryDisconnect());
+            activity1.Dispose();
+            Assert.False(device.TryDisconnect());
+
+            activity2.Dispose();
+            deviceClient.Setup(x => x.Disconnect())
+                .Returns(true);
+
+            Assert.True(device.TryDisconnect());
+
+            deviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
+        }
+
+        [Fact]
+        public void When_Needed_Should_Reconnect_Client()
+        {
+            var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var manager = new LoRaDeviceClientConnectionManager(cache);
+            var device = new LoRaDevice("00000000", "0123456789", manager);
+            device.KeepAliveTimeout = 60;
+            manager.Register(device, deviceClient.Object);
+
+            deviceClient.Setup(x => x.EnsureConnected())
+                .Returns(true);
+
+            deviceClient.Setup(x => x.Disconnect())
+                .Returns(true);
+
+            using (var activity1 = device.BeginDeviceClientConnectionActivity())
+            {
+                Assert.NotNull(activity1);
+            }
+
+            Assert.True(device.TryDisconnect());
+
+            using (var activity2 = device.BeginDeviceClientConnectionActivity())
+            {
+                Assert.NotNull(activity2);
+
+                Assert.False(device.TryDisconnect());
+            }
+
+            Assert.True(device.TryDisconnect());
+
+            deviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
+            deviceClient.Verify(x => x.Disconnect(), Times.Exactly(2));
         }
     }
 }
