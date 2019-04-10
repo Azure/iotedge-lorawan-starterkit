@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.4.3" />
-    <PackageReference Include="Microsoft.Azure.Devices" Version="1.17.2" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="1.17.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
