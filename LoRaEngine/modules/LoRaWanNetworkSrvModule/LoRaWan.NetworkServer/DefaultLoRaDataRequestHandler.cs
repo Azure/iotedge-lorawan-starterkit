@@ -141,16 +141,16 @@ namespace LoRaWan.NetworkServer
                     // if deduplication already processed the next framecounter down, use that
                     uint? fcntDown = loRaADRResult?.FCntDown != null ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
 
-                if (fcntDown.HasValue)
-                {
-                    LogFrameCounterDownState(loRaDevice, fcntDown.Value);
-                }
+                    if (fcntDown.HasValue)
+                    {
+                        LogFrameCounterDownState(loRaDevice, fcntDown.Value);
+                    }
 
-                // If it is confirmed it require us to update the frame counter down
-                // Multiple gateways: in redis, otherwise in device twin
-                if (requiresConfirmation)
-                {
-                    fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+                    // If it is confirmed it require us to update the frame counter down
+                    // Multiple gateways: in redis, otherwise in device twin
+                    if (requiresConfirmation)
+                    {
+                        fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
                         // Failed to update the fcnt down
                         // In multi gateway scenarios it means the another gateway was faster than using, can stop now
