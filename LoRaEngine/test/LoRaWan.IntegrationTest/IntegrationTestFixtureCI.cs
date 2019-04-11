@@ -162,11 +162,6 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        public async Task<bool> ResetDeviceCache(string devEUI)
-        {
-            return await LoRaAPIHelper.ResetDeviceCache(devEUI);
-        }
-
         public string GetKey16(int deviceId, bool multiGw = false)
         {
             var target = multiGw ? this.Configuration.DeviceKeyFormatMultiGW : this.Configuration.DeviceKeyFormat;

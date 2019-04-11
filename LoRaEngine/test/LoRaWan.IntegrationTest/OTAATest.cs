@@ -98,8 +98,15 @@ namespace LoRaWan.IntegrationTest
                 if (device.IsMultiGw)
                 {
                     // multi gw, make sure one ignored the message
-                    var confirmedLog = $"{device.DeviceID}: sending a downstream message";
-                    await this.TestFixtureCi.AssertSingleGatewaySource(log => log.StartsWith(confirmedLog, StringComparison.OrdinalIgnoreCase));
+                    var searchTokenSending = $"{device.DeviceID}: sending a downstream message";
+                    var sending = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase));
+                    Assert.NotNull(sending.MatchedEvent);
+
+                    var searchTokenAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
+                    var ignored = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenAlreadySent, StringComparison.OrdinalIgnoreCase));
+                    Assert.NotNull(ignored.MatchedEvent);
+
+                    Assert.NotEqual(sending.MatchedEvent.SourceId, ignored.MatchedEvent.SourceId);
                 }
 
                 // After transferPacketWithConfirmed: Expectation from serial

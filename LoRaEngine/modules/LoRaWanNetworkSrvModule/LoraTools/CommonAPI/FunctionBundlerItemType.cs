@@ -11,7 +11,6 @@ namespace LoRaTools.CommonAPI
         FCntDown = 0x1,
         Deduplication = 0x2,
         ADR = 0x4,
-        PreferredGateway = 0x8,
-        ResetDeviceCache = 0x10
+        PreferredGateway = 0x8
     }
 }

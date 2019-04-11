@@ -31,17 +31,6 @@ namespace LoRaWan.IntegrationTest
             return new HttpClient(httpHandler);
         }
 
-        public static async Task<bool> ResetDeviceCache(string devEUI)
-        {
-            var url = $"{baseUrl}FunctionBundler/{devEUI}?code={authCode}";
-            // the gateway id is only used to identify who is taking the lock when
-            // releasing the cache. Hence we do not need a real GW id
-            var payload = "{\"GatewayId\":\"integrationTesting\", \"FunctionItems\": " + (int)FunctionBundlerItemType.ResetDeviceCache + "}";
-
-            var response = await httpClient.Value.PostAsync(url, PreparePostContent(payload));
-            return response.IsSuccessStatusCode;
-        }
-
         public static async Task<bool> ResetADRCache(string devEUI)
         {
             var url = $"{baseUrl}FunctionBundler/{devEUI}?code={authCode}";

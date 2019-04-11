@@ -45,7 +45,6 @@ namespace LoraKeysManagerFacade.Test
                 .Setup(x => x.GetStrategy())
                 .Returns(strategy.Object);
 
-            // .Returns(new LoRaADRStandardStrategy());
             var cacheStore = new LoRaInMemoryDeviceStore();
             this.adrManager = new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, cacheStore);
             this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
