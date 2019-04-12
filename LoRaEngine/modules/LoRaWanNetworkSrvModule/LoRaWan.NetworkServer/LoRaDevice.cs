@@ -267,6 +267,37 @@ namespace LoRaWan.NetworkServer
 
                         if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
                             this.DevNonce = twin.Properties.Reported[TwinProperty.DevNonce].Value as string;
+
+                        // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
+                        if (twin.Properties.Desired.Contains(TwinProperty.RX2DataRate))
+                        {
+                            this.DesiredRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
+                        }
+
+                        if (twin.Properties.Desired.Contains(TwinProperty.RX1DROffset))
+                        {
+                            this.DesiredRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value);
+                        }
+
+                        if (twin.Properties.Desired.Contains(TwinProperty.RXDelay))
+                        {
+                            this.DesiredRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RXDelay].Value);
+                        }
+
+                        if (twin.Properties.Reported.Contains(TwinProperty.RX2DataRate))
+                        {
+                            this.ReportedRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX2DataRate].Value);
+                        }
+
+                        if (twin.Properties.Reported.Contains(TwinProperty.RX1DROffset))
+                        {
+                            this.ReportedRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX1DROffset].Value);
+                        }
+
+                        if (twin.Properties.Reported.Contains(TwinProperty.RXDelay))
+                        {
+                            this.ReportedRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RXDelay].Value);
+                        }
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
@@ -293,21 +324,6 @@ namespace LoRaWan.NetworkServer
                         var val = twin.Properties.Desired[TwinProperty.Deduplication].Value as string;
                         Enum.TryParse<DeduplicationMode>(val, true, out DeduplicationMode mode);
                         this.Deduplication = mode;
-                    }
-
-                    if (twin.Properties.Desired.Contains(TwinProperty.RX2DataRate))
-                    {
-                        this.DesiredRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
-                    }
-
-                    if (twin.Properties.Desired.Contains(TwinProperty.RX1DROffset))
-                    {
-                        this.DesiredRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value);
-                    }
-
-                    if (twin.Properties.Desired.Contains(TwinProperty.RXDelay))
-                    {
-                        this.DesiredRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RXDelay].Value);
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
@@ -796,25 +812,6 @@ namespace LoRaWan.NetworkServer
             reportedProperties[TwinProperty.NetID] = updateProperties.NetID;
             reportedProperties[TwinProperty.DevNonce] = updateProperties.DevNonce;
 
-            // Additional Join Property Saved
-            if (this.DesiredRX1DROffset != DefaultJoinValues)
-            {
-                reportedProperties[TwinProperty.RX1DROffset] = this.DesiredRX1DROffset;
-            }
-            else
-            {
-                reportedProperties[TwinProperty.RX1DROffset] = null;
-            }
-
-            if (this.DesiredRX2DataRate != DefaultJoinValues)
-            {
-                reportedProperties[TwinProperty.RX2DataRate] = this.DesiredRX2DataRate;
-            }
-            else
-            {
-                reportedProperties[TwinProperty.RX2DataRate] = null;
-            }
-
             if (updateProperties.SaveRegion)
             {
                 this.region.Set(updateProperties.Region);
@@ -822,6 +819,41 @@ namespace LoRaWan.NetworkServer
                 {
                     reportedProperties[this.region.PropertyName] = updateProperties.Region.ToString();
                 }
+            }
+
+            if (RegionManager.TryTranslateToRegion(updateProperties.Region, out var currentRegion))
+            {
+                // Additional Join Property Saved
+                if (this.DesiredRX1DROffset != DefaultJoinValues && currentRegion.IsValidRX1DROffset(this.DesiredRX1DROffset))
+                {
+                    reportedProperties[TwinProperty.RX1DROffset] = this.DesiredRX1DROffset;
+                }
+                else
+                {
+                    reportedProperties[TwinProperty.RX1DROffset] = null;
+                }
+
+                if (this.DesiredRX2DataRate != DefaultJoinValues && currentRegion.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
+                {
+                    reportedProperties[TwinProperty.RX2DataRate] = this.DesiredRX2DataRate;
+                }
+                else
+                {
+                    reportedProperties[TwinProperty.RX2DataRate] = null;
+                }
+
+                if (this.DesiredRXDelay != DefaultJoinValues && currentRegion.IsValidRXDelay(this.DesiredRXDelay))
+                {
+                    reportedProperties[TwinProperty.RXDelay] = this.DesiredRXDelay;
+                }
+                else
+                {
+                    reportedProperties[TwinProperty.RXDelay] = null;
+                }
+            }
+            else
+            {
+                Logger.Log(this.DevEUI, "the region provided in the device twin is not a valid value", LogLevel.Error);
             }
 
             if (updateProperties.SavePreferredGateway)
@@ -839,15 +871,6 @@ namespace LoRaWan.NetworkServer
                 {
                     reportedProperties[this.preferredGatewayID.PropertyName] = updateProperties.PreferredGatewayID;
                 }
-            }
-
-            if (this.DesiredRXDelay != DefaultJoinValues)
-            {
-                reportedProperties[TwinProperty.RXDelay] = this.DesiredRXDelay;
-            }
-            else
-            {
-                reportedProperties[TwinProperty.RXDelay] = null;
             }
 
             using (var activityScope = this.BeginDeviceClientConnectionActivity())
@@ -871,11 +894,6 @@ namespace LoRaWan.NetworkServer
                     this.AppNonce = updateProperties.AppNonce;
                     this.DevNonce = updateProperties.DevNonce;
                     this.NetID = updateProperties.NetID;
-
-                    if (!RegionManager.TryTranslateToRegion(updateProperties.Region, out var currentRegion))
-                    {
-                        Logger.Log(this.DevEUI, "the region provided in the device twin is not a valid value", LogLevel.Error);
-                    }
 
                     if (currentRegion.IsValidRX1DROffset(this.DesiredRX1DROffset))
                     {
