@@ -194,7 +194,7 @@ namespace LoRaWan.Test.Shared
         /// </summary>
         /// <param name="serialLog">serial log from the attached device</param>
         /// <param name="devEUI">The device EUI of the current device</param>
-        public async Task AssertTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, string devEUI)
+        public async Task<bool> WaitForTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, string devEUI)
         {
             var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID"));
             Assert.NotNull(joinConfirmMsg);
@@ -217,7 +217,12 @@ namespace LoRaWan.Test.Shared
                 }
             }
 
-            Assert.True(reported);
+            if (!reported)
+            {
+                TestLogger.Log($"[WARNING] Twin sync after join did not happen for device {devEUI}");
+            }
+
+            return reported;
         }
 
         // Asserts Network Server Module log exists. It has built-in retries and delays

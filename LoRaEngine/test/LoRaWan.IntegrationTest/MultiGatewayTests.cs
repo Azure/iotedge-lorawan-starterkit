@@ -46,7 +46,7 @@ namespace LoRaWan.IntegrationTest
             var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg) != -1, new SearchLogOptions(joinRefusedMsg));
             Assert.True(joinRefused.Found);
 
-            await this.TestFixtureCi.AssertTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
+            await this.TestFixtureCi.WaitForTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
 
             // expecting both gw to start picking up messages
             // and sending to IoT hub.

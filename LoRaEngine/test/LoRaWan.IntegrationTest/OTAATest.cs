@@ -49,7 +49,7 @@ namespace LoRaWan.IntegrationTest
 
             if (device.IsMultiGw)
             {
-                await this.TestFixtureCi.AssertTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
+                await this.TestFixtureCi.WaitForTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
             }
 
             // Sends 10x unconfirmed messages
