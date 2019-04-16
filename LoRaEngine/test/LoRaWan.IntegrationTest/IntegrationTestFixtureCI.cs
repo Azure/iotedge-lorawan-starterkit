@@ -131,6 +131,8 @@ namespace LoRaWan.IntegrationTest
 
         public override async Task InitializeAsync()
         {
+            TestLogger.LogDate = true;
+
             await base.InitializeAsync();
 
             if (!string.IsNullOrEmpty(this.Configuration.LeafDeviceSerialPort))

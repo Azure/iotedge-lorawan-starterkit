@@ -120,7 +120,7 @@ namespace LoRaWan.IntegrationTest
                             break;
                         case "Drop":
                             var logMsg = $"{device.DeviceID}: duplication strategy indicated to not process message";
-                            var droppedLog = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log == logMsg, new SearchLogOptions { Description = logMsg, SourceIdFilter = duplicateResult.MatchedEvent.SourceId });
+                            var droppedLog = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(logMsg), new SearchLogOptions { Description = logMsg, SourceIdFilter = duplicateResult.MatchedEvent.SourceId });
                             Assert.NotNull(droppedLog.MatchedEvent);
 
                             var expectedPayload = $"{{\"value\":{msg}}}";

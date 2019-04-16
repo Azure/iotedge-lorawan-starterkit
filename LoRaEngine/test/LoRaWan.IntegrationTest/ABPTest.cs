@@ -427,6 +427,11 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+            var result = await this.TestFixtureCi.SearchNetworkServerModuleAsync(msg => msg.StartsWith($"{device25.DeviceID}: device client disconnected"), new SearchLogOptions { MaxAttempts = 10 });
+
+            Assert.NotNull(result.MatchedEvent);
+
             this.TestFixtureCi.ClearLogs();
 
             // Send 1 message from device 25 and check that connection was restablished
