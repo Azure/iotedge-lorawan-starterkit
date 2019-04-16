@@ -12,6 +12,9 @@ namespace LoraKeysManagerFacade
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
 
+    /// <summary>
+    /// This Cache Manager class is used to perform synchronisation at function startup.
+    /// </summary>
     class DevAddressCacheManager : IHostedService
     {
         private readonly RegistryManager registryManager;
@@ -28,7 +31,7 @@ namespace LoraKeysManagerFacade
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             LoRaDevAddrCache loRaDevAddrCache = new LoRaDevAddrCache(this.cacheStore, this.logger);
-            // To check should we wait?
+            // To check should we wait? I don't think so.
             await loRaDevAddrCache.PerformNeededSyncs(this.registryManager);
         }
 

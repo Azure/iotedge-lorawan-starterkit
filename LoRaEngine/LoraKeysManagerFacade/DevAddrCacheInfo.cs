@@ -11,11 +11,14 @@ namespace LoraKeysManagerFacade
     {
         public string GatewayId { get; set; }
 
+        public DateTime LastUpdatedTwins { get; set; }
+
         internal bool IsEqual(DevAddrCacheInfo oldElement)
         {
             return this.GatewayId == oldElement.GatewayId
                 && this.DevAddr == oldElement.DevAddr
-                && this.DevEUI == oldElement.DevEUI;
+                && this.DevEUI == oldElement.DevEUI
+                && this.LastUpdatedTwins == oldElement.LastUpdatedTwins;
         }
     }
 }

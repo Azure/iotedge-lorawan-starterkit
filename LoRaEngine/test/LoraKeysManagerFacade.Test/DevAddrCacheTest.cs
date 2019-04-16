@@ -80,7 +80,7 @@ namespace LoraKeysManagerFacade.Test
                         deviceTwin.DeviceId = devaddrItem.DevEUI;
                         deviceTwin.Properties = new TwinProperties()
                         {
-                            Desired = new TwinCollection($"{{\"DevAddr\": \"{devaddrItem.DevAddr}\", \"GatewayId\": \"{devaddrItem.GatewayId}\"}}"),
+                            Desired = new TwinCollection($"{{\"DevAddr\": \"{devaddrItem.DevAddr}\", \"GatewayId\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins}\"}}"),
                         };
 
                         twins.Add(deviceTwin);
@@ -134,6 +134,7 @@ namespace LoraKeysManagerFacade.Test
         public async Task When_DevAddr_Is_Not_In_Cache_Query_Iot_Hub_And_Save_In_Cache()
         {
             string gatewayId = NewUniqueEUI64();
+            DateTime dateTime = DateTime.UtcNow;
             List<DevAddrCacheInfo> managerInput = new List<DevAddrCacheInfo>();
 
             for (int i = 0; i < 2; i++)
@@ -178,6 +179,7 @@ namespace LoraKeysManagerFacade.Test
         public async Task When_DevAddr_Is_In_Cache_Without_Key_Should_Not_Query_Iot_Hub_For_Twin_But_Should_Get_Key_And_Update()
         {
             string gatewayId = NewUniqueEUI64();
+            DateTime dateTime = DateTime.UtcNow;
             List<DevAddrCacheInfo> managerInput = new List<DevAddrCacheInfo>();
             for (int i = 0; i < 2; i++)
             {
@@ -185,7 +187,8 @@ namespace LoraKeysManagerFacade.Test
                 {
                     DevEUI = NewUniqueEUI64(),
                     DevAddr = NewUniqueEUI32(),
-                    GatewayId = gatewayId
+                    GatewayId = gatewayId,
+                    LastUpdatedTwins = dateTime
                 });
             }
 
@@ -220,7 +223,7 @@ namespace LoraKeysManagerFacade.Test
         public async Task When_DevAddr_Is_In_Cache_With_Key_Should_Not_Query_Iot_Hub_For_Twin_At_All()
         {
             string gatewayId = NewUniqueEUI64();
-
+            DateTime dateTime = DateTime.UtcNow;
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             List<DevAddrCacheInfo> managerInput = new List<DevAddrCacheInfo>();
             for (int i = 0; i < 2; i++)
@@ -230,7 +233,8 @@ namespace LoraKeysManagerFacade.Test
                     DevEUI = NewUniqueEUI64(),
                     DevAddr = NewUniqueEUI32(),
                     GatewayId = gatewayId,
-                    PrimaryKey = primaryKey
+                    PrimaryKey = primaryKey,
+                    LastUpdatedTwins = dateTime
                 });
             }
 
@@ -260,6 +264,7 @@ namespace LoraKeysManagerFacade.Test
         public async Task When_Device_Is_Not_Ours_Save_In_Cache_And_Dont_Query_Hub_Again()
         {
             string gatewayId = NewUniqueEUI64();
+            DateTime dateTime = DateTime.UtcNow;
             // In this test we want no updates running
             // initialize locks for test to run correctly
             var lockToTake = new string[2] { FullUpdateKey, DeltaUpdateKey };
@@ -275,7 +280,8 @@ namespace LoraKeysManagerFacade.Test
                     DevEUI = NewUniqueEUI64(),
                     DevAddr = NewUniqueEUI32(),
                     GatewayId = gatewayId,
-                    PrimaryKey = primaryKey
+                    PrimaryKey = primaryKey,
+                    LastUpdatedTwins = dateTime
                 });
             }
 
@@ -308,7 +314,7 @@ namespace LoraKeysManagerFacade.Test
         public async Task When_FullUpdateKey_Is_Not_there_Should_Perform_Full_Reload()
         {
             string gatewayId = NewUniqueEUI64();
-
+            DateTime dateTime = DateTime.UtcNow;
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             List<DevAddrCacheInfo> managerInput = new List<DevAddrCacheInfo>();
             for (int i = 0; i < 5; i++)
@@ -357,6 +363,7 @@ namespace LoraKeysManagerFacade.Test
         public async Task Delta_Update_Perform_Correctly_On_Empty_Cache()
         {
             string gatewayId = NewUniqueEUI64();
+            DateTime dateTime = DateTime.UtcNow;
 
             List<DevAddrCacheInfo> managerInput = new List<DevAddrCacheInfo>();
             for (int i = 0; i < 5; i++)
@@ -366,6 +373,7 @@ namespace LoraKeysManagerFacade.Test
                     DevEUI = NewUniqueEUI64(),
                     DevAddr = NewUniqueEUI32(),
                     GatewayId = gatewayId,
+                    LastUpdatedTwins = dateTime
                 });
             }
 
@@ -416,10 +424,12 @@ namespace LoraKeysManagerFacade.Test
         // primary key present in the cache is still here after a delta up
         // Items with save Devaddr are correctly saved (one old from cache, one from iot hub)
         // Gateway Id is correctly updated in old cache information.
+        // Primary Key are kept as UpdateTime is similar
         public async Task Delta_Update_Perform_Correctly_On_Non_Empty_Cache_And_Keep_Old_Values()
         {
             string oldGatewayId = NewUniqueEUI64();
             string newGatewayId = NewUniqueEUI64();
+            DateTime dateTime = DateTime.UtcNow;
 
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             List<DevAddrCacheInfo> managerInput = new List<DevAddrCacheInfo>();
@@ -431,7 +441,8 @@ namespace LoraKeysManagerFacade.Test
                 {
                     DevEUI = NewUniqueEUI64(),
                     DevAddr = NewUniqueEUI32(),
-                    GatewayId = newGatewayId
+                    GatewayId = newGatewayId,
+                    LastUpdatedTwins = dateTime
                 });
             }
 
@@ -439,7 +450,8 @@ namespace LoraKeysManagerFacade.Test
             {
                 DevEUI = NewUniqueEUI64(),
                 DevAddr = adressForDuplicateDevAddr,
-                GatewayId = newGatewayId
+                GatewayId = newGatewayId,
+                LastUpdatedTwins = dateTime
             });
 
             var devAddrJoining = managerInput[0].DevAddr;
@@ -454,7 +466,8 @@ namespace LoraKeysManagerFacade.Test
                 {
                     DevEUI = managerInput[i].DevEUI,
                     DevAddr = managerInput[i].DevAddr,
-                    GatewayId = oldGatewayId
+                    GatewayId = oldGatewayId,
+                    LastUpdatedTwins = dateTime
                 });
             }
 
@@ -467,7 +480,8 @@ namespace LoraKeysManagerFacade.Test
                 DevEUI = devEuiDoubleItem,
                 DevAddr = adressForDuplicateDevAddr,
                 GatewayId = oldGatewayId,
-                PrimaryKey = primaryKey
+                PrimaryKey = primaryKey,
+                LastUpdatedTwins = dateTime
             });
             this.InitCache(this.cache, cacheInput);
 
@@ -519,18 +533,89 @@ namespace LoraKeysManagerFacade.Test
         }
 
         [Fact]
+        // This test perform a delta update and we check the following
+        // primary key present in the cache is still here after a delta up
+        // Items with save Devaddr are correctly saved (one old from cache, one from iot hub)
+        // Gateway Id is correctly updated in old cache information.
+        // Primary Key are kept as UpdateTime is similar
+        public async Task Delta_Update_Perform_Correctly_On_Non_Empty_Cache_And_Keep_Old_Values_Except_Primary_Key()
+        {
+            string oldGatewayId = NewUniqueEUI64();
+            string newGatewayId = NewUniqueEUI64();
+            DateTime dateTime = DateTime.UtcNow;
+            DateTime updateDateTime = DateTime.UtcNow.AddMinutes(3);
+
+            var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
+            List<DevAddrCacheInfo> managerInput = new List<DevAddrCacheInfo>();
+
+            var adressForDuplicateDevAddr = NewUniqueEUI32();
+            for (int i = 0; i < 5; i++)
+            {
+                managerInput.Add(new DevAddrCacheInfo()
+                {
+                    DevEUI = NewUniqueEUI64(),
+                    DevAddr = NewUniqueEUI32(),
+                    GatewayId = newGatewayId,
+                    LastUpdatedTwins = updateDateTime
+                });
+            }
+
+            var registryManagerMock = this.InitRegistryManager(managerInput, managerInput.Count());
+
+            // Set up the cache with expectation.
+            List<DevAddrCacheInfo> cacheInput = new List<DevAddrCacheInfo>();
+            for (int i = 0; i < 5; i++)
+            {
+                cacheInput.Add(new DevAddrCacheInfo()
+                {
+                    DevEUI = managerInput[i].DevEUI,
+                    DevAddr = managerInput[i].DevAddr,
+                    LastUpdatedTwins = dateTime,
+                    PrimaryKey = primaryKey
+                });
+            }
+
+            this.InitCache(this.cache, cacheInput);
+            // initialize locks for test to run correctly
+            string[] neededLocksForTestToRun = new string[2] { GlobalDevAddrUpdateKey, DeltaUpdateKey };
+            var locksGuideTest = new string[1] { FullUpdateKey };
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, locksGuideTest);
+
+            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+
+            // we expect the devices are saved
+            for (int i = 0; i < managerInput.Count; i++)
+            {
+                var queryResult = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, managerInput[i].DevAddr));
+                Assert.Single(queryResult);
+                var resultObject = JsonConvert.DeserializeObject<DevAddrCacheInfo>(queryResult[0].Value);
+                Assert.Equal(managerInput[i].GatewayId, resultObject.GatewayId);
+                Assert.Equal(managerInput[i].DevEUI, resultObject.DevEUI);
+                // as the object changed the keys should not be saved
+                Assert.Equal(string.Empty, resultObject.PrimaryKey);
+            }
+
+            // Iot hub should never have been called.
+            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Once);
+            registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
+            // We expect to query for the key once (the device with an active connection)
+            registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
         // This test perform a full update and we check the following
         // primary key present in the cache is still here after a fullupdate
         // Items with same Devaddr are correctly saved (one old from cache, one from iot hub)
         // Old cache items sharing a devaddr not in the new update are correctly removed
         // Items with a devAddr not in the update are correctly still in cache
         // Gateway Id is correctly updated in old cache information.
-        // Primary key is kept
+        // Primary Key are kept as UpdateTime is similar
         public async Task Full_Update_Perform_Correctly_On_Non_Empty_Cache_And_Keep_Old_Values()
         {
             string oldGatewayId = NewUniqueEUI64();
             string newGatewayId = NewUniqueEUI64();
-
+            DateTime dateTime = DateTime.UtcNow;
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             List<DevAddrCacheInfo> newValues = new List<DevAddrCacheInfo>();
 
@@ -541,7 +626,8 @@ namespace LoraKeysManagerFacade.Test
                 {
                     DevEUI = NewUniqueEUI64(),
                     DevAddr = NewUniqueEUI32(),
-                    GatewayId = newGatewayId
+                    GatewayId = newGatewayId,
+                    LastUpdatedTwins = dateTime
                 });
             }
 
@@ -549,7 +635,8 @@ namespace LoraKeysManagerFacade.Test
             {
                 DevEUI = NewUniqueEUI64(),
                 DevAddr = adressForDuplicateDevAddr,
-                GatewayId = newGatewayId
+                GatewayId = newGatewayId,
+                LastUpdatedTwins = dateTime
             });
 
             var devAddrJoining = newValues[0].DevAddr;
@@ -564,7 +651,8 @@ namespace LoraKeysManagerFacade.Test
                 {
                     DevEUI = newValues[i].DevEUI,
                     DevAddr = newValues[i].DevAddr,
-                    GatewayId = oldGatewayId
+                    GatewayId = oldGatewayId,
+                    LastUpdatedTwins = dateTime
                 });
             }
 
@@ -579,7 +667,8 @@ namespace LoraKeysManagerFacade.Test
                 DevEUI = devEuiDoubleItem,
                 DevAddr = adressForDuplicateDevAddr,
                 GatewayId = oldGatewayId,
-                PrimaryKey = primaryKey
+                PrimaryKey = primaryKey,
+                LastUpdatedTwins = dateTime
             });
 
             this.InitCache(this.cache, cacheInput);
@@ -603,6 +692,79 @@ namespace LoraKeysManagerFacade.Test
                 {
                     Assert.Equal(cacheInput[i].PrimaryKey, result2Object.PrimaryKey);
                 }
+            }
+
+            // Iot hub should never have been called.
+            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Once);
+            registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
+            // We expect to query for the key once (the device with an active connection)
+            registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        // This test perform a full update and we check the following
+        // primary key present in the cache is still here after a fullupdate
+        // Items with same Devaddr are correctly saved (one old from cache, one from iot hub)
+        // Old cache items sharing a devaddr not in the new update are correctly removed
+        // Items with a devAddr not in the update are correctly still in cache
+        // Gateway Id is correctly updated in old cache information.
+        // Primary Key are not kept as UpdateTime is not similar
+        public async Task Full_Update_Perform_Correctly_On_Non_Empty_Cache_And_Keep_Old_Values_Except_Primary_Keys()
+        {
+            string oldGatewayId = NewUniqueEUI64();
+            string newGatewayId = NewUniqueEUI64();
+            DateTime dateTime = DateTime.UtcNow;
+            DateTime updateDateTime = DateTime.UtcNow.AddMinutes(3);
+            var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
+            List<DevAddrCacheInfo> newValues = new List<DevAddrCacheInfo>();
+
+            var adressForDuplicateDevAddr = NewUniqueEUI32();
+            for (int i = 0; i < 5; i++)
+            {
+                newValues.Add(new DevAddrCacheInfo()
+                {
+                    DevEUI = NewUniqueEUI64(),
+                    DevAddr = NewUniqueEUI32(),
+                    GatewayId = newGatewayId,
+                    LastUpdatedTwins = updateDateTime
+                });
+            }
+
+            // The cache start as empty
+            var registryManagerMock = this.InitRegistryManager(newValues, newValues.Count());
+
+            // Set up the cache with expectation.
+            List<DevAddrCacheInfo> cacheInput = new List<DevAddrCacheInfo>();
+            for (int i = 0; i < 5; i++)
+            {
+                cacheInput.Add(new DevAddrCacheInfo()
+                {
+                    DevEUI = newValues[i].DevEUI,
+                    DevAddr = newValues[i].DevAddr,
+                    GatewayId = oldGatewayId,
+                    LastUpdatedTwins = dateTime,
+                    PrimaryKey = primaryKey
+                });
+            }
+
+            this.InitCache(this.cache, cacheInput);
+
+            // initialize locks for test to run correctly
+            string[] neededLocksForTestToRun = new string[2] { GlobalDevAddrUpdateKey, FullUpdateKey };
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, null);
+
+            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+
+            // we expect the devices are saved, the double device id should not be there anymore
+            for (int i = 0; i < newValues.Count; i++)
+            {
+                var queryResult = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, newValues[i].DevAddr));
+                Assert.Single(queryResult);
+                var result2Object = JsonConvert.DeserializeObject<DevAddrCacheInfo>(queryResult[0].Value);
+                Assert.Equal(newGatewayId, result2Object.GatewayId);
+                Assert.Equal(newValues[i].DevEUI, result2Object.DevEUI);
+                Assert.Equal(string.Empty, result2Object.PrimaryKey);
             }
 
             // Iot hub should never have been called.

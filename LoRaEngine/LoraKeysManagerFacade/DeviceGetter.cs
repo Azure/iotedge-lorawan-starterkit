@@ -171,7 +171,8 @@ namespace LoraKeysManagerFacade
                                     PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey,
                                     GatewayId = twin.Properties.Desired.Contains("GatewayId") ?
                                         twin.Properties.Desired["GatewayId"] as string :
-                                        string.Empty
+                                        string.Empty,
+                                    LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
                                 };
                                 results.Add(iotHubDeviceInfo);
                                 devAddrCache.StoreInfo((DevAddrCacheInfo)iotHubDeviceInfo);
