@@ -85,13 +85,13 @@ namespace LoRaWan.IntegrationTest
             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
 
+            // wait 1 second after joined
+            await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
+
             if (device.IsMultiGw)
             {
                 await this.TestFixtureCi.WaitForTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
             }
-
-            // wait 1 second after joined
-            await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
             await this.Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_CommandsImplAsync(device, "test");
             await this.Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_CommandsImplAsync(device, string.Empty);
