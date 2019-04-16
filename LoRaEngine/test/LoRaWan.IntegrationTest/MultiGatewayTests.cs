@@ -119,7 +119,7 @@ namespace LoRaWan.IntegrationTest
                             await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, "dupmsg", "true");
                             break;
                         case "Drop":
-                            var logMsg = $"{device.DeviceID}: duplicate message '{i + 1}' is dropped.";
+                            var logMsg = $"{device.DeviceID}: duplication strategy indicated to not process message";
                             var droppedLog = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log == logMsg, new SearchLogOptions { Description = logMsg, SourceIdFilter = duplicateResult.MatchedEvent.SourceId });
                             Assert.NotNull(droppedLog.MatchedEvent);
 
