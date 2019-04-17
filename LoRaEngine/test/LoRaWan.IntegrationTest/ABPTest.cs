@@ -428,7 +428,13 @@ namespace LoRaWan.IntegrationTest
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-            var result = await this.TestFixtureCi.SearchNetworkServerModuleAsync(msg => msg.StartsWith($"{device25.DeviceID}: device client disconnected"), new SearchLogOptions { MaxAttempts = 10 });
+            var result = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
+                        msg => msg.StartsWith($"{device25.DeviceID}: device client disconnected"),
+                        new SearchLogOptions
+                        {
+                            MaxAttempts = 10,
+                            SourceIdFilter = device25.GatewayID
+                        });
 
             Assert.NotNull(result.MatchedEvent);
 
