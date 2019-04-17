@@ -20,14 +20,32 @@ namespace LoraKeysManagerFacade.Test
         private readonly ILoRaADRManager adrManager;
         private readonly FunctionBundlerFunction functionBundler;
         private readonly ADRExecutionItem adrExecutionItem;
+        private readonly Random rnd = new Random();
 
         public FunctionBundlerTest()
         {
+            var strategy = new Mock<ILoRaADRStrategy>(MockBehavior.Strict);
+            strategy.Setup(x => x.DefaultNbRep).Returns(1);
+            strategy.Setup(x => x.DefaultTxPower).Returns(0);
+            strategy.Setup(x => x.MinimumNumberOfResult).Returns(20);
+            strategy
+                .Setup(x => x.ComputeResult(It.IsNotNull<string>(), It.IsAny<LoRaADRTable>(), It.IsAny<float>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>()))
+                .Returns((string devEUI, LoRaADRTable table, float snr, int upstreamDr, int minTxPower, int maxDr) =>
+                {
+                    return new LoRaADRResult
+                    {
+                        CanConfirmToDevice = true,
+                        DataRate = upstreamDr,
+                        TxPower = 0
+                    };
+                });
+
             var strategyProvider = new Mock<ILoRaADRStrategyProvider>(MockBehavior.Strict);
             strategyProvider
                 .Setup(x => x.GetStrategy())
-                .Returns(new LoRaADRStandardStrategy());
+                .Returns(strategy.Object);
 
+            // .Returns(new LoRaADRStandardStrategy());
             var cacheStore = new LoRaInMemoryDeviceStore();
             this.adrManager = new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, cacheStore);
             this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
@@ -252,7 +270,7 @@ namespace LoraKeysManagerFacade.Test
             }
 
             Assert.Equal(1, winners);
-            Assert.Equal(requests.Length - 1, dups);
+            Assert.Equal(functionBundlerResults.Count - 1, dups);
         }
 
         private async Task<FunctionBundlerResult> ExecuteRequest(string devEUI, FunctionBundlerRequest req)
@@ -299,8 +317,6 @@ namespace LoraKeysManagerFacade.Test
 
         private async Task PrepareADRFrames(string deviceEUI, int numberOfFrames, List<LoRaADRRequest> requests)
         {
-            var rnd = new Random();
-
             // add just 1 under the limit to the table
             for (var i = 0; i < numberOfFrames; i++)
             {
@@ -308,7 +324,11 @@ namespace LoraKeysManagerFacade.Test
                 {
                     var res = await this.adrExecutionItem.HandleADRRequest(deviceEUI, req);
 
-                    req.RequiredSnr = rnd.Next(-20, 20);
+                    lock (this.rnd)
+                    {
+                        req.RequiredSnr = this.rnd.Next(-20, 20);
+                    }
+
                     req.DataRate = 2;
                     ++req.FCntUp;
                     req.FCntDown = res.FCntDown.GetValueOrDefault() > 0 ? res.FCntDown.Value : req.FCntDown;
