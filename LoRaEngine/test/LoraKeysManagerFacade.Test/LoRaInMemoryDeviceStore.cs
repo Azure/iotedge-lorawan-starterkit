@@ -135,7 +135,7 @@ namespace LoraKeysManagerFacade.Test
             throw new NotImplementedException();
         }
 
-        public void ChangeLockTTL(string key, TimeSpan timeToExpire)
+        public bool TryChangeLockTTL(string key, TimeSpan timeToExpire)
         {
             throw new NotImplementedException();
         }
@@ -145,7 +145,7 @@ namespace LoraKeysManagerFacade.Test
             throw new NotImplementedException();
         }
 
-        public void ReplaceHashObjects<T>(string cacheKey, Dictionary<string, T> input, TimeSpan? timeToExpire = null, bool removeOldOccurence = false)
+        public void ReplaceHashObjects<T>(string cacheKey, IDictionary<string, T> input, TimeSpan? timeToExpire = null, bool removeOldOccurence = false)
             where T : class
         {
             throw new NotImplementedException();

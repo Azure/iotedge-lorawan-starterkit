@@ -123,7 +123,7 @@ namespace LoraKeysManagerFacade.Test
             var loradevaddrcache = new LoRaDevAddrCache(cache, null);
             foreach (var device in deviceIds)
             {
-                loradevaddrcache.StoreInfo(device, customCacheKey: device.DevAddr);
+                loradevaddrcache.StoreInfo(device);
             }
         }
 
@@ -175,6 +175,56 @@ namespace LoraKeysManagerFacade.Test
         }
 
         [Fact]
+        // This test simulate a call received by multiple server. It ensures IoT Hub is only queried once.
+        public async Task Multi_Gateway_When_DevAddr_Is_Not_In_Cache_Query_Iot_Hub_Only_Once_And_Save_In_Cache()
+        {
+            string gatewayId = NewUniqueEUI64();
+            DateTime dateTime = DateTime.UtcNow;
+            List<DevAddrCacheInfo> managerInput = new List<DevAddrCacheInfo>();
+
+            for (int i = 0; i < 2; i++)
+            {
+                managerInput.Add(new DevAddrCacheInfo()
+                {
+                    DevEUI = NewUniqueEUI64(),
+                    DevAddr = NewUniqueEUI32()
+                });
+            }
+
+            var devAddrJoining = managerInput[0].DevAddr;
+            var registryManagerMock = this.InitRegistryManager(managerInput);
+
+            // In this test we want no updates running
+            // initialize locks for test to run correctly
+            var lockToTake = new string[2] { FullUpdateKey, DeltaUpdateKey };
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache, null, lockToTake);
+
+            var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
+            // Simulate three queries
+            var tasks = new Task[3]
+              {
+                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
+                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
+                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
+              };
+
+            await Task.WhenAll(tasks);
+
+            // If a cache miss it should save it in the redisCache
+            var devAddrcache = new LoRaDevAddrCache(this.cache, null);
+            var queryResult = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, devAddrJoining));
+            Assert.Single(queryResult);
+            var resultObject = JsonConvert.DeserializeObject<DevAddrCacheInfo>(queryResult[0].Value);
+            Assert.Equal(managerInput[0].DevAddr, resultObject.DevAddr);
+            Assert.Equal(managerInput[0].GatewayId, resultObject.GatewayId);
+            Assert.Equal(managerInput[0].DevEUI, resultObject.DevEUI);
+
+            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>(), It.IsAny<int>()), Times.Once);
+            registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
         // This test ensure that if a device is in cache without a key, it get the keys from iot hub and saave it
         public async Task When_DevAddr_Is_In_Cache_Without_Key_Should_Not_Query_Iot_Hub_For_Twin_But_Should_Get_Key_And_Update()
         {
@@ -206,8 +256,59 @@ namespace LoraKeysManagerFacade.Test
             items = await deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining);
 
             Assert.Single(items);
+            var queryResult = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, devAddrJoining));
+            Assert.Single(queryResult);
+            // The key should have been saved
+            var resultObject = JsonConvert.DeserializeObject<DevAddrCacheInfo>(queryResult[0].Value);
+            Assert.NotNull(resultObject.PrimaryKey);
+
             // Iot hub should never have been called.
             registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+            registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+            // Should query for the key as key is missing
+            registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Once);
+            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+        }
+
+        [Fact]
+        // This test ensure that if a device is in cache without a key, it get the keys from iot hub and saave it
+        public async Task Multi_Gateway_When_DevAddr_Is_In_Cache_Without_Key_Should_Not_Query_Iot_Hub_For_Twin_But_Should_Get_Key_And_Update()
+        {
+            string gatewayId = NewUniqueEUI64();
+            DateTime dateTime = DateTime.UtcNow;
+            List<DevAddrCacheInfo> managerInput = new List<DevAddrCacheInfo>();
+            for (int i = 0; i < 2; i++)
+            {
+                managerInput.Add(new DevAddrCacheInfo()
+                {
+                    DevEUI = NewUniqueEUI64(),
+                    DevAddr = NewUniqueEUI32(),
+                    GatewayId = gatewayId,
+                    LastUpdatedTwins = dateTime
+                });
+            }
+
+            var devAddrJoining = managerInput[0].DevAddr;
+            this.InitCache(this.cache, managerInput);
+            var registryManagerMock = this.InitRegistryManager(managerInput);
+
+            // In this test we want no updates running
+            // initialize locks for test to run correctly
+            var lockToTake = new string[2] { FullUpdateKey, DeltaUpdateKey };
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache, null, lockToTake);
+
+            var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
+            var tasks = new Task[3]
+            {
+                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
+                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
+                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
+            };
+
+            await Task.WhenAll(tasks);
+            // Iot hub should never have been called.
+            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>(), It.IsAny<int>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
             // Should query for the key as key is missing
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Once);
@@ -387,7 +488,7 @@ namespace LoraKeysManagerFacade.Test
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, locksGuideTest);
 
             LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object, gatewayId);
 
             while (!string.IsNullOrEmpty(this.cache.StringGet(GlobalDevAddrUpdateKey)))
             {
@@ -491,7 +592,7 @@ namespace LoraKeysManagerFacade.Test
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, locksGuideTest);
 
             LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object, newGatewayId);
 
             // we expect the devices are saved
             for (int i = 0; i < managerInput.Count; i++)
@@ -530,6 +631,7 @@ namespace LoraKeysManagerFacade.Test
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
             // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
@@ -537,13 +639,13 @@ namespace LoraKeysManagerFacade.Test
         // primary key present in the cache is still here after a delta up
         // Items with save Devaddr are correctly saved (one old from cache, one from iot hub)
         // Gateway Id is correctly updated in old cache information.
-        // Primary Key are kept as UpdateTime is similar
+        // Primary Key are dropped as updatetime is defferent
         public async Task Delta_Update_Perform_Correctly_On_Non_Empty_Cache_And_Keep_Old_Values_Except_Primary_Key()
         {
             string oldGatewayId = NewUniqueEUI64();
             string newGatewayId = NewUniqueEUI64();
             DateTime dateTime = DateTime.UtcNow;
-            DateTime updateDateTime = DateTime.UtcNow.AddMinutes(3);
+            DateTime updateDateTime = DateTime.UtcNow.AddMinutes(10);
 
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             List<DevAddrCacheInfo> managerInput = new List<DevAddrCacheInfo>();
@@ -582,7 +684,7 @@ namespace LoraKeysManagerFacade.Test
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, locksGuideTest);
 
             LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object, newGatewayId);
 
             // we expect the devices are saved
             for (int i = 0; i < managerInput.Count; i++)
@@ -678,7 +780,7 @@ namespace LoraKeysManagerFacade.Test
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, null);
 
             LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object, newGatewayId);
 
             // we expect the devices are saved, the double device id should not be there anymore
             for (int i = 0; i < newValues.Count; i++)
@@ -754,7 +856,7 @@ namespace LoraKeysManagerFacade.Test
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, null);
 
             LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object, newGatewayId);
 
             // we expect the devices are saved, the double device id should not be there anymore
             for (int i = 0; i < newValues.Count; i++)

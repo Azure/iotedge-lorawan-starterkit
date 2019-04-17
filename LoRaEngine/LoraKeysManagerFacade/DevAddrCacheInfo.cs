@@ -7,18 +7,27 @@ namespace LoraKeysManagerFacade
     using System.Collections.Generic;
     using System.Text;
 
-    public class DevAddrCacheInfo : IoTHubDeviceInfo
+    public class DevAddrCacheInfo : IoTHubDeviceInfo, IComparable
     {
         public string GatewayId { get; set; }
 
         public DateTime LastUpdatedTwins { get; set; }
 
-        internal bool IsEqual(DevAddrCacheInfo oldElement)
+        public int CompareTo(object obj)
         {
-            return this.GatewayId == oldElement.GatewayId
-                && this.DevAddr == oldElement.DevAddr
-                && this.DevEUI == oldElement.DevEUI
-                && this.LastUpdatedTwins == oldElement.LastUpdatedTwins;
+            if (obj is DevAddrCacheInfo)
+            {
+                var oldElement = (DevAddrCacheInfo)obj;
+                if (this.GatewayId == oldElement.GatewayId
+                                && this.DevAddr == oldElement.DevAddr
+                                && this.DevEUI == oldElement.DevEUI
+                                && this.LastUpdatedTwins == oldElement.LastUpdatedTwins)
+                {
+                    return 0;
+                }
+            }
+
+            return 1;
         }
     }
 }

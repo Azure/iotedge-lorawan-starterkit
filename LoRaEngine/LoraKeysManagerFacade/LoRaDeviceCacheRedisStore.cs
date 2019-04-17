@@ -118,7 +118,7 @@ namespace LoraKeysManagerFacade
             return this.redisCache.HashGetAll(key);
         }
 
-        public void ReplaceHashObjects<T>(string cacheKey, Dictionary<string, T> input, TimeSpan? timeToExpire = null, bool removeOldOccurence = false)
+        public void ReplaceHashObjects<T>(string cacheKey, IDictionary<string, T> input, TimeSpan? timeToExpire = null, bool removeOldOccurence = false)
             where T : class
         {
             if (removeOldOccurence)
@@ -141,9 +141,9 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public void ChangeLockTTL(string key, TimeSpan timeToExpire)
+        public bool TryChangeLockTTL(string key, TimeSpan timeToExpire)
         {
-                this.redisCache.KeyExpire(key, DateTime.UtcNow.Add(timeToExpire));
+            return this.redisCache.KeyExpire(key, DateTime.UtcNow.Add(timeToExpire));
         }
     }
 }
