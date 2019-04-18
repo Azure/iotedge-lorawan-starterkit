@@ -10,7 +10,7 @@ namespace LoRaTools
 
     public class OTAAKeysGenerator
     {
-        private static readonly Random RndDevAddr = new Random();
+        private static readonly Random RndKeysGenerator = new Random();
         private static readonly object RndLock = new object();
 
         public static string GetNwkId(byte[] netId)
@@ -20,7 +20,7 @@ namespace LoRaTools
 
             lock (RndLock)
             {
-                RndDevAddr.NextBytes(devAddr);
+                RndKeysGenerator.NextBytes(devAddr);
             }
 
             devAddr[0] = (byte)((nwkPart & 0b11111110) | (devAddr[0] & 0b00000001));
@@ -80,9 +80,12 @@ namespace LoRaTools
 
         public static string GetAppNonce()
         {
-            Random rnd = new Random();
             byte[] appNonce = new byte[3];
-            rnd.NextBytes(appNonce);
+            lock (RndLock)
+            {
+                RndKeysGenerator.NextBytes(appNonce);
+            }
+
             return ConversionHelper.ByteArrayToString(appNonce);
         }
     }

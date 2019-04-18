@@ -127,7 +127,7 @@ namespace LoRaWan.NetworkServer
                         if (bundlerResult?.DeduplicationResult != null && !bundlerResult.DeduplicationResult.CanProcess)
                         {
                             // duplication strategy is indicating that we do not need to continue processing this message
-                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: ${payloadFcnt}", LogLevel.Debug);
+                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: {payloadFcnt}", LogLevel.Debug);
                             return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
                         }
                     }
@@ -140,6 +140,11 @@ namespace LoRaWan.NetworkServer
 
                     // if deduplication already processed the next framecounter down, use that
                     uint? fcntDown = loRaADRResult?.FCntDown != null ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
+
+                    if (fcntDown.HasValue)
+                    {
+                        LogFrameCounterDownState(loRaDevice, fcntDown.Value);
+                    }
 
                     // If it is confirmed it require us to update the frame counter down
                     // Multiple gateways: in redis, otherwise in device twin
@@ -587,7 +592,6 @@ namespace LoRaWan.NetworkServer
         {
             if (fcntDown.HasValue)
             {
-                // if it was previously calculated, use that value
                 return fcntDown.Value;
             }
 
@@ -595,6 +599,13 @@ namespace LoRaWan.NetworkServer
 
             // Failed to update the fcnt down
             // In multi gateway scenarios it means the another gateway was faster than using, can stop now
+            LogFrameCounterDownState(loRaDevice, newFcntDown);
+
+            return newFcntDown;
+        }
+
+        private static void LogFrameCounterDownState(LoRaDevice loRaDevice, uint newFcntDown)
+        {
             if (newFcntDown <= 0)
             {
                 Logger.Log(loRaDevice.DevEUI, "another gateway has already sent ack or downlink msg", LogLevel.Debug);
@@ -603,8 +614,6 @@ namespace LoRaWan.NetworkServer
             {
                 Logger.Log(loRaDevice.DevEUI, $"down frame counter: {loRaDevice.FCntDown}", LogLevel.Debug);
             }
-
-            return newFcntDown;
         }
 
         private async Task<FunctionBundlerResult> TryUseBundler(LoRaRequest request, LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool useMultipleGateways)

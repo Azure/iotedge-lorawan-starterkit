@@ -103,7 +103,7 @@
                 "value": "$NET_SRV_IOTEDGE_TIMEOUT"
               },
               "LOG_TO_UDP_ADDRESS": {
-                "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
+                "value": "$BUILD_AGENT_ADDRESS"
               }
             },
             "status": "running",
@@ -139,42 +139,6 @@
             "version": "1.0",
             "status": "running",
             "restartPolicy": "always"
-          },
-          "AzureDevOpsAgent": {
-            "version": "1.0",
-            "type": "docker",
-            "status": "running",
-            "restartPolicy": "always",
-            "settings": {
-              "image": "$DEVOPS_AGENT_IMAGE",
-              "createOptions": {
-                "HostConfig": {
-                  "Privileged": true,
-                  "PublishAllPorts": true,
-                  "PortBindings": {
-                    "6000/udp": [
-                      {
-                        "HostPort": "6000"
-                      }
-                    ]
-                  }
-                },
-                "ExposedPorts": {
-                  "6000/udp": {}
-                }
-              }
-            },
-            "env": {
-              "VSTS_ACCOUNT": {
-                "value": "$VSTS_ACCOUNT"
-              },
-              "VSTS_TOKEN": {
-                "value": "$VSTS_TOKEN"
-              },
-              "VSTS_AGENT": {
-                "value": "$VSTS_AGENT"
-              }
-            }
           },
           "sensordecodermodule": {
             "type": "docker",

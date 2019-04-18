@@ -56,9 +56,13 @@ namespace LoRaWan.Test.Shared
 
         public bool Supports32BitFCnt { get; set; }
 
+        public string Deduplication { get; set; }
+
         public ushort RXDelay { get; set; } = 0;
 
         public int KeepAliveTimeout { get; set; }
+
+        public bool IsMultiGw => string.IsNullOrEmpty(this.GatewayID);
 
         /// <summary>
         /// Gets the desired properties for the <see cref="TestDeviceInfo"/>
@@ -100,6 +104,9 @@ namespace LoRaWan.Test.Shared
 
             // if (this.KeepAliveTimeout > 0)
             desiredProperties[nameof(this.KeepAliveTimeout)] = this.KeepAliveTimeout;
+
+            if (!string.IsNullOrEmpty(this.Deduplication))
+                desiredProperties[nameof(this.Deduplication)] = this.Deduplication;
 
             return desiredProperties;
         }

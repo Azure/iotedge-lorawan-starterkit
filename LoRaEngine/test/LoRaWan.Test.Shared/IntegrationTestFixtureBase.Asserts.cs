@@ -8,8 +8,6 @@ namespace LoRaWan.Test.Shared
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.EventHubs;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -23,7 +21,7 @@ namespace LoRaWan.Test.Shared
             return actualMessageIdentifier?.ToString();
         }
 
-        bool IsDeviceMessage(string expectedDeviceID, string expectedDataValue, EventData eventData, string eventDeviceID, string eventDataMessageBody)
+        bool IsDeviceMessage(string expectedDeviceID, string jsonPropertyToValidate, string expectedValue, string eventDeviceID, string eventDataMessageBody)
         {
             if (eventDeviceID != null && eventDeviceID == expectedDeviceID)
             {
@@ -32,8 +30,8 @@ namespace LoRaWan.Test.Shared
                     var messageJson = JObject.Parse(eventDataMessageBody);
                     if (messageJson != null)
                     {
-                        var data = messageJson["data"];
-                        return data != null && data.ToString(Formatting.None) == expectedDataValue;
+                        var data = messageJson[jsonPropertyToValidate];
+                        return data != null && data.ToString(Formatting.None) == expectedValue;
                     }
                 }
                 catch (Exception ex)
@@ -45,8 +43,7 @@ namespace LoRaWan.Test.Shared
             return false;
         }
 
-        // Asserts leaf device message payload exists. It searches inside the payload "data" property. Has built-in retries
-        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string expectedDataValue, SearchLogOptions options = null)
+        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string targetJsonProperty, string expectedJsonValue, SearchLogOptions options = null)
         {
             var assertionLevel = this.Configuration.IoTHubAssertLevel;
             if (options != null && options.TreatAsError.HasValue)
@@ -56,35 +53,41 @@ namespace LoRaWan.Test.Shared
                 return;
 
             var searchResult = await this.SearchIoTHubMessageAsync(
-                (eventData, eventDeviceID, eventDataMessageBody) => this.IsDeviceMessage(deviceID, expectedDataValue, eventData, eventDeviceID, eventDataMessageBody),
+                (eventData, eventDeviceID, eventDataMessageBody) => this.IsDeviceMessage(deviceID, targetJsonProperty, expectedJsonValue, eventDeviceID, eventDataMessageBody),
                 new SearchLogOptions
                 {
-                    Description = options?.Description ?? expectedDataValue,
+                    Description = options?.Description ?? $"\"{targetJsonProperty}\": {expectedJsonValue}",
                     TreatAsError = options?.TreatAsError,
                 });
 
             if (assertionLevel == LogValidationAssertLevel.Error)
             {
                 var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                Assert.True(searchResult.Found, $"Searching for {expectedDataValue} failed for device {deviceID}. Current log content: [{logs}]");
+                Assert.True(searchResult.Found, $"Searching for \"{targetJsonProperty}\": {expectedJsonValue} failed for device {deviceID}. Current log content: [{logs}]");
             }
             else if (assertionLevel == LogValidationAssertLevel.Warning)
             {
                 if (!searchResult.Found)
                 {
                     var logs = string.Join("\n\t", searchResult.Logs.TakeLast(5));
-                    TestLogger.Log($"[WARN] '{expectedDataValue}' for device {deviceID} found in logs? {searchResult.Found}. Logs: [{logs}]");
+                    TestLogger.Log($"[WARN] \"{targetJsonProperty}\": {expectedJsonValue} for device {deviceID} found in logs? {searchResult.Found}. Logs: [{logs}]");
                 }
             }
         }
 
+        // Asserts leaf device message payload exists. It searches inside the payload "data" property. Has built-in retries
+        public async Task AssertIoTHubDeviceMessageExistsAsync(string deviceID, string expectedDataValue, SearchLogOptions options = null)
+        {
+            await this.AssertIoTHubDeviceMessageExistsAsync(deviceID, "data", expectedDataValue, options);
+        }
+
         // Asserts network server module log contains
-        public async Task AssertNetworkServerModuleLogStartsWithAsync(string logMessageStart)
+        public async Task<SearchLogResult> AssertNetworkServerModuleLogStartsWithAsync(string logMessageStart)
         {
             if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
-                return;
+                return null;
 
-            await this.AssertNetworkServerModuleLogExistsAsync((input) => input.StartsWith(logMessageStart), new SearchLogOptions(logMessageStart));
+            return await this.AssertNetworkServerModuleLogExistsAsync((input) => input.StartsWith(logMessageStart), new SearchLogOptions(logMessageStart));
         }
 
         public async Task AssertNetworkServerModuleLogStartsWithAsync(string logMessageStart1, string logMessageStart2)
@@ -108,11 +111,125 @@ namespace LoRaWan.Test.Shared
             return searchResult;
         }
 
+        /// <summary>
+        /// Searches the UDP log, matching the passed in predicate to
+        /// ensure a particular message got reported by all gateways.
+        /// The number of gateways can be driven by configuration.
+        /// <see cref="TestConfiguration.NumberOfGateways"/>
+        /// </summary>
+        /// <param name="predicate">predicate used to match the log entries</param>
+        /// <param name="maxAttempts">max retry attempts if the message is not found on all Gateways</param>
+        /// <returns>true, if it was found on all configured gateways otherwise false</returns>
+        public async Task<bool> ValidateMultiGatewaySources(Func<string, bool> predicate, int maxAttempts = 5)
+        {
+            int numberOfGw = this.Configuration.NumberOfGateways;
+            var sourceIds = new HashSet<string>(numberOfGw);
+            for (int i = 0; i < maxAttempts && sourceIds.Count < numberOfGw; i++)
+            {
+                if (i > 0)
+                {
+                    var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
+                    await Task.Delay(TimeSpan.FromSeconds(timeToWait));
+                }
+
+                foreach (var item in this.udpLogListener.GetEvents())
+                {
+                    var parsed = SearchLogEvent.Parse(item);
+                    if (predicate(parsed.Message))
+                    {
+                        if (!string.IsNullOrEmpty(parsed.SourceId))
+                        {
+                            sourceIds.Add(parsed.SourceId);
+                        }
+
+                        if (sourceIds.Count == numberOfGw)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return sourceIds.Count == numberOfGw;
+        }
+
+        public async Task AssertSingleGatewaySource(Func<string, bool> predicate, int maxAttempts = 5)
+        {
+            int numberOfGw = this.Configuration.NumberOfGateways;
+            var sourceIds = new HashSet<string>(numberOfGw);
+            for (int i = 0; i < maxAttempts && sourceIds.Count < numberOfGw; i++)
+            {
+                if (i > 0)
+                {
+                    var timeToWait = i * this.Configuration.EnsureHasEventDelayBetweenReadsInSeconds;
+                    await Task.Delay(TimeSpan.FromSeconds(timeToWait));
+                }
+
+                foreach (var item in this.udpLogListener.GetEvents())
+                {
+                    var parsed = SearchLogEvent.Parse(item);
+                    if (predicate(parsed.Message))
+                    {
+                        if (!string.IsNullOrEmpty(parsed.SourceId))
+                        {
+                            sourceIds.Add(parsed.SourceId);
+                        }
+                    }
+                }
+
+                if (sourceIds.Count == 1)
+                {
+                    return;
+                }
+            }
+
+            Assert.True(sourceIds.Count == 1, $"Not 1 source, but {sourceIds.Count}");
+        }
+
+        /// <summary>
+        /// This makes sure that after a join, the DevAddr is
+        /// available from the twins. Call this in case of an OTTA join with
+        /// a multi GW setup, where you want to make sure both GW will be able
+        /// to process the next message
+        /// </summary>
+        /// <param name="serialLog">serial log from the attached device</param>
+        /// <param name="devEUI">The device EUI of the current device</param>
+        public async Task<bool> WaitForTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, string devEUI)
+        {
+            var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID"));
+            Assert.NotNull(joinConfirmMsg);
+            var devAddr = joinConfirmMsg.Substring(joinConfirmMsg.LastIndexOf(' ') + 1);
+            devAddr = devAddr.Replace(":", string.Empty);
+
+            // wait for the twins to be stored and published -> all GW need the same state
+            const int DelayForJoinTwinStore = 20 * 1000;
+            const string DevAddrProperty = "DevAddr";
+            const int MaxRuns = 10;
+            bool reported = false;
+            for (var i = 0; i < MaxRuns && !reported; i++)
+            {
+                await Task.Delay(DelayForJoinTwinStore);
+
+                var twins = await this.GetTwinAsync(devEUI);
+                if (twins.Properties.Reported.Contains(DevAddrProperty))
+                {
+                    reported = devAddr.Equals(twins.Properties.Reported[DevAddrProperty].Value as string, StringComparison.InvariantCultureIgnoreCase);
+                }
+            }
+
+            if (!reported)
+            {
+                TestLogger.Log($"[WARNING] Twin sync after join did not happen for device {devEUI}");
+            }
+
+            return reported;
+        }
+
         // Asserts Network Server Module log exists. It has built-in retries and delays
-        public async Task AssertNetworkServerModuleLogExistsAsync(Func<string, bool> predicate, SearchLogOptions options)
+        public async Task<SearchLogResult> AssertNetworkServerModuleLogExistsAsync(Func<string, bool> predicate, SearchLogOptions options)
         {
             if (this.Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
-                return;
+                return null;
 
             SearchLogResult searchResult;
             if (this.udpLogListener != null)
@@ -136,16 +253,18 @@ namespace LoRaWan.Test.Shared
                     }
                 }
             }
+
+            return searchResult;
         }
 
         /// <summary>
         /// Check for The timing between an upstream message and a downstream one.
         /// The method stop at first occurence found and is not expected to perform against multiple DS/US messages.
         /// </summary>
-        public async Task CheckAnswerTimingAsync(uint rxDelay, bool isSecondWindow)
+        public async Task CheckAnswerTimingAsync(uint rxDelay, bool isSecondWindow, string gatewayId)
         {
-            var upstreamMessageTimingResult = await this.TryFindMessageTimeAsync("rxpk");
-            var downstreamMessageTimingResult = await this.TryFindMessageTimeAsync("txpk");
+            var upstreamMessageTimingResult = await this.TryFindMessageTimeAsync("rxpk", gatewayId);
+            var downstreamMessageTimingResult = await this.TryFindMessageTimeAsync("txpk", gatewayId);
 
             if (upstreamMessageTimingResult.Success && upstreamMessageTimingResult.Success)
             {
@@ -160,10 +279,10 @@ namespace LoRaWan.Test.Shared
         /// <summary>
         /// Helper method to find the time of the message that contain the message argument.
         /// </summary>
-        async Task<FindTimeResult> TryFindMessageTimeAsync(string message)
+        async Task<FindTimeResult> TryFindMessageTimeAsync(string message, string sourceIdFilter)
         {
             const string token = @"""tmst"":";
-            var log = await this.SearchUdpLogs(x => x.Contains(message));
+            var log = await this.SearchUdpLogs(x => x.Contains(message), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
             int timeIndexStart = log.FoundLogResult.IndexOf(token) + token.Length;
             int timeIndexStop = log.FoundLogResult.IndexOf(",", timeIndexStart);
             uint parsedValue = 0;
@@ -183,10 +302,10 @@ namespace LoRaWan.Test.Shared
             };
         }
 
-        async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        async Task<SearchLogResult> SearchUdpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
         {
             var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
-            var processedEvents = new HashSet<string>();
+            var processedEvents = new HashSet<SearchLogEvent>();
             for (int i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
@@ -204,24 +323,39 @@ namespace LoRaWan.Test.Shared
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
+                var sourceIdFilter = options?.SourceIdFilter;
+
                 foreach (var item in this.udpLogListener.GetEvents())
                 {
-                    processedEvents.Add(item);
-                    if (predicate(item))
+                    var searchLogEvent = new SearchLogEvent(item);
+                    processedEvents.Add(searchLogEvent);
+                    if (!string.IsNullOrEmpty(sourceIdFilter) && !sourceIdFilter.Equals(searchLogEvent.SourceId))
                     {
-                        return new SearchLogResult(true, processedEvents, item);
+                        continue;
+                    }
+
+                    if (predicate(searchLogEvent))
+                    {
+                        return new SearchLogResult(true, processedEvents, item)
+                        {
+                            MatchedEvent = searchLogEvent
+                        };
                     }
                 }
             }
 
-            return new SearchLogResult(false, processedEvents, string.Empty);
+            return new SearchLogResult(false, processedEvents);
         }
 
-        // Searches IoT Hub for messages
-        async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        {
+            return await this.SearchUdpLogs(evt => predicate(evt.Message), options);
+        }
+
+        async Task<SearchLogResult> SearchIoTHubLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
         {
             var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
-            var processedEvents = new HashSet<string>();
+            var processedEvents = new HashSet<SearchLogEvent>();
             for (int i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
@@ -242,22 +376,37 @@ namespace LoRaWan.Test.Shared
                 foreach (var item in this.IoTHubMessages.GetEvents())
                 {
                     var bodyText = item.Body.Count > 0 ? Encoding.UTF8.GetString(item.Body) : string.Empty;
-                    processedEvents.Add(bodyText);
-                    if (predicate(bodyText))
+                    var searchLogEvent = new SearchLogEvent
                     {
-                        return new SearchLogResult(true, processedEvents, bodyText);
+                        Message = bodyText,
+                        SourceId = item.GetDeviceId()
+                    };
+
+                    processedEvents.Add(searchLogEvent);
+                    if (predicate(searchLogEvent))
+                    {
+                        return new SearchLogResult(true, processedEvents, bodyText)
+                        {
+                            MatchedEvent = searchLogEvent
+                        };
                     }
                 }
             }
 
-            return new SearchLogResult(false, processedEvents, string.Empty);
+            return new SearchLogResult(false, processedEvents);
+        }
+
+        // Searches IoT Hub for messages
+        async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        {
+            return await this.SearchIoTHubLogs(evt => predicate(evt.Message), options);
         }
 
         // Searches IoT Hub for messages
         internal async Task<SearchLogResult> SearchIoTHubMessageAsync(Func<EventData, string, string, bool> predicate, SearchLogOptions options = null)
         {
             var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
-            var processedEvents = new HashSet<string>();
+            var processedEvents = new HashSet<SearchLogEvent>();
             for (int i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
@@ -280,7 +429,14 @@ namespace LoRaWan.Test.Shared
                     try
                     {
                         var bodyText = item.Body.Count > 0 ? Encoding.UTF8.GetString(item.Body) : string.Empty;
-                        processedEvents.Add(bodyText);
+                        var searchLogEvent = new SearchLogEvent
+                        {
+                            SourceId = item.GetDeviceId(),
+                            Message = bodyText
+                        };
+
+                        processedEvents.Add(searchLogEvent);
+
                         item.SystemProperties.TryGetValue("iothub-connection-device-id", out var deviceId);
                         if (predicate(item, deviceId?.ToString() ?? string.Empty, bodyText))
                         {

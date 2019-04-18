@@ -81,8 +81,6 @@ namespace LoRaWan.NetworkServer
             if (!managedConnection.LoRaDevice.TryDisconnect())
             {
                 Logger.Log(managedConnection.LoRaDevice.DevEUI, $"scheduled device disconnection has been postponed. Device client connection is active", LogLevel.Information);
-
-                // add item to schedule once again
                 this.SetupSchedule(managedConnection);
             }
         }

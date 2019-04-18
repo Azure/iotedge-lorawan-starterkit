@@ -189,7 +189,7 @@ namespace LoraKeysManagerFacade
                 }
                 finally
                 {
-                    var released = this.cacheStore.LockRelease(lockKeyJoinInfo, gatewayId);
+                    this.cacheStore.LockRelease(lockKeyJoinInfo, gatewayId);
                 }
 
                 if (string.IsNullOrEmpty(joinInfo.PrimaryKey))

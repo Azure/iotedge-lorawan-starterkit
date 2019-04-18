@@ -20,12 +20,20 @@ namespace LoRaWan.IntegrationTest
 
         // Verifies that ABP confirmed and unconfirmed messages are working
         // Uses Device5_ABP
-        [Fact]
-        public async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR()
+        [Theory]
+        [InlineData("Device5_ABP")]
+        [InlineData("Device5_ABP_MultiGw")]
+        public async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(string devicePropertyName)
         {
+            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
+
+            if (device.IsMultiGw)
+            {
+                Assert.True(await LoRaAPIHelper.ResetADRCache(device.DeviceID));
+            }
+
             await this.ArduinoDevice.setDeviceDefaultAsync();
             const int MESSAGES_COUNT = 10;
-            var device = this.TestFixtureCi.Device5_ABP;
             this.LogTestStart(device);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
@@ -80,6 +88,19 @@ namespace LoRaWan.IntegrationTest
                 // 0000000000000005: message '{"value": 51}' sent to hub
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
+                if (device.IsMultiGw)
+                {
+                    var searchTokenSending = $"{device.DeviceID}: sending a downstream message";
+                    var sending = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenSending, StringComparison.OrdinalIgnoreCase));
+                    Assert.NotNull(sending.MatchedEvent);
+
+                    var searchTokenAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
+                    var ignored = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenAlreadySent, StringComparison.OrdinalIgnoreCase));
+                    Assert.NotNull(ignored.MatchedEvent);
+
+                    Assert.NotEqual(sending.MatchedEvent.SourceId, ignored.MatchedEvent.SourceId);
+                }
+
                 this.TestFixtureCi.ClearLogs();
             }
 
@@ -122,7 +143,19 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: ADR ack request received");
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: performing a rate adaptation: DR");
+
+            var searchTokenADRRateAdaptation = $"{device.DeviceID}: performing a rate adaptation: DR";
+            var received = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRRateAdaptation, StringComparison.OrdinalIgnoreCase));
+            Assert.NotNull(received.MatchedEvent);
+
+            if (device.IsMultiGw)
+            {
+                var searchTokenADRAlreadySent = $"{device.DeviceID}: another gateway has already sent ack or downlink msg";
+                var ignored = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(searchTokenADRAlreadySent, StringComparison.OrdinalIgnoreCase));
+
+                Assert.NotNull(ignored.MatchedEvent);
+                Assert.NotEqual(received.MatchedEvent.SourceId, ignored.MatchedEvent.SourceId);
+            }
 
             // Check the messages are now sent on DR5
             for (var i = 0; i < 2; ++i)
@@ -379,6 +412,8 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
             await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
 
+            await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith($"{device25.DeviceID}: processing time"));
+
             // wait 61 seconds
             await Task.Delay(TimeSpan.FromSeconds(61));
 
@@ -392,6 +427,17 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+
+            var result = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
+                        msg => msg.StartsWith($"{device25.DeviceID}: device client disconnected"),
+                        new SearchLogOptions
+                        {
+                            MaxAttempts = 10,
+                            SourceIdFilter = device25.GatewayID
+                        });
+
+            Assert.NotNull(result.MatchedEvent);
+
             this.TestFixtureCi.ClearLogs();
 
             // Send 1 message from device 25 and check that connection was restablished
