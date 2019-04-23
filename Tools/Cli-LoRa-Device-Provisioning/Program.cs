@@ -4,6 +4,7 @@
 namespace LoRaWan.Tools.CLI
 {
     using System;
+    using System.Threading.Tasks;
     using CommandLine;
     using LoRaWan.Tools.CLI.Helpers;
     using LoRaWan.Tools.CLI.Options;
@@ -15,7 +16,7 @@ namespace LoRaWan.Tools.CLI
         static ConfigurationHelper configurationHelper = new ConfigurationHelper();
         static IoTDeviceHelper iotDeviceHelper = new IoTDeviceHelper();
 
-        static int Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
             WriteAzureLogo();
             Console.WriteLine("Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Provisioning Tool.");
@@ -25,17 +26,18 @@ namespace LoRaWan.Tools.CLI
             Console.ResetColor();
             Console.WriteLine();
 
-            var success = Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, AddOptions, UpdateOptions, RemoveOptions>(args)
+            var success = await Parser.Default.ParseArguments<ListOptions, QueryOptions, VerifyOptions, BulkVerifyOptions, AddOptions, UpdateOptions, RemoveOptions>(args)
                 .MapResult(
                     (ListOptions opts) => RunListAndReturnExitCode(opts),
                     (QueryOptions opts) => RunQueryAndReturnExitCode(opts),
                     (VerifyOptions opts) => RunVerifyAndReturnExitCode(opts),
+                    (BulkVerifyOptions opts) => RunBulkVerifyAndReturnExitCode(opts),
                     (AddOptions opts) => RunAddAndReturnExitCode(opts),
                     (UpdateOptions opts) => RunUpdateAndReturnExitCode(opts),
                     (RemoveOptions opts) => RunRemoveAndReturnExitCode(opts),
-                    errs => false);
+                    errs => Task.FromResult(false));
 
-            if ((bool)success)
+            if (success)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine();
@@ -55,7 +57,7 @@ namespace LoRaWan.Tools.CLI
             }
         }
 
-        private static object RunListAndReturnExitCode(ListOptions opts)
+        private static async Task<bool> RunListAndReturnExitCode(ListOptions opts)
         {
             int page;
             int total;
@@ -69,59 +71,75 @@ namespace LoRaWan.Tools.CLI
             if (!int.TryParse(opts.Total, out total))
                 total = -1;
 
-            var isSuccess = iotDeviceHelper.QueryDevices(configurationHelper, page, total).Result;
+            var isSuccess = await iotDeviceHelper.QueryDevices(configurationHelper, page, total);
 
             return isSuccess;
         }
 
-        private static object RunQueryAndReturnExitCode(QueryOptions opts)
+        private static async Task<bool> RunQueryAndReturnExitCode(QueryOptions opts)
         {
             if (!configurationHelper.ReadConfig())
                 return false;
 
-            var twin = iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper).Result;
+            var twin = await iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
 
             if (twin != null)
             {
-                Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"DevEUI: {opts.DevEui}");
-                Console.WriteLine(TwinToString(twin));
-                Console.ResetColor();
+                StatusConsole.WriteTwin(opts.DevEui, twin);
                 return true;
             }
             else
             {
-                StatusConsole.WriteLine(MessageType.Error, $"Could not get data for device {opts.DevEui}.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Could not get data for device {opts.DevEui}.");
                 return false;
             }
         }
 
-        private static object RunVerifyAndReturnExitCode(VerifyOptions opts)
+        private static async Task<bool> RunVerifyAndReturnExitCode(VerifyOptions opts)
         {
             if (!configurationHelper.ReadConfig())
                 return false;
 
-            var twin = iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper).Result;
+            var twin = await iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
 
             if (twin != null)
             {
-                Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"DevEUI: {opts.DevEui}");
-                Console.WriteLine(TwinToString(twin));
-                Console.ResetColor();
-
-                return iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper);
+                StatusConsole.WriteTwin(opts.DevEui, twin);
+                return iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper, true);
             }
             else
             {
-                StatusConsole.WriteLine(MessageType.Error, $"Could not get data for device {opts.DevEui}.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Could not get data for device {opts.DevEui}.");
                 return false;
             }
         }
 
-        private static object RunAddAndReturnExitCode(AddOptions opts)
+        private static async Task<bool> RunBulkVerifyAndReturnExitCode(BulkVerifyOptions opts)
+        {
+            int page;
+
+            if (!configurationHelper.ReadConfig())
+                return false;
+
+            if (!int.TryParse(opts.Page, out page))
+                page = 0;
+
+            var isSuccess = await iotDeviceHelper.QueryDevicesAndVerify(configurationHelper, page);
+
+            Console.WriteLine();
+            if (isSuccess)
+            {
+                StatusConsole.WriteLogLine(MessageType.Info, "No errors were encountered.");
+            }
+            else
+            {
+                StatusConsole.WriteLogLine(MessageType.Error, "Errors detected in devices.");
+            }
+
+            return isSuccess;
+        }
+
+        private static async Task<bool> RunAddAndReturnExitCode(AddOptions opts)
         {
             if (!configurationHelper.ReadConfig())
                 return false;
@@ -131,30 +149,26 @@ namespace LoRaWan.Tools.CLI
             opts = iotDeviceHelper.CleanOptions(opts as object, true) as AddOptions;
             opts = iotDeviceHelper.CompleteMissingAddOptions(opts, configurationHelper);
 
-            if (iotDeviceHelper.VerifyDevice(opts, null, null, null, configurationHelper))
+            if (iotDeviceHelper.VerifyDevice(opts, null, null, null, configurationHelper, true))
             {
                 Twin twin = iotDeviceHelper.CreateDeviceTwin(opts);
-                isSuccess = iotDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, true).Result;
+                isSuccess = await iotDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, true);
             }
             else
             {
-                StatusConsole.WriteLine(MessageType.Error, $"Can not add {opts.Type.ToUpper()} device.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Can not add {opts.Type.ToUpper()} device.");
             }
 
             if (isSuccess)
             {
-                var twin = iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper).Result;
-                Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"DevEUI: {opts.DevEui}");
-                Console.WriteLine(TwinToString(twin));
-                Console.ResetColor();
+                var twin = await iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
+                StatusConsole.WriteTwin(opts.DevEui, twin);
             }
 
             return isSuccess;
         }
 
-        private static object RunUpdateAndReturnExitCode(UpdateOptions opts)
+        private static async Task<bool> RunUpdateAndReturnExitCode(UpdateOptions opts)
         {
             if (!configurationHelper.ReadConfig())
                 return false;
@@ -164,61 +178,49 @@ namespace LoRaWan.Tools.CLI
             opts = iotDeviceHelper.CleanOptions(opts as object, false) as UpdateOptions;
             opts = iotDeviceHelper.CompleteMissingUpdateOptions(opts, configurationHelper);
 
-            var twin = iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper).Result;
+            var twin = await iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
 
             if (twin != null)
             {
                 twin = iotDeviceHelper.UpdateDeviceTwin(twin, opts);
 
-                if (iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper))
+                if (iotDeviceHelper.VerifyDeviceTwin(opts.DevEui, opts.NetId, twin, configurationHelper, true))
                 {
-                    isSuccess = iotDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, false).Result;
+                    isSuccess = await iotDeviceHelper.WriteDeviceTwin(twin, opts.DevEui, configurationHelper, false);
 
                     if (isSuccess)
                     {
-                        var newTwin = iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper).Result;
-                        Console.WriteLine();
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.WriteLine($"DevEUI: {opts.DevEui}");
-                        Console.WriteLine(TwinToString(newTwin));
-                        Console.ResetColor();
+                        var newTwin = await iotDeviceHelper.QueryDeviceTwin(opts.DevEui, configurationHelper);
+                        StatusConsole.WriteTwin(opts.DevEui, twin);
                     }
                     else
                     {
                         Console.WriteLine();
-                        StatusConsole.WriteLine(MessageType.Error, $"Can not update device {opts.DevEui}.");
+                        StatusConsole.WriteLogLine(MessageType.Error, $"Can not update device {opts.DevEui}.");
                     }
                 }
                 else
                 {
                     Console.WriteLine();
-                    StatusConsole.WriteLine(MessageType.Error, $"Errors found in Twin data. Device {opts.DevEui} was not updated.");
+                    StatusConsole.WriteLogLine(MessageType.Error, $"Errors found in Twin data. Device {opts.DevEui} was not updated.");
                 }
             }
             else
             {
                 Console.WriteLine();
-                StatusConsole.WriteLine(MessageType.Error, $"Could not get data for device {opts.DevEui}. Failed to update.");
+                StatusConsole.WriteLogLine(MessageType.Error, $"Could not get data for device {opts.DevEui}. Failed to update.");
                 isSuccess = false;
             }
 
             return isSuccess;
         }
 
-        private static string TwinToString(Twin twin)
-        {
-            var twinData = JObject.Parse(twin.Properties.Desired.ToJson());
-            twinData.Remove("$metadata");
-            twinData.Remove("$version");
-            return twinData.ToString();
-        }
-
-        private static object RunRemoveAndReturnExitCode(RemoveOptions opts)
+        private static async Task<bool> RunRemoveAndReturnExitCode(RemoveOptions opts)
         {
             if (!configurationHelper.ReadConfig())
                 return false;
 
-            return iotDeviceHelper.RemoveDevice(opts.DevEui, configurationHelper).Result;
+            return await iotDeviceHelper.RemoveDevice(opts.DevEui, configurationHelper);
         }
 
         private static void WriteAzureLogo()

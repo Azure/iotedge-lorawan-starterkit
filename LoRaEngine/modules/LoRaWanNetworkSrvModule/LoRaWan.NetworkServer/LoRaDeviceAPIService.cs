@@ -81,10 +81,10 @@ namespace LoRaWan.NetworkServer
             return JsonConvert.DeserializeObject<FunctionBundlerResult>(payload);
         }
 
-        public override async Task<bool> ABPFcntCacheResetAsync(string devEUI)
+        public override async Task<bool> ABPFcntCacheResetAsync(string devEUI, uint fcntUp, string gatewayId)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = $"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true";
+            var url = $"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true&GatewayId={gatewayId}&FCntUp={fcntUp}";
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
@@ -151,11 +151,19 @@ namespace LoRaWan.NetworkServer
                 {
                     var badReqResult = await response.Content.ReadAsStringAsync();
 
-                    if (!string.IsNullOrEmpty(badReqResult) && string.Equals(badReqResult, "UsedDevNonce", StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(badReqResult, "UsedDevNonce", StringComparison.OrdinalIgnoreCase))
                     {
                         return new SearchDevicesResult
                         {
                             IsDevNonceAlreadyUsed = true,
+                        };
+                    }
+
+                    if (badReqResult != null && badReqResult.StartsWith("JoinRefused", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new SearchDevicesResult()
+                        {
+                            RefusedMessage = badReqResult
                         };
                     }
                 }

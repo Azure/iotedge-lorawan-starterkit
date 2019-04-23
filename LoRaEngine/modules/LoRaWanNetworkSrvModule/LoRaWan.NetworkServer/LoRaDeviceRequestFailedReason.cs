@@ -21,6 +21,7 @@ namespace LoRaWan.NetworkServer
         ConfirmationResubmitThresholdExceeded,
         InvalidFrameCounter,
         IoTHubProblem,
-        DeduplicationDrop
+        DeduplicationDrop,
+        DeviceClientConnectionFailed
     }
 }

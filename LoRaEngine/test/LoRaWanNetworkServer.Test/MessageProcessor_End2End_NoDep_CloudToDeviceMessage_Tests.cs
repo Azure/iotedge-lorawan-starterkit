@@ -42,6 +42,11 @@ namespace LoRaWan.NetworkServer.Test
             // message will be sent
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
+            if (string.IsNullOrEmpty(deviceGatewayID))
+            {
+                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+                    .ReturnsAsync(true);
+            }
 
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);

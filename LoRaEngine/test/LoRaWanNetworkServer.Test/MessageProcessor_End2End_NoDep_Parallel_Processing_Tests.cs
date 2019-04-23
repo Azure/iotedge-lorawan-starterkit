@@ -169,7 +169,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (expectedToSaveTwin && string.IsNullOrEmpty(parallelTestConfiguration.GatewayID))
             {
-                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI))
+                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI, It.IsAny<uint>(), It.IsNotNull<string>()))
                     .Returns(() =>
                     {
                         var duration = parallelTestConfiguration.DeviceApiResetFcntDuration.Next();

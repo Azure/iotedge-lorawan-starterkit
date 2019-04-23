@@ -326,7 +326,12 @@ namespace LoRaWan.NetworkServer
 
                     if (!loRaDevice.IsOurDevice)
                     {
-                        loRaDevice.Disconnect();
+                        // Initialization does not use activity counters
+                        // This should not fail
+                        if (!loRaDevice.TryDisconnect())
+                        {
+                            Logger.Log(loRaDevice.DevEUI, "failed to disconnect device from another gateway", LogLevel.Error);
+                        }
                     }
 
                     return loRaDevice;

@@ -45,6 +45,9 @@ namespace LoRaWan.NetworkServer.Test
                         NextFCntDown = simulatedDevice.FrmCntDown + 1
                     });
 
+            this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+                .ReturnsAsync(true);
+
             this.LoRaDeviceClient
                 .Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);

@@ -21,7 +21,7 @@ namespace LoRaWan.Test.Shared
         {
             if (LogDate)
             {
-                text = string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", text);
+                text = string.Concat(DateTime.UtcNow.ToString("HH:mm:ss.fff"), " ", text);
             }
 
             // Log to diagnostics if a debbuger is attached

@@ -105,6 +105,18 @@ namespace LoRaWan.Tools.CLI.Options
         public string Rx1DrOffset { get; set; }
 
         [Option(
+            "rxdelay",
+            Required = false,
+            HelpText = "RxDelay (Delay in seconds for sending downstream messages, currently only supported for OTAA devices): 0 through 15. (optional)")]
+        public string RxDelay { get; set; }
+
+        [Option(
+            "keepalivetimeout",
+            Required = false,
+            HelpText = "KeepAliveTimeout (Timeout in seconds before device client connection is closed): 0 or 60 and above. (optional)")]
+        public string KeepAliveTimeout { get; set; }
+
+        [Option(
             "supports32bitfcnt",
             Required = false,
             HelpText = "Supports32BitFCnt (Support for 32bit frame counter): True or false. (optional)")]

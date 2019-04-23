@@ -35,6 +35,9 @@ namespace LoRaWan.NetworkServer.Test
                         NextFCntDown = 0
                     });
 
+            this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI, It.IsAny<uint>(), It.IsNotNull<string>()))
+                    .ReturnsAsync(true);
+
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var device = this.CreateLoRaDevice(simulatedDevice);
 
@@ -134,12 +137,8 @@ namespace LoRaWan.NetworkServer.Test
                     .ReturnsAsync(true);
             }
 
-            // multi gateway will reset the fcnt
-            if (shouldSaveTwin)
-            {
-                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI))
+            this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI, It.IsAny<uint>(), It.IsNotNull<string>()))
                     .ReturnsAsync(true);
-            }
 
             // device api will be searched for payload
             this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))

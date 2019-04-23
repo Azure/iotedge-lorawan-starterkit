@@ -27,7 +27,7 @@ namespace LoRaWan.NetworkServer.Test
             }
         }
 
-        public Task<bool> ResetAsync(LoRaDevice loRaDevice)
+        public Task<bool> ResetAsync(LoRaDevice loRaDevice, uint fcntUp, string gatewayId)
         {
             loRaDevice.ResetFcnt();
 
