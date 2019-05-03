@@ -109,7 +109,7 @@ The ARM template will deploy all the required Azure infrastructure to get you st
 By using the `docker ps` command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the [Arduino folder](/Arduino) to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly "TransmissionTestOTAALoRa.ino" without provisioning the device first.
 
 ## Troubleshooting
-Refer to our [troubleshooting guide](troubleshooting.md) for debugging guidance, known issues along and other FAQ.
+Refer to our [troubleshooting guide](/Docs/troubleshooting.md) for debugging guidance, known issues along and other FAQ.
 
 ## Tested Gateways
 
