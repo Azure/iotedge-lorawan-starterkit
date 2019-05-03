@@ -1,4 +1,4 @@
-# Architecture and Concepts for the LoRaWAN starter kit
+# Concepts for the LoRaWAN starter kit
 
 ## Background
 
@@ -15,8 +15,4 @@ However, customers looking for any of the following are expected to prefer a set
   - Gateway management.
 - Homogenous management of devices and gateways independent of connectivity technology.
 
-## High Level Architecture
-Below is a high level diagram of how the framework works, for more details refer to the [dev guide](devguide.md).
-
-![Architecture](/Docs/Pictures/EdgeArchitecture.png)
 

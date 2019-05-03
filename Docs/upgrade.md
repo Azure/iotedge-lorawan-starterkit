@@ -1,4 +1,4 @@
-# Upgrade LoRaWAN to a new version
+# Upgrade LoRaWAN starter kit to a new version
 
 ## Updating existing installations from 0.3.0-preview to 0.4.0-preview
 
