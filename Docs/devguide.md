@@ -1,4 +1,4 @@
-# Developer Guidance
+# Developer Guide for Custom Installation and Setup
 
 ## Directory Structure
 

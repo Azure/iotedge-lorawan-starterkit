@@ -1,4 +1,4 @@
-# Upgrade LoRaWAN to a new version
+# Upgrade LoRaWAN starter kit to a new version
 
 ## Release 1.0.0
 

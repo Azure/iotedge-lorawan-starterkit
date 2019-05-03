@@ -1,4 +1,4 @@
-﻿# Azure IoT Edge LoRaWAN Starter Kit
+﻿# Custom Decoder Sample for Azure IoT Edge LoRaWAN starter kit
 ## DecoderSample
 
 This sample allows you to create and run your own LoRa message decoder in an independent container running on your LoRa gateway without having to edit the main LoRa Engine. This description shows you how to get started.
