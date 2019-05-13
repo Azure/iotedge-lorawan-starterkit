@@ -380,7 +380,7 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
 
             // wait 61 seconds
-            await Task.Delay(TimeSpan.FromSeconds(61));
+            await Task.Delay(TimeSpan.FromSeconds(120));
 
             // Send 1 message from device 26
             var device26 = this.TestFixtureCi.Device26_ABP;
