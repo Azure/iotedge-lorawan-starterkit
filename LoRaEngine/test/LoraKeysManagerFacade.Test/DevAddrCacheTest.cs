@@ -120,7 +120,7 @@ namespace LoraKeysManagerFacade.Test
 
         private void InitCache(ILoRaDeviceCacheStore cache, List<DevAddrCacheInfo> deviceIds)
         {
-            var loradevaddrcache = new LoRaDevAddrCache(cache, null);
+            var loradevaddrcache = new LoRaDevAddrCache(cache, null, null);
             foreach (var device in deviceIds)
             {
                 loradevaddrcache.StoreInfo(device);
@@ -161,7 +161,7 @@ namespace LoraKeysManagerFacade.Test
 
             Assert.Single(items);
             // If a cache miss it should save it in the redisCache
-            var devAddrcache = new LoRaDevAddrCache(this.cache, null);
+            var devAddrcache = new LoRaDevAddrCache(this.cache, null, null);
             var queryResult = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, devAddrJoining));
             Assert.Single(queryResult);
             var resultObject = JsonConvert.DeserializeObject<DevAddrCacheInfo>(queryResult[0].Value);
@@ -211,7 +211,7 @@ namespace LoraKeysManagerFacade.Test
             await Task.WhenAll(tasks);
 
             // If a cache miss it should save it in the redisCache
-            var devAddrcache = new LoRaDevAddrCache(this.cache, null);
+            var devAddrcache = new LoRaDevAddrCache(this.cache, null, null);
             var queryResult = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, devAddrJoining));
             Assert.Single(queryResult);
             var resultObject = JsonConvert.DeserializeObject<DevAddrCacheInfo>(queryResult[0].Value);
@@ -487,8 +487,8 @@ namespace LoraKeysManagerFacade.Test
             var locksGuideTest = new string[1] { FullUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, locksGuideTest);
 
-            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object, gatewayId);
+            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null, gatewayId);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
 
             while (!string.IsNullOrEmpty(this.cache.StringGet(GlobalDevAddrUpdateKey)))
             {
@@ -591,8 +591,8 @@ namespace LoraKeysManagerFacade.Test
             var locksGuideTest = new string[1] { FullUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, locksGuideTest);
 
-            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object, newGatewayId);
+            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
 
             // we expect the devices are saved
             for (int i = 0; i < managerInput.Count; i++)
@@ -683,8 +683,8 @@ namespace LoraKeysManagerFacade.Test
             var locksGuideTest = new string[1] { FullUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, locksGuideTest);
 
-            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object, newGatewayId);
+            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
 
             // we expect the devices are saved
             for (int i = 0; i < managerInput.Count; i++)
@@ -779,8 +779,8 @@ namespace LoraKeysManagerFacade.Test
             string[] neededLocksForTestToRun = new string[2] { GlobalDevAddrUpdateKey, FullUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, null);
 
-            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object, newGatewayId);
+            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
 
             // we expect the devices are saved, the double device id should not be there anymore
             for (int i = 0; i < newValues.Count; i++)
@@ -855,8 +855,8 @@ namespace LoraKeysManagerFacade.Test
             string[] neededLocksForTestToRun = new string[2] { GlobalDevAddrUpdateKey, FullUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, neededLocksForTestToRun, null);
 
-            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object, newGatewayId);
+            LoRaDevAddrCache devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
+            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
 
             // we expect the devices are saved, the double device id should not be there anymore
             for (int i = 0; i < newValues.Count; i++)

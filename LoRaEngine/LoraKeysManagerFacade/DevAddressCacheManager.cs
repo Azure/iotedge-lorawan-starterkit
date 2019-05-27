@@ -30,9 +30,8 @@ namespace LoraKeysManagerFacade
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            LoRaDevAddrCache loRaDevAddrCache = new LoRaDevAddrCache(this.cacheStore, this.logger);
-            // To check should we wait? I don't think so.
-            await loRaDevAddrCache.PerformNeededSyncs(this.registryManager, "functionStartup");
+            LoRaDevAddrCache loRaDevAddrCache = new LoRaDevAddrCache(this.cacheStore, this.registryManager, this.logger, null);
+            await Task.FromResult(0);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

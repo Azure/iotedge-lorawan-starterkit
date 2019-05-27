@@ -126,7 +126,7 @@ namespace LoraKeysManagerFacade
                 // TODO check for sql injection
                 devAddr = devAddr.Replace('\'', ' ');
                 var devAddrCache = new LoRaDevAddrCache(this.cacheStore, this.registryManager, log, gatewayId);
-                if (await devAddrCache.TryTakeDevAddrUpdateLock(devAddr, gatewayId))
+                if (await devAddrCache.TryTakeDevAddrUpdateLock(devAddr))
                 {
                     try
                     {
@@ -159,7 +159,7 @@ namespace LoraKeysManagerFacade
                         // if the device is not found is the cache we query, if there was something, it is probably not our device.
                         if (results.Count == 0 && devAddressesInfo == null)
                         {
-                            if (await devAddrCache.TryTakeDevAddrUpdateLock(devAddr, gatewayId))
+                            if (await devAddrCache.TryTakeDevAddrUpdateLock(devAddr))
                             {
                                 try
                                 {
@@ -204,14 +204,14 @@ namespace LoraKeysManagerFacade
                                 }
                                 finally
                                 {
-                                    devAddrCache.ReleaseDevAddrUpdateLock(devAddr, gatewayId);
+                                    devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
                                 }
                             }
                         }
                     }
                     finally
                     {
-                        devAddrCache.ReleaseDevAddrUpdateLock(devAddr, gatewayId);
+                        devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
                     }
                 }
             }
