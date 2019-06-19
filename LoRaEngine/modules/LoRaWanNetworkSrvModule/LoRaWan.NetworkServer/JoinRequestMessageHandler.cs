@@ -200,7 +200,7 @@ namespace LoRaWan.NetworkServer
                 // Build the DlSettings fields that is a superposition of RX2DR and RX1DROffset field
                 byte[] dlSettings = new byte[1];
 
-                if (request.Region.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(loRaDevice.DesiredRX2DataRate))
+                if (request.Region.DRtoConfiguration.ContainsKey(loRaDevice.DesiredRX2DataRate))
                 {
                     dlSettings[0] =
                         (byte)(loRaDevice.DesiredRX2DataRate & 0b00001111);

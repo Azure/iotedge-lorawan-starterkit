@@ -3,8 +3,8 @@
 
 namespace LoRaTools.Regions
 {
-    using System;
     using System.Collections.Generic;
+    using Org.BouncyCastle.Utilities.Collections;
 
     public class RegionLimits
     {
@@ -13,24 +13,15 @@ namespace LoRaTools.Regions
         /// </summary>
         public (double min, double max) FrequencyRange { get; set; }
 
-        public List<string> DatarateRange { get; set; }
+        public HashSet<string> DownstreamValidDR { get; set; }
 
-        public bool IsCurrentDRIndexWithinAcceptableValue(uint dr)
-        {
-            if (dr < this.DatarateRange.Count)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        public HashSet<string> UpstreamValidDR { get; set; }
 
-        public RegionLimits((double min, double max) frequencyRange, List<string> datarateRange)
+        public RegionLimits((double min, double max) frequencyRange, HashSet<string> upstreamValidDR, HashSet<string> downstreamValidDR)
         {
             this.FrequencyRange = frequencyRange;
-            this.DatarateRange = datarateRange;
+            this.DownstreamValidDR = downstreamValidDR;
+            this.UpstreamValidDR = upstreamValidDR;
         }
     }
 }

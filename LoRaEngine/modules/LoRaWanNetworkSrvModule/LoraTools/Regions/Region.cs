@@ -125,7 +125,7 @@ namespace LoRaTools.Regions
         {
             frequency = 0;
 
-            if (this.IsValidRxpk(upstreamChannel))
+            if (this.IsValidDownstreamRxpk(upstreamChannel))
             {
                 if (this.LoRaRegion == LoRaRegionType.EU868)
                 {
@@ -154,6 +154,18 @@ namespace LoRaTools.Regions
             }
 
             return false;
+        }
+
+        public bool IsCurrentDRIndexWithinAcceptableValue(uint dr)
+        {
+            if (this.DRtoConfiguration.ContainsKey(dr))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -187,7 +199,7 @@ namespace LoRaTools.Regions
             else
             {
                 uint rx2Dr = (uint)rx2DrFromTwins;
-                if (this.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(rx2Dr))
+                if (this.IsCurrentDRIndexWithinAcceptableValue(rx2Dr))
                 {
                     datr = this.DRtoConfiguration[rx2Dr].configuration;
                 }
@@ -209,7 +221,7 @@ namespace LoRaTools.Regions
         /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
         public string GetDownstreamDR(Rxpk upstreamChannel, uint rx1DrOffset = 0)
         {
-            if (this.IsValidRxpk(upstreamChannel))
+            if (this.IsValidDownstreamRxpk(upstreamChannel))
             {
                     // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
                     if (rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1))
@@ -240,11 +252,11 @@ namespace LoRaTools.Regions
         /// <summary>
         /// This method Check that a received packet is within the correct frenquency range and has a valid Datr.
         /// </summary>
-        private bool IsValidRxpk(Rxpk rxpk)
+        private bool IsValidDownstreamRxpk(Rxpk rxpk)
         {
             if (rxpk.Freq < this.RegionLimits.FrequencyRange.min ||
                 rxpk.Freq > this.RegionLimits.FrequencyRange.max ||
-                !this.RegionLimits.DatarateRange.Contains(rxpk.Datr))
+                !this.RegionLimits.DownstreamValidDR.Contains(rxpk.Datr))
             {
                 Logger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
                 return false;
