@@ -8,6 +8,7 @@ namespace LoRaWanTest
     using System.Linq;
     using System.Text;
     using LoRaTools.LoRaPhysical;
+    using LoRaTools.Regions;
     using Xunit;
 
     public class RxpkTest
@@ -72,6 +73,112 @@ namespace LoRaWanTest
             Assert.Contains("custom_prop_b", rxpks[0].ExtraData.Keys);
             Assert.Equal("a", rxpks[0].ExtraData["custom_prop_a"]);
             Assert.Equal(10L, rxpks[0].ExtraData["custom_prop_b"]);
+        }
+
+        [Theory]
+        [InlineData(868.1, "SF12BW125", "SF12BW125")]
+        [InlineData(868.1, "SF8BW125", "SF8BW125")]
+        [InlineData(868.1, "SF7BW250", "SF7BW250")]
+        [InlineData(800, "SF12BW125", null)]
+        [InlineData(868.1, "SF36BW125", null)]
+        public void CheckEUValidUpstreamRxpk(double frequency, string datr, string expectedDatr)
+        {
+            string jsonUplink =
+                "{\"rxpk\":[{\"time\":\"2013-03-31T16:21:17.528002Z\"," +
+                "\"tmst\":3512348611," +
+                "\"chan\":2," +
+                "\"rfch\":0," +
+                $"\"freq\": {frequency}," +
+                "\"stat\":1," +
+                "\"modu\":\"LORA\"," +
+                $"\"datr\":\"{datr}\"," +
+                "\"codr\":\"4/6\"," +
+                "\"rssi\":-35," +
+                "\"lsnr\":5.1," +
+                "\"size\":32," +
+                "\"data\":\"AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=\"," +
+               "\"custom_prop_a\":\"a\"," +
+               "\"custom_prop_b\":10" +
+               " }]}";
+            byte[] physicalUpstreamPyld = new byte[12];
+            physicalUpstreamPyld[0] = 2;
+            var request = Encoding.Default.GetBytes(jsonUplink);
+            var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());
+            var downstream = RegionManager.EU868.GetDownstreamDR(rxpks[0]);
+            Assert.Equal(expectedDatr, downstream);
+        }
+
+        [Theory]
+        [InlineData(915, "SF10BW125", "SF12BW500")]
+        [InlineData(915, "SF7BW125", "SF9BW500")]
+        [InlineData(915, "SF8BW125", "SF8BW500")]
+        [InlineData(900, "SF12BW125", null)]
+        [InlineData(915, "SF36BW125", null)]
+        public void CheckUSValidUpstreamRxpk(double frequency, string datr, string expectedDatr)
+        {
+            string jsonUplink =
+                "{\"rxpk\":[{\"time\":\"2013-03-31T16:21:17.528002Z\"," +
+                "\"tmst\":3512348611," +
+                "\"chan\":2," +
+                "\"rfch\":0," +
+                $"\"freq\": {frequency}," +
+                "\"stat\":1," +
+                "\"modu\":\"LORA\"," +
+                $"\"datr\":\"{datr}\"," +
+                "\"codr\":\"4/6\"," +
+                "\"rssi\":-35," +
+                "\"lsnr\":5.1," +
+                "\"size\":32," +
+                "\"data\":\"AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=\"," +
+               "\"custom_prop_a\":\"a\"," +
+               "\"custom_prop_b\":10" +
+               " }]}";
+            byte[] physicalUpstreamPyld = new byte[12];
+            physicalUpstreamPyld[0] = 2;
+            var request = Encoding.Default.GetBytes(jsonUplink);
+            var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());
+            var downstream = RegionManager.EU868.GetDownstreamDR(rxpks[0]);
+            Assert.Equal(expectedDatr, downstream);
+        }
+
+
+        [Theory]
+        [InlineData(LoRaRegionType.EU868, 0)]
+        [InlineData(LoRaRegionType.EU868, 1)]
+        [InlineData(LoRaRegionType.EU868, 3)]
+        [InlineData(LoRaRegionType.EU868, 5)]
+        [InlineData(LoRaRegionType.US915, 0)]
+        [InlineData(LoRaRegionType.US915, 4)]
+        [InlineData(LoRaRegionType.US915, 9)]
+        [InlineData(LoRaRegionType.US915, 13)]
+        public void Check_Correct_RXPK_Datr_Are_Accepted(LoRaRegionType loRaRegionType, uint datrIndex)
+        {
+            if (loRaRegionType == LoRaRegionType.EU868)
+            {
+                Assert.True(RegionManager.EU868.IsCurrentDRIndexWithinAcceptableValue(datrIndex));
+                    }
+            else
+            {
+                Assert.True(RegionManager.US915.IsCurrentDRIndexWithinAcceptableValue(datrIndex));
+            }
+        }
+
+        [Theory]
+        [InlineData(LoRaRegionType.EU868, 8)]
+        [InlineData(LoRaRegionType.EU868, 10)]
+        [InlineData(LoRaRegionType.US915, 5)]
+        [InlineData(LoRaRegionType.US915, 7)]
+        [InlineData(LoRaRegionType.US915, 14)]
+        public void Check_incorrect_RXPK_Datr_Are_Refused(LoRaRegionType loRaRegionType, uint datrIndex)
+        {
+            if (loRaRegionType == LoRaRegionType.EU868)
+            {
+                Assert.False(RegionManager.EU868.IsCurrentDRIndexWithinAcceptableValue(datrIndex));
+            }
+            else
+            {
+                Assert.False(RegionManager.US915.IsCurrentDRIndexWithinAcceptableValue(datrIndex));
+            }
         }
     }
 }

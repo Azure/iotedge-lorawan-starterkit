@@ -172,7 +172,7 @@ namespace LoRaWan.NetworkServer
                 if (windowToUse == Constants.RECEIVE_WINDOW_1)
                 {
                     datr = loraRegion.GetDownstreamDR(request.Rxpk);
-                    if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
+                    if (!loraRegion.TryGetUpstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
                     {
                         Logger.Log(loRaDevice.DevEUI, "could not resolve DR and/or frequency for downstream", LogLevel.Error);
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidRxpk);
