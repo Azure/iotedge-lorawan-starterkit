@@ -141,7 +141,6 @@ namespace LoRaWanTest
             Assert.Equal(expectedDatr, downstream);
         }
 
-
         [Theory]
         [InlineData(LoRaRegionType.EU868, 0)]
         [InlineData(LoRaRegionType.EU868, 1)]
