@@ -137,7 +137,7 @@ namespace LoRaWanTest
             physicalUpstreamPyld[0] = 2;
             var request = Encoding.Default.GetBytes(jsonUplink);
             var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());
-            var downstream = RegionManager.EU868.GetDownstreamDR(rxpks[0]);
+            var downstream = RegionManager.US915.GetDownstreamDR(rxpks[0]);
             Assert.Equal(expectedDatr, downstream);
         }
 
