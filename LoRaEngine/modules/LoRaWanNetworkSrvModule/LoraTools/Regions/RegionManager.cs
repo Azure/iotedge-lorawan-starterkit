@@ -130,7 +130,7 @@ namespace LoRaTools.Regions
             { 6, 5, 4, 3, 2, 1 },
             { 7, 6, 5, 4, 3, 2 }
             };
-            HashSet<string> validDatarange = new HashSet<string>()
+            HashSet<string> validDataRangeUpAndDownstream = new HashSet<string>()
             {
                 "SF12BW125", // 0
                 "SF11BW125", // 1
@@ -143,7 +143,7 @@ namespace LoRaTools.Regions
             };
 
             eu868.MaxADRDataRate = 5;
-            eu868.RegionLimits = new RegionLimits((min: 863, max: 870), validDatarange, validDatarange);
+            eu868.RegionLimits = new RegionLimits((min: 863, max: 870), validDataRangeUpAndDownstream, validDataRangeUpAndDownstream, 0, 0);
         }
 
         private static Region us915;
@@ -228,7 +228,7 @@ namespace LoRaTools.Regions
             };
 
             us915.MaxADRDataRate = 3;
-            us915.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), upstreamValidDataranges, downstreamValidDataranges);
+            us915.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), upstreamValidDataranges, downstreamValidDataranges, 0, 8);
         }
     }
 }

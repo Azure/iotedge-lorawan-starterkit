@@ -156,18 +156,6 @@ namespace LoRaTools.Regions
             return false;
         }
 
-        public bool IsCurrentDRIndexWithinAcceptableValue(uint dr)
-        {
-            if (this.DRtoConfiguration.ContainsKey(dr))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         /// <summary>
         /// Method to calculate the RX2 DataRate and frequency.
         /// Those parameters can be set in the device twins, Server Twins, or it could be a regional feature.
@@ -199,7 +187,7 @@ namespace LoRaTools.Regions
             else
             {
                 uint rx2Dr = (uint)rx2DrFromTwins;
-                if (this.IsCurrentDRIndexWithinAcceptableValue(rx2Dr))
+                if (this.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2Dr))
                 {
                     datr = this.DRtoConfiguration[rx2Dr].configuration;
                 }
@@ -256,7 +244,7 @@ namespace LoRaTools.Regions
         {
             if (rxpk.Freq < this.RegionLimits.FrequencyRange.min ||
                 rxpk.Freq > this.RegionLimits.FrequencyRange.max ||
-                !this.RegionLimits.UpstreamValidDR.Contains(rxpk.Datr))
+                !this.RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(rxpk.Datr))
             {
                 Logger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
                 return false;

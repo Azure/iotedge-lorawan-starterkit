@@ -145,38 +145,72 @@ namespace LoRaWanTest
         [InlineData(LoRaRegionType.EU868, 0)]
         [InlineData(LoRaRegionType.EU868, 1)]
         [InlineData(LoRaRegionType.EU868, 3)]
-        [InlineData(LoRaRegionType.EU868, 5)]
+        [InlineData(LoRaRegionType.EU868, 5, false)]
         [InlineData(LoRaRegionType.US915, 0)]
         [InlineData(LoRaRegionType.US915, 4)]
-        [InlineData(LoRaRegionType.US915, 9)]
-        [InlineData(LoRaRegionType.US915, 13)]
-        public void Check_Correct_RXPK_Datr_Are_Accepted(LoRaRegionType loRaRegionType, uint datrIndex)
+        [InlineData(LoRaRegionType.US915, 2)]
+        [InlineData(LoRaRegionType.US915, 13, false)]
+        [InlineData(LoRaRegionType.US915, 10, false)]
+        public void Check_Correct_RXPK_Datr_Are_Accepted(LoRaRegionType loRaRegionType, uint datrIndex, bool upstream = true)
         {
             if (loRaRegionType == LoRaRegionType.EU868)
             {
-                Assert.True(RegionManager.EU868.IsCurrentDRIndexWithinAcceptableValue(datrIndex));
-                    }
+                if (upstream)
+                {
+                    Assert.True(RegionManager.EU868.RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(datrIndex));
+                }
+                else
+                {
+                    Assert.True(RegionManager.EU868.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(datrIndex));
+                }
+            }
             else
             {
-                Assert.True(RegionManager.US915.IsCurrentDRIndexWithinAcceptableValue(datrIndex));
+                if (upstream)
+                {
+                    Assert.True(RegionManager.US915.RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(datrIndex));
+                }
+                else
+                {
+                    Assert.True(RegionManager.US915.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(datrIndex));
+                }
             }
         }
 
         [Theory]
         [InlineData(LoRaRegionType.EU868, 8)]
         [InlineData(LoRaRegionType.EU868, 10)]
+        [InlineData(LoRaRegionType.EU868, 8, false)]
+        [InlineData(LoRaRegionType.EU868, 10, false)]
         [InlineData(LoRaRegionType.US915, 5)]
         [InlineData(LoRaRegionType.US915, 7)]
         [InlineData(LoRaRegionType.US915, 14)]
-        public void Check_incorrect_RXPK_Datr_Are_Refused(LoRaRegionType loRaRegionType, uint datrIndex)
+        [InlineData(LoRaRegionType.US915, 10)]
+        [InlineData(LoRaRegionType.US915, 2, false)]
+        [InlineData(LoRaRegionType.US915, 12)]
+        public void Check_incorrect_RXPK_Datr_Are_Refused(LoRaRegionType loRaRegionType, uint datrIndex, bool upstream = true)
         {
             if (loRaRegionType == LoRaRegionType.EU868)
             {
-                Assert.False(RegionManager.EU868.IsCurrentDRIndexWithinAcceptableValue(datrIndex));
+                if (upstream)
+                {
+                    Assert.False(RegionManager.EU868.RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(datrIndex));
+                }
+                else
+                {
+                    Assert.False(RegionManager.EU868.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(datrIndex));
+                }
             }
             else
             {
-                Assert.False(RegionManager.US915.IsCurrentDRIndexWithinAcceptableValue(datrIndex));
+                if (upstream)
+                {
+                    Assert.False(RegionManager.US915.RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue(datrIndex));
+                }
+                else
+                {
+                    Assert.False(RegionManager.US915.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(datrIndex));
+                }
             }
         }
     }
