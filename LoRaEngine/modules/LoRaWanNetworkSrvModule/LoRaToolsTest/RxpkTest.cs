@@ -109,8 +109,8 @@ namespace LoRaWanTest
         }
 
         [Theory]
-        [InlineData(915, "SF10BW125", "SF12BW500")]
-        [InlineData(915, "SF7BW125", "SF9BW500")]
+        [InlineData(915, "SF10BW125", "SF10BW500")]
+        [InlineData(915, "SF7BW125", "SF7BW500")]
         [InlineData(915, "SF8BW125", "SF8BW500")]
         [InlineData(900, "SF12BW125", null)]
         [InlineData(915, "SF36BW125", null)]
