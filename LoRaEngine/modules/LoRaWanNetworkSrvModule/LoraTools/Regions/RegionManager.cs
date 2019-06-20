@@ -224,7 +224,7 @@ namespace LoRaTools.Regions
                 "SF10BW500", // 10
                 "SF9BW500", // 11
                 "SF8BW500", // 12
-                "SF8BW500" // 13
+                "SF7BW500" // 13
             };
 
             us915.MaxADRDataRate = 3;
