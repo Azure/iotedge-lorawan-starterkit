@@ -375,7 +375,7 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
             var txpk = downlinkMessage.Txpk;
             var euRegion = RegionManager.EU868;
-            Assert.True(euRegion.TryGetDownstreamChannelFrequency(rxpk, out double frequency));
+            Assert.True(euRegion.TryGetUpstreamChannelFrequency(rxpk, out double frequency));
             // Ensure we are using second window frequency
             Assert.Equal(frequency, txpk.Freq);
 
