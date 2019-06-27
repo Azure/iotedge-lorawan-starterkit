@@ -47,7 +47,6 @@ namespace LoraKeysManagerFacade
 
             // ABP parameters
             string devAddr = req.Query["DevAddr"];
-
             // OTAA parameters
             string devEUI = req.Query["DevEUI"];
             string devNonce = req.Query["DevNonce"];
@@ -126,25 +125,93 @@ namespace LoraKeysManagerFacade
 
                 // TODO check for sql injection
                 devAddr = devAddr.Replace('\'', ' ');
-
-                var query = this.registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{devAddr}' OR properties.reported.DevAddr ='{devAddr}'", 100);
-                while (query.HasMoreResults)
+                var devAddrCache = new LoRaDevAddrCache(this.cacheStore, this.registryManager, log, gatewayId);
+                if (await devAddrCache.TryTakeDevAddrUpdateLock(devAddr))
                 {
-                    var page = await query.GetNextAsTwinAsync();
-
-                    foreach (var twin in page)
+                    try
                     {
-                        if (twin.DeviceId != null)
+                        if (devAddrCache.TryGetInfo(devAddr, out List<DevAddrCacheInfo> devAddressesInfo))
                         {
-                            var device = await this.registryManager.GetDeviceAsync(twin.DeviceId);
-                            var iotHubDeviceInfo = new IoTHubDeviceInfo
+                            for (int i = 0; i < devAddressesInfo.Count; i++)
                             {
-                                DevAddr = devAddr,
-                                DevEUI = twin.DeviceId,
-                                PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey
-                            };
-                            results.Add(iotHubDeviceInfo);
+                                if (!string.IsNullOrEmpty(devAddressesInfo[i].DevEUI))
+                                {
+                                    // device was not yet populated
+                                    if (!string.IsNullOrEmpty(devAddressesInfo[i].PrimaryKey))
+                                    {
+                                        results.Add(devAddressesInfo[i]);
+                                    }
+                                    else
+                                    {
+                                        // we need to load the primaryKey from IoTHub
+                                        // Add a lock loadPrimaryKey get lock get
+                                        devAddressesInfo[i].PrimaryKey = await this.LoadPrimaryKeyAsync(devAddressesInfo[i].DevEUI);
+                                        results.Add(devAddressesInfo[i]);
+                                        devAddrCache.StoreInfo(devAddressesInfo[i]);
+                                    }
+
+                                    // even if we fail to acquire the lock we wont enter in the next condition as devaddressinfo is not null
+                                }
+                            }
                         }
+
+                        // if the cache results are null, we query the IoT Hub.
+                        // if the device is not found is the cache we query, if there was something, it is probably not our device.
+                        if (results.Count == 0 && devAddressesInfo == null)
+                        {
+                            if (await devAddrCache.TryTakeDevAddrUpdateLock(devAddr))
+                            {
+                                try
+                                {
+                                    var query = this.registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{devAddr}' OR properties.reported.DevAddr ='{devAddr}'", 100);
+                                    int resultCount = 0;
+                                    while (query.HasMoreResults)
+                                    {
+                                        var page = await query.GetNextAsTwinAsync();
+
+                                        foreach (var twin in page)
+                                        {
+                                            if (twin.DeviceId != null)
+                                            {
+                                                var device = await this.registryManager.GetDeviceAsync(twin.DeviceId);
+                                                var iotHubDeviceInfo = new DevAddrCacheInfo
+                                                {
+                                                    DevAddr = devAddr,
+                                                    DevEUI = twin.DeviceId,
+                                                    PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey,
+                                                    GatewayId = twin.Properties.Desired.Contains("GatewayId") ?
+                                                        twin.Properties.Desired["GatewayId"] as string :
+                                                        string.Empty,
+                                                    LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
+                                                };
+                                                results.Add(iotHubDeviceInfo);
+                                                devAddrCache.StoreInfo((DevAddrCacheInfo)iotHubDeviceInfo);
+                                            }
+
+                                            resultCount++;
+                                        }
+                                    }
+
+                                    // todo save when not our devaddr
+                                    if (resultCount == 0)
+                                    {
+                                        devAddrCache.StoreInfo(new DevAddrCacheInfo()
+                                        {
+                                            DevAddr = devAddr,
+                                            DevEUI = string.Empty
+                                        });
+                                    }
+                                }
+                                finally
+                                {
+                                    devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
+                                }
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
                     }
                 }
             }
@@ -154,6 +221,17 @@ namespace LoraKeysManagerFacade
             }
 
             return results;
+        }
+
+        private async Task<string> LoadPrimaryKeyAsync(string devEUI)
+        {
+            var device = await this.registryManager.GetDeviceAsync(devEUI);
+            if (device == null)
+            {
+                return null;
+            }
+
+            return device.Authentication.SymmetricKey?.PrimaryKey;
         }
 
         private async Task<JoinInfo> TryGetJoinInfoAndValidateAsync(string devEUI, string gatewayId, ILogger log)

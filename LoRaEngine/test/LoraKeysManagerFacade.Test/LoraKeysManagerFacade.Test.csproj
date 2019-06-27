@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\LoraKeysManagerFacade\LoraKeysManagerFacade.csproj" />
+    <ProjectReference Include="..\LoRaWan.Test.Shared\LoRaWan.Test.Shared.csproj" />
   </ItemGroup>
 
   <!-- StyleCop Setup -->

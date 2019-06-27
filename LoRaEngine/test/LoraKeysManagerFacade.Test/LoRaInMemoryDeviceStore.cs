@@ -8,6 +8,7 @@ namespace LoraKeysManagerFacade.Test
     using System.Threading;
     using System.Threading.Tasks;
     using Newtonsoft.Json;
+    using StackExchange.Redis;
 
     internal class LoRaInMemoryDeviceStore : ILoRaDeviceCacheStore
     {
@@ -127,6 +128,27 @@ namespace LoraKeysManagerFacade.Test
         public bool KeyExists(string key)
         {
             return this.cache.ContainsKey(key);
+        }
+
+        public HashEntry[] GetHashObject(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryChangeLockTTL(string key, TimeSpan timeToExpire)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TrySetHashObject(string key, string subkey, string value, TimeSpan? timeToExpire = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ReplaceHashObjects<T>(string cacheKey, IDictionary<string, T> input, TimeSpan? timeToExpire = null, bool removeOldOccurence = false)
+            where T : class
+        {
+            throw new NotImplementedException();
         }
     }
 }
