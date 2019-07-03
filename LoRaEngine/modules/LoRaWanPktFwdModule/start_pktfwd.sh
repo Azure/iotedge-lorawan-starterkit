@@ -37,5 +37,17 @@ if [[ $arch != *"arm"* ]]; then
         fi
     fi
 else
-    ./lora_pkt_fwd
+    
+if [[ -z "$SPI_DEV_SPEED" ]]; then
+           ./lora_pkt_fwd
+       else
+           if [ "$SPI_DEV" == "2" ]; then
+               echo "The SPI speed is set to 2Mbps"
+               ./lora_pkt_fwd_spi_speed
+           fi
+           else
+               echo "Currently only a customized value of 2Mbps is supported as custom SPI speed"
+           fi
+       fi
+   fi
 fi  
