@@ -9,10 +9,21 @@ WORKDIR /build/packet_forwarder
 RUN ./compile.sh
 WORKDIR /build
 
+FROM sdthirlwall/raspberry-pi-cross-compiler as builder2
+RUN apt-get install -y git
+RUN git clone https://github.com/Lora-net/packet_forwarder.git
+RUN git clone https://github.com/Lora-net/lora_gateway.git
+# For RAK833 based modules
+RUN sed -i "s|# write output for SX1301 reset|echo \"0\" > /sys/class/gpio/gpio\$IOT_SK_SX1301_RESET_PIN/value; WAIT_GPIO|g" ./lora_gateway/reset_lgw.sh
+RUN sed -i "s|8000000|2000000|g" ./lora_gateway/libloragw/src/loragw_spi.native.c
+WORKDIR /build/packet_forwarder
+RUN ./compile.sh
+RUN cp /build/packet_forwarder/lora_pkt_fwd/lora_pkt_fwd /lora_pkt_fwd_spi_speed
 
 FROM arm32v7/debian:stretch-slim as exec
 WORKDIR /LoRa
 COPY --from=builder /build/packet_forwarder/lora_pkt_fwd/lora_pkt_fwd .
+COPY --from=builder2 /lora_pkt_fwd_spi_speed .
 COPY --from=builder /build/packet_forwarder/lora_pkt_fwd/global_conf.json .
 COPY --from=builder /build/packet_forwarder/lora_pkt_fwd/global_conf.json global_conf.eu.json
 COPY --from=builder /build/lora_gateway/reset_lgw.sh .
