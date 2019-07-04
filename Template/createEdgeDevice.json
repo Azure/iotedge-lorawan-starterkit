@@ -19,7 +19,7 @@
             "metadata": {
                 "description": "Provide the reset pin value of your gateway. Please refer to the doc if you are unfamiliar with the value"
             }
-    },
+        },
         "region": {
             "type": "string",
             "allowedValues": [
@@ -29,12 +29,33 @@
             "defaultValue": "EU",
             "metadata": {
                 "description": "In what region is your gateway deployed?"
-    }
-    }
-},
+            }
+        },
+        "spiSpeed": {
+            "type": "int",
+            "allowedValues": [
+                8,
+                2
+            ],
+            "defaultValue": "Standard (8Mbps)",
+            "metadata": {
+                "description": "Custom SPI speed for your gateway, currently only supported for ARM gateways"
+            }
+        },
+        "spiDev": {
+            "type": "int",
+            "allowedValues": [
+                1,
+                2
+            ],
+            "defaultValue": 2,
+            "metadata": {
+                "description": "SPI Dev version for x86 based gateway"
+            }
+        }
+    },
     "variables": {
-
-        "functionAppName":"[concat(parameters('solutionPrefix'), 'function')]"
+        "functionAppName": "[concat(parameters('solutionPrefix'), 'function')]"
     },
     "resources": [
         {
@@ -44,7 +65,7 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[Concat(listsecrets(resourceId('Microsoft.Web/sites/functions', concat(parameters('solutionPrefix'), 'function'), 'CreateEdgeDevice'),'2015-08-01').trigger_url,'&region=',parameters('region'),'&resetPin=',parameters('resetPin'),'&deviceName=',parameters('edgeGatewayName'),'&publishingUserName=', list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingUserName,'&publishingPassword=',list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingPassword)]",                    
+                    "uri": "[Concat(listsecrets(resourceId('Microsoft.Web/sites/functions', concat(parameters('solutionPrefix'), 'function'), 'CreateEdgeDevice'),'2015-08-01').trigger_url,'&region=',parameters('region'),'&resetPin=',parameters('resetPin'),'&spiDev=',parameters('spiDev'),'&spiSpeed=',parameters('spiSpeed'),'&deviceName=',parameters('edgeGatewayName'),'&publishingUserName=', list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingUserName,'&publishingPassword=',list(resourceId('Microsoft.Web/sites/config', variables('functionAppName'), 'publishingcredentials'), '2016-08-01').properties.publishingPassword)]",
                     "contentVersion": "1.0.0.0"
                 }
             }
