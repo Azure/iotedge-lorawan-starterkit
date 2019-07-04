@@ -38,10 +38,10 @@ if [[ $arch != *"arm"* ]]; then
     fi
 else
     
-if [[ -z "$SPI_DEV_SPEED" ]]; then
+if [[ -z "$SPI_SPEED" ]]; then
            ./lora_pkt_fwd
        else
-           if [ "$SPI_DEV" == "2" ]; then
+           if [ "$SPI_SPEED" == "2" ]; then
                echo "The SPI speed is set to 2Mbps"
                ./lora_pkt_fwd_spi_speed
            fi
