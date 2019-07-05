@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-[assembly: Microsoft.Azure.WebJobs.Hosting.WebJobsStartup(typeof(LoraKeysManagerFacade.FacadeStartup))]
+[assembly: Microsoft.Azure.Functions.Extensions.DependencyInjection.FunctionsStartup(typeof(LoraKeysManagerFacade.FacadeStartup))]
 
 namespace LoraKeysManagerFacade
 {
@@ -9,16 +9,15 @@ namespace LoraKeysManagerFacade
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
     using Microsoft.Azure.Devices;
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Hosting;
+    using Microsoft.Azure.Functions.Extensions.DependencyInjection;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using StackExchange.Redis;
 
-    public class FacadeStartup : IWebJobsStartup
+    public class FacadeStartup : FunctionsStartup
     {
-        public void Configure(IWebJobsBuilder builder)
+        public override void Configure(IFunctionsHostBuilder builder)
         {
             var configHandler = ConfigHandler.Create(builder);
 
@@ -58,7 +57,7 @@ namespace LoraKeysManagerFacade
             internal const string IoTHubConnectionStringKey = "IoTHubConnectionString";
             internal const string RedisConnectionStringKey = "RedisConnectionString";
 
-            internal static ConfigHandler Create(IWebJobsBuilder builder)
+            internal static ConfigHandler Create(IFunctionsHostBuilder builder)
             {
                 var tempProvider = builder.Services.BuildServiceProvider();
                 var config = tempProvider.GetRequiredService<IConfiguration>();
