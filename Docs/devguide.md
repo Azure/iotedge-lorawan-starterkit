@@ -104,12 +104,6 @@ You have the option to either deploy the Azure Function code from your Visual St
 
 #### Follow these next steps in both cases
 
-- Edit the Function's `Application settings` and change the `FUNCTIONS_EXTENSION_VERSION` App setting from `~2` to `2.0.12342.0`
-
-|App Settings Name|Value|
-|-|-|
-|FUNCTIONS_EXTENSION_VERSION|**2.0.12342.0**|
-
 - Configure IoT Hub and Redis connection strings in the function:
 
 Copy your Redis Cache connection string in a connection string names `RedisConnectionString`

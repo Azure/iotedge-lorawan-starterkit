@@ -6,9 +6,10 @@
   <ItemGroup>
     <PackageReference Include="Docker.DotNet.X509" Version="3.125.2" />
     <PackageReference Include="Microsoft.Azure.Devices" Version="1.17.0" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Script.ExtensionsMetadataGenerator" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.2.0" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.22" />
+    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.29" />
     <PackageReference Include="StackExchange.Redis" Version="2.0.513" />
   </ItemGroup>
   
