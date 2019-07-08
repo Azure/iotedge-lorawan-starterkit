@@ -1,8 +1,38 @@
 # Upgrade LoRaWAN to a new version
 
-## Release 1.0.0
+## Release 1.0.1
 
-We recommend re-deploying your solution based on the 1.0.0 release if you have been working with a pre-release version. If you prefer to update your existing installation, the following lists the steps required.
+We recommend re-deploying your solution based on the 1.0.1 release if you have been working with a pre-release version. If you prefer to update your existing installation, the following lists describes the required steps.
+
+## Updating existing installations from 1.0.0 to release 1.0.1
+
+### Updating your gateways' IoT Edge module versions
+
+Go to your solution's Azure IoT Hub and under IoT Edge, select eacu of your gateways. Select `Set Modules` and configure the two deployment modules `LoRaWanNetworkSrvModule` and `LoRaWanPktFwdModule`. Make sure, the following image URIs are configured:
+
+|Deployment Module|Image URI|
+|-|-|
+|LoRaWanNetworkSrvModule|loraedge/lorawannetworksrvmodule:1.0.1|
+|LoRaWanPktFwdModule|loraedge/lorawanpktfwdmodule:1.0.1|
+
+### Updating the Azure Function Facade
+
+If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+
+If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an `App Setting` in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:
+
+```
+https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.1/function-1.0.1.zip
+```
+
+Edit the Function's `Application settings` and make sure the `FUNCTIONS_EXTENSION_VERSION` App setting is set to `~2`.
+If during a previous upgrade you manually set it to `2.0.12342.0`, please change it back to `~2`.
+
+|App Settings Name|Value|
+|-|-|
+|FUNCTIONS_EXTENSION_VERSION|**~2**|
+
+Make sure the IoT Hub and Redis connection strings are properly configured in the function.
 
 ## Updating existing installations from 0.4.0-preview to release 1.0.0
 
