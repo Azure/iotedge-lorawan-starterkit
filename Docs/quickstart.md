@@ -189,7 +189,7 @@ This section provide a brief description of the device reported properties you c
 
 ### Decoders
 
-The SensorDecoder tag is used to define which method will be used to decode the LoRa payload. If you leave it out or empty it will send the raw decrypted payload in the data field of the json message as Base64 encoded value to IoT Hub.
+The SensorDecoder tag is used to define which method will be used to decode the LoRa payload. If you leave it out or empty it will send the raw decrypted payload in the data field of the json message as **Base64 encoded** value to IoT Hub.
 
 If you want to decode it on the Edge you have the following two options:
 
@@ -207,7 +207,17 @@ In both cases, we have already provided a simple decoder called `"DecoderValueSe
 }
 ```
 
-To add the sample `"DecoderValueSensor"` to the sample LoRa device configured above, change it's desired properties in IoT Hub as follows for option 1:
+If you want the raw decrypted payload to be sent to IoT Hub as **Hex encoded** value in the data field of the json message, you can set the decoder to `"DecoderHexSensor"`. The byte array {1, 2, 4, 8, 255} for example will be converted to "01020408FF" by this built-in decoder.
+
+```json
+{
+  .....
+    "data": {"value": "01020408FF"}
+  .....
+}
+```
+
+To add the sample `"DecoderValueSensor"` or `"DeoderHexSensor`" to the sample LoRa device configured above, change it's desired properties in IoT Hub as follows for option 1:
 
 ```json
 "desired": {
@@ -229,7 +239,7 @@ or as follows for option 2:
   },
 ```
 
-The `"DecoderValueSensor"` decoder is not a best practice but it makes it easier to experiment sending sensor readings to IoT Hub without having to change any code.
+The `"DecoderValueSensor"` and `"DecoderHexSensor"` decoders are not a best practice but it makes it easier to experiment sending sensor readings to IoT Hub without having to change any code.
 
 if the SensorDecoder tag has a "http" in it's string value, it will forward the decoding call to an external decoder, as described in option 2 above, using standard Http. The call expects a return value with the same format as the json here above or an error string.
 
