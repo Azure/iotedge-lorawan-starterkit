@@ -4,10 +4,12 @@
 namespace LoRaTools.Regions
 {
     using System.Collections.Generic;
+    using System.Data;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
+    using Org.BouncyCastle.Utilities.Collections;
 
     public static class RegionManager
     {
@@ -128,7 +130,7 @@ namespace LoRaTools.Regions
             { 6, 5, 4, 3, 2, 1 },
             { 7, 6, 5, 4, 3, 2 }
             };
-            List<string> euValidDataranges = new List<string>()
+            HashSet<string> validDataRangeUpAndDownstream = new HashSet<string>()
             {
                 "SF12BW125", // 0
                 "SF11BW125", // 1
@@ -141,7 +143,7 @@ namespace LoRaTools.Regions
             };
 
             eu868.MaxADRDataRate = 5;
-            eu868.RegionLimits = new RegionLimits((min: 863, max: 870), euValidDataranges);
+            eu868.RegionLimits = new RegionLimits((min: 863, max: 870), validDataRangeUpAndDownstream, validDataRangeUpAndDownstream, 0, 0);
         }
 
         private static Region us915;
@@ -206,23 +208,27 @@ namespace LoRaTools.Regions
             { 13, 13, 12, 11 },
             };
 
-            List<string> usValidDataranges = new List<string>()
+            HashSet<string> upstreamValidDataranges = new HashSet<string>()
             {
                 "SF10BW125", // 0
                 "SF9BW125", // 1
                 "SF8BW125", // 2
                 "SF7BW125", // 3
                 "SF8BW500", // 4
+            };
+
+            HashSet<string> downstreamValidDataranges = new HashSet<string>()
+            {
                 "SF12BW500", // 8
                 "SF11BW500", // 9
                 "SF10BW500", // 10
                 "SF9BW500", // 11
                 "SF8BW500", // 12
-                "SF8BW500" // 13
+                "SF7BW500" // 13
             };
 
             us915.MaxADRDataRate = 3;
-            us915.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), usValidDataranges);
+            us915.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), upstreamValidDataranges, downstreamValidDataranges, 0, 8);
         }
     }
 }

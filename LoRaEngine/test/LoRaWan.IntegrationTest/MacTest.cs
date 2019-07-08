@@ -69,10 +69,12 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that Mac Commands C2D messages working
         // Uses Device23_OTAA
-        [Fact]
-        public async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands()
+        [Theory]
+        [InlineData("Device23_OTAA")]
+        [InlineData("Device23_OTAA_MultiGw")]
+        public async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(string devicePropertyName)
         {
-            var device = this.TestFixtureCi.Device23_OTAA;
+            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -85,6 +87,11 @@ namespace LoRaWan.IntegrationTest
 
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
+
+            if (device.IsMultiGw)
+            {
+                await this.TestFixtureCi.WaitForTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
+            }
 
             await this.Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_CommandsImplAsync(device, "test");
             await this.Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_CommandsImplAsync(device, string.Empty);
@@ -192,19 +199,6 @@ namespace LoRaWan.IntegrationTest
 
             Assert.True(foundMacCommandReceivedMsg, $"Did not find in network server logs: '{macCommandReceivedMsg}'");
             Assert.True(foundDeviceMacCommandResponseMsg, $"Did not find in network server logs: '{deviceMacCommandResponseMsg}'");
-        }
-
-        private string ToHexString(string str)
-        {
-            var sb = new StringBuilder();
-
-            var bytes = Encoding.UTF8.GetBytes(str);
-            foreach (var t in bytes)
-            {
-                sb.Append(t.ToString("X2"));
-            }
-
-            return sb.ToString(); // returns: "48656C6C6F20776F726C64" for "Hello world"
         }
     }
 }

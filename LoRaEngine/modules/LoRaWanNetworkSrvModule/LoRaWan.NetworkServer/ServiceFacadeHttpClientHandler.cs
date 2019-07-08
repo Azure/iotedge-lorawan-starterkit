@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer
+namespace LoRaWan.Shared
 {
     using System;
     using System.Linq;
@@ -10,7 +10,6 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.Shared;
 
     /// <summary>
     /// <see cref="HttpClientHandler"/> for service facade function API calls.

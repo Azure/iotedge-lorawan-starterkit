@@ -14,27 +14,37 @@ namespace LoraKeysManagerFacade
 
     public class LoRaADRRedisStore : LoRaADRStoreBase, ILoRaADRStore
     {
-        const string CacheToken = "ADR";
-        const string LockToken = "_lock";
+        const string CacheToken = ":ADR";
+        const string LockToken = ":lock";
         IDatabase redisCache;
 
         sealed class RedisLockWrapper : IDisposable
         {
+            private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(10);
+            private static readonly TimeSpan LockDuration = TimeSpan.FromSeconds(15);
             private string lockKey;
             private string owner;
             private IDatabase redisCache;
             private bool ownsLock;
 
-            internal RedisLockWrapper(string devEUI, IDatabase redisCache, string owner = "_LoRaRedisStore")
+            internal RedisLockWrapper(string devEUI, IDatabase redisCache, string owner = ":LoRaRedisStore")
             {
                 this.lockKey = GetEntryKey(devEUI) + LockToken;
                 this.redisCache = redisCache;
                 this.owner = owner;
             }
 
-            internal bool TakeLock()
+            internal async Task<bool> TakeLockAsync()
             {
-                return this.ownsLock = this.redisCache.LockTake(this.lockKey, this.owner, TimeSpan.FromSeconds(10));
+                var start = DateTime.UtcNow;
+                while (!(this.ownsLock = await this.redisCache.LockTakeAsync(this.lockKey, this.owner, LockDuration)))
+                {
+                    if (DateTime.UtcNow - start > LockTimeout)
+                        break;
+                    await Task.Delay(100);
+                }
+
+                return this.ownsLock;
             }
 
             public void Dispose()
@@ -56,7 +66,7 @@ namespace LoraKeysManagerFacade
         {
             using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
             {
-                if (redisLock.TakeLock())
+                if (await redisLock.TakeLockAsync())
                 {
                     await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
                 }
@@ -68,7 +78,7 @@ namespace LoraKeysManagerFacade
             LoRaADRTable table = null;
             using (var redisLock = new RedisLockWrapper(entry.DevEUI, this.redisCache))
             {
-                if (redisLock.TakeLock())
+                if (await redisLock.TakeLockAsync())
                 {
                     var entryKey = GetEntryKey(entry.DevEUI);
                     table = await this.GetADRTableCore(entryKey) ?? new LoRaADRTable();
@@ -87,7 +97,7 @@ namespace LoraKeysManagerFacade
         {
             using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
             {
-                if (redisLock.TakeLock())
+                if (await redisLock.TakeLockAsync())
                 {
                     return await this.GetADRTableCore(GetEntryKey(devEUI));
                 }
@@ -101,7 +111,7 @@ namespace LoraKeysManagerFacade
         {
             using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
             {
-                if (redisLock.TakeLock())
+                if (await redisLock.TakeLockAsync())
                 {
                     return await this.redisCache.KeyDeleteAsync(GetEntryKey(devEUI));
                 }

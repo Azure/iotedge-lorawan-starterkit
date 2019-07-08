@@ -55,7 +55,7 @@ namespace LoRaWan.NetworkServer
                 if (loRaDevice == null)
                 {
                     request.NotifyFailed(devEUI, LoRaDeviceRequestFailedReason.UnknownDevice);
-                    Logger.Log(devEUI, "join refused: unknown device", LogLevel.Information);
+                    // we do not log here as we assume that the deviceRegistry does a more informed logging if returning null
                     return;
                 }
 
@@ -172,7 +172,7 @@ namespace LoRaWan.NetworkServer
                 if (windowToUse == Constants.RECEIVE_WINDOW_1)
                 {
                     datr = loraRegion.GetDownstreamDR(request.Rxpk);
-                    if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
+                    if (!loraRegion.TryGetUpstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
                     {
                         Logger.Log(loRaDevice.DevEUI, "could not resolve DR and/or frequency for downstream", LogLevel.Error);
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidRxpk);
@@ -200,7 +200,7 @@ namespace LoRaWan.NetworkServer
                 // Build the DlSettings fields that is a superposition of RX2DR and RX1DROffset field
                 byte[] dlSettings = new byte[1];
 
-                if (request.Region.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(loRaDevice.DesiredRX2DataRate))
+                if (request.Region.DRtoConfiguration.ContainsKey(loRaDevice.DesiredRX2DataRate))
                 {
                     dlSettings[0] =
                         (byte)(loRaDevice.DesiredRX2DataRate & 0b00001111);

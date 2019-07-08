@@ -36,6 +36,28 @@
             "metadata": {
                 "description": "In what region is your gateway deployed?"
             }
+        },
+        "spiSpeed": {
+            "type": "int",
+            "allowedValues": [
+                8,
+                2
+            ],
+            "defaultValue": 8,
+            "metadata": {
+                "description": "[In Mbps] Custom SPI speed for your gateway, currently only supported for ARM gateways"
+            }
+        },
+        "spiDev": {
+            "type": "int",
+            "allowedValues": [
+                1,
+                2
+            ],
+            "defaultValue": 2,
+            "metadata": {
+                "description": "SPI Dev version for x86 based gateway"
+            }
         }
     },
     "variables": {
@@ -46,7 +68,7 @@
         "storageAccountType": "Standard_LRS",
         "functionAppName": "[concat(parameters('uniqueSolutionPrefix'), 'function')]",
         "gitUsername": "Azure",
-        "functionZipBinary": "https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.0/function-1.0.0.zip",
+        "functionZipBinary": "https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.1/function-1.0.1.zip",
         "gitBranch": "master",
         "storageAccountId": "[concat(resourceGroup().id, '/providers/', 'Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "iotHubOwnerPolicyName": "iothubowner",
@@ -100,9 +122,7 @@
                 "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]",
                 "[resourceId('Microsoft.Cache/Redis', variables('redisCacheName'))]"
             ],
-            "resources": [
-               
-            ],
+            "resources": [],
             "properties": {
                 "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
                 "siteConfig": {
@@ -128,10 +148,6 @@
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
                         },
                         {
-                            "name": "FUNCTIONS_EXTENSION_VERSION",
-                            "value": "2.0.12342.0"
-                        },
-                        {
                             "name": "AzureWebJobsSecretStorageType",
                             "value": "Files"
                         },
@@ -150,6 +166,10 @@
                         {
                             "name": "FACADE_HOST_NAME",
                             "value": "[variables('functionAppName')]"
+                        },
+                         {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~2"
                         },
                         {
                             "name": "DEPLOY_DEVICE",
@@ -196,6 +216,12 @@
                     },
                     "resetPin": {
                         "value": "[parameters('resetPin')]"
+                    },
+                    "spiDev": {
+                        "value": "[parameters('spiDev')]"
+                    },
+                    "spiSpeed": {
+                        "value": "[parameters('spiSpeed')]"
                     }
                 }
             }

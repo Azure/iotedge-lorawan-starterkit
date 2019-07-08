@@ -127,8 +127,8 @@ namespace LoraKeysManagerFacade.Test
                 req1.RequiredSnr = rnd.Next(-20, 5);
                 req2.RequiredSnr = rnd.Next(-20, 5);
                 req2.FCntUp = ++req1.FCntUp;
-                req1.FCntDown = res1.FCntDown > 0 ? res1.FCntDown : req1.FCntDown;
-                req2.FCntDown = res2.FCntDown > 0 ? res2.FCntDown : req2.FCntDown;
+                req1.FCntDown = res1.FCntDown.GetValueOrDefault() > 0 ? res1.FCntDown.Value : req1.FCntDown;
+                req2.FCntDown = res2.FCntDown.GetValueOrDefault() > 0 ? res2.FCntDown.Value : req2.FCntDown;
             }
 
             req2.FCntUp = ++req1.FCntUp;
@@ -140,7 +140,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.False(result2.CanConfirmToDevice);
 
             Assert.Equal(req1.FCntDown + 1, result1.FCntDown);
-            Assert.Equal(0U, result2.FCntDown);
+            Assert.Equal(0U, result2.FCntDown.GetValueOrDefault());
         }
     }
 }

@@ -140,7 +140,7 @@ namespace LoRaWan.NetworkServer.Test
             var target = new SingleGatewayFrameCounterUpdateStrategy();
 
             var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
-            await target.ResetAsync(device);
+            await target.ResetAsync(device, 1, string.Empty);
             Assert.False(device.HasFrameCountChanges);
             this.deviceClient.VerifyAll();
         }

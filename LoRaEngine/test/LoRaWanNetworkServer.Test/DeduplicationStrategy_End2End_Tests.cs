@@ -59,6 +59,9 @@ namespace LoRaWan.NetworkServer.Test
                     Assert.True(mode == DeduplicationMode.None);
                 });
 
+            this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+                .ReturnsAsync(true);
+
             var shouldBeMarked = false;
 
             this.LoRaDeviceClient

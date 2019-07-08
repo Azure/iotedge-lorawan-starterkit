@@ -149,7 +149,15 @@
               "image": "$DEVOPS_AGENT_IMAGE",
               "createOptions": {
                 "HostConfig": {
-                  "Privileged": true
+                  "Privileged": true,
+                  "PublishAllPorts": true,
+                  "PortBindings": {
+                    "6000/udp": [
+                      {
+                        "HostPort": "6000"
+                      }
+                    ]
+                  }
                 },
                 "ExposedPorts": {
                   "6000/udp": {}

@@ -24,7 +24,7 @@ namespace LoRaWanTest
             // in EU in standard parameters the expectation is that the reply arrive at same place.
             var expFreq = freq;
             var expDatr = datr;
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
+            Assert.True(RegionManager.EU868.TryGetUpstreamChannelFrequency(rxpk[0], out double frequency));
             Assert.Equal(frequency, expFreq);
             Assert.Equal(RegionManager.EU868.GetDownstreamDR(rxpk[0]), expDatr);
         }
@@ -99,7 +99,7 @@ namespace LoRaWanTest
                     break;
             }
 
-            Assert.True(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
+            Assert.True(RegionManager.US915.TryGetUpstreamChannelFrequency(rxpk[0], out double frequency));
             Assert.Equal(frequency, expFreq);
             Assert.Equal(RegionManager.US915.GetDownstreamDR(rxpk[0]), expDatr);
         }
@@ -147,7 +147,7 @@ namespace LoRaWanTest
                     break;
             }
 
-            Assert.True(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
+            Assert.True(RegionManager.US915.TryGetUpstreamChannelFrequency(rxpk[0], out double frequency));
             Assert.Equal(frequency, expFreq);
             Assert.Equal(RegionManager.US915.GetDownstreamDR(rxpk[0]), expDatr);
         }
@@ -195,13 +195,13 @@ namespace LoRaWanTest
             var rxpk = GenerateRxpk(datarate, freq);
             if (region == LoRaRegionType.EU868)
             {
-                Assert.False(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency) &&
+                Assert.False(RegionManager.EU868.TryGetUpstreamChannelFrequency(rxpk[0], out double frequency) &&
                 RegionManager.EU868.GetDownstreamDR(rxpk[0]) != null);
             }
 
             if (region == LoRaRegionType.US915)
             {
-                Assert.False(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency) &&
+                Assert.False(RegionManager.US915.TryGetUpstreamChannelFrequency(rxpk[0], out double frequency) &&
                 RegionManager.US915.GetDownstreamDR(rxpk[0]) != null);
             }
         }

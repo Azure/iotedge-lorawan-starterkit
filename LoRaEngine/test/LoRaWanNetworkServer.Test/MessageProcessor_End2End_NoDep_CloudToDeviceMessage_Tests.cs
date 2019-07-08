@@ -42,6 +42,11 @@ namespace LoRaWan.NetworkServer.Test
             // message will be sent
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
+            if (string.IsNullOrEmpty(deviceGatewayID))
+            {
+                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+                    .ReturnsAsync(true);
+            }
 
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
@@ -370,7 +375,7 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
             var txpk = downlinkMessage.Txpk;
             var euRegion = RegionManager.EU868;
-            Assert.True(euRegion.TryGetDownstreamChannelFrequency(rxpk, out double frequency));
+            Assert.True(euRegion.TryGetUpstreamChannelFrequency(rxpk, out double frequency));
             // Ensure we are using second window frequency
             Assert.Equal(frequency, txpk.Freq);
 

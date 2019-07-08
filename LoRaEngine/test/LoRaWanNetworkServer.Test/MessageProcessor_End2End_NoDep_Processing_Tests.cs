@@ -84,6 +84,12 @@ namespace LoRaWan.NetworkServer.Test
                     .ReturnsAsync(true);
             }
 
+            if (string.IsNullOrEmpty(deviceGatewayID))
+            {
+                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI, It.IsAny<uint>(), It.IsNotNull<string>()))
+                    .ReturnsAsync(true);
+            }
+
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
 
@@ -136,7 +142,7 @@ namespace LoRaWan.NetworkServer.Test
             // will update api in multi gateway scenario
             if (string.IsNullOrEmpty(deviceGatewayID))
             {
-                this.LoRaDeviceApi.Verify(x => x.ABPFcntCacheResetAsync(devEUI), Times.Exactly(1));
+                this.LoRaDeviceApi.Verify(x => x.ABPFcntCacheResetAsync(devEUI, It.IsAny<uint>(), It.IsNotNull<string>()), Times.Exactly(1));
             }
 
             this.LoRaDeviceClient.VerifyAll();
@@ -163,6 +169,12 @@ namespace LoRaWan.NetworkServer.Test
             // C2D message will be checked
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
+
+            if (string.IsNullOrEmpty(deviceGatewayID))
+            {
+                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(loRaDevice.DevEUI, It.IsAny<uint>(), It.IsNotNull<string>()))
+                    .ReturnsAsync(true);
+            }
 
             // add device to cache already
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -463,6 +475,9 @@ namespace LoRaWan.NetworkServer.Test
                 // C2D message will be checked
                 this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                     .ReturnsAsync((Message)null);
+
+                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(loRaDevice.DevEUI, It.IsAny<uint>(), It.IsNotNull<string>()))
+                .ReturnsAsync(true);
             }
 
             // add device to cache already
@@ -629,7 +644,7 @@ namespace LoRaWan.NetworkServer.Test
             var confirmedMessageResult = this.PacketForwarder.DownlinkMessages[0];
 
             // validates txpk according to eu region
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk, out double frequency));
+            Assert.True(RegionManager.EU868.TryGetUpstreamChannelFrequency(rxpk, out double frequency));
             Assert.Equal(frequency, confirmedMessageResult.Txpk.Freq);
             Assert.Equal("4/5", confirmedMessageResult.Txpk.Codr);
             Assert.False(confirmedMessageResult.Txpk.Imme);
@@ -802,7 +817,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Single(this.PacketForwarder.DownlinkMessages);
             var txpk = this.PacketForwarder.DownlinkMessages[0].Txpk;
             Assert.Equal(0U, txpk.Rfch);
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk, out double frequency));
+            Assert.True(RegionManager.EU868.TryGetUpstreamChannelFrequency(rxpk, out double frequency));
             Assert.Equal(frequency, txpk.Freq);
             Assert.Equal("4/5", txpk.Codr);
             Assert.False(txpk.Imme);
@@ -832,6 +847,12 @@ namespace LoRaWan.NetworkServer.Test
             // message will be sent
             this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
+
+            if (string.IsNullOrEmpty(deviceGatewayID))
+            {
+                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+                    .ReturnsAsync(true);
+            }
 
             var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
@@ -1699,7 +1720,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (string.IsNullOrEmpty(gatewayID))
             {
-                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(simDevice.DevEUI))
+                this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(simDevice.DevEUI, It.IsAny<uint>(), It.IsNotNull<string>()))
                     .ReturnsAsync(true);
             }
 

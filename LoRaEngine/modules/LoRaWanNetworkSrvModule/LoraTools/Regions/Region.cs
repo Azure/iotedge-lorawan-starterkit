@@ -121,11 +121,11 @@ namespace LoRaTools.Regions
         /// Implement correct logic to get the correct transmission frequency based on the region.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
-        public bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency)
+        public bool TryGetUpstreamChannelFrequency(Rxpk upstreamChannel, out double frequency)
         {
             frequency = 0;
 
-            if (this.IsValidRxpk(upstreamChannel))
+            if (this.IsValidUpstreamRxpk(upstreamChannel))
             {
                 if (this.LoRaRegion == LoRaRegionType.EU868)
                 {
@@ -187,7 +187,7 @@ namespace LoRaTools.Regions
             else
             {
                 uint rx2Dr = (uint)rx2DrFromTwins;
-                if (this.RegionLimits.IsCurrentDRIndexWithinAcceptableValue(rx2Dr))
+                if (this.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2Dr))
                 {
                     datr = this.DRtoConfiguration[rx2Dr].configuration;
                 }
@@ -209,18 +209,18 @@ namespace LoRaTools.Regions
         /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
         public string GetDownstreamDR(Rxpk upstreamChannel, uint rx1DrOffset = 0)
         {
-            if (this.IsValidRxpk(upstreamChannel))
+            if (this.IsValidUpstreamRxpk(upstreamChannel))
             {
-                    // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
-                    if (rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1))
-                    {
-                        // in case of EU, you respond on same frequency as you sent data.
-                        return this.DRtoConfiguration[(uint)this.RX1DROffsetTable[this.GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].configuration;
-                    }
-                    else
-                    {
-                        return upstreamChannel.Datr;
-                    }
+                // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
+                if (rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1))
+                {
+                    // in case of EU, you respond on same frequency as you sent data.
+                    return this.DRtoConfiguration[(uint)this.RX1DROffsetTable[this.GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].configuration;
+                }
+                else
+                {
+                    return upstreamChannel.Datr;
+                }
             }
 
             return null;
@@ -240,11 +240,11 @@ namespace LoRaTools.Regions
         /// <summary>
         /// This method Check that a received packet is within the correct frenquency range and has a valid Datr.
         /// </summary>
-        private bool IsValidRxpk(Rxpk rxpk)
+        private bool IsValidUpstreamRxpk(Rxpk rxpk)
         {
             if (rxpk.Freq < this.RegionLimits.FrequencyRange.min ||
                 rxpk.Freq > this.RegionLimits.FrequencyRange.max ||
-                !this.RegionLimits.DatarateRange.Contains(rxpk.Datr))
+                !this.RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(rxpk.Datr))
             {
                 Logger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
                 return false;

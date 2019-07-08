@@ -6,9 +6,13 @@ namespace LoraKeysManagerFacade.Test
     using System;
     using System.Collections.Generic;
     using System.Threading;
+    using System.Threading.Tasks;
+    using Newtonsoft.Json;
+    using StackExchange.Redis;
 
     internal class LoRaInMemoryDeviceStore : ILoRaDeviceCacheStore
     {
+        private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(60);
         private readonly Dictionary<string, object> cache;
         private readonly Dictionary<string, SemaphoreSlim> locks;
 
@@ -34,31 +38,26 @@ namespace LoraKeysManagerFacade.Test
                 }
                 else
                 {
-                    return false;
+                    return true;
                 }
             }
         }
 
-        public bool LockTake(string key, string value, TimeSpan timeout)
+        public async Task<bool> LockTakeAsync(string key, string value, TimeSpan expiration, bool block = true)
         {
             SemaphoreSlim waiter = null;
-
             lock (this.locks)
             {
                 if (!this.locks.TryGetValue(key, out waiter))
                 {
-                    this.locks[key] = new SemaphoreSlim(0);
+                    this.locks[key] = new SemaphoreSlim(0, 1);
                     return true;
                 }
             }
 
-            if (waiter.Wait((int)timeout.TotalMilliseconds))
+            if (block && await waiter.WaitAsync((int)LockTimeout.TotalMilliseconds))
             {
-                lock (this.locks)
-                {
-                    this.locks[key] = new SemaphoreSlim(0);
-                    return true;
-                }
+                return true;
             }
 
             return false;
@@ -70,6 +69,25 @@ namespace LoraKeysManagerFacade.Test
             return result as string;
         }
 
+        public T GetObject<T>(string key)
+            where T : class
+        {
+            var str = this.StringGet(key);
+            if (string.IsNullOrEmpty(str))
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(str);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public bool StringSet(string key, string value, TimeSpan? expiry, bool onlyIfNotExists)
         {
             if (onlyIfNotExists)
@@ -79,6 +97,13 @@ namespace LoraKeysManagerFacade.Test
 
             this.cache[key] = value;
             return true;
+        }
+
+        public bool ObjectSet<T>(string key, T value, TimeSpan? expiration, bool onlyIfNotExists = false)
+            where T : class
+        {
+            var str = value != null ? JsonConvert.SerializeObject(value) : null;
+            return this.StringSet(key, str, expiration, onlyIfNotExists);
         }
 
         public long ListAdd(string key, string value, TimeSpan? expiry = null)
@@ -98,6 +123,32 @@ namespace LoraKeysManagerFacade.Test
             }
 
             return null;
+        }
+
+        public bool KeyExists(string key)
+        {
+            return this.cache.ContainsKey(key);
+        }
+
+        public HashEntry[] GetHashObject(string key)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryChangeLockTTL(string key, TimeSpan timeToExpire)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TrySetHashObject(string key, string subkey, string value, TimeSpan? timeToExpire = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ReplaceHashObjects<T>(string cacheKey, IDictionary<string, T> input, TimeSpan? timeToExpire = null, bool removeOldOccurence = false)
+            where T : class
+        {
+            throw new NotImplementedException();
         }
     }
 }

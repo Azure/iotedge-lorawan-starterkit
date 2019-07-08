@@ -24,6 +24,9 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     internal static class DownlinkMessageBuilder
     {
+        private static readonly Random RndDownlinkMessageBuilder = new Random();
+        private static readonly object RndLock = new object();
+
         /// <summary>
         /// Creates downlink message with ack for confirmation or cloud to device message
         /// </summary>
@@ -62,8 +65,11 @@ namespace LoRaWan.NetworkServer
             }
 
             byte[] rndToken = new byte[2];
-            Random rnd = new Random();
-            rnd.NextBytes(rndToken);
+
+            lock (RndLock)
+            {
+                RndDownlinkMessageBuilder.NextBytes(rndToken);
+            }
 
             string datr;
             double freq;
@@ -83,7 +89,7 @@ namespace LoRaWan.NetworkServer
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
 
-                if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq))
+                if (!loRaRegion.TryGetUpstreamChannelFrequency(rxpk, out freq))
                 {
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the frequency in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);
@@ -235,8 +241,11 @@ namespace LoRaWan.NetworkServer
             CidEnum macCommandType = CidEnum.Zero;
 
             byte[] rndToken = new byte[2];
-            Random rnd = new Random();
-            rnd.NextBytes(rndToken);
+
+            lock (RndLock)
+            {
+                RndDownlinkMessageBuilder.NextBytes(rndToken);
+            }
 
             bool isMessageTooLong = false;
 
@@ -245,20 +254,8 @@ namespace LoRaWan.NetworkServer
             double freq;
             var tmst = 0; // immediate mode
 
-            if (string.IsNullOrEmpty(configuration.Rx2DataRate))
-            {
-                Logger.Log(loRaDevice.DevEUI, $"using standard second receive window", LogLevel.Debug);
-                freq = loRaRegion.RX2DefaultReceiveWindows.frequency;
-                datr = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
-            }
-
-            // if specific twins are set, specify second channel to be as specified
-            else
-            {
-                freq = configuration.Rx2DataFrequency;
-                datr = configuration.Rx2DataRate;
-                Logger.Log(loRaDevice.DevEUI, $"using custom DR second receive window freq : {freq}, datr:{datr}", LogLevel.Debug);
-            }
+            // Class C always use RX2
+            (freq, datr) = loRaRegion.GetDownstreamRX2DRAndFreq(loRaDevice.DevEUI, configuration.Rx2DataRate, configuration.Rx2DataFrequency, loRaDevice.ReportedRX2DataRate);
 
             // get max. payload size based on data rate from LoRaRegion
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);

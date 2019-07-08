@@ -156,10 +156,12 @@ namespace LoRaWan.IntegrationTest
         }
 
         // Performs a OTAA join and sends 1 unconfirmed, 1 confirmed and rejoins
-        [Fact]
-        public async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR()
+        [Theory]
+        [InlineData("Device20_OTAA")]
+        [InlineData("Device20_OTAA_MultiGw")]
+        public async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(string devicePropertyName)
         {
-            var device = this.TestFixtureCi.Device20_OTAA;
+            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -173,7 +175,12 @@ namespace LoRaWan.IntegrationTest
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
 
-            // Sends 10x unconfirmed messages
+            if (device.IsMultiGw)
+            {
+                await this.TestFixtureCi.WaitForTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
+            }
+
+            // Sends 1x unconfirmed messages
             this.TestFixtureCi.ClearLogs();
 
             var msg = PayloadGenerator.Next().ToString();
@@ -229,12 +236,20 @@ namespace LoRaWan.IntegrationTest
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
+            // rejoin
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
             await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
             var joinSucceeded2 = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded2, "Rejoin failed");
+
+            if (device.IsMultiGw)
+            {
+                const string joinRefusedMsg = "join refused";
+                var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg) != -1, new SearchLogOptions(joinRefusedMsg));
+                Assert.True(joinRefused.Found);
+            }
         }
     }
 }

@@ -30,19 +30,6 @@ namespace LoRaWan.IntegrationTest
         {
         }
 
-        private string ToHexString(string str)
-        {
-            var sb = new StringBuilder();
-
-            var bytes = Encoding.UTF8.GetBytes(str);
-            foreach (var t in bytes)
-            {
-                sb.Append(t.ToString("X2"));
-            }
-
-            return sb.ToString(); // returns: "48656C6C6F20776F726C64" for "Hello world"
-        }
-
         // Ensures that C2D messages are received when working with confirmed messages
         // RxDelay set up to be 2 seconds
         // Uses Device9_OTAA
@@ -60,6 +47,14 @@ namespace LoRaWan.IntegrationTest
 
             var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
+
+            // find the gateway that accepted the join
+            var joinAccept = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf("JoinAccept") != -1);
+            Assert.NotNull(joinAccept);
+            Assert.NotNull(joinAccept.MatchedEvent);
+
+            var targetGw = joinAccept.MatchedEvent.SourceId;
+            Assert.Equal(device.GatewayID, targetGw);
 
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
@@ -113,11 +108,11 @@ namespace LoRaWan.IntegrationTest
                 // Check that RXDelay was correctly used
                 if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN1")).Count() > 0)
                 {
-                    await this.TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, false);
+                    await this.TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, false, device.GatewayID);
                 }
                 else if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN2")).Count() > 0)
                 {
-                    await this.TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, true);
+                    await this.TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, true, device.GatewayID);
                 }
                 else
                 {
@@ -126,7 +121,7 @@ namespace LoRaWan.IntegrationTest
 
                 // check if c2d message was found
                 // 0000000000000009: C2D message: 58
-                var c2dLogMessage = $"{device.DeviceID}: cloud to device message: {this.ToHexString(c2dMessageBody)}";
+                var c2dLogMessage = $"{device.DeviceID}: done completing cloud to device message, id: {c2dMessage.MessageId}";
                 var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                     (messageBody) =>
                     {
@@ -278,10 +273,12 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device15_OTAA
-        [Fact]
-        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message()
+        [Theory]
+        [InlineData("Device15_OTAA")]
+        [InlineData("Device15_OTAA_MultiGw")]
+        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(string devicePropertyName)
         {
-            var device = this.TestFixtureCi.Device15_OTAA;
+            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -295,6 +292,11 @@ namespace LoRaWan.IntegrationTest
 
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
+
+            if (device.IsMultiGw)
+            {
+                await this.TestFixtureCi.WaitForTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
+            }
 
             // Sends 2x unconfirmed messages
             for (var i = 1; i <= 2; ++i)
@@ -328,7 +330,7 @@ namespace LoRaWan.IntegrationTest
             var expectedRxSerial = $"+MSG: PORT: 2; RX: \"{this.ToHexString(c2dMessageBody)}\"";
             this.Log($"Expected C2D start with: {expectedRxSerial}");
 
-            // Sends 8x confirmed messages, stopping if C2D message is found
+            // Sends 8x unconfirmed messages, stopping if C2D message is found
             for (var i = 3; i <= 10; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
@@ -386,10 +388,12 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device10_OTAA
-        [Fact]
-        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message()
+        [Theory]
+        [InlineData("Device14_OTAA")]
+        [InlineData("Device14_OTAA_MultiGw")]
+        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(string devicePropertyName)
         {
-            var device = this.TestFixtureCi.Device14_OTAA;
+            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);
             await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
             await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
@@ -402,6 +406,11 @@ namespace LoRaWan.IntegrationTest
 
             // wait 1 second after joined
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_JOIN);
+
+            if (device.IsMultiGw)
+            {
+                await this.TestFixtureCi.WaitForTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
+            }
 
             // Sends 2x unconfirmed messages
             for (var i = 1; i <= 2; ++i)
@@ -440,14 +449,14 @@ namespace LoRaWan.IntegrationTest
             this.Log($"Expected C2D received log is: {expectedRxSerial}");
             this.Log($"Expected UDP log starting with: {expectedUDPMessageV1} or {expectedUDPMessageV2}");
 
-            // Sends 8x confirmed messages, stopping if C2D message is found
+            // Sends 8x unconfirmed messages, stopping if C2D message is found
             for (var i = 3; i <= 10; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/10");
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
-                await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
+                await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
 
