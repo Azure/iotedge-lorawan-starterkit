@@ -40,6 +40,8 @@ namespace LoraKeysManagerFacade
             queryStrings.TryGetValue("publishingPassword", out string publishingPassword);
             queryStrings.TryGetValue("region", out string region);
             queryStrings.TryGetValue("resetPin", out string resetPin);
+            queryStrings.TryGetValue("spiSpeed", out string spiSpeed);
+            queryStrings.TryGetValue("spiDev", out string spiDev);
 
             bool.TryParse(Environment.GetEnvironmentVariable("DEPLOY_DEVICE"), out bool deployEndDevice);
 
@@ -84,8 +86,8 @@ namespace LoraKeysManagerFacade
                     json = wc.DownloadString(deviceConfigurationUrl);
                 }
 
-                json = json.Replace("[$region]", region);
-                json = json.Replace("[$reset_pin]", resetPin);
+                json = ReplaceJsonWithCorrectValues(region, resetPin, json, spiSpeed, spiDev);
+
                 ConfigurationContent spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
                 await this.registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
 
@@ -144,6 +146,40 @@ namespace LoraKeysManagerFacade
             }
 
             return PrepareResponse(HttpStatusCode.OK);
+        }
+
+        private static string ReplaceJsonWithCorrectValues(string region, string resetPin, string json, string spiSpeed, string spiDev)
+        {
+            json = json.Replace("[$region]", region);
+            json = json.Replace("[$reset_pin]", resetPin);
+
+            if (string.Equals(spiSpeed, "8", StringComparison.CurrentCultureIgnoreCase) ||
+                string.IsNullOrEmpty(spiSpeed))
+            {
+                // default case
+                json = json.Replace("[$spi_speed]", string.Empty);
+            }
+            else
+            {
+                json = json.Replace(
+                    "[$spi_speed]",
+                    ",'SPI_SPEED':{'value':'2'}");
+            }
+
+            if (string.Equals(spiDev, "2", StringComparison.CurrentCultureIgnoreCase) ||
+                string.IsNullOrEmpty(spiDev))
+            {
+                // default case
+                json = json.Replace("[$spi_dev]", string.Empty);
+            }
+            else
+            {
+                json = json.Replace(
+                    "[$spi_dev]",
+                    ",'SPI_DEV':{'value':'1'}");
+            }
+
+            return json;
         }
 
         private static HttpResponseMessage PrepareResponse(HttpStatusCode httpStatusCode)
