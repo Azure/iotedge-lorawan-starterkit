@@ -2,7 +2,7 @@
 
 ## Release 1.0.1
 
-We recommend re-deploying your solution based on the 1.0.1 release if you have been working with a pre-release version. If you prefer to update your existing installation, the following lists the steps required.
+We recommend re-deploying your solution based on the 1.0.1 release if you have been working with a pre-release version. If you prefer to update your existing installation, the following lists describes the required steps.
 
 ## Updating existing installations from 1.0.0 to release 1.0.1
 
