@@ -10,6 +10,7 @@ namespace LoRaWan.IntegrationTest
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaTools.Utils;
+    using LoRaWan.IntegrationTest.RetryHelper;
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices;
     using Xunit;
@@ -273,7 +274,7 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device15_OTAA
-        [Theory]
+        [RetryTheory]
         [InlineData("Device15_OTAA")]
         [InlineData("Device15_OTAA_MultiGw")]
         public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(string devicePropertyName)
@@ -388,7 +389,7 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device10_OTAA
-        [Theory]
+        [RetryTheory]
         [InlineData("Device14_OTAA")]
         [InlineData("Device14_OTAA_MultiGw")]
         public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(string devicePropertyName)

@@ -5,6 +5,7 @@ namespace LoRaWan.IntegrationTest
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaWan.IntegrationTest.RetryHelper;
     using LoRaWan.Test.Shared;
     using Xunit;
 
@@ -18,9 +19,17 @@ namespace LoRaWan.IntegrationTest
         {
         }
 
+        [RetryTheory]
+        [InlineData("Device5_ABP")]
+        [InlineData("Device5_ABP_MultiGw")]
+        public void Test_Retry_Works(string devicePropertyName)
+        {
+            Assert.True(!string.IsNullOrEmpty(devicePropertyName));
+        }
+
         // Verifies that ABP confirmed and unconfirmed messages are working
         // Uses Device5_ABP
-        [Theory]
+        [RetryTheory]
         [InlineData("Device5_ABP")]
         [InlineData("Device5_ABP_MultiGw")]
         public async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(string devicePropertyName)

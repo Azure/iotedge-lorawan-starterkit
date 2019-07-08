@@ -5,6 +5,7 @@ namespace LoRaWan.IntegrationTest
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaWan.IntegrationTest.RetryHelper;
     using LoRaWan.Test.Shared;
     using Newtonsoft.Json;
     using Xunit;
@@ -156,7 +157,7 @@ namespace LoRaWan.IntegrationTest
         }
 
         // Performs a OTAA join and sends 1 unconfirmed, 1 confirmed and rejoins
-        [Theory]
+        [RetryTheory]
         [InlineData("Device20_OTAA")]
         [InlineData("Device20_OTAA_MultiGw")]
         public async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(string devicePropertyName)
