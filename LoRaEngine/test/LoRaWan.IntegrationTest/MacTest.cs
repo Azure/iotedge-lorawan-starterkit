@@ -4,15 +4,12 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
     using System.Threading.Tasks;
-    using System.Xml;
     using LoRaTools;
     using LoRaTools.CommonAPI;
     using LoRaWan.Test.Shared;
-    using Newtonsoft.Json.Linq;
     using Xunit;
+    using XunitRetryHelper;
 
     // Tests OTAA requests
     [Collection(Constants.TestCollectionName)] // run in serial
@@ -69,7 +66,7 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that Mac Commands C2D messages working
         // Uses Device23_OTAA
-        [Theory]
+        [RetryTheory]
         [InlineData("Device23_OTAA")]
         [InlineData("Device23_OTAA_MultiGw")]
         public async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(string devicePropertyName)

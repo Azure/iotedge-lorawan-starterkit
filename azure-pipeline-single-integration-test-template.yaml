@@ -1,0 +1,12 @@
+parameters:
+  testName: 'empty'  
+  
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Integration testing ${{parameters.testName}}
+  condition: or(and(eq(variables['AdditionalIntegrationTestArguments'], ''), eq(variables['IntegrationTestToRun'], '')), eq(variables['IntegrationTestToRun'], '${{parameters.testName}}'))
+  inputs:
+    command: test
+    nobuild: true
+    projects: '**/test/LoRaWan.IntegrationTest/LoRaWan.IntegrationTest.csproj'
+    arguments: '--configuration $(BuildConfiguration) -p:ParallelizeTestCollections=false --filter LoRaWan.IntegrationTest.${{parameters.testName}}'

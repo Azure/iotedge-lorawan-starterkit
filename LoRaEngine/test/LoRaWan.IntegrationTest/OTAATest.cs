@@ -6,10 +6,8 @@ namespace LoRaWan.IntegrationTest
     using System;
     using System.Linq;
     using System.Threading.Tasks;
-    using System.Xml;
-    using LoRaWan.Test.Shared;
-    using Newtonsoft.Json.Linq;
     using Xunit;
+    using XunitRetryHelper;
 
     // Tests OTAA requests
     [Collection(Constants.TestCollectionName)] // run in serial
@@ -26,7 +24,7 @@ namespace LoRaWan.IntegrationTest
         // - device message is available on IoT Hub
         // - frame counter validation is done
         // - Message is decoded
-        [Theory]
+        [RetryTheory]
         [InlineData("Device4_OTAA")]
         [InlineData("Device4_OTAA_MultiGw")]
         public async Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(string devicePropertyName)

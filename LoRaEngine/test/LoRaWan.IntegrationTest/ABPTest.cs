@@ -7,6 +7,7 @@ namespace LoRaWan.IntegrationTest
     using System.Threading.Tasks;
     using LoRaWan.Test.Shared;
     using Xunit;
+    using XunitRetryHelper;
 
     // Tests ABP requests
     [Collection(Constants.TestCollectionName)] // run in serial
@@ -20,7 +21,7 @@ namespace LoRaWan.IntegrationTest
 
         // Verifies that ABP confirmed and unconfirmed messages are working
         // Uses Device5_ABP
-        [Theory]
+        [RetryTheory]
         [InlineData("Device5_ABP")]
         [InlineData("Device5_ABP_MultiGw")]
         public async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(string devicePropertyName)

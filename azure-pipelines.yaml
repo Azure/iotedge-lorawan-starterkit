@@ -93,13 +93,13 @@ jobs:
     displayName: Run unit tests    
   
   # Quick test runner test
-  - bash: ./test_runner.sh "$COMMON_TESTRESULTSDIRECTORY"
-    displayName: Execute LoRaWanNetworkServer.Test tests (with retry)
-    workingDirectory: ./LoRaEngine/test/LoRaWanNetworkServer.Test
-    failOnStderr: true
-    timeoutInMinutes: 45
-    enabled: false
-
+  - task: DotNetCoreCLI@2
+    displayName: Test
+    inputs:
+      command: test
+      projects: '**/tests/LoRaWanNetworkServer.Test/LoRaWanNetworkServer.Test.csproj'
+      arguments: '--configuration $(BuildConfiguration)'
+ 
   # Publish Test Results to Azure Pipelines/TFS
   - task: PublishTestResults@2
     condition: always()    
@@ -216,8 +216,6 @@ jobs:
       #DeploymentType: zipDeploy
       DeploymentType: runFromZip
       TakeAppOfflineFlag: false
-
-
 
 - job: test_runner_amd_eu
   displayName: Run tests in AMD device (EU)
