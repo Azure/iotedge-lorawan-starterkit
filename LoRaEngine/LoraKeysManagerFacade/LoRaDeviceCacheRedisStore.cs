@@ -25,7 +25,7 @@ namespace LoraKeysManagerFacade
         {
             var start = DateTime.UtcNow;
             var taken = false;
-            while (!(taken = this.redisCache.LockTake(key, lockOwner, expiration)) && block)
+            while (!(taken = this.redisCache.LockTake(key, lockOwner, expiration, CommandFlags.DemandMaster)) && block)
             {
                 if (DateTime.UtcNow - start > LockTimeout)
                     break;
@@ -100,6 +100,50 @@ namespace LoraKeysManagerFacade
         {
             var list = this.redisCache.ListRange(key);
             return list.Select(x => (string)x).ToList();
+        }
+
+        public bool TrySetHashObject(string cacheKey, string subkey, string value, TimeSpan? timeToExpire = null)
+        {
+            var returnValue = this.redisCache.HashSet(cacheKey, subkey, value);
+            if (timeToExpire.HasValue)
+            {
+                this.redisCache.KeyExpire(cacheKey, DateTime.UtcNow.Add(timeToExpire.Value));
+            }
+
+            return returnValue;
+        }
+
+        public HashEntry[] GetHashObject(string key)
+        {
+            return this.redisCache.HashGetAll(key);
+        }
+
+        public void ReplaceHashObjects<T>(string cacheKey, IDictionary<string, T> input, TimeSpan? timeToExpire = null, bool removeOldOccurence = false)
+            where T : class
+        {
+            if (removeOldOccurence)
+            {
+                this.redisCache.KeyDelete(cacheKey);
+            }
+
+            HashEntry[] hashEntries = new HashEntry[input.Count];
+            int i = 0;
+            foreach (var element in input)
+            {
+                hashEntries[i] = new HashEntry(element.Key, JsonConvert.SerializeObject(element.Value));
+                i++;
+            }
+
+            this.redisCache.HashSet(cacheKey, hashEntries, CommandFlags.DemandMaster);
+            if (timeToExpire.HasValue)
+            {
+                this.redisCache.KeyExpire(cacheKey, DateTime.UtcNow.Add(timeToExpire.Value));
+            }
+        }
+
+        public bool TryChangeLockTTL(string key, TimeSpan timeToExpire)
+        {
+            return this.redisCache.KeyExpire(key, DateTime.UtcNow.Add(timeToExpire));
         }
     }
 }

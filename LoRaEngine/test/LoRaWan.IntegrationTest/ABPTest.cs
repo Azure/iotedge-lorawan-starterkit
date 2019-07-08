@@ -415,7 +415,7 @@ namespace LoRaWan.IntegrationTest
             await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith($"{device25.DeviceID}: processing time"));
 
             // wait 61 seconds
-            await Task.Delay(TimeSpan.FromSeconds(61));
+            await Task.Delay(TimeSpan.FromSeconds(120));
 
             // Send 1 message from device 26
             var device26 = this.TestFixtureCi.Device26_ABP;

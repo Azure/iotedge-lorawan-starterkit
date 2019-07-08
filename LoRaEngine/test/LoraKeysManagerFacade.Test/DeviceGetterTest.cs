@@ -29,21 +29,6 @@ namespace LoraKeysManagerFacade.Test
             Assert.Equal(devEUI, items[0].DevEUI);
         }
 
-        [Fact]
-        public async void DeviceGetter_ABP_Join()
-        {
-            string devEUI = NewUniqueEUI64();
-            string devEUI2 = NewUniqueEUI64();
-            string gatewayId = NewUniqueEUI64();
-
-            var deviceGetter = new DeviceGetter(this.InitRegistryManager(devEUI, devEUI2), new LoRaInMemoryDeviceStore());
-            var items = await deviceGetter.GetDeviceList(null, gatewayId, "ABCD", "DevAddr1");
-
-            Assert.Equal(2, items.Count);
-            Assert.Equal(devEUI, items[0].DevEUI);
-            Assert.Equal(devEUI2, items[1].DevEUI);
-        }
-
         private RegistryManager InitRegistryManager(string devEui1, string devEui2)
         {
             var mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Strict);
@@ -80,6 +65,10 @@ namespace LoraKeysManagerFacade.Test
 
             mockRegistryManager
                 .Setup(x => x.CreateQuery(It.IsAny<string>(), 100))
+                .Returns(queryMock.Object);
+
+            mockRegistryManager
+                .Setup(x => x.CreateQuery(It.IsAny<string>()))
                 .Returns(queryMock.Object);
 
             return mockRegistryManager.Object;

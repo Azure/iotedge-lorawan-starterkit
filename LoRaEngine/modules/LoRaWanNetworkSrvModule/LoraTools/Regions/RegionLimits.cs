@@ -3,8 +3,8 @@
 
 namespace LoRaTools.Regions
 {
-    using System;
     using System.Collections.Generic;
+    using Org.BouncyCastle.Utilities.Collections;
 
     public class RegionLimits
     {
@@ -13,24 +13,29 @@ namespace LoRaTools.Regions
         /// </summary>
         public (double min, double max) FrequencyRange { get; set; }
 
-        public List<string> DatarateRange { get; set; }
+        private HashSet<string> downstreamValidDR;
 
-        public bool IsCurrentDRIndexWithinAcceptableValue(uint dr)
-        {
-            if (dr < this.DatarateRange.Count)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        private HashSet<string> upstreamValidDR;
 
-        public RegionLimits((double min, double max) frequencyRange, List<string> datarateRange)
+        private uint startUpstreamDRIndex;
+
+        private uint startDownstreamDRIndex;
+
+        public RegionLimits((double min, double max) frequencyRange, HashSet<string> upstreamValidDR, HashSet<string> downstreamValidDR, uint startUpstreamDRIndex, uint startDownstreamDRIndex)
         {
             this.FrequencyRange = frequencyRange;
-            this.DatarateRange = datarateRange;
+            this.downstreamValidDR = downstreamValidDR;
+            this.upstreamValidDR = upstreamValidDR;
+            this.startDownstreamDRIndex = startDownstreamDRIndex;
+            this.startUpstreamDRIndex = startUpstreamDRIndex;
         }
+
+        public bool IsCurrentUpstreamDRValueWithinAcceptableValue(string dr) => this.upstreamValidDR.Contains(dr);
+
+        public bool IsCurrentDownstreamDRValueWithinAcceptableValue(string dr) => this.downstreamValidDR.Contains(dr);
+
+        public bool IsCurrentUpstreamDRIndexWithinAcceptableValue(uint dr) => (dr >= this.startUpstreamDRIndex) && dr < this.startUpstreamDRIndex + this.upstreamValidDR.Count;
+
+        public bool IsCurrentDownstreamDRIndexWithinAcceptableValue(uint dr) => (dr >= this.startDownstreamDRIndex) && dr < this.startDownstreamDRIndex + this.downstreamValidDR.Count;
     }
 }

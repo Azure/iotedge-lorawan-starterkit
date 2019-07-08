@@ -1,5 +1,5 @@
 {
-  "moduleContent": {
+  "modulesContent": {
     "$edgeAgent": {
       "properties.desired": {
         "schemaVersion": "1.0",
@@ -131,6 +131,10 @@
               },
               "SPI_DEV":{
                 "value":"$PKT_FWD_SPI_DEV"
+              },
+              "SPI_SPEED":
+              {
+               "value":"$PKT_FWD_SPI_SPEED"
               }
             },
             "version": "1.0",
