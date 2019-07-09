@@ -217,7 +217,7 @@ If you want the raw decrypted payload to be sent to IoT Hub as **Hex encoded** v
 }
 ```
 
-To add the sample `"DecoderValueSensor"` or `"DeoderHexSensor`" to the sample LoRa device configured above, change it's desired properties in IoT Hub as follows for option 1:
+To add the sample `"DecoderValueSensor"` or `"DecoderHexSensor`" to the sample LoRa device configured above, change it's desired properties in IoT Hub as follows for option 1:
 
 ```json
 "desired": {
