@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
+    using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Caching.Memory;
 
     internal class TestLoRaDeviceFactory : ILoRaDeviceFactory
@@ -87,5 +88,7 @@ namespace LoRaWan.NetworkServer.Test
         internal bool TryGetLoRaDevice(string devEUI, out LoRaDevice device) => this.deviceMap.TryGetValue(devEUI, out device);
 
         internal void SetClient(string devEUI, ILoRaDeviceClient deviceClient) => this.deviceClientMap[devEUI] = deviceClient;
+
+        public IIoTHubDeviceClient CreateDeviceClient(string connectionString) => null;
     }
 }

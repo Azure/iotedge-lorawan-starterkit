@@ -6,10 +6,10 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
@@ -20,22 +20,21 @@ namespace LoRaWan.NetworkServer
     {
         private readonly string devEUI;
         private readonly string connectionString;
-        private readonly ITransportSettings[] transportSettings;
-        private DeviceClient deviceClient;
+        private readonly ILoRaDeviceFactory deviceFactory;
+        private IIoTHubDeviceClient deviceClient;
 
-        // TODO: verify if those are thread safe and can be static
         NoRetry noRetryPolicy;
         ExponentialBackoff exponentialBackoff;
 
-        public LoRaDeviceClient(string devEUI, string connectionString, ITransportSettings[] transportSettings)
+        public LoRaDeviceClient(string devEUI, string connectionString, ILoRaDeviceFactory deviceFactory)
         {
             this.devEUI = devEUI;
             this.noRetryPolicy = new NoRetry();
             this.exponentialBackoff = new ExponentialBackoff(int.MaxValue, TimeSpan.FromMilliseconds(100), TimeSpan.FromSeconds(10), TimeSpan.FromMilliseconds(100));
 
             this.connectionString = connectionString;
-            this.transportSettings = transportSettings;
-            this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
+            this.deviceFactory = deviceFactory;
+            this.deviceClient = deviceFactory.CreateDeviceClient(this.connectionString);
 
             this.SetRetry(false);
         }
@@ -155,12 +154,165 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
+        readonly SemaphoreSlim receiveAsyncLock = new SemaphoreSlim(1, 1);
+        TaskCompletionSource<Message> receiveAsyncTaskCompletionSource;
+        int receiveAsyncTaskWaitCount = 0;
+
         public async Task<Message> ReceiveAsync(TimeSpan timeout)
+        {
+            var isUsingPendingRequest = true;
+
+            TaskCompletionSource<Message> localPendingReceiveAsync = null;
+
+            await this.receiveAsyncLock.WaitAsync();
+
+            try
+            {
+                if ((localPendingReceiveAsync = this.receiveAsyncTaskCompletionSource) == null)
+                {
+                    localPendingReceiveAsync = this.SetupNewReceiveAsyncTaskCompletionSource(timeout);
+                    isUsingPendingRequest = false;
+                }
+            }
+            finally
+            {
+                this.receiveAsyncTaskWaitCount++;
+                this.receiveAsyncLock.Release();
+            }
+
+            if (isUsingPendingRequest)
+            {
+                Logger.Log(this.devEUI, $"checking cloud to device message for {timeout}, reusing pending request", LogLevel.Debug);
+            }
+
+            using (var cts = new CancellationTokenSource())
+            {
+                var timer = Task.Delay(timeout, cts.Token);
+                var winner = await Task.WhenAny(localPendingReceiveAsync.Task, timer);
+                if (winner == localPendingReceiveAsync.Task)
+                {
+                    // Cancel the timer tasks so that it does not fire
+                    cts.Cancel();
+
+                    Task<Message> singleFinished;
+                    await this.receiveAsyncLock.WaitAsync();
+                    try
+                    {
+                        if (localPendingReceiveAsync == this.receiveAsyncTaskCompletionSource)
+                        {
+                            Logger.Log(this.devEUI, $"task ReceiveAsync returned before timeout", LogLevel.Debug);
+                            singleFinished = this.receiveAsyncTaskCompletionSource.Task;
+
+                            this.receiveAsyncTaskCompletionSource = null;
+                            this.receiveAsyncTaskWaitCount = 0;
+                        }
+                        else
+                        {
+                            singleFinished = null;
+                        }
+                    }
+                    finally
+                    {
+                        this.receiveAsyncLock.Release();
+                    }
+
+                    // Finished can be null if two race for the value of pendingReceiveAsync
+                    // In that case the winner will handle the message
+                    if (singleFinished != null && singleFinished.IsFaulted)
+                    {
+                        Logger.Log(this.devEUI, $"error in task checking cloud to device message: {singleFinished.Exception?.Message}", LogLevel.Error);
+                        return null;
+                    }
+
+                    return singleFinished?.Result;
+                }
+                else
+                {
+                    await this.receiveAsyncLock.WaitAsync();
+                    try
+                    {
+                        if (localPendingReceiveAsync == this.receiveAsyncTaskCompletionSource)
+                        {
+                            --this.receiveAsyncTaskWaitCount;
+                        }
+                    }
+                    finally
+                    {
+                        this.receiveAsyncLock.Release();
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Setups a new <see cref="receiveAsyncTaskCompletionSource"/>. Must be called while the lock is owned
+        /// </summary>
+        private TaskCompletionSource<Message> SetupNewReceiveAsyncTaskCompletionSource(TimeSpan timeout)
+        {
+            var localPendingReceiveAsync = this.receiveAsyncTaskCompletionSource = new TaskCompletionSource<Message>();
+            this.receiveAsyncTaskWaitCount = 0;
+
+            _ = this.InternalReceiveAsync(timeout).ContinueWith(async (t) =>
+            {
+                // TODO: remove before PR!
+                Logger.Log(this.devEUI, $"starting new ReceiveAsync task", LogLevel.Debug);
+
+                var hasReceivers = false;
+                // if no one cares abandon message
+                await this.receiveAsyncLock.WaitAsync();
+                try
+                {
+                    hasReceivers = this.receiveAsyncTaskWaitCount > 0;
+
+                    if (!hasReceivers && localPendingReceiveAsync == this.receiveAsyncTaskCompletionSource)
+                    {
+                        this.receiveAsyncTaskCompletionSource = null;
+                        this.receiveAsyncTaskWaitCount = 0;
+                    }
+                }
+                finally
+                {
+                    this.receiveAsyncLock.Release();
+                }
+
+                if (hasReceivers)
+                {
+                    if (t.IsCompletedSuccessfully)
+                    {
+                        localPendingReceiveAsync.SetResult(t.Result);
+                    }
+                    else
+                    {
+                        localPendingReceiveAsync.SetException(t.Exception);
+                    }
+                }
+                else if (t.IsCompletedSuccessfully && t.Result != null)
+                {
+                    // TODO: remove before PR!
+                    Logger.Log(this.devEUI, $"task ReceiveAsync found message but not one is awaiting, abandoning", LogLevel.Debug);
+
+                    try
+                    {
+                        await this.AbandonAsync(t.Result);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log(this.devEUI, $"failed to abandon message from task without listener: {ex.Message}", LogLevel.Debug);
+                    }
+                }
+            });
+
+            return localPendingReceiveAsync;
+        }
+
+        public async Task<Message> InternalReceiveAsync(TimeSpan timeout)
         {
             try
             {
                 // Set the operation timeout to accepted timeout plus one second
-                // Should not return an operation timeout since we wait less that it
+                // Should not return an operation timeout since we wait less than it
                 this.deviceClient.OperationTimeoutInMilliseconds = (uint)(timeout.TotalMilliseconds + 1000);
 
                 this.SetRetry(true);
@@ -312,7 +464,7 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
+                    this.deviceClient = this.deviceFactory.CreateDeviceClient(this.connectionString);
                     Logger.Log(this.devEUI, "device client reconnected", LogLevel.Debug);
                 }
                 catch (Exception ex)

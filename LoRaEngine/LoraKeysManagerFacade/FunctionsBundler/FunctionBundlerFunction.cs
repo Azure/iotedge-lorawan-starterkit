@@ -38,6 +38,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
             catch (IncompatibleVersionException ex)
             {
+                logger.LogError("{Method} invoked with wrong version. {details}", nameof(this.FunctionBundlerImpl), ex.Message);
                 return new BadRequestObjectResult(ex.Message);
             }
 

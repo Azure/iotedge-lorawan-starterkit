@@ -431,8 +431,8 @@ namespace LoRaWan.IntegrationTest
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device10_OTAA
         [Theory]
-        [InlineData("Device14_OTAA")]
-        [InlineData("Device14_OTAA_MultiGw")]
+        [InlineData(nameof(IntegrationTestFixtureCi.Device14_OTAA))]
+        [InlineData(nameof(IntegrationTestFixtureCi.Device14_OTAA_MultiGw))]
         public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(string devicePropertyName)
         {
             const int messagesToSend = 10;

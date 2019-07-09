@@ -56,7 +56,7 @@ namespace LoRaWan.Test.Shared
                     while (true)
                     {
                         var msg = await this.udpClient.ReceiveAsync();
-                        if (msg != null && msg.Buffer != null)
+                        if (msg.Buffer != null)
                         {
                             var text = Encoding.UTF8.GetString(msg.Buffer);
                             this.OnMessageReceived(text);

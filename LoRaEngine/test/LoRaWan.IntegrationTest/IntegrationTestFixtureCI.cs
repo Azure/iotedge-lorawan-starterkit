@@ -121,6 +121,21 @@ namespace LoRaWan.IntegrationTest
         /// </summary>
         public TestDeviceInfo Device30_OTAA { get; private set; }
 
+        /// <summary>
+        /// Gets Device31_ABP used for device client test scenarios
+        /// </summary>
+        public TestDeviceInfo Device31_ABP { get; private set; }
+
+        /// <summary>
+        /// Gets Device32_ABP used for device client test scenarios
+        /// </summary>
+        public TestDeviceInfo Device32_ABP { get; private set; }
+
+        /// <summary>
+        /// Gets Device33_ABP_MultiGw used class-C tests with multi-gateway
+        /// </summary>
+        public TestDeviceInfo Device33_ABP_MultiGw { get; private set; }
+
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice
         {
@@ -559,6 +574,35 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = this.GetKey16(30),
                 AppKey = this.GetKey32(30),
                 IsIoTHubDevice = true
+            };
+
+            this.Device31_ABP = new TestDeviceInfo()
+            {
+                DeviceID = this.GetKey16(31),
+                AppSKey = this.GetKey32(31),
+                NwkSKey = this.GetKey32(31),
+                DevAddr = "00000031",
+                IsIoTHubDevice = true
+            };
+
+            this.Device32_ABP = new TestDeviceInfo()
+            {
+                DeviceID = this.GetKey16(32),
+                AppSKey = this.GetKey32(32),
+                NwkSKey = this.GetKey32(32),
+                DevAddr = "00000032",
+                IsIoTHubDevice = true
+            };
+
+            this.Device33_ABP_MultiGw = new TestDeviceInfo()
+            {
+                DeviceID = this.GetKey16(33),
+                AppSKey = this.GetKey32(33),
+                NwkSKey = this.GetKey32(33),
+                DevAddr = "00000033",
+                IsIoTHubDevice = true,
+                Deduplication = "Mark",
+                ClassType = 'C',
             };
         }
     }

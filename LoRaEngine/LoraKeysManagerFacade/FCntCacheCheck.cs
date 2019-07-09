@@ -31,6 +31,7 @@ namespace LoraKeysManagerFacade
             }
             catch (IncompatibleVersionException ex)
             {
+                log.LogError("{Method} invoked with wrong version. {details}", nameof(this.NextFCntDownInvoke), ex.Message);
                 return new BadRequestObjectResult(ex.Message);
             }
 

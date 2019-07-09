@@ -8,37 +8,47 @@ namespace LoRaWan.IntegrationTest
     using System.Net.Http.Headers;
     using System.Text;
     using System.Threading.Tasks;
+    using System.Web;
     using LoRaTools.CommonAPI;
     using LoRaWan.Shared;
+    using Newtonsoft.Json;
 
     public static class LoRaAPIHelper
     {
         private static string authCode;
         private static string baseUrl;
-        private static ServiceFacadeHttpClientHandler httpHandler;
+        private static Lazy<HttpClient> apiVersionedHttpClient;
         private static Lazy<HttpClient> httpClient;
 
         internal static void Initialize(string functionAppCode, string functionAppBaseUrl)
         {
             authCode = functionAppCode;
             baseUrl = SanitizeApiURL(functionAppBaseUrl);
-            httpHandler = new ServiceFacadeHttpClientHandler(ApiVersion.LatestVersion);
-            httpClient = new Lazy<HttpClient>(CreateHttpClient);
+            apiVersionedHttpClient = new Lazy<HttpClient>(CreateApiVersionedHttpClient);
+            httpClient = new Lazy<HttpClient>(() => new HttpClient());
         }
 
-        private static HttpClient CreateHttpClient()
+        private static HttpClient CreateApiVersionedHttpClient()
         {
-            return new HttpClient(httpHandler);
+            return new HttpClient(new ServiceFacadeHttpClientHandler(ApiVersion.LatestVersion));
         }
 
         public static async Task<bool> ResetADRCache(string devEUI)
         {
-            var url = $"{baseUrl}FunctionBundler/{devEUI}?code={authCode}";
+            var url = $"{baseUrl}FunctionBundler/{HttpUtility.UrlEncode(devEUI)}?code={HttpUtility.UrlEncode(authCode)}";
             // the gateway id is only used to identify who is taking the lock when
             // releasing the cache. Hence we do not need a real GW id
             var payload = "{\"AdrRequest\":{\"ClearCache\": true},\"GatewayId\":\"integrationTesting\", \"FunctionItems\": " + (int)FunctionBundlerItemType.ADR + "}";
 
-            var response = await httpClient.Value.PostAsync(url, PreparePostContent(payload));
+            var response = await apiVersionedHttpClient.Value.PostAsync(url, PreparePostContent(payload));
+            return response.IsSuccessStatusCode;
+        }
+
+        public static async Task<bool> SendCloudToDeviceMessageAsync(string devEUI, LoRaCloudToDeviceMessage message)
+        {
+            var url = $"{baseUrl}cloudtodevicemessage/{HttpUtility.UrlEncode(devEUI)}/?code={HttpUtility.UrlEncode(authCode)}";
+            var jsonPayload = JsonConvert.SerializeObject(message);
+            var response = await httpClient.Value.PostAsync(url, PreparePostContent(jsonPayload));
             return response.IsSuccessStatusCode;
         }
 

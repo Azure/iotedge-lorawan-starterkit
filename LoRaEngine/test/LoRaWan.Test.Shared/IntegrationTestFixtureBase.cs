@@ -12,6 +12,7 @@ namespace LoRaWan.Test.Shared
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.EventHubs;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using Xunit;
@@ -32,6 +33,11 @@ namespace LoRaWan.Test.Shared
 
         public IntegrationTestFixtureBase()
         {
+            Logger.Init(new LoggerConfiguration()
+            {
+                LogLevel = LogLevel.Debug,
+            });
+
             this.Configuration = TestConfiguration.GetConfiguration();
             this.serviceClient = new Lazy<ServiceClient>(() => ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString));
             TestLogger.Log($"[INFO] {nameof(this.Configuration.IoTHubAssertLevel)}: {this.Configuration.IoTHubAssertLevel}");
@@ -128,6 +134,11 @@ namespace LoRaWan.Test.Shared
         public async Task<Twin> GetTwinAsync(string deviceId)
         {
             return await this.GetRegistryManager().GetTwinAsync(deviceId);
+        }
+
+        public string GetDeviceClientConnectionString(string deviceId)
+        {
+            return string.Concat(this.Configuration.IoTHubConnectionString, ";deviceId=", deviceId);
         }
 
         public async Task SendCloudToDeviceMessageAsync(string deviceId, LoRaCloudToDeviceMessage message)

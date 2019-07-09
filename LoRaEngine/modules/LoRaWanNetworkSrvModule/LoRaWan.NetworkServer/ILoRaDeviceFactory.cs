@@ -3,11 +3,19 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System.Threading.Tasks;
+    using System;
+    using Microsoft.Azure.Devices.Client;
 
     public interface ILoRaDeviceFactory
     {
-        // Creates and initializes a new lora device
+        /// <summary>
+        /// Creates and initializes a new lora device
+        /// </summary>
         LoRaDevice Create(IoTHubDeviceInfo deviceInfo);
+
+        /// <summary>
+        /// Creates a new instance of <see cref="IIoTHubDeviceClient"/>
+        /// </summary>
+        IIoTHubDeviceClient CreateDeviceClient(string connectionString);
     }
 }

@@ -33,7 +33,7 @@ namespace LoraKeysManagerFacade
             }
             catch (IncompatibleVersionException ex)
             {
-                log.LogError(ex, "Invalid version");
+                log.LogError("{Method} invoked with wrong version. {details}", nameof(this.GetDeviceByDevEUI), ex.Message);
                 return new BadRequestObjectResult(ex.Message);
             }
 

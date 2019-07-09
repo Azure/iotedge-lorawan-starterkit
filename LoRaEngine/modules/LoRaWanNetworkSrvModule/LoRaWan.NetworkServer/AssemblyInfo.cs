@@ -4,3 +4,4 @@ using System.Runtime.CompilerServices;
 
 // Lets test assembly access internal methods
 [assembly: InternalsVisibleTo("LoRaWanNetworkServer.Test")]
+[assembly: InternalsVisibleTo("LoRaWan.IntegrationTest")]
