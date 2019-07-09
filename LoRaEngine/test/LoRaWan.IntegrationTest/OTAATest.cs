@@ -6,11 +6,8 @@ namespace LoRaWan.IntegrationTest
     using System;
     using System.Linq;
     using System.Threading.Tasks;
-    using System.Xml;
-    using LoRaWan.IntegrationTest.RetryHelper;
-    using LoRaWan.Test.Shared;
-    using Newtonsoft.Json.Linq;
     using Xunit;
+    using XunitRetryHelper;
 
     // Tests OTAA requests
     [Collection(Constants.TestCollectionName)] // run in serial

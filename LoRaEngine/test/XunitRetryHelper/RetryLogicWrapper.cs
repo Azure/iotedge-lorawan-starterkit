@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.IntegrationTest.RetryHelper
+namespace XunitRetryHelper
 {
     using System;
+    using System.Diagnostics;
     using System.Runtime.InteropServices.ComTypes;
     using System.Threading;
     using System.Threading.Tasks;
@@ -25,23 +26,33 @@ namespace LoRaWan.IntegrationTest.RetryHelper
                                                 ExceptionAggregator aggregator,
                                                 CancellationTokenSource cancellationTokenSource)
         {
-            var runCount = 0;
+            var testExecutionCount = 0;
 
-            while (true)
+            using (var delayedMessageBus = new DelayedMessageBus(messageBus))
             {
-                using (var delayedMessageBus = new DelayedMessageBus(messageBus))
+                while (true)
                 {
                     var summary = await executer(diagnosticMessageSink, delayedMessageBus, constructorArguments, aggregator, cancellationTokenSource);
-                    if (aggregator.HasExceptions || summary.Failed == 0 || ++runCount >= maxRetries)
+                    if (aggregator.HasExceptions || summary.Failed == 0 || ++testExecutionCount > maxRetries)
                     {
                         delayedMessageBus.Complete();
                         return summary;
                     }
 
-                    diagnosticMessageSink.OnMessage(new DiagnosticMessage("Execution failed (attempt #{0}), retrying...", runCount));
-                }
+                    var retryDelay = Math.Min(60_000, 5000 * testExecutionCount);
+                    var msg = $"{DateTime.UtcNow.ToString("HH:mm:ss.fff")}, xunit will perform retry number {testExecutionCount} in {retryDelay}ms";
 
-                await Task.Delay(5000);
+                    if (Debugger.IsAttached)
+                    {
+                        Debug.WriteLine(msg);
+                    }
+                    else
+                    {
+                        Console.WriteLine(msg);
+                    }
+
+                    await Task.Delay(retryDelay);
+                }
             }
         }
     }

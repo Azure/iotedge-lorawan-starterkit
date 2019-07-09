@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.421
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29025.244
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoraKeysManagerFacade", "LoraKeysManagerFacade\LoraKeysManagerFacade.csproj", "{7E3FDAAC-242D-40CD-9782-0A8487FD0070}"
 EndProject
@@ -26,6 +26,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Test.Shared", "test\LoRaWan.Test.Shared\LoRaWan.Test.Shared.csproj", "{727AF443-9B5E-4730-BC04-255F82D87C66}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.SimulatedTest", "test\LoRaWan.SimulatedTest\LoRaWan.SimulatedTest.csproj", "{4FA0718D-15A2-4D4E-9310-7FB17B285757}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XunitRetryHelper", "test\XunitRetryHelper\XunitRetryHelper.csproj", "{25916C24-E17B-4FB3-8E18-A386A18FC9D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -123,6 +125,14 @@ Global
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|x86.ActiveCfg = Release|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|x86.Build.0 = Release|Any CPU
+		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Debug|x86.Build.0 = Debug|Any CPU
+		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Release|x86.ActiveCfg = Release|Any CPU
+		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -134,6 +144,7 @@ Global
 		{BDC96E16-510C-41DA-A075-4336CB5D58A1} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{727AF443-9B5E-4730-BC04-255F82D87C66} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757} = {A3AF6806-947C-426F-8063-7229B71A4472}
+		{25916C24-E17B-4FB3-8E18-A386A18FC9D0} = {A3AF6806-947C-426F-8063-7229B71A4472}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}

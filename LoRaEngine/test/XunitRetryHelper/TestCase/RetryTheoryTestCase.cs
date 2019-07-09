@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.IntegrationTest.RetryHelper
+namespace XunitRetryHelper
 {
     using System;
     using System.ComponentModel;
@@ -16,21 +16,17 @@ namespace LoRaWan.IntegrationTest.RetryHelper
         private int maxRetries;
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [Obsolete("Called by the de-serializer", true)]
+        [Obsolete("Called by the deserializer", true)]
         public RetryTheoryTestCase()
         {
         }
 
-        public RetryTheoryTestCase(IMessageSink diagnosticMessageSink, TestMethodDisplay testMethodDisplay, ITestMethod testMethod, int maxRetries)
-            : base(diagnosticMessageSink, testMethodDisplay, testMethod)
+        public RetryTheoryTestCase(IMessageSink diagnosticMessageSink, TestMethodDisplay testMethodDisplay, TestMethodDisplayOptions defaultMethodDisplayOptions, ITestMethod testMethod, int maxRetries)
+            : base(diagnosticMessageSink, testMethodDisplay, defaultMethodDisplayOptions, testMethod)
         {
             this.maxRetries = maxRetries;
         }
 
-        // This method is called by the xUnit test framework classes to run the test case. We will do the
-        // loop here, forwarding on to the implementation in XunitTestCase to do the heavy lifting. We will
-        // continue to re-run the test until the aggregator has an error (meaning that some internal error
-        // condition happened), or the test runs without failure, or we've hit the maximum number of tries.
         public override async Task<RunSummary> RunAsync(
                                                 IMessageSink diagnosticMessageSink,
                                                 IMessageBus messageBus,

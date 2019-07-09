@@ -5,9 +5,9 @@ namespace LoRaWan.IntegrationTest
 {
     using System;
     using System.Threading.Tasks;
-    using LoRaWan.IntegrationTest.RetryHelper;
     using LoRaWan.Test.Shared;
     using Xunit;
+    using XunitRetryHelper;
 
     // Tests ABP requests
     [Collection(Constants.TestCollectionName)] // run in serial

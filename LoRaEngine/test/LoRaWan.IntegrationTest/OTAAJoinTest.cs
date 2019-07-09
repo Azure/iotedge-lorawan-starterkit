@@ -5,11 +5,10 @@ namespace LoRaWan.IntegrationTest
 {
     using System;
     using System.Threading.Tasks;
-    using LoRaWan.IntegrationTest.RetryHelper;
     using LoRaWan.Test.Shared;
-    using Newtonsoft.Json;
     using Xunit;
     using Xunit.Sdk;
+    using XunitRetryHelper;
 
     // Tests OTAA join requests
     // OTAA joins requires the following information:

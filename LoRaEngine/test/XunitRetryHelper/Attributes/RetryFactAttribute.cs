@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.IntegrationTest.RetryHelper
+namespace XunitRetryHelper
 {
     using Xunit;
     using Xunit.Sdk;
 
-    [XunitTestCaseDiscoverer("LoRaWan.IntegrationTest.RetryHelper.RetryTheoryTestDiscoverer", "LoRaWan.IntegrationTest")]
-    public class RetryTheoryAttribute : TheoryAttribute
+    [XunitTestCaseDiscoverer("XunitRetryHelper.RetryFactDiscoverer", "XunitRetryHelper")]
+    public class RetryFactAttribute : FactAttribute
     {
-        public RetryTheoryAttribute()
+        public RetryFactAttribute()
         {
         }
 
-        public RetryTheoryAttribute(int maxRetries)
+        public RetryFactAttribute(int maxRetries)
         {
             this.MaxRetries = maxRetries;
         }

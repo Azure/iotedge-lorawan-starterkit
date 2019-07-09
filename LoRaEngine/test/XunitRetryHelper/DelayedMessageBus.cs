@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.IntegrationTest.RetryHelper
+namespace XunitRetryHelper
 {
     using System.Collections.Generic;
     using Xunit.Abstractions;
@@ -10,7 +10,7 @@ namespace LoRaWan.IntegrationTest.RetryHelper
     public class DelayedMessageBus : IMessageBus
     {
         private readonly IMessageBus innerBus;
-        private readonly IList<IMessageSinkMessage> messages = new List<IMessageSinkMessage>();
+        private readonly IList<IMessageSinkMessage> delayedMessages = new List<IMessageSinkMessage>();
 
         public DelayedMessageBus(IMessageBus innerBus)
         {
@@ -19,9 +19,9 @@ namespace LoRaWan.IntegrationTest.RetryHelper
 
         public bool QueueMessage(IMessageSinkMessage message)
         {
-            lock (this.messages)
+            lock (this.delayedMessages)
             {
-                this.messages.Add(message);
+                this.delayedMessages.Add(message);
             }
 
             return true;
@@ -29,17 +29,23 @@ namespace LoRaWan.IntegrationTest.RetryHelper
 
         public void Complete()
         {
-            for (var i = 0; i < this.messages.Count; i++)
+            lock (this.delayedMessages)
             {
-                this.innerBus.QueueMessage(this.messages[i]);
-            }
+                for (var i = 0; i < this.delayedMessages.Count; i++)
+                {
+                    this.innerBus.QueueMessage(this.delayedMessages[i]);
+                }
 
-            this.messages.Clear();
+                this.delayedMessages.Clear();
+            }
         }
 
         public void Dispose()
         {
-            this.messages.Clear();
+            lock (this.delayedMessages)
+            {
+                this.delayedMessages.Clear();
+            }
         }
     }
 }

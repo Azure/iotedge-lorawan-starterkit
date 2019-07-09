@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.IntegrationTest.RetryHelper
+namespace XunitRetryHelper
 {
     using System;
     using System.ComponentModel;
@@ -16,13 +16,13 @@ namespace LoRaWan.IntegrationTest.RetryHelper
         private int maxRetries;
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        [Obsolete("Called by the de-serializer", true)]
+        [Obsolete("Called by the deserializer", true)]
         public RetryTestCase()
         {
         }
 
-        public RetryTestCase(IMessageSink diagnosticMessageSink, TestMethodDisplay testMethodDisplay, ITestMethod testMethod, int maxRetries)
-            : base(diagnosticMessageSink, testMethodDisplay, testMethod, testMethodArguments: null)
+        public RetryTestCase(IMessageSink diagnosticMessageSink, TestMethodDisplay testMethodDisplay, TestMethodDisplayOptions defaultMethodDisplayOptions, ITestMethod testMethod, int maxRetries)
+            : base(diagnosticMessageSink, testMethodDisplay, defaultMethodDisplayOptions, testMethod, testMethodArguments: null)
         {
             this.maxRetries = maxRetries;
         }

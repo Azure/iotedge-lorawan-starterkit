@@ -4,16 +4,12 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
-    using LoRaTools.Utils;
-    using LoRaWan.IntegrationTest.RetryHelper;
     using LoRaWan.Test.Shared;
-    using Microsoft.Azure.Devices;
     using Xunit;
+    using XunitRetryHelper;
 
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
