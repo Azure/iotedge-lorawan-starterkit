@@ -21,10 +21,12 @@ namespace LoRaWan.NetworkServer
         private readonly string devEUI;
         private readonly string connectionString;
         private readonly ILoRaDeviceFactory deviceFactory;
+        private readonly NoRetry noRetryPolicy;
+        private readonly ExponentialBackoff exponentialBackoff;
+        private SemaphoreSlim receiveAsyncLock;
+        private TaskCompletionSource<Message> receiveAsyncTaskCompletionSource;
+        private int receiveAsyncTaskWaitCount;
         private IIoTHubDeviceClient deviceClient;
-
-        NoRetry noRetryPolicy;
-        ExponentialBackoff exponentialBackoff;
 
         public LoRaDeviceClient(string devEUI, string connectionString, ILoRaDeviceFactory deviceFactory)
         {
@@ -37,6 +39,8 @@ namespace LoRaWan.NetworkServer
             this.deviceClient = deviceFactory.CreateDeviceClient(this.connectionString);
 
             this.SetRetry(false);
+
+            this.receiveAsyncLock = new SemaphoreSlim(1, 1);
         }
 
         private void SetRetry(bool retryon)
@@ -154,10 +158,6 @@ namespace LoRaWan.NetworkServer
             return false;
         }
 
-        readonly SemaphoreSlim receiveAsyncLock = new SemaphoreSlim(1, 1);
-        TaskCompletionSource<Message> receiveAsyncTaskCompletionSource;
-        int receiveAsyncTaskWaitCount = 0;
-
         public async Task<Message> ReceiveAsync(TimeSpan timeout)
         {
             var isUsingPendingRequest = true;
@@ -200,6 +200,7 @@ namespace LoRaWan.NetworkServer
                     {
                         if (localPendingReceiveAsync == this.receiveAsyncTaskCompletionSource)
                         {
+                            // TODO: remove before PR!
                             Logger.Log(this.devEUI, $"task ReceiveAsync returned before timeout", LogLevel.Debug);
                             singleFinished = this.receiveAsyncTaskCompletionSource.Task;
 
@@ -228,6 +229,10 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
+                    // TODO: remove before PR!
+                    Logger.Log(this.devEUI, $"task ReceiveAsync returned by timeout", LogLevel.Debug);
+
+                    // Task.Delay won the race, we are not awaiting for ReceiveAsync anymore
                     await this.receiveAsyncLock.WaitAsync();
                     try
                     {
@@ -254,11 +259,11 @@ namespace LoRaWan.NetworkServer
             var localPendingReceiveAsync = this.receiveAsyncTaskCompletionSource = new TaskCompletionSource<Message>();
             this.receiveAsyncTaskWaitCount = 0;
 
+            // TODO: remove before PR!
+            Logger.Log(this.devEUI, $"starting new ReceiveAsync task", LogLevel.Debug);
+
             _ = this.InternalReceiveAsync(timeout).ContinueWith(async (t) =>
             {
-                // TODO: remove before PR!
-                Logger.Log(this.devEUI, $"starting new ReceiveAsync task", LogLevel.Debug);
-
                 var hasReceivers = false;
                 // if no one cares abandon message
                 await this.receiveAsyncLock.WaitAsync();
@@ -276,6 +281,9 @@ namespace LoRaWan.NetworkServer
                 {
                     this.receiveAsyncLock.Release();
                 }
+
+                // TODO: remove before PR!
+                Logger.Log(this.devEUI, $"finished ReceiveAsync task (hasReceivers={hasReceivers})", LogLevel.Debug);
 
                 if (hasReceivers)
                 {
@@ -299,7 +307,7 @@ namespace LoRaWan.NetworkServer
                     }
                     catch (Exception ex)
                     {
-                        Logger.Log(this.devEUI, $"failed to abandon message from task without listener: {ex.Message}", LogLevel.Debug);
+                        Logger.Log(this.devEUI, $"failed to abandon message from task without listener: {ex.Message}", LogLevel.Error);
                     }
                 }
             });
@@ -481,6 +489,9 @@ namespace LoRaWan.NetworkServer
         {
             this.deviceClient?.Dispose();
             this.deviceClient = null;
+
+            this.receiveAsyncLock?.Dispose();
+            this.receiveAsyncLock = null;
 
             GC.SuppressFinalize(this);
         }

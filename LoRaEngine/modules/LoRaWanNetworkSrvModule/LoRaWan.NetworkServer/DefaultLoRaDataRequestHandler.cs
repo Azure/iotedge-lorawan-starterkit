@@ -358,9 +358,20 @@ namespace LoRaWan.NetworkServer
                                         var additionalMsg = await this.ReceiveCloudToDeviceAsync(loRaDevice, LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage);
                                         if (additionalMsg != null)
                                         {
-                                            fpending = true;
-                                            Logger.Log(loRaDevice.DevEUI, $"found cloud to device message, setting fpending flag, message id: {additionalMsg.MessageId ?? "undefined"}", LogLevel.Information);
-                                            _ = additionalMsg.AbandonAsync();
+                                            // Ensure the new message does not have the same id as the current
+                                            if (string.Equals(additionalMsg.MessageId, cloudToDeviceMessage.MessageId, StringComparison.InvariantCulture))
+                                            {
+                                                Logger.Log(loRaDevice.DevEUI, $"found same cloud to device message, message id: {additionalMsg.MessageId ?? "undefined"}", LogLevel.Debug);
+
+                                                // swap so we hold reference to last returned message
+                                                cloudToDeviceMessage = additionalMsg;
+                                            }
+                                            else
+                                            {
+                                                fpending = true;
+                                                Logger.Log(loRaDevice.DevEUI, $"found cloud to device message, setting fpending flag, message id: {additionalMsg.MessageId ?? "undefined"}", LogLevel.Information);
+                                                _ = additionalMsg.AbandonAsync();
+                                            }
                                         }
                                     }
                                 }
