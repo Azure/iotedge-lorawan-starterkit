@@ -7,6 +7,7 @@ namespace LoRaWan.IntegrationTest
     using System.Threading.Tasks;
     using LoRaWan.Test.Shared;
     using Xunit;
+    using XunitRetryHelper;
 
     // Tests sensor decoding test (http, reflection)
     [Collection(Constants.TestCollectionName)] // run in serial
@@ -20,7 +21,7 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that http sensor decoder decodes payload
         // Uses device Device11_OTAA
-        [Fact]
+        [RetryFact]
         public async Task SensorDecoder_HttpBased_ValueSensorDecoder_DecodesPayload()
         {
             var device = this.TestFixtureCi.Device11_OTAA;
@@ -52,7 +53,7 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that reflect based sensor decoder decodes payload
         // Uses Device12_OTAA
-        [Fact]
+        [RetryFact]
         public async Task SensorDecoder_ReflectionBased_ValueSensorDecoder_DecodesPayload()
         {
             var device = this.TestFixtureCi.Device12_OTAA;

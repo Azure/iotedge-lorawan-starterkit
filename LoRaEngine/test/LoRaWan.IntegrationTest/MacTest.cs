@@ -23,7 +23,7 @@ namespace LoRaWan.IntegrationTest
 
         // Send a LinkCheckCmd from the device and expect an answer.
         // Use Device22_ABP
-        [Fact]
+        [RetryFact]
         public async Task Test_Device_Initiated_Mac_LinkCheckCmd_Should_work()
         {
             try

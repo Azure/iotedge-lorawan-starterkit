@@ -48,7 +48,7 @@ namespace LoRaWan.IntegrationTest
         // Ensures that C2D messages are received when working with confirmed messages
         // RxDelay set up to be 2 seconds
         // Uses Device9_OTAA
-        [Fact]
+        [RetryFact]
         public async Task Test_OTAA_Confirmed_Receives_C2D_Message_With_RX_Delay_2()
         {
             const int messagesToSend = 10;
@@ -189,7 +189,7 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device10_OTAA
-        [Fact]
+        [RetryFact]
         public async Task Test_OTAA_Unconfirmed_Receives_C2D_Message()
         {
             const int messagesToSend = 10;
@@ -569,7 +569,7 @@ namespace LoRaWan.IntegrationTest
         /// <summary>
         /// Ensures that a device that has preferred window set to two receives C2D messages
         /// </summary>
-        [Fact]
+        [RetryFact]
         public async Task C2D_When_Device_Has_Preferred_Windows_2_Should_Receive_In_2nd_Window_With_Custom_DR()
         {
             const int messagesToSend = 10;

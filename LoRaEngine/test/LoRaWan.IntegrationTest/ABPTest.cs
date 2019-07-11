@@ -178,12 +178,21 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
+        [RetryFact]
+        public Task Test_ABP_Wrong_DevAddr_Is_Ignored_05060708()
+        {
+            return this.Test_ABP_Wrong_DevAddr_Is_Ignored("05060708");
+        }
+
+        [RetryFact]
+        public Task Test_ABP_Wrong_DevAddr_Is_Ignored_02060708()
+        {
+            return this.Test_ABP_Wrong_DevAddr_Is_Ignored("02060708");
+        }
+
         // Verifies that ABP using wrong devAddr is ignored when sending messages
         // Uses Device6_ABP
-        [Theory]
-        [InlineData("05060708")]
-        [InlineData("02060708")]
-        public async Task Test_ABP_Wrong_DevAddr_Is_Ignored(string devAddrToUse)
+        private async Task Test_ABP_Wrong_DevAddr_Is_Ignored(string devAddrToUse)
         {
             var device = this.TestFixtureCi.Device6_ABP;
             this.LogTestStart(device);
@@ -250,7 +259,7 @@ namespace LoRaWan.IntegrationTest
         // NwkSKey="3B7E151628AED2A6ABF7158809CF4F3C",
         // DevAddr="0028B1B2"
         // Uses Device7_ABP
-        [Fact]
+        [RetryFact]
         public async Task Test_ABP_Mismatch_NwkSKey_And_AppSKey_Fails_Mic_Validation()
         {
             var device = this.TestFixtureCi.Device7_ABP;
@@ -296,7 +305,7 @@ namespace LoRaWan.IntegrationTest
 
         // Tests using a invalid Network Session key, resulting in mic failed
         // Uses Device8_ABP
-        [Fact]
+        [RetryFact]
         public async Task Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error()
         {
             var device = this.TestFixtureCi.Device8_ABP;
@@ -337,7 +346,7 @@ namespace LoRaWan.IntegrationTest
 
         // Verifies that ABP confirmed and unconfirmed messages are working
         // Uses Device16_ABP and Device17_ABP
-        [Fact]
+        [RetryFact]
         public async Task Test_ABP_Device_With_Same_DevAddr()
         {
             const int MESSAGES_COUNT = 2;
@@ -408,7 +417,7 @@ namespace LoRaWan.IntegrationTest
 
         // Verifies that ABP confirmed and unconfirmed messages are working
         // Uses Device25_ABP and Device26_ABP
-        [Fact]
+        [RetryFact]
         public async Task Test_ABP_Device_With_Connection_Timeout()
         {
             this.LogTestStart(new TestDeviceInfo[] { this.TestFixtureCi.Device25_ABP, this.TestFixtureCi.Device26_ABP });
