@@ -6,9 +6,9 @@ namespace LoRaWan.IntegrationTest
     using System;
     using System.Threading.Tasks;
     using LoRaWan.Test.Shared;
-    using Newtonsoft.Json;
     using Xunit;
     using Xunit.Sdk;
+    using XunitRetryHelper;
 
     // Tests OTAA join requests
     // OTAA joins requires the following information:
@@ -26,7 +26,7 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that an OTAA join will update the device twin
         // Uses Device1_OTAA
-        [Fact]
+        [RetryFact]
         public async Task OTAA_Join_With_Valid_Device_Updates_DeviceTwin()
         {
             var device = this.TestFixtureCi.Device1_OTAA;
@@ -92,7 +92,7 @@ namespace LoRaWan.IntegrationTest
         // Ensure that a join with an invalid DevEUI fails
         // Does not need a real device, because the goal is no to have one that matches the DevEUI
         // Uses Device2_OTAA
-        [Fact]
+        [RetryFact]
         public async Task OTAA_Join_With_Wrong_DevEUI_Fails()
         {
             var device = this.TestFixtureCi.Device2_OTAA;
@@ -111,7 +111,7 @@ namespace LoRaWan.IntegrationTest
 
         // Ensure that a join with an invalid AppKey fails
         // Uses Device3_OTAA
-        [Fact]
+        [RetryFact]
         public async Task OTAA_Join_With_Wrong_AppKey_Fails()
         {
             var device = this.TestFixtureCi.Device3_OTAA;
@@ -135,7 +135,7 @@ namespace LoRaWan.IntegrationTest
 
         // Ensure that a join with an invalid AppKey fails
         // Uses Device13_OTAA
-        [Fact]
+        [RetryFact]
         public async Task OTAA_Join_With_Wrong_AppEUI_Fails()
         {
             var device = this.TestFixtureCi.Device13_OTAA;
@@ -155,11 +155,20 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.WaitForIdleAsync();
         }
 
+        [RetryFact]
+        public Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR_Single()
+        {
+            return this.Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(nameof(this.TestFixtureCi.Device20_OTAA));
+        }
+
+        [RetryFact]
+        public Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR_MultiGw()
+        {
+            return this.Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(nameof(this.TestFixtureCi.Device20_OTAA_MultiGw));
+        }
+
         // Performs a OTAA join and sends 1 unconfirmed, 1 confirmed and rejoins
-        [Theory]
-        [InlineData("Device20_OTAA")]
-        [InlineData("Device20_OTAA_MultiGw")]
-        public async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(string devicePropertyName)
+        private async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(string devicePropertyName)
         {
             var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);

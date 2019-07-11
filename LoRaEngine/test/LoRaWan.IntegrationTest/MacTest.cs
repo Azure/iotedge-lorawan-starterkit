@@ -4,15 +4,12 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
     using System.Threading.Tasks;
-    using System.Xml;
     using LoRaTools;
     using LoRaTools.CommonAPI;
     using LoRaWan.Test.Shared;
-    using Newtonsoft.Json.Linq;
     using Xunit;
+    using XunitRetryHelper;
 
     // Tests OTAA requests
     [Collection(Constants.TestCollectionName)] // run in serial
@@ -26,7 +23,7 @@ namespace LoRaWan.IntegrationTest
 
         // Send a LinkCheckCmd from the device and expect an answer.
         // Use Device22_ABP
-        [Fact]
+        [RetryFact]
         public async Task Test_Device_Initiated_Mac_LinkCheckCmd_Should_work()
         {
             try
@@ -67,12 +64,21 @@ namespace LoRaWan.IntegrationTest
             this.TestFixtureCi.ClearLogs();
         }
 
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands_Single()
+        {
+            return this.Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(nameof(this.TestFixtureCi.Device23_OTAA));
+        }
+
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands_MultiGw()
+        {
+            return this.Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(nameof(this.TestFixtureCi.Device23_OTAA_MultiGw));
+        }
+
         // Ensures that Mac Commands C2D messages working
         // Uses Device23_OTAA
-        [Theory]
-        [InlineData("Device23_OTAA")]
-        [InlineData("Device23_OTAA_MultiGw")]
-        public async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(string devicePropertyName)
+        private async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(string devicePropertyName)
         {
             var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);
