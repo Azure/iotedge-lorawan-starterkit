@@ -7,6 +7,5 @@ steps:
   condition: or(and(eq(variables['AdditionalIntegrationTestArguments'], ''), eq(variables['IntegrationTestToRun'], '')), eq(variables['IntegrationTestToRun'], '${{parameters.testName}}'))
   inputs:
     command: test
-    nobuild: true
     projects: '**/test/LoRaWan.IntegrationTest/LoRaWan.IntegrationTest.csproj'
-    arguments: '--configuration $(BuildConfiguration) -p:ParallelizeTestCollections=false --filter LoRaWan.IntegrationTest.${{parameters.testName}}'
+    arguments: '--no-build --configuration $(BuildConfiguration) -p:ParallelizeTestCollections=false --filter LoRaWan.IntegrationTest.${{parameters.testName}}'
