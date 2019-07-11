@@ -40,16 +40,18 @@ namespace XunitRetryHelper
                     if (aggregator.HasExceptions || summary.Failed == 0 || testRetryCount + 1 > maxRetries)
                     {
                         delayedMessageBus.Complete();
+
                         if (testRetryCount > 0)
                         {
+                            LogMessage($"test retry finished. Failed status of last run: {summary.Failed}, {testRetryCount}/{maxRetries}");
+
                             if (summary.Failed == 0)
                             {
                                 LogMessage($"test '{testCase.DisplayName}' succeeded after {testRetryCount}/{maxRetries} executions.");
                             }
                             else if (testRetryCount == maxRetries)
                             {
-                                LogMessage($"test '{testCase.DisplayName}' failed after {testRetryCount}/{maxRetries} executions.");
-                                LogAssertInfo(lastAssert);
+                                LogMessage($"test '{testCase.DisplayName}' failed after {testRetryCount}/{maxRetries} executions.", lastAssert);
                             }
                         }
 
@@ -64,28 +66,23 @@ namespace XunitRetryHelper
                     testRetryCount++;
                     var retryDelay = (int)Math.Min(180_000, Math.Pow(2, testRetryCount) * rnd.Next(5000, 30_000));
                     var msg = $"performing retry number {testRetryCount}/{maxRetries} in {retryDelay}ms for Test '{testCase.DisplayName}'";
-                    LogMessage(msg);
-                    LogAssertInfo(lastAssert);
+                    LogMessage(msg, lastAssert);
 
-                    // await Task.Delay(retryDelay, cancellationTokenSource.Token);
-                    await Task.Delay(500, cancellationTokenSource.Token);
+                    await Task.Delay(retryDelay, cancellationTokenSource.Token);
                 }
             }
         }
 
-        private static void LogAssertInfo(TestFailed assertInfo)
+        private static void LogMessage(string msg, TestFailed assertInfo = null)
         {
+            msg = $"{DateTime.UtcNow.ToString("HH:mm:ss.fff")} [Test] {msg}";
+
             if (assertInfo != null)
             {
                 var messages = assertInfo.Messages != null ? string.Join(',', assertInfo.Messages) : string.Empty;
                 var stackTrace = assertInfo.StackTraces != null ? string.Join(',', assertInfo.StackTraces) : string.Empty;
-                LogMessage($"{messages} {Environment.NewLine} {stackTrace}");
+                msg = string.Concat(msg, Environment.NewLine, messages, Environment.NewLine, stackTrace);
             }
-        }
-
-        private static void LogMessage(string msg)
-        {
-            msg = $"{DateTime.UtcNow.ToString("HH:mm:ss.fff")} [Test] {msg}";
 
             if (Debugger.IsAttached)
             {
