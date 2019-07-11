@@ -19,15 +19,24 @@ namespace LoRaWan.IntegrationTest
         {
         }
 
+        [RetryFact]
+        public Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset_Single()
+        {
+            return this.Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(nameof(this.TestFixtureCi.Device4_OTAA));
+        }
+
+        [RetryFact]
+        public Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset_MultiGw()
+        {
+            return this.Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(nameof(this.TestFixtureCi.Device4_OTAA_MultiGw));
+        }
+
         // Performs a OTAA join and sends N confirmed and unconfirmed messages
         // Expects that:
         // - device message is available on IoT Hub
         // - frame counter validation is done
         // - Message is decoded
-        [RetryTheory]
-        [InlineData("Device4_OTAA")]
-        [InlineData("Device4_OTAA_MultiGw")]
-        public async Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(string devicePropertyName)
+        private async Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(string devicePropertyName)
         {
             var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             const int MESSAGES_COUNT = 10;

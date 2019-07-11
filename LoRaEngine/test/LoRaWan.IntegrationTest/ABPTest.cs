@@ -19,12 +19,21 @@ namespace LoRaWan.IntegrationTest
         {
         }
 
+        [RetryFact]
+        public Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR_Single()
+        {
+            return this.Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(nameof(this.TestFixtureCi.Device5_ABP));
+        }
+
+        [RetryFact]
+        public Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR_MultiGw()
+        {
+            return this.Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(nameof(this.TestFixtureCi.Device5_ABP_MultiGw));
+        }
+
         // Verifies that ABP confirmed and unconfirmed messages are working
         // Uses Device5_ABP
-        [RetryTheory]
-        [InlineData("Device5_ABP")]
-        [InlineData("Device5_ABP_MultiGw")]
-        public async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(string devicePropertyName)
+        private async Task Test_ABP_Confirmed_And_Unconfirmed_Message_With_ADR(string devicePropertyName)
         {
             var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
 

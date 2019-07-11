@@ -155,11 +155,20 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.WaitForIdleAsync();
         }
 
+        [RetryFact]
+        public Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR_Single()
+        {
+            return this.Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(nameof(this.TestFixtureCi.Device20_OTAA));
+        }
+
+        [RetryFact]
+        public Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR_MultiGw()
+        {
+            return this.Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(nameof(this.TestFixtureCi.Device20_OTAA_MultiGw));
+        }
+
         // Performs a OTAA join and sends 1 unconfirmed, 1 confirmed and rejoins
-        [RetryTheory]
-        [InlineData("Device20_OTAA")]
-        [InlineData("Device20_OTAA_MultiGw")]
-        public async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(string devicePropertyName)
+        private async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(string devicePropertyName)
         {
             var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);

@@ -64,12 +64,21 @@ namespace LoRaWan.IntegrationTest
             this.TestFixtureCi.ClearLogs();
         }
 
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands_Single()
+        {
+            return this.Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(nameof(this.TestFixtureCi.Device23_OTAA));
+        }
+
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands_MultiGw()
+        {
+            return this.Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(nameof(this.TestFixtureCi.Device23_OTAA_MultiGw));
+        }
+
         // Ensures that Mac Commands C2D messages working
         // Uses Device23_OTAA
-        [RetryTheory]
-        [InlineData("Device23_OTAA")]
-        [InlineData("Device23_OTAA_MultiGw")]
-        public async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(string devicePropertyName)
+        private async Task Test_OTAA_Unconfirmed_Send_And_Receive_C2D_Mac_Commands(string devicePropertyName)
         {
             var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);

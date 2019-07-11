@@ -302,12 +302,21 @@ namespace LoRaWan.IntegrationTest
             Assert.True(foundReceivePacketCount > 0, $"Could not find lora receiving message '{expectedRxSerial}'");
         }
 
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message_Single()
+        {
+            return this.Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(nameof(this.TestFixtureCi.Device15_OTAA));
+        }
+
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message_MultiGw()
+        {
+            return this.Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(nameof(this.TestFixtureCi.Device15_OTAA_MultiGw));
+        }
+
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device15_OTAA
-        [RetryTheory]
-        [InlineData("Device15_OTAA")]
-        [InlineData("Device15_OTAA_MultiGw")]
-        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(string devicePropertyName)
+        private async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(string devicePropertyName)
         {
             const int messagesToSend = 10;
             const int warmUpMessageCount = 2;
@@ -425,12 +434,21 @@ namespace LoRaWan.IntegrationTest
             Assert.True(foundReceivePacketCount > 0, $"Could not find lora receiving message '{expectedRxSerial}'");
         }
 
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message_Single()
+        {
+            return this.Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(nameof(this.TestFixtureCi.Device14_OTAA));
+        }
+
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message_MultiGw()
+        {
+            return this.Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(nameof(this.TestFixtureCi.Device14_OTAA_MultiGw));
+        }
+
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device10_OTAA
-        [RetryTheory]
-        [InlineData("Device14_OTAA")]
-        [InlineData("Device14_OTAA_MultiGw")]
-        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(string devicePropertyName)
+        private async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(string devicePropertyName)
         {
             const int messagesToSend = 10;
             const int warmUpMessageCount = 2;
