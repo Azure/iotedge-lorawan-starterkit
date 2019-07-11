@@ -56,4 +56,4 @@ steps:
   inputs:
     command: test
     projects: '**/test/LoRaWan.IntegrationTest/LoRaWan.IntegrationTest.csproj'
-    arguments: '${{ parameters.defaultTestParams }} $(AdditionalIntegrationTestArguments)'
+    arguments: '--configuration $(BuildConfiguration) -p:ParallelizeTestCollections=false $(AdditionalIntegrationTestArguments)'
