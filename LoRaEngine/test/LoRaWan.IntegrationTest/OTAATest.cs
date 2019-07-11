@@ -19,13 +19,13 @@ namespace LoRaWan.IntegrationTest
         {
         }
 
-        [RetryFact]
+        [Fact]
         public Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset_Single()
         {
             return this.Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(nameof(this.TestFixtureCi.Device4_OTAA));
         }
 
-        [RetryFact]
+        [Fact]
         public Task Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset_MultiGw()
         {
             return this.Test_OTAA_Confirmed_And_Unconfirmed_Message_With_Custom_RX1_DR_Offset(nameof(this.TestFixtureCi.Device4_OTAA_MultiGw));
