@@ -6,7 +6,7 @@ namespace XunitRetryHelper
     using Xunit;
     using Xunit.Sdk;
 
-    [XunitTestCaseDiscoverer("XunitRetryHelper.RetryFactDiscoverer", "XunitRetryHelper")]
+    [XunitTestCaseDiscoverer("XunitRetryHelper.RetryFactTestDiscoverer", "XunitRetryHelper")]
     public class RetryFactAttribute : FactAttribute
     {
         public RetryFactAttribute()
