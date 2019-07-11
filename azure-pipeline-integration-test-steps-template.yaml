@@ -28,7 +28,7 @@ steps:
 - ${{ each test in parameters.testsToRun }}:
     - task: DotNetCoreCLI@2
       displayName: Integration testing ${{test}}
-      condition: or(and(eq(variables['AdditionalIntegrationTestArguments'], ''), eq(variables['IntegrationTestToRun'], '')), eq(variables['IntegrationTestToRun'], '${{test}}'))
+      condition: or(and(eq(variables['AdditionalIntegrationTestArguments'], ''), eq(variables['IntegrationTestsToRun'], '')), contains(variables['IntegrationTestsToRun'], '${{test}}'))
       inputs:
         command: test
         projects: '**/test/LoRaWan.IntegrationTest/LoRaWan.IntegrationTest.csproj'
