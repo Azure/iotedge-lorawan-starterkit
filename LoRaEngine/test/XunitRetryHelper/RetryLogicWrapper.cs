@@ -43,7 +43,7 @@ namespace XunitRetryHelper
 
                         if (testRetryCount > 0)
                         {
-                            LogMessage($"test retry finished. Failed status of last run: {summary.Failed}, {testRetryCount}/{maxRetries}");
+                            LogMessage($"test '{testCase.DisplayName}' retry finished. Number of failed tests of last run: {summary.Failed}, retry state: {testRetryCount}/{maxRetries}");
 
                             if (summary.Failed == 0)
                             {
