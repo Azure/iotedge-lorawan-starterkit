@@ -35,10 +35,12 @@ namespace XunitRetryHelper
                 {
                     var summary = await executer(diagnosticMessageSink, delayedMessageBus, constructorArguments, aggregator, cancellationTokenSource);
 
+                    var lastAssert = delayedMessageBus.GetLastFailure();
+
                     if (aggregator.HasExceptions || summary.Failed == 0 || testRetryCount + 1 > maxRetries)
                     {
                         delayedMessageBus.Complete();
-                        if (testRetryCount > 1)
+                        if (testRetryCount > 0)
                         {
                             if (summary.Failed == 0)
                             {
@@ -47,12 +49,13 @@ namespace XunitRetryHelper
                             else if (testRetryCount == maxRetries)
                             {
                                 LogMessage($"test '{testCase.DisplayName}' failed after {testRetryCount}/{maxRetries} executions.");
+                                LogAssertInfo(lastAssert);
                             }
                         }
 
                         if (aggregator.HasExceptions)
                         {
-                            LogMessage($"test '{testCase.DisplayName}' failed with exception.");
+                            LogMessage($"test '{testCase.DisplayName}' failed with exception. {aggregator.ToException()}");
                         }
 
                         return summary;
@@ -62,9 +65,21 @@ namespace XunitRetryHelper
                     var retryDelay = (int)Math.Min(180_000, Math.Pow(2, testRetryCount) * rnd.Next(5000, 30_000));
                     var msg = $"performing retry number {testRetryCount}/{maxRetries} in {retryDelay}ms for Test '{testCase.DisplayName}'";
                     LogMessage(msg);
+                    LogAssertInfo(lastAssert);
 
-                    await Task.Delay(retryDelay, cancellationTokenSource.Token);
+                    // await Task.Delay(retryDelay, cancellationTokenSource.Token);
+                    await Task.Delay(500, cancellationTokenSource.Token);
                 }
+            }
+        }
+
+        private static void LogAssertInfo(TestFailed assertInfo)
+        {
+            if (assertInfo != null)
+            {
+                var messages = assertInfo.Messages != null ? string.Join(',', assertInfo.Messages) : string.Empty;
+                var stackTrace = assertInfo.StackTraces != null ? string.Join(',', assertInfo.StackTraces) : string.Empty;
+                LogMessage($"{messages} {Environment.NewLine} {stackTrace}");
             }
         }
 
