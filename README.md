@@ -4,7 +4,7 @@
 
 # Azure IoT Edge LoRaWAN Starter Kit
 
-The Azure IoT Edge LoRaWAN starter kit is an *experimental* cross platform LoRaWAN implementation following the [LoRaWAN 1.0.2 specification](https://lora-alliance.org/resource-hub/lorawantm-specification-v102). The goal of the solution is to provide a turnkey experience for users looking to build their own private LoRa network and connect their LoRaWAN devices and gateways to Azure IoT Hub without the need of any intermediaries or third party services. The kit provides a LoRaWAN packet forwarder and network server implementation built on top of [Azure IoT Edge](https://azure.microsoft.com/en-us/services/iot-edge/) infrastructure and all other components required to enable seamless communication to Azure. It significantly reduces the effort of building your own custom network server and deployment to multiple gateways. 
+The Azure IoT Edge LoRaWAN starter kit is an *experimental* cross platform LoRaWAN implementation which follows the [LoRaWAN 1.0.2 specification](https://lora-alliance.org/resource-hub/lorawantm-specification-v102). The goal of the solution is to provide a turnkey experience for users looking to build their own private LoRa network and connect their LoRaWAN devices and gateways to Azure IoT Hub without the need of any intermediaries or third party services. The kit provides a LoRaWAN packet forwarder and network server implementation built on top of [Azure IoT Edge](https://azure.microsoft.com/en-us/services/iot-edge/) infrastructure and all other components required to enable seamless communication to Azure. It significantly reduces the effort of building your own custom network server and deployment to multiple gateways. 
 Some of the key benefits include: 
 
 - Deploy your own LoRa private network and connect to Azure within minutes. No intermediaries or third party required. [Get Started Now](#getting-started). 
@@ -12,7 +12,7 @@ Some of the key benefits include:
 - Enterprise ready with features like proxy support, offline support, and complete cloud based management. [See complete list of features](#features).
 - Extensible [LoRa Engine](/Docs/devguide.md) and a custom [Decoder framework](/Samples/DecoderSample/ReadMe.md) for specialized implementations.
 - Stress tested for **EU868** and **US915** frequencies with real customers and [multiple LoRaWAN gateways](#tested-gateways).
-- Supporting tools such as comprehensive unit tests, CI/CD pipeline, stress testing, simulator and a command line interface.
+- Supporting tools such as comprehensive unit tests, CI/CD pipeline, stress testing, simulator and a LoRa client device provisioning command line interface.
   
 ![Architecture](/Docs/Pictures/EdgeArchitecture.png)
   ## Table of Contents
@@ -21,7 +21,6 @@ Some of the key benefits include:
   - [Getting Started](#getting-started)
   - - [Prerequisites](#prerequisites)
   - - [Deploy to Azure](#deploy-to-azure)
-  - [Troubleshooting](#troubleshooting)
   - [Tested Gateways](#tested-gateways)
   - [Support](#support)
   - [Contributing](#contributing)
@@ -36,7 +35,7 @@ Some of the key benefits include:
 - Easy deployment and setup using Azure ARM templates.
 - Small to Midsize Scalability Tests.
 - Simulator for development and testing without the need to own a Gateway.
-- Command Line Interface for common operations.*
+- Command Line Interface for LoRa client device provisioning.
 **Planned or In Development features*
 ## LoRaWAN Specification Support 
 We plan to support the following key features of LoRaWAN 1.0.2 specification, however please note that not all of them are available as of today. Please refer to our release notes for more details on what is available.
@@ -74,7 +73,7 @@ The following should be completed before proceeding with the LoRaWAN starter kit
 </a>
 
 
-The ARM template will deploy all the required Azure infrastructure to get you started quickly. Specifically, it configures the required Azure Services and  Azure IoT Edge modules. As soon as you connect your IoT Edge device these modules will be pushed onto the gateway and you should have an Azure connected LoRaWAN gateway running. 
+The ARM template will deploy all the required Azure infrastructure to get you started quickly. Specifically, it configures the required Azure Services and  Azure IoT Edge modules. As soon as you connect your IoT Edge based LoRaWAN gateway to Azure IoT Hub, these modules will be pushed onto it and you will have a functional, Azure connected LoRaWAN gateway.
 
 - The template will deploy the following resources in your Azure subscription:
   - [IoT Hub](https://azure.microsoft.com/en-us/services/iot-hub/)
@@ -85,7 +84,7 @@ The ARM template will deploy all the required Azure infrastructure to get you st
 
 #### Configuration for the ARM template  
 - Make sure to provide your gateway's reset pin in the dialog before the deployment.
-- if your gateway use SPI_DEV version 1 the packet forwarder module will not work out-of-the-box. To fix this, simply add an environment variable 'SPI_DEV' set to the value 1 to the LoRaWanPktFwdModule module (SPI_DEV is set to 2 by default).
+- If your gateway use SPI_DEV version 1, the packet forwarder module will not work out-of-the-box. To fix this, simply add an environment variable 'SPI_DEV' set to the value 1 to the LoRaWanPktFwdModule module (SPI_DEV is set to 2 by default).
 - If you are using the the RAK833-USB, you'll need to adjust the template to use the right LoRaWan Packet Forwarder. You will find a full documentation in this [submodule](/Docs/LoRaWanPktFwdRAK833USB).
 
 #### Installation instructions
@@ -110,8 +109,7 @@ The ARM template will deploy all the required Azure infrastructure to get you st
 
 By using the `docker ps` command, you should see the Edge containers being deployed on your local gateway. You can now try one of the samples in the [Arduino folder](/Arduino) to see LoRa messages being sent to the cloud. If you have checked the Deploy Device checkbox you can use this sample directly "TransmissionTestOTAALoRa.ino" without provisioning the device first.
 
-## Troubleshooting
-Refer to our [troubleshooting guide](troubleshooting.md) for debugging guidance, known issues along and other FAQ.
+> For more customization and additional how-to reference, please look at our [supplement reference guide](supplement.md) for custom configurations, provisioning guidance and other common customizations
 
 ## Tested Gateways
 

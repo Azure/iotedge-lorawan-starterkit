@@ -1,9 +1,9 @@
 
+# Supplement Reference Guide
 
-#Troubleshooting
-Provide some tips and tricks to help customize and troubleshoot the solution.
+The aim of this reference guide is to provide quick access to common configuration settings, setup and installation tips and troubleshooting advise to help and run the LoRaWAN starter kit smoothly.
 
-## Using a Proxy Server to connect your Concentrator to Azure
+## How to use a Proxy Server to connect your Concentrator to Azure
 
 This is an optional configuration that should only be executed if your concentrator needs to use a proxy server to communicate with Azure.
 
@@ -14,19 +14,20 @@ Follow [this guide](/Docs/devguide.md#use-a-proxy-server-to-connect-your-concent
 3. Set environment variables for the IoT Edge runtime in the deployment manifest.
 4. Add the `https_proxy` environment variable to the `LoRaWanNetworkSrvModule` in IoT Hub.
 
-## LoRa Device provisioning
+
+## How to provision a LoRA device in Azure IoT Hub
 
 A LoRa device is a normal IoT Hub device with some specific device twin tags. You manage it like you would with any other IoT Hub device.
-**To avoid caching issues you should not allow the device to join or send data before it is provisioned in IoT Hub. In case that you did plese follow the ClearCache procedure that you find below.**
+>To avoid caching issues you should not allow the device to join or send data before it is provisioned in IoT Hub. In case that you did, please follow the ClearCache procedure [here](#Cache-Clearing).
 
 ### ABP (personalization) and OTAA (over the air) provisioning
 
-- Login in to the Azure portal go to IoT Hub -> IoT devices -> Add
+- Login in to the Azure portal; Go to IoT Hub -> IoT devices -> Add
 - Use the DeviceEUI as DeviceID -> Save
 - Click on the newly created device
 - Click on Device Twin menu
 
-- Add the followings desired properties for OTAA:
+- Add the following desired properties for OTAA:
 
 ```json
 "desired": {
@@ -39,7 +40,7 @@ A LoRa device is a normal IoT Hub device with some specific device twin tags. Yo
 
 Or the followings desired properties for ABP:
 
-**DevAddr must be unique for every device! It is like an ip address for lora.**
+> DevAddr must be unique for every device. It is like an IP Address for LoRA.
 
 ```json
 "desired": {
@@ -96,21 +97,21 @@ It should look something like this for ABP:
 
 - Click Save
 - Turn on the device and you are ready to go
+  
+## How to customize the LoRa device to Azure communication
 
-### Optional device properties
-
-Customization's to lora devices are set by creating specific twin desired properties on the device. The following customization's are available:
+The solution supports optional configuration settings that can be configured to enable or disable specific features. These configurations are supported through the Azure IoT Hub Device Twin properties. The following configurations are available:
 
 |Name|Description|Configuration|When to use|
 |-|-|-|-|
 |Enable/disable downstream messages|Allows disabling the downstream (cloud to device) for a device. By default downstream messages are enabled| Add twin desired property `"Downlink": false` to disable downstream messages. The absence of the twin property or setting value to `true` will enable downlink messages.|Disabling downlink on devices decreases message processing latency, since the network server will not look for cloud to device messages when an uplink is received. Only disable it in devices that are not expecting messages from cloud. Acknowledgement of confirmed upstream are sent to devices even when downlink is set to false|
-|Preferred receive window|Allows setting the device preferred receive window (RX1 or RX2). The default preferred receive window is 1| Add twin desired property `"PreferredWindow": 2` sets RX2 as preferred window. The absence of the twin property or setting the value to `1` will set RX1 as preferred window.|Using the second receive window increases the chances that the end application can process the upstream message and send a cloud to device message to the lora device without requiring and additional upstream message. Basically completing the round trip in less than 2 seconds.|
+|Preferred receive window|Allows setting the device preferred receive window (RX1 or RX2). The default preferred receive window is 1| Add twin desired property `"PreferredWindow": 2` sets RX2 as preferred window. The absence of the twin property or setting the value to `1` will set RX1 as preferred window.|Using the second receive window increases the chances that the end application can process the upstream message and send a cloud to device message to the LoRA device without requiring and additional upstream message. Basically completing the round trip in less than 2 seconds.|
 
-**Important**: changes made to twin desired properties in devices that are already connected will only take effect once the network server is restarted or [cache is cleared](#cache-clearing).
+> Changes made to twin desired properties in devices that are already connected will only take effect once the network server is restarted or [cache is cleared](#cache-clearing).
 
-### Decoders
+## How to decode an incoming packet on IoT Edge
 
-The SensorDecoder tag is used to define which method will be used to decode the LoRa payload. If you leave it out or empty it will send the raw decrypted payload in the data field of the json message as Base64 encoded value to IoT Hub.
+The SensorDecoder tag is used to define which method will be used to decode the LoRA payload. If you leave it out or empty, it will send the raw decrypted payload in the data field of the json message as Base64 encoded value to IoT Hub.
 
 If you want to decode it on the Edge you have the following two options:
 
@@ -152,12 +153,12 @@ or as follows for option 2:
 
 The `"DecoderValueSensor"` decoder is not a best practice but it makes it easier to experiment sending sensor readings to IoT Hub without having to change any code.
 
-if the SensorDecoder tag has a "http" in it's string value, it will forward the decoding call to an external decoder, as described in option 2 above, using standard Http. The call expects a return value with the same format as the json here above or an error string.
+If the SensorDecoder tag has a "http" in it's string value, it will forward the decoding call to an external decoder, as described in option 2 above, using standard Http. The call expects a return value with the same format as the JSON above or an error string.
 
-### Cache Clearing
+## How to clear cache
 
 Due to the gateway caching the device information (tags) for 1 day, if the device tries to connect before you have provisioned it, it will not be able to connect because it will be considered a device for another LoRa network.
-To clear the cache and allow the device to connect follow these steps:
+To clear the cache and allow the device to connect, follow these steps:
 
 - IoT Hub -> IoT Edge -> click on the device ID of your gateway
 - Click on LoRaWanNetworkSrvModule
@@ -165,9 +166,9 @@ To clear the cache and allow the device to connect follow these steps:
 - Type "ClearCache" on Method Name
 - Click Invoke Method
 
-Alternatively you can restart the Gateway or the LoRaWanNetworkSrvModule container.
+Alternatively you can restart the Gateway or the *LoRaWanNetworkSrvModule* container.
 
-## Monitoring and Logging
+## How to configure logging levels for the Network Server
 
 There is a logging mechanism that outputs valuable information to the console of the docker container and can optionally forward these messages to IoT Hub.
 
@@ -197,13 +198,9 @@ Log in to the gateway and use `sudo docker logs LoRaWanNetworkSrvModule -f` to f
 | LOG_TO_CONSOLE | true  | Log to docker logs (default if omitted) |
 |                | false | Does not log to docker logs             |
 
-## Customize the solution
+## How to configure cloud to device messaging
 
-Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanation.
-
-## Cloud to device message
-
-The solution support sending Cloud to device (C2D) messages to LoRa messages using [standard IoT Hub Sdks](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d). Cloud to device messages require a Fport message property being set or it will be refused (as shown in the figure below from the Azure Portal). 
+The solution supports sending Cloud to device (C2D) messages to LoRa messages using [standard IoT Hub Sdks](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-messages-c2d). Cloud to device messages require a Fport message property being set or it will be refused (as shown in the figure below from the Azure Portal). 
 
 ![C2D portal](/Docs/Pictures/cloudtodevice.png)
 
@@ -222,15 +219,3 @@ As soon as the device acknowledges the message, it will report it in the logs an
 
 
 ![C2D portal](/Docs/Pictures/receiveC2DConfirmation.png)
-
-
-## MAC Commands
-
-The Solution has an initial support for MAC Commands. Currently only the command Device Status Command is fully testable. The command will return device status (battery and communication margin). To try it, send a Cloud to Device message on your end device and add the following message properties :
-
-```
-CidType : 6
-```
-
-![MacCommand](/Docs/Pictures/MacCommand.PNG)
-
