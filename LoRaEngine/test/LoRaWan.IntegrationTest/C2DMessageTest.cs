@@ -4,15 +4,12 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
-    using LoRaTools.Utils;
     using LoRaWan.Test.Shared;
-    using Microsoft.Azure.Devices;
     using Xunit;
+    using XunitRetryHelper;
 
     [Collection(Constants.TestCollectionName)] // run in serial
     [Trait("Category", "SkipWhenLiveUnitTesting")]
@@ -38,7 +35,6 @@ namespace LoRaWan.IntegrationTest
         /// <summary>
         /// Ensures that a cloud to device message has not been seen more than expected
         /// </summary>
-        /// <param name="foundCount"></param>
         private void EnsureNotSeenTooManyTimes(int foundCount)
         {
             Assert.True(foundCount <= CloudToDeviceMessageReceiveCountThreshold, $"Cloud to device message was processed {foundCount} times");
@@ -51,7 +47,7 @@ namespace LoRaWan.IntegrationTest
         // Ensures that C2D messages are received when working with confirmed messages
         // RxDelay set up to be 2 seconds
         // Uses Device9_OTAA
-        [Fact]
+        [RetryFact]
         public async Task Test_OTAA_Confirmed_Receives_C2D_Message_With_RX_Delay_2()
         {
             const int messagesToSend = 10;
@@ -192,7 +188,7 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device10_OTAA
-        [Fact]
+        [RetryFact]
         public async Task Test_OTAA_Unconfirmed_Receives_C2D_Message()
         {
             const int messagesToSend = 10;
@@ -305,12 +301,21 @@ namespace LoRaWan.IntegrationTest
             Assert.True(foundReceivePacketCount > 0, $"Could not find lora receiving message '{expectedRxSerial}'");
         }
 
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message_Single()
+        {
+            return this.Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(nameof(this.TestFixtureCi.Device15_OTAA));
+        }
+
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message_MultiGw()
+        {
+            return this.Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(nameof(this.TestFixtureCi.Device15_OTAA_MultiGw));
+        }
+
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device15_OTAA
-        [Theory]
-        [InlineData("Device15_OTAA")]
-        [InlineData("Device15_OTAA_MultiGw")]
-        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(string devicePropertyName)
+        private async Task Test_OTAA_Unconfirmed_Receives_Confirmed_FPort_2_Message(string devicePropertyName)
         {
             const int messagesToSend = 10;
             const int warmUpMessageCount = 2;
@@ -428,12 +433,21 @@ namespace LoRaWan.IntegrationTest
             Assert.True(foundReceivePacketCount > 0, $"Could not find lora receiving message '{expectedRxSerial}'");
         }
 
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message_Single()
+        {
+            return this.Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(nameof(this.TestFixtureCi.Device14_OTAA));
+        }
+
+        [RetryFact]
+        public Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message_MultiGw()
+        {
+            return this.Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(nameof(this.TestFixtureCi.Device14_OTAA_MultiGw));
+        }
+
         // Ensures that C2D messages are received when working with unconfirmed messages
         // Uses Device10_OTAA
-        [Theory]
-        [InlineData(nameof(IntegrationTestFixtureCi.Device14_OTAA))]
-        [InlineData(nameof(IntegrationTestFixtureCi.Device14_OTAA_MultiGw))]
-        public async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(string devicePropertyName)
+        private async Task Test_OTAA_Unconfirmed_Receives_Confirmed_C2D_Message(string devicePropertyName)
         {
             const int messagesToSend = 10;
             const int warmUpMessageCount = 2;
@@ -554,7 +568,7 @@ namespace LoRaWan.IntegrationTest
         /// <summary>
         /// Ensures that a device that has preferred window set to two receives C2D messages
         /// </summary>
-        [Fact]
+        [RetryFact]
         public async Task C2D_When_Device_Has_Preferred_Windows_2_Should_Receive_In_2nd_Window_With_Custom_DR()
         {
             const int messagesToSend = 10;

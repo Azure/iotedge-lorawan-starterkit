@@ -11,6 +11,7 @@
     <ProjectReference Include="../../modules/LoRaWanNetworkSrvModule/LoraTools/LoRaTools.csproj" />
     <ProjectReference Include="..\..\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\LoRaWan.NetworkServer.csproj" />
     <ProjectReference Include="..\LoRaWan.Test.Shared\LoRaWan.Test.Shared.csproj" />
+    <ProjectReference Include="..\XunitRetryHelper\XunitRetryHelper.csproj" />
   </ItemGroup>
 
   <ItemGroup>

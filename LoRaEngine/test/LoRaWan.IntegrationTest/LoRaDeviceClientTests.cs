@@ -8,8 +8,10 @@ namespace LoRaWan.IntegrationTest
     using System.Linq;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices.Client;
     using Xunit;
+    using XunitRetryHelper;
 
     /// <summary>
     /// Integration tests for <see cref="LoRaDeviceClient"/>
@@ -158,12 +160,21 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        [Theory]
-        [InlineData(1, nameof(IntegrationTestFixtureCi.Device31_ABP))]
-        [InlineData(2, nameof(IntegrationTestFixtureCi.Device32_ABP))]
-        public async Task When_Receiving_Message_With_Multiple_Device_Clients_Not_Racing_Should_Receive_Only_Once(
+        [RetryFact]
+        public async Task When_Receiving_Message_With_Single_Device_Client_Not_Racing_Should_Receive_Only_Once()
+        {
+            await this.When_Receiving_Message_Not_Racing_Should_Receive_Only_Once(1, this.fixture.Device31_ABP);
+        }
+
+        [RetryFact]
+        public async Task When_Receiving_Message_With_Two_Device_Client_Not_Racing_Should_Receive_Only_Once()
+        {
+            await this.When_Receiving_Message_Not_Racing_Should_Receive_Only_Once(2, this.fixture.Device32_ABP);
+        }
+
+        async Task When_Receiving_Message_Not_Racing_Should_Receive_Only_Once(
             int deviceClientCount,
-            string deviceId)
+            TestDeviceInfo device)
         {
             const int cleanUpReceiveAsyncTimeout = 1000;
             const int receiveAsyncTimeout = 500;
@@ -173,8 +184,6 @@ namespace LoRaWan.IntegrationTest
             const int delayInBetweenReceiveAsync = 1000;
             const int delayInBetweenCleanupLoops = 400;
             const int delayInBetweenMessages = 1000;
-
-            var device = this.fixture.GetDeviceByPropertyName(deviceId);
 
             var deviceConnectionString = this.fixture.GetDeviceClientConnectionString(device.DeviceID);
             var deviceClients = new LoRaDeviceClient[deviceClientCount];

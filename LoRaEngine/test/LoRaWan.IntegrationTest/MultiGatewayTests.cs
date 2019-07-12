@@ -13,6 +13,7 @@ namespace LoRaWan.IntegrationTest
     using LoRaWan.Test.Shared;
     using Newtonsoft.Json.Linq;
     using Xunit;
+    using XunitRetryHelper;
 
     // Tests OTAA requests
     [Collection(Constants.TestCollectionName)] // run in serial
@@ -24,7 +25,7 @@ namespace LoRaWan.IntegrationTest
         {
         }
 
-        [Fact]
+        [RetryFact]
         public async Task Test_MultiGW_OTTA_Join_Single()
         {
             var device = this.TestFixtureCi.Device27_OTAA;
@@ -75,10 +76,19 @@ namespace LoRaWan.IntegrationTest
             Assert.True(bothReported);
         }
 
-        [Theory]
-        [InlineData("Device29_ABP", "Mark")]
-        [InlineData("Device28_ABP", "Drop")]
-        public async Task Test_Deduplication_Strategies(string devicePropertyName, string strategy)
+        [RetryFact]
+        public Task Test_Deduplication_Strategies_Mark()
+        {
+            return this.Test_Deduplication_Strategies("Device29_ABP", "Mark");
+        }
+
+        [RetryFact]
+        public Task Test_Deduplication_Strategies_Drop()
+        {
+            return this.Test_Deduplication_Strategies("Device28_ABP", "Drop");
+        }
+
+        private async Task Test_Deduplication_Strategies(string devicePropertyName, string strategy)
         {
             var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
             this.LogTestStart(device);
