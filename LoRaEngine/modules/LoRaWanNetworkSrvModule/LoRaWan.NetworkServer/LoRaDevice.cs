@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -24,6 +25,18 @@ namespace LoRaWan.NetworkServer
         /// The default values for RX1DROffset, RX2DR, RXDelay
         /// </summary>
         internal const ushort DefaultJoinValues = 0;
+
+        private readonly ILoRaDeviceClientConnectionManager connectionManager;
+        private readonly ConcurrentQueue<Task> pendingCloudToDeviceMessageRequests;
+        private volatile bool hasFrameCountChanges;
+        private byte confirmationResubmitCount = 0;
+        private volatile uint fcntUp;
+        private volatile uint fcntDown;
+        private volatile uint lastSavedFcntUp;
+        private volatile uint lastSavedFcntDown;
+        private volatile LoRaRequest runningRequest;
+        private ILoRaDataRequestHandler dataRequestHandler;
+        private volatile int deviceClientConnectionActivityCounter;
 
         public string DevAddr { get; set; }
 
@@ -81,8 +94,6 @@ namespace LoRaWan.NetworkServer
         public int DataRate => this.dataRate.Get();
 
         ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
-
-        ILoRaDeviceClientConnectionManager connectionManager;
 
         public int TxPower => this.txPower.Get();
 
@@ -150,22 +161,9 @@ namespace LoRaWan.NetworkServer
 
         public ushort ReportedRX1DROffset { get; set; }
 
-        private volatile bool hasFrameCountChanges;
-
-        private byte confirmationResubmitCount = 0;
-        private volatile uint fcntUp;
-        private volatile uint fcntDown;
-        private volatile uint lastSavedFcntUp;
-        private volatile uint lastSavedFcntDown;
-        private volatile LoRaRequest runningRequest;
-
         public ushort ReportedRXDelay { get; set; }
 
         public ushort DesiredRXDelay { get; set; }
-
-        private ILoRaDataRequestHandler dataRequestHandler;
-
-        private volatile int deviceClientConnectionActivityCounter;
 
         /// <summary>
         ///  Gets or sets a value indicating whether cloud to device messages are enabled for the device
@@ -190,6 +188,7 @@ namespace LoRaWan.NetworkServer
             this.confirmationResubmitCount = 0;
             this.queuedRequests = new Queue<LoRaRequest>();
             this.ClassType = LoRaDeviceClassType.A;
+            this.pendingCloudToDeviceMessageRequests = new ConcurrentQueue<Task>();
         }
 
         /// <summary>
@@ -789,13 +788,53 @@ namespace LoRaWan.NetworkServer
 
         public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => this.connectionManager.Get(this).SendEventAsync(telemetry, properties);
 
-        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => this.connectionManager.Get(this).ReceiveAsync(timeout);
+        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout)
+        {
+            if (this.HasPendingRequest())
+            {
+                Logger.Log(this.DevEUI, $"not trying to receive messages due to existing pending tasks", LogLevel.Debug);
+                return Task.FromResult<Message>(null);
+            }
 
-        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).CompleteAsync(cloudToDeviceMessage);
+            var task = this.connectionManager.Get(this).ReceiveAsync(timeout);
+            this.pendingCloudToDeviceMessageRequests.Enqueue(task);
+            return task;
+        }
 
-        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).AbandonAsync(cloudToDeviceMessage);
+        private bool HasPendingRequest()
+        {
+            while (this.pendingCloudToDeviceMessageRequests.TryDequeue(out var task))
+            {
+                if (!task.IsCompleted)
+                {
+                    this.pendingCloudToDeviceMessageRequests.Enqueue(task);
+                    return true;
+                }
+            }
 
-        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).RejectAsync(cloudToDeviceMessage);
+            return false;
+        }
+
+        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage)
+        {
+            var task = this.connectionManager.Get(this).CompleteAsync(cloudToDeviceMessage);
+            this.pendingCloudToDeviceMessageRequests.Enqueue(task);
+            return task;
+        }
+
+        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage)
+        {
+            var task = this.connectionManager.Get(this).AbandonAsync(cloudToDeviceMessage);
+            this.pendingCloudToDeviceMessageRequests.Enqueue(task);
+            return task;
+        }
+
+        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage)
+        {
+            var task = this.connectionManager.Get(this).RejectAsync(cloudToDeviceMessage);
+            this.pendingCloudToDeviceMessageRequests.Enqueue(task);
+            return task;
+        }
 
         /// <summary>
         /// Updates device on the server after a join succeeded

@@ -364,7 +364,7 @@ namespace LoRaWan.NetworkServer
                                                 Logger.Log(loRaDevice.DevEUI, $"found same cloud to device message, message id: {additionalMsg.MessageId ?? "undefined"}", LogLevel.Debug);
 
                                                 // swap so we hold reference to last returned message
-                                                cloudToDeviceMessage = additionalMsg;
+                                                // cloudToDeviceMessage = additionalMsg;
                                             }
                                             else
                                             {

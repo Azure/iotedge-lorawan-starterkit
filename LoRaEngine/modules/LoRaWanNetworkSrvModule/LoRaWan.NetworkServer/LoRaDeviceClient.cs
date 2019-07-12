@@ -200,7 +200,7 @@ namespace LoRaWan.NetworkServer
                     {
                         if (localPendingReceiveAsync == this.receiveAsyncTaskCompletionSource)
                         {
-                            // TODO: remove before PR!
+                            // Verbose log as long as this is a new feature
                             Logger.Log(this.devEUI, $"task ReceiveAsync returned before timeout", LogLevel.Debug);
                             singleFinished = this.receiveAsyncTaskCompletionSource.Task;
 
@@ -229,7 +229,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    // TODO: remove before PR!
+                    // Verbose log as long as this is a new feature
                     Logger.Log(this.devEUI, $"task ReceiveAsync returned by timeout", LogLevel.Debug);
 
                     // Task.Delay won the race, we are not awaiting for ReceiveAsync anymore
@@ -259,7 +259,7 @@ namespace LoRaWan.NetworkServer
             var localPendingReceiveAsync = this.receiveAsyncTaskCompletionSource = new TaskCompletionSource<Message>();
             this.receiveAsyncTaskWaitCount = 0;
 
-            // TODO: remove before PR!
+            // Verbose log as long as this is a new feature
             Logger.Log(this.devEUI, $"starting new ReceiveAsync task", LogLevel.Debug);
 
             _ = this.InternalReceiveAsync(timeout).ContinueWith(async (t) =>
@@ -282,7 +282,7 @@ namespace LoRaWan.NetworkServer
                     this.receiveAsyncLock.Release();
                 }
 
-                // TODO: remove before PR!
+                // Verbose log as long as this is a new feature
                 Logger.Log(this.devEUI, $"finished ReceiveAsync task (hasReceivers={hasReceivers})", LogLevel.Debug);
 
                 if (hasReceivers)
@@ -298,7 +298,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else if (t.IsCompletedSuccessfully && t.Result != null)
                 {
-                    // TODO: remove before PR!
+                    // Verbose log as long as this is a new feature
                     Logger.Log(this.devEUI, $"task ReceiveAsync found message but not one is awaiting, abandoning", LogLevel.Debug);
 
                     try
