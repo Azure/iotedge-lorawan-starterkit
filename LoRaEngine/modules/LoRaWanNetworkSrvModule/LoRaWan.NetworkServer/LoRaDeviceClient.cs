@@ -65,7 +65,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 60000;
+                this.deviceClient.OperationTimeoutInMilliseconds = 120_000;
 
                 this.SetRetry(true);
 
@@ -92,7 +92,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 120000;
+                this.deviceClient.OperationTimeoutInMilliseconds = 120_000;
 
                 this.SetRetry(true);
 
@@ -121,7 +121,7 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    this.deviceClient.OperationTimeoutInMilliseconds = 120000;
+                    this.deviceClient.OperationTimeoutInMilliseconds = 120_000;
 
                     // Enable retry for this send message, off by default
                     this.SetRetry(true);
@@ -319,9 +319,8 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                // Set the operation timeout to accepted timeout plus one second
-                // Should not return an operation timeout since we wait less than it
-                this.deviceClient.OperationTimeoutInMilliseconds = (uint)(timeout.TotalMilliseconds + 1000);
+                // ReceiveAsync only respects OperationTimeoutInMilliseconds
+                this.deviceClient.OperationTimeoutInMilliseconds = 60_000;
 
                 this.SetRetry(true);
 
@@ -355,7 +354,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 30000;
+                this.deviceClient.OperationTimeoutInMilliseconds = 60_000;
 
                 this.SetRetry(true);
 
@@ -383,7 +382,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 30000;
+                this.deviceClient.OperationTimeoutInMilliseconds = 60_000;
 
                 this.SetRetry(true);
 
@@ -411,7 +410,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                this.deviceClient.OperationTimeoutInMilliseconds = 30000;
+                this.deviceClient.OperationTimeoutInMilliseconds = 60_000;
 
                 this.SetRetry(true);
 
