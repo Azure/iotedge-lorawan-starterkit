@@ -179,9 +179,8 @@ namespace LoraKeysManagerFacade
                                                     DevAddr = devAddr,
                                                     DevEUI = twin.DeviceId,
                                                     PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey,
-                                                    GatewayId = twin.Properties.Desired.Contains("GatewayId") ?
-                                                        twin.Properties.Desired["GatewayId"] as string :
-                                                        string.Empty,
+                                                    GatewayId = twin.GetGatewayID(),
+                                                    NwkSKey = twin.GetNwkSKey(),
                                                     LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
                                                 };
                                                 results.Add(iotHubDeviceInfo);
@@ -254,10 +253,9 @@ namespace LoraKeysManagerFacade
                         {
                             joinInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
                             var twin = await this.registryManager.GetTwinAsync(devEUI);
-                            const string GatewayIdProperty = "GatewayID";
-                            if (twin.Properties.Desired.Contains(GatewayIdProperty))
+                            if (twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID))
                             {
-                                joinInfo.DesiredGateway = twin.Properties.Desired[GatewayIdProperty].Value as string;
+                                joinInfo.DesiredGateway = twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_GatewayID].Value as string;
                             }
                         }
 

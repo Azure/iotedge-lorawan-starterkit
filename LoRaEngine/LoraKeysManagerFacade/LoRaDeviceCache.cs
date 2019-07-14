@@ -26,12 +26,12 @@ namespace LoraKeysManagerFacade
         {
             if (string.IsNullOrEmpty(devEUI))
             {
-                throw new ArgumentNullException("devEUI");
+                throw new ArgumentNullException(nameof(devEUI));
             }
 
             if (string.IsNullOrEmpty(gatewayId))
             {
-                throw new ArgumentNullException("gatewayId");
+                throw new ArgumentNullException(nameof(gatewayId));
             }
 
             this.cacheStore = cacheStore;

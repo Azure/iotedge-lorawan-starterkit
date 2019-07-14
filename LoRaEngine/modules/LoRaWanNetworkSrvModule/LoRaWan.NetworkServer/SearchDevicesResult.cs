@@ -11,12 +11,12 @@ namespace LoRaWan.NetworkServer
     public class SearchDevicesResult
     {
         /// <summary>
-        /// List of devices that match the criteria
+        /// Gets list of devices that match the criteria
         /// </summary>
         public IReadOnlyList<IoTHubDeviceInfo> Devices { get; }
 
         /// <summary>
-        /// Indicates dev nonce already used
+        /// Gets or sets a value indicating whether the dev nonce was already used
         /// </summary>
         public bool IsDevNonceAlreadyUsed { get; set; }
 
