@@ -25,9 +25,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>	      
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>	
     </None>
-    <None Include="extensions.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <!-- StyleCop Setup -->
   <ItemGroup>

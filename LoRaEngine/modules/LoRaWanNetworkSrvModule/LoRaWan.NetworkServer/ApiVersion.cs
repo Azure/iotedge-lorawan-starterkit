@@ -25,7 +25,7 @@ namespace LoRaWan.Shared
         /// Gets the latest version released.
         /// Update this once a new API version is released
         /// </summary>
-        public static ApiVersion LatestVersion => Version_2019_07_05;
+        public static ApiVersion LatestVersion => Version_2019_07_16;
 
         /// <summary>
         /// Gets the Version from 0.1 and 0.2 had not versioning information
@@ -85,6 +85,14 @@ namespace LoRaWan.Shared
         public static ApiVersion Version_2019_07_05 { get; }
 
         /// <summary>
+        /// Gets 2019_07_16 version
+        /// Fix iothub query error
+        /// Adds nwkSKey to response
+        /// not backward compatible (fixes to iothub bug)
+        /// </summary>
+        public static ApiVersion Version_2019_07_16 { get; }
+
+        /// <summary>
         /// Gets the version that is assumed in case none is specified
         /// </summary>
         public static ApiVersion DefaultVersion => Version_0_2_Or_Earlier;
@@ -103,6 +111,7 @@ namespace LoRaWan.Shared
             yield return Version_2019_04_02;
             yield return Version_2019_04_15_Preview;
             yield return Version_2019_07_05;
+            yield return Version_2019_07_16;
         }
 
         /// <summary>
@@ -155,6 +164,9 @@ namespace LoRaWan.Shared
 
             Version_2019_07_05 = new ApiVersion("2019-07-05");
             Version_2019_07_05.MinCompatibleVersion = Version_2019_04_15_Preview;
+
+            Version_2019_07_16 = new ApiVersion("2019-07-16");
+            Version_2019_07_16.MinCompatibleVersion = Version_2019_07_16;
         }
 
         /// <summary>

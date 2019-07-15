@@ -75,6 +75,8 @@ namespace LoRaWan.NetworkServer.Test
                 deviceInfo.DevEUI,
                 this.connectionManager);
 
+            loRaDevice.GatewayID = deviceInfo.GatewayId;
+
             this.connectionManager.Register(loRaDevice, deviceClientToAssign);
 
             loRaDevice.SetRequestHandler(this.requestHandler ?? new DefaultLoRaDataRequestHandler(this.configuration, this.frameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), this.deduplicationFactory, this.adrStrategyProvider, this.adrManagerFactory, this.functionBundlerProvider));

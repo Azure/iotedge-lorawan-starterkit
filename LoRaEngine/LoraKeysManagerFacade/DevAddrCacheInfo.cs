@@ -13,15 +13,18 @@ namespace LoraKeysManagerFacade
 
         public DateTime LastUpdatedTwins { get; set; }
 
+        public string NwkSKey { get; set; }
+
         public int CompareTo(object obj)
         {
             if (obj is DevAddrCacheInfo)
             {
                 var oldElement = (DevAddrCacheInfo)obj;
                 if (this.GatewayId == oldElement.GatewayId
-                                && this.DevAddr == oldElement.DevAddr
-                                && this.DevEUI == oldElement.DevEUI
-                                && this.LastUpdatedTwins == oldElement.LastUpdatedTwins)
+                    && this.NwkSKey == oldElement.NwkSKey
+                    && this.DevAddr == oldElement.DevAddr
+                    && this.DevEUI == oldElement.DevEUI
+                    && this.LastUpdatedTwins == oldElement.LastUpdatedTwins)
                 {
                     return 0;
                 }

@@ -23,14 +23,19 @@ namespace LoRaWan.NetworkServer
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
         {
-            var loraDeviceClient = this.CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey);
-
             var loRaDevice = new LoRaDevice(
                 deviceInfo.DevAddr,
                 deviceInfo.DevEUI,
                 this.connectionManager);
 
-            this.connectionManager.Register(loRaDevice, loraDeviceClient);
+            loRaDevice.GatewayID = deviceInfo.GatewayId;
+            loRaDevice.NwkSKey = deviceInfo.NwkSKey;
+
+            var isOurDevice = string.IsNullOrEmpty(deviceInfo.GatewayId) || string.Equals(deviceInfo.GatewayId, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
+            if (isOurDevice)
+            {
+                this.connectionManager.Register(loRaDevice, this.CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey));
+            }
 
             loRaDevice.SetRequestHandler(this.dataRequestHandler);
 
