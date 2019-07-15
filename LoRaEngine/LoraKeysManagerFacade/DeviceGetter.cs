@@ -253,9 +253,10 @@ namespace LoraKeysManagerFacade
                         {
                             joinInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
                             var twin = await this.registryManager.GetTwinAsync(devEUI);
-                            if (twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID))
+                            var deviceGatewayId = twin.GetGatewayID();
+                            if (!string.IsNullOrEmpty(deviceGatewayId))
                             {
-                                joinInfo.DesiredGateway = twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_GatewayID].Value as string;
+                                joinInfo.DesiredGateway = deviceGatewayId;
                             }
                         }
 
