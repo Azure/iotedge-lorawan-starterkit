@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer
     using System.Text;
     using System.Threading.Tasks;
     using System.Web;
+    using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
@@ -187,6 +188,19 @@ namespace LoRaWan.NetworkServer
             }
 
             return new DecodedPayloadValue(payloadText);
+        }
+
+        /// <summary>
+        /// Value Hex decoding, from <see cref="byte[]"/> to <see cref="DecodePayloadResult"/>
+        /// </summary>
+        /// <param name="devEUI">Device identifier</param>
+        /// <param name="payload">The payload to decode</param>
+        /// <param name="fport">The received frame port</param>
+        /// <returns>The decoded value as a JSON string</returns>
+        public static object DecoderHexSensor(string devEUI, byte[] payload, uint fport)
+        {
+            var payloadHex = ((payload?.Length ?? 0) == 0) ? string.Empty : ConversionHelper.ByteArrayToString(payload);
+            return new DecodedPayloadValue(payloadHex);
         }
     }
 }
