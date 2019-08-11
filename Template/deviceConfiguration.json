@@ -46,7 +46,7 @@
 					"LoRaWanNetworkSrvModule": {
 						"type": "docker",
 						"settings": {
-							"image": "loraedge/lorawannetworksrvmodule:1.0.1",
+							"image": "loraedge/lorawannetworksrvmodule:1.0.2",
 							"createOptions": "{\"ExposedPorts\": { \"1680/udp\": {}}, \"HostConfig\": {  \"PortBindings\": {\"1680/udp\": [  { \"HostPort\": \"1680\", \"HostIp\":\"172.17.0.1\" } ]}}}"
 						},
 						"version": "1.0",
@@ -64,7 +64,7 @@
 					"LoRaWanPktFwdModule": {
 						"type": "docker",
 						"settings": {
-							"image": "loraedge/lorawanpktfwdmodule:1.0.1",
+							"image": "loraedge/lorawanpktfwdmodule:1.0.2",
 							"createOptions": "  {\"HostConfig\": {\"NetworkMode\": \"host\", \"Privileged\": true },  \"NetworkingConfig\": {\"EndpointsConfig\": {\"host\": {} }}}"
 						},
 						"env": {
