@@ -1,5 +1,20 @@
 # Upgrade LoRaWAN to a new version
 
+## Release 1.0.2
+
+We recommend re-deploying your solution based on the 1.0.2 release if you have been working with a solution before version 1.0.2. To update from 1.0.1 you can follow the below instructions. If you want to update manually from a version prior to 1.0.1, please refer to [Updating existing installations from 1.0.0 to release 1.0.1](##Updating-existing-installations-from-1.0.0-to-release-1.0.1) section below.
+
+## Updating existing installations from 1.0.1 to release 1.0.2
+
+Go to your solution's Azure IoT Hub and under IoT Edge, select each of your gateways. Select `Set Modules` and configure the two deployment modules `LoRaWanNetworkSrvModule` and `LoRaWanPktFwdModule`. Make sure, the following image URIs are configured:
+
+|Deployment Module|Image URI|
+|-|-|
+|LoRaWanNetworkSrvModule|loraedge/lorawannetworksrvmodule:1.0.2|
+|LoRaWanPktFwdModule|loraedge/lorawanpktfwdmodule:1.0.2|
+
+On the same `Set Modules` page, also update your current edge version to 1.0.7 by pressing the `Configure Advanced Edge Runtime settings` button. On the menu, ensure the edge hub and edge agent are using version 1.0.7 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.0.7 and mcr.microsoft.com/azureiotedge-agent:1.0.7.
+
 ## Release 1.0.1
 
 We recommend re-deploying your solution based on the 1.0.1 release if you have been working with a pre-release version. If you prefer to update your existing installation, the following lists describes the required steps.
@@ -8,7 +23,7 @@ We recommend re-deploying your solution based on the 1.0.1 release if you have b
 
 ### Updating your gateways' IoT Edge module versions
 
-Go to your solution's Azure IoT Hub and under IoT Edge, select eacu of your gateways. Select `Set Modules` and configure the two deployment modules `LoRaWanNetworkSrvModule` and `LoRaWanPktFwdModule`. Make sure, the following image URIs are configured:
+Go to your solution's Azure IoT Hub and under IoT Edge, select each of your gateways. Select `Set Modules` and configure the two deployment modules `LoRaWanNetworkSrvModule` and `LoRaWanPktFwdModule`. Make sure, the following image URIs are configured:
 
 |Deployment Module|Image URI|
 |-|-|
