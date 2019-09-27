@@ -290,7 +290,7 @@ namespace LoRaWan.NetworkServer
 
             var frmPayload = cloudToDeviceMessage.GetPayload();
 
-            if (Logger.LoggerLevel >= LogLevel.Information)
+            if (Logger.LoggerLevel <= LogLevel.Information)
             {
                 Logger.Log(loRaDevice.DevEUI, $"cloud to device message: {ConversionHelper.ByteArrayToString(frmPayload)}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {cloudToDeviceMessage.Fport}, confirmed: {cloudToDeviceMessage.Confirmed}, cidType: {macCommandType}", LogLevel.Information);
                 Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Information);

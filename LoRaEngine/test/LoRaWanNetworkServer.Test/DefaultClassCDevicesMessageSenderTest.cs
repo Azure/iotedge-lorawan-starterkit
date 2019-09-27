@@ -304,5 +304,70 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
+
+        [Fact]
+        public async Task When_Has_Custom_RX2DR_Should_Send_Correctly()
+        {
+            const string devAddr = "023637F8";
+            const string appSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
+            const string nwkSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, deviceClassType: 'c', gatewayID: ServerGatewayID));
+            var devEUI = simDevice.DevEUI;
+            simDevice.SetupJoin(appSKey, nwkSKey, devAddr);
+
+            this.deviceApi.Setup(x => x.SearchByDevEUIAsync(devEUI))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+
+            var twin = simDevice.CreateOTAATwin(
+                desiredProperties: new Dictionary<string, object>
+                {
+                    { TwinProperty.RX2DataRate, "10" }
+                },
+                reportedProperties: new Dictionary<string, object>
+                {
+                    { TwinProperty.RX2DataRate, 10 },
+                    { TwinProperty.Region, LoRaRegionType.US915.ToString() },
+                    // OTAA device, already joined
+                    { TwinProperty.DevAddr, devAddr },
+                    { TwinProperty.AppSKey, appSKey },
+                    { TwinProperty.NwkSKey, nwkSKey }
+                });
+
+            this.deviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(twin);
+
+            var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
+            {
+                Payload = "hello",
+                DevEUI = devEUI,
+                Fport = 10,
+                MessageId = Guid.NewGuid().ToString(),
+            };
+
+            this.packetForwarder.Setup(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkPktFwdMessage>()))
+                .Returns(Task.CompletedTask)
+                .Callback<DownlinkPktFwdMessage>(d =>
+                {
+                    this.EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
+                    Assert.Equal("SF10BW500", d.Txpk.Datr);
+                    Assert.Equal(0L, d.Txpk.Tmst);
+                    Assert.Equal(923.3, d.Txpk.Freq);
+                    Assert.True(d.Txpk.Imme);
+                });
+
+            var target = new DefaultClassCDevicesMessageSender(
+                this.serverConfiguration,
+                this.loRaDeviceRegistry,
+                this.packetForwarder.Object,
+                this.frameCounterStrategyProvider);
+
+            Assert.True(await target.SendAsync(c2dToDeviceMessage));
+
+            this.packetForwarder.Verify(x => x.SendDownstreamAsync(It.IsNotNull<DownlinkPktFwdMessage>()), Times.Once());
+
+            this.packetForwarder.VerifyAll();
+            this.deviceApi.VerifyAll();
+            this.deviceClient.VerifyAll();
+        }
     }
 }

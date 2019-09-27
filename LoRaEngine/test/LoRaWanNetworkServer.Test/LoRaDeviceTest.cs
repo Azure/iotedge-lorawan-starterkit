@@ -744,5 +744,54 @@ namespace LoRaWan.NetworkServer.Test
             deviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
             deviceClient.Verify(x => x.Disconnect(), Times.Exactly(2));
         }
+
+        [Fact]
+        public async Task When_Initialized_With_Class_C_And_Custom_RX2DR_Should_Have_Correct_Properties()
+        {
+            const string appSKey = "ABCD2000000000000000000000000009ABC02000000000000000000000000009";
+            const string nwkSKey = "ABC02000000000000000000000000009ABC02000000000000000000000000009";
+
+            var twin = TestUtils.CreateTwin(
+                desired: new Dictionary<string, object>
+                {
+                    { "AppEUI", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "ClassType", "C" },
+                    { "GatewayID", "mygateway" },
+                    { "SensorDecoder", "http://mydecoder" },
+                    { "RX2DataRate", "10" },
+                    { "$version", 1 },
+                },
+                reported: new Dictionary<string, object>
+                {
+                    { "$version", 1 },
+                    { "NwkSKey", nwkSKey },
+                    { "AppSKey", appSKey },
+                    { "DevAddr", "0000AABB" },
+                    { "FCntDown", 9 },
+                    { "FCntUp", 100 },
+                    { "DevEUI", "ABC0200000000009" },
+                    { "NetId", "010000" },
+                    { "DevNonce", "C872" },
+                    { "RX2DataRate", 10 },
+                    { "Region", "US915" },
+                });
+
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(twin);
+
+            var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", new SingleDeviceConnectionManager(this.loRaDeviceClient.Object));
+            await loRaDevice.InitializeAsync();
+            Assert.Equal(LoRaDeviceClassType.C, loRaDevice.ClassType);
+            Assert.Equal("mygateway", loRaDevice.GatewayID);
+            Assert.Equal(9u, loRaDevice.FCntDown);
+            Assert.Equal(100u, loRaDevice.FCntUp);
+            Assert.Equal(10, loRaDevice.ReportedRX2DataRate);
+            Assert.Equal(10, loRaDevice.DesiredRX2DataRate);
+            Assert.Equal(appSKey, loRaDevice.AppSKey);
+            Assert.Equal(nwkSKey, loRaDevice.NwkSKey);
+            Assert.Equal(LoRaRegionType.US915, loRaDevice.LoRaRegion);
+            Assert.False(loRaDevice.IsABP);
+        }
     }
 }

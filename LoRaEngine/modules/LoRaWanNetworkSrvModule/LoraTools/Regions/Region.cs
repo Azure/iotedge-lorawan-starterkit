@@ -190,10 +190,12 @@ namespace LoRaTools.Regions
                 if (this.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2Dr))
                 {
                     datr = this.DRtoConfiguration[rx2Dr].configuration;
+                    Logger.Log(devEUI, $"using device rx2: {rx2Dr}, datr: {datr}, region: {this.LoRaRegion}", LogLevel.Debug);
                 }
                 else
                 {
                     datr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
+                    Logger.Log(devEUI, $"device rx2 ({rx2Dr}) is invalid, using default: {this.RX2DefaultReceiveWindows.dr}, datr: {datr}, region: {this.LoRaRegion}", LogLevel.Debug);
                 }
 
                 // Todo add optional frequencies via Mac Commands
