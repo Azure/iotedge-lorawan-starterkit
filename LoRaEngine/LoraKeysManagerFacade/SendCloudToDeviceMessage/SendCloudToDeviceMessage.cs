@@ -26,12 +26,6 @@ namespace LoraKeysManagerFacade
     /// </summary>
     public class SendCloudToDeviceMessage
     {
-        internal const string NetworkServerModuleId = "LoRaWanNetworkSrvModule";
-        internal const string CloudToDeviceMessageMethodName = "cloudtodevicemessage";
-        internal const string TwinProperty_ClassType = "ClassType";
-        internal const string TwinProperty_PreferredGatewayID = "PreferredGatewayID";
-        internal const string TwinProperty_DevAddr = "DevAddr";
-        internal const string TwinProperty_GatewayID = "GatewayID";
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly RegistryManager registryManager;
         private readonly IServiceClient serviceClient;
@@ -107,17 +101,17 @@ namespace LoraKeysManagerFacade
                 if (twin != null)
                 {
                     // the device must have a DevAddr
-                    if (twin.Properties?.Desired?.GetTwinPropertyStringSafe(TwinProperty_DevAddr).Length == 0 && twin.Properties?.Reported?.GetTwinPropertyStringSafe(TwinProperty_DevAddr).Length == 0)
+                    if (twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr).Length == 0 && twin.Properties?.Reported?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr).Length == 0)
                     {
                         return new BadRequestObjectResult("Device DevAddr is unknown. Ensure the device has been correctly setup as a LoRa device and that it has connected to network at least once.");
                     }
 
-                    if (string.Equals("c", twin.Properties?.Desired?.GetTwinPropertyStringSafe(TwinProperty_ClassType), StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals("c", twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_ClassType), StringComparison.InvariantCultureIgnoreCase))
                     {
-                        var gatewayID = twin.Properties?.Reported?.GetTwinPropertyStringSafe(TwinProperty_PreferredGatewayID);
+                        var gatewayID = twin.Properties?.Reported?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_PreferredGatewayID);
                         if (string.IsNullOrEmpty(gatewayID))
                         {
-                            gatewayID = twin.Properties?.Desired?.GetTwinPropertyStringSafe(TwinProperty_GatewayID);
+                            gatewayID = twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_GatewayID);
                         }
 
                         if (!string.IsNullOrEmpty(gatewayID))
@@ -172,10 +166,10 @@ namespace LoraKeysManagerFacade
         {
             try
             {
-                var method = new CloudToDeviceMethod(CloudToDeviceMessageMethodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
+                var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceMessageMethodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
                 method.SetPayloadJson(JsonConvert.SerializeObject(c2dMessage));
 
-                var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, NetworkServerModuleId, method);
+                var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
                 if (IsSuccessStatusCode(res.Status))
                 {
                     this.log.LogInformation("Direct method call to {gatewayID} and {devEUI} succeeded with {statusCode}", preferredGatewayID, devEUI, res.Status);

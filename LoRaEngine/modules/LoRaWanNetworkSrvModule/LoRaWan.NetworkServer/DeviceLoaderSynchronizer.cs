@@ -204,22 +204,31 @@ namespace LoRaWan.NetworkServer
             foreach (var request in this.queuedRequests)
             {
                 var requestHandled = false;
+                var hasDeviceFromAnotherGateway = false;
                 if (devices.Count > 0)
                 {
                     foreach (var device in devices)
                     {
-                        if (device.ValidateMic(request.Payload))
+                        if (device.IsOurDevice)
                         {
-                            this.AddToDeviceQueue(device, request);
-                            requestHandled = true;
-                            break;
+                            if (device.ValidateMic(request.Payload))
+                            {
+                                this.AddToDeviceQueue(device, request);
+                                requestHandled = true;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            hasDeviceFromAnotherGateway = true;
                         }
                     }
                 }
 
                 if (!requestHandled)
                 {
-                    var failedReason = hasDevicesMatchingDevAddr ? LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck : LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr;
+                    var failedReason = hasDeviceFromAnotherGateway ? LoRaDeviceRequestFailedReason.BelongsToAnotherGateway :
+                        (hasDevicesMatchingDevAddr ? LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck : LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr);
                     this.LogRequestFailed(request, failedReason);
                     request.NotifyFailed(failedReason);
                 }
@@ -246,17 +255,26 @@ namespace LoRaWan.NetworkServer
 
             if (!requestAddedToQueue)
             {
+                var hasDeviceFromAnotherGateway = false;
                 foreach (var device in this.existingDevices.Values)
                 {
-                    if (device.ValidateMic(request.Payload))
+                    if (device.IsOurDevice)
                     {
-                        this.AddToDeviceQueue(device, request);
-                        return;
+                        if (device.ValidateMic(request.Payload))
+                        {
+                            this.AddToDeviceQueue(device, request);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        hasDeviceFromAnotherGateway = true;
                     }
                 }
 
                 // not handled, raised failed event
                 var failedReason =
+                    hasDeviceFromAnotherGateway ? LoRaDeviceRequestFailedReason.BelongsToAnotherGateway :
                     this.loadingDevicesFailed ? LoRaDeviceRequestFailedReason.ApplicationError :
                     this.existingDevices.Count > 0 ? LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck : LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr;
 
@@ -304,6 +322,10 @@ namespace LoRaWan.NetworkServer
                 case LoRaDeviceRequestFailedReason.ApplicationError:
                     Logger.Log(deviceId, "problem resolving device", LogLevel.Error);
                     break;
+
+                case LoRaDeviceRequestFailedReason.BelongsToAnotherGateway:
+                    Logger.Log(deviceId, "device is not our device, ignore message", LogLevel.Debug);
+                    break;
             }
         }
 
@@ -311,19 +333,32 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
+                // Our device if it does not have a gateway assigned or is assigned to our
+                var isOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
+                // Only create client if the device is our
+                if (!isOurDevice)
+                {
+                    loRaDevice.IsOurDevice = false;
+                    return loRaDevice;
+                }
+
                 // Calling initialize async here to avoid making async calls in the concurrent dictionary
                 // Since only one device will be added, we guarantee that initialization only happens once
                 if (await loRaDevice.InitializeAsync())
                 {
+                    // revalidate based on device twin property
                     loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
-
-                    // once added, call initializers
-                    if (this.initializers != null)
+                    if (loRaDevice.IsOurDevice)
                     {
-                        foreach (var initializer in this.initializers)
-                            initializer.Initialize(loRaDevice);
+                        // once added, call initializers
+                        if (this.initializers != null)
+                        {
+                            foreach (var initializer in this.initializers)
+                                initializer.Initialize(loRaDevice);
+                        }
                     }
 
+                    // checking again in case one of the initializers change the value
                     if (!loRaDevice.IsOurDevice)
                     {
                         // Initialization does not use activity counters

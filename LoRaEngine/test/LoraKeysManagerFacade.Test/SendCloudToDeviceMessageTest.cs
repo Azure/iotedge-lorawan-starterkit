@@ -93,7 +93,7 @@ namespace LoraKeysManagerFacade.Test
                 Payload = "hello",
             };
 
-            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", SendCloudToDeviceMessage.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
+            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
                 .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) =>
                 {
                     var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson());
@@ -124,7 +124,7 @@ namespace LoraKeysManagerFacade.Test
             var preferredGateway = new LoRaDevicePreferredGateway("gateway1", 100);
             LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEUI, preferredGateway);
 
-            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", SendCloudToDeviceMessage.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
+            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
                 .ReturnsAsync(new CloudToDeviceMethodResult() { Status = (int)HttpStatusCode.BadRequest });
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
@@ -148,7 +148,7 @@ namespace LoraKeysManagerFacade.Test
             var preferredGateway = new LoRaDevicePreferredGateway("gateway1", 100);
             LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEUI, preferredGateway);
 
-            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", SendCloudToDeviceMessage.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
+            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
                 .ThrowsAsync(new TimeoutException());
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
@@ -274,7 +274,7 @@ namespace LoraKeysManagerFacade.Test
                 Payload = "hello",
             };
 
-            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", SendCloudToDeviceMessage.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
+            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
                 .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) =>
                 {
                     var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson());
@@ -329,7 +329,7 @@ namespace LoraKeysManagerFacade.Test
                 Payload = "hello",
             };
 
-            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("mygateway", SendCloudToDeviceMessage.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
+            this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("mygateway", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
                 .Callback<string, string, CloudToDeviceMethod>((device, methodName, method) =>
                 {
                     var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(method.GetPayloadAsJson());

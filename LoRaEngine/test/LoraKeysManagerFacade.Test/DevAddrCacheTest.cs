@@ -80,7 +80,7 @@ namespace LoraKeysManagerFacade.Test
                         deviceTwin.DeviceId = devaddrItem.DevEUI;
                         deviceTwin.Properties = new TwinProperties()
                         {
-                            Desired = new TwinCollection($"{{\"DevAddr\": \"{devaddrItem.DevAddr}\", \"GatewayId\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins}\"}}"),
+                            Desired = new TwinCollection($"{{\"{LoraKeysManagerFacadeConstants.TwinProperty_DevAddr}\": \"{devaddrItem.DevAddr}\", \"{LoraKeysManagerFacadeConstants.TwinProperty_GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
                         };
 
                         twins.Add(deviceTwin);
@@ -107,7 +107,7 @@ namespace LoraKeysManagerFacade.Test
                 });
 
             mockRegistryManager
-                .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM c where properties.desired.$metadata.$lastUpdated >="))))
+                .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >="))))
                 .Returns((string query) =>
                 {
                     currentDevAddrContext = currentDevices.Take(numberOfDeviceDeltaUpdates).ToList();
@@ -166,7 +166,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.Single(queryResult);
             var resultObject = JsonConvert.DeserializeObject<DevAddrCacheInfo>(queryResult[0].Value);
             Assert.Equal(managerInput[0].DevAddr, resultObject.DevAddr);
-            Assert.Equal(managerInput[0].GatewayId, resultObject.GatewayId);
+            Assert.Equal(managerInput[0].GatewayId ?? string.Empty, resultObject.GatewayId);
             Assert.Equal(managerInput[0].DevEUI, resultObject.DevEUI);
 
             registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>(), It.IsAny<int>()), Times.Once);
@@ -216,7 +216,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.Single(queryResult);
             var resultObject = JsonConvert.DeserializeObject<DevAddrCacheInfo>(queryResult[0].Value);
             Assert.Equal(managerInput[0].DevAddr, resultObject.DevAddr);
-            Assert.Equal(managerInput[0].GatewayId, resultObject.GatewayId);
+            Assert.Equal(managerInput[0].GatewayId ?? string.Empty, resultObject.GatewayId);
             Assert.Equal(managerInput[0].DevEUI, resultObject.DevEUI);
 
             registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>(), It.IsAny<int>()), Times.Once);

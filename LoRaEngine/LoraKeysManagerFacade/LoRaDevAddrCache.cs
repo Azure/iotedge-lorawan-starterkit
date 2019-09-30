@@ -5,10 +5,10 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
-    using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Newtonsoft.Json;
@@ -182,8 +182,8 @@ namespace LoraKeysManagerFacade
         private async Task PerformDeltaReload(RegistryManager registryManager)
         {
             // if the value is null (first call), we take five minutes before this call
-            var lastUpdate = this.cacheStore.StringGet(LastDeltaUpdateKeyValue) ?? DateTime.UtcNow.AddMinutes(-5).ToString();
-            var query = $"SELECT * FROM c where properties.desired.$metadata.$lastUpdated >= '{lastUpdate}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{lastUpdate}'";
+            var lastUpdate = this.cacheStore.StringGet(LastDeltaUpdateKeyValue) ?? DateTime.UtcNow.AddMinutes(-5).ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
+            var query = $"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{lastUpdate}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{lastUpdate}'";
             var devAddrCacheInfos = await this.GetDeviceTwinsFromIotHub(registryManager, query);
             this.BulkSaveDevAddrCache(devAddrCacheInfos, false);
         }
@@ -191,7 +191,7 @@ namespace LoraKeysManagerFacade
         private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(RegistryManager registryManager, string inputQuery)
         {
             var query = registryManager.CreateQuery(inputQuery);
-            this.cacheStore.StringSet(LastDeltaUpdateKeyValue, DateTime.UtcNow.ToString(), TimeSpan.FromDays(1));
+            this.cacheStore.StringSet(LastDeltaUpdateKeyValue, DateTime.UtcNow.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
             var devAddrCacheInfos = new List<DevAddrCacheInfo>();
             while (query.HasMoreResults)
             {
@@ -202,13 +202,13 @@ namespace LoraKeysManagerFacade
                     if (twin.DeviceId != null)
                     {
                         string currentDevAddr;
-                        if (twin.Properties.Desired.Contains("DevAddr"))
+                        if (twin.Properties.Desired.Contains(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr))
                         {
-                            currentDevAddr = twin.Properties.Desired["DevAddr"].Value as string;
+                            currentDevAddr = twin.Properties.Desired[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value as string;
                         }
-                        else if (twin.Properties.Reported.Contains("DevAddr"))
+                        else if (twin.Properties.Reported.Contains(LoraKeysManagerFacadeConstants.TwinProperty_DevAddr))
                         {
-                            currentDevAddr = twin.Properties.Reported["DevAddr"].Value as string;
+                            currentDevAddr = twin.Properties.Reported[LoraKeysManagerFacadeConstants.TwinProperty_DevAddr].Value as string;
                         }
                         else
                         {
@@ -219,7 +219,8 @@ namespace LoraKeysManagerFacade
                         {
                             DevAddr = currentDevAddr,
                             DevEUI = twin.DeviceId,
-                            GatewayId = twin.Properties.Desired.Contains("GatewayId") ? twin.Properties.Desired["GatewayId"].Value as string : string.Empty,
+                            GatewayId = twin.GetGatewayID(),
+                            NwkSKey = twin.GetNwkSKey(),
                             LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
                         });
                     }

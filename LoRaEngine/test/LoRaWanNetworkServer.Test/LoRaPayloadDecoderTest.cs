@@ -83,6 +83,26 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Fact]
+        public async Task When_Payload_Is_Null_DecoderHexSensor_Should_Return_Empty()
+        {
+            var target = new LoRaPayloadDecoder();
+
+            var result = await target.DecodeMessageAsync("12", null, 1, "DecoderHexSensor");
+            var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
+            Assert.Equal("{\"value\":\"\"}", json);
+        }
+
+        [Fact]
+        public async Task When_Payload_Is_Empty_DecoderHexSensor_Should_Return_Empty()
+        {
+            var target = new LoRaPayloadDecoder();
+
+            var result = await target.DecodeMessageAsync("12", new byte[0], 1, "DecoderHexSensor");
+            var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
+            Assert.Equal("{\"value\":\"\"}", json);
+        }
+
+        [Fact]
         public async Task When_Payload_Is_Null_ExternalDecoder_Should_Be_Called_With_Empty_Payload()
         {
             var devEUI = "12";
@@ -146,6 +166,28 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData("decodervaluesensor", "$1", "$1", 2)]
         [InlineData("decodervaluesensor", "100'000", "100'000", 2)]
         public async Task When_Decoder_Is_DecoderValueSensor_Return_In_Value(string decoder, string payloadString, object expectedValue, byte fport)
+        {
+            var payload = Encoding.UTF8.GetBytes(payloadString);
+
+            var target = new LoRaPayloadDecoder();
+            var actual = await target.DecodeMessageAsync("12", payload, fport, decoder);
+            Assert.IsType<DecodedPayloadValue>(actual.Value);
+            var decodedPayloadValue = (DecodedPayloadValue)actual.Value;
+            Assert.Equal(expectedValue, decodedPayloadValue.Value);
+        }
+
+        [Theory]
+        [InlineData("DecoderHexSensor", "1234", "31323334", 1)]
+        [InlineData("DecoderHexSensor", "1234", "31323334", 2)]
+        [InlineData("DECODERHEXSENSOR", "1234", "31323334", 1)]
+        [InlineData("decoderhexsensor", "1234", "31323334", 2)]
+        [InlineData("DECODERHEXSENSOR", "12.34", "31322E3334", 1)]
+        [InlineData("decoderhexsensor", "-12.34", "2D31322E3334", 2)]
+        [InlineData("decoderhexsensor", "hello world", "68656C6C6F20776F726C64", 2)]
+        [InlineData("decoderhexsensor", " 1 ", "203120", 2)]
+        [InlineData("decoderhexsensor", "$1", "2431", 2)]
+        [InlineData("decoderhexsensor", "100'000", "31303027303030", 2)]
+        public async Task When_Decoder_Is_DecoderHexSensor_Return_In_Value(string decoder, string payloadString, object expectedValue, byte fport)
         {
             var payload = Encoding.UTF8.GetBytes(payloadString);
 
