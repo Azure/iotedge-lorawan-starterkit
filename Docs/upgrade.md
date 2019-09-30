@@ -15,6 +15,16 @@ Go to your solution's Azure IoT Hub and under IoT Edge, select each of your gate
 
 On the same `Set Modules` page, also update your current edge version to 1.0.7 by pressing the `Configure Advanced Edge Runtime settings` button. On the menu, ensure the edge hub and edge agent are using version 1.0.7 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.0.7 and mcr.microsoft.com/azureiotedge-agent:1.0.7.
 
+### Updating the Azure Function Facade
+
+If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+
+If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an `App Setting` in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:
+
+```
+https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.2/function-1.0.2.zip
+```
+
 ## Release 1.0.1
 
 We recommend re-deploying your solution based on the 1.0.1 release if you have been working with a pre-release version. If you prefer to update your existing installation, the following lists describes the required steps.
