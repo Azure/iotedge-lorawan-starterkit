@@ -222,7 +222,7 @@ jobs:
     name: LoRa
     demands: Agent.OSArchitecture -equals x64 
   variables:      
-    INTEGRATIONTEST_LeafDeviceSerialPort: "/dev/ttyAMA0"
+    INTEGRATIONTEST_LeafDeviceSerialPort: "/dev/ttyACM0"
     INTEGRATIONTEST_IoTHubEventHubConsumerGroup: "reserved_integrationtest" 
     INTEGRATIONTEST_LeafDeviceGatewayID: $(IoTEdgeDeviceARMPrimary)
     INTEGRATIONTEST_DevicePrefix: '01'
