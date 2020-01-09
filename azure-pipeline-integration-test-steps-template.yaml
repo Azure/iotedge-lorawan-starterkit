@@ -1,6 +1,5 @@
 # File: azure-pipeline-integration-test-steps-template.yaml
 parameters:
-  platform: ''  
   testsToRun: 
   - OTAAJoinTest
   - ABPTest
