@@ -56,7 +56,7 @@ namespace LoRaTools.Regions
                 region = EU868;
                 return true;
             }// US902-928
-            else if (rxpk.Freq <= 928 && rxpk.Freq >= 902)
+            else if (rxpk.Freq <= 915 && rxpk.Freq >= 902)
             {
                 region = US915;
                 return true;

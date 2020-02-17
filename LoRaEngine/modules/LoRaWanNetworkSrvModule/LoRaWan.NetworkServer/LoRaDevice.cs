@@ -142,11 +142,11 @@ namespace LoRaWan.NetworkServer
         private readonly object processingSyncLock = new object();
         private readonly Queue<LoRaRequest> queuedRequests = new Queue<LoRaRequest>();
 
-        public ushort DesiredRX2DataRate { get; set; }
+        public ushort? DesiredRX2DataRate { get; set; }
 
         public ushort DesiredRX1DROffset { get; set; }
 
-        public ushort ReportedRX2DataRate { get; set; }
+        public ushort? ReportedRX2DataRate { get; set; }
 
         public ushort ReportedRX1DROffset { get; set; }
 

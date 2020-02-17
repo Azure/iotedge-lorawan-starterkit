@@ -156,20 +156,20 @@ namespace LoRaWanTest
         {
             string jsonUplink =
                 @"{ ""rxpk"":[
- 	            {
-		            ""time"":""2013-03-31T16:21:17.528002Z"",
- 		            ""tmst"":3512348611,
- 		            ""chan"":2,
- 		            ""rfch"":0,
- 		            ""freq"":" + freq + @",
- 		            ""stat"":1,
- 		            ""modu"":""LORA"",
- 		            ""datr"":""" + datr + @""",
- 		            ""codr"":""4/6"",
- 		            ""rssi"":-35,
- 		            ""lsnr"":5.1,
- 		            ""size"":32,
- 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
+                {
+                    ""time"":""2013-03-31T16:21:17.528002Z"",
+                    ""tmst"":3512348611,
+                    ""chan"":2,
+                    ""rfch"":0,
+                    ""freq"":" + freq + @",
+                    ""stat"":1,
+                    ""modu"":""LORA"",
+                    ""datr"":""" + datr + @""",
+                    ""codr"":""4/6"",
+                    ""rssi"":-35,
+                    ""lsnr"":5.1,
+                    ""size"":32,
+                    ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
                 }]}";
 
             var multiRxpkInput = Encoding.Default.GetBytes(jsonUplink);
@@ -236,6 +236,24 @@ namespace LoRaWanTest
         public void TestMaxPayloadLengthUS(string datr, uint maxPyldSize)
         {
             Assert.Equal(RegionManager.US915.GetMaxPayloadSize(datr), maxPyldSize);
+        }
+
+        [Theory]
+        [InlineData(LoRaRegionType.EU868, "", null, null, 869.525, "SF12BW125")] // Standard EU.
+        [InlineData(LoRaRegionType.EU868, "SF9BW125", null, null, 869.525, "SF9BW125")] // nwksrvDR is correctly applied if no device twins.
+        [InlineData(LoRaRegionType.EU868, "SF9BW125", 868.250, (ushort)6, 868.250, "SF7BW250")] // device twins are applied in priority.
+        [InlineData(LoRaRegionType.US915, "", null, null, 923.3, "SF12BW500")] // Standard US.
+        [InlineData(LoRaRegionType.US915, "SF9BW500", null, null, 923.3, "SF9BW500")] // Standard EU.
+        [InlineData(LoRaRegionType.US915, "SF9BW500", 920.0, (ushort)12, 920.0, "SF8BW500")] // Standard EU.
+
+        public void GetDownStreamRx2(LoRaRegionType loRaRegion, string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        {
+            var devEui = "testDevice";
+            RegionManager.TryTranslateToRegion(loRaRegion, out Region region);
+            var datr = region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins);
+            var freq = region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq);
+            Assert.Equal(expectedFreq, freq);
+            Assert.Equal(expectedDr, datr);
         }
     }
 }

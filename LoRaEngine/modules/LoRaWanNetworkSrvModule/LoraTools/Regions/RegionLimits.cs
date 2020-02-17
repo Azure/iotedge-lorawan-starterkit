@@ -34,8 +34,8 @@ namespace LoRaTools.Regions
 
         public bool IsCurrentDownstreamDRValueWithinAcceptableValue(string dr) => this.downstreamValidDR.Contains(dr);
 
-        public bool IsCurrentUpstreamDRIndexWithinAcceptableValue(uint dr) => (dr >= this.startUpstreamDRIndex) && dr < this.startUpstreamDRIndex + this.upstreamValidDR.Count;
+        public bool IsCurrentUpstreamDRIndexWithinAcceptableValue(ushort dr) => (dr >= this.startUpstreamDRIndex) && dr < this.startUpstreamDRIndex + this.upstreamValidDR.Count;
 
-        public bool IsCurrentDownstreamDRIndexWithinAcceptableValue(uint dr) => (dr >= this.startDownstreamDRIndex) && dr < this.startDownstreamDRIndex + this.downstreamValidDR.Count;
+        public bool IsCurrentDownstreamDRIndexWithinAcceptableValue(ushort? dr) => (dr >= this.startDownstreamDRIndex) && dr < this.startDownstreamDRIndex + this.downstreamValidDR.Count;
     }
 }
