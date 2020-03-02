@@ -21,6 +21,11 @@ namespace LoRaWan.Test.Shared
     /// </summary>
     public abstract partial class IntegrationTestFixtureBase : IDisposable, IAsyncLifetime
     {
+        /// <summary>
+        /// expiry time for c2d.
+        /// </summary>
+        private const int C2dExpiryTime = 5;
+
         public const string MESSAGE_IDENTIFIER_PROPERTY_NAME = "messageIdentifier";
 
         RegistryManager registryManager;
@@ -136,7 +141,7 @@ namespace LoRaWan.Test.Shared
         public async Task SendCloudToDeviceMessageAsync(string deviceId, LoRaCloudToDeviceMessage message)
         {
             var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)));
-            msg.ExpiryTimeUtc = DateTime.UtcNow.AddMinutes(c2dExpiryTime);
+            msg.ExpiryTimeUtc = DateTime.UtcNow.AddMinutes(C2dExpiryTime);
 
             if (!string.IsNullOrEmpty(message.MessageId))
             {
@@ -320,11 +325,6 @@ namespace LoRaWan.Test.Shared
         }
 
         private bool disposedValue = false; // To detect redundant calls
-
-        /// <summary>
-        /// expiry time for c2d.
-        /// </summary>
-        private const int c2dExpiryTime = 5;
 
         protected virtual void Dispose(bool disposing)
         {
