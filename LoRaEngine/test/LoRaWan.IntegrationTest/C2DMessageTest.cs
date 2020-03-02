@@ -212,7 +212,7 @@ namespace LoRaWan.IntegrationTest
             for (var i = 1; i <= warmUpMessageCount; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
-                this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{messagesToSend}");
+                this.Log($"{device.DeviceID}: Sending confirmed '{msg}' {i}/{messagesToSend}");
 
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
