@@ -38,7 +38,7 @@ variables:
   NET_SRV_LOGTO_HUB: false
   NET_SRV_IOTEDGE_TIMEOUT: 0
   NET_SRV_VERSION: "" # Network Server module version
-  NET_SRV_LOG_TO_UDP_ADDRESS: AzureDevOpsAgent # Hostname of container where AzureDevOpsAgent will be running for Udp logging sink
+  NET_SRV_LOG_TO_UDP_ADDRESS: 10.164.74.151 # Hostname of test runner
   PKT_FWD_VERSION: "" # Packet Forward module version
 
 # Enable PR validation on branches master and dev
@@ -209,40 +209,18 @@ jobs:
       DeploymentType: runFromZip
       TakeAppOfflineFlag: false
 
-- job: test_runner_amd_eu
-  displayName: Run tests in AMD device (EU)
-  dependsOn: 
-    - full_ci_deploy_amd
-    - full_ci_deploy_facade_function
-  condition: and(ne(variables['IoTEdgeDeviceAMD'], ''), or(succeeded(), eq(variables['RunTestsOnly'], 'true')))
-  timeoutInMinutes: 60
-  pool:    
-    name: Default
-    demands: Agent.OSArchitecture -equals x64 # Run on AMD test device
-  variables:      
-    INTEGRATIONTEST_LeafDeviceSerialPort: "/dev/ttyACM0"
-    INTEGRATIONTEST_IoTHubEventHubConsumerGroup: "reserved_integrationtest_amd" 
-    INTEGRATIONTEST_LeafDeviceGatewayID: $(IoTEdgeDeviceAMD)
-    INTEGRATIONTEST_FunctionAppBaseUrl: $(FACADE_SERVER_URL)
-    INTEGRATIONTEST_FunctionAppCode: $(FACADE_AUTH_CODE)
-    INTEGRATIONTEST_DevicePrefix: ''
-  steps:
-  - template: azure-pipeline-integration-test-steps-template.yaml
-    parameters:
-      platform: amd64
-
-# [Job] Runs the test in ARM device using VSTS Agent
-- job: test_runner_arm_eu
-  displayName: Run tests in ARM device (EU)
+# Runs integration tests in dedicated agent, while having modules deployed into PI (arm32v7)
+- job: test_runner_dedicated_agent
+  displayName: Run tests in dedicated agent
   dependsOn: 
     - full_ci_deploy_arm_primary
     - full_ci_deploy_arm_secondary
     - full_ci_deploy_facade_function
-  condition: and(ne(variables['IoTEdgeDeviceARMPrimary'], ''), or(succeeded(), eq(variables['RunTestsOnly'], 'true')))
-  timeoutInMinutes: 125 # Raspberry PI is slow, allow taking 125 minutes
+  condition: or(succeeded(), eq(variables['RunTestsOnly'], 'true'))
+  timeoutInMinutes: 125
   pool:    
-    name: Default
-    demands: Agent.OSArchitecture -equals ARM # Run on pi atm
+    name: LoRa
+    demands: Agent.OSArchitecture -equals x64 
   variables:      
     INTEGRATIONTEST_LeafDeviceSerialPort: "/dev/ttyACM0"
     INTEGRATIONTEST_IoTHubEventHubConsumerGroup: "reserved_integrationtest" 
@@ -250,8 +228,5 @@ jobs:
     INTEGRATIONTEST_DevicePrefix: '01'
     INTEGRATIONTEST_FunctionAppBaseUrl: $(FACADE_SERVER_URL)
     INTEGRATIONTEST_FunctionAppCode: $(FACADE_AUTH_CODE)
-  
   steps:
   - template: azure-pipeline-integration-test-steps-template.yaml
-    parameters:
-      platform: arm32v7

@@ -78,4 +78,4 @@ steps:
     scriptLocation: inlineScript
     inlineScript: |
       az extension add --name azure-cli-iot-ext     
-      until `az iot edge deployment show-metric --deployment-id $(IOT_DEPLOYMENT_ID) --metric-id reportedSuccessfulCount  --hub-name $(INTEGRATIONTEST_IOTHUB_NAME)|grep -q ${{ parameters.deviceID }}`; do sleep 10 && echo wait; done
+      until `az iot edge deployment show-metric --deployment-id $(IOT_DEPLOYMENT_ID) --metric-id reportedSuccessfulCount --metric-type system --hub-name $(INTEGRATIONTEST_IOTHUB_NAME) | grep -q ${{ parameters.deviceID }}`; do sleep 10 && echo wait; done

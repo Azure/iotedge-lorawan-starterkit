@@ -212,7 +212,7 @@ namespace LoRaWan.IntegrationTest
             for (var i = 1; i <= warmUpMessageCount; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();
-                this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{messagesToSend}");
+                this.Log($"{device.DeviceID}: Sending confirmed '{msg}' {i}/{messagesToSend}");
 
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
@@ -243,7 +243,7 @@ namespace LoRaWan.IntegrationTest
             var c2dLogMessage = $"{device.DeviceID}: cloud to device message: {this.ToHexString(c2dMessageBody)}";
             this.Log($"Expected C2D received network server log is: {c2dLogMessage}");
 
-            // Sends 8x confirmed messages, stopping if C2D message is found
+            // Sends 8x confirmed messages
             for (var i = warmUpMessageCount + 1; i <= messagesToSend; ++i)
             {
                 var msg = PayloadGenerator.Next().ToString();

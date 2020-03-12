@@ -16,8 +16,16 @@ namespace LoRaWan.Test.Shared
     using Newtonsoft.Json.Linq;
     using Xunit;
 
+    /// <summary>
+    /// Integration test class.
+    /// </summary>
     public abstract partial class IntegrationTestFixtureBase : IDisposable, IAsyncLifetime
     {
+        /// <summary>
+        /// expiry time for c2d.
+        /// </summary>
+        private const int C2dExpiryTime = 5;
+
         public const string MESSAGE_IDENTIFIER_PROPERTY_NAME = "messageIdentifier";
 
         RegistryManager registryManager;
@@ -133,6 +141,7 @@ namespace LoRaWan.Test.Shared
         public async Task SendCloudToDeviceMessageAsync(string deviceId, LoRaCloudToDeviceMessage message)
         {
             var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)));
+            msg.ExpiryTimeUtc = DateTime.UtcNow.AddMinutes(C2dExpiryTime);
 
             if (!string.IsNullOrEmpty(message.MessageId))
             {
