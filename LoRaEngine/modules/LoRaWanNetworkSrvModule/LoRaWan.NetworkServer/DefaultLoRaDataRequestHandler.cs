@@ -338,8 +338,7 @@ namespace LoRaWan.NetworkServer
                                     if (!fcntDown.HasValue || fcntDown <= 0)
                                     {
                                         // We did not get a valid frame count down, therefore we should not process the message
-                                        _ = cloudToDeviceMessage.AbandonAsync();
-
+                                        // Not calling 'cloudToDeviceMessage.AbandonAsync()' as this created race condition in C2D Message between both
                                         cloudToDeviceMessage = null;
                                     }
                                     else
