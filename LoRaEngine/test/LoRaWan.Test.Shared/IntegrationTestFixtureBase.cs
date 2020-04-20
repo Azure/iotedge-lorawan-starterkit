@@ -151,7 +151,34 @@ namespace LoRaWan.Test.Shared
             await this.SendCloudToDeviceMessageAsync(deviceId, msg);
         }
 
-        public Task SendCloudToDeviceMessageAsync(string deviceId, string messageText, Dictionary<string, string> messageProperties = null) => this.SendCloudToDeviceMessageAsync(deviceId, null, messageText, messageProperties);
+        public async Task CleanupC2DDeviceQueueAsync(string deviceId)
+        {
+            try
+            {
+                using (var client = Microsoft.Azure.Devices.Client.DeviceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString + $";DeviceId={deviceId}", Microsoft.Azure.Devices.Client.TransportType.Amqp))
+                {
+                    Microsoft.Azure.Devices.Client.Message msg = null;
+                    Console.WriteLine($"Cleaning up messages for device {deviceId}");
+                    do
+                    {
+                        msg = await client.ReceiveAsync(TimeSpan.FromSeconds(10));
+                        if (msg != null)
+                        {
+                            Console.WriteLine($"Found message to cleanup for device {deviceId}");
+                            await client.CompleteAsync(msg);
+                        }
+                    }
+                    while (msg != null);
+                }
+
+                Console.WriteLine($"Finished cleaning up messages for device {deviceId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Problem while cleaning up messages for device {deviceId}");
+                Console.WriteLine(ex.ToString());
+            }
+        }
 
         public async Task SendCloudToDeviceMessageAsync(string deviceId, string messageId, string messageText, Dictionary<string, string> messageProperties = null)
         {
