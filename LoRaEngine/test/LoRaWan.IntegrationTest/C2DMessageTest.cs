@@ -35,7 +35,7 @@ namespace LoRaWan.IntegrationTest
         /// <summary>
         /// Ensures that a cloud to device message has not been seen more than expected
         /// </summary>
-        /// <param name="foundCount">foundcount.</param>
+        /// <param name="foundCount">The number of found items</param>
         private void EnsureNotSeenTooManyTimes(int foundCount)
         {
             Assert.True(foundCount <= CloudToDeviceMessageReceiveCountThreshold, $"Cloud to device message was processed {foundCount} times");
