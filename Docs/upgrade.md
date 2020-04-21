@@ -2,7 +2,7 @@
 
 ## Release 1.0.3
 
-We recommend re-deploying your solution based on the 1.0.3 release if you have been working with a solution before version 1.0.2. To update from 1.0.1 or 1.0.2 you can follow the below instructions. If you want to update manually from a version prior to 1.0.1, please refer to [Updating existing installations from 1.0.0 to release 1.0.1](##Updating-existing-installations-from-1.0.0-to-release-1.0.1) section below.
+To update from 1.0.1 or 1.0.2 you can follow the below instructions. If you want to update manually from a version prior to 1.0.1, please refer to [Updating existing installations from 1.0.0 to release 1.0.1](##Updating-existing-installations-from-1.0.0-to-release-1.0.1) section below.
 
 ### Updating existing installations from 1.0.1 or 1.0.2 to release 1.0.3
 
