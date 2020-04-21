@@ -57,7 +57,7 @@ If you are using the the RAK833-USB, you'll need to adjust the template to use t
 
 This is an optional configuration that should only be executed if your concentrator needs to use a proxy server to communicate with Azure.
 
-Follow [this guide](./LoRaEngine#use-a-proxy-server-to-connect-your-concentrator-to-azure) to:
+Follow [this guide](./devguide.md#use-a-proxy-server-to-connect-your-concentrator-to-azure) to:
 
 1. Configure the Docker daemon and the IoT Edge daemon on your device to use a proxy server.
 2. Configure the `edgeAgent` properties in the `config.yaml` file on your device.
