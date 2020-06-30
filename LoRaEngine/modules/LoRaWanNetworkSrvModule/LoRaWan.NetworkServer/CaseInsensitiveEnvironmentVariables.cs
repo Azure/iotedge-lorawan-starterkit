@@ -49,7 +49,7 @@ namespace LoRaWan.NetworkServer
             return value;
         }
 
-        public double GetEnvVar(string key, double defaultValue)
+        public double? GetEnvVar(string key, double? defaultValue)
         {
             var value = defaultValue;
             if (this.envVars.TryGetValue(key, out var envValue))

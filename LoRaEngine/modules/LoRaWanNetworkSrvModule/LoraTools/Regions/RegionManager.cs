@@ -55,7 +55,7 @@ namespace LoRaTools.Regions
             {
                 region = EU868;
                 return true;
-            }// US902-928
+            }// US902-928 frequency band, upstream messages are between 902 and 915.
             else if (rxpk.Freq <= 915 && rxpk.Freq >= 902)
             {
                 region = US915;

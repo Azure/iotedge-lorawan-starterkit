@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer.Test
             };
 
             var target = new CaseInsensitiveEnvironmentVariables(variables);
-            var actual = target.GetEnvVar("NOT_EXISTS", null);
+            var actual = target.GetEnvVar("NOT_EXISTS", (string)null);
             Assert.Null(actual);
         }
 

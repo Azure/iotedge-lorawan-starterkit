@@ -129,11 +129,7 @@ namespace LoRaWan.NetworkServer
             config.GatewayID = envVars.GetEnvVar("IOTEDGE_DEVICEID", string.Empty);
             config.HttpsProxy = envVars.GetEnvVar("HTTPS_PROXY", string.Empty);
             config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", string.Empty);
-            if (config.Rx2Frequency.HasValue)
-            {
-                config.Rx2Frequency = envVars.GetEnvVar("RX2_FREQ", config.Rx2Frequency.Value);
-            }
-
+            config.Rx2Frequency = envVars.GetEnvVar("RX2_FREQ", (double?)null);
             config.IoTEdgeTimeout = envVars.GetEnvVar("IOTEDGE_TIMEOUT", config.IoTEdgeTimeout);
             config.FacadeServerUrl = envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty);
             config.FacadeAuthCode = envVars.GetEnvVar("FACADE_AUTH_CODE", string.Empty);

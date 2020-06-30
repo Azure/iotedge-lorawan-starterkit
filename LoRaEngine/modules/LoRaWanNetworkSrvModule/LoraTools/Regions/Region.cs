@@ -198,28 +198,24 @@ namespace LoRaTools.Regions
                 }
                 else
                 {
-                    var datr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
-                    Logger.Log(devEUI, $"device twins rx2 ({rx2DrFromTwins.Value}) is invalid, using default: {this.RX2DefaultReceiveWindows.dr}, datr: {datr}", LogLevel.Debug);
-                    return datr;
+                    Logger.Log(devEUI, $"device twins rx2 ({rx2DrFromTwins.Value}) is invalid", LogLevel.Error);
                 }
             }
             else
             {
                 // Otherwise we check if we have some properties set on the server (server Specific)
-                if (string.IsNullOrEmpty(nwkSrvRx2Dr))
-                {
-                    // If not we use the region default.
-                    var datr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
-                    Logger.Log(devEUI, $"using standard region RX2 datarate {datr}", LogLevel.Debug);
-                    return datr;
-                }
-                else
+                if (!string.IsNullOrEmpty(nwkSrvRx2Dr))
                 {
                     var datr = nwkSrvRx2Dr;
                     Logger.Log(devEUI, $"using custom gateway RX2 datarate {datr}", LogLevel.Debug);
                     return datr;
                 }
             }
+
+            // if no settings was set we use region default.
+            var defaultDatr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
+            Logger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
+            return defaultDatr;
         }
 
         /// <summary>
