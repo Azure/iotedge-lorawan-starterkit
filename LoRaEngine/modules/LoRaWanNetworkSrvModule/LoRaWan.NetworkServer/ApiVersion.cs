@@ -25,7 +25,7 @@ namespace LoRaWan.Shared
         /// Gets the latest version released.
         /// Update this once a new API version is released.
         /// </summary>
-        public static ApiVersion LatestVersion => Version_2019_07_16;
+        public static ApiVersion LatestVersion => Version_2020_08_11;
 
         /// <summary>
         /// Gets the Version from 0.1 and 0.2 had not versioning information.
@@ -91,6 +91,13 @@ namespace LoRaWan.Shared
         /// not backward compatible (fixes to iothub bug).
         /// </summary>
         public static ApiVersion Version_2019_07_16 { get; }
+
+        /// <summary>
+        /// Gets 2020_08_11 version
+        /// Upgrade dotnet versions
+        /// backward compatible.
+        /// </summary>
+        public static ApiVersion Version_2020_08_11 { get; }
 
         /// <summary>
         /// Gets the version that is assumed in case none is specified.
