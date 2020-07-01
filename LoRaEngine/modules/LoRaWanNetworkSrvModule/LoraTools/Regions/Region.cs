@@ -216,7 +216,7 @@ namespace LoRaTools.Regions
             var defaultDatr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
             Logger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
             return defaultDatr;
-        }
+            }
 
         /// <summary>
         /// Implement correct logic to get the downstream data rate based on the region.
@@ -229,11 +229,11 @@ namespace LoRaTools.Regions
                 // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
                 if (rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1))
                 {
-                    // in case of EU, you respond on same frequency as you sent data.
                     return this.DRtoConfiguration[(ushort)this.RX1DROffsetTable[this.GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].configuration;
                 }
                 else
                 {
+                    Logger.Log($"rx1 Dr Offset was not set to a valid value {rx1DrOffset}, defaulting to {upstreamChannel.Datr} datarate", LogLevel.Error);
                     return upstreamChannel.Datr;
                 }
             }
