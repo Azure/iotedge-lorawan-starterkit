@@ -26,7 +26,7 @@ namespace LoRaTools.Regions
         /// max application payload size N should be N= M-8 bytes.
         /// This is in case of absence of Fopts field.
         /// </summary>
-        public Dictionary<uint, (string configuration, uint maxPyldSize)> DRtoConfiguration { get; set; } = new Dictionary<uint, (string, uint)>();
+        public Dictionary<ushort, (string configuration, uint maxPyldSize)> DRtoConfiguration { get; set; } = new Dictionary<ushort, (string, uint)>();
 
         /// <summary>
         /// Gets or sets by default MaxEIRP is considered to be +16dBm.
@@ -44,7 +44,7 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Gets or sets default parameters for the RX2 receive Windows, This windows use a fix frequency and Data rate.
         /// </summary>
-        public (double frequency, uint dr) RX2DefaultReceiveWindows { get; set; }
+        public (double frequency, ushort dr) RX2DefaultReceiveWindows { get; set; }
 
         /// <summary>
         /// Gets or sets default first receive windows. [sec]
@@ -99,7 +99,7 @@ namespace LoRaTools.Regions
         /// </summary>
         public int MaxADRDataRate { get; set; }
 
-        public Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, uint datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
+        public Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
         {
             this.LoRaRegion = regionEnum;
             this.Ack_timeout = ack_timeout;
@@ -157,53 +157,66 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Method to calculate the RX2 DataRate and frequency.
-        /// Those parameters can be set in the device twins, Server Twins, or it could be a regional feature.
+        /// Get the downstream RX2 frequency.
         /// </summary>
-        public (double freq, string datr) GetDownstreamRX2DRAndFreq(string devEUI, string nwkSrvRx2Dr, double nwkSrvRx2Freq, int? rx2DrFromTwins)
+        /// <param name="devEUI">the device id.</param>
+        /// <param name="nwkSrvRx2Freq">the value of the rx2freq env var on the nwk srv.</param>
+        /// <returns>rx2 freq.</returns>
+        public double GetDownstreamRX2Freq(string devEUI, double? nwkSrvRx2Freq)
         {
-            double freq = 0;
-            string datr;
-
-            // If the rx2 property is in twins, it is device specific and take precedence
-            if (rx2DrFromTwins == null)
+            // resolve frequency to gateway if setted to region's default
+            if (nwkSrvRx2Freq.HasValue)
             {
-                // Otherwise we check if we have some properties set on the server (server Specific)
-                if (string.IsNullOrEmpty(nwkSrvRx2Dr))
+                Logger.Log(devEUI, $"using custom gateway RX2 frequency {nwkSrvRx2Freq}", LogLevel.Debug);
+                return nwkSrvRx2Freq.Value;
+            }
+            else
+            {
+                // default frequency
+                Logger.Log(devEUI, $"using standard region RX2 frequency {this.RX2DefaultReceiveWindows.frequency}", LogLevel.Debug);
+                return this.RX2DefaultReceiveWindows.frequency;
+            }
+        }
+
+        /// <summary>
+        /// Get downstream RX2 datarate
+        /// </summary>
+        /// <param name="devEUI">the device id.</param>
+        /// <param name="nwkSrvRx2Dr">the network server rx2 datarate.</param>
+        /// <param name="rx2DrFromTwins">rx2 datarate value from twins.</param>
+        /// <returns>the rx2 datarate.</returns>
+        public string GetDownstreamRX2Datarate(string devEUI, string nwkSrvRx2Dr, ushort? rx2DrFromTwins)
+        {
+            // If the rx2 datarate property is in twins, we take it from there
+            if (rx2DrFromTwins.HasValue)
+            {
+                if (this.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
                 {
-                    // If not we use the region default.
-                    Logger.Log(devEUI, $"using standard second receive windows for join request", LogLevel.Debug);
-                    // using EU fix DR for RX2
-                    freq = this.RX2DefaultReceiveWindows.frequency;
-                    datr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
+                    var datr = this.DRtoConfiguration[rx2DrFromTwins.Value].configuration;
+                    Logger.Log(devEUI, $"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}", LogLevel.Debug);
+                    return datr;
                 }
                 else
                 {
-                    Logger.Log(devEUI, $"using custom second receive windows for join request", LogLevel.Debug);
-                    freq = nwkSrvRx2Freq;
-                    datr = nwkSrvRx2Dr;
+                    Logger.Log(devEUI, $"device twins rx2 ({rx2DrFromTwins.Value}) is invalid", LogLevel.Error);
                 }
             }
             else
             {
-                uint rx2Dr = (uint)rx2DrFromTwins;
-                if (this.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2Dr))
+                // Otherwise we check if we have some properties set on the server (server Specific)
+                if (!string.IsNullOrEmpty(nwkSrvRx2Dr))
                 {
-                    datr = this.DRtoConfiguration[rx2Dr].configuration;
-                    Logger.Log(devEUI, $"using device rx2: {rx2Dr}, datr: {datr}, region: {this.LoRaRegion}", LogLevel.Debug);
+                    var datr = nwkSrvRx2Dr;
+                    Logger.Log(devEUI, $"using custom gateway RX2 datarate {datr}", LogLevel.Debug);
+                    return datr;
                 }
-                else
-                {
-                    datr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
-                    Logger.Log(devEUI, $"device rx2 ({rx2Dr}) is invalid, using default: {this.RX2DefaultReceiveWindows.dr}, datr: {datr}, region: {this.LoRaRegion}", LogLevel.Debug);
-                }
-
-                // Todo add optional frequencies via Mac Commands
-                freq = this.RX2DefaultReceiveWindows.frequency;
             }
 
-            return (freq, datr);
-        }
+            // if no settings was set we use region default.
+            var defaultDatr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
+            Logger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
+            return defaultDatr;
+            }
 
         /// <summary>
         /// Implement correct logic to get the downstream data rate based on the region.
@@ -216,11 +229,11 @@ namespace LoRaTools.Regions
                 // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
                 if (rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1))
                 {
-                    // in case of EU, you respond on same frequency as you sent data.
-                    return this.DRtoConfiguration[(uint)this.RX1DROffsetTable[this.GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].configuration;
+                    return this.DRtoConfiguration[(ushort)this.RX1DROffsetTable[this.GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].configuration;
                 }
                 else
                 {
+                    Logger.Log($"rx1 Dr Offset was not set to a valid value {rx1DrOffset}, defaulting to {upstreamChannel.Datr} datarate", LogLevel.Error);
                     return upstreamChannel.Datr;
                 }
             }

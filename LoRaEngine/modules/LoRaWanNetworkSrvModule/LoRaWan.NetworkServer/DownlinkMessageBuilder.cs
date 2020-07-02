@@ -78,7 +78,8 @@ namespace LoRaWan.NetworkServer
             if (receiveWindow == Constants.RECEIVE_WINDOW_2)
             {
                 tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow2Delay(loRaDevice), loRaDevice.ReportedRXDelay);
-                (freq, datr) = loRaRegion.GetDownstreamRX2DRAndFreq(loRaDevice.DevEUI, configuration.Rx2DataRate, configuration.Rx2DataFrequency, loRaDevice.ReportedRX2DataRate);
+                freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency);
+                datr = loRaRegion.GetDownstreamRX2Datarate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate);
             }
             else
             {
@@ -255,7 +256,8 @@ namespace LoRaWan.NetworkServer
             var tmst = 0; // immediate mode
 
             // Class C always use RX2
-            (freq, datr) = loRaRegion.GetDownstreamRX2DRAndFreq(loRaDevice.DevEUI, configuration.Rx2DataRate, configuration.Rx2DataFrequency, loRaDevice.ReportedRX2DataRate);
+            freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency);
+            datr = loRaRegion.GetDownstreamRX2Datarate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate);
 
             // get max. payload size based on data rate from LoRaRegion
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);

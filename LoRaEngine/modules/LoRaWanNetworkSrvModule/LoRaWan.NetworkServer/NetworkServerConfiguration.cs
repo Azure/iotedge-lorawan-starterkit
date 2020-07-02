@@ -11,63 +11,97 @@ namespace LoRaWan.NetworkServer
     // Network server configuration
     public class NetworkServerConfiguration
     {
-        // Gets/sets if the server is running as an IoT Edge module
+        /// <summary>
+        /// Gets or sets a value indicating whether the server is running as an IoT Edge module.
+        /// </summary>
         public bool RunningAsIoTEdgeModule { get; set; }
 
-        // Gets/sets the iot hub host name
+        /// <summary>
+        /// Gets or sets the iot hub host name.
+        /// </summary>
         public string IoTHubHostName { get; set; }
 
-        // Gets/sets the gateway host name
+        /// <summary>
+        /// Gets or sets the gateway host name.
+        /// </summary>
         public string GatewayHostName { get; set; }
 
-        // Gets/sets if the gateway (edgeHub) is enabled
+        /// <summary>
+        /// Gets or sets a value indicating whether the gateway (edgeHub) is enabled.
+        /// </summary>
         public bool EnableGateway { get; set; } = true;
 
-        // Gets/sets the gateway identifier
+        /// <summary>
+        /// Gets or sets the gateway identifier.
+        /// </summary>
         public string GatewayID { get; set; }
 
-        // Gets/sets the Http proxy URL
+        /// <summary>
+        /// Gets or sets the HTTP proxy url.
+        /// </summary>
         public string HttpsProxy { get; set; }
 
-        // Gets/sets the 2nd receive windows data rate
-        // TODO: better documentation and property name
+        /// <summary>
+        /// Gets or sets the 2nd receive windows datarate.
+        /// </summary>
         public string Rx2DataRate { get; set; }
 
-        // Gets/sets the 2nd receive windows data frequency
-        public double Rx2DataFrequency { get; set; }
+        /// <summary>
+        /// Gets or sets the 2nd receive windows data frequency.
+        /// </summary>
+        public double? Rx2Frequency { get; set; }
 
-        // Gets/sets a IoT edge timeout, 0 keeps the default value
+        /// <summary>
+        /// Gets or sets the IoT Edge timeout, 0 keeps default value,
+        /// </summary>
         public uint IoTEdgeTimeout { get; set; }
 
-        // Gets/sets the Azure Facade Function URL
+        /// <summary>
+        /// Gets or sets the Azure Facade function URL.
+        /// </summary>
         public string FacadeServerUrl { get; set; }
 
-        // Gets/sets the Azure Facade Function auth code
+        /// <summary>
+        /// Gets or sets the Azure Facade Function auth code.
+        /// </summary>
         public string FacadeAuthCode { get; set; }
 
-        // Gets/sets if logging to console is enabled
-        // Default: true
+        /// <summary>
+        /// Gets or sets a value indicating whether logging to console is enabled
+        /// </summary>
         public bool LogToConsole { get; set; } = true;
 
-        // Gets/sets the logging level
-        // Default: 4 (Log Errors)
+        /// <summary>
+        /// Gets or sets  the logging level.
+        /// Default: 4 (Log level: Error)
+        /// </summary>
         public string LogLevel { get; set; } = "4";
 
-        // Gets/sets if logging to IoT Hub is enabled
-        // Default: false
+        /// <summary>
+        /// Gets or sets a value indicating whether logging to IoT Hub is enabled.
+        /// Default is false.
+        /// </summary>
         public bool LogToHub { get; set; }
 
-        // Gets/sets if logging to udp is enabled (used for integration tests mainly)
-        // Default: false
+        /// <summary>
+        /// Gets or sets a value indicating whether logging to udp is enabled (used for integration tests mainly).
+        /// Default is false.
+        /// </summary>
         public bool LogToUdp { get; set; }
 
-        // Gets/sets udp address to send log
+        /// <summary>
+        /// Gets or sets udp address to send log to.
+        /// </summary>
         public string LogToUdpAddress { get; set; }
 
-        // Gets/sets udp port to send logs
+        /// <summary>
+        /// Gets or sets udp port to send logs to.
+        /// </summary>
         public int LogToUdpPort { get; set; } = 6000;
 
-        // Gets/sets gateway NetId
+        /// <summary>
+        /// Gets or sets the gateway netword id.
+        /// </summary>
         public uint NetId { get; set; } = 1;
 
         /// <summary>
@@ -95,7 +129,7 @@ namespace LoRaWan.NetworkServer
             config.GatewayID = envVars.GetEnvVar("IOTEDGE_DEVICEID", string.Empty);
             config.HttpsProxy = envVars.GetEnvVar("HTTPS_PROXY", string.Empty);
             config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", string.Empty);
-            config.Rx2DataFrequency = envVars.GetEnvVar("RX2_FREQ", config.Rx2DataFrequency);
+            config.Rx2Frequency = envVars.GetEnvVar("RX2_FREQ");
             config.IoTEdgeTimeout = envVars.GetEnvVar("IOTEDGE_TIMEOUT", config.IoTEdgeTimeout);
             config.FacadeServerUrl = envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty);
             config.FacadeAuthCode = envVars.GetEnvVar("FACADE_AUTH_CODE", string.Empty);
