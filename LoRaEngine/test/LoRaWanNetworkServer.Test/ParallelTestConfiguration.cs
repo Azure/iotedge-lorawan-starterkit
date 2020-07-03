@@ -4,7 +4,7 @@
 namespace LoRaWan.NetworkServer.Test
 {
     /// <summary>
-    /// Call durations, all in ms
+    /// Call durations, all in ms.
     /// </summary>
     public class ParallelTestConfiguration
     {

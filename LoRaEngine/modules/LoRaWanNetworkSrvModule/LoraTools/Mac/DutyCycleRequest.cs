@@ -8,7 +8,7 @@ namespace LoRaTools
     using Newtonsoft.Json;
 
     /// <summary>
-    ///  DutyCycleReq Downstream
+    ///  DutyCycleReq Downstream.
     /// </summary>
     public class DutyCycleRequest : MacCommand
     {

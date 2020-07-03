@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Runtime.Serialization;
 
     /// <summary>
-    /// Defines a error loading a LoRaDevice
+    /// Defines a error loading a LoRaDevice.
     /// </summary>
     [Serializable]
     public class InvalidLoRaDeviceException : Exception

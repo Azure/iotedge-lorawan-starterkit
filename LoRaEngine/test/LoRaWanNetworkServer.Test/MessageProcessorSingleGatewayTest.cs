@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer.Test
     using Xunit;
 
     /// <summary>
-    /// Single gateway message processor tests
+    /// Single gateway message processor tests.
     /// </summary>
     public class MessageProcessorSingleGatewayTest : MessageProcessorTestBase
     {

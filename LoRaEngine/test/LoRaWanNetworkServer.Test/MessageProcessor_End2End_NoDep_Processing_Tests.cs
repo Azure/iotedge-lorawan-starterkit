@@ -665,7 +665,7 @@ namespace LoRaWan.NetworkServer.Test
 
         /// <summary>
         /// This tests the multi gateway scenario where a 2nd gateway cannot find the joined device because IoT Hub twin has not yet been updated
-        /// It device api will not find it, only once the device registry finds it the message will be sent to IoT Hub
+        /// It device api will not find it, only once the device registry finds it the message will be sent to IoT Hub.
         /// </summary>
         [Fact]
         public async Task When_Second_Gateway_Does_Not_Find_Device_Should_Keep_Trying_On_Subsequent_Requests()
@@ -766,7 +766,7 @@ namespace LoRaWan.NetworkServer.Test
 
         /// <summary>
         /// Downlink should use same rfch than uplink message
-        /// RFCH stands for Concentrator "RF chain" used for RX
+        /// RFCH stands for Concentrator "RF chain" used for RX.
         /// </summary>
         [Theory]
         [InlineData(ServerGatewayID, 1)]
@@ -884,7 +884,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         /// <summary>
-        /// Verifies that if the update twin takes too long that no join accepts are sent
+        /// Verifies that if the update twin takes too long that no join accepts are sent.
         /// </summary>
         [Theory]
         [InlineData(ServerGatewayID)]
@@ -970,7 +970,7 @@ namespace LoRaWan.NetworkServer.Test
 
         /// <summary>
         /// Tests that a ABP device (already in cached or not), receives 1st message with invalid mic, 2nd with valid
-        /// should send message 2 to iot hub
+        /// should send message 2 to iot hub.
         /// </summary>
         [Theory]
         [InlineData(false)]
@@ -1053,7 +1053,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         /// <summary>
-        /// Tests that a ABP device without AppSKey should not send message to IoT Hub
+        /// Tests that a ABP device without AppSKey should not send message to IoT Hub.
         /// </summary>
         [Theory]
         [InlineData(TwinProperty.AppSKey)]

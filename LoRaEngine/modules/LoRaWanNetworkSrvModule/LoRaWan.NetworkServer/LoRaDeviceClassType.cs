@@ -4,7 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     /// <summary>
-    /// Defines the types of LoRa device class
+    /// Defines the types of LoRa device class.
     /// </summary>
     public enum LoRaDeviceClassType
     {

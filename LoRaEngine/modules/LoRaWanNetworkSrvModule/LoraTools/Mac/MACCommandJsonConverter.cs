@@ -8,7 +8,7 @@ namespace LoRaTools
     using Newtonsoft.Json.Linq;
 
     /// <summary>
-    /// Defines a <see cref="JsonConverter"/> capable of converting a JSON list of elements to concrete <see cref="MacCommand"/> objects
+    /// Defines a <see cref="JsonConverter"/> capable of converting a JSON list of elements to concrete <see cref="MacCommand"/> objects.
     /// </summary>
     public class MacCommandJsonConverter : JsonConverter
     {

@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer
 
     /// <summary>
     /// <see cref="LoRaDevice"/> change tracker
-    /// Tracks and persists changes to the device including: frame counters, regions, preferred gateways
+    /// Tracks and persists changes to the device including: frame counters, regions, preferred gateways.
     /// </summary>
     internal sealed class LoRaDeviceChangeTracker : IDisposable
     {

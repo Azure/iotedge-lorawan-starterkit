@@ -7,7 +7,7 @@ namespace LoRaTools.CommonAPI
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Defines the contract for a LoRa cloud to device message
+    /// Defines the contract for a LoRa cloud to device message.
     /// </summary>
     public class LoRaCloudToDeviceMessage : ILoRaCloudToDeviceMessage
     {
@@ -19,14 +19,14 @@ namespace LoRaTools.CommonAPI
 
         /// <summary>
         /// Gets or sets payload as base64 string
-        /// Use this to send bytes
+        /// Use this to send bytes.
         /// </summary>
         [JsonProperty("rawPayload", NullValueHandling = NullValueHandling.Ignore)]
         public string RawPayload { get; set; }
 
         /// <summary>
         /// Gets or sets payload as string
-        /// Use this to send text
+        /// Use this to send text.
         /// </summary>
         [JsonProperty("payload", NullValueHandling = NullValueHandling.Ignore)]
         public string Payload { get; set; }
@@ -41,15 +41,15 @@ namespace LoRaTools.CommonAPI
         public IList<MacCommand> MacCommands { get; set; }
 
         /// <summary>
-        /// Gets if the cloud to device message has any payload data (mac commands don't count)
+        /// Gets if the cloud to device message has any payload data (mac commands don't count).
         /// </summary>
         protected bool HasPayload() => !string.IsNullOrEmpty(this.Payload) || !string.IsNullOrEmpty(this.RawPayload);
 
         /// <summary>
-        /// Identifies if the message is a valid LoRa downstream message
+        /// Identifies if the message is a valid LoRa downstream message.
         /// </summary>
-        /// <param name="errorMessage">Returns the error message in case it fails</param>
-        /// <returns>True if the message is valid, false otherwise</returns>
+        /// <param name="errorMessage">Returns the error message in case it fails.</param>
+        /// <returns>True if the message is valid, false otherwise.</returns>
         public virtual bool IsValid(out string errorMessage)
         {
             // ensure fport follows LoRa specification

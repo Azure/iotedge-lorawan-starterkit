@@ -31,7 +31,7 @@ namespace LoRaTools.LoRaPhysical
         /// This method is used in case of a request to a upstream message.
         /// </summary>
         /// <param name="LoraMessage">the serialized LoRa Message.</param>
-        /// <returns>UplinkPktFwdMessage object ready to be sent</returns>
+        /// <returns>UplinkPktFwdMessage object ready to be sent.</returns>
         public UplinkPktFwdMessage(byte[] loRaData, string datr, double freq, uint tmst = 0, float lsnr = 0)
         {
             // This is a new ctor, must be validated by MIK

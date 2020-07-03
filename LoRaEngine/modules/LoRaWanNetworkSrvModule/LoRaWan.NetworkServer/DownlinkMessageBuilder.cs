@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Helper class to create <see cref="DownlinkPktFwdMessage"/>
+    /// Helper class to create <see cref="DownlinkPktFwdMessage"/>.
     /// </summary>
     internal static class DownlinkMessageBuilder
     {
@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
         private static readonly object RndLock = new object();
 
         /// <summary>
-        /// Creates downlink message with ack for confirmation or cloud to device message
+        /// Creates downlink message with ack for confirmation or cloud to device message.
         /// </summary>
         internal static DownlinkMessageBuilderResponse CreateDownlinkMessage(
             NetworkServerConfiguration configuration,

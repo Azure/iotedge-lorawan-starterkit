@@ -7,12 +7,12 @@ namespace LoRaWan.NetworkServer
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Defines the result of a decoder
+    /// Defines the result of a decoder.
     /// </summary>
     public class DecodePayloadResult
     {
         /// <summary>
-        /// Gets or sets the decoded value that will be sent to IoT Hub
+        /// Gets or sets the decoded value that will be sent to IoT Hub.
         /// </summary>
         [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)]
         public object Value { get; set; }
@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Gets or sets a message to be sent to the device (optional)
-        /// Assigning a value to <see cref="ILoRaCloudToDeviceMessage.DevEUI"/> will send the message to a class C device
+        /// Assigning a value to <see cref="ILoRaCloudToDeviceMessage.DevEUI"/> will send the message to a class C device.
         /// </summary>
         [JsonProperty(Constants.CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME, NullValueHandling = NullValueHandling.Ignore)]
         public ReceivedLoRaCloudToDeviceMessage CloudToDeviceMessage { get; set; }

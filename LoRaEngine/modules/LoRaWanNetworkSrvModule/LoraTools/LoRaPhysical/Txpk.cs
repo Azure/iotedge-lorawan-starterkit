@@ -44,10 +44,10 @@ namespace LoRaTools.LoRaPhysical
         public bool Ipol { get; set; }
 
         /// <summary>
-        /// This method is used as part of Simulated device for testing purposes
+        /// This method is used as part of Simulated device for testing purposes.
         /// </summary>
-        /// <param name="inputMessage">The Input Message bytes</param>
-        /// <param name="appKey">The appKey</param>
+        /// <param name="inputMessage">The Input Message bytes.</param>
+        /// <param name="appKey">The appKey.</param>
         public static Txpk CreateTxpk(byte[] inputMessage, string appKey)
         {
             PhysicalPayload physicalPayload = new PhysicalPayload(inputMessage, true);

@@ -9,7 +9,7 @@ namespace LoRaTools
     using Microsoft.Extensions.Logging;
 
     /// <summary>
-    /// The Physical Payload wrapper
+    /// The Physical Payload wrapper.
     /// </summary>
     public class PhysicalPayload
     {
@@ -17,7 +17,7 @@ namespace LoRaTools
         private const int PHYSICAL_IDENTIFIER_INDEX = 3;
 
         /// <summary>
-        /// Get the type of a physical payload
+        /// Get the type of a physical payload.
         /// </summary>
         public static PhysicalIdentifier GetIdentifierFromPayload(byte[] packet)
         {

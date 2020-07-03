@@ -13,21 +13,21 @@ namespace LoRaWan.Shared
 
     /// <summary>
     /// <see cref="HttpClientHandler"/> for service facade function API calls.
-    /// Adds api-version to request query string and validates response according with <see cref="MinFunctionVersion"/>
+    /// Adds api-version to request query string and validates response according with <see cref="MinFunctionVersion"/>.
     /// </summary>
     public class ServiceFacadeHttpClientHandler : HttpClientHandler
     {
         private readonly ApiVersion minFunctionVersion;
 
         /// <summary>
-        /// Expected Function version
+        /// Expected Function version.
         /// </summary>
         public ApiVersion MinFunctionVersion => this.minFunctionVersion;
 
         private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> next;
 
         /// <summary>
-        /// Constructor
+        /// Constructor.
         /// </summary>
         /// <param name="minFunctionVersion"></param>
         public ServiceFacadeHttpClientHandler(ApiVersion minFunctionVersion)
@@ -36,7 +36,7 @@ namespace LoRaWan.Shared
         }
 
         /// <summary>
-        /// Constructor for unit testing, letting us change the call chain, without calling base
+        /// Constructor for unit testing, letting us change the call chain, without calling base.
         /// </summary>
         /// <param name="minFunctionVersion"></param>
         /// <param name="next"></param>
@@ -47,7 +47,7 @@ namespace LoRaWan.Shared
         }
 
         /// <summary>
-        /// Handlers http request pipeline
+        /// Handlers http request pipeline.
         /// </summary>
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
@@ -78,7 +78,7 @@ namespace LoRaWan.Shared
         }
 
         /// <summary>
-        /// Get function version from "api-version"  response header
+        /// Get function version from "api-version"  response header.
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>

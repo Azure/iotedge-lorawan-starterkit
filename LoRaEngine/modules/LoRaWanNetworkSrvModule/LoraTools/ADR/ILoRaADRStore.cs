@@ -6,7 +6,7 @@ namespace LoRaTools.ADR
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Interface to implement to store ADR tables
+    /// Interface to implement to store ADR tables.
     /// </summary>
     public interface ILoRaADRStore
     {

@@ -208,7 +208,7 @@ namespace LoRaWan.Test.Shared
 
         /// <summary>
         /// Singleton for the module client
-        /// Does not have to be thread-safe as CI does not run tests in parallel
+        /// Does not have to be thread-safe as CI does not run tests in parallel.
         /// </summary>
         public async Task<Microsoft.Azure.Devices.Client.ModuleClient> GetModuleClientAsync()
         {

@@ -580,9 +580,9 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Helper method to resolve FcntDown in case one was not yet acquired
+        /// Helper method to resolve FcntDown in case one was not yet acquired.
         /// </summary>
-        /// <returns>0 if the resolution failed or > 0 if a valid frame count was acquired</returns>
+        /// <returns>0 if the resolution failed or > 0 if a valid frame count was acquired.</returns>
         async ValueTask<uint> EnsureHasFcntDownAsync(
             LoRaDevice loRaDevice,
             uint? fcntDown,

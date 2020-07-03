@@ -7,7 +7,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.Devices;
 
     /// <summary>
-    /// Interface for service client interation
+    /// Interface for service client interation.
     /// </summary>
     public interface IServiceClient
     {

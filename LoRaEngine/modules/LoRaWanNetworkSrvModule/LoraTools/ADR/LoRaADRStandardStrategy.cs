@@ -10,7 +10,7 @@ namespace LoRaTools.ADR
     using LoRaWan;
 
     /// <summary>
-    /// A strategy based on the standard ADR strategy
+    /// A strategy based on the standard ADR strategy.
     /// </summary>
     public class LoRaADRStandardStrategy : ILoRaADRStrategy
     {
@@ -21,9 +21,15 @@ namespace LoRaTools.ADR
         /// <summary>
         /// Array to calculate nb Repetion given packet loss
         /// X axis min 5 %, 5-10 %, 10-30%, more than 30%
-        /// Y axis currentNbRep 1, 2, 3
+        /// Y axis currentNbRep 1, 2, 3.
         /// </summary>
-        private readonly int[,] pktLossToNbRep = new int[4, 3] { { 1, 1, 2 }, { 1, 2, 3 }, { 2, 3, 3 }, { 3, 3, 3 } };
+        private readonly int[,] pktLossToNbRep = new int[4, 3]
+        {
+            { 1, 1, 2 },
+            { 1, 2, 3 },
+            { 2, 3, 3 },
+            { 3, 3, 3 }
+        };
 
         public int MinimumNumberOfResult => 20;
 

@@ -426,7 +426,7 @@ namespace LoRaWan.NetworkServer.Test
 
         /// <summary>
         /// Downlink should use same rfch than uplink message
-        /// RFCH stands for Concentrator "RF chain" used for RX
+        /// RFCH stands for Concentrator "RF chain" used for RX.
         /// </summary>
         [Theory]
         [InlineData(ServerGatewayID, 1)]

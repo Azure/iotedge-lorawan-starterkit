@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer.Test
     using Xunit;
 
     /// <summary>
-    /// Tests the <see cref="LoRaDevice"/>
+    /// Tests the <see cref="LoRaDevice"/>.
     /// </summary>
     public class LoRaDeviceTest
     {

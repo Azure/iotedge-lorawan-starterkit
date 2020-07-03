@@ -151,7 +151,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         /// <summary>
-        /// Helper to create a <see cref="Message"/> from a <see cref="LoRaCloudToDeviceMessage"/>
+        /// Helper to create a <see cref="Message"/> from a <see cref="LoRaCloudToDeviceMessage"/>.
         /// </summary>
         public static Message CreateMessage(this LoRaCloudToDeviceMessage loRaMessage)
         {
@@ -179,7 +179,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         /// <summary>
-        /// Gets the time span delay necessary to make the request be answered in 2nd receive window
+        /// Gets the time span delay necessary to make the request be answered in 2nd receive window.
         /// </summary>
         public static TimeSpan GetStartTimeOffsetForSecondWindow()
         {
@@ -187,7 +187,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         /// <summary>
-        /// Helper method for testing
+        /// Helper method for testing.
         /// </summary>
         public static LoRaDeviceClientConnectionManager CreateConnectionManager() => new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions()));
     }

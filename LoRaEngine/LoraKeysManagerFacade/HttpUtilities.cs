@@ -11,12 +11,12 @@ namespace LoraKeysManagerFacade
     using Microsoft.AspNetCore.Http;
 
     /// <summary>
-    /// Http utilities
+    /// Http utilities.
     /// </summary>
     public static class HttpUtilities
     {
         /// <summary>
-        /// Gets requested <see cref="ApiVersion"/> from a <see cref="HttpRequest"/>
+        /// Gets requested <see cref="ApiVersion"/> from a <see cref="HttpRequest"/>.
         /// </summary>
         public static ApiVersion GetRequestedVersion(this HttpRequest req)
         {

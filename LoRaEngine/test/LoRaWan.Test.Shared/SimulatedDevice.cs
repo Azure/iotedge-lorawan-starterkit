@@ -17,7 +17,7 @@ namespace LoRaWan.Test.Shared
     using Newtonsoft.Json.Linq;
 
     /// <summary>
-    /// Defines a simulated device
+    /// Defines a simulated device.
     /// </summary>
     public class SimulatedDevice
     {
@@ -104,7 +104,7 @@ namespace LoRaWan.Test.Shared
         public UplinkPktFwdMessage CreateUnconfirmedMessageUplink(string data, uint? fcnt = null, byte fport = 1, byte fctrl = 0) => this.CreateUnconfirmedDataUpMessage(data, fcnt, fport, fctrl).SerializeUplink(this.AppSKey, this.NwkSKey);
 
         /// <summary>
-        /// Creates request to send unconfirmed data message
+        /// Creates request to send unconfirmed data message.
         /// </summary>
         public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, byte fctrl = 0, bool isHexPayload = false, List<MacCommand> macCommands = null)
         {
@@ -153,7 +153,7 @@ namespace LoRaWan.Test.Shared
         public UplinkPktFwdMessage CreateConfirmedMessageUplink(string data, uint? fcnt = null, byte fport = 1) => this.CreateConfirmedDataUpMessage(data, fcnt, fport).SerializeUplink(this.AppSKey, this.NwkSKey);
 
         /// <summary>
-        /// Creates request to send unconfirmed data message
+        /// Creates request to send unconfirmed data message.
         /// </summary>
         public LoRaPayloadData CreateConfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, bool isHexPayload = false)
         {
@@ -308,7 +308,7 @@ namespace LoRaWan.Test.Shared
         }
 
         /// <summary>
-        /// Setups the join properties
+        /// Setups the join properties.
         /// </summary>
         public void SetupJoin(string appSKey, string nwkSKey, string devAddr)
         {

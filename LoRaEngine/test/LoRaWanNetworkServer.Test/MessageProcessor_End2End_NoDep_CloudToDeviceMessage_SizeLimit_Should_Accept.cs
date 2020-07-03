@@ -97,7 +97,7 @@ namespace LoRaWan.NetworkServer.Test
 
             this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync(cloudToDeviceMessage)
-                .ReturnsAsync(null);
+                .ReturnsAsync<Message>((Message)null);
 
             this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);

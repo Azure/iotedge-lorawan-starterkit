@@ -4,7 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     /// <summary>
-    /// Defines a contract for properties that have tracking enabled
+    /// Defines a contract for properties that have tracking enabled.
     /// </summary>
     public interface IChangeTrackingProperty
     {

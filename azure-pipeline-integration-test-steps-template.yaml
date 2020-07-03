@@ -11,11 +11,6 @@ parameters:
   - ClassCTest
   
 steps:
-- task: UseDotNet@2
-  displayName: 'Use .NET Core sdk'
-  inputs:
-    packageType: sdk
-    version: 2.1.807
 
 - task: qetza.replacetokens.replacetokens-task.replacetokens@3
   displayName: 'Configure test in **/test/LoRaWan.IntegrationTest/appsettings.json'  

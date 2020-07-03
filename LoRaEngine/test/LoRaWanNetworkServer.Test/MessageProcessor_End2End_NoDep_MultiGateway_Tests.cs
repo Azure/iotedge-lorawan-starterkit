@@ -192,7 +192,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         /// <summary>
-        /// If cannot get a fcntdown from api should drop the c2d message
+        /// If cannot get a fcntdown from api should drop the c2d message.
         /// </summary>
         [Fact]
         public async Task When_Getting_C2D_Message_Fails_To_Resolve_Fcnt_Down_Should_Drop_Message_And_Return_Null()

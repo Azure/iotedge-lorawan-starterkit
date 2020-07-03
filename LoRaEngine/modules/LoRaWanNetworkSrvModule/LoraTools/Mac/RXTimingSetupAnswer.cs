@@ -7,7 +7,7 @@ namespace LoRaTools
     using System.Collections.Generic;
 
     /// <summary>
-    /// RXTimingSetupAns Upstream & RXTimingSetupReq Downstream
+    /// RXTimingSetupAns Upstream & RXTimingSetupReq Downstream.
     /// </summary>
     public class RXTimingSetupAnswer : MacCommand
     {

@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Logging;
 
     /// <summary>
-    /// Message dispatcher
+    /// Message dispatcher.
     /// </summary>
     public class MessageDispatcher
     {
@@ -39,7 +39,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Dispatches a request
+        /// Dispatches a request.
         /// </summary>
         public void DispatchRequest(LoRaRequest request)
         {

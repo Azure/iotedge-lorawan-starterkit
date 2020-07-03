@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Primitives;
 
     /// <summary>
-    /// LoRa device registry
+    /// LoRa device registry.
     /// </summary>
     public class LoRaDeviceRegistry : ILoRaDeviceRegistry
     {
@@ -40,7 +40,7 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Gets or sets the interval in which devices will be loaded
-        /// Only affect reload attempts for same DevAddr
+        /// Only affect reload attempts for same DevAddr.
         /// </summary>
         public TimeSpan DevAddrReloadInterval { get; set; }
 
@@ -64,15 +64,15 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Registers a <see cref="ILoRaDeviceInitializer"/>
+        /// Registers a <see cref="ILoRaDeviceInitializer"/>.
         /// </summary>
         public void RegisterDeviceInitializer(ILoRaDeviceInitializer initializer) => this.initializers.Add(initializer);
 
         /// <summary>
-        /// Gets a <see cref="DevEUIToLoRaDeviceDictionary"/> containing a list of devices given a <paramref name="devAddr"/>
+        /// Gets a <see cref="DevEUIToLoRaDeviceDictionary"/> containing a list of devices given a <paramref name="devAddr"/>.
         /// </summary>
         /// <remarks>
-        /// This method is internal in order to allow test assembly to used it!
+        /// This method is internal in order to allow test assembly to used it!.
         /// </remarks>
         internal DevEUIToLoRaDeviceDictionary InternalGetCachedDevicesForDevAddr(string devAddr, bool createIfNotExists = true)
         {
@@ -165,7 +165,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Called to sync up list of devices kept by device registry
+        /// Called to sync up list of devices kept by device registry.
         /// </summary>
         void UpdateDeviceRegistration(LoRaDevice loRaDevice, string oldDevAddr = null)
         {
@@ -191,7 +191,7 @@ namespace LoRaWan.NetworkServer
         internal static string CacheKeyForDevEUIDevice(string devEUI) => string.Concat("deveui:", devEUI);
 
         /// <summary>
-        /// Gets a device by DevEUI
+        /// Gets a device by DevEUI.
         /// </summary>
         public async Task<LoRaDevice> GetDeviceByDevEUIAsync(string devEUI)
         {
@@ -219,9 +219,9 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Checks whether a <see cref="LoRaDevice"/> is valid for a <see cref="LoRaPayloadData"/>
-        /// It validates that the device has a <see cref="LoRaDevice.NwkSKey"/> and mic check
+        /// It validates that the device has a <see cref="LoRaDevice.NwkSKey"/> and mic check.
         /// </summary>
-        /// <param name="logError">Indicates if error should be log if mic check fails</param>
+        /// <param name="logError">Indicates if error should be log if mic check fails.</param>
         private bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool logError)
         {
             if (string.IsNullOrEmpty(loRaDevice.NwkSKey))
@@ -258,7 +258,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Searchs for devices that match the join request
+        /// Searchs for devices that match the join request.
         /// </summary>
         public async Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, string appEUI, string devNonce)
         {
@@ -307,7 +307,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Updates a device after a successful login
+        /// Updates a device after a successful login.
         /// </summary>
         public void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, string oldDevAddr)
         {

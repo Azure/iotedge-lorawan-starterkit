@@ -9,7 +9,7 @@ namespace LoRaTools
     using Newtonsoft.Json;
 
     /// <summary>
-    /// RXParamSetupReq & RXParamSetupAns TODO Region specific
+    /// RXParamSetupReq & RXParamSetupAns TODO Region specific.
     /// </summary>
     public class RXParamSetupRequest : MacCommand
     {

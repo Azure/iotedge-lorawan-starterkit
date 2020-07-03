@@ -37,7 +37,7 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Gets or sets table to the get receive windows Offsets.
         /// X = RX1DROffset Upstream DR
-        /// Y = Downstream DR in RX1 slot
+        /// Y = Downstream DR in RX1 slot.
         /// </summary>
         public int[,] RX1DROffsetTable { get; set; }
 
@@ -47,7 +47,7 @@ namespace LoRaTools.Regions
         public (double frequency, ushort dr) RX2DefaultReceiveWindows { get; set; }
 
         /// <summary>
-        /// Gets or sets default first receive windows. [sec]
+        /// Gets or sets default first receive windows. [sec].
         /// </summary>
         public uint Receive_delay1 { get; set; }
 
@@ -57,23 +57,23 @@ namespace LoRaTools.Regions
         public uint Receive_delay2 { get; set; }
 
         /// <summary>
-        /// Gets or sets default Join Accept Delay for first Join Accept Windows.[sec]
+        /// Gets or sets default Join Accept Delay for first Join Accept Windows.[sec].
         /// </summary>
         public uint Join_accept_delay1 { get; set; }
 
         /// <summary>
-        /// Gets or sets default Join Accept Delay for second Join Accept Windows. [sec]
+        /// Gets or sets default Join Accept Delay for second Join Accept Windows. [sec].
         /// </summary>
         public uint Join_accept_delay2 { get; set; }
 
         /// <summary>
         /// Gets or sets max fcnt gap between expected and received. [#frame]
-        /// If this difference is greater than the value of MAX_FCNT_GAP then too many data frames have been lost then subsequent will be discarded
+        /// If this difference is greater than the value of MAX_FCNT_GAP then too many data frames have been lost then subsequent will be discarded.
         /// </summary>
         public int Max_fcnt_gap { get; set; }
 
         /// <summary>
-        /// Gets or sets number of uplink an end device can send without asking for an ADR acknowledgement request (set ADRACKReq bit to 1). [#frame]
+        /// Gets or sets number of uplink an end device can send without asking for an ADR acknowledgement request (set ADRACKReq bit to 1). [#frame].
         /// </summary>
         public uint Adr_ack_limit { get; set; }
 
@@ -85,17 +85,17 @@ namespace LoRaTools.Regions
 
         /// <summary>
         /// Gets or sets timeout for ack transmissiont, tuple with (min,max). Value should be a delay between min and max. [sec, sec].
-        /// If  an  end-­device  does  not  receive  a  frame  with  the  ACK  bit  set  in  one  of  the  two  receive  19   windows  immediately  following  the  uplink  transmission  it  may  resend  the  same  frame  with  20   the  same  payload  and  frame  counter  again  at  least  ACK_TIMEOUT  seconds  after  the  21   second  reception  window
+        /// If  an  end-­device  does  not  receive  a  frame  with  the  ACK  bit  set  in  one  of  the  two  receive  19   windows  immediately  following  the  uplink  transmission  it  may  resend  the  same  frame  with  20   the  same  payload  and  frame  counter  again  at  least  ACK_TIMEOUT  seconds  after  the  21   second  reception  window.
         /// </summary>
         public (uint min, uint max) Ack_timeout { get; set; }
 
         /// <summary>
-        /// Gets or sets the limits on the region to ensure valid properties
+        /// Gets or sets the limits on the region to ensure valid properties.
         /// </summary>
         public RegionLimits RegionLimits { get; set; }
 
         /// <summary>
-        /// Gets or sets set the Max ADR datarate acceptable, this is not necessarelly the highest in the region hence we need an additional param
+        /// Gets or sets set the Max ADR datarate acceptable, this is not necessarelly the highest in the region hence we need an additional param.
         /// </summary>
         public int MaxADRDataRate { get; set; }
 
@@ -120,7 +120,7 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Implement correct logic to get the correct transmission frequency based on the region.
         /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
+        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         public bool TryGetUpstreamChannelFrequency(Rxpk upstreamChannel, out double frequency)
         {
             frequency = 0;
@@ -179,7 +179,7 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Get downstream RX2 datarate
+        /// Get downstream RX2 datarate.
         /// </summary>
         /// <param name="devEUI">the device id.</param>
         /// <param name="nwkSrvRx2Dr">the network server rx2 datarate.</param>
@@ -221,7 +221,7 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Implement correct logic to get the downstream data rate based on the region.
         /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted</param>
+        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         public string GetDownstreamDR(Rxpk upstreamChannel, uint rx1DrOffset = 0)
         {
             if (this.IsValidUpstreamRxpk(upstreamChannel))
@@ -244,7 +244,7 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Implement correct logic to get the maximum payload size based on the datr/configuration.
         /// </summary>
-        /// <param name="datr">the datr/configuration with which the message was transmitted</param>
+        /// <param name="datr">the datr/configuration with which the message was transmitted.</param>
         public uint GetMaxPayloadSize(string datr)
         {
             var maxPayloadSize = this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Value.maxPyldSize;
@@ -269,7 +269,7 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Get Datarate number from SF#BW# string
+        /// Get Datarate number from SF#BW# string.
         /// </summary>
         public int GetDRFromFreqAndChan(string datr)
         {

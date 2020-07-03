@@ -52,7 +52,7 @@ namespace LoRaWan.NetworkServer
         public double? Rx2Frequency { get; set; }
 
         /// <summary>
-        /// Gets or sets the IoT Edge timeout, 0 keeps default value,
+        /// Gets or sets the IoT Edge timeout, 0 keeps default value,.
         /// </summary>
         public uint IoTEdgeTimeout { get; set; }
 
@@ -67,13 +67,13 @@ namespace LoRaWan.NetworkServer
         public string FacadeAuthCode { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether logging to console is enabled
+        /// Gets or sets a value indicating whether logging to console is enabled.
         /// </summary>
         public bool LogToConsole { get; set; } = true;
 
         /// <summary>
         /// Gets or sets  the logging level.
-        /// Default: 4 (Log level: Error)
+        /// Default: 4 (Log level: Error).
         /// </summary>
         public string LogLevel { get; set; } = "4";
 
@@ -105,7 +105,7 @@ namespace LoRaWan.NetworkServer
         public uint NetId { get; set; } = 1;
 
         /// <summary>
-        /// Gets list of allowed dev addresses
+        /// Gets list of allowed dev addresses.
         /// </summary>
         public HashSet<string> AllowedDevAddresses { get; internal set; }
 
