@@ -19,17 +19,17 @@ namespace LoRaTools.LoRaMessage
     using Org.BouncyCastle.Security;
 
     /// <summary>
-    /// the body of an Uplink (normal) message
+    /// the body of an Uplink (normal) message.
     /// </summary>
     public class LoRaPayloadData : LoRaPayload
     {
         /// <summary>
-        /// Gets or sets list of Mac Commands in the LoRaPayload
+        /// Gets or sets list of Mac Commands in the LoRaPayload.
         /// </summary>
         public List<MacCommand> MacCommands { get; set; }
 
         /// <summary>
-        /// Gets the LoRa payload fport as value
+        /// Gets the LoRa payload fport as value.
         /// </summary>
         public byte GetFPort()
         {
@@ -43,73 +43,73 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
-        /// Gets the LoRa payload frame counter
+        /// Gets the LoRa payload frame counter.
         /// </summary>
         public ushort GetFcnt() => MemoryMarshal.Read<ushort>(this.Fcnt.Span);
 
         /// <summary>
-        /// Gets the DevAdd netID
+        /// Gets the DevAdd netID.
         /// </summary>
         public byte GetDevAddrNetID() => (byte)(this.DevAddr.Span[0] & 0b11111110);
 
         /// <summary>
-        /// Gets a value indicating whether the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp)
+        /// Gets a value indicating whether the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp).
         /// </summary>
         public bool IsConfirmed => this.LoRaMessageType == LoRaMessageType.ConfirmedDataDown || this.LoRaMessageType == LoRaMessageType.ConfirmedDataUp;
 
         /// <summary>
-        /// Gets a value indicating whether does a Mac command require an answer?
+        /// Gets a value indicating whether does a Mac command require an answer?.
         /// </summary>
         public bool IsMacAnswerRequired => this.MacCommands?.FirstOrDefault(x => x.Cid == CidEnum.LinkCheckCmd) != null;
 
         /// <summary>
-        /// Indicates if the payload is an confirmation message acknowledgement
+        /// Indicates if the payload is an confirmation message acknowledgement.
         /// </summary>
         public bool IsUpwardAck() => (this.Fctrl.Span[0] & (byte)FctrlEnum.Ack) == 32;
 
         /// <summary>
-        /// Gets a value indicating whether indicates if the payload is an confirmation message acknowledgement
+        /// Gets a value indicating whether indicates if the payload is an confirmation message acknowledgement.
         /// </summary>
         public bool IsAdrReq => (this.Fctrl.Span[0] & 0b01000000) > 0;
 
         /// <summary>
-        /// Gets a value indicating whether the device has ADR enabled
+        /// Gets a value indicating whether the device has ADR enabled.
         /// </summary>
         public bool IsAdrEnabled => (this.Fctrl.Span[0] & 0b10000000) > 0;
 
         /// <summary>
-        /// Gets or sets frame control octet
+        /// Gets or sets frame control octet.
         /// </summary>
         public Memory<byte> Fctrl { get; set; }
 
         /// <summary>
-        /// Gets or sets frame Counter
+        /// Gets or sets frame Counter.
         /// </summary>
         public Memory<byte> Fcnt { get; set; }
 
         /// <summary>
-        /// Gets or sets optional frame
+        /// Gets or sets optional frame.
         /// </summary>
         public Memory<byte> Fopts { get; set; }
 
         /// <summary>
-        /// Gets or sets port field
+        /// Gets or sets port field.
         /// </summary>
         public Memory<byte> Fport { get; set; }
 
         /// <summary>
-        /// Gets or sets mAC Frame Payload Encryption
+        /// Gets or sets mAC Frame Payload Encryption.
         /// </summary>
         public Memory<byte> Frmpayload { get; set; }
 
         /// <summary>
-        /// Gets or sets get message direction
+        /// Gets or sets get message direction.
         /// </summary>
         public int Direction { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
-        /// Constructor used by the simulator
+        /// Constructor used by the simulator.
         /// </summary>
         public LoRaPayloadData()
         {
@@ -117,9 +117,9 @@ namespace LoRaTools.LoRaMessage
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
-        /// Upstream Constructor (decode a LoRa Message from existing array of bytes)
+        /// Upstream Constructor (decode a LoRa Message from existing array of bytes).
         /// </summary>
-        /// <param name="inputMessage">the upstream Constructor</param>
+        /// <param name="inputMessage">the upstream Constructor.</param>
         public LoRaPayloadData(byte[] inputMessage)
             : base(inputMessage)
         {
@@ -174,7 +174,7 @@ namespace LoRaTools.LoRaMessage
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
-        /// Downstream Constructor (build a LoRa Message)
+        /// Downstream Constructor (build a LoRa Message).
         /// </summary>
         public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
         {
@@ -271,13 +271,13 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Serialize a message to be sent downlink on the wire.
         /// </summary>
-        /// <param name="appSKey">the app key used for encryption</param>
-        /// <param name="nwkSKey">the nwk key used for encryption</param>
-        /// <param name="datr">the calculated datarate</param>
-        /// <param name="freq">The frequency at which to be sent</param>
-        /// <param name="tmst">time stamp</param>
-        /// <param name="devEUI">the device EUI</param>
-        /// <returns>the Downlink message</returns>
+        /// <param name="appSKey">the app key used for encryption.</param>
+        /// <param name="nwkSKey">the nwk key used for encryption.</param>
+        /// <param name="datr">the calculated datarate.</param>
+        /// <param name="freq">The frequency at which to be sent.</param>
+        /// <param name="tmst">time stamp.</param>
+        /// <param name="devEUI">the device EUI.</param>
+        /// <returns>the Downlink message.</returns>
         public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI)
         {
             // It is a Mac Command payload, needs to encrypt with nwkskey
@@ -310,10 +310,10 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
-        /// Method to check if the mic is valid
+        /// Method to check if the mic is valid.
         /// </summary>
-        /// <param name="nwskey">the network security key</param>
-        /// <returns>if the Mic is valid or not</returns>
+        /// <param name="nwskey">the network security key.</param>
+        /// <returns>if the Mic is valid or not.</returns>
         public override bool CheckMic(string nwskey, uint? server32BitFcnt = null)
         {
             this.Ensure32BitFcntValue(server32BitFcnt);
@@ -347,7 +347,7 @@ namespace LoRaTools.LoRaMessage
             KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
             mac.Init(key);
             byte[] block =
-                {
+            {
                 0x49, 0x00, 0x00, 0x00, 0x00, (byte)this.Direction, this.DevAddr.Span[3], this.DevAddr.Span[2], this.DevAddr.Span[1],
                 this.DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)byteMsg.Length
             };
@@ -368,10 +368,10 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
-        /// Decrypts the payload value, without changing the <see cref="RawMessage"/>
+        /// Decrypts the payload value, without changing the <see cref="RawMessage"/>.
         /// </summary>
         /// <remarks>
-        /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py</remarks>
+        /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py.</remarks>
         public byte[] GetDecryptedPayload(string appSkey)
         {
             if (!this.Frmpayload.Span.IsEmpty)
@@ -382,7 +382,7 @@ namespace LoRaTools.LoRaMessage
                 var fcntBytes = this.GetFcntBlockInfo();
 
                 byte[] aBlock =
-                    {
+                {
                     0x01, 0x00, 0x00, 0x00, 0x00, (byte)this.Direction, this.DevAddr.Span[3], this.DevAddr.Span[2], this.DevAddr.Span[1],
                     this.DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, 0x00
                 };
@@ -426,7 +426,7 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
-        ///  Replaces the <see cref="Frmpayload"/>, encrypting the values
+        ///  Replaces the <see cref="Frmpayload"/>, encrypting the values.
         /// </summary>
         public override byte[] PerformEncryption(string appSkey)
         {
@@ -476,7 +476,7 @@ namespace LoRaTools.LoRaMessage
 
         /// <summary>
         /// Add Mac Command to a LoRa Payload
-        /// Warning, do not use this method if your LoRaPayload was created from bytes
+        /// Warning, do not use this method if your LoRaPayload was created from bytes.
         /// </summary>
         public void AddMacCommand(MacCommand mac)
         {

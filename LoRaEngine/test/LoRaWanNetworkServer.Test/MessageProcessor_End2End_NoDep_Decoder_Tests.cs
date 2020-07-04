@@ -51,7 +51,7 @@ namespace LoRaWan.NetworkServer.Test
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
         ///     "edgets": 1550217512748
-        /// }
+        /// }.
         /// </summary>
         [Theory]
         [InlineData(ServerGatewayID, "1234", "")]
@@ -141,7 +141,7 @@ namespace LoRaWan.NetworkServer.Test
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
         ///     "edgets": 1550223375041
-        /// }
+        /// }.
         /// </summary>
         [Theory]
         [InlineData("hello world", "hello world")]
@@ -231,7 +231,7 @@ namespace LoRaWan.NetworkServer.Test
         ///     "edgets": 1550223375041,
         ///     "x_power":22.3,
         ///     "x_wind":"NE"
-        /// }
+        /// }.
         /// </summary>
         [Fact]
         public async Task When_Rxpk_Has_Additional_Information_Should_Include_In_Telemetry()
@@ -312,7 +312,7 @@ namespace LoRaWan.NetworkServer.Test
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
         ///     "edgets": 1550223375041
-        /// }
+        /// }.
         /// </summary>
         [Fact]
         public async Task When_Using_Custom_Decoder_Returns_String_Should_Send_Decoded_Value()
@@ -396,7 +396,7 @@ namespace LoRaWan.NetworkServer.Test
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
         ///     "edgets": 1550223375041
-        /// }
+        /// }.
         /// </summary>
         [Fact]
         public async Task When_Using_Custom_Decoder_Returns_Empty_Should_Send_Decoded_Value()
@@ -482,7 +482,7 @@ namespace LoRaWan.NetworkServer.Test
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
         ///     "edgets": 1550223375041
-        /// }
+        /// }.
         /// </summary>
         [Fact]
         public async Task When_Using_Custom_Decoder_Returns_JsonString_Should_Send_Decoded_Value()
@@ -568,7 +568,7 @@ namespace LoRaWan.NetworkServer.Test
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
         ///     "edgets": 1550223375041
-        /// }
+        /// }.
         /// </summary>
         [Fact]
         public async Task When_Using_Custom_Decoder_Returns_Complex_Object_Should_Send_Decoded_Value()
@@ -654,7 +654,7 @@ namespace LoRaWan.NetworkServer.Test
         ///     "eui": "0000000000000001",
         ///     "gatewayid": "test-gateway",
         ///     "edgets": 1550223375041
-        /// }
+        /// }.
         /// </summary>
         [Fact]
         public async Task When_Using_Custom_Fails_Returns_Sets_Error_Information_In_Value()

@@ -13,7 +13,7 @@ namespace LoRaTools.Utils
         /// <summary>
         /// Method enabling to convert a hex string to a byte array.
         /// </summary>
-        /// <param name="hex">Input hex string</param>
+        /// <param name="hex">Input hex string.</param>
         public static byte[] StringToByteArray(string hex)
         {
             int numberChars = hex.Length;

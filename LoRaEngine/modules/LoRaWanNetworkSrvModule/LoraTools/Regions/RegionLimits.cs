@@ -9,7 +9,7 @@ namespace LoRaTools.Regions
     public class RegionLimits
     {
         /// <summary>
-        /// Gets or sets The maximum and minimum datarate of a given region
+        /// Gets or sets The maximum and minimum datarate of a given region.
         /// </summary>
         public (double min, double max) FrequencyRange { get; set; }
 

@@ -6,7 +6,7 @@ namespace LoraKeysManagerFacade
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Defines a preferred gateway result
+    /// Defines a preferred gateway result.
     /// </summary>
     public class PreferredGatewayResult
     {
@@ -20,11 +20,11 @@ namespace LoraKeysManagerFacade
         public string PreferredGatewayID { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether there was a conflict in the preferred gateway resolution
+        /// Gets or sets a value indicating whether there was a conflict in the preferred gateway resolution.
         /// </summary>
         /// <remarks>
         /// A conflict happens if a request to resolve the preferred gateway is received with a fcntUp older than the current resolved one.
-        /// Causes are the calling gateway took too long to call the function while another device requests have been addressed by other gateways
+        /// Causes are the calling gateway took too long to call the function while another device requests have been addressed by other gateways.
         /// </remarks>
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool Conflict { get; set; }

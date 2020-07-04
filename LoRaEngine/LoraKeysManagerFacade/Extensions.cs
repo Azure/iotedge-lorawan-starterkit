@@ -8,7 +8,7 @@ namespace LoraKeysManagerFacade
     public static class Extensions
     {
         /// <summary>
-        /// Gets the twin property if exists, return string.Empty if not found
+        /// Gets the twin property if exists, return string.Empty if not found.
         /// </summary>
         public static string GetTwinPropertyStringSafe(this TwinCollection twin, string propertyName)
         {

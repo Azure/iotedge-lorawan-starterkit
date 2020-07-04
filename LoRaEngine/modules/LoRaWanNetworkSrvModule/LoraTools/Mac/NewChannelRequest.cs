@@ -9,7 +9,7 @@ namespace LoRaTools
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Both ways
+    /// Both ways.
     /// </summary>
     public class NewChannelRequest : MacCommand
     {

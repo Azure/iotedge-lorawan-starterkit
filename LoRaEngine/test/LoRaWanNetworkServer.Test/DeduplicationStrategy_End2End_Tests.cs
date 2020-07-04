@@ -77,6 +77,7 @@ namespace LoRaWan.NetworkServer.Test
                     {
                         Assert.Null(telemetry.DupMsg);
                     }
+
                     shouldBeMarked = mode == DeduplicationMode.Mark;
                 });
 

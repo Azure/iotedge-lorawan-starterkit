@@ -102,22 +102,22 @@ namespace LoRaWan.IntegrationTest
         public TestDeviceInfo Device26_ABP { get; private set; }
 
         /// <summary>
-        /// Gets Device27_OTAA: used for multi GW OTAA testing
+        /// Gets Device27_OTAA: used for multi GW OTAA testing.
         /// </summary>
         public TestDeviceInfo Device27_OTAA { get; private set; }
 
         /// <summary>
-        /// Gets Device27_ABP: used for multi GW deduplication drop testing
+        /// Gets Device27_ABP: used for multi GW deduplication drop testing.
         /// </summary>
         public TestDeviceInfo Device28_ABP { get; private set; }
 
         /// <summary>
-        /// Gets Device27_ABP: used for multi GW deduplication mark testing
+        /// Gets Device27_ABP: used for multi GW deduplication mark testing.
         /// </summary>
         public TestDeviceInfo Device29_ABP { get; private set; }
 
         /// <summary>
-        /// Gets Device30_OTAA used for C2D messages in multi gateway scenario
+        /// Gets Device30_OTAA used for C2D messages in multi gateway scenario.
         /// </summary>
         public TestDeviceInfo Device30_OTAA { get; private set; }
 

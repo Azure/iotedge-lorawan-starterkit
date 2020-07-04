@@ -6,7 +6,7 @@ namespace LoRaTools.LoRaPhysical
     using System;
 
     /// <summary>
-    /// Base type of a Packet Forwarder message (lower level)
+    /// Base type of a Packet Forwarder message (lower level).
     /// </summary>
     public abstract class PktFwdMessage
     {

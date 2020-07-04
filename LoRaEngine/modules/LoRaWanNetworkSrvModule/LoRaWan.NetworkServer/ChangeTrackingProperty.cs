@@ -7,9 +7,9 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
 
     /// <summary>
-    /// Primitive that keep tracks of changes
+    /// Primitive that keep tracks of changes.
     /// </summary>
-    /// <typeparam name="T">The underlying type that we keep track of. Must implement <see cref="IEqualityComparer{T}"/></typeparam>
+    /// <typeparam name="T">The underlying type that we keep track of. Must implement <see cref="IEqualityComparer{T}"/>.</typeparam>
     public class ChangeTrackingProperty<T> : IChangeTrackingProperty
     {
         T current;
@@ -27,12 +27,12 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Gets the property name
+        /// Gets the property name.
         /// </summary>
         public string PropertyName { get;  }
 
         /// <summary>
-        /// Gets the value that must be persisted in twin collection
+        /// Gets the value that must be persisted in twin collection.
         /// </summary>
         object IChangeTrackingProperty.Value
         {
@@ -46,32 +46,32 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Gets the current value
+        /// Gets the current value.
         /// </summary>
         public T Get() => this.current;
 
         /// <summary>
-        /// Sets the current value
+        /// Sets the current value.
         /// </summary>
         public void Set(T value) => this.current = value;
 
         /// <summary>
-        /// Gets if the value has changed
+        /// Gets if the value has changed.
         /// </summary>
         public bool IsDirty() => !EqualityComparer<T>.Default.Equals(this.current, this.original);
 
         /// <summary>
-        /// Accepts any pending change
+        /// Accepts any pending change.
         /// </summary>
         public void AcceptChanges() => this.original = this.current;
 
         /// <summary>
-        /// Rollbacks any pending change
+        /// Rollbacks any pending change.
         /// </summary>
         public void Rollback() => this.current = this.original;
 
         /// <summary>
-        /// Implicit operator for {T}
+        /// Implicit operator for {T}.
         /// </summary>
         public static implicit operator T(ChangeTrackingProperty<T> t) => t.current;
     }

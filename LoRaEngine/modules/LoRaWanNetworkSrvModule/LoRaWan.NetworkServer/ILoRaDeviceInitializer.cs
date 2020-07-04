@@ -5,7 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     /// <summary>
     /// Defines a <see cref="LoRaDevice"/> initializer
-    /// A concrete implementation is the frame counter initializer
+    /// A concrete implementation is the frame counter initializer.
     /// </summary>
     public interface ILoRaDeviceInitializer
     {

@@ -7,7 +7,7 @@ namespace LoRaWan.Test.Shared
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Random token generator
+    /// Random token generator.
     /// </summary>
     public static class RandomTokenGenerator
     {
@@ -15,7 +15,7 @@ namespace LoRaWan.Test.Shared
         static Random random = new Random();
 
         /// <summary>
-        /// Gets a new token
+        /// Gets a new token.
         /// </summary>
         public static byte[] GetToken()
         {

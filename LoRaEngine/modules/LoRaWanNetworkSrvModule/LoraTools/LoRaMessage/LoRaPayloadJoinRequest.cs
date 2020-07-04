@@ -18,7 +18,7 @@ namespace LoRaTools.LoRaMessage
     public class LoRaPayloadJoinRequest : LoRaPayload
     {
         /// <summary>
-        /// Gets or sets aka JoinEUI
+        /// Gets or sets aka JoinEUI.
         /// </summary>
         public Memory<byte> AppEUI { get; set; }
 
@@ -27,23 +27,23 @@ namespace LoRaTools.LoRaMessage
         public Memory<byte> DevNonce { get; set; }
 
         /// <summary>
-        /// Gets the value of DevEUI as <see cref="string"/>
+        /// Gets the value of DevEUI as <see cref="string"/>.
         /// </summary>
         public string GetDevEUIAsString() => ConversionHelper.ReverseByteArrayToString(this.DevEUI);
 
         /// <summary>
-        /// Gets the value of AppEUI as <see cref="string"/>
+        /// Gets the value of AppEUI as <see cref="string"/>.
         /// </summary>
         public string GetAppEUIAsString() => ConversionHelper.ReverseByteArrayToString(this.AppEUI);
 
         /// <summary>
-        /// Gets the value <see cref="DevNonce"/> as <see cref="string"/>
+        /// Gets the value <see cref="DevNonce"/> as <see cref="string"/>.
         /// </summary>
         public string GetDevNonceAsString() => ConversionHelper.ByteArrayToString(this.DevNonce);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadJoinRequest"/> class.
-        /// Constructor used for the simulator
+        /// Constructor used for the simulator.
         /// </summary>
         public LoRaPayloadJoinRequest()
         {
@@ -132,7 +132,7 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
-        /// Serializes uplink message, used by simulator
+        /// Serializes uplink message, used by simulator.
         /// </summary>
         public UplinkPktFwdMessage SerializeUplink(string appKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0)
         {

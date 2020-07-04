@@ -27,7 +27,7 @@ namespace LoRaWan.NetworkServer
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Defines udp Server communicating with packet forwarder
+    /// Defines udp Server communicating with packet forwarder.
     /// </summary>
     public class UdpServer : IDisposable, IPacketForwarder
     {

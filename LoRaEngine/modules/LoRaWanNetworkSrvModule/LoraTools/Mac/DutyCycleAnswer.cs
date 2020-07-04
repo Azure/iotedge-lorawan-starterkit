@@ -7,7 +7,7 @@ namespace LoRaTools
     using System.Collections.Generic;
 
     /// <summary>
-    /// DutyCycleAns Upstream
+    /// DutyCycleAns Upstream.
     /// </summary>
     public class DutyCycleAnswer : MacCommand
     {

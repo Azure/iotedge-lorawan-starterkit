@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
 
     /// <summary>
-    /// Helper for a reusable <see cref="IDisposable"/>
+    /// Helper for a reusable <see cref="IDisposable"/>.
     /// </summary>
     internal class NullDisposable : IDisposable
     {

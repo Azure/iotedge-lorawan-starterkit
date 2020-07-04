@@ -6,7 +6,7 @@ namespace LoRaTools.CommonAPI
     using System.Collections.Generic;
 
     /// <summary>
-    /// Defines the data contract for cloud to device messages
+    /// Defines the data contract for cloud to device messages.
     /// </summary>
     public interface ILoRaCloudToDeviceMessage
     {
@@ -19,15 +19,15 @@ namespace LoRaTools.CommonAPI
         string MessageId { get; }
 
         /// <summary>
-        /// Gets list of mac commands that are part of the message
+        /// Gets list of mac commands that are part of the message.
         /// </summary>
         IList<MacCommand> MacCommands { get; }
 
         /// <summary>
-        /// Identifies if the message is a valid LoRa downstream message
+        /// Identifies if the message is a valid LoRa downstream message.
         /// </summary>
-        /// <param name="errorMessage">Returns the error message in case it fails</param>
-        /// <returns>True if the message is valid, false otherwise</returns>
+        /// <param name="errorMessage">Returns the error message in case it fails.</param>
+        /// <returns>True if the message is valid, false otherwise.</returns>
         bool IsValid(out string errorMessage);
     }
 }

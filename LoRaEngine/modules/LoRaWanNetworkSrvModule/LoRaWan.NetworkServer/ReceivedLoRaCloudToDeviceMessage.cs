@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Logging;
 
     /// <summary>
-    /// Defines a <see cref="LoRaCloudToDeviceMessage"/> that was received by the network server allowing it to abandon, reject and complete
+    /// Defines a <see cref="LoRaCloudToDeviceMessage"/> that was received by the network server allowing it to abandon, reject and complete.
     /// </summary>
     public class ReceivedLoRaCloudToDeviceMessage : LoRaCloudToDeviceMessage, IReceivedLoRaCloudToDeviceMessage
     {
@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer
         public Task<bool> RejectAsync() => Task.FromResult(true);
 
         /// <summary>
-        /// Gets the payload bytes
+        /// Gets the payload bytes.
         /// </summary>
         public byte[] GetPayload()
         {

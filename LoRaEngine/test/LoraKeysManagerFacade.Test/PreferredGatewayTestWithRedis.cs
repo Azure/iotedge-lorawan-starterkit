@@ -12,7 +12,7 @@ namespace LoraKeysManagerFacade.Test
     using Xunit;
 
     /// <summary>
-    /// Tests to run against a real redis instance
+    /// Tests to run against a real redis instance.
     /// </summary>
     [Trait("RequiresDocker", "true")]
     public class PreferredGatewayTestWithRedis : IClassFixture<RedisFixture>

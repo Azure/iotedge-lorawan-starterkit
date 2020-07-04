@@ -7,7 +7,7 @@ namespace LoRaTools
     using System.Collections.Generic;
 
     /// <summary>
-    /// LinkCheckReq Upstream
+    /// LinkCheckReq Upstream.
     /// </summary>
     public class LinkCheckRequest : MacCommand
     {
@@ -15,7 +15,7 @@ namespace LoRaTools
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkCheckRequest"/> class.
-        /// Downstream Constructor
+        /// Downstream Constructor.
         /// </summary>
         public LinkCheckRequest()
         {

@@ -6,12 +6,12 @@ namespace LoRaWan.NetworkServer
     using System.Net.Http;
 
     /// <summary>
-    /// Provides a <see cref="HttpClient"/> to access Service Facade API
+    /// Provides a <see cref="HttpClient"/> to access Service Facade API.
     /// </summary>
     public interface IServiceFacadeHttpClientProvider
     {
         /// <summary>
-        /// Gets the <see cref="HttpClient"/> to access the function
+        /// Gets the <see cref="HttpClient"/> to access the function.
         /// </summary>
         HttpClient GetHttpClient();
     }

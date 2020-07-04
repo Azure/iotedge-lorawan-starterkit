@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Process OTAA join request
+        /// Process OTAA join request.
         /// </summary>
         async Task ProcessJoinRequestAsync(LoRaRequest request)
         {

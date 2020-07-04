@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Represents a failed payload decoding
+    /// Represents a failed payload decoding.
     /// </summary>
     public class DecodingFailedPayload
     {

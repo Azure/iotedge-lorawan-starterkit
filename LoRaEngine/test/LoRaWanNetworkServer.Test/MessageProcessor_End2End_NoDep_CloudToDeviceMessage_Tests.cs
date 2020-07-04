@@ -642,7 +642,7 @@ namespace LoRaWan.NetworkServer.Test
             var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
                 .CreateMessage();
 
-            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsInRange<TimeSpan>(TimeSpan.FromMilliseconds(checkMinDuration), TimeSpan.FromMilliseconds(checkMaxDuration), Range.Inclusive)))
+            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsInRange<TimeSpan>(TimeSpan.FromMilliseconds(checkMinDuration), TimeSpan.FromMilliseconds(checkMaxDuration), Moq.Range.Inclusive)))
                 .ReturnsAsync(cloudToDeviceMessage);
 
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage))

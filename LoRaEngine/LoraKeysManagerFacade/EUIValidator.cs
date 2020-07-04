@@ -10,10 +10,10 @@ namespace LoraKeysManagerFacade
         const string InvalidZero = "0000000000000000";
 
         /// <summary>
-        /// DevEUI are required to be IEEE EUI-64
+        /// DevEUI are required to be IEEE EUI-64.
         /// </summary>
-        /// <param name="devEUI">devEUI to validate</param>
-        /// <exception cref="ArgumentException">If an invalid devEUI string was passed</exception>
+        /// <param name="devEUI">devEUI to validate.</param>
+        /// <exception cref="ArgumentException">If an invalid devEUI string was passed.</exception>
         internal static void ValidateDevEUI(string devEUI)
         {
             const int ExpectedLength = 16;

@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer.Test
     public class TestConstants
     {
         /// <summary>
-        /// Defines the test collection name for c2d size limit validation
+        /// Defines the test collection name for c2d size limit validation.
         /// </summary>
         public const string C2D_Size_Limit_TestCollectionName = "C2D_Size_Limit";
     }

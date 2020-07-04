@@ -8,12 +8,12 @@ namespace LoRaWanTest
     using Xunit;
 
     /// <summary>
-    /// Class to test the conversion helper class
+    /// Class to test the conversion helper class.
     /// </summary>
     public class ConversionHelperTest
     {
         /// <summary>
-        /// Check conversion helper
+        /// Check conversion helper.
         /// </summary>
         [Theory]
         [InlineData(new byte[] { 1, 2, 3, 4 }, "01020304")]
@@ -25,7 +25,7 @@ namespace LoRaWanTest
         }
 
         /// <summary>
-        /// Check conversion helper
+        /// Check conversion helper.
         /// </summary>
         [Theory]
         [InlineData(new byte[] { 1, 2, 3, 4 }, "01020304")]

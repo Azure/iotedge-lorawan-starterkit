@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Logging;
 
     /// <summary>
-    /// Composition of a <see cref="LoRaRequest"/> that logs at the end of the process
+    /// Composition of a <see cref="LoRaRequest"/> that logs at the end of the process.
     /// </summary>
     public class LoggingLoRaRequest : LoRaRequest
     {

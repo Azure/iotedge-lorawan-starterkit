@@ -8,7 +8,7 @@ namespace LoRaWan.NetworkServer
     using System.Text;
 
     /// <summary>
-    /// Twin properties of a <see cref="LoRaDevice"/>
+    /// Twin properties of a <see cref="LoRaDevice"/>.
     /// </summary>
     public static class TwinProperty
     {
@@ -46,7 +46,7 @@ namespace LoRaWan.NetworkServer
         public const string RXDelay = "RXDelay";
 
         /// <summary>
-        /// Defines the connection keep alive timeout
+        /// Defines the connection keep alive timeout.
         /// </summary>
         public const string KeepAliveTimeout = "KeepAliveTimeout";
     }

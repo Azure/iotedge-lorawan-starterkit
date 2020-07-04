@@ -29,7 +29,7 @@ namespace LoraKeysManagerFacade
         }
 
         /// <summary>
-        /// Entry point function for getting devices
+        /// Entry point function for getting devices.
         /// </summary>
         [FunctionName(nameof(GetDevice))]
         public async Task<IActionResult> GetDevice(

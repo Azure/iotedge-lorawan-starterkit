@@ -5,7 +5,7 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Concurrent;
 
     /// <summary>
-    /// Dictionary of <see cref="LoRaDevice"/> where key is the DevEUI
+    /// Dictionary of <see cref="LoRaDevice"/> where key is the DevEUI.
     /// </summary>
     public class DevEUIToLoRaDeviceDictionary : ConcurrentDictionary<string, LoRaDevice>
     {

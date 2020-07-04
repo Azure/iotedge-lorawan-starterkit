@@ -19,7 +19,7 @@ namespace LoRaWan.IntegrationTest
     public sealed class C2DMessageTest : IntegrationTestBaseCi
     {
         /// <summary>
-        /// Identifies how many times a cloud to device message can be processor without failing a test
+        /// Identifies how many times a cloud to device message can be processor without failing a test.
         /// </summary>
         private const int CloudToDeviceMessageReceiveCountThreshold = 2;
 
@@ -33,9 +33,9 @@ namespace LoRaWan.IntegrationTest
         }
 
         /// <summary>
-        /// Ensures that a cloud to device message has not been seen more than expected
+        /// Ensures that a cloud to device message has not been seen more than expected.
         /// </summary>
-        /// <param name="foundCount">The number of found items</param>
+        /// <param name="foundCount">number of times found.</param>
         private void EnsureNotSeenTooManyTimes(int foundCount)
         {
             Assert.True(foundCount <= CloudToDeviceMessageReceiveCountThreshold, $"Cloud to device message was processed {foundCount} times");
@@ -578,7 +578,7 @@ namespace LoRaWan.IntegrationTest
         }
 
         /// <summary>
-        /// Ensures that a device that has preferred window set to two receives C2D messages
+        /// Ensures that a device that has preferred window set to two receives C2D messages.
         /// </summary>
         [RetryFact]
         public async Task C2D_When_Device_Has_Preferred_Windows_2_Should_Receive_In_2nd_Window_With_Custom_DR()

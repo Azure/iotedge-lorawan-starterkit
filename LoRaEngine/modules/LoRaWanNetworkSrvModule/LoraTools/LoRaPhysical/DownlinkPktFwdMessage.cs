@@ -43,7 +43,7 @@ namespace LoRaTools.LoRaPhysical
         /// Initializes a new instance of the <see cref="DownlinkPktFwdMessage"/> class.
         /// This method is used in case of a response to a upstream message.
         /// </summary>
-        /// <returns>DownlinkPktFwdMessage object ready to be sent</returns>
+        /// <returns>DownlinkPktFwdMessage object ready to be sent.</returns>
         public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, long tmst = 0)
         {
             this.Txpk = new Txpk()

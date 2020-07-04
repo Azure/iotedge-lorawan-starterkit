@@ -8,7 +8,7 @@ namespace LoRaTools
     using Newtonsoft.Json;
 
     /// <summary>
-    /// RXParamSetupAns
+    /// RXParamSetupAns.
     /// </summary>
     public class RXParamSetupAnswer : MacCommand
     {

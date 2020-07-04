@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Defines a payload that was not decoded (one was not configure for the device)
+    /// Defines a payload that was not decoded (one was not configure for the device).
     /// </summary>
     public class UndecodedPayload
     {

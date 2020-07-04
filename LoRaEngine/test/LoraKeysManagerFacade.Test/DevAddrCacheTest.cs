@@ -85,6 +85,7 @@ namespace LoraKeysManagerFacade.Test
 
                         twins.Add(deviceTwin);
                     }
+
                     return twins;
                 });
 

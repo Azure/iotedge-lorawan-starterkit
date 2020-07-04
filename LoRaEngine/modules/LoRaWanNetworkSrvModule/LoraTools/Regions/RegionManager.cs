@@ -21,7 +21,7 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Tries to get the <see cref="LoRaRegionType"/> based on <paramref name="value"/>
+        /// Tries to get the <see cref="LoRaRegionType"/> based on <paramref name="value"/>.
         /// </summary>
         public static bool TryTranslateToRegion(LoRaRegionType value, out Region region)
         {

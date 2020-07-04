@@ -15,12 +15,12 @@ namespace LoRaWanTest
     using Xunit;
 
     /// <summary>
-    /// all these test cases were inspired from https://github.com/brocaar/lora-app-server
+    /// all these test cases were inspired from https://github.com/brocaar/lora-app-server.
     /// </summary>
     public class LoRaLibraryTest
     {
         /// <summary>
-        /// Test Join Accept messages
+        /// Test Join Accept messages.
         /// </summary>
         [Fact]
         public void TestJoinAccept()
@@ -46,7 +46,7 @@ namespace LoRaWanTest
             byte[] joinAcceptMic = new byte[4]
             {
                 67, 72, 91, 188,
-                };
+            };
 
             Assert.True(decodedJoinAccept.Mic.ToArray().SequenceEqual(joinAcceptMic));
             var msg = ConversionHelper.ByteArrayToString(Convert.FromBase64String(joinacceptbyte.Txpk.Data));
@@ -54,7 +54,7 @@ namespace LoRaWanTest
         }
 
         /// <summary>
-        /// Test mic Check
+        /// Test mic Check.
         /// </summary>
         [Fact]
         public void JoinRequest_Should_Succeed_Mic_Check()
@@ -98,7 +98,7 @@ namespace LoRaWanTest
         }
 
         /// <summary>
-        /// Test the join request process
+        /// Test the join request process.
         /// </summary>
         [Fact]
         public void TestJoinRequest()
@@ -133,7 +133,9 @@ namespace LoRaWanTest
             LoRaPayloadJoinRequest joinRequestMessage = (LoRaPayloadJoinRequest)loRaPayload;
 
             byte[] joinRequestAppKey = new byte[16]
-            { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+            {
+                1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+            };
             var joinRequestBool = joinRequestMessage.CheckMic(ConversionHelper.ByteArrayToString(joinRequestAppKey));
             if (!joinRequestBool)
             {
@@ -141,12 +143,18 @@ namespace LoRaWanTest
             }
 
             byte[] joinRequestAppEui = new byte[8]
-            { 1, 2, 3, 4, 1, 2, 3, 4 };
+            {
+                1, 2, 3, 4, 1, 2, 3, 4
+            };
 
             byte[] joinRequestDevEUI = new byte[8]
-           { 2, 3, 4, 5, 2, 3, 4, 5 };
+            {
+               2, 3, 4, 5, 2, 3, 4, 5
+            };
             byte[] joinRequestDevNonce = new byte[2]
-            { 16, 45 };
+            {
+                16, 45
+            };
 
             Array.Reverse(joinRequestAppEui);
             Array.Reverse(joinRequestDevEUI);
@@ -157,7 +165,7 @@ namespace LoRaWanTest
         }
 
         /// <summary>
-        /// Test Confirmed Uplink Messages
+        /// Test Confirmed Uplink Messages.
         /// </summary>
         [Fact]
         public void TestUnconfirmedUplink()
@@ -202,7 +210,7 @@ namespace LoRaWanTest
         }
 
         /// <summary>
-        /// Test a confirm data up message
+        /// Test a confirm data up message.
         /// </summary>
         [Fact]
         public void TestConfirmedDataUp()
@@ -210,14 +218,18 @@ namespace LoRaWanTest
             byte[] mhdr = new byte[1];
             mhdr[0] = 128;
             byte[] devAddr = new byte[4]
-                { 4, 3, 2, 1 };
+                {
+                    4, 3, 2, 1
+                };
 
             byte[] fctrl = new byte[1]
             {
                 0,
             };
             byte[] fcnt = new byte[2]
-            { 0, 0 };
+            {
+                0, 0
+            };
             byte[] fport = new byte[1]
             {
                     10,
@@ -250,7 +262,7 @@ namespace LoRaWanTest
         }
 
         /// <summary>
-        /// Test keys
+        /// Test keys.
         /// </summary>
         [Fact]
         public void TestKeys()
@@ -316,7 +328,7 @@ namespace LoRaWanTest
 
         /// <summary>
         /// This test will validate if creating payloads will work, using new approach
-        ///  LoRaPayloadData (UnconfirmedDataUp) -> SerializeUplink -> Uplink.Rxpk[0] -> LoRaPayloadData -> check properties
+        ///  LoRaPayloadData (UnconfirmedDataUp) -> SerializeUplink -> Uplink.Rxpk[0] -> LoRaPayloadData -> check properties.
         /// </summary>
         [Theory]
         [InlineData(LoRaMessageType.UnconfirmedDataUp, "1234")]
@@ -383,7 +395,7 @@ namespace LoRaWanTest
         }
 
         /// <summary>
-        /// Check Mic process
+        /// Check Mic process.
         /// </summary>
         [Theory]
         [InlineData("FBE5100000000004", "FBE5100000000004", "FBE51000000000000000000000000004")]

@@ -8,14 +8,14 @@ namespace LoRaWan.Test.Shared
 
     /// <summary>
     /// Helper class enabling logging in Integration Test
-    /// When running the tests in Visual Studio Log does not output
+    /// When running the tests in Visual Studio Log does not output.
     /// </summary>
     public static class TestLogger
     {
         public static bool LogDate { get; set; }
 
         /// <summary>
-        /// Logs
+        /// Logs.
         /// </summary>
         public static void Log(string text)
         {

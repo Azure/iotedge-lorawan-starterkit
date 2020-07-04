@@ -7,12 +7,12 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaPhysical;
 
     /// <summary>
-    /// Defines a loRa device request queue
+    /// Defines a loRa device request queue.
     /// </summary>
     public interface ILoRaDeviceRequestQueue
     {
         /// <summary>
-        /// Queues a request
+        /// Queues a request.
         /// </summary>
         void Queue(LoRaRequest request);
     }

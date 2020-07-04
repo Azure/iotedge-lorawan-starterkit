@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer.Test
     public class MessageProcessor_End2End_NoDep_Join_Slow_Twin_Update_Tests : MessageProcessorTestBase
     {
         /// <summary>
-        /// Verifies that if the update twin takes too long that no join accepts are sent
+        /// Verifies that if the update twin takes too long that no join accepts are sent.
         /// </summary>
         [Theory]
         [InlineData(ServerGatewayID)]

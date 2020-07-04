@@ -11,7 +11,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
     using Microsoft.Extensions.Logging;
 
     /// <summary>
-    /// Checks the preferred gateway for a device
+    /// Checks the preferred gateway for a device.
     /// </summary>
     /// <remarks>
     /// The resolution happens the following way:
@@ -19,7 +19,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
     /// - Wait 200ms for other gateways register the same request for the device
     /// - Read all requests and identity the closest gateway based on RSSI
     /// - A single azure function will update the computed value
-    /// - All pending calls will return the computed value
+    /// - All pending calls will return the computed value.
     /// </remarks>
     public class PreferredGatewayExecutionItem : IFunctionBundlerExecutionItem
     {

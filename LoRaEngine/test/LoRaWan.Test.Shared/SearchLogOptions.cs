@@ -17,7 +17,7 @@ namespace LoRaWan.Test.Shared
         /// Gets or sets the source id filter that is used to
         /// filter for a specific source (in multi gateway scenarios).
         /// This currently only support inclusion of the specified id and exlusion
-        /// of anything that does not match that string
+        /// of anything that does not match that string.
         /// </summary>
         public string SourceIdFilter { get; set; }
 

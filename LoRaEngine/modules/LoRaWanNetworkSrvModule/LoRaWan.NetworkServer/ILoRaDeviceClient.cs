@@ -11,52 +11,52 @@ namespace LoRaWan.NetworkServer
 
     /// <summary>
     /// LoRa device client contract
-    /// Defines the iteractions between a LoRa device and a IoT service (Azure IoT Hub)
+    /// Defines the iteractions between a LoRa device and a IoT service (Azure IoT Hub).
     /// </summary>
     public interface ILoRaDeviceClient : IDisposable
     {
         /// <summary>
-        /// Gets the twin properties for the device
+        /// Gets the twin properties for the device.
         /// </summary>
         Task<Twin> GetTwinAsync();
 
         /// <summary>
-        /// Sends a telemetry/event
+        /// Sends a telemetry/event.
         /// </summary>
         Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties);
 
         /// <summary>
-        /// Updates the device reported properties
+        /// Updates the device reported properties.
         /// </summary>
         Task<bool> UpdateReportedPropertiesAsync(TwinCollection reportedProperties);
 
         /// <summary>
-        /// Receive a cloud to device message
+        /// Receive a cloud to device message.
         /// </summary>
         Task<Message> ReceiveAsync(TimeSpan timeout);
 
         /// <summary>
-        /// Completes a cloud to device message
+        /// Completes a cloud to device message.
         /// </summary>
         Task<bool> CompleteAsync(Message cloudToDeviceMessage);
 
         /// <summary>
-        /// Abandon a cloud to device message
+        /// Abandon a cloud to device message.
         /// </summary>
         Task<bool> AbandonAsync(Message cloudToDeviceMessage);
 
         /// <summary>
-        /// Reject a cloud to device message
+        /// Reject a cloud to device message.
         /// </summary>
         Task<bool> RejectAsync(Message cloudToDeviceMessage);
 
         /// <summary>
-        /// Disconnects device client
+        /// Disconnects device client.
         /// </summary>
         bool Disconnect();
 
         /// <summary>
-        /// Ensures the device client is connected
+        /// Ensures the device client is connected.
         /// </summary>
         bool EnsureConnected();
     }

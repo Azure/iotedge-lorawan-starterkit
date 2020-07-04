@@ -16,39 +16,39 @@ namespace LoRaTools.LoRaMessage
     using Org.BouncyCastle.Crypto.Parameters;
 
     /// <summary>
-    /// Implementation of a LoRa Join-Accept frame
+    /// Implementation of a LoRa Join-Accept frame.
     /// </summary>
     public class LoRaPayloadJoinAccept : LoRaPayload
     {
         const ushort MaxRxDelayValue = 16;
 
         /// <summary>
-        /// Gets or sets server Nonce aka JoinNonce
+        /// Gets or sets server Nonce aka JoinNonce.
         /// </summary>
         public Memory<byte> AppNonce { get; set; }
 
         /// <summary>
-        /// Gets or sets device home network aka Home_NetId
+        /// Gets or sets device home network aka Home_NetId.
         /// </summary>
         public Memory<byte> NetID { get; set; }
 
         /// <summary>
-        /// Gets or sets dLSettings
+        /// Gets or sets dLSettings.
         /// </summary>
         public Memory<byte> DlSettings { get; set; }
 
         /// <summary>
-        /// Gets or sets rxDelay
+        /// Gets or sets rxDelay.
         /// </summary>
         public Memory<byte> RxDelay { get; set; }
 
         /// <summary>
-        /// Gets or sets cFList / Optional
+        /// Gets or sets cFList / Optional.
         /// </summary>
         public Memory<byte> CfList { get; set; }
 
         /// <summary>
-        /// Gets or sets frame Counter
+        /// Gets or sets frame Counter.
         /// </summary>
         public Memory<byte> Fcnt { get; set; }
 

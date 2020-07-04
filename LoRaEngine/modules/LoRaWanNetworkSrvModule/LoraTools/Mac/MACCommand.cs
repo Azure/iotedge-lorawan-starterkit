@@ -15,7 +15,7 @@ namespace LoRaTools
     public abstract class MacCommand
     {
         /// <summary>
-        /// Gets or sets cid number of
+        /// Gets or sets cid number of.
         /// </summary>
         [JsonProperty("cid")]
         public CidEnum Cid { get; set; }
@@ -26,7 +26,7 @@ namespace LoRaTools
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MacCommand"/> class.
-        /// create
+        /// create.
         /// </summary>
         public MacCommand(ReadOnlySpan<byte> input)
         {

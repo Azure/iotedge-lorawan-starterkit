@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Helper <see cref="ILoRaDeviceClientConnectionManager"/> implementation for unit tests
+    /// Helper <see cref="ILoRaDeviceClientConnectionManager"/> implementation for unit tests.
     /// </summary>
     internal class SingleDeviceConnectionManager : ILoRaDeviceClientConnectionManager
     {

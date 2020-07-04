@@ -79,7 +79,7 @@ namespace LoRaWan.NetworkServer.Test
         public MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());
 
         /// <summary>
-        /// Creates a <see cref="IMemoryCache"/> containing the <paramref name="loRaDevice"/> already available
+        /// Creates a <see cref="IMemoryCache"/> containing the <paramref name="loRaDevice"/> already available.
         /// </summary>
         public IMemoryCache NewNonEmptyCache(LoRaDevice loRaDevice)
         {
