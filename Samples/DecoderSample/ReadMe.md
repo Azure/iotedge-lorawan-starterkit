@@ -59,7 +59,7 @@ You should see the result as JSON string.
 
 ![Decoder Sample - Debugging on localhost](/Docs/Pictures/decodersample-debugging.png)
 
-When running the solution in a container, the [Kestrel webserver](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-2.1) from .NET Core uses the HTTP default port 80 of the container and does not need to bind it to a port on the host machine as Docker allows for container-to-container communication. IoT Edge automatically creates the required [Docker Network Bridge](https://docs.docker.com/network/bridge/).
+When running the solution in a container, the [Kestrel webserver](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-3.1) from .NET Core uses the HTTP default port 80 of the container and does not need to bind it to a port on the host machine as Docker allows for container-to-container communication. IoT Edge automatically creates the required [Docker Network Bridge](https://docs.docker.com/network/bridge/).
 
 ### Preparing and Testing the Docker Image
 
