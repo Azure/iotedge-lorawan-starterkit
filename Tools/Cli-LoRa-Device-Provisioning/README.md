@@ -26,7 +26,7 @@ dotnet run -- (add verbs and parameters here)
 or dotnet loradeviceprovisioning.dll from the bin folder.
 
 ```powershell
-dotnet .\bin\Release\netcoreapp2.1\loradeviceprovisioning.dll -- (add verbs and parameters here)
+dotnet .\bin\Release\netcoreapp3.1\loradeviceprovisioning.dll -- (add verbs and parameters here)
 ```
 
 ## Setting up
