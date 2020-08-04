@@ -59,11 +59,11 @@ You should see the result as JSON string.
 
 ![Decoder Sample - Debugging on localhost](/Docs/Pictures/decodersample-debugging.png)
 
-When running the solution in a container, the [Kestrel webserver](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-3.1) from .NET Core uses the HTTP default port 80 of the container and does not need to bind it to a port on the host machine as Docker allows for container-to-container communication. IoT Edge automatically creates the required [Docker Network Bridge](https://docs.docker.com/network/bridge/).
+When running the solution in a container, the [Kestrel webserver](https://docs.microsoft.com/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-3.1) from .NET Core uses the HTTP default port 80 of the container and does not need to bind it to a port on the host machine as Docker allows for container-to-container communication. IoT Edge automatically creates the required [Docker Network Bridge](https://docs.docker.com/network/bridge/).
 
 ### Preparing and Testing the Docker Image
 
-Create a docker image from your finished solution based on the target architecture and host it in an [Azure Container Registry](https://azure.microsoft.com/en-us/services/container-registry/), on DockerHub or in any other container registry of your choice.
+Create a docker image from your finished solution based on the target architecture and host it in an [Azure Container Registry](https://azure.microsoft.com/services/container-registry/), on DockerHub or in any other container registry of your choice.
 
 We are using the [Azure IoT Edge for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge) extension to build and push the Docker image.
 
