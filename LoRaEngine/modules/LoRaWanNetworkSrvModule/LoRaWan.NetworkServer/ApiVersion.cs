@@ -119,6 +119,7 @@ namespace LoRaWan.Shared
             yield return Version_2019_04_15_Preview;
             yield return Version_2019_07_05;
             yield return Version_2019_07_16;
+            yield return Version_2020_08_11;
         }
 
         /// <summary>
@@ -174,6 +175,9 @@ namespace LoRaWan.Shared
 
             Version_2019_07_16 = new ApiVersion("2019-07-16");
             Version_2019_07_16.MinCompatibleVersion = Version_2019_07_16;
+
+            Version_2020_08_11 = new ApiVersion("2020-08-11");
+            Version_2020_08_11.MinCompatibleVersion = Version_2019_07_16;
         }
 
         /// <summary>
