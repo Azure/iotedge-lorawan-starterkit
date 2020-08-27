@@ -117,6 +117,7 @@ namespace LoraKeysManagerFacade
                     else
                     {
                         ownGlobalLock = true;
+                        this.logger.LogDebug("A full reload was started");
                         await this.PerformFullReload(registryManager);
                         this.logger.LogDebug("A full reload was completed");
                         // if successfull i set the delta lock to 5 minutes and release the global lock
@@ -151,6 +152,7 @@ namespace LoraKeysManagerFacade
                 {
                     if (await this.cacheStore.LockTakeAsync(DeltaUpdateKey, this.lockOwner, TimeSpan.FromMinutes(5)))
                     {
+                        this.logger.LogDebug("A delta reload was started");
                         await this.PerformDeltaReload(registryManager);
                         this.logger.LogDebug("A delta reload was completed");
                     }
