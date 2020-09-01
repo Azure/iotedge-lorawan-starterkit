@@ -24,7 +24,8 @@ namespace LoraKeysManagerFacade
         [FunctionName("SyncDevAddrCache")]
         public async Task Run([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
         {
-            log.LogDebug($"SyncDevAddrCache function executed at: {DateTime.Now}");
+            log.LogDebug($"{(myTimer.IsPastDue ? "The timer is past due" : "The timer is on schedule")}, Function last ran at {myTimer.ScheduleStatus.Last} Function next scheduled run at {myTimer.ScheduleStatus.Next})");
+
             await this.loRaDevAddrCache.PerformNeededSyncs(this.registryManager);
         }
     }
