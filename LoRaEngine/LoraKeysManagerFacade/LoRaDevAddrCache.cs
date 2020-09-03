@@ -168,6 +168,8 @@ namespace LoraKeysManagerFacade
             }
         }
 
+        public async Task<TimeSpan?> GetTTLInformation(string key) => await this.cacheStore.GetObjectTTL(key);
+
         /// <summary>
         /// Perform a full relaoad on the dev address cache. This occur typically once every 24 h.
         /// </summary>

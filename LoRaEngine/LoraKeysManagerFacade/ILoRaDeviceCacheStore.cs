@@ -20,6 +20,8 @@ namespace LoraKeysManagerFacade
         /// <returns>true if the lock was acquired otherwise false.</returns>
         Task<bool> LockTakeAsync(string key, string owner, TimeSpan expiration, bool block = true);
 
+        public Task<TimeSpan?> GetObjectTTL(string key);
+
         string StringGet(string key);
 
         T GetObject<T>(string key)

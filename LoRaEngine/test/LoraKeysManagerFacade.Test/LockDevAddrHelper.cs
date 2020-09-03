@@ -35,5 +35,7 @@ namespace LoraKeysManagerFacade.Test
             LockDevAddrHelper.ReleaseAllLocks(loRaDeviceCache);
             await LockDevAddrHelper.TakeLocksAsync(loRaDeviceCache, locksGuideTest);
         }
+
+        public static DevAddrCacheInfo GetCachedDevAddr(ILoRaDeviceCacheStore loRaDeviceCache, string key) => loRaDeviceCache.GetObject<DevAddrCacheInfo>(key);
     }
 }

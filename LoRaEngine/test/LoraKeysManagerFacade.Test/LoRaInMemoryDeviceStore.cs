@@ -150,5 +150,10 @@ namespace LoraKeysManagerFacade.Test
         {
             throw new NotImplementedException();
         }
+
+        public Task<TimeSpan?> GetObjectTTL(string key)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
