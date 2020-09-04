@@ -128,6 +128,39 @@ namespace LoraKeysManagerFacade.Test
             }
         }
 
+        /// <summary>
+        /// Ensure that the Locks get released if an exception pop.
+        /// </summary>
+        [Theory]
+        [InlineData(FullUpdateKey)]
+        [InlineData(DeltaUpdateKey)]
+        public async Task When_PerformNeededSyncs_Fails_Should_Release_Lock(params string[] lockToTake)
+        {
+            var devAddrcache = new LoRaDevAddrCache(this.cache, null, null);
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache, null, lockToTake);
+            List<DevAddrCacheInfo> managerInput = new List<DevAddrCacheInfo>();
+
+            for (int i = 0; i < 2; i++)
+            {
+                managerInput.Add(new DevAddrCacheInfo()
+                {
+                    DevEUI = NewUniqueEUI64(),
+                    DevAddr = NewUniqueEUI32()
+                });
+            }
+
+            var registryManagerMock = this.InitRegistryManager(managerInput);
+            registryManagerMock.Setup(x => x.CreateQuery(It.IsAny<string>())).Throws<Exception>();
+            await devAddrcache.PerformNeededSyncs(registryManagerMock.Object);
+
+            Assert.Null(this.cache.GetObject<DevAddrCacheInfo>(GlobalDevAddrUpdateKey));
+            var nextFullUpdate = await this.cache.GetObjectTTL(FullUpdateKey);
+            if (lockToTake[0] == DeltaUpdateKey)
+            {
+                Assert.True(nextFullUpdate < TimeSpan.FromMinutes(1));
+            }
+        }
+
         [Fact]
         // This test simulate a new call from an unknow device. It checks that :
         // The server correctly query iot hub
