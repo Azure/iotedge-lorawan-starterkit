@@ -904,13 +904,16 @@ namespace LoRaWan.NetworkServer
                         Logger.Log(this.DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
                     }
 
-                    if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
+                    if (this.DesiredRX2DataRate != null)
                     {
-                        this.ReportedRX2DataRate = this.DesiredRX2DataRate;
-                    }
-                    else
-                    {
-                        Logger.Log(this.DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
+                        if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
+                        {
+                            this.ReportedRX2DataRate = this.DesiredRX2DataRate;
+                        }
+                        else
+                        {
+                            Logger.Log(this.DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
+                        }
                     }
 
                     if (currentRegion.IsValidRXDelay(this.DesiredRXDelay))
