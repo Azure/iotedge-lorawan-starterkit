@@ -12,8 +12,8 @@ variables:
 
   buildConfiguration: 'Release'
 
-  edgeAgentVersion: 1.0.9
-  edgeHubVersion: 1.0.9
+  edgeAgentVersion: 1.0.9.5
+  edgeHubVersion: 1.0.9.5
   edgeHubRoute: FROM /* INTO $upstream
 
   # Defines the name of the VSTS agent in ARM architecture

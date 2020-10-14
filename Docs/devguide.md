@@ -4,7 +4,7 @@
 
 The code is organized into three sections:
 
-- **LoRaEngine** - a .NET Standard 2.1 solution with the following folders:
+- **LoRaEngine** - a .NET core 3.1 solution with the following folders:
   - **modules** - Azure IoT Edge modules.
   - **LoraKeysManagerFacade** - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
   - **LoRaDevTools** - library for dev tools (git submodule)
@@ -17,7 +17,7 @@ The code is organized into three sections:
 
 ## LoRaEngine
 
-A **.NET Core 2.1** solution with the following projects:
+A **.NET Core 3.1** solution with the following projects:
 
 - **modules** - Azure IoT Edge modules.
   - **LoRaWanPktFwdModule** packages the network forwarder into an IoT Edge compatible docker container. See https://github.com/Lora-net/packet_forwarder and https://github.com/Lora-net/lora_gateway. If you are using a RAK833-USB see this [submodule](/Docs/LoRaWanPktFwdRAK833USB)
