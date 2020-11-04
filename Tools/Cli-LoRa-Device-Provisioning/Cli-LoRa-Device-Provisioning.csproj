@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.Targets" Version="3.1.0" PrivateAssets="all" />
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Microsoft.Azure.Devices" Version="1.22.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.6" />
@@ -29,7 +30,9 @@
     </ItemGroup>
     <PropertyGroup>
         <CodeAnalysisRuleSet>../../stylecop.ruleset</CodeAnalysisRuleSet><Authors>Sascha Corti (saschac@microsoft.com)</Authors><Version>1.1.0.0</Version><Company>Microsoft</Company><Product>Azure IoT Edge LoRaWAN Starter Kit LoRa Leaf Device Provisioning Utility.</Product><Description>This tool complements http://aka.ms/lora</Description><Copyright>Copyright (c) 2019 Microsoft. All rights reserved.</Copyright><PackageLicenseExpression>Licensed under the MIT license. See LICENSE file in the project GitHub repo root for full license information.</PackageLicenseExpression><PackageProjectUrl>https://github.com/Azure/iotedge-lorawan-starterkit</PackageProjectUrl><RepositoryUrl>https://github.com/Azure/iotedge-lorawan-starterkit</RepositoryUrl>
-    </PropertyGroup>
+    </PropertyGroup><PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+</PropertyGroup>
     <Import Project="../../stylecop.props" />
 
 </Project>
