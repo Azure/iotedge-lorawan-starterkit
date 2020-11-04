@@ -230,5 +230,97 @@ namespace LoRaTools.Regions
             us915.MaxADRDataRate = 3;
             us915.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), upstreamValidDataranges, downstreamValidDataranges, 0, 8);
         }
+
+        private static Region au915;
+
+        public static Region AU915
+        {
+            get
+            {
+                if (au915 == null)
+                {
+                    lock (RegionLock)
+                    {
+                        if (au915 == null)
+                        {
+                            CreateAU915Region();
+                        }
+                    }
+                }
+
+                return us915;
+            }
+        }
+
+        private static void CreateAU915Region()
+        {
+            au915 = new Region(
+                LoRaRegionType.AU915,
+                0x34,
+                null, // no GFSK in US Band
+                (frequency: 923.3, datr: 8),
+                1,
+                2,
+                5,
+                6,
+                16384,
+                64,
+                32,
+                (min: 1, max: 3));
+            au915.DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
+            au915.DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
+            au915.DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 59));
+            au915.DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 123));
+            au915.DRtoConfiguration.Add(4, (configuration: "SF8BW125", maxPyldSize: 230));
+            au915.DRtoConfiguration.Add(5, (configuration: "SF7BW125", maxPyldSize: 230));
+            au915.DRtoConfiguration.Add(6, (configuration: "SF8BW500", maxPyldSize: 230));
+
+            au915.DRtoConfiguration.Add(8, (configuration: "SF12BW500", maxPyldSize: 41));
+            au915.DRtoConfiguration.Add(9, (configuration: "SF11BW500", maxPyldSize: 117));
+            au915.DRtoConfiguration.Add(10, (configuration: "SF10BW500", maxPyldSize: 230));
+            au915.DRtoConfiguration.Add(11, (configuration: "SF9BW500", maxPyldSize: 230));
+            au915.DRtoConfiguration.Add(12, (configuration: "SF8BW500", maxPyldSize: 230));
+            au915.DRtoConfiguration.Add(13, (configuration: "SF7BW500", maxPyldSize: 230));
+
+            for (uint i = 0; i < 14; i++)
+            {
+                au915.TXPowertoMaxEIRP.Add(i, 30 - i);
+            }
+
+            au915.RX1DROffsetTable = new int[7, 6]
+            {
+            { 8, 8, 8, 8, 8, 8 },
+            { 9, 8, 8, 8, 8, 8 },
+            { 10, 9, 8, 8, 8, 8 },
+            { 11, 10, 9, 8, 8, 8 },
+            { 12, 11, 10, 9, 8, 8 },
+            { 13, 12, 11, 10, 9, 8 },
+            { 13, 13, 12, 11, 10, 9 },
+            };
+
+            HashSet<string> upstreamValidDataranges = new HashSet<string>()
+            {
+                "SF12BW125", // 0
+                "SF11BW125", // 1
+                "SF10BW125", // 2
+                "SF9BW125", // 3
+                "SF8BW125", // 4
+                "SF7BW125", // 5
+                "SF8BW500", // 6
+            };
+
+            HashSet<string> downstreamValidDataranges = new HashSet<string>()
+            {
+                "SF12BW500", // 8
+                "SF11BW500", // 9
+                "SF10BW500", // 10
+                "SF9BW500", // 11
+                "SF8BW500", // 12
+                "SF7BW500" // 13
+            };
+
+            au915.MaxADRDataRate = 3;
+            au915.RegionLimits = new RegionLimits((min: 915.2, max: 927.8), upstreamValidDataranges, downstreamValidDataranges, 0, 8);
+        }
     }
 }

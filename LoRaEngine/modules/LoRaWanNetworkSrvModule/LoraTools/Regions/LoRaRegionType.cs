@@ -7,6 +7,7 @@ namespace LoRaTools.Regions
     {
         NotSet,
         EU868,
-        US915
+        US915,
+        AU915
     }
 }
