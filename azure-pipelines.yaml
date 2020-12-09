@@ -38,7 +38,7 @@ variables:
   NET_SRV_LOGTO_HUB: false
   NET_SRV_IOTEDGE_TIMEOUT: 0
   NET_SRV_VERSION: "" # Network Server module version
-  NET_SRV_LOG_TO_UDP_ADDRESS: 10.164.74.151 # Hostname of test runner
+  NET_SRV_LOG_TO_UDP_ADDRESS: 192.168.1.16 # Hostname of test runner
   PKT_FWD_VERSION: "" # Packet Forward module version
 
 # Enable PR validation on branches master and dev
