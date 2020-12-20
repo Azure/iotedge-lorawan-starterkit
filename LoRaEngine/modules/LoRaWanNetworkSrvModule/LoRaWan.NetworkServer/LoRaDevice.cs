@@ -572,9 +572,9 @@ namespace LoRaWan.NetworkServer
                 var fcntDownDelta = this.FCntDown >= this.LastSavedFCntDown ? this.FCntDown - this.LastSavedFCntDown : this.LastSavedFCntDown - this.FCntDown;
 
                 if (reportedProperties.Count > 0 ||
-                    fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
-                    fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
-                    (this.hasFrameCountChanges && force))
+                            fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
+                            fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
+                            (this.hasFrameCountChanges && force))
                 {
                     var savedFcntDown = this.FCntDown;
                     var savedFcntUp = this.FCntUp;
@@ -904,16 +904,13 @@ namespace LoRaWan.NetworkServer
                         Logger.Log(this.DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
                     }
 
-                    if (this.DesiredRX2DataRate != null)
+                    if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
                     {
-                        if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
-                        {
-                            this.ReportedRX2DataRate = this.DesiredRX2DataRate;
-                        }
-                        else
-                        {
-                            Logger.Log(this.DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
-                        }
+                        this.ReportedRX2DataRate = this.DesiredRX2DataRate;
+                    }
+                    else
+                    {
+                        Logger.Log(this.DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
                     }
 
                     if (currentRegion.IsValidRXDelay(this.DesiredRXDelay))
