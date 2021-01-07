@@ -152,6 +152,13 @@ namespace LoRaWanTest
             Assert.Equal(expectedDatr, downstream);
         }
 
+        [Fact]
+        public void Check_Downstream_DR_Returns_False_On_Null_Datarate()
+        {
+            Assert.False(RegionManager.EU868.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(null));
+            Assert.False(RegionManager.US915.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(null));
+        }
+
         [Theory]
         [InlineData(LoRaRegionType.EU868, 0)]
         [InlineData(LoRaRegionType.EU868, 1)]
