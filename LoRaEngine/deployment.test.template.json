@@ -22,7 +22,7 @@
             "type": "docker",
             "settings": {
               "image": "mcr.microsoft.com/azureiotedge-agent:$EDGE_AGENT_VERSION",
-              "createOptions": ""
+              "createOptions": {}
             }
           },
           "edgeHub": {
@@ -143,7 +143,7 @@
           "sensordecodermodule": {
             "type": "docker",
             "settings": {
-              "image": "$CONTAINER_REGISTRY_ADDRESS/decodersample:2.0",
+              "image": "$CONTAINER_REGISTRY_ADDRESS/decodersample:2.0-arm32v7",
               "createOptions": {}
             },
             "status": "running",

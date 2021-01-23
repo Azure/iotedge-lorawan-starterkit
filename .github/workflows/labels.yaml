@@ -1,0 +1,21 @@
+name: Add Test Labels
+
+on:
+  pull_request: 
+    types: [labeled]
+jobs:
+  add_label:
+    name: Add labels
+    runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        labelToAdd: [ SensorDecodingTest, OTAAJoinTest, ABPTest, OTAATest, MacTest, ClassCTest, C2DMessageTest, MultiGatewayTests]
+    steps:
+    - name: addlabel_${{ matrix.labelToAdd }}
+      uses: buildsville/add-remove-label@v1
+      if: github.event.label.name == 'fullci'
+      with:
+        token: ${{secrets.GITHUB_TOKEN}}
+        label: ${{ matrix.labelToAdd }}
+        type: add
+
