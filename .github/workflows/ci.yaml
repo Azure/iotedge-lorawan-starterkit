@@ -14,6 +14,9 @@ on: # rebuild any PRs and main branch changes
       TestsToRun:
         default: '[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]'
         description: 'tests to run'
+env:
+  buildConfiguration: 'Release'
+
 jobs:
   env_var:
     name: Set environment variables
@@ -106,7 +109,7 @@ jobs:
       shell: bash
       run: |
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        dotnet build --configuration Release --output ./output
+        dotnet build --configuration ${{ env.buildConfiguration }} --output ./output
         popd
 
     - name: 'Run Azure Functions Action'
@@ -136,7 +139,7 @@ jobs:
     env:
       CONTAINER_REGISTRY_ADDRESS: "loramoduleintegrationtest.azurecr.io"
       CONTAINER_REGISTRY_SERVER: "loramoduleintegrationtest.azurecr.io"
-      CONTAINER_REGISTRY_USERNAME: "loramoduleintegrationtest.azurecr.io"
+      CONTAINER_REGISTRY_USERNAME: "loramoduleintegrationtest"
       CONTAINER_REGISTRY_PASSWORD: ${{ secrets.ACR_CREDENTIALS }}
       IOTHUB_CONNECTION_STRING: ${{ secrets.IOTHUB_CONNECTION_STRING }}
       IOT_EDGE_DEPLOYMENT_ID: "citest${{ matrix.gateway }}"
