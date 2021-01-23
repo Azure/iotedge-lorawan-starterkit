@@ -16,6 +16,7 @@ on: # rebuild any PRs and main branch changes
         description: 'tests to run'
 env:
   buildConfiguration: 'Release'
+  AZURE_FUNCTIONAPP_NAME: 'loramoduleintegrationtest'
 
 jobs:
   env_var:
@@ -41,7 +42,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     outputs:
-      AZURE_FUNCTIONAPP_NAME: loramoduleintegrationtest
       RunTestsOnly: ${{ github.event.inputs.RunTestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunTestsOnly') == true}}
       IntegrationTestsToRun: ${{ steps.set-integration-matrix.outputs.IntegrationTestsToRun }}
   
@@ -151,7 +151,7 @@ jobs:
       EDGEHUB_ROUTE: "FROM /* INTO $upstream"
       RESET_PIN: 7
       REGION: "EU"
-      FACADE_SERVER_URL: "https://${{ needs.env_var.outputs.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net/api/"
+      FACADE_SERVER_URL: "https://${{ env.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net/api/"
       FACADE_AUTH_CODE: ${{ secrets.FUNCTION_AUTH_CODE }}
       EDGE_AGENT_VERSION: 1.0.10
       EDGE_HUB_VERSION: 1.0.10
@@ -239,7 +239,7 @@ jobs:
       INTEGRATIONTEST_IoTHubConnectionString: ${{ secrets.IOTHUB_CONNECTION_STRING }}
       INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
       INTEGRATIONTEST_FunctionAppCode: ${{ secrets.FUNCTION_AUTH_CODE }}
-      INTEGRATIONTEST_FunctionAppBaseUrl: "https://${{ needs.env_var.outputs.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net/api/"
+      INTEGRATIONTEST_FunctionAppBaseUrl: "https://${{ env.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net/api/"
 
     steps:
     - uses: actions/checkout@v2
