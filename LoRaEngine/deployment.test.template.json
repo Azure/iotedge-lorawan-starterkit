@@ -143,7 +143,7 @@
           "sensordecodermodule": {
             "type": "docker",
             "settings": {
-              "image": "$CONTAINER_REGISTRY_ADDRESS/decodersample:2.0-arm32v7",
+              "image": "$CONTAINER_REGISTRY_ADDRESS/decodersample:2.0",
               "createOptions": {}
             },
             "status": "running",

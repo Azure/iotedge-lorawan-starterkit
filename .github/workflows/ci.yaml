@@ -9,7 +9,7 @@ on: # rebuild any PRs and main branch changes
   workflow_dispatch:
     inputs:
       RunTestsOnly:
-        description: 'Run only tests?'
+        description: 'Run tests only'
         default: false   
       TestsToRun:
         default: '[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]'
@@ -176,7 +176,7 @@ jobs:
           elif [ ${{ github.ref	}} = "refs/heads/master" ]; then
           echo "master"
           IMAGE_TAG="$MASTER_IMAGE_TAG"
-          elif [ ${{ github.event_name }}	== "pull_request" ]; then
+          elif [ ${{ github.event_name }} == "pull_request" ]; then
           echo "pull request"
           IMAGE_TAG="pr-${{ github.event.number}}"
           else
