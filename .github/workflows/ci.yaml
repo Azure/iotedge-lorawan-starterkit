@@ -181,7 +181,7 @@ jobs:
           IMAGE_TAG="pr-${{ github.event.number}}"
           else
           echo "all others"
-          IMAGE_TAG="custom-${{ github.ref }}"
+          IMAGE_TAG="custom-${GITHUB_REF##*/}"
           fi
           echo "Using image tag prefix $IMAGE_TAG"
           IMAGE_TAG="$IMAGE_TAG-${{ github.run_number }}"
