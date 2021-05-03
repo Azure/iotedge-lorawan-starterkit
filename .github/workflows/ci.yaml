@@ -154,8 +154,8 @@ jobs:
       REGION: "EU"
       FACADE_SERVER_URL: "https://${{ needs.env_var.outputs.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net/api/"
       FACADE_AUTH_CODE: ${{ secrets.FUNCTION_AUTH_CODE }}
-      EDGE_AGENT_VERSION: 1.0.10
-      EDGE_HUB_VERSION: 1.0.10
+      EDGE_AGENT_VERSION: 1.2.0
+      EDGE_HUB_VERSION: 1.2.0
       EDGEHUB_OPTIMIZEFORPERFORMANCE: false
       EDGEHUB_MQTTSETTINGS_ENABLED: false
       EDGEHUB_HTTPSETTINGS_ENABLED: false
@@ -181,7 +181,7 @@ jobs:
           IMAGE_TAG="pr-${{ github.event.number}}"
           else
           echo "all others"
-          IMAGE_TAG="custom-${{ github.ref }}"
+          IMAGE_TAG="custom-${GITHUB_REF##*/}"
           fi
           echo "Using image tag prefix $IMAGE_TAG"
           IMAGE_TAG="$IMAGE_TAG-${{ github.run_number }}"
