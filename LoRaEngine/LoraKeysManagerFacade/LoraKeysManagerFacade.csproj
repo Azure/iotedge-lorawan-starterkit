@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Docker.DotNet.X509" Version="3.125.2" />
-    <PackageReference Include="Microsoft.Azure.Devices" Version="1.31.0" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="1.33.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.5" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.5" />
