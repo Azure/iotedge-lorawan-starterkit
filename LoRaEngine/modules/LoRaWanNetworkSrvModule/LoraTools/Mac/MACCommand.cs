@@ -50,71 +50,71 @@ namespace LoRaTools
             int pointer = 0;
             var macCommands = new List<MacCommand>(3);
 
-            while (pointer < input.Length)
+            try
             {
-                try
+                while (pointer < input.Length)
                 {
-                    CidEnum cid = (CidEnum)input.Span[pointer];
-                    switch (cid)
-                    {
-                        case CidEnum.LinkCheckCmd:
-                            var linkCheck = new LinkCheckRequest();
-                            pointer += linkCheck.Length;
-                            macCommands.Add(linkCheck);
-                            break;
-                        case CidEnum.LinkADRCmd:
-                            var linkAdrAnswer = new LinkADRAnswer(input.Span.Slice(pointer));
-                            pointer += linkAdrAnswer.Length;
-                            macCommands.Add(linkAdrAnswer);
-                            break;
-                        case CidEnum.DutyCycleCmd:
-                            var dutyCycle = new DutyCycleAnswer();
-                            pointer += dutyCycle.Length;
-                            macCommands.Add(dutyCycle);
-                            break;
-                        case CidEnum.RXParamCmd:
-                            var rxParamSetup = new RXParamSetupAnswer(input.Span.Slice(pointer));
-                            pointer += rxParamSetup.Length;
-                            macCommands.Add(rxParamSetup);
-                            break;
-                        case CidEnum.DevStatusCmd:
-                            // Added this case to enable unit testing
-                            if (input.Length == 1)
-                            {
-                                var devStatusRequest = new DevStatusRequest();
-                                pointer += devStatusRequest.Length;
-                                macCommands.Add(devStatusRequest);
-                            }
-                            else
-                            {
-                                DevStatusAnswer devStatus = new DevStatusAnswer(input.Span.Slice(pointer));
-                                pointer += devStatus.Length;
-                                macCommands.Add(devStatus);
-                            }
+                        CidEnum cid = (CidEnum)input.Span[pointer];
+                        switch (cid)
+                        {
+                            case CidEnum.LinkCheckCmd:
+                                var linkCheck = new LinkCheckRequest();
+                                pointer += linkCheck.Length;
+                                macCommands.Add(linkCheck);
+                                break;
+                            case CidEnum.LinkADRCmd:
+                                var linkAdrAnswer = new LinkADRAnswer(input.Span.Slice(pointer));
+                                pointer += linkAdrAnswer.Length;
+                                macCommands.Add(linkAdrAnswer);
+                                break;
+                            case CidEnum.DutyCycleCmd:
+                                var dutyCycle = new DutyCycleAnswer();
+                                pointer += dutyCycle.Length;
+                                macCommands.Add(dutyCycle);
+                                break;
+                            case CidEnum.RXParamCmd:
+                                var rxParamSetup = new RXParamSetupAnswer(input.Span.Slice(pointer));
+                                pointer += rxParamSetup.Length;
+                                macCommands.Add(rxParamSetup);
+                                break;
+                            case CidEnum.DevStatusCmd:
+                                // Added this case to enable unit testing
+                                if (input.Length == 1)
+                                {
+                                    var devStatusRequest = new DevStatusRequest();
+                                    pointer += devStatusRequest.Length;
+                                    macCommands.Add(devStatusRequest);
+                                }
+                                else
+                                {
+                                    DevStatusAnswer devStatus = new DevStatusAnswer(input.Span.Slice(pointer));
+                                    pointer += devStatus.Length;
+                                    macCommands.Add(devStatus);
+                                }
 
-                            break;
-                        case CidEnum.NewChannelCmd:
-                            NewChannelAnswer newChannel = new NewChannelAnswer(input.Span.Slice(pointer));
-                            pointer += newChannel.Length;
-                            macCommands.Add(newChannel);
-                            break;
-                        case CidEnum.RXTimingCmd:
-                            RXTimingSetupAnswer rxTimingSetup = new RXTimingSetupAnswer();
-                            pointer += rxTimingSetup.Length;
-                            macCommands.Add(rxTimingSetup);
-                            break;
-                        default:
-                            Logger.Log(deviceId, $"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
-                            return null;
-                    }
+                                break;
+                            case CidEnum.NewChannelCmd:
+                                NewChannelAnswer newChannel = new NewChannelAnswer(input.Span.Slice(pointer));
+                                pointer += newChannel.Length;
+                                macCommands.Add(newChannel);
+                                break;
+                            case CidEnum.RXTimingCmd:
+                                RXTimingSetupAnswer rxTimingSetup = new RXTimingSetupAnswer();
+                                pointer += rxTimingSetup.Length;
+                                macCommands.Add(rxTimingSetup);
+                                break;
+                            default:
+                                Logger.Log(deviceId, $"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
+                                return null;
+                        }
 
                     MacCommand addedMacCommand = macCommands[macCommands.Count - 1];
                     Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand.ToString()}", LogLevel.Debug);
                 }
-                catch (MacCommandException ex)
-                {
-                    Logger.Log(deviceId, ex.ToString(), LogLevel.Error);
-                }
+            }
+            catch (MacCommandException ex)
+            {
+                Logger.Log(deviceId, ex.ToString(), LogLevel.Error);
             }
 
             return macCommands;

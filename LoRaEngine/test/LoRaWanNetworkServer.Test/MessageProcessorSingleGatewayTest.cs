@@ -9,6 +9,8 @@ namespace LoRaWan.NetworkServer.Test
     using System.Runtime.InteropServices;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
+    using LoRaTools.LoRaPhysical;
+    using LoRaTools.Mac;
     using LoRaWan.NetworkServer;
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices.Client;
@@ -198,6 +200,43 @@ namespace LoRaWan.NetworkServer.Test
 
             // 3. Frame counter up was updated
             Assert.Equal(10U, loraDevice.FCntUp);
+        }
+
+        [Fact]
+        public void MAC_Should_work()
+        {
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID));
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 10);
+            simulatedDevice.FrmCntUp = 9;
+
+            // Create Rxpk
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
+
+            var loraDevice = this.CreateLoRaDevice(simulatedDevice);
+
+            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .ReturnsAsync(true);
+
+            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+                .ReturnsAsync((Message)null);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+
+            // Send to message processor
+            var messageProcessor = new MessageDispatcher(
+                this.ServerConfiguration,
+                deviceRegistry,
+                this.FrameCounterUpdateStrategyProvider);
+
+            var request = new LoRaRequest(
+                new Rxpk
+                {
+                    Data = "QDDaAAGxfh0FAI6wAENHbvgt1UK5Je1uPo/bLPB9HlnOXLGlLRUrTtA0KOHrZhusGl+L4g=="
+                },
+                null,
+                DateTime.Now);
+
+            Assert.Throws<MacCommandException>(() => messageProcessor.DispatchRequest(request));
         }
 
         [Fact]
