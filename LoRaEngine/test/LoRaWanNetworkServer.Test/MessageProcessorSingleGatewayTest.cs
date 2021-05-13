@@ -203,7 +203,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         [Fact]
-        public void MAC_Should_work()
+        public void When_Faulty_MAC_Message_Is_Received_Processing_Abort_Without_Infinite_Loop()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID));
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 10);
@@ -236,7 +236,7 @@ namespace LoRaWan.NetworkServer.Test
                 null,
                 DateTime.Now);
 
-            Assert.Throws<MacCommandException>(() => messageProcessor.DispatchRequest(request));
+            messageProcessor.DispatchRequest(request);
         }
 
         [Fact]
