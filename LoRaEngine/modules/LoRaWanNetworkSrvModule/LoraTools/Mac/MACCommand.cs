@@ -50,9 +50,9 @@ namespace LoRaTools
             int pointer = 0;
             var macCommands = new List<MacCommand>(3);
 
-            while (pointer < input.Length)
+            try
             {
-                try
+                while (pointer < input.Length)
                 {
                     CidEnum cid = (CidEnum)input.Span[pointer];
                     switch (cid)
@@ -111,10 +111,10 @@ namespace LoRaTools
                     MacCommand addedMacCommand = macCommands[macCommands.Count - 1];
                     Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand.ToString()}", LogLevel.Debug);
                 }
-                catch (MacCommandException ex)
-                {
-                    Logger.Log(deviceId, ex.ToString(), LogLevel.Error);
-                }
+            }
+            catch (MacCommandException ex)
+            {
+                Logger.Log(deviceId, ex.ToString(), LogLevel.Error);
             }
 
             return macCommands;
