@@ -4,7 +4,7 @@
     "image": {
         "repository": "oneweek202105.azurecr.io/universaldecoder",
         "tag": {
-            "version": "0.0.1",
+            "version": "0.0.5",
             "platforms": {
                 "amd64": "./Dockerfile.amd64",
                 "amd64.debug": "./Dockerfile.amd64.debug",

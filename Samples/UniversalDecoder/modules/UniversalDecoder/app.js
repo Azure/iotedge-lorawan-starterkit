@@ -6,8 +6,13 @@ const port = 8080
 
 app.get('/', (req, res) => {
   console.log('Request received');
+
+  var bytes = Buffer.from(req.query.payload, 'base64').toString('utf-8');
+  var fPort = req.query.fport;
+
   res.send({
-    value: req.query.payload
+    fPort,
+    bytes
   });
 })
 
