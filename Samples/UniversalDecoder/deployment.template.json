@@ -64,7 +64,20 @@
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.UniversalDecoder}",
-              "createOptions": {}
+              "createOptions": {
+                "ExposedPorts": {
+                  "8080/tcp": {}
+                },
+                "HostConfig": {
+                  "PortBindings": {
+                    "8080/tcp": [
+                      {
+                        "HostPort": "8080"
+                      }
+                    ]
+                  }
+                }
+              }
             }
           }
         }
