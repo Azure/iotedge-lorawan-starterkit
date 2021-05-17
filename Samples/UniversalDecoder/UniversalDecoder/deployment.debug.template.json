@@ -79,16 +79,6 @@
                 }
               }
             }
-          },
-          "SimulatedTemperatureSensor": {
-            "version": "1.0",
-            "type": "docker",
-            "status": "running",
-            "restartPolicy": "always",
-            "settings": {
-              "image": "mcr.microsoft.com/azureiotedge-simulated-temperature-sensor:1.0",
-              "createOptions": {}
-            }
           }
         }
       }
@@ -97,8 +87,7 @@
       "properties.desired": {
         "schemaVersion": "1.0",
         "routes": {
-          "UniversalDecoderToIoTHub": "FROM /messages/modules/UniversalDecoder/outputs/* INTO $upstream",
-          "sensorToUniversalDecoder": "FROM /messages/modules/SimulatedTemperatureSensor/outputs/temperatureOutput INTO BrokeredEndpoint(\"/modules/UniversalDecoder/inputs/input1\")"
+          "UniversalDecoderToIoTHub": "FROM /messages/modules/UniversalDecoder/outputs/* INTO $upstream"
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200
