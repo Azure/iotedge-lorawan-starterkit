@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
+    using LoRaWan.NetworkServer.PacketForwarder;
 
     public class LoRaRequest
     {

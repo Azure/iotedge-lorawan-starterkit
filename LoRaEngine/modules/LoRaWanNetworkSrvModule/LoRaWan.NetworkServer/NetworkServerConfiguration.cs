@@ -105,6 +105,11 @@ namespace LoRaWan.NetworkServer
         public uint NetId { get; set; } = 1;
 
         /// <summary>
+        /// Gets or sets a value indicating whether to use Basic station.
+        /// </summary>
+        public bool UseBasicStation { get; set; }
+
+        /// <summary>
         /// Gets list of allowed dev addresses.
         /// </summary>
         public HashSet<string> AllowedDevAddresses { get; internal set; }

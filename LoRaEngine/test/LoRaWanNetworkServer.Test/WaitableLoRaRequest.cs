@@ -13,6 +13,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.PacketForwarder;
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
