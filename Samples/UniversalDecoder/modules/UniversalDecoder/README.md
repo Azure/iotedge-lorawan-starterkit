@@ -7,3 +7,25 @@
   - This allows to implement a quality gate before releasing a new version of the docker container (prevent bugs coming from external repo)
   - This allows for rollback to an earlier working version of the docker image
 - Docker image build should be automated and scheduled according to the requirements
+
+## Setup
+
+- Add configuration to your .env:
+  - CONTAINER_REGISTRY=xxx
+  - CONTAINER_REGISTRY_USERNAME=xxx
+  - CONTAINER_REGISTRY_PASSWORD=xxx
+- npm install
+- npm run codecs
+- Azure Iot: Set default target platform for Edge Solution --> select appropriately
+
+## Run application
+
+- npm start
+
+## Run test
+
+- npm test
+
+## TODOs
+
+- Remove pictures from codecs
