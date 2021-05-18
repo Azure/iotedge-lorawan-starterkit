@@ -9,3 +9,17 @@ glob.sync(`./codecs/**/*.js`).map(f => {
         console.log(`Modified ${f}`);
       });
 });
+
+glob.sync(`./codecs/**/*.jpg`).map(f => {
+  fs.rm(f, function (err) {
+      if (err) throw err;
+      console.log(`Removed ${f}`);
+    });
+});
+
+glob.sync(`./codecs/**/*.png`).map(f => {
+  fs.rm(f, function (err) {
+      if (err) throw err;
+      console.log(`Removed ${f}`);
+    });
+});
