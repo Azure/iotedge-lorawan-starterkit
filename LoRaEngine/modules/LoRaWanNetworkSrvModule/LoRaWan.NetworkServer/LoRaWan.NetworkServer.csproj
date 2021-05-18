@@ -20,6 +20,10 @@
   <ItemGroup>
     <AdditionalFiles Include="../../../../stylecop.json" Link="stylecop.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="BasicStation\Models\" />
+    <Folder Include="BasicStation\WebSocketServer\" />
+  </ItemGroup>
   <PropertyGroup>
     <CodeAnalysisRuleSet>../../../../stylecop.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>

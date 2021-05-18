@@ -70,7 +70,7 @@ namespace LoRaWan.NetworkServer.PacketForwarder
         {
         }
 
-        public async Task RunServer()
+        public override async Task RunServer()
         {
             Logger.LogAlways("Starting LoRaWAN Server...");
 
@@ -391,7 +391,7 @@ namespace LoRaWan.NetworkServer.PacketForwarder
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             this.Dispose(true);
             GC.SuppressFinalize(this);
