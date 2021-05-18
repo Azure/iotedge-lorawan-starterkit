@@ -3,7 +3,7 @@
 const express = require('express');
 const app = express();
 
-app.get('/api/:decoder', (req, res) => {
+app.get('/api/DecoderValueSensor', (req, res) => {
   console.log('Request received');
 
   var bytes = Buffer.from(req.query.payload, 'base64').toString('utf8');
