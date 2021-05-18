@@ -146,6 +146,7 @@ namespace LoRaWan.NetworkServer
             config.LogToUdpPort = envVars.GetEnvVar("LOG_TO_UDP_PORT", config.LogToUdpPort);
             config.NetId = envVars.GetEnvVar("NETID", config.NetId);
             config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
+            config.UseBasicStation = envVars.GetEnvVar("USE_BASIC_STATION", config.LogToUdp);
 
             return config;
         }

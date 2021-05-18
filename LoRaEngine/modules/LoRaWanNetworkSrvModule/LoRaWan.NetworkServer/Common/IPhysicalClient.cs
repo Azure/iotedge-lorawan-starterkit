@@ -4,8 +4,7 @@
 namespace LoRaWan.NetworkServer.Common
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public interface IPhysicalClient : IDisposable
@@ -13,6 +12,7 @@ namespace LoRaWan.NetworkServer.Common
         /// <summary>
         /// Run the Physical client.
         /// </summary>
-        public Task RunServer();
+        /// <param name="cancellationToken">The Cancellation Token.</param>
+        public Task RunServer(CancellationToken cancellationToken = default);
     }
 }
