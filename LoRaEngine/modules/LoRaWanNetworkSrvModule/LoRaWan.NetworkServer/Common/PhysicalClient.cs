@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer.Common
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Threading.Tasks;
     using BasicStation;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer.ADR;
@@ -15,7 +16,7 @@ namespace LoRaWan.NetworkServer.Common
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
-    public class PhysicalClient
+    public abstract class PhysicalClient : IPhysicalClient
     {
 #pragma warning disable SA1401 // Fields should be private
         protected readonly NetworkServerConfiguration configuration;
@@ -74,5 +75,9 @@ namespace LoRaWan.NetworkServer.Common
                 return udpServer;
             }
         }
+
+        public abstract void Dispose();
+
+        public abstract Task RunServer();
     }
 }

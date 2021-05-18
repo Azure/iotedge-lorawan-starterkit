@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.PacketForwarder
     /// <summary>
     /// Defines udp Server communicating with packet forwarder.
     /// </summary>
-    public class UdpServer : PhysicalClient, IPhysicalClient, IPacketForwarder
+    public class UdpServer : PhysicalClient, IPacketForwarder
     {
         const int PORT = 1680;
 
