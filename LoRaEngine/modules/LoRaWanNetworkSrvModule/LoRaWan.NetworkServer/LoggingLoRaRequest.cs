@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
+    using LoRaWan.NetworkServer.PacketForwarder;
     using Microsoft.Extensions.Logging;
 
     /// <summary>

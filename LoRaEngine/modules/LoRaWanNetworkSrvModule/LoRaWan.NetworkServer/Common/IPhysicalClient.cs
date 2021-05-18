@@ -1,17 +1,18 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer
+namespace LoRaWan.NetworkServer.Common
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
     using System.Threading.Tasks;
-    using LoRaTools.LoRaPhysical;
 
-    // Packet forwarder
-    public interface IPacketForwarder
+    public interface IPhysicalClient : IDisposable
     {
         /// <summary>
-        /// Send downstream message to LoRa device.
+        /// Run the Physical client.
         /// </summary>
-        Task SendDownstreamAsync(DownlinkPktFwdMessage message);
+        public Task RunServer();
     }
 }
