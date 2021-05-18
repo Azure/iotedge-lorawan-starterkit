@@ -70,7 +70,7 @@ namespace LoRaWan.NetworkServer.PacketForwarder
         {
         }
 
-        public override async Task RunServer()
+        public override async Task RunServer(CancellationToken cancellationToken)
         {
             Logger.LogAlways("Starting LoRaWAN Server...");
 
@@ -181,7 +181,7 @@ namespace LoRaWan.NetworkServer.PacketForwarder
         {
             try
             {
-                ITransportSettings transportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+                ITransportSettings transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_Tcp_Only);
 
                 ITransportSettings[] settings = { transportSettings };
 

@@ -4,19 +4,44 @@
 namespace LoRaWan.NetworkServer.BasicStation
 {
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
+    using LoRaWan.NetworkServer.BasicStation.WebSocketServer;
     using LoRaWan.NetworkServer.Common;
+    using Microsoft.AspNetCore;
+    using Microsoft.AspNetCore.Hosting;
 
     class BasicStation : IPhysicalClient
     {
-        public void Dispose()
+        private IWebHost webHost;
+        private bool disposedValue;
+
+        public Task RunServer(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            this.webHost = WebHost.CreateDefaultBuilder()
+                                  .UseUrls("http://0.0.0.0:5000")
+                                  .UseStartup<LnsStartup>()
+                                  .Build();
+            return this.webHost.RunAsync(cancellationToken);
         }
 
-        public Task RunServer()
+        protected virtual void Dispose(bool disposing)
         {
-            throw new NotImplementedException();
+            if (!this.disposedValue)
+            {
+                if (disposing)
+                {
+                    this.webHost.Dispose();
+                }
+
+                this.disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            this.Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
