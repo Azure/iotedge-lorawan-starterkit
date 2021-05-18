@@ -1,4 +1,5 @@
 'use strict';
+
 const glob = require('glob');
 const express = require('express');
 const app = express();
@@ -13,20 +14,27 @@ app.get('/api/DecoderValueSensor', (req, res) => {
   });
 })
 
-app.get('/api/:decodername', async (req, res) => {
+app.get('/api/:decodername', (req, res) => {
   console.log(`Request received for ${req.params.decodername}`);
 
-  console.log("Looking for " + `./codecs/**/${req.params.decodername}.js`);
-  await glob(`./codecs/**/${req.params.decodername}.js`, {}, (err, files)=>{
-    console.log(err);
-    console.log(files);
-  });
+  var files = glob.sync(`./codecs/**/${req.params.decodername}.js`, {});
+  // TODO: error handling if files.length == 0 or files.length > 1
 
-  const decoder = require(`./codecs/arduino/${req.params.decodername}`);
   var bytes = Buffer.from(req.query.payload, 'base64').toString('utf8');
-  var result = decoder.decodeUplink({bytes});
+  var fPort = parseInt(req.query.fport);
+  const decoder = require(files[0]);
+
+  const input = {
+    bytes,
+    fPort
+  };
+
+  console.log(`Decoder input: ${JSON.stringify(input)}`);
+  var output = decoder.decodeUplink(input);
+  console.log(`Decoder output: ${JSON.stringify(output)}`);
+
   res.send({
-    value: result.data,
+    value: output.data,
   });
 })
 
