@@ -135,7 +135,7 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
                     while (!result.EndOfMessage);
 
                     var input = Encoding.UTF8.GetString(framePayload.ToArray()).Replace("\0", string.Empty);
-                    this.logger.Log(LogLevel.Information, "Message received from Client");
+                    this.logger.Log(LogLevel.Information, $"Message received from Client: {input}");
                     var formaterInput = JsonSerializer.Deserialize<LnsDiscoveryVersion>(input);
                     if (formaterInput?.Msgtype == "version")
                     {
