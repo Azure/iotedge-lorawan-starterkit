@@ -11,18 +11,22 @@ namespace LoRaWan.NetworkServer.BasicStation
     using Microsoft.AspNetCore;
     using Microsoft.AspNetCore.Hosting;
 
-    class BasicStation : IPhysicalClient
+    class BasicStation : PhysicalClient
     {
         private IWebHost webHost;
         private bool disposedValue;
 
-        public Task RunServer(CancellationToken cancellationToken)
+        public BasicStation(
+            NetworkServerConfiguration configuration,
+            MessageDispatcher messageDispatcher,
+            LoRaDeviceAPIServiceBase loRaDeviceAPIService,
+            ILoRaDeviceRegistry loRaDeviceRegistry)
+            : base(
+                configuration,
+                messageDispatcher,
+                loRaDeviceAPIService,
+                loRaDeviceRegistry)
         {
-            this.webHost = WebHost.CreateDefaultBuilder()
-                                  .UseUrls("http://0.0.0.0:5000")
-                                  .UseStartup<LnsStartup>()
-                                  .Build();
-            return this.webHost.RunAsync(cancellationToken);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -38,10 +42,19 @@ namespace LoRaWan.NetworkServer.BasicStation
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             this.Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        public override Task RunServerProcess(CancellationToken cancellationToken)
+        {
+            this.webHost = WebHost.CreateDefaultBuilder()
+                                              .UseUrls("http://0.0.0.0:5000")
+                                              .UseStartup<LnsStartup>()
+                                              .Build();
+            return this.webHost.RunAsync(cancellationToken);
         }
     }
 }
