@@ -20,7 +20,7 @@ app.get('/api/:decodername', (req, res) => {
   var files = glob.sync(`./codecs/**/${req.params.decodername}.js`);
   // TODO: error handling if files.length == 0 or files.length > 1
 
-  var bytes = Buffer.from(req.query.payload, 'base64').toString('utf8');
+  var bytes = Buffer.from(req.query.payload, 'base64').toString('utf8').split('');
   var fPort = parseInt(req.query.fport);
   // TODO: input validation
 

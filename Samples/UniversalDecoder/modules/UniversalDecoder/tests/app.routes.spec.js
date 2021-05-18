@@ -80,4 +80,30 @@ describe('tpl110-0292', () => {
         value: {type: "parking status", occupied: false},
     });
   });
+
+  describe('lw001-bg', () => {
+    it('should decode all 1s', async () => {
+      const res = await request(app)
+        .get('/api/lw001-bg')
+        .query({
+          payload: "MTExMTExMTExMTExMTExMQ==",
+          fport: 1,
+          devEui: "0000000000000000",
+        })
+        .send();
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toEqual({
+          value: {
+            barometer: 65792.1,
+            batterylevel: 0.01,
+            devicestatus: "1",
+            firmwareversion: 101,
+            humidity: 25.61,
+            macversion: 0,
+            temperature: -19.39,
+            type: "Device Information Packet"
+          },
+      });
+    });
+  });
 })
