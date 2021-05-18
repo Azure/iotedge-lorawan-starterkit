@@ -27,5 +27,3 @@
 - npm test
 
 ## TODOs
-
-- Remove pictures from codecs
