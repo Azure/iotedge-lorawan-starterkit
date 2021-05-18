@@ -31,7 +31,7 @@ describe('loravisionshield', () => {
       .send();
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
-        value: {"ledState": "on"},
+        value: {ledState: "on"},
     });
   }),
   it('should decode off', async () => {
@@ -45,7 +45,24 @@ describe('loravisionshield', () => {
       .send();
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
-        value: {"ledState": "off"},
+        value: {ledState: "off"},
+    });
+  })
+})
+
+describe('tpl110-0292', () => {
+  it('should decode parking status occupied', async () => {
+    const res = await request(app)
+      .get('/api/tpl110-0292')
+      .query({
+        payload: "MQ==",
+        fport: 1,
+        devEui: "0000000000000000",
+      })
+      .send();
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toEqual({
+        value: {type: "parking status", occupied: true},
     });
   })
 })
