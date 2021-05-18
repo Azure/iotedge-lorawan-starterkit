@@ -46,7 +46,7 @@ namespace LoRaWanNetworkSrvModule
         /// </summary>
         private static async Task Run()
         {
-            physicalClient = PhysicalClientResolver.Create();
+            physicalClient = PhysicalClient.Create();
             await physicalClient.RunServer();
         }
     }
