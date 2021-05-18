@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer.Common
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using BasicStation;
     using LoRaTools.ADR;
@@ -78,6 +79,6 @@ namespace LoRaWan.NetworkServer.Common
 
         public abstract void Dispose();
 
-        public abstract Task RunServer();
+        public abstract Task RunServer(CancellationToken cancellationToken = default);
     }
 }
