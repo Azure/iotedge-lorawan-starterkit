@@ -4,7 +4,7 @@ const glob = require('glob');
 const express = require('express');
 const app = express();
 
-app.get('/api/:decodername', (req, res) => {
+app.get('/api/:decodername', (req, res, next) => {
   console.log(`Request received for ${req.params.decodername}`);
 
   // TODO: input validation
@@ -28,18 +28,32 @@ app.get('/api/:decodername', (req, res) => {
   });
 })
 
+// gets decoder by name
 function getDecoder(decoderName) {
   if (decoderName == 'DecoderValueSensor') {
+    // return inline decoder implementation
     return {
       decodeUplink: (input) => { return { data: input.bytes.join('') } }
     }
   }
   
+  // search for codec in "codecs" directory
   var files = glob.sync(`./codecs/**/${decoderName}.js`);
-  // TODO: error handling if files.length == 0 or files.length > 1
-  const decoder = require(files[0]);
-  // TODO: error handling if module load fails
-  return decoder;
+  if (files.length == 0) {
+    throw new Error(`No codec found: ${decoderName}`);
+  } else if (files.length > 1) {
+    throw new Error(`Multiple codecs found: ${JSON.stringify(files)}`);
+  }
+  
+  return require(files[0]);
 }
+
+// Error handling
+app.use(function (err, req, res, next) {
+  res.status(500).send({
+    error: err.message,
+    rawPayload: req.query.payload
+  });
+})
 
 module.exports = app;

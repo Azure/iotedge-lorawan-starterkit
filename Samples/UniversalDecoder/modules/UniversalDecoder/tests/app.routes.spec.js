@@ -15,8 +15,26 @@ describe('DecoderValueSensor', () => {
     expect(res.body).toEqual({
         value: "ABCDE12345",
     });
-  })
-})
+  });
+});
+
+describe('invalid-sensor', () => {
+  it('should return error', async () => {
+    const res = await request(app)
+      .get('/api/invalid-sensor')
+      .query({
+        payload: "QUJDREUxMjM0NQ==",
+        fport: 1,
+        devEui: "0000000000000000",
+      })
+      .send();
+    expect(res.statusCode).toEqual(500);
+    expect(res.body).toEqual({
+        error: "No codec found: invalid-sensor",
+        rawPayload: "QUJDREUxMjM0NQ=="
+    });
+  });
+});
 
 describe('loravisionshield', () => {
   it('should decode led state on', async () => {
