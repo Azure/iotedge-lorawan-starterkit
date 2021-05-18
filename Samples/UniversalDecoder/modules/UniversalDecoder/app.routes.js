@@ -17,26 +17,28 @@ app.get('/api/DecoderValueSensor', (req, res) => {
 app.get('/api/:decodername', (req, res) => {
   console.log(`Request received for ${req.params.decodername}`);
 
-  var files = glob.sync(`./codecs/**/${req.params.decodername}.js`, {});
+  var files = glob.sync(`./codecs/**/${req.params.decodername}.js`);
   // TODO: error handling if files.length == 0 or files.length > 1
 
   var bytes = Buffer.from(req.query.payload, 'base64').toString('utf8');
   var fPort = parseInt(req.query.fport);
+  // TODO: input validation
+
   const decoder = require(files[0]);
+  // TODO: error handling if module load fails
 
   const input = {
     bytes,
     fPort
   };
 
-  console.log(`Decoder input: ${JSON.stringify(input)}`);
+  console.log(`Decoder ${req.params.decodername} input: ${JSON.stringify(input)}`);
   var output = decoder.decodeUplink(input);
-  console.log(`Decoder output: ${JSON.stringify(output)}`);
+  console.log(`Decoder ${req.params.decodername} output: ${JSON.stringify(output)}`);
 
   res.send({
     value: output.data,
   });
 })
-
 
 module.exports = app;

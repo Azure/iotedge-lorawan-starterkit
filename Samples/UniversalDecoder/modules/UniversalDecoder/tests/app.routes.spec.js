@@ -1,7 +1,6 @@
 const request = require('supertest')
 const app = require('../app.routes')
 
-
 describe('DecoderValueSensor', () => {
   it('should decode basic data', async () => {
     const res = await request(app)
@@ -20,7 +19,7 @@ describe('DecoderValueSensor', () => {
 })
 
 describe('loravisionshield', () => {
-  it('should decode on', async () => {
+  it('should decode led state on', async () => {
     const res = await request(app)
       .get('/api/loravisionshield')
       .query({
@@ -34,7 +33,8 @@ describe('loravisionshield', () => {
         value: {ledState: "on"},
     });
   }),
-  it('should decode off', async () => {
+
+  it('should decode led state off', async () => {
     const res = await request(app)
       .get('/api/loravisionshield')
       .query({
@@ -64,5 +64,20 @@ describe('tpl110-0292', () => {
     expect(res.body).toEqual({
         value: {type: "parking status", occupied: true},
     });
-  })
+  }),
+  
+  it('should decode parking status not occupied', async () => {
+    const res = await request(app)
+      .get('/api/tpl110-0292')
+      .query({
+        payload: "MA==",
+        fport: 1,
+        devEui: "0000000000000000",
+      })
+      .send();
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toEqual({
+        value: {type: "parking status", occupied: false},
+    });
+  });
 })
