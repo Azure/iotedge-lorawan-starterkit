@@ -20,7 +20,7 @@ describe('DecoderValueSensor', () => {
 })
 
 describe('loravisionshield', () => {
-  it('should decode on loravisionshield', async () => {
+  it('should decode on', async () => {
     const res = await request(app)
       .get('/api/loravisionshield')
       .query({
@@ -34,7 +34,7 @@ describe('loravisionshield', () => {
         value: {"ledState": "on"},
     });
   }),
-  it('should decode off loravisionshield', async () => {
+  it('should decode off', async () => {
     const res = await request(app)
       .get('/api/loravisionshield')
       .query({
