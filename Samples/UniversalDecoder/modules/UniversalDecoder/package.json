@@ -9,7 +9,8 @@
     "license": "MIT",
     "scripts": {
         "start": "node app.js",
-        "test": "jest"
+        "test": "jest",
+        "codecs": "rm -fR node_modules/lorawan-devices && git clone https://github.com/TheThingsNetwork/lorawan-devices.git node_modules/lorawan-devices && cp -r node_modules/lorawan-devices/vendor/* codecs && node codec-util"
     },
     "dependencies": {
         "express": "^4.17.1",
