@@ -33,5 +33,19 @@ describe('loravisionshield', () => {
     expect(res.body).toEqual({
         value: {"ledState": "on"},
     });
+  }),
+  it('should decode off loravisionshield', async () => {
+    const res = await request(app)
+      .get('/api/loravisionshield')
+      .query({
+        payload: "MA==",
+        fport: 1,
+        devEui: "0000000000000000",
+      })
+      .send();
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toEqual({
+        value: {"ledState": "off"},
+    });
   })
 })
