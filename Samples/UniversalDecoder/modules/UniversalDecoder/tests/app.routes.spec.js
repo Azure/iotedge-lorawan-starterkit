@@ -3,31 +3,17 @@ const app = require('../app.routes')
 
 describe('DecoderValueSensor', () => {
   it('should decode basic data', async () => {
-    const res = await request(app)
-      .get('/api/DecoderValueSensor')
-      .query({
-        payload: "QUJDREUxMjM0NQ==",
-        fport: 1,
-        devEui: "0000000000000000",
-      })
-      .send();
+    const res = await sendRequest('DecoderValueSensor', 'ABCDE12345', 1);
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
-        value: "ABCDE12345",
+        value: 'ABCDE12345',
     });
   });
 });
 
 describe('invalid-sensor', () => {
   it('should return error', async () => {
-    const res = await request(app)
-      .get('/api/invalid-sensor')
-      .query({
-        payload: "QUJDREUxMjM0NQ==",
-        fport: 1,
-        devEui: "0000000000000000",
-      })
-      .send();
+    const res = await sendRequest('invalid-sensor', 'ABCDE12345', 1);
     expect(res.statusCode).toEqual(500);
     expect(res.body).toEqual({
         error: "No codec found: invalid-sensor",
@@ -38,77 +24,64 @@ describe('invalid-sensor', () => {
 
 describe('loravisionshield', () => {
   it('should decode led state on', async () => {
-    const res = await request(app)
-      .get('/api/loravisionshield')
-      .query({
-        payload: "MQ==",
-        fport: 1,
-        devEui: "0000000000000000",
-      })
-      .send();
+    const res = await sendRequest('loravisionshield', '1', 1);
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
-        value: {ledState: "on"},
+        value: {
+          ledState: "on"
+        },
     });
   }),
 
   it('should decode led state off', async () => {
-    const res = await request(app)
-      .get('/api/loravisionshield')
-      .query({
-        payload: "MA==",
-        fport: 1,
-        devEui: "0000000000000000",
-      })
-      .send();
+    const res = await sendRequest('loravisionshield', '0', 1);
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
-        value: {ledState: "off"},
+        value: {
+          ledState: "off"
+        },
     });
   })
 })
 
 describe('tpl110-0292', () => {
   it('should decode parking status occupied', async () => {
-    const res = await request(app)
-      .get('/api/tpl110-0292')
-      .query({
-        payload: "MQ==",
-        fport: 1,
-        devEui: "0000000000000000",
-      })
-      .send();
+    const res = await sendRequest('tpl110-0292', '1', 1);
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
-        value: {type: "parking status", occupied: true},
+        value: {
+          type: "parking status", 
+          occupied: true
+        },
     });
   }),
   
   it('should decode parking status not occupied', async () => {
-    const res = await request(app)
-      .get('/api/tpl110-0292')
-      .query({
-        payload: "MA==",
-        fport: 1,
-        devEui: "0000000000000000",
-      })
-      .send();
+    const res = await sendRequest('tpl110-0292', '0', 1);
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({
-        value: {type: "parking status", occupied: false},
+        value: {
+          type: "parking status", 
+          occupied: false
+        },
+    });
+  }),
+  
+  it('should decode device heartbeat', async () => {
+    const res = await sendRequest('tpl110-0292', '1111', 2);
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toEqual({
+        value: {
+          occupied: true,
+          temperature: "1",
+          type: "heartbeat"
+        },
     });
   });
 
   describe('lw001-bg', () => {
     it('should decode all 1s', async () => {
-      const res = await request(app)
-        .get('/api/lw001-bg')
-        .query({
-          payload: "MTExMTExMTExMTExMTExMQ==",
-          fport: 1,
-          devEui: "0000000000000000",
-        })
-        .send();
+      const res = await sendRequest('lw001-bg', '1111111111111111', 1);
       expect(res.statusCode).toEqual(200);
       expect(res.body).toEqual({
           value: {
@@ -125,3 +98,14 @@ describe('tpl110-0292', () => {
     });
   });
 })
+
+function sendRequest(decoderName, payload, fPort) {
+  return request(app)
+    .get(`/api/${decoderName}`)
+    .query({
+      payload: Buffer.from(payload).toString('base64'),
+      fport: fPort,
+      devEui: "0000000000000000",
+    })
+    .send();
+}
