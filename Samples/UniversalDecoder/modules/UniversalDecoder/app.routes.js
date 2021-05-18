@@ -13,4 +13,17 @@ app.get('/api/DecoderValueSensor', (req, res) => {
   });
 })
 
+app.get('/api/loravisionshield', (req, res) => {
+  console.log('Request received');
+  
+  const decoder = require('./codecs/arduino/loravisionshield');
+  var bytes = Buffer.from(req.query.payload, 'base64').toString('utf8');
+  
+  var result = decoder.decodeUplink(bytes);
+  res.send({
+    value: result,
+  });
+})
+
+
 module.exports = app;
