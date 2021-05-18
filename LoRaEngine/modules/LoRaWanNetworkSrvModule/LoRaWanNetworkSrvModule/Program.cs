@@ -7,10 +7,12 @@ namespace LoRaWanNetworkSrvModule
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.Common;
+    using LoRaWan.NetworkServer.PacketForwarder;
 
     internal class Program
     {
-        private static UdpServer udpServer;
+        private static IPhysicalClient physicalClient = null;
 
         private static void Main(string[] args)
         {
@@ -28,9 +30,9 @@ namespace LoRaWanNetworkSrvModule
         /// </summary>
         public static Task WhenCancelled(CancellationToken cancellationToken)
         {
-            if (udpServer != null)
+            if (physicalClient != null)
             {
-                udpServer.Dispose();
+                physicalClient.Dispose();
             }
 
             var tcs = new TaskCompletionSource<bool>();
@@ -44,8 +46,8 @@ namespace LoRaWanNetworkSrvModule
         /// </summary>
         private static async Task Run()
         {
-            udpServer = UdpServer.Create();
-            await udpServer.RunServer();
+            physicalClient = PhysicalClient.Create();
+            await physicalClient.RunServer();
         }
     }
 }

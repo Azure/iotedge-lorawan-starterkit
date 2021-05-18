@@ -13,6 +13,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.PacketForwarder;
     using LoRaWan.Test.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;

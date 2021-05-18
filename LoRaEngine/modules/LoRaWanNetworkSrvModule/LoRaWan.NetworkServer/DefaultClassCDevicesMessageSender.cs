@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
+    using LoRaWan.NetworkServer.PacketForwarder;
     using Microsoft.Extensions.Logging;
 
     public class DefaultClassCDevicesMessageSender : IClassCDeviceMessageSender

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer
+namespace LoRaWan.NetworkServer.PacketForwarder
 {
     using System;
     using System.Collections.Concurrent;
@@ -18,6 +18,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer.ADR;
+    using LoRaWan.NetworkServer.Common;
     using LoRaWan.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Transport.Mqtt;
@@ -29,20 +30,15 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Defines udp Server communicating with packet forwarder.
     /// </summary>
-    public class UdpServer : IDisposable, IPacketForwarder
+    public class UdpServer : PhysicalClient, IPacketForwarder
     {
         const int PORT = 1680;
-        private readonly NetworkServerConfiguration configuration;
-        private readonly MessageDispatcher messageDispatcher;
-        private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
-        private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
+
         readonly SemaphoreSlim randomLock = new SemaphoreSlim(1);
         readonly Random random = new Random();
-
-        private IClassCDeviceMessageSender classCMessageSender;
-        private ModuleClient ioTHubModuleClient;
         private volatile int pullAckRemoteLoRaAggregatorPort = 0;
         private volatile string pullAckRemoteLoRaAddress = null;
+
         UdpClient udpClient;
 
         private async Task<byte[]> GetTokenAsync()
@@ -61,45 +57,20 @@ namespace LoRaWan.NetworkServer
         }
 
         // Creates a new instance of UdpServer
-        public static UdpServer Create()
-        {
-            var configuration = NetworkServerConfiguration.CreateFromEnviromentVariables();
-
-            var loRaDeviceAPIService = new LoRaDeviceAPIService(configuration, new ServiceFacadeHttpClientProvider(configuration, ApiVersion.LatestVersion));
-            var frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(configuration.GatewayID, loRaDeviceAPIService);
-            var deduplicationStrategyFactory = new DeduplicationStrategyFactory(loRaDeviceAPIService);
-            var adrStrategyProvider = new LoRaADRStrategyProvider();
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var dataHandlerImplementation = new DefaultLoRaDataRequestHandler(configuration, frameCounterStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, new LoRAADRManagerFactory(loRaDeviceAPIService), new FunctionBundlerProvider(loRaDeviceAPIService));
-            var connectionManager = new LoRaDeviceClientConnectionManager(cache);
-            var loRaDeviceFactory = new LoRaDeviceFactory(configuration, dataHandlerImplementation, connectionManager);
-            var loRaDeviceRegistry = new LoRaDeviceRegistry(configuration, cache, loRaDeviceAPIService, loRaDeviceFactory);
-
-            var messageDispatcher = new MessageDispatcher(configuration, loRaDeviceRegistry, frameCounterStrategyProvider);
-            var udpServer = new UdpServer(configuration, messageDispatcher, loRaDeviceAPIService, loRaDeviceRegistry);
-
-            // TODO: review dependencies
-            var classCMessageSender = new DefaultClassCDevicesMessageSender(configuration, loRaDeviceRegistry, udpServer, frameCounterStrategyProvider);
-            dataHandlerImplementation.SetClassCMessageSender(classCMessageSender);
-
-            udpServer.SetClassCMessageSender(classCMessageSender);
-            return udpServer;
-        }
-
-        // Creates a new instance of UdpServer
         public UdpServer(
             NetworkServerConfiguration configuration,
             MessageDispatcher messageDispatcher,
             LoRaDeviceAPIServiceBase loRaDeviceAPIService,
             ILoRaDeviceRegistry loRaDeviceRegistry)
+            : base(
+                configuration,
+                messageDispatcher,
+                loRaDeviceAPIService,
+                loRaDeviceRegistry)
         {
-            this.configuration = configuration;
-            this.messageDispatcher = messageDispatcher;
-            this.loRaDeviceAPIService = loRaDeviceAPIService;
-            this.loRaDeviceRegistry = loRaDeviceRegistry;
         }
 
-        public async Task RunServer()
+        public override async Task RunServer()
         {
             Logger.LogAlways("Starting LoRaWAN Server...");
 
@@ -402,7 +373,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private void SetClassCMessageSender(DefaultClassCDevicesMessageSender classCMessageSender) => this.classCMessageSender = classCMessageSender;
+        public void SetClassCMessageSender(DefaultClassCDevicesMessageSender classCMessageSender) => this.classCMessageSender = classCMessageSender;
 
         private bool disposedValue = false; // To detect redundant calls
 
@@ -420,7 +391,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             this.Dispose(true);
             GC.SuppressFinalize(this);

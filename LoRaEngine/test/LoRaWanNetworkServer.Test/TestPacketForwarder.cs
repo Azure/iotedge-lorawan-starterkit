@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Threading.Tasks;
     using LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.PacketForwarder;
 
     public class TestPacketForwarder : IPacketForwarder
     {
