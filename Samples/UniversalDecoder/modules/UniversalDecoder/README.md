@@ -27,3 +27,7 @@
 - npm test
 
 ## TODOs
+
+- Documentation
+  - Logging with pino
+  
