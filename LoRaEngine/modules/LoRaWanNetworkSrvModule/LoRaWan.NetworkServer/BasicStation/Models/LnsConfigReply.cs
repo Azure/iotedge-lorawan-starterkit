@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
     using System.Collections.Generic;
     using System.Text.Json.Serialization;
 
-    class LnsRouterConfigReply
+    class LnsConfigReply
     {
         [JsonPropertyName("msgtype")]
         public string Msgtype { get; set; } = "router_config";
