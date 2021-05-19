@@ -136,10 +136,10 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
 
                     var input = Encoding.UTF8.GetString(framePayload.ToArray()).Replace("\0", string.Empty);
                     this.logger.Log(LogLevel.Information, $"Message received from Client: {input}");
-                    var formaterInput = JsonSerializer.Deserialize<LnsDiscoveryVersion>(input);
+                    var formaterInput = JsonSerializer.Deserialize<LnsConfigRequest>(input);
                     if (formaterInput?.Msgtype == "version")
                     {
-                        var message = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LnsRouterConfigReply { Sx1301_conf = new List<Sx1301Config>() { new Sx1301Config() } }));
+                        var message = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LnsConfigReply { Sx1301_conf = new List<Sx1301Config>() { new Sx1301Config() } }));
                         await socket.SendAsync(new ArraySegment<byte>(message, 0, message.Length), result.MessageType, result.EndOfMessage, CancellationToken.None);
                         this.logger.Log(LogLevel.Information, "Message sent to Client");
                     }
