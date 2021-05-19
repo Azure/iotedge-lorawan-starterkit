@@ -1,10 +1,13 @@
 'use strict';
 
+const glob = require('glob');
 const express = require('express');
 const { param, query, validationResult } = require('express-validator');
-const glob = require('glob');
+const { expressLogger, logger } = require('./app.logging');
 
 const app = express();
+
+app.use(expressLogger);
 
 app.get('/api/:decodername', 
     param('decodername').notEmpty().withMessage("is missing"),
@@ -13,13 +16,11 @@ app.get('/api/:decodername',
     (req, res, next) => {
         // Input validation
         if (!validationResult(req).isEmpty()) {
-            return res.status(400).send({
-              error: `Invalid inputs: ${(validationResult(req).formatWith(e => `'${e.param}' ${e.msg}`).array().join(", "))}`,
-            });
+            const error = `Invalid inputs: ${(validationResult(req).formatWith(e => `'${e.param}' ${e.msg}`).array().join(", "))}`;
+            logger.warn(error);
+            return res.status(400).send({error});
         }
       
-      console.log(`Request received for ${req.params.decodername}`);
-    
       const decoderName = req.params.decodername;
       const bytes = Buffer.from(req.query.payload, 'base64').toString('utf8').split('');
       const fPort = parseInt(req.query.fport);
@@ -31,9 +32,9 @@ app.get('/api/:decodername',
         fPort
       };
     
-      console.log(`Decoder ${decoderName} input: ${JSON.stringify(input)}`);
+      logger.debug(`Decoder ${decoderName} input: ${JSON.stringify(input)}`);
       var output = decoder.decodeUplink(input);
-      console.log(`Decoder ${decoderName} output: ${JSON.stringify(output)}`);
+      logger.debug(`Decoder ${decoderName} output: ${JSON.stringify(output)}`);
     
       res.send({
         value: output.data,
@@ -62,7 +63,7 @@ function getDecoder(decoderName) {
 
 // Error handling
 app.use(function (err, req, res, next) {
-  console.error(err.stack);
+  logger.error(err);
   res.status(500).send({
     error: err.message,
     rawPayload: req.query.payload
