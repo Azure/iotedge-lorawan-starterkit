@@ -259,6 +259,15 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
+        /// Build LoRaPayload from a LoraBasicStation(LBS) message.
+        /// </summary>
+        public LoRaPayloadData(LBSMessageType messageType, uint mhdr, int devAddr, uint fctrl, uint fcnt, string fopts, int fport, string frmPayload, int mic)
+        {
+            throw new NotImplementedException("Implementation is in progress.");
+        }
+
+        /// <summary>
         /// Serialize a message to be sent upstream.
         /// </summary>
         public UplinkPktFwdMessage SerializeUplink(string appSKey, string nwkSKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0, float lsnr = 0)
