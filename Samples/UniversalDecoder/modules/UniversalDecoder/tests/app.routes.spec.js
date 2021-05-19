@@ -63,18 +63,18 @@ describe('loravisionshield', () => {
                 ledState: "on"
             },
         });
-    }),
+    });
 
-        it('should decode led state off', async () => {
-            const res = await sendRequest('loravisionshield', '0', 1);
-            expect(res.statusCode).toEqual(200);
-            expect(res.body).toEqual({
-                value: {
-                    ledState: "off"
-                },
-            });
-        })
-})
+    it('should decode led state off', async () => {
+        const res = await sendRequest('loravisionshield', '0', 1);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toEqual({
+            value: {
+                ledState: "off"
+            },
+        });
+    });
+});
 
 describe('tpl110-0292', () => {
     it('should decode parking status occupied', async () => {
@@ -86,50 +86,50 @@ describe('tpl110-0292', () => {
                 occupied: true
             },
         });
-    }),
+    });
 
-        it('should decode parking status not occupied', async () => {
-            const res = await sendRequest('tpl110-0292', '0', 1);
-            expect(res.statusCode).toEqual(200);
-            expect(res.body).toEqual({
-                value: {
-                    type: "parking status",
-                    occupied: false
-                },
-            });
-        }),
-
-        it('should decode device heartbeat', async () => {
-            const res = await sendRequest('tpl110-0292', '1111', 2);
-            expect(res.statusCode).toEqual(200);
-            expect(res.body).toEqual({
-                value: {
-                    occupied: true,
-                    temperature: "1",
-                    type: "heartbeat"
-                },
-            });
-        });
-
-    describe('lw001-bg', () => {
-        it('should decode all 1s', async () => {
-            const res = await sendRequest('lw001-bg', '1111111111111111', 1);
-            expect(res.statusCode).toEqual(200);
-            expect(res.body).toEqual({
-                value: {
-                    barometer: 65792.1,
-                    batterylevel: 0.01,
-                    devicestatus: "1",
-                    firmwareversion: 101,
-                    humidity: 25.61,
-                    macversion: 0,
-                    temperature: -19.39,
-                    type: "Device Information Packet"
-                },
-            });
+    it('should decode parking status not occupied', async () => {
+        const res = await sendRequest('tpl110-0292', '0', 1);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toEqual({
+            value: {
+                type: "parking status",
+                occupied: false
+            },
         });
     });
-})
+
+    it('should decode device heartbeat', async () => {
+        const res = await sendRequest('tpl110-0292', '1111', 2);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toEqual({
+            value: {
+                occupied: true,
+                temperature: "1",
+                type: "heartbeat"
+            },
+        });
+    });
+});
+
+describe('lw001-bg', () => {
+    it('should decode all 1s', async () => {
+        const res = await sendRequest('lw001-bg', '1111111111111111', 1);
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toEqual({
+            value: {
+                barometer: 65792.1,
+                batterylevel: 0.01,
+                devicestatus: "1",
+                firmwareversion: 101,
+                humidity: 25.61,
+                macversion: 0,
+                temperature: -19.39,
+                type: "Device Information Packet"
+            },
+        });
+    });
+});
 
 function sendRequest(decoderName, payload, fPort) {
     return request(app)
