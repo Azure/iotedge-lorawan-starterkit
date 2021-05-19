@@ -266,13 +266,17 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadData(LBSMessageType messageType, uint mhdr, int devAddr, uint fctrl, uint fcnt, string fopts, int fport, string frmPayload, int mic)
         {
             this.Mhdr = new Memory<byte>(BitConverter.GetBytes(mhdr));
-            this.DevAddr = new Memory<byte>(BitConverter.GetBytes(devAddr));
+            var devAddrBytes = BitConverter.GetBytes(Convert.ToUInt32(devAddr));
+            Array.Reverse(devAddrBytes);
+            this.DevAddr = new Memory<byte>(devAddrBytes);
             this.Fctrl = new Memory<byte>(BitConverter.GetBytes(fctrl));
             this.Fcnt = new Memory<byte>(BitConverter.GetBytes(fcnt));
             this.Fopts = new Memory<byte>(Encoding.Unicode.GetBytes(fopts));
             this.Fport = new Memory<byte>(BitConverter.GetBytes(fport));
             this.Frmpayload = new Memory<byte>(Encoding.Unicode.GetBytes(frmPayload));
-            this.Mic = new Memory<byte>(BitConverter.GetBytes(mic));
+            var micBytes = BitConverter.GetBytes(Convert.ToUInt32(mic));
+            Array.Reverse(micBytes);
+            this.Mic = new Memory<byte>(micBytes);
         }
 
         /// <summary>

@@ -11,6 +11,7 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer.BasicStation.Models;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
@@ -143,20 +144,31 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
 
                     switch (dynamicObject["msgtype"].ToString())
                     {
-                        case nameof(LbsMessageType.Version):
+                        case nameof(LbsMessageType.version):
                             var formaterInput = JsonSerializer.Deserialize<LnsConfigRequest>(input);
                             var message = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LnsConfigReply { Sx1301_conf = new List<Sx1301Config>() { new Sx1301Config() } }));
                             await socket.SendAsync(new ArraySegment<byte>(message, 0, message.Length), result.MessageType, result.EndOfMessage, CancellationToken.None);
                             this.logger.Log(LogLevel.Information, "Message sent to Client");
                             break;
 
-                        case nameof(LbsMessageType.Updf):
+                        case nameof(LbsMessageType.updf):
                             var lnsDataFrame = JsonSerializer.Deserialize<LnsDataFrameRequest>(input);
                             this.logger.Log(LogLevel.Debug, "Received a message");
-                            this.messageDispatcher.DispatchLoRaDataMessage(new LoRaRequest());
+                            var loraRequest = new LoRaRequest();
+                            loraRequest.SetPayload(new LoRaPayloadData(
+                                                            LBSMessageType.Updf,
+                                                            lnsDataFrame.Mhdr,
+                                                            lnsDataFrame.DevAddr,
+                                                            lnsDataFrame.Fctrl,
+                                                            lnsDataFrame.Fcnt,
+                                                            lnsDataFrame.Fopts,
+                                                            lnsDataFrame.Fport,
+                                                            lnsDataFrame.FrmPayload,
+                                                            lnsDataFrame.Mic));
+                            this.messageDispatcher.DispatchLoRaDataMessage(loraRequest);
                             break;
 
-                        case nameof(LbsMessageType.Jreq):
+                        case nameof(LbsMessageType.jreq):
 
                             break;
                     }

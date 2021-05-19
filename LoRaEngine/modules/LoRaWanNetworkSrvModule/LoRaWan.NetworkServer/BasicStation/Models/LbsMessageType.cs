@@ -5,8 +5,10 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
 {
     enum LbsMessageType
     {
-        Version,
-        Updf,
-        Jreq,
+#pragma warning disable SA1300 // Element should begin with upper-case letter
+        version,
+        updf,
+        jreq,
+#pragma warning restore SA1300 // Element should begin with upper-case letter
     }
 }
