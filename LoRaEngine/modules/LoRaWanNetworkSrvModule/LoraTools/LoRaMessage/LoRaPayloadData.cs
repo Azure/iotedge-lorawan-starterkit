@@ -7,6 +7,7 @@ namespace LoRaTools.LoRaMessage
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.InteropServices;
+    using System.Text;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Mac;
     using LoRaTools.Utils;
@@ -106,6 +107,11 @@ namespace LoRaTools.LoRaMessage
         /// Gets or sets get message direction.
         /// </summary>
         public int Direction { get; set; }
+
+        /// <summary>
+        /// Gets or sets LBS message type.
+        /// </summary>
+        public LBSMessageType LbsMessageType { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
@@ -256,6 +262,23 @@ namespace LoRaTools.LoRaMessage
             if (!this.Frmpayload.Span.IsEmpty)
                 this.Frmpayload.Span.Reverse();
             this.Direction = direction;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
+        /// Build LoRaPayload from a LoraBasicStation(LBS) message.
+        /// </summary>
+        public LoRaPayloadData(LBSMessageType messageType, uint mhdr, int devAddr, uint fctrl, uint fcnt, string fopts, int fport, string frmPayload, int mic)
+        {
+            this.LbsMessageType = messageType;
+            this.Mhdr = new Memory<byte>(BitConverter.GetBytes(mhdr));
+            this.DevAddr = new Memory<byte>(BitConverter.GetBytes(devAddr));
+            this.Fctrl = new Memory<byte>(BitConverter.GetBytes(fctrl));
+            this.Fcnt = new Memory<byte>(BitConverter.GetBytes(fcnt));
+            this.Fopts = new Memory<byte>(Encoding.Unicode.GetBytes(fopts));
+            this.Fport = new Memory<byte>(BitConverter.GetBytes(fport));
+            this.Frmpayload = new Memory<byte>(Encoding.Unicode.GetBytes(frmPayload));
+            this.Mic = new Memory<byte>(BitConverter.GetBytes(mic));
         }
 
         /// <summary>
