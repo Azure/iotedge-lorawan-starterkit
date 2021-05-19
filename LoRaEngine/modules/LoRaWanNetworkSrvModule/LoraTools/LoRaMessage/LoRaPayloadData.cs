@@ -7,6 +7,7 @@ namespace LoRaTools.LoRaMessage
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.InteropServices;
+    using System.Text;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Mac;
     using LoRaTools.Utils;
@@ -264,7 +265,14 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public LoRaPayloadData(LBSMessageType messageType, uint mhdr, int devAddr, uint fctrl, uint fcnt, string fopts, int fport, string frmPayload, int mic)
         {
-            throw new NotImplementedException("Implementation is in progress.");
+            this.Mhdr = new Memory<byte>(BitConverter.GetBytes(mhdr));
+            this.DevAddr = new Memory<byte>(BitConverter.GetBytes(devAddr));
+            this.Fctrl = new Memory<byte>(BitConverter.GetBytes(fctrl));
+            this.Fcnt = new Memory<byte>(BitConverter.GetBytes(fcnt));
+            this.Fopts = new Memory<byte>(Encoding.Unicode.GetBytes(fopts));
+            this.Fport = new Memory<byte>(BitConverter.GetBytes(fport));
+            this.Frmpayload = new Memory<byte>(Encoding.Unicode.GetBytes(frmPayload));
+            this.Mic = new Memory<byte>(BitConverter.GetBytes(mic));
         }
 
         /// <summary>
