@@ -5,7 +5,7 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
 {
     using System.Text.Json.Serialization;
 
-    public class LnsDiscoveryVersion
+    public class LnsConfigRequest
     {
         [JsonPropertyName("msgtype")]
         public string Msgtype { get; set; }
