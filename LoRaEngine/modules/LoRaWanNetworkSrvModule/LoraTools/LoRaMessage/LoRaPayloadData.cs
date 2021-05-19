@@ -109,6 +109,11 @@ namespace LoRaTools.LoRaMessage
         public int Direction { get; set; }
 
         /// <summary>
+        /// Gets or sets LBS message type.
+        /// </summary>
+        public LBSMessageType LbsMessageType { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Constructor used by the simulator.
         /// </summary>
@@ -265,6 +270,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public LoRaPayloadData(LBSMessageType messageType, uint mhdr, int devAddr, uint fctrl, uint fcnt, string fopts, int fport, string frmPayload, int mic)
         {
+            this.LbsMessageType = messageType;
             this.Mhdr = new Memory<byte>(BitConverter.GetBytes(mhdr));
             this.DevAddr = new Memory<byte>(BitConverter.GetBytes(devAddr));
             this.Fctrl = new Memory<byte>(BitConverter.GetBytes(fctrl));
