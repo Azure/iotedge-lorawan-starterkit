@@ -9,14 +9,24 @@ describe('DecoderValueSensor', () => {
         value: 'ABCDE12345',
     });
   });
+
+    it('should handle missing parameters', async () => {
+        const res = await request(app)
+            .get(`/api/DecoderValueSensor`)
+            .send();
+        expect(res.statusCode).toEqual(500);
+        expect(res.body).toEqual({
+            error: 'The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined',
+        });
+    });
 });
 
-describe('invalid-sensor', () => {
+describe('invalid-decoder', () => {
   it('should return error', async () => {
-    const res = await sendRequest('invalid-sensor', 'ABCDE12345', 1);
+    const res = await sendRequest('invalid-decoder', 'ABCDE12345', 1);
     expect(res.statusCode).toEqual(500);
     expect(res.body).toEqual({
-        error: "No codec found: invalid-sensor",
+        error: "No codec found: invalid-decoder",
         rawPayload: "QUJDREUxMjM0NQ=="
     });
   });
