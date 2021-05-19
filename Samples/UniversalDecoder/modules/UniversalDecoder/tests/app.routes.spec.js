@@ -10,15 +10,29 @@ describe('DecoderValueSensor', () => {
     });
   });
 
-    it('should handle missing parameters', async () => {
-        const res = await request(app)
-            .get(`/api/DecoderValueSensor`)
-            .send();
-        expect(res.statusCode).toEqual(500);
-        expect(res.body).toEqual({
-            error: 'The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received undefined',
-        });
+  it('should handle missing parameters', async () => {
+    const res = await request(app)
+      .get(`/api/DecoderValueSensor`)
+      .send();
+    expect(res.statusCode).toEqual(400);
+    expect(res.body).toEqual({
+      error: 'Invalid inputs: \'payload\' is missing, \'fport\' Invalid value',
     });
+  });
+
+  it('should handle wrong payload', async () => {
+    const res = await request(app)
+        .get(`/api/DecoderValueSensor`)
+        .query({
+            payload: "not-base64",
+            fport: 1,
+        })
+        .send();
+    expect(res.statusCode).toEqual(400);
+    expect(res.body).toEqual({
+        error: 'Invalid inputs: \'payload\' must be a base64 encoded string',
+    });
+  });
 });
 
 describe('invalid-decoder', () => {
