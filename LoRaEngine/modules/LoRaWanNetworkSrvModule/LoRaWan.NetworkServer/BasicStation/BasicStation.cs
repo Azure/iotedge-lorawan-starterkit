@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer.BasicStation
     using LoRaWan.NetworkServer.Common;
     using Microsoft.AspNetCore;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.DependencyInjection;
 
     class BasicStation : PhysicalClient
     {
@@ -51,10 +52,17 @@ namespace LoRaWan.NetworkServer.BasicStation
         public override Task RunServerProcess(CancellationToken cancellationToken)
         {
             this.webHost = WebHost.CreateDefaultBuilder()
-                                              .UseUrls("http://0.0.0.0:5000")
-                                              .UseStartup<LnsStartup>()
-                                              .Build();
+                                  .UseUrls("http://0.0.0.0:5000")
+                                  .UseStartup<LnsStartup>()
+                                  .ConfigureServices(this.PopulateServiceCollection)
+                                  .Build();
             return this.webHost.RunAsync(cancellationToken);
         }
+
+        private void PopulateServiceCollection(IServiceCollection serviceCollection)
+            => serviceCollection.AddSingleton(this.configuration)
+                                .AddSingleton(this.messageDispatcher)
+                                .AddSingleton(this.loRaDeviceAPIService)
+                                .AddSingleton(this.loRaDeviceRegistry);
     }
 }

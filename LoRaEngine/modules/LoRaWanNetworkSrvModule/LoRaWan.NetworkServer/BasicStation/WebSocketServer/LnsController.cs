@@ -14,16 +14,19 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
     using LoRaWan.NetworkServer.BasicStation.Models;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Newtonsoft.Json.Linq;
 
     [ApiController]
     [Route("/")]
     public class LnsController : ControllerBase
     {
         private readonly ILogger<LnsController> logger;
+        private readonly MessageDispatcher messageDispatcher;
 
-        public LnsController(ILogger<LnsController> logger)
+        public LnsController(ILogger<LnsController> logger, MessageDispatcher messageDispatcher)
         {
             this.logger = logger;
+            this.messageDispatcher = messageDispatcher;
         }
 
         [HttpGet("/router-config")]
@@ -136,12 +139,26 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
 
                     var input = Encoding.UTF8.GetString(framePayload.ToArray()).Replace("\0", string.Empty);
                     this.logger.Log(LogLevel.Information, $"Message received from Client: {input}");
-                    var formaterInput = JsonSerializer.Deserialize<LnsConfigRequest>(input);
-                    if (formaterInput?.Msgtype == "version")
+                    var dynamicObject = JObject.Parse(input);
+
+                    switch (dynamicObject["msgtype"].ToString())
                     {
-                        var message = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LnsConfigReply { Sx1301_conf = new List<Sx1301Config>() { new Sx1301Config() } }));
-                        await socket.SendAsync(new ArraySegment<byte>(message, 0, message.Length), result.MessageType, result.EndOfMessage, CancellationToken.None);
-                        this.logger.Log(LogLevel.Information, "Message sent to Client");
+                        case nameof(LbsMessageType.Version):
+                            var formaterInput = JsonSerializer.Deserialize<LnsConfigRequest>(input);
+                            var message = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LnsConfigReply { Sx1301_conf = new List<Sx1301Config>() { new Sx1301Config() } }));
+                            await socket.SendAsync(new ArraySegment<byte>(message, 0, message.Length), result.MessageType, result.EndOfMessage, CancellationToken.None);
+                            this.logger.Log(LogLevel.Information, "Message sent to Client");
+                            break;
+
+                        case nameof(LbsMessageType.Updf):
+                            var lnsDataFrame = JsonSerializer.Deserialize<LnsDataFrameRequest>(input);
+                            this.logger.Log(LogLevel.Debug, "Received a message");
+                            this.messageDispatcher.DispatchLoRaDataMessage(new LoRaRequest());
+                            break;
+
+                        case nameof(LbsMessageType.Jreq):
+
+                            break;
                     }
 
                     result = await socket.ReceiveAsync(buffer, CancellationToken.None);

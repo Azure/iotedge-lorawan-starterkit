@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer
 
         public virtual Region Region { get; private set; }
 
-        protected LoRaRequest()
+        public LoRaRequest()
         {
         }
 

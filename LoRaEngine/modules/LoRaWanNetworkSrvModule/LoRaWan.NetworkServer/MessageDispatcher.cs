@@ -84,7 +84,7 @@ namespace LoRaWan.NetworkServer
 
         private void DispatchLoRaJoinRequest(LoggingLoRaRequest request) => this.joinRequestHandler.DispatchRequest(request);
 
-        void DispatchLoRaDataMessage(LoRaRequest request)
+        public void DispatchLoRaDataMessage(LoRaRequest request)
         {
             var loRaPayload = (LoRaPayloadData)request.Payload;
             if (!this.IsValidNetId(loRaPayload))
