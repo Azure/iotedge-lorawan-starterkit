@@ -34,7 +34,7 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
         [JsonPropertyName("FRMPayload")]
         public string FrmPayload { get; set; }
 
-        [JsonPropertyName("Mic")]
+        [JsonPropertyName("MIC")]
         public int Mic { get; set; }
     }
 }
