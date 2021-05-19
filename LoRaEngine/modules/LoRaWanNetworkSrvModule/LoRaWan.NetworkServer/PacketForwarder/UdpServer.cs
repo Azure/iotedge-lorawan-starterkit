@@ -70,15 +70,6 @@ namespace LoRaWan.NetworkServer.PacketForwarder
         {
         }
 
-        public override async Task RunServer(CancellationToken cancellationToken)
-        {
-            Logger.LogAlways("Starting LoRaWAN Server...");
-
-            await this.InitCallBack();
-
-            await this.RunUdpListener();
-        }
-
         async Task UdpSendMessageAsync(byte[] messageToSend, string remoteLoRaAggregatorIp, int remoteLoRaAggregatorPort)
         {
             if (messageToSend != null && messageToSend.Length != 0)
@@ -87,7 +78,7 @@ namespace LoRaWan.NetworkServer.PacketForwarder
             }
         }
 
-        async Task RunUdpListener()
+        public async override Task RunServerProcess(CancellationToken cancellationToken)
         {
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, PORT);
             this.udpClient = new UdpClient(endPoint);
@@ -175,171 +166,6 @@ namespace LoRaWan.NetworkServer.PacketForwarder
                 messageType
             };
             _ = this.UdpSendMessageAsync(response, remoteEndpoint.Address.ToString(), remoteEndpoint.Port);
-        }
-
-        async Task InitCallBack()
-        {
-            try
-            {
-                ITransportSettings transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_Tcp_Only);
-
-                ITransportSettings[] settings = { transportSettings };
-
-                // if running as Edge module
-                if (this.configuration.RunningAsIoTEdgeModule)
-                {
-                    this.ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
-
-                    Logger.Init(new LoggerConfiguration
-                    {
-                        ModuleClient = this.ioTHubModuleClient,
-                        LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
-                        LogToConsole = this.configuration.LogToConsole,
-                        LogToHub = this.configuration.LogToHub,
-                        LogToUdp = this.configuration.LogToUdp,
-                        LogToUdpPort = this.configuration.LogToUdpPort,
-                        LogToUdpAddress = this.configuration.LogToUdpAddress,
-                        GatewayId = this.configuration.GatewayID
-                    });
-
-                    if (this.configuration.IoTEdgeTimeout > 0)
-                    {
-                        this.ioTHubModuleClient.OperationTimeoutInMilliseconds = this.configuration.IoTEdgeTimeout;
-                        Logger.Log($"Changing timeout to {this.ioTHubModuleClient.OperationTimeoutInMilliseconds} ms", LogLevel.Debug);
-                    }
-
-                    Logger.Log("Getting properties from module twin...", LogLevel.Information);
-
-                    var moduleTwin = await this.ioTHubModuleClient.GetTwinAsync();
-                    var moduleTwinCollection = moduleTwin.Properties.Desired;
-                    try
-                    {
-                        this.loRaDeviceAPIService.SetURL(moduleTwinCollection["FacadeServerUrl"].Value as string);
-                        Logger.LogAlways($"Facade function url: {this.loRaDeviceAPIService.URL}");
-                    }
-                    catch (ArgumentOutOfRangeException e)
-                    {
-                        Logger.Log("Module twin FacadeServerUrl property does not exist", LogLevel.Error);
-                        throw e;
-                    }
-
-                    try
-                    {
-                        this.loRaDeviceAPIService.SetAuthCode(moduleTwinCollection["FacadeAuthCode"].Value as string);
-                    }
-                    catch (ArgumentOutOfRangeException e)
-                    {
-                        Logger.Log("Module twin FacadeAuthCode does not exist", LogLevel.Error);
-                        throw e;
-                    }
-
-                    await this.ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(this.OnDesiredPropertiesUpdate, null);
-
-                    await this.ioTHubModuleClient.SetMethodDefaultHandlerAsync(this.OnDirectMethodCalled, null);
-                }
-
-                // running as non edge module for test and debugging
-                else
-                {
-                    Logger.Init(new LoggerConfiguration
-                    {
-                        ModuleClient = null,
-                        LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
-                        LogToConsole = this.configuration.LogToConsole,
-                        LogToHub = this.configuration.LogToHub,
-                        LogToUdp = this.configuration.LogToUdp,
-                        LogToUdpPort = this.configuration.LogToUdpPort,
-                        LogToUdpAddress = this.configuration.LogToUdpAddress,
-                        GatewayId = this.configuration.GatewayID
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Log($"Initialization failed with error: {ex.Message}", LogLevel.Error);
-                throw ex;
-            }
-
-            // Report Log level
-            Logger.LogAlways($"Log Level: {(LogLevel)Logger.LoggerLevel}");
-        }
-
-        async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
-        {
-            if (string.Equals("clearcache", methodRequest.Name, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return await this.ClearCache(methodRequest, userContext);
-            }
-            else if (string.Equals(Constants.CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME, methodRequest.Name, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return await this.SendCloudToDeviceMessageAsync(methodRequest);
-            }
-
-            Logger.Log($"Unknown direct method called: {methodRequest?.Name}", LogLevel.Error);
-
-            return new MethodResponse(404);
-        }
-
-        private async Task<MethodResponse> SendCloudToDeviceMessageAsync(MethodRequest methodRequest)
-        {
-            if (this.classCMessageSender == null)
-            {
-                return new MethodResponse((int)HttpStatusCode.NotFound);
-            }
-
-            var c2d = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
-            Logger.Log(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
-
-            CancellationToken cts = CancellationToken.None;
-            if (methodRequest.ResponseTimeout.HasValue)
-                cts = new CancellationTokenSource(methodRequest.ResponseTimeout.Value).Token;
-
-            if (await this.classCMessageSender.SendAsync(c2d, cts))
-            {
-                return new MethodResponse((int)HttpStatusCode.OK);
-            }
-            else
-            {
-                return new MethodResponse((int)HttpStatusCode.BadRequest);
-            }
-        }
-
-        private Task<MethodResponse> ClearCache(MethodRequest methodRequest, object userContext)
-        {
-            this.loRaDeviceRegistry.ResetDeviceCache();
-
-            return Task.FromResult(new MethodResponse(200));
-        }
-
-        Task OnDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
-        {
-            try
-            {
-                if (desiredProperties.Contains("FacadeServerUrl"))
-                {
-                    this.loRaDeviceAPIService.SetURL((string)desiredProperties["FacadeServerUrl"]);
-                }
-
-                if (desiredProperties.Contains("FacadeAuthCode"))
-                {
-                    this.loRaDeviceAPIService.SetAuthCode((string)desiredProperties["FacadeAuthCode"]);
-                }
-
-                Logger.Log("Desired property changed", LogLevel.Debug);
-            }
-            catch (AggregateException ex)
-            {
-                foreach (Exception exception in ex.InnerExceptions)
-                {
-                    Logger.Log($"Error when receiving desired property: {exception}", LogLevel.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Log($"Error when receiving desired property: {ex.Message}", LogLevel.Error);
-            }
-
-            return Task.CompletedTask;
         }
 
         async Task IPacketForwarder.SendDownstreamAsync(DownlinkPktFwdMessage downstreamMessage)
