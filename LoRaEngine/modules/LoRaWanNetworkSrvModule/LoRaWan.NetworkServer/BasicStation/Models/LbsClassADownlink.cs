@@ -29,16 +29,16 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
         public ushort RxDelay { get; set; }
 
         [JsonPropertyName("RX1DR")]
-        public ushort RX1DR { get; set; }
+        public int RX1DR { get; set; }
 
         [JsonPropertyName("RX1Freq")]
-        public ushort RX1Freq { get; set; }
+        public int RX1Freq { get; set; }
 
         [JsonPropertyName("RX2DR")]
         public ushort RX2DR { get; set; }
 
         [JsonPropertyName("RX2Freq")]
-        public ushort RX2Freq { get; set; }
+        public int RX2Freq { get; set; }
 
         [JsonPropertyName("priority")]
         public ushort Priority { get; set; }

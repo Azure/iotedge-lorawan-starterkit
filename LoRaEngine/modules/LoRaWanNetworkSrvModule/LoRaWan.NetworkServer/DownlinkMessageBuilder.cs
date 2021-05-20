@@ -368,17 +368,23 @@ namespace LoRaWan.NetworkServer
             }
 
             var msgType = requiresDeviceAcknowlegement ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
+            Random random = new Random();
             var ackLoRaMessage = new LbsClassADownlink
             {
                 DevEUI = loRaDevice.DevEUI,
                 // check
-                Diid = 0,
+                Diid = random.Next(),
                 Msgtype = LbsMessageType.dnmsg,
                 Pdu = "pyld",
                 Priority = 0,
                 Xtime = request.DataFrame.UpInfo.Xtime,
                 Rctx = request.DataFrame.UpInfo.Rctx,
-              };
+                RX2Freq = (int)configuration.Region.RX2DefaultReceiveWindows.frequency * 1000,
+                RX2DR = configuration.Region.RX2DefaultReceiveWindows.dr,
+                // Todo call the real resolver here, works for EU but certianly not for US.
+                RX1Freq = request.DataFrame.Freq,
+                RX1DR = request.DataFrame.DR,
+            };
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
             Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Information);
