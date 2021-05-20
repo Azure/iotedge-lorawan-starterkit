@@ -256,9 +256,8 @@ namespace LoRaWan.NetworkServer
 
             var requiresDeviceAcknowlegement = false;
 
-            /* TODO
             // get max. payload size based on data rate from LoRaRegion
-            var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
+            var maxPayloadSize = configuration.Region.GetMaxPayloadSize(Convert.ToUInt16(request.DataFrame.DR));
 
             // Deduct 8 bytes from max payload size.
             maxPayloadSize -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
@@ -274,8 +273,10 @@ namespace LoRaWan.NetworkServer
 
             if (cloudToDeviceMessage != null)
             {
+                // TODO MAC COMMANDS
                 // Get C2D Mac coomands
-                var macCommandsC2d = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage?.MacCommands, rxpk, null);
+                // var macCommandsC2d = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage?.MacCommands, rxpk, null);
+                var macCommandsC2d = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage?.MacCommands, null, null);
 
                 // Calculate total C2D payload size
                 var totalC2dSize = cloudToDeviceMessage.GetPayload()?.Length ?? 0;
@@ -321,8 +322,10 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
+            // TODO MAC COMMANDS
             // Get request Mac commands
-            var macCommandsRequest = PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload.MacCommands, null, rxpk, loRaADRResult);
+            // var macCommandsRequest = PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload.MacCommands, null, rxpk, loRaADRResult);
+            var macCommandsRequest = PrepareMacCommandAnswer(loRaDevice.DevEUI, upstreamPayload.MacCommands, null, null, loRaADRResult);
 
             // Calculate request Mac commands size
             var macCommandsRequestSize = macCommandsRequest?.Sum(x => x.Length) ?? 0;
@@ -338,8 +341,6 @@ namespace LoRaWan.NetworkServer
                     }
                 }
             }
-
-            */
 
             if (fpending || isMessageTooLong)
             {
@@ -357,11 +358,6 @@ namespace LoRaWan.NetworkServer
             {
                 reversedDevAddr[i] = srcDevAddr[srcDevAddr.Length - (1 + i)];
             }
-
-            // TODO temporary
-            var macCommands = new List<MacCommand>();
-            byte? fport = upstreamPayload.Fport.ToArray()[0];
-            byte[] frmPayload = null;
 
             var msgType = requiresDeviceAcknowlegement ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
             Random random = new Random();
