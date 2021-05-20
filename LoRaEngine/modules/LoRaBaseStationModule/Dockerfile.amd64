@@ -1,6 +1,6 @@
 #This docker builds a container for the LoRa Base station
 
-FROM debian:stretch-slim
+FROM arm32v7/debian:stretch-slim
 RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get install -y --no-install-recommends apt-utils build-essential
