@@ -11,32 +11,26 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer.BasicStation.Models;
-    using LoRaWan.NetworkServer.BasicStation.WebSocketServer;
-    using Newtonsoft.Json;
 
     public class LbsDownStreamSender
     {
-        private readonly WebSocket websocket;
+        private readonly WebSocket socket;
 
-        public LbsDownStreamSender(WebSocket websocket)
+        public LbsDownStreamSender(WebSocket socket)
         {
-            this.websocket = websocket;
+            this.socket = socket;
         }
 
         internal async Task SendDownstreamAsync(LbsClassADownlink lbsClassAPayload)
         {
             var options = new JsonSerializerOptions
             {
-                IgnoreNullValues = true,
-                Converters =
-                {
-                    new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
-                }
+                IgnoreNullValues = true
             };
+            options.Converters.Add(new JsonStringEnumConverter());
+            var message = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(lbsClassAPayload, options));
 
-            var message = Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(lbsClassAPayload, options));
-            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(lbsClassAPayload, options));
-            await this.websocket.SendAsync(new ReadOnlyMemory<byte>(message, 0, message.Length), System.Net.WebSockets.WebSocketMessageType.Text, true, CancellationToken.None);
+            await this.socket.SendAsync(new ReadOnlyMemory<byte>(message, 0, message.Length), WebSocketMessageType.Text, true, CancellationToken.None);
         }
     }
 }

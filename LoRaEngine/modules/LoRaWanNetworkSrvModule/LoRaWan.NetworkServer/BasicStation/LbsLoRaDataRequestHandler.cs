@@ -294,7 +294,7 @@ namespace LoRaWan.NetworkServer
                             fcntDown.GetValueOrDefault(),
                             loRaADRResult);
 
-                        _ = request.Sender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkLbsMessage);
+                        await request.Sender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkLbsMessage);
                         /*
                         if (cloudToDeviceMessage != null)
                         {
@@ -408,7 +408,7 @@ namespace LoRaWan.NetworkServer
 
                     if (downlink != null)
                     {
-                        _ = request.Sender.SendDownstreamAsync(downlink.DownlinkLbsMessage);
+                        await request.Sender.SendDownstreamAsync(downlink.DownlinkLbsMessage);
                     }
 
                     return new LoRaDeviceRequestProcessResult(loRaDevice, request);

@@ -170,6 +170,7 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
                                                             lnsDataFrame.FrmPayload,
                                                             lnsDataFrame.Mic));
                             loraRequest.DataFrame = lnsDataFrame;
+                            loraRequest.Sender = new LbsDownStreamSender(socket);
                             this.messageDispatcher.DispatchLoRaDataMessage(loraRequest);
                             break;
 

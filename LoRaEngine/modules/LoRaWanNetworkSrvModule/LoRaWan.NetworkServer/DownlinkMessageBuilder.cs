@@ -360,25 +360,27 @@ namespace LoRaWan.NetworkServer
 
             // TODO temporary
             var macCommands = new List<MacCommand>();
-            byte? fport = null;
+            byte? fport = upstreamPayload.Fport.ToArray()[0];
             byte[] frmPayload = null;
 
             var msgType = requiresDeviceAcknowlegement ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
             Random random = new Random();
 
-            var payload = new LoRaPayloadData(
-               msgType,
-               reversedDevAddr,
-               new byte[] { fctrl },
-               BitConverter.GetBytes(fcntDownToSend),
-               macCommands,
-               fport.HasValue ? new byte[] { fport.Value } : null,
-               frmPayload,
-               1,
-               loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
-
-            var hexPyld = ConversionHelper.ByteArrayToString(payload.GetByteMessage());
             var diid = random.Next();
+
+            var payload = new LoRaPayloadData(
+                msgType,
+                reversedDevAddr,
+                new byte[] { fctrl },
+                BitConverter.GetBytes(fcntDownToSend),
+                macCommands,
+                fport.HasValue ? new byte[] { fport.Value } : null,
+                frmPayload,
+                1,
+                loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
+            payload.SetMic(loRaDevice.NwkSKey);
+            var hexPyld = ConversionHelper.ByteArrayToString(payload.GetByteMessage());
+
             var ackLoRaMessage = new LbsClassADownlink
             {
                 DevEUI = loRaDevice.DevEUI,
@@ -388,10 +390,10 @@ namespace LoRaWan.NetworkServer
                 Priority = 0,
                 Xtime = request.DataFrame.UpInfo.Xtime,
                 Rctx = request.DataFrame.UpInfo.Rctx,
-                RX2Freq = (int)configuration.Region.RX2DefaultReceiveWindows.frequency * 1000000,
+                RX2Freq = (int)configuration.Region.RX2DefaultReceiveWindows.frequency * 1000 * 1000,
                 RX2DR = configuration.Region.RX2DefaultReceiveWindows.dr,
                 RX1Freq = request.DataFrame.Freq,
-                RX1DR = request.DataFrame.DR,
+                RX1DR = (ushort)request.DataFrame.DR,
             };
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
