@@ -9,6 +9,10 @@ const app = express();
 
 app.use(expressLogger);
 
+app.get('/decoders', (req, res, next) => {
+    res.send(decoder.getAllDecoders());
+});
+
 app.get('/api/:decodername',
     param('decodername').notEmpty().withMessage("is missing"),
     query('payload').notEmpty().withMessage("is missing").isBase64().withMessage("must be a base64 encoded string"),

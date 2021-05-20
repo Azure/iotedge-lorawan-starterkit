@@ -17,14 +17,24 @@ Create docker image (replace `amd64` with the architecture of your choice)
 docker build . -f Dockerfile.amd64 -t universaldecoder
 ```
 
-Run docker image
+Run docker image:
 ```
 docker run --rm -d -p 8080:8080 universaldecoder
 ```
 
-Call universal decoder at the following url. You should see the result as JSON string.
+Call the `DecoderValueSensor` decoder at the following url. You should see the result as JSON string.
 ```
 http://localhost:8080/api/DecoderValueSensor?devEui=0000000000000000&fport=1&payload=QUJDREUxMjM0NQ%3D%3D
+```
+
+Finally list all available decoders with the following url:
+```
+http://localhost:8080/decoders
+```
+
+You can finally call any other supported validator at:
+```
+http://localhost:8080/api/<decoder>?devEui=0000000000000000&fport=<fport>&payload=<payload>
 ```
 
 ## Local development
@@ -74,7 +84,7 @@ docker run --rm -it -p 8080:8080 --name universaldecoder <container registry>/<i
 You can then use a browser to navigate to:
 
 ```
-http://localhost:8881/api/DecoderValueSensor?devEui=0000000000000000&fport=1&payload=QUJDREUxMjM0NQ%3D%3D
+http://localhost:8080/api/DecoderValueSensor?devEui=0000000000000000&fport=1&payload=QUJDREUxMjM0NQ%3D%3D
 ```
 
 ### Deploy to IoT Edge
@@ -95,7 +105,11 @@ To activate the decoder for a LoRa device, navigate to your IoT Hub &rarr; IoT D
 http://universaldecoder:8080/api/<DecoderName>
 ```
 
-A list of all available decoders can be found in the [TTN repository](https://github.com/TheThingsNetwork/lorawan-devices/tree/master/vendor). Decoder names correspond to their respective `<decoder-name>js` codec implementation.
+A list of all available decoders can be retrieved by calling the endpoint:
+
+```
+http://universaldecoder:8080/decoders
+```
 
 **Again make sure to choose all lowercase letters for the module name to make sure it is reachable.**
 

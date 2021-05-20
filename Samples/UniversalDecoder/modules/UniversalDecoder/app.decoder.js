@@ -1,7 +1,12 @@
 'use strict';
 
 const glob = require('glob');
+const path = require('path');
 const {logger} = require('./app.logging');
+
+function getAllDecoders() {
+    return glob.sync(`./codecs/**/*.js`).map(d => path.basename(d).split('.')[0]);
+}
 
 // gets decoder by name
 function getDecoder(decoderName) {
@@ -38,4 +43,4 @@ function decode(decoderName, payload, fPort) {
     return output;
 }
 
-module.exports = { decode };
+module.exports = { getAllDecoders, decode };
