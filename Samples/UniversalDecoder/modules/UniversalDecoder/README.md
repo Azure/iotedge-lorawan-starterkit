@@ -92,8 +92,10 @@ Configure your IoT Edge gateway device to include the custom container. IoT Hub 
 To activate the decoder for a LoRa device, navigate to your IoT Hub &rarr; IoT Devices &rarr; Device Details &rarr; Device Twin and set the ```SensorDecoder``` value in the desired properties to:
 
 ```
-http://<decoder module name>/api/<DecoderName>
+http://universaldecoder:8080/api/<DecoderName>
 ```
+
+A list of all available decoders can be found in the [TTN repository](https://github.com/TheThingsNetwork/lorawan-devices/tree/master/vendor). Decoder names correspond to their respective `<decoder-name>js` codec implementation.
 
 **Again make sure to choose all lowercase letters for the module name to make sure it is reachable.**
 
@@ -103,8 +105,6 @@ In case the custom decoder is unreachable, throws an error or return invalid JSO
 
 ## TODOs
 
-- Documentation
-  - Logging with pino
+- Documentation on logging with pino
 - Parse yaml structure to find codecs 
-- ACR repository to store image
   
