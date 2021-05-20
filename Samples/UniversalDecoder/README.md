@@ -117,8 +117,4 @@ http://universaldecoder:8080/decoders
 
 In case the custom decoder is unreachable, throws an error or return invalid JSON, the error message will be shown in your device's messages in IoT Hub.
 
-## TODOs
-
-- Documentation on logging with pino
-- Parse yaml structure to find codecs 
   
