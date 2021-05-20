@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.BasicStation.Models
 {
+    using System;
     using System.Text.Json.Serialization;
 
     class LnsDiscoveryReply
