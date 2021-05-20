@@ -3,15 +3,21 @@
 
 namespace LoRaWan.NetworkServer.BasicStation.Models
 {
+    using System;
     using System.Collections.Generic;
     using System.Text.Json.Serialization;
     using LoRaTools.Regions;
 
     class LnsConfigReply
     {
+        private readonly NetworkServerConfiguration configuration;
+
         public LnsConfigReply(NetworkServerConfiguration configuration)
         {
-            // access DR etc... configuration.Region.DRtoConfiguration[0].datarate
+            if (configuration is null)
+                throw new ArgumentNullException(nameof(configuration));
+            this.configuration = configuration;
+            this.DRs = this.GetDataratesFromRegion();
         }
 
         [JsonPropertyName("msgtype")]
@@ -20,16 +26,7 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
         public List<int> NetID { get; set; } = new List<int> { 1 };
 
         [JsonPropertyName("DRs")]
-        public List<List<int>> DRs { get; set; } = new List<List<int>>
-        {
-            new List<int> { 12, 125, 0, },
-            new List<int> { 11, 125, 0, },
-            new List<int> { 10, 125, 0, },
-            new List<int> { 9, 125, 0, },
-            new List<int> { 8, 125, 0, },
-            new List<int> { 7, 125, 0, },
-            new List<int> { 7, 250, 0, }
-        };
+        public List<List<int>> DRs { get; set; }
 
         [JsonPropertyName("hwspec")]
         public string Hwspec { get; set; } = "sx1301/1";
@@ -48,5 +45,17 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
 
         [JsonPropertyName("sx1301_conf")]
         public List<Sx1301Config> Sx1301_conf { get; set; }
+
+        private List<List<int>> GetDataratesFromRegion()
+        {
+            var response = new List<List<int>> { };
+            foreach (var item in this.configuration.Region.DRtoConfiguration.Values)
+            {
+                List<int> newSet = new List<int>() { Convert.ToInt32(item.datarate.SpreadingFactor), Convert.ToInt32(item.datarate.BandWidth), 0 };
+                response.Add(newSet);
+            }
+
+            return response;
+        }
     }
 }
