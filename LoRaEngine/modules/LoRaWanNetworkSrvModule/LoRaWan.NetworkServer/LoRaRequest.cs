@@ -11,11 +11,7 @@ namespace LoRaWan.NetworkServer
 
     public class LoRaRequest
     {
-        public virtual Rxpk Rxpk { get; }
-
         public virtual LoRaPayload Payload { get; private set; }
-
-        public virtual IPacketForwarder PacketForwarder { get; }
 
         public virtual DateTime StartTime { get; }
 
@@ -31,12 +27,8 @@ namespace LoRaWan.NetworkServer
         }
 
         public LoRaRequest(
-            Rxpk rxpk,
-            IPacketForwarder packetForwarder,
             DateTime startTime)
         {
-            this.Rxpk = rxpk;
-            this.PacketForwarder = packetForwarder;
             this.StartTime = startTime;
         }
 

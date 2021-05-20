@@ -8,7 +8,7 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
     using System.Text;
     using System.Text.Json.Serialization;
 
-    class LnsDataFrameRequest
+    public class LnsDataFrameRequest
     {
         [JsonPropertyName("msgtype")]
         public string Msgtype { get; set; }
@@ -36,5 +36,14 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
 
         [JsonPropertyName("MIC")]
         public int Mic { get; set; }
+
+        [JsonPropertyName("DR")]
+        public int DR { get; set; }
+
+        [JsonPropertyName("Freq")]
+        public int Freq { get; set; }
+
+        [JsonPropertyName("upinfo")]
+        public UpInfo UpInfo { get; set; }
     }
 }

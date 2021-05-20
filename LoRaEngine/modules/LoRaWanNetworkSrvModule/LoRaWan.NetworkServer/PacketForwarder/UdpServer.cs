@@ -146,7 +146,7 @@ namespace LoRaWan.NetworkServer.PacketForwarder
                 {
                     foreach (var rxpk in messageRxpks)
                     {
-                        this.messageDispatcher.DispatchRequest(new LoRaRequest(rxpk, this, startTimeProcessing));
+                        this.messageDispatcher.DispatchRequest(new LoRaPktFwdRequest(rxpk, this, startTimeProcessing));
                     }
                 }
             }

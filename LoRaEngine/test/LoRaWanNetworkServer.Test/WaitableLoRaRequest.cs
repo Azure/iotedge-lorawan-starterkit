@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer.Test
     using Moq;
     using Xunit;
 
-    public class WaitableLoRaRequest : LoRaRequest
+    public class WaitableLoRaRequest : LoRaPktFwdRequest
     {
         SemaphoreSlim complete;
 

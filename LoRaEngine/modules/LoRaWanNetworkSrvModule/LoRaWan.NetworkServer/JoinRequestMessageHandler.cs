@@ -32,11 +32,19 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Process OTAA join request.
         /// </summary>
-        async Task ProcessJoinRequestAsync(LoRaRequest request)
+        async Task ProcessJoinRequestAsync(LoRaRequest baseRequest)
         {
             LoRaDevice loRaDevice = null;
             string devEUI = null;
+            LoRaPktFwdRequest request = baseRequest as LoRaPktFwdRequest;
+
             var loraRegion = request.Region;
+
+            if (request == null)
+            {
+                // TODO: Add custom error type.
+                return;
+            }
 
             try
             {

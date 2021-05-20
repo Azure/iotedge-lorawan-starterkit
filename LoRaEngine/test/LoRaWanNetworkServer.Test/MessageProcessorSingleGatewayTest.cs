@@ -228,7 +228,7 @@ namespace LoRaWan.NetworkServer.Test
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var request = new LoRaRequest(
+            var request = new LoRaPktFwdRequest(
                 new Rxpk
                 {
                     Data = "QDDaAAGxfh0FAI6wAENHbvgt1UK5Je1uPo/bLPB9HlnOXLGlLRUrTtA0KOHrZhusGl+L4g=="

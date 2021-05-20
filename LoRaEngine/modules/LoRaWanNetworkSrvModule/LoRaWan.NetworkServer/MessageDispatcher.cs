@@ -41,8 +41,15 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Dispatches a request.
         /// </summary>
-        public void DispatchRequest(LoRaRequest request)
+        public void DispatchRequest(LoRaRequest baseRequest)
         {
+            LoRaPktFwdRequest request = baseRequest as LoRaPktFwdRequest;
+            if (request == null)
+            {
+                // TODO: Add custom error type.
+                return;
+            }
+
             if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out LoRaPayload loRaPayload))
             {
                 Logger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);

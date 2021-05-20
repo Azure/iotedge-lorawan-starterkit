@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
         version,
         updf,
         jreq,
+        dnmsg,
 #pragma warning restore SA1300 // Element should begin with upper-case letter
     }
 }
