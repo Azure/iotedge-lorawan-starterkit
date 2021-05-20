@@ -16,7 +16,8 @@ namespace LoRaWan.NetworkServer
 
         public virtual LbsDownStreamSender Sender { get; }
 
-        public LoRaLbsProcessingRequest()
+        public LoRaLbsProcessingRequest(DateTime startTime)
+            : base(startTime)
         {
         }
     }
