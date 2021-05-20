@@ -235,8 +235,6 @@ namespace LoRaWan.NetworkServer
             var fcntDownToSend = ValidateAndConvert16bitFCnt(fcntDown);
 
             var upstreamPayload = (LoRaPayloadData)request.Payload;
-            var inputMessage = request.DataFrame;
-            var loRaRegion = request.Region;
             bool isMessageTooLong = false;
 
             // default fport
@@ -254,13 +252,6 @@ namespace LoRaWan.NetworkServer
                 // TODO return error No valid receive window. Abandon the message
                 isMessageTooLong = true;
                 return null;
-            }
-
-            byte[] rndToken = new byte[2];
-
-            lock (RndLock)
-            {
-                RndDownlinkMessageBuilder.NextBytes(rndToken);
             }
 
             var requiresDeviceAcknowlegement = false;
@@ -367,27 +358,44 @@ namespace LoRaWan.NetworkServer
                 reversedDevAddr[i] = srcDevAddr[srcDevAddr.Length - (1 + i)];
             }
 
+            // TODO temporary
+            var macCommands = new List<MacCommand>();
+            byte? fport = null;
+            byte[] frmPayload = null;
+
             var msgType = requiresDeviceAcknowlegement ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
             Random random = new Random();
+
+            var payload = new LoRaPayloadData(
+               msgType,
+               reversedDevAddr,
+               new byte[] { fctrl },
+               BitConverter.GetBytes(fcntDownToSend),
+               macCommands,
+               fport.HasValue ? new byte[] { fport.Value } : null,
+               frmPayload,
+               1,
+               loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
+
+            var hexPyld = ConversionHelper.ByteArrayToString(payload.GetByteMessage());
+            var diid = random.Next();
             var ackLoRaMessage = new LbsClassADownlink
             {
                 DevEUI = loRaDevice.DevEUI,
-                // check
-                Diid = random.Next(),
+                Diid = diid,
                 Msgtype = LbsMessageType.dnmsg,
-                Pdu = "pyld",
+                Pdu = hexPyld,
                 Priority = 0,
                 Xtime = request.DataFrame.UpInfo.Xtime,
                 Rctx = request.DataFrame.UpInfo.Rctx,
-                RX2Freq = (int)configuration.Region.RX2DefaultReceiveWindows.frequency * 1000,
+                RX2Freq = (int)configuration.Region.RX2DefaultReceiveWindows.frequency * 1000000,
                 RX2DR = configuration.Region.RX2DefaultReceiveWindows.dr,
-                // Todo call the real resolver here, works for EU but certianly not for US.
                 RX1Freq = request.DataFrame.Freq,
                 RX1DR = request.DataFrame.DR,
             };
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
-            Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Information);
+            Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {diid}", LogLevel.Information);
             return new DownLinkLbsMessage(ackLoRaMessage, false);
         }
 

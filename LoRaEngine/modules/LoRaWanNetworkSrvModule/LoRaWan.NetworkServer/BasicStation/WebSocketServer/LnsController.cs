@@ -157,7 +157,7 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
                         case nameof(LbsMessageType.updf):
                             var lnsDataFrame = JsonSerializer.Deserialize<LnsDataFrameRequest>(input);
                             this.logger.Log(LogLevel.Debug, "Received a message");
-                            var loraRequest = new LoRaLbsProcessingRequest(DateTime.UtcNow);
+                            var loraRequest = new LoRaLbsProcessingRequest(DateTime.UtcNow, socket);
                             loraRequest.SetRegion(this.configuration.Region);
                             loraRequest.SetPayload(new LoRaPayloadData(
                                                             LBSMessageType.Updf,

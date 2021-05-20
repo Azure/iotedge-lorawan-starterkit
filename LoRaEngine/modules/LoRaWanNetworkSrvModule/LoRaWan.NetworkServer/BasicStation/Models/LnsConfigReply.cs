@@ -14,6 +14,13 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
             // access DR etc... configuration.Region.DRtoConfiguration[0].datarate
         }
 
+        [JsonPropertyName("freq_range")]
+        public List<int> FrequencyRange { get; set; } = new List<int>
+        {
+            863000000,
+            870000000,
+        };
+
         [JsonPropertyName("msgtype")]
         public string Msgtype { get; set; } = "router_config";
 

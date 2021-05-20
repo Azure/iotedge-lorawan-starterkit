@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
+    using System.Net.WebSockets;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
@@ -14,11 +15,12 @@ namespace LoRaWan.NetworkServer
     {
         public virtual LnsDataFrameRequest DataFrame { get; set; }
 
-        public virtual LbsDownStreamSender Sender { get; }
+        public LbsDownStreamSender Sender { get; set; }
 
-        public LoRaLbsProcessingRequest(DateTime startTime)
+        public LoRaLbsProcessingRequest(DateTime startTime, WebSocket socket)
             : base(startTime)
         {
+            this.Sender = new LbsDownStreamSender(socket);
         }
     }
 }
