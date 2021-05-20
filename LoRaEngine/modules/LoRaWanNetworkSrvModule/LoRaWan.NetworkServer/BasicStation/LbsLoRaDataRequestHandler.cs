@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Text;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
@@ -538,6 +539,8 @@ namespace LoRaWan.NetworkServer
             {
                 DeviceEUI = loRaDevice.DevEUI,
                 GatewayID = this.configuration.GatewayID,
+                Data = decodedValue,
+                Rawdata = LoRaTools.Utils.ConversionHelper.ByteArrayToString(decryptedPayloadData),
                 Edgets = (long)(timeWatcher.Start - DateTime.UnixEpoch).TotalMilliseconds,
             };
 
