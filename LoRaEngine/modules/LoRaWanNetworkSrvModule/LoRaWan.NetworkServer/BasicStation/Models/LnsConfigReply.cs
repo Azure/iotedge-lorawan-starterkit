@@ -11,8 +11,7 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
     {
         public LnsConfigReply(NetworkServerConfiguration configuration)
         {
-            RegionManager.TryTranslateToRegion(configuration.Region, out Region currentRegion);
-            // access DR etc... currentRegion.DRtoConfiguration[0].datarate;
+            // access DR etc... configuration.Region.DRtoConfiguration[0].datarate
         }
 
         [JsonPropertyName("msgtype")]

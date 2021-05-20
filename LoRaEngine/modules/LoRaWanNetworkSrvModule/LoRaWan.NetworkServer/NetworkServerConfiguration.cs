@@ -118,7 +118,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets or sets the geographical region where LoRa Network Server is deployed.
         /// </summary>
-        public LoRaRegionType Region { get; set; }
+        public Region Region { get; set; }
 
         // Creates a new instance of NetworkServerConfiguration
         public NetworkServerConfiguration()
@@ -154,13 +154,9 @@ namespace LoRaWan.NetworkServer
             config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
             config.UseBasicStation = envVars.GetEnvVar("USE_BASIC_STATION", config.UseBasicStation);
             var regionString = envVars.GetEnvVar("REGION", string.Empty);
-            if (Enum.TryParse<LoRaRegionType>(regionString, true, out var regionType))
+            if (Enum.TryParse<LoRaRegionType>(regionString, true, out var regionType) && RegionManager.TryTranslateToRegion(regionType, out var localRegion))
             {
-                config.Region = regionType;
-            }
-            else
-            {
-                config.Region = LoRaRegionType.NotSet;
+                config.Region = localRegion;
             }
 
             return config;
