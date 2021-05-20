@@ -68,7 +68,7 @@ namespace LoRaWan.NetworkServer
                 ClientFCntDown = context.FCntDown,
                 ClientFCntUp = context.FCntUp,
                 GatewayId = gatewayId,
-                Rssi = ((LoRaPktFwdRequest)context.Request)?.Rxpk.Rssi,
+                Rssi = (context.Request as LoRaPktFwdRequest)?.Rxpk.Rssi,
             };
 
             for (var i = 0; i < qualifyingExecutionItems.Count; i++)
