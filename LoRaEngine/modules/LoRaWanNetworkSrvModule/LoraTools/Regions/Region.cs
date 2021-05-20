@@ -252,6 +252,8 @@ namespace LoRaTools.Regions
             return maxPayloadSize;
         }
 
+        public uint GetMaxPayloadSize(ushort datr) => this.DRtoConfiguration[datr].maxPyldSize;
+
         /// <summary>
         /// This method Check that a received packet is within the correct frenquency range and has a valid Datr.
         /// </summary>
