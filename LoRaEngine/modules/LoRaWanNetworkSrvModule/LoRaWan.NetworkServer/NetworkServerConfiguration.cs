@@ -107,12 +107,17 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets or sets a value indicating whether to use Basic station.
         /// </summary>
-        public bool UseBasicStation { get; set; }
+        public bool UseBasicStation { get; set; } = false;
 
         /// <summary>
         /// Gets list of allowed dev addresses.
         /// </summary>
         public HashSet<string> AllowedDevAddresses { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the geographical region where LoRa Network Server is deployed.
+        /// </summary>
+        public string Region { get; set; }
 
         // Creates a new instance of NetworkServerConfiguration
         public NetworkServerConfiguration()
@@ -146,7 +151,8 @@ namespace LoRaWan.NetworkServer
             config.LogToUdpPort = envVars.GetEnvVar("LOG_TO_UDP_PORT", config.LogToUdpPort);
             config.NetId = envVars.GetEnvVar("NETID", config.NetId);
             config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
-            config.UseBasicStation = envVars.GetEnvVar("USE_BASIC_STATION", config.LogToUdp);
+            config.UseBasicStation = envVars.GetEnvVar("USE_BASIC_STATION", config.UseBasicStation);
+            config.Region = envVars.GetEnvVar("REGION", string.Empty);
 
             return config;
         }
