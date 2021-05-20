@@ -154,7 +154,8 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
                         case nameof(LbsMessageType.updf):
                             var lnsDataFrame = JsonSerializer.Deserialize<LnsDataFrameRequest>(input);
                             this.logger.Log(LogLevel.Debug, "Received a message");
-                            var loraRequest = new LoRaRequest();
+                            var loraRequest = new LoRaLbsProcessingRequest(DateTime.UtcNow);
+                            loraRequest.SetRegion(this.configuration.Region);
                             loraRequest.SetPayload(new LoRaPayloadData(
                                                             LBSMessageType.Updf,
                                                             lnsDataFrame.Mhdr,
@@ -165,6 +166,7 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
                                                             lnsDataFrame.Fport,
                                                             lnsDataFrame.FrmPayload,
                                                             lnsDataFrame.Mic));
+                            loraRequest.DataFrame = lnsDataFrame;
                             this.messageDispatcher.DispatchLoRaDataMessage(loraRequest);
                             break;
 
