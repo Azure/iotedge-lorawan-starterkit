@@ -14,6 +14,7 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
     using LoRaTools.LoRaMessage;
     using LoRaWan.NetworkServer.BasicStation.Models;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json.Linq;
 
@@ -23,11 +24,13 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
     {
         private readonly ILogger<LnsController> logger;
         private readonly MessageDispatcher messageDispatcher;
+        private readonly NetworkServerConfiguration configuration;
 
-        public LnsController(ILogger<LnsController> logger, MessageDispatcher messageDispatcher)
+        public LnsController(ILogger<LnsController> logger, MessageDispatcher messageDispatcher, NetworkServerConfiguration configuration)
         {
             this.logger = logger;
             this.messageDispatcher = messageDispatcher;
+            this.configuration = configuration;
         }
 
         [HttpGet("/router-config")]
@@ -146,7 +149,7 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
                     {
                         case nameof(LbsMessageType.version):
                             var formaterInput = JsonSerializer.Deserialize<LnsConfigRequest>(input);
-                            var message = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LnsConfigReply { Sx1301_conf = new List<Sx1301Config>() { new Sx1301Config() } }));
+                            var message = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new LnsConfigReply(this.configuration) { Sx1301_conf = new List<Sx1301Config>() { new Sx1301Config() } }));
                             await socket.SendAsync(new ArraySegment<byte>(message, 0, message.Length), result.MessageType, result.EndOfMessage, CancellationToken.None);
                             this.logger.Log(LogLevel.Information, "Message sent to Client");
                             break;

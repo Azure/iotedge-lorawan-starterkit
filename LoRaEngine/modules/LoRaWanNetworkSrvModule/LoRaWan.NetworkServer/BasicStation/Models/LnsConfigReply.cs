@@ -5,9 +5,16 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
 {
     using System.Collections.Generic;
     using System.Text.Json.Serialization;
+    using LoRaTools.Regions;
 
     class LnsConfigReply
     {
+        public LnsConfigReply(NetworkServerConfiguration configuration)
+        {
+            RegionManager.TryTranslateToRegion(configuration.Region, out Region currentRegion);
+            // access DR etc... currentRegion.DRtoConfiguration[0].datarate;
+        }
+
         [JsonPropertyName("msgtype")]
         public string Msgtype { get; set; } = "router_config";
 

@@ -101,14 +101,14 @@ namespace LoRaTools.Regions
                 64,
                 32,
                 (min: 1, max: 3));
-            eu868.DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
-            eu868.DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
-            eu868.DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 59));
-            eu868.DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 123));
-            eu868.DRtoConfiguration.Add(4, (configuration: "SF8BW125", maxPyldSize: 230));
-            eu868.DRtoConfiguration.Add(5, (configuration: "SF7BW125", maxPyldSize: 230));
-            eu868.DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 230));
-            eu868.DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 230)); // USED FOR GFSK
+            eu868.DRtoConfiguration.Add(0, (datarate: new Datarate(12, 125), maxPyldSize: 59));
+            eu868.DRtoConfiguration.Add(1, (datarate: new Datarate(11, 125), maxPyldSize: 59));
+            eu868.DRtoConfiguration.Add(2, (datarate: new Datarate(10, 125), maxPyldSize: 59));
+            eu868.DRtoConfiguration.Add(3, (datarate: new Datarate(9, 125), maxPyldSize: 123));
+            eu868.DRtoConfiguration.Add(4, (datarate: new Datarate(8, 125), maxPyldSize: 230));
+            eu868.DRtoConfiguration.Add(5, (datarate: new Datarate(7, 125), maxPyldSize: 230));
+            eu868.DRtoConfiguration.Add(6, (datarate: new Datarate(7, 250), maxPyldSize: 230));
+            eu868.DRtoConfiguration.Add(7, (datarate: new Datarate(50, 0), maxPyldSize: 230)); // USED FOR GFSK
 
             eu868.TXPowertoMaxEIRP.Add(0, 16);
             eu868.TXPowertoMaxEIRP.Add(1, 14);
@@ -182,17 +182,17 @@ namespace LoRaTools.Regions
                 64,
                 32,
                 (min: 1, max: 3));
-            us915.DRtoConfiguration.Add(0, (configuration: "SF10BW125", maxPyldSize: 19));
-            us915.DRtoConfiguration.Add(1, (configuration: "SF9BW125", maxPyldSize: 61));
-            us915.DRtoConfiguration.Add(2, (configuration: "SF8BW125", maxPyldSize: 133));
-            us915.DRtoConfiguration.Add(3, (configuration: "SF7BW125", maxPyldSize: 250));
-            us915.DRtoConfiguration.Add(4, (configuration: "SF8BW500", maxPyldSize: 250));
-            us915.DRtoConfiguration.Add(8, (configuration: "SF12BW500", maxPyldSize: 61));
-            us915.DRtoConfiguration.Add(9, (configuration: "SF11BW500", maxPyldSize: 137));
-            us915.DRtoConfiguration.Add(10, (configuration: "SF10BW500", maxPyldSize: 250));
-            us915.DRtoConfiguration.Add(11, (configuration: "SF9BW500", maxPyldSize: 250));
-            us915.DRtoConfiguration.Add(12, (configuration: "SF8BW500", maxPyldSize: 250));
-            us915.DRtoConfiguration.Add(13, (configuration: "SF7BW500", maxPyldSize: 250));
+            us915.DRtoConfiguration.Add(0, (datarate: new Datarate(10, 125), maxPyldSize: 19));
+            us915.DRtoConfiguration.Add(1, (datarate: new Datarate(9, 125), maxPyldSize: 61));
+            us915.DRtoConfiguration.Add(2, (datarate: new Datarate(8, 125), maxPyldSize: 133));
+            us915.DRtoConfiguration.Add(3, (datarate: new Datarate(7, 125), maxPyldSize: 250));
+            us915.DRtoConfiguration.Add(4, (datarate: new Datarate(8, 500), maxPyldSize: 250));
+            us915.DRtoConfiguration.Add(8, (datarate: new Datarate(12, 500), maxPyldSize: 61));
+            us915.DRtoConfiguration.Add(9, (datarate: new Datarate(11, 500), maxPyldSize: 137));
+            us915.DRtoConfiguration.Add(10, (datarate: new Datarate(10, 500), maxPyldSize: 250));
+            us915.DRtoConfiguration.Add(11, (datarate: new Datarate(9, 500), maxPyldSize: 250));
+            us915.DRtoConfiguration.Add(12, (datarate: new Datarate(8, 500), maxPyldSize: 250));
+            us915.DRtoConfiguration.Add(13, (datarate: new Datarate(7, 500), maxPyldSize: 250));
 
             for (uint i = 0; i < 14; i++)
             {
