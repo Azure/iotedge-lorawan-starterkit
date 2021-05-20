@@ -284,11 +284,6 @@ namespace LoRaWan.NetworkServer
                     // - we don't have time to check c2d and send to device we return now
                     if (requiresConfirmation && (!loRaDevice.DownlinkEnabled || timeToSecondWindow.Subtract(LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage) <= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage))
                     {
-                        LbsClassADownlink lbsClassAPayload = new LbsClassADownlink
-                        {
-                            DC = 0,
-                        };
-
                         var downlinkMessageBuilderResp = DownlinkMessageBuilder.CreateDownlinkLbsMessage(
                             this.configuration,
                             loRaDevice,
@@ -299,7 +294,7 @@ namespace LoRaWan.NetworkServer
                             fcntDown.GetValueOrDefault(),
                             loRaADRResult);
 
-                        _ = request.Sender.SendDownstreamAsync(lbsClassAPayload);
+                        _ = request.Sender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkLbsMessage);
                         /*
                         if (cloudToDeviceMessage != null)
                         {
@@ -411,11 +406,10 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    /*
-                    if (lbsClassAPayload != null)
+                    if (downlink != null)
                     {
-                        _ = request.Sender.SendDownstreamAsync(lbsClassAPayload);
-                    }*/
+                        _ = request.Sender.SendDownstreamAsync(downlink.DownlinkLbsMessage);
+                    }
 
                     return new LoRaDeviceRequestProcessResult(loRaDevice, request);
                 }
