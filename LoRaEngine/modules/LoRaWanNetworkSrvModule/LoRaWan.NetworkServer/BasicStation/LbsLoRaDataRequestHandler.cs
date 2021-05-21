@@ -294,19 +294,21 @@ namespace LoRaWan.NetworkServer
                             fcntDown.GetValueOrDefault(),
                             loRaADRResult);
 
-                        await request.Sender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkLbsMessage);
-                        /*
-                        if (cloudToDeviceMessage != null)
+                        if (downlinkMessageBuilderResp.DownlinkLbsMessage != null)
                         {
-                            if (downlinkMessageBuilderResp.IsMessageTooLong)
+                            _ = request.Sender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkLbsMessage);
+                            if (cloudToDeviceMessage != null)
                             {
-                                await cloudToDeviceMessage.AbandonAsync();
+                                if (downlinkMessageBuilderResp.IsMessageTooLong)
+                                {
+                                    await cloudToDeviceMessage.AbandonAsync();
+                                }
+                                else
+                                {
+                                    await cloudToDeviceMessage.CompleteAsync();
+                                }
                             }
-                            else
-                            {
-                                await cloudToDeviceMessage.CompleteAsync();
-                            }
-                        }*/
+                        }
 
                         return new LoRaDeviceRequestProcessResult(loRaDevice, request);
                     }
@@ -406,7 +408,7 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    if (downlink != null)
+                    if (downlink?.DownlinkLbsMessage != null)
                     {
                         await request.Sender.SendDownstreamAsync(downlink.DownlinkLbsMessage);
                     }

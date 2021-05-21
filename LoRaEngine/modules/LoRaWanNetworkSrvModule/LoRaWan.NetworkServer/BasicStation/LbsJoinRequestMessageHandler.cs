@@ -231,8 +231,8 @@ namespace LoRaWan.NetworkServer
                 if (!loRaPayloadJoinAccept.CfList.Span.IsEmpty)
                     algoinput = algoinput.Concat(loRaPayloadJoinAccept.CfList.ToArray()).ToArray();
 
-                loRaPayloadJoinAccept.CalculateMic(appSKey, algoinput);
-                loRaPayloadJoinAccept.PerformEncryption(appSKey);
+                loRaPayloadJoinAccept.CalculateMic(loRaDevice.AppKey, algoinput);
+                loRaPayloadJoinAccept.PerformEncryption(loRaDevice.AppKey);
 
                 if (loRaPayloadJoinAccept != null)
                 {
