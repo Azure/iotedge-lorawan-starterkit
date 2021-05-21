@@ -104,7 +104,7 @@ We provide the Dockerfiles for the following architectures:
 
 To build the Docker image, right-click on the [module.json](./module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for from the drop-down menu.
 
-To **temporarily test** the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 80 to a free port on your host machine, like for example 8881.
+To **temporarily test** the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 8080 to a free port on your host machine (8080 is usually good).
 
 ```bash
 docker run --rm -it -p 8080:8080 --name universaldecoder <container registry>/<image>:<tag>
@@ -137,7 +137,7 @@ http://universaldecoder:8080/api/<decoder>
 A list of all available decoders can be retrieved by calling the endpoint:
 
 ```
-http://universaldecoder:8080/decoders?devEui=0000000000000000&fport=<fport>&payload=<payload>
+http://universaldecoder:8080/decoders
 ```
 
 **Again make sure to choose all lowercase letters for the module name to make sure it is reachable.**
