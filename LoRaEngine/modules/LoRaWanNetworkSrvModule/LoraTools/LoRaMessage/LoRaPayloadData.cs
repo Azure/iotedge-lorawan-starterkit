@@ -109,6 +109,11 @@ namespace LoRaTools.LoRaMessage
         public int Direction { get; set; }
 
         /// <summary>
+        /// Gets or sets LBS message type.
+        /// </summary>
+        public LBSMessageType LbsMessageType { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadData"/> class.
         /// Constructor used by the simulator.
         /// </summary>
