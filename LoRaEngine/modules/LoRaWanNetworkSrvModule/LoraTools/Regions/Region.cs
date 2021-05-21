@@ -26,7 +26,7 @@ namespace LoRaTools.Regions
         /// max application payload size N should be N= M-8 bytes.
         /// This is in case of absence of Fopts field.
         /// </summary>
-        public Dictionary<ushort, (string configuration, uint maxPyldSize)> DRtoConfiguration { get; set; } = new Dictionary<ushort, (string, uint)>();
+        public Dictionary<ushort, (Datarate datarate, uint maxPyldSize)> DRtoConfiguration { get; set; } = new Dictionary<ushort, (Datarate, uint)>();
 
         /// <summary>
         /// Gets or sets by default MaxEIRP is considered to be +16dBm.
@@ -192,7 +192,7 @@ namespace LoRaTools.Regions
             {
                 if (this.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
                 {
-                    var datr = this.DRtoConfiguration[rx2DrFromTwins.Value].configuration;
+                    var datr = this.DRtoConfiguration[rx2DrFromTwins.Value].datarate.ToString();
                     Logger.Log(devEUI, $"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}", LogLevel.Debug);
                     return datr;
                 }
@@ -213,7 +213,7 @@ namespace LoRaTools.Regions
             }
 
             // if no settings was set we use region default.
-            var defaultDatr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
+            var defaultDatr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].datarate.ToString();
             Logger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
             return defaultDatr;
             }
@@ -229,7 +229,7 @@ namespace LoRaTools.Regions
                 // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
                 if (rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1))
                 {
-                    return this.DRtoConfiguration[(ushort)this.RX1DROffsetTable[this.GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].configuration;
+                    return this.DRtoConfiguration[(ushort)this.RX1DROffsetTable[this.GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].datarate.ToString();
                 }
                 else
                 {
@@ -247,10 +247,12 @@ namespace LoRaTools.Regions
         /// <param name="datr">the datr/configuration with which the message was transmitted.</param>
         public uint GetMaxPayloadSize(string datr)
         {
-            var maxPayloadSize = this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Value.maxPyldSize;
+            var maxPayloadSize = this.DRtoConfiguration.FirstOrDefault(x => x.Value.datarate.ToString() == datr).Value.maxPyldSize;
 
             return maxPayloadSize;
         }
+
+        public uint GetMaxPayloadSize(ushort datr) => this.DRtoConfiguration[datr].maxPyldSize;
 
         /// <summary>
         /// This method Check that a received packet is within the correct frenquency range and has a valid Datr.
@@ -273,7 +275,7 @@ namespace LoRaTools.Regions
         /// </summary>
         public int GetDRFromFreqAndChan(string datr)
         {
-            return (int)this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Key;
+            return (int)this.DRtoConfiguration.FirstOrDefault(x => x.Value.datarate.ToString() == datr).Key;
         }
 
         public bool IsValidRX1DROffset(uint rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1);

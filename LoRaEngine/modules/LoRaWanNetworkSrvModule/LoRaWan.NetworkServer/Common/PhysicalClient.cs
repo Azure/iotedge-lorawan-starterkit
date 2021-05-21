@@ -54,21 +54,25 @@ namespace LoRaWan.NetworkServer.Common
             var deduplicationStrategyFactory = new DeduplicationStrategyFactory(loRaDeviceAPIService);
             var adrStrategyProvider = new LoRaADRStrategyProvider();
             var cache = new MemoryCache(new MemoryCacheOptions());
-            var dataHandlerImplementation = new DefaultLoRaDataRequestHandler(configuration, frameCounterStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, new LoRAADRManagerFactory(loRaDeviceAPIService), new FunctionBundlerProvider(loRaDeviceAPIService));
             var connectionManager = new LoRaDeviceClientConnectionManager(cache);
-            var loRaDeviceFactory = new LoRaDeviceFactory(configuration, dataHandlerImplementation, connectionManager);
-            var loRaDeviceRegistry = new LoRaDeviceRegistry(configuration, cache, loRaDeviceAPIService, loRaDeviceFactory);
-
-            var messageDispatcher = new MessageDispatcher(configuration, loRaDeviceRegistry, frameCounterStrategyProvider);
 
             if (configuration.UseBasicStation)
             {
+                var dataHandlerImplementation = new LbsLoRaDataRequestHandler(configuration, frameCounterStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, new LoRAADRManagerFactory(loRaDeviceAPIService), new FunctionBundlerProvider(loRaDeviceAPIService));
+                var loRaDeviceFactory = new LoRaDeviceFactory(configuration, dataHandlerImplementation, connectionManager);
+                var loRaDeviceRegistry = new LoRaDeviceRegistry(configuration, cache, loRaDeviceAPIService, loRaDeviceFactory);
+                var lbsLoRaDataRequestHandler = new LbsJoinRequestMessageHandler(configuration, loRaDeviceRegistry);
+                var messageDispatcher = new MessageDispatcher(configuration, loRaDeviceRegistry, frameCounterStrategyProvider, lbsLoRaDataRequestHandler);
                 Logger.Log("Using physical client with basic station implementation", LogLevel.Information);
                 return new BasicStation(configuration, messageDispatcher, loRaDeviceAPIService, loRaDeviceRegistry);
             }
             else
             {
                 Logger.Log("Using physical client with the packet forwarder implementation", LogLevel.Information);
+                var dataHandlerImplementation = new DefaultLoRaDataRequestHandler(configuration, frameCounterStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, new LoRAADRManagerFactory(loRaDeviceAPIService), new FunctionBundlerProvider(loRaDeviceAPIService));
+                var loRaDeviceFactory = new LoRaDeviceFactory(configuration, dataHandlerImplementation, connectionManager);
+                var loRaDeviceRegistry = new LoRaDeviceRegistry(configuration, cache, loRaDeviceAPIService, loRaDeviceFactory);
+                var messageDispatcher = new MessageDispatcher(configuration, loRaDeviceRegistry, frameCounterStrategyProvider);
                 var udpServer = new UdpServer(configuration, messageDispatcher, loRaDeviceAPIService, loRaDeviceRegistry);
 
                 // TODO: review dependencies

@@ -11,10 +11,10 @@ namespace LoRaWan.NetworkServer
     public class LoRaDeviceFactory : ILoRaDeviceFactory
     {
         private readonly NetworkServerConfiguration configuration;
-        private readonly DefaultLoRaDataRequestHandler dataRequestHandler;
+        private readonly ILoRaDataRequestHandler dataRequestHandler;
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
 
-        public LoRaDeviceFactory(NetworkServerConfiguration configuration, DefaultLoRaDataRequestHandler dataRequestHandler, ILoRaDeviceClientConnectionManager connectionManager)
+        public LoRaDeviceFactory(NetworkServerConfiguration configuration, ILoRaDataRequestHandler dataRequestHandler, ILoRaDeviceClientConnectionManager connectionManager)
         {
             this.configuration = configuration;
             this.dataRequestHandler = dataRequestHandler;

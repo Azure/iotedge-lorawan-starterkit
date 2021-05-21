@@ -71,7 +71,7 @@ namespace LoRaWan.NetworkServer.Test
             }
 
             if (isSendingInRx2)
-                expectedDownlinkDatr = euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].configuration;
+                expectedDownlinkDatr = euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].datarate.ToString();
             else
                 expectedDownlinkDatr = datr;
 

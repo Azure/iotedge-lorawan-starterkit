@@ -14,9 +14,9 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Composition of a <see cref="LoRaRequest"/> that logs at the end of the process.
     /// </summary>
-    public class LoggingLoRaRequest : LoRaRequest
+    public class LoggingLoRaRequest : LoRaPktFwdRequest
     {
-        private readonly LoRaRequest wrappedRequest;
+        private readonly LoRaPktFwdRequest wrappedRequest;
 
         public override IPacketForwarder PacketForwarder => this.wrappedRequest.PacketForwarder;
 
@@ -30,7 +30,11 @@ namespace LoRaWan.NetworkServer
 
         public LoggingLoRaRequest(LoRaRequest wrappedRequest)
         {
-            this.wrappedRequest = wrappedRequest;
+            LoRaPktFwdRequest request = wrappedRequest as LoRaPktFwdRequest;
+            if (request != null)
+            {
+                this.wrappedRequest = request;
+            }
         }
 
         public override void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)

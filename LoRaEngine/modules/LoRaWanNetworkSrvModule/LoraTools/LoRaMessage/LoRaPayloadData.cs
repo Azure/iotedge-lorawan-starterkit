@@ -270,15 +270,26 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public LoRaPayloadData(LBSMessageType messageType, uint mhdr, int devAddr, uint fctrl, uint fcnt, string fopts, int fport, string frmPayload, int mic)
         {
-            this.LbsMessageType = messageType;
-            this.Mhdr = new Memory<byte>(BitConverter.GetBytes(mhdr));
-            this.DevAddr = new Memory<byte>(BitConverter.GetBytes(devAddr));
-            this.Fctrl = new Memory<byte>(BitConverter.GetBytes(fctrl));
-            this.Fcnt = new Memory<byte>(BitConverter.GetBytes(fcnt));
-            this.Fopts = new Memory<byte>(Encoding.Unicode.GetBytes(fopts));
-            this.Fport = new Memory<byte>(BitConverter.GetBytes(fport));
-            this.Frmpayload = new Memory<byte>(Encoding.Unicode.GetBytes(frmPayload));
-            this.Mic = new Memory<byte>(BitConverter.GetBytes(mic));
+            var mhdrBytes = BitConverter.GetBytes(mhdr).Take(1).ToArray();
+            var devAddrBytes = BitConverter.GetBytes(devAddr);
+            var fctrlBytes = BitConverter.GetBytes(fctrl).Take(1).ToArray();
+            var fcntBytes = BitConverter.GetBytes(fcnt).Take(2).ToArray();
+            var foptsBytes = string.IsNullOrEmpty(fopts) ? null : ConversionHelper.StringToByteArray(fopts);
+            var fportBytes = BitConverter.GetBytes(fport).Take(1).ToArray();
+            var frmPayloadBytes = string.IsNullOrEmpty(frmPayload) ? null : ConversionHelper.StringToByteArray(frmPayload);
+            var micBytes = BitConverter.GetBytes(mic);
+
+            Array.Reverse(devAddrBytes);
+
+            this.LoRaMessageType = (LoRaMessageType)mhdrBytes[0];
+            this.Mhdr = new Memory<byte>(mhdrBytes);
+            this.DevAddr = new Memory<byte>(devAddrBytes);
+            this.Fctrl = new Memory<byte>(fctrlBytes);
+            this.Fcnt = new Memory<byte>(fcntBytes);
+            this.Fopts = foptsBytes is null ? null : new Memory<byte>(foptsBytes);
+            this.Fport = new Memory<byte>(fportBytes);
+            this.Frmpayload = frmPayloadBytes is null ? null : new Memory<byte>(frmPayloadBytes);
+            this.Mic = new Memory<byte>(micBytes);
         }
 
         /// <summary>

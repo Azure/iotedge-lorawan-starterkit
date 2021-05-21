@@ -19,13 +19,13 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private volatile Region loraRegion;
-        private JoinRequestMessageHandler joinRequestHandler;
+        private IJoinRequestMessageHandler joinRequestHandler;
 
         public MessageDispatcher(
             NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry deviceRegistry,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
-            JoinRequestMessageHandler joinRequestHandler = null)
+            IJoinRequestMessageHandler joinRequestHandler = null)
         {
             this.configuration = configuration;
             this.deviceRegistry = deviceRegistry;
@@ -41,8 +41,15 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Dispatches a request.
         /// </summary>
-        public void DispatchRequest(LoRaRequest request)
+        public void DispatchRequest(LoRaRequest baseRequest)
         {
+            LoRaPktFwdRequest request = baseRequest as LoRaPktFwdRequest;
+            if (request == null)
+            {
+                // TODO: Add custom error type.
+                return;
+            }
+
             if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out LoRaPayload loRaPayload))
             {
                 Logger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);
@@ -82,9 +89,11 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private void DispatchLoRaJoinRequest(LoggingLoRaRequest request) => this.joinRequestHandler.DispatchRequest(request);
+        public void DispatchLoRaJoinRequest(LoggingLoRaRequest request) => this.joinRequestHandler.DispatchRequest(request);
 
-        void DispatchLoRaDataMessage(LoRaRequest request)
+        public void DispatchLoRaJoinRequest(LoRaRequest request) => this.joinRequestHandler.DispatchRequest(request);
+
+        public void DispatchLoRaDataMessage(LoRaRequest request)
         {
             var loRaPayload = (LoRaPayloadData)request.Payload;
             if (!this.IsValidNetId(loRaPayload))

@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer.Test
                 upstreamMessageMacCommandSize = new LinkCheckAnswer(1, 1).Length;
             }
 
-            expectedDownlinkDatr = euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].configuration;
+            expectedDownlinkDatr = euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].datarate.ToString();
 
             var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
                 - c2dMessageMacCommandSize

@@ -5,11 +5,30 @@ namespace LoRaWan.NetworkServer.BasicStation.Models
 {
     using System.Collections.Generic;
     using System.Text.Json.Serialization;
+    using LoRaTools.Regions;
 
     class LnsConfigReply
     {
+        public LnsConfigReply(NetworkServerConfiguration configuration)
+        {
+            // access DR etc... configuration.Region.DRtoConfiguration[0].datarate
+        }
+
+        [JsonPropertyName("freq_range")]
+        public List<int> FrequencyRange { get; set; } = new List<int>
+        {
+            863000000,
+            870000000,
+        };
+
         [JsonPropertyName("msgtype")]
         public string Msgtype { get; set; } = "router_config";
+
+        public List<List<ulong>> JoinEUI { get; set; } = new List<List<ulong>>
+        {
+            new List<ulong>
+            { 13725282814365013217, 13725282814365013219 }
+        };
 
         public List<int> NetID { get; set; } = new List<int> { 1 };
 

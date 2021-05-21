@@ -13,13 +13,13 @@ namespace LoRaWan.NetworkServer
         {
             request.AdrRequest = new LoRaADRRequest
             {
-                DataRate = context.Request.Region.GetDRFromFreqAndChan(context.Request.Rxpk.Datr),
+                DataRate = context.Request.Region.GetDRFromFreqAndChan(((LoRaPktFwdRequest)context.Request).Rxpk.Datr),
                 FCntDown = context.FCntDown,
                 FCntUp = context.FCntUp,
                 GatewayId = context.GatewayId,
                 MinTxPowerIndex = context.Request.Region.TXPowertoMaxEIRP.Count - 1,
                 PerformADRCalculation = context.LoRaPayload.IsAdrReq,
-                RequiredSnr = (float)context.Request.Rxpk.RequiredSnr
+                RequiredSnr = (float)((LoRaPktFwdRequest)context.Request).Rxpk.RequiredSnr
             };
 
             request.FunctionItems |= FunctionBundlerItemType.ADR;

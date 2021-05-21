@@ -475,7 +475,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(euRegion.RX2DefaultReceiveWindows.frequency, txpk.Freq);
 
             // Ensure we are using second window datr
-            Assert.Equal(euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].configuration, txpk.Datr);
+            Assert.Equal(euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].datarate.ToString(), txpk.Datr);
 
             // Ensure tmst was computed to 2 seconds (2 windows in Europe)
             Assert.Equal(2000000, txpk.Tmst);
@@ -576,7 +576,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(euRegion.RX2DefaultReceiveWindows.frequency, txpk.Freq);
 
             // Ensure we are using second window datr
-            Assert.Equal(euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].configuration, txpk.Datr);
+            Assert.Equal(euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].datarate.ToString(), txpk.Datr);
 
             // Ensure tmst was computed to 2 seconds (2 windows in Europe)
             Assert.Equal(2000000, txpk.Tmst);
