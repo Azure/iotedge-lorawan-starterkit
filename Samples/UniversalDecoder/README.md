@@ -90,7 +90,7 @@ Create a docker image from your finished solution based on the target architectu
 
 Install the [Azure IoT Edge for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-edge) extension to build and push the Docker image.
 
-Make sure you are logged in to the Azure Container Registry you are using. Run `docker login <mycontainerregistry>.azurecr.io` on your development machine.
+Make sure you are logged in to the Azure Container Registry you are using. Run `docker login <mycontainerregistry>.azurecr.io` on your development machine, or `az acr login -n mycontainerregistry` if the Azure CLI is available.
 
 Edit the file [module.json](./module.json) to contain your container registry address, image name and version number:
 
