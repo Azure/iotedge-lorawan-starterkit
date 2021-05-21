@@ -374,6 +374,7 @@ namespace LoRaWan.NetworkServer
                 frmPayload,
                 1,
                 loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
+            payload.PerformEncryption(loRaDevice.AppSKey);
             payload.SetMic(loRaDevice.NwkSKey);
             var hexPyld = ConversionHelper.ByteArrayToString(payload.GetByteMessage());
 
