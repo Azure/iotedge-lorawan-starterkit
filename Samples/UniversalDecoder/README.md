@@ -2,7 +2,7 @@
 
 This project gives access to decoders in the [TTN repo](https://github.com/TheThingsNetwork/lorawan-devices#payload-codecs) through a HTTP REST interface compliant with the LoraWan implementation in this repository. 
 
-Codecs provided by TTN are stored in well defined [folder structure](https://github.com/TheThingsNetwork/lorawan-devices#files-and-directories). The universal decoder copies the codec files into its docker image at build time for later use from the web application. As currently codecs are not implemented as node modules (see [open issue](https://github.com/TheThingsNetwork/lorawan-devices/issues/177)), these files need to be patched accordingly so that they can be imported and reused.
+Codecs provided by TTN are stored in a well defined [folder structure](https://github.com/TheThingsNetwork/lorawan-devices#files-and-directories). The universal decoder copies the codec files into its docker image at build time for later use from the web application. As currently codecs are not implemented as node modules (see [open issue](https://github.com/TheThingsNetwork/lorawan-devices/issues/177)), these files were patched accordingly after being copied so that they can be imported and reused.
 
 ## Quick start
 
