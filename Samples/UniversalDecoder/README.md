@@ -22,7 +22,7 @@ Run docker image:
 docker run --rm -d -p 8080:8080 universaldecoder
 ```
 
-Call the `DecoderValueSensor` decoder at the following url. You should see the result as JSON string.
+Call the built-in `DecoderValueSensor` decoder at the following url. You should see the result as JSON string.
 ```
 http://localhost:8080/api/DecoderValueSensor?devEui=0000000000000000&fport=1&payload=QUJDREUxMjM0NQ%3D%3D
 ```
@@ -32,7 +32,7 @@ Finally list all available decoders with the following url:
 http://localhost:8080/decoders
 ```
 
-You can finally call any other supported validator at:
+You can finally call any other supported decoder at:
 ```
 http://localhost:8080/api/<decoder>?devEui=0000000000000000&fport=<fport>&payload=<payload>
 ```
@@ -52,6 +52,35 @@ You can access the universal decoder at the url available in the output of the p
 ```
 npm test
 ```
+
+## Universal Decoder REST API
+
+The url accepted by the universal decoder follows the pattern:
+
+```
+/api/<decoder>?devEui=<devEui>&fport=<fport>&payload=<payload>
+```
+
+### decoder
+
+This path parameter identifies the TTN decoder that will be used. You can get a list of all available decoders by calling the `/decoders` endpoint.
+
+### devEui
+
+LoRaWan unique end-device identifier.
+
+### fport
+
+LoRaWan Port field as integer value.
+
+### payload
+
+Base64 and URL encoded payload to decode.
+
+For example, to test a payload of `ABCDE12345`, you:
+- Convert it to a base64 encoded string: `QUJDREUxMjM0NQ==`
+- Convert the result to a valid URL parameter: `QUJDREUxMjM0NQ%3D%3D`
+- Add this to your URL as the payload query parameter.
 
 ## Deploying to Azure IoT Edge
 
@@ -81,7 +110,7 @@ To **temporarily test** the container running you decoder using a webbrowser or 
 docker run --rm -it -p 8080:8080 --name universaldecoder <container registry>/<image>:<tag>
 ````
 
-You can then use a browser to navigate to:
+Call the built-in `DecoderValueSensor` decoder at the following url:
 
 ```
 http://localhost:8080/api/DecoderValueSensor?devEui=0000000000000000&fport=1&payload=QUJDREUxMjM0NQ%3D%3D
@@ -102,13 +131,13 @@ Configure your IoT Edge gateway device to include the custom container. IoT Hub 
 To activate the decoder for a LoRa device, navigate to your IoT Hub &rarr; IoT Devices &rarr; Device Details &rarr; Device Twin and set the ```SensorDecoder``` value in the desired properties to:
 
 ```
-http://universaldecoder:8080/api/<DecoderName>
+http://universaldecoder:8080/api/<decoder>
 ```
 
 A list of all available decoders can be retrieved by calling the endpoint:
 
 ```
-http://universaldecoder:8080/decoders
+http://universaldecoder:8080/decoders?devEui=0000000000000000&fport=<fport>&payload=<payload>
 ```
 
 **Again make sure to choose all lowercase letters for the module name to make sure it is reachable.**
