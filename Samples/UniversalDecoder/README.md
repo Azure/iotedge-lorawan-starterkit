@@ -100,7 +100,7 @@ We provide the Dockerfiles for the following architectures:
 
 - [Dockerfile.amd64](./Dockerfile.amd64)
 - [Dockerfile.arm32v7](./Dockerfile.arm32v7)
-- [Dockerfile.arm32v7](./Dockerfile.arm64v8)
+- [Dockerfile.arm64v8](./Dockerfile.arm64v8)
 
 To build the Docker image, right-click on the [module.json](./module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for from the drop-down menu.
 
