@@ -1,21 +1,25 @@
 {
     "name": "universaldecoder",
     "version": "0.0.1",
-    "description": "Azure IoT Edge Node.js module sample project",
+    "description": "Universal decoder module for LoraWan",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/Azure/generator-azure-iot-edge-module"
     },
     "license": "MIT",
     "scripts": {
-        "start": "node app.js",
+        "start": "LOG_LEVEL=debug node app.js | ./node_modules/.bin/pino-pretty",
         "test": "jest",
         "codecs": "rm -fR node_modules/lorawan-devices codecs/* && git clone https://github.com/TheThingsNetwork/lorawan-devices.git node_modules/lorawan-devices && node codec-util"
     },
     "dependencies": {
         "express": "^4.17.1",
+        "express-pino-logger": "^6.0.0",
+        "express-validator": "^6.11.1",
         "fs-extra": "^10.0.0",
-        "glob": "^7.1.7"
+        "glob": "^7.1.7",
+        "pino": "^6.11.3",
+        "pino-pretty": "^4.8.0"
     },
     "devDependencies": {
         "jest": "^26.6.3",
