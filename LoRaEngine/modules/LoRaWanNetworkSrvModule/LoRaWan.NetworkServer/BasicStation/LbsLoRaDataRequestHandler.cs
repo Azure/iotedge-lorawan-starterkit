@@ -296,7 +296,7 @@ namespace LoRaWan.NetworkServer
 
                         if (downlinkMessageBuilderResp.DownlinkLbsMessage != null)
                         {
-                            _ = request.Sender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkLbsMessage);
+                            await request.Sender.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkLbsMessage);
                             if (cloudToDeviceMessage != null)
                             {
                                 if (downlinkMessageBuilderResp.IsMessageTooLong)
