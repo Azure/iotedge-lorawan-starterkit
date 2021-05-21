@@ -214,8 +214,7 @@ namespace LoRaWanTest
         [InlineData("SF8BW125", 230)]
         [InlineData("SF7BW125", 230)]
         [InlineData("SF7BW250", 230)]
-        [InlineData("50", 230)]
-
+        // [InlineData("50", 230)] this test case was removed as not sure how to use GSFK.
         public void TestMaxPayloadLengthEU(string datr, uint maxPyldSize)
         {
             Assert.Equal(RegionManager.EU868.GetMaxPayloadSize(datr), maxPyldSize);

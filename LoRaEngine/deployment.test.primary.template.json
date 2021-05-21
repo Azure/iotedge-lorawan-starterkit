@@ -149,7 +149,7 @@
           "sensordecodermodule": {
             "type": "docker",
             "settings": {
-              "image": "$CONTAINER_REGISTRY_ADDRESS/decodersample:2.0",
+              "image": "loraedge/universaldecoder:0.0.6aeafce9df355dd04cb0a5c85275f73825f23952-arm32v7",
               "createOptions": {}
             },
             "status": "running",

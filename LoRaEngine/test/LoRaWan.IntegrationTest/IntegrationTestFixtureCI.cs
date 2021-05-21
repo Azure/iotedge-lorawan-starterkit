@@ -325,7 +325,7 @@ namespace LoRaWan.IntegrationTest
                 AppKey = this.GetKey32(11),
                 GatewayID = gatewayID,
                 IsIoTHubDevice = true,
-                SensorDecoder = "http://sensordecodermodule/api/DecoderValueSensor",
+                SensorDecoder = "http://sensordecodermodule:8080/api/DecoderValueSensor",
             };
 
             // Device12_OTAA: used for reflection based decoder

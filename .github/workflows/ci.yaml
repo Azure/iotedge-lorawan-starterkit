@@ -197,7 +197,7 @@ jobs:
         with:
           command: push
           folder_path: 'LoRaEngine'
-          file_name: 'deployment.test.template.json'
+          file_name: 'deployment.test.${{ matrix.gateway }}.template.json'
           target_platform: ${{ matrix.architecture }}
 
       - name: Iot Edge Deploy
@@ -206,7 +206,7 @@ jobs:
         with:
           command: deploy
           folder_path: 'LoRaEngine'
-          file_name: 'deployment.test.template.json'
+          file_name: 'deployment.test.${{ matrix.gateway }}.template.json'
           target_platform: ${{ matrix.architecture }}
 
       - name: Wait for IoT Edge Deployment
