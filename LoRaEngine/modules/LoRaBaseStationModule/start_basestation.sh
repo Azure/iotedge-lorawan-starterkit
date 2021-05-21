@@ -9,7 +9,7 @@ else
     cd examples/live-s2.sm.tc
     touch tc.uri && echo "ws://$TC_URI" > tc.uri
 
-    #start basestaion
+    #start basestation
     echo "Starting base station..."
     RADIODEV=/dev/spidev0.0 ../../build-rpi-std/bin/station -f
 fi
