@@ -15,6 +15,7 @@ glob.sync(`**/*`,
     ignore: [
       '**/*.jpg',
       '**/*.png',
+      '**/*.svg',
     ]
   }).map(f => {
     const srcPath = `${srcDir}/${f}`;
