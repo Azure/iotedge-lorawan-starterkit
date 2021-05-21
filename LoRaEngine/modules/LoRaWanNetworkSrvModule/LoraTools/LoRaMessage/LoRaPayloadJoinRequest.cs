@@ -80,6 +80,27 @@ namespace LoRaTools.LoRaMessage
             this.Mic = default(Memory<byte>);
         }
 
+        public LoRaPayloadJoinRequest(string appEUI, string devEUI, uint devNonceUint, int mic)
+        {
+            byte[] devNonce = BitConverter.GetBytes(devNonceUint).Take(2).ToArray();
+
+            // Mhdr is always 0 in case of a join request
+            this.Mhdr = new byte[1] { 0x00 };
+
+            var appEUIBytes = ConversionHelper.StringToByteArray(appEUI);
+            var devEUIBytes = ConversionHelper.StringToByteArray(devEUI);
+
+            // Store as reversed value
+            // When coming from real device and pktfwd is is reversed
+            // message processor reverses both values before getting it
+            Array.Reverse(appEUIBytes);
+            Array.Reverse(devEUIBytes);
+            this.AppEUI = new Memory<byte>(appEUIBytes);
+            this.DevEUI = new Memory<byte>(devEUIBytes);
+            this.DevNonce = new Memory<byte>(devNonce);
+            this.Mic = BitConverter.GetBytes(mic);
+        }
+
         public override bool CheckMic(string appKey, uint? server32BitFcnt = null)
         {
             return this.Mic.ToArray().SequenceEqual(this.PerformMic(appKey));

@@ -175,7 +175,18 @@ namespace LoRaWan.NetworkServer.BasicStation.WebSocketServer
                             break;
 
                         case nameof(LbsMessageType.jreq):
-
+                            var lnsDataFrameJoin = JsonSerializer.Deserialize<LnsDataFrameJoinRequest>(input);
+                            this.logger.Log(LogLevel.Debug, "Received a message");
+                            var loraJoinRequest = new LoRaLbsProcessingJoinRequest(DateTime.UtcNow, socket);
+                            loraJoinRequest.SetRegion(this.configuration.Region);
+                            loraJoinRequest.SetPayload(new LoRaPayloadJoinRequest(
+                                                            lnsDataFrameJoin.JoinEui.Replace("-", string.Empty),
+                                                            lnsDataFrameJoin.DevEui.Replace("-", string.Empty),
+                                                            lnsDataFrameJoin.DevNonce,
+                                                            lnsDataFrameJoin.MIC));
+                            loraJoinRequest.DataFrame = lnsDataFrameJoin;
+                            loraJoinRequest.Sender = new LbsDownStreamSender(socket);
+                            this.messageDispatcher.DispatchLoRaJoinRequest(loraJoinRequest);
                             break;
                     }
 

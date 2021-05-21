@@ -61,7 +61,8 @@ namespace LoRaWan.NetworkServer.Common
                 var dataHandlerImplementation = new LbsLoRaDataRequestHandler(configuration, frameCounterStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, new LoRAADRManagerFactory(loRaDeviceAPIService), new FunctionBundlerProvider(loRaDeviceAPIService));
                 var loRaDeviceFactory = new LoRaDeviceFactory(configuration, dataHandlerImplementation, connectionManager);
                 var loRaDeviceRegistry = new LoRaDeviceRegistry(configuration, cache, loRaDeviceAPIService, loRaDeviceFactory);
-                var messageDispatcher = new MessageDispatcher(configuration, loRaDeviceRegistry, frameCounterStrategyProvider);
+                var lbsLoRaDataRequestHandler = new LbsJoinRequestMessageHandler(configuration, loRaDeviceRegistry);
+                var messageDispatcher = new MessageDispatcher(configuration, loRaDeviceRegistry, frameCounterStrategyProvider, lbsLoRaDataRequestHandler);
                 Logger.Log("Using physical client with basic station implementation", LogLevel.Information);
                 return new BasicStation(configuration, messageDispatcher, loRaDeviceAPIService, loRaDeviceRegistry);
             }
