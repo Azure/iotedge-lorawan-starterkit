@@ -58,9 +58,6 @@
               "httpSettings__enabled": {
                 "value": "false"
               },
-              "TwinManagerVersion": {
-                "value": "v2"
-              },
               "AuthenticationMode": {
                 "value": "CloudAndScope"
               }
