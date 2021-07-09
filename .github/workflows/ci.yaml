@@ -157,8 +157,8 @@ jobs:
       REGION: "EU"
       FACADE_SERVER_URL: "https://${{ needs.env_var.outputs.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net/api/"
       FACADE_AUTH_CODE: ${{ secrets.FUNCTION_AUTH_CODE }}
-      EDGE_AGENT_VERSION: 1.2.0
-      EDGE_HUB_VERSION: 1.2.0
+      EDGE_AGENT_VERSION: 1.2.2
+      EDGE_HUB_VERSION: 1.2.2
       EDGEHUB_OPTIMIZEFORPERFORMANCE: false
       EDGEHUB_MQTTSETTINGS_ENABLED: false
       EDGEHUB_HTTPSETTINGS_ENABLED: false
