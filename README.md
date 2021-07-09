@@ -1,5 +1,5 @@
 
-[![Build Status](https://dev.azure.com/epicstuff/Azure%20IoT%20Edge%20LoRaWAN%20Starter%20Kit/_apis/build/status/CI-MultiGateway?branchName=master)](https://dev.azure.com/epicstuff/Azure%20IoT%20Edge%20LoRaWAN%20Starter%20Kit/_build/latest?definitionId=62&branchName=master)
+[![LoRa CI](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/ci.yaml)
 [![LoRa CI](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/ci.yaml/badge.svg?branch=dev)](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/ci.yaml)
 
 # Azure IoT Edge LoRaWAN Starter Kit
