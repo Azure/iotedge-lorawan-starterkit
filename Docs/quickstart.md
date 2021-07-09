@@ -286,6 +286,16 @@ Log in to the gateway and use `sudo docker logs LoRaWanNetworkSrvModule -f` to f
 | LOG_TO_CONSOLE | true  | Log to docker logs (default if omitted) |
 |                | false | Does not log to docker logs             |
 
+
+## Local Processing and Routing
+
+By default the network server does not use the local edge queue (edgeHub), sending directly messages to IoT Hub. If you need to do local processing, please set the following setting to true on the `LoRaWanNetworkSrvModule`.
+
+| Variable       | Value | Explanation                                                   |
+|----------------|-------|---------------------------------------------------------------|
+| ENABLE_GATEWAY | true  | Messages go to edgeHub and then to IoT Hub                    |
+|                | false | Messages go directly to IoT Hub, skipping local edgeHub Queue |
+
 ## Customize the solution & Deep dive
 
 Have a look at the [LoRaEngine folder](/LoRaEngine) for more in details explanation.
