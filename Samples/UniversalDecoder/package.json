@@ -10,7 +10,7 @@
     "scripts": {
         "start": "LOG_LEVEL=debug node app.js | ./node_modules/.bin/pino-pretty",
         "test": "jest",
-        "codecs": "rm -fR node_modules/lorawan-devices codecs/* && git clone https://github.com/TheThingsNetwork/lorawan-devices.git node_modules/lorawan-devices && node tools/copy-codecs.js"
+        "codecs": "rm -fR node_modules/lorawan-devices codecs/* && git clone --depth 1 https://github.com/TheThingsNetwork/lorawan-devices.git node_modules/lorawan-devices && node tools/copy-codecs.js"
     },
     "dependencies": {
         "express": "^4.17.1",
