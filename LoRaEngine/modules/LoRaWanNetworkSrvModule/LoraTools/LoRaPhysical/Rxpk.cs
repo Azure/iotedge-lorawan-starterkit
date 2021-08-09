@@ -18,7 +18,7 @@ namespace LoRaTools.LoRaPhysical
         public string Time { get; set; }
 
         [JsonProperty("tmms")]
-        public uint Tmms { get; set; }
+        public ulong Tmms { get; set; }
 
         [JsonProperty("tmst")]
         public uint Tmst { get; set; }
