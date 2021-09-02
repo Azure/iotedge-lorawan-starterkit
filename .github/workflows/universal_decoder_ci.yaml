@@ -1,6 +1,9 @@
 name: Universal Decoder CI
 on: 
   push:
+    branches:
+      - master
+      - dev
     paths:
       - 'Samples/UniversalDecoder/**'
   workflow_dispatch:
