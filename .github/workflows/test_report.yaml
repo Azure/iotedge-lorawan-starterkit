@@ -13,7 +13,8 @@ jobs:
     steps:
     - uses: dorny/test-reporter@v1
       with:
-        artifact: "*results"            # artifact name
-        name: UnitTestResults                  # Name of the check run which will be created
-        path: '*.trx'                     # Path to test results (inside artifact .zip)
-        reporter: dotnet-trx            # Format of test results
+        artifact: "*results"
+        name: UnitTestResults
+        path: '*.trx'
+        reporter: dotnet-trx
+        fail-on-error: 'false'
