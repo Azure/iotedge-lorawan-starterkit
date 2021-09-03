@@ -32,7 +32,6 @@ jobs:
         if [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
           echo "Set up for workflow dispatch"  
           echo "::set-output name=IntegrationTestsToRun::${{ github.event.inputs.TestsToRun }}"
-        fi
         else
           echo "::set-output name=IntegrationTestsToRun::[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]" 
         fi
