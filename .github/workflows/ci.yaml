@@ -38,10 +38,10 @@ jobs:
             if [[ ${{ github.event.pull_request.labels.*.name }} == *"fullci"* ]]; then
               echo "::set-output name=fullci::true"
               echo "Full CI Run Detected"
+              echo "Set up for standard run"
+              echo "::set-output name=IntegrationTestsToRun::[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]" 
             fi
           fi
-          echo "Set up for standard run"
-          echo "::set-output name=IntegrationTestsToRun::[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]" 
         fi
 
     - name: Avoid concurrent run
