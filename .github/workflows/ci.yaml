@@ -50,6 +50,7 @@ jobs:
       IntegrationTestsToRun: ${{ steps.set-integration-matrix.outputs.IntegrationTestsToRun }}
   
   build_and_test:
+  - needs: env_var
     name: Build and Test Solution
     runs-on: ubuntu-latest
     if: needs.env_var.outputs.RunTestsOnly != 'true'
