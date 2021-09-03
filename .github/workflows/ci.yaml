@@ -50,7 +50,7 @@ jobs:
       IntegrationTestsToRun: ${{ steps.set-integration-matrix.outputs.IntegrationTestsToRun }}
   
   build_and_test:
-  - needs: env_var
+    needs: env_var
     name: Build and Test Solution
     runs-on: ubuntu-latest
     if: needs.env_var.outputs.RunTestsOnly != 'true'
@@ -88,8 +88,8 @@ jobs:
         path: LoRaEngine/test/TestResults
 
   check_if_deploy:
-  needs: 
-    - env_var
+    needs: 
+      - env_var
     runs-on: ubuntu-latest
     environment: CI
     if: needs.env_var.outputs.RunTestsOnly != 'true'
