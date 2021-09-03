@@ -33,8 +33,15 @@ jobs:
           echo "Set up for workflow dispatch"  
           echo "::set-output name=IntegrationTestsToRun::${{ github.event.inputs.TestsToRun }}"
         else 
+          if [ ${{ github.event_name }} == 'pull_request' ]; then
+            echo "Checking if full ci run"
+            if [[ ${{ github.event.pull_request.labels.*.name }} == *"fullci"* ]]; then
+              echo "::set-output name=fullci::true"
+              echo "Full CI Run Detected"
+            fi
+          fi
           echo "Set up for standard run"
-          echo "::set-output name=IntegrationTestsToRun::[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]"
+          echo "::set-output name=IntegrationTestsToRun::[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]" 
         fi
 
     - name: Avoid concurrent run
@@ -91,7 +98,7 @@ jobs:
       - env_var
     runs-on: ubuntu-latest
     environment: CI
-    if: needs.env_var.outputs.RunTestsOnly != 'true'
+    if: needs.env_var.outputs.RunTestsOnly != 'true' && needs.env_var.outputs.fullci  == 'true'
     name: Deploy this run on the CI environment
     steps:
     - run : echo "Deployment was authorized"
