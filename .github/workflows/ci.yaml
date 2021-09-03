@@ -35,8 +35,8 @@ jobs:
         else 
           if [ ${{ github.event_name }} == 'pull_request' ]; then
             echo "Checking if full ci run"
-            echo ${{ github.event.pull_request.labels.*.name }}
-            if [[ ${{ github.event.pull_request.labels.*.name }} == *"fullci"* ]]; then
+            echo "  ${{ github.event.pull_request.labels.*.name[@] }} "
+            if [[ " ${{ github.event.pull_request.labels.*.name[@] }} " == " fullci " ]]; then
               echo "::set-output name=fullci::true"
               echo "Full CI Run Detected"
               echo "Set up for standard run"
