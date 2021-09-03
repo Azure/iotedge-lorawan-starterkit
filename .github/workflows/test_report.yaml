@@ -6,6 +6,8 @@ on:
       - completed
 jobs:
   report:
+    permissions:
+      checks: write 
     runs-on: ubuntu-latest
     steps:
     - uses: dorny/test-reporter@v1
