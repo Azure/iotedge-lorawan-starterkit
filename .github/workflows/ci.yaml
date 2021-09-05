@@ -277,20 +277,10 @@ jobs:
     
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
-      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true 
+      if: success() || failure()
       with:
         name: ${{ matrix.testsToRun }}-results
         path: LoRaEngine/test/LoRaWan.IntegrationTest/TestResults
-
-    - uses: LouisBrunner/checks-action@v0.1.0
-      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true 
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        name: ${{ matrix.testsToRun }}
-        conclusion: ${{ job.status }}
-        # TODO can we enhance with some output?
-        # output: |
-        #   {"summary":${{ steps.integration_test.outputs.summary }} }
 
     - name: Add ${{ matrix.testsToRun }} Test Label
       uses: buildsville/add-remove-label@v1
