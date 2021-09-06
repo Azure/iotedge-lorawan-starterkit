@@ -40,7 +40,7 @@ jobs:
       name: Check if deploy on local ci
       if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'fullci' ) != true 
       run: |
-        echo "::set-output name=stopfullci::true"
+        echo "::set-output name=StopFullCi::true"
 
     - name: Avoid concurrent run
       uses: softprops/turnstyle@v1
@@ -96,7 +96,7 @@ jobs:
       - env_var
     runs-on: ubuntu-latest
     environment: CI
-    if: needs.env_var.outputs.RunTestsOnly != 'true' && needs.env_var.outputs.stopfullci  != 'true'
+    if: needs.env_var.outputs.RunTestsOnly != 'true' && needs.env_var.outputs.StopFullCi  != 'true'
     name: Deploy this run on the CI environment
     steps:
     - run : echo "Deployment was authorized"
@@ -225,6 +225,7 @@ jobs:
           until `az iot edge deployment show-metric --deployment-id ${{ env.IOT_EDGE_DEPLOYMENT_ID }} --metric-id reportedSuccessfulCount --metric-type system --login '${{ secrets.IOTHUB_CONNECTION_STRING }}' | grep -q $DEVICE_ID`; do sleep 10 && echo wait; done
           
           # We add the 3 minutes sleep to let the container start up
+          # TODO We might want to revisit this once there are some options to check that the network server started.
           sleep 3m
 
 # Runs integration tests in dedicated agent, while having modules deployed into PI (arm32v7)
