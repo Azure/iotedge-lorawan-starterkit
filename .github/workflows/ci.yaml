@@ -32,10 +32,15 @@ jobs:
         if [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
           echo "Set up for workflow dispatch"  
           echo "::set-output name=IntegrationTestsToRun::${{ github.event.inputs.TestsToRun }}"
-        else 
-          echo "Set up for standard run"
-          echo "::set-output name=IntegrationTestsToRun::[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]"
+        else
+          echo "::set-output name=IntegrationTestsToRun::[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]" 
         fi
+
+    - id: check-if-run
+      name: Check if deploy on local ci
+      if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'fullci' ) != true 
+      run: |
+        echo "::set-output name=StopFullCi::true"
 
     - name: Avoid concurrent run
       uses: softprops/turnstyle@v1
@@ -87,11 +92,11 @@ jobs:
         path: LoRaEngine/test/TestResults
 
   check_if_deploy:
-  needs: 
-    - env_var
+    needs: 
+      - env_var
     runs-on: ubuntu-latest
     environment: CI
-    if: needs.env_var.outputs.RunTestsOnly != 'true'
+    if: needs.env_var.outputs.RunTestsOnly != 'true' && needs.env_var.outputs.StopFullCi  != 'true'
     name: Deploy this run on the CI environment
     steps:
     - run : echo "Deployment was authorized"
@@ -218,6 +223,10 @@ jobs:
         run: |
           az extension add --name azure-iot   
           until `az iot edge deployment show-metric --deployment-id ${{ env.IOT_EDGE_DEPLOYMENT_ID }} --metric-id reportedSuccessfulCount --metric-type system --login '${{ secrets.IOTHUB_CONNECTION_STRING }}' | grep -q $DEVICE_ID`; do sleep 10 && echo wait; done
+          
+          # We add the 3 minutes sleep to let the container start up
+          # TODO We might want to revisit this once there are some options to check that the network server started.
+          sleep 3m
 
 # Runs integration tests in dedicated agent, while having modules deployed into PI (arm32v7)
   integration_test_ :
@@ -272,20 +281,10 @@ jobs:
     
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
-      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true 
+      if: success() || failure()
       with:
         name: ${{ matrix.testsToRun }}-results
         path: LoRaEngine/test/LoRaWan.IntegrationTest/TestResults
-
-    - uses: LouisBrunner/checks-action@v0.1.0
-      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true 
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        name: ${{ matrix.testsToRun }}
-        conclusion: ${{ job.status }}
-        # TODO can we enhance with some output?
-        # output: |
-        #   {"summary":${{ steps.integration_test.outputs.summary }} }
 
     - name: Add ${{ matrix.testsToRun }} Test Label
       uses: buildsville/add-remove-label@v1
