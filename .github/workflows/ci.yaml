@@ -224,7 +224,7 @@ jobs:
           az extension add --name azure-iot   
           until `az iot edge deployment show-metric --deployment-id ${{ env.IOT_EDGE_DEPLOYMENT_ID }} --metric-id reportedSuccessfulCount --metric-type system --login '${{ secrets.IOTHUB_CONNECTION_STRING }}' | grep -q $DEVICE_ID`; do sleep 10 && echo wait; done
           
-          // We add the 3 minutes sleep to let the container start up
+          # We add the 3 minutes sleep to let the container start up
           sleep 3m
 
 # Runs integration tests in dedicated agent, while having modules deployed into PI (arm32v7)
