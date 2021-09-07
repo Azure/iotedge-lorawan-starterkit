@@ -83,8 +83,18 @@
 						"version": "1.0",
 						"status": "running",
 						"restartPolicy": "always"
+					},
+					"UniversalDecoder": {
+						"type": "docker",
+						"settings": {
+							"image": "loraedge/universaldecoder:0.0.6aeafce9df355dd04cb0a5c85275f73825f23952",
+						},
+						"version": "1.0",
+						"env": {},
+						"status": "running",
+						"restartPolicy": "always"
 					}
-				}
+}
 			}
 		},
 		"$edgeHub": {
