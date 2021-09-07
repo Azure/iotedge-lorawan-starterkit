@@ -108,14 +108,14 @@ namespace LoraKeysManagerFacade
                     await this.registryManager.AddDeviceAsync(otaaDevice);
 
                     var otaaEndTwin = new Twin();
-                    otaaEndTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:'',SensorDecoder:'DecoderValueSensor'}");
+                    otaaEndTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:'',SensorDecoder:'http://universaldecoder:8080/api/DecoderValueSensor'}");
                     var otaaRemoteTwin = await this.registryManager.GetTwinAsync(OtaaDeviceId);
                     await this.registryManager.UpdateTwinAsync(OtaaDeviceId, otaaEndTwin, otaaRemoteTwin.ETag);
 
                     var abpDevice = new Device(AbpDeviceId);
                     await this.registryManager.AddDeviceAsync(abpDevice);
                     var abpTwin = new Twin();
-                    abpTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:'',DevAddr:'0228B1B1',SensorDecoder:'DecoderValueSensor'}");
+                    abpTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:'',DevAddr:'0228B1B1',SensorDecoder:'http://universaldecoder:8080/api/DecoderValueSensor'}");
                     var abpRemoteTwin = await this.registryManager.GetTwinAsync(AbpDeviceId);
                     await this.registryManager.UpdateTwinAsync(AbpDeviceId, abpTwin, abpRemoteTwin.ETag);
                 }
