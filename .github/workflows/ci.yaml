@@ -98,7 +98,7 @@ jobs:
       - env_var
     runs-on: ubuntu-latest
     environment: CI
-    if: needs.env_var.outputs.RunTestsOnly != 'true' || needs.env_var.outputs.StopFullCi  != 'true'
+    if: needs.env_var.outputs.RunTestsOnly != 'true' && needs.env_var.outputs.StopFullCi  != 'true'
     name: Deploy this run on the CI environment
     steps:
     - run : echo "Deployment was authorized"
