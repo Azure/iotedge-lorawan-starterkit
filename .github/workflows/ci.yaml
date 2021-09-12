@@ -40,7 +40,7 @@ jobs:
       name: Check if deploy on local ci
       if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'fullci' ) != true 
       run: |
-        echo "::set-output name=StopFullCi::true"
+        echo "::set-output name=StopFullCi::'true'"
 
     - name: Avoid concurrent run
       uses: softprops/turnstyle@v1
