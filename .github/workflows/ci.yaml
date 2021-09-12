@@ -104,7 +104,7 @@ jobs:
     steps:
     - run : |
         echo "Deployment was authorized"
-        echo ${{ jobs.env_var.outputs.StopFullCi }}
+        echo ${{ needs.env_var.outputs.StopFullCi }}
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
