@@ -99,12 +99,12 @@ jobs:
       - env_var
     runs-on: ubuntu-latest
     environment: CI
-    if: needs.env_var.outputs.RunTestsOnly != 'true' && needs.env_var.outputs.StopFullCi  != 'true'
+    if: needs.env_var.outputs.RunTestsOnly != 'true' && needs.StopFullCi.outputs.env_var  != 'true'
     name: Deploy this run on the CI environment
     steps:
     - run : |
         echo "Deployment was authorized"
-        echo ${{ needs.env_var.outputs.StopFullCi }}
+        echo ${{ needs.StopFullCi.outputs.env_var }}
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
