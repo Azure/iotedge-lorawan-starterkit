@@ -7,8 +7,8 @@ on:
 jobs:
   report:
     permissions:
-      checks: read/write 
-      pull requests: read/write 
+      checks: read|write 
+      pull requests: read 
     runs-on: ubuntu-latest
     steps:
     - uses: dorny/test-reporter@v1
