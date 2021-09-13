@@ -102,9 +102,7 @@ jobs:
     if: needs.env_var.outputs.RunTestsOnly != 'true' && needs.env_var.outputs.StopFullCi  != 'true'
     name: Deploy this run on the CI environment
     steps:
-    - run : |
-        echo "Deployment was authorized"
-        echo ${{ needs.env_var.outputs.StopFullCi }}
+    - run : echo "Deployment was authorized"
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
