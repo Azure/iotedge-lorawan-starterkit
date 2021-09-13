@@ -53,7 +53,7 @@ jobs:
       AZURE_FUNCTIONAPP_NAME: ${{ env.AZURE_FUNCTIONAPP_NAME }}
       RunTestsOnly: ${{ github.event.inputs.RunTestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunTestsOnly') == true}}
       IntegrationTestsToRun: ${{ steps.set-integration-matrix.outputs.IntegrationTestsToRun }}
-      StopFullCi: "false"
+      StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
   
   build_and_test:
     name: Build and Test Solution
@@ -99,12 +99,12 @@ jobs:
       - env_var
     runs-on: ubuntu-latest
     environment: CI
-    if: needs.env_var.outputs.RunTestsOnly != 'true' && needs.StopFullCi.outputs.env_var  != 'true'
+    if: needs.env_var.outputs.RunTestsOnly != 'true' && needs.env_var.outputs..StopFullCi  != 'true'
     name: Deploy this run on the CI environment
     steps:
     - run : |
         echo "Deployment was authorized"
-        echo ${{ needs.StopFullCi.outputs.env_var }}
+        echo ${{ needs.env_var.outputs..StopFullCi }}
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
