@@ -121,6 +121,9 @@ namespace LoRaWan.IntegrationTest
         /// </summary>
         public TestDeviceInfo Device30_OTAA { get; private set; }
 
+        // Device31_OTAA: used for Universal decoder
+        public TestDeviceInfo Device31_OTAA { get; private set; }
+
         // Arduino device used for testing
         public LoRaArduinoSerial ArduinoDevice
         {
@@ -559,6 +562,17 @@ namespace LoRaWan.IntegrationTest
                 AppEUI = this.GetKey16(30),
                 AppKey = this.GetKey32(30),
                 IsIoTHubDevice = true
+            };
+
+            // Device31_OTAA: used for Universal decoder
+            this.Device31_OTAA = new TestDeviceInfo()
+            {
+                DeviceID = this.GetKey16(11),
+                AppEUI = this.GetKey16(11),
+                AppKey = this.GetKey32(11),
+                GatewayID = gatewayID,
+                IsIoTHubDevice = true,
+                SensorDecoder = "http://universaldecodermodule:8080/api/DecoderValueSensor",
             };
         }
     }

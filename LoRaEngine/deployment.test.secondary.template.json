@@ -143,10 +143,10 @@
             "status": "running",
             "restartPolicy": "always"
           },
-          "sensordecodermodule": {
+          "universaldecodermodule": {
             "type": "docker",
             "settings": {
-              "image": "$CONTAINER_REGISTRY_ADDRESS/decodersample:2.0",
+              "image": "loraedge/universaldecoder:1.0.6",
               "createOptions": {}
             },
             "status": "running",
