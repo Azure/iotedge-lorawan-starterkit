@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: dorny/test-reporter@v1
       with:
-        artifact: "*results"
-        name: UnitTestResults
+        artifact: /(.*)results/
+        name: '$1 Test Results'
         path: '*.trx'
         reporter: dotnet-trx
