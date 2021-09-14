@@ -21,7 +21,7 @@ fi
 arch="$(uname -m)"
 if [[ $arch != *"arm"* ]]; then
     if [ -z "$SPI_DEV" ] || [ "$SPI_DEV" == '$PKT_FWD_SPI_DEV' ]; then
-        echo "No SPI Dev version detected in environment variables on x86, defaulting to SPI Dev 2" 
+        echo "No custom SPI Dev version detected in environment variables on x86, defaulting to SPI Dev 2" 
         ./lora_pkt_fwd_spidev2
     else
         if [ "$SPI_DEV" == "2" ]; then
@@ -39,6 +39,7 @@ if [[ $arch != *"arm"* ]]; then
     fi
 else
     if [ -z "$SPI_SPEED" ] || [ "$SPI_SPEED" == '$PKT_FWD_SPI_SPEED' ]; then
+        echo "No custom SPI Speed detected in environment variables, defaulting to standard." 
         ./lora_pkt_fwd
     else
         if [ "$SPI_SPEED" == "2" ]; then
