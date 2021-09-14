@@ -17,10 +17,10 @@ namespace LoraKeysManagerFacade
 
     public class DeviceGetter
     {
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
         private readonly ILoRaDeviceCacheStore cacheStore;
 
-        public DeviceGetter(RegistryManager registryManager, ILoRaDeviceCacheStore cacheStore)
+        public DeviceGetter(IDeviceRegistryManager registryManager, ILoRaDeviceCacheStore cacheStore)
         {
             this.registryManager = registryManager;
             this.cacheStore = cacheStore;

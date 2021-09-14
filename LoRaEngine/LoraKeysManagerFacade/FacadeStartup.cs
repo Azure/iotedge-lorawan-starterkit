@@ -40,7 +40,7 @@ namespace LoraKeysManagerFacade
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
             // Object is handled by DI container.
-            _ = builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(iotHubConnectionString));
+            _ = builder.Services.AddSingleton<IDeviceRegistryManager>(RegistryManager.CreateFromConnectionString(iotHubConnectionString));
 #pragma warning restore CA2000 // Dispose objects before losing scope
             _ = builder.Services
                     .AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)))
