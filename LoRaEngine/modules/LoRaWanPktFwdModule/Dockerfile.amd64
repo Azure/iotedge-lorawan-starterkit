@@ -1,6 +1,6 @@
 #This docker builds a container for the AAEON intel LoRaWaN gateway
 
-FROM microsoft/dotnet:2.0-runtime AS builder1
+FROM debian AS builder1
 RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get install -y --no-install-recommends apt-utils build-essential
@@ -11,7 +11,7 @@ WORKDIR /packet_forwarder
 RUN ./compile.sh
 RUN cp /packet_forwarder/lora_pkt_fwd/lora_pkt_fwd /lora_pkt_fwd_spidev1
 
-FROM microsoft/dotnet:2.0-runtime AS builder2
+FROM debian AS builder2
 RUN apt-get update
 RUN apt-get install -y git
 RUN apt-get install -y --no-install-recommends apt-utils build-essential
