@@ -12,9 +12,9 @@ namespace LoraKeysManagerFacade
     public class SyncDevAddrCache
     {
         private readonly LoRaDevAddrCache loRaDevAddrCache;
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
 
-        public SyncDevAddrCache(LoRaDevAddrCache loRaDevAddrCache, RegistryManager registryManager)
+        public SyncDevAddrCache(LoRaDevAddrCache loRaDevAddrCache, IDeviceRegistryManager registryManager)
         {
             this.loRaDevAddrCache = loRaDevAddrCache;
             this.registryManager = registryManager;

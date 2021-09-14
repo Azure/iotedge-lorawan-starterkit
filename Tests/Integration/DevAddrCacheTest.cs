@@ -33,11 +33,11 @@ namespace LoRaWan.Tests.Integration
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
         }
 
-        private static Mock<RegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds, int numberOfDeviceDeltaUpdates = 2)
+        private Mock<IDeviceRegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds, int numberOfDeviceDeltaUpdates = 2)
         {
             var currentDevAddrContext = new List<DevAddrCacheInfo>();
             var currentDevices = deviceIds;
-            var mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var mockRegistryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var hasMoreShouldReturn = true;
 
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));

@@ -31,9 +31,9 @@ namespace LoRaWan.Tests.Unit.FacadeTests
             Assert.Equal(devEUI, items[0].DevEUI);
         }
 
-        private static RegistryManager InitRegistryManager(string devEui1, string devEui2)
+        private IDeviceRegistryManager InitRegistryManager(string devEui1, string devEui2)
         {
-            var mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var mockRegistryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             mockRegistryManager
                 .Setup(x => x.GetDeviceAsync(It.IsAny<string>()))
