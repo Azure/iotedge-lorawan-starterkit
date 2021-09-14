@@ -20,7 +20,7 @@ fi
 #get current architecture for the mess processor
 arch="$(uname -m)"
 if [[ $arch != *"arm"* ]]; then
-    if [ -z "$SPI_DEV" ]; then
+    if [ -z "$SPI_DEV" ] || [ "$SPI_DEV" == '$PKT_FWD_SPI_DEV' ]; then
         echo "No SPI Dev version detected in environment variables on x86, defaulting to SPI Dev 2" 
         ./lora_pkt_fwd_spidev2
     else
@@ -32,12 +32,13 @@ if [[ $arch != *"arm"* ]]; then
                 echo "Using SPI dev 1 from environment variables"
                 ./lora_pkt_fwd_spidev1
             else
+                echo "$SPI_DEV"
                 echo "SPI_DEV variables not valid in a x86 architecture. Please select a valid value (1 or 2)."
             fi
         fi
     fi
 else
-    if [[ -z "$SPI_SPEED" ]]; then
+    if [ -z "$SPI_SPEED" ] || [ "$SPI_SPEED" == '$PKT_FWD_SPI_SPEED' ]; then
         ./lora_pkt_fwd
     else
         if [ "$SPI_SPEED" == "2" ]; then
