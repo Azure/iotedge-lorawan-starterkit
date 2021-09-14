@@ -158,6 +158,10 @@ namespace LoRaWan.NetworkServer
             {
                 config.Region = localRegion;
             }
+            else
+            {
+                throw new ArgumentOutOfRangeException("The region specified was out of range of the allowed values");
+            }
 
             return config;
         }
