@@ -30,10 +30,10 @@ The template will deploy in your Azure subscription the Following resources:
 2. You will get to a page asking you to fill the following fields :
 
 - **Resource Group** - A logical "folder" where all the template resource would be put into, just choose a meaningful name.
-- **Location** - In which DataCenter the resources should be deployed.
-- **Unique Solution Prefix** - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail.
+- **Location** - In which DataCenter the resources should be deployed. Make sure to choose a location where [IoT Hub is available](https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&regions=all)
+- **Unique Solution Prefix** - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the [naming restrictions of Storage](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage) apply here.
 - **Edge gateway name** - the name of your LoRa Gateway node in the IoT Hub.
-- **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP). If yes, the code located in the [Arduino folder](/Arduino) would be ready to use immediately.
+- **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](/Arduino) would be ready to use immediately.
 - **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
 - **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)
 
