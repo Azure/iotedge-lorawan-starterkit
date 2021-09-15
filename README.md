@@ -47,7 +47,7 @@ The following should be completed before proceeding with the LoRaWAN starter kit
 
 - You must have an Azure subscription. Get an [Azure Free account](https://azure.microsoft.com/en-us/offers/ms-azr-0044p/) to get started.
 - We are based on Azure IoT Edge so it is important that you understand the concepts and deployment model for Azure IoT Edge. Refer to Azure [IoT Edge documentation](https://docs.microsoft.com/en-us/azure/iot-edge/) to see how it works.
-- Understand how LoRa and LoRaWAN works. A great primer is available at the [LoRa Alliance website](https://lora-alliance.org/resource-hub/what-lorawantm).
+- Understand how LoRa and LoRaWAN works. A great primer is available at the [LoRa Alliance website](https://lora-alliance.org/resource_hub/what-is-lorawan/).
 - To test the solution on a device, you need to have a LoRaWAN Device Kit Gateway and a LoRa end node. We have some recommendations in the [Tested Gateways](#tested-gateways) section below.
 
 ## Getting Started
