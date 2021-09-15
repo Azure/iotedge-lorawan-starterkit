@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Runtime.Serialization;
 
     /// <summary>
-    /// Exception raised if there is a problem with a managed device connection
+    /// Exception raised if there is a problem with a managed device connection.
     /// </summary>
     [Serializable]
     public class ManagedConnectionException : Exception

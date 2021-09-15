@@ -6,6 +6,7 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Newtonsoft.Json;
@@ -64,6 +65,8 @@ namespace LoraKeysManagerFacade
             var when = onlyIfNotExists ? When.NotExists : When.Always;
             return this.redisCache.StringSet(key, value, expiry, when, CommandFlags.DemandMaster);
         }
+
+        public async Task<TimeSpan?> GetObjectTTL(string key) => await this.redisCache.KeyTimeToLiveAsync(key);
 
         public bool ObjectSet<T>(string key, T value, TimeSpan? expiration, bool onlyIfNotExists = false)
             where T : class

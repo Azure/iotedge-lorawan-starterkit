@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Represents a running task loading devices by devAddr
     /// - Prevents querying the registry and loading twins multiple times
-    /// - Ensure that requests are queued by <see cref="LoRaDevice"/> in the order they come
+    /// - Ensure that requests are queued by <see cref="LoRaDevice"/> in the order they come.
     /// </summary>
     class DeviceLoaderSynchronizer : ILoRaDeviceRequestQueue
     {
@@ -30,12 +30,12 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Gets a value indicating whether gets if there were errors loading devices
+        /// Gets a value indicating whether gets if there were errors loading devices.
         /// </summary>
         internal bool HasLoadingDeviceError { get; private set; }
 
         /// <summary>
-        /// Gets the amount of devices that were loaded
+        /// Gets the amount of devices that were loaded.
         /// </summary>
         internal int CreatedDevicesCount { get; private set; }
 

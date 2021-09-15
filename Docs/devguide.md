@@ -4,7 +4,7 @@
 
 The code is organized into three sections:
 
-- **LoRaEngine** - a .NET Standard 2.1 solution with the following folders:
+- **LoRaEngine** - a .NET core 3.1 solution with the following folders:
   - **modules** - Azure IoT Edge modules.
   - **LoraKeysManagerFacade** - An Azure function handling device provisioning (e.g. LoRa network join, OTAA) with Azure IoT Hub as persistence layer.
   - **LoRaDevTools** - library for dev tools (git submodule)
@@ -17,7 +17,7 @@ The code is organized into three sections:
 
 ## LoRaEngine
 
-A **.NET Core 2.1** solution with the following projects:
+A **.NET Core 3.1** solution with the following projects:
 
 - **modules** - Azure IoT Edge modules.
   - **LoRaWanPktFwdModule** packages the network forwarder into an IoT Edge compatible docker container. See https://github.com/Lora-net/packet_forwarder and https://github.com/Lora-net/lora_gateway. If you are using a RAK833-USB see this [submodule](/Docs/LoRaWanPktFwdRAK833USB)
@@ -84,11 +84,16 @@ If you want to update a LoRa Gateway running a previous version fo our software 
 
 You have the option to either deploy the Azure Function code from your Visual Studio Code to Azure or create an empty Azure Function that points to a Zip file hosted by us, containing the function code. Follow one of the two sets of instructions that follow:
 
-#### If you choose to deploy manually using Visual Studio Code
+#### Deploy manually using Visual Studio 
 
-- Build and deploy the [Azure function](LoraKeysManagerFacade). The best way is to open the  [Azure function folder](LoraKeysManagerFacade) with Visual Studio Code with the [Azure Functions Plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) installed. Now run the command `Azure Functions: Deploy to function app...` and provide the name of the Azure function to deploy to. If prompted, select  environment `C#` and  version `V2`.
+On your Visual Studio Solution, right click on the 'LoRaKeysManagerFacade' project, select 'deploy', then 'Azure' and then 'Azure function'. You should then arrive on a page where you just need to hit the deploy button to get the code deployed on Azure.
+![Deploy to Azure Function from Visual Studio](/Docs/Pictures/vsdeploytoazurefunc.PNG)
 
-- If you want to just deploy the function from Visual Studio Code with the root project folder `iotedge-lorawan-starterkit` open (of which the Function is a subfolder `/LoRaEngine/LoraKeysManagerFacade`), you need to run the Visual Studio Command `Azure Functions: Deploy to function app...` and then **manually** choose the folder `LoraKeysManagerFacade/bin/Release/netstandard2.0/publish`. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.
+#### Deploy manually using Visual Studio Code
+
+- Open the [Azure function folder](../LoRaEngine/LoraKeysManagerFacade) with Visual Studio Code with the [Azure Functions Plugin](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurefunctions) installed. Now run the command `Azure Functions: Deploy to function app...` and provide the name of the Azure function to deploy to. If prompted, select  environment `C#` and  version `V3`.
+
+- If you want to just deploy the function from Visual Studio Code with the root project folder `iotedge-lorawan-starterkit` open (of which the Function is a subfolder `/LoRaEngine/LoraKeysManagerFacade`), you need to run the Visual Studio Command `Azure Functions: Deploy to function app...` and then **manually** choose the folder `LoraKeysManagerFacade/bin/Release/netcoreapp3.1/publish`. (Unfortunately at time of this writing we saw the behavior that VSCode is proposing the wrong folder). Building the function does not work in this way unfortunately.
 
 #### If you choose to create an empty Azure Function pointing to our Zipped code
 
@@ -98,9 +103,9 @@ You have the option to either deploy the Azure Function code from your Visual St
 
 |App Settings Name|Value|
 |-|-|
-|WEBSITE_RUN_FROM_ZIP|<https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.0/function-1.0.0.zip>|
+|WEBSITE_RUN_FROM_ZIP|<https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.4/function-1.0.4.zip>|
 
-![Run Azure Function from Zip file](/Docs/Pictures/FunctionRunFromZip.png)
+![Run Azure Function from Zip file](/Docs/Pictures/FunctionRunFromZip.PNG)
 
 #### Follow these next steps in both cases
 

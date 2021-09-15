@@ -52,7 +52,7 @@ namespace LoRaWan.NetworkServer.Test
                             "ads", string.Empty, "0228B1B2"
                         }
                     }
-            };
+                };
             }
         }
     }

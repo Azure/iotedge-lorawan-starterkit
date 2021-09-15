@@ -16,12 +16,12 @@ namespace LoRaWan.NetworkServer
     public sealed class LoRaDevice : IDisposable, ILoRaDeviceRequestQueue
     {
         /// <summary>
-        /// Defines the maximum amount of times an ack resubmit will be sent
+        /// Defines the maximum amount of times an ack resubmit will be sent.
         /// </summary>
         internal const int MaxConfirmationResubmitCount = 3;
 
         /// <summary>
-        /// The default values for RX1DROffset, RX2DR, RXDelay
+        /// The default values for RX1DROffset, RX2DR, RXDelay.
         /// </summary>
         internal const ushort DefaultJoinValues = 0;
 
@@ -53,14 +53,14 @@ namespace LoRaWan.NetworkServer
         public uint FCntUp => this.fcntUp;
 
         /// <summary>
-        /// Gets the last saved value for <see cref="FCntUp"/>
+        /// Gets the last saved value for <see cref="FCntUp"/>.
         /// </summary>
         public uint LastSavedFCntUp => this.lastSavedFcntUp;
 
         public uint FCntDown => this.fcntDown;
 
         /// <summary>
-        /// Gets the last saved value for <see cref="FCntDown"/>
+        /// Gets the last saved value for <see cref="FCntDown"/>.
         /// </summary>
         public uint LastSavedFCntDown => this.lastSavedFcntDown;
 
@@ -95,7 +95,7 @@ namespace LoRaWan.NetworkServer
         int preferredWindow;
 
         /// <summary>
-        /// Gets or sets value indicating the preferred receive window for the device
+        /// Gets or sets value indicating the preferred receive window for the device.
         /// </summary>
         public int PreferredWindow
         {
@@ -111,7 +111,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="LoRaDeviceClassType"/>
+        /// Gets or sets the <see cref="LoRaDeviceClassType"/>.
         /// </summary>
         public LoRaDeviceClassType ClassType { get; set; }
 
@@ -119,7 +119,7 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Gets or sets the <see cref="LoRaTools.Regions.LoRaRegionType"/> of the device
-        /// Relevant only for <see cref="LoRaDeviceClassType.C"/>
+        /// Relevant only for <see cref="LoRaDeviceClassType.C"/>.
         /// </summary>
         public LoRaRegionType LoRaRegion
         {
@@ -131,7 +131,7 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Gets the device preferred gateway identifier
-        /// Relevant only for <see cref="LoRaDeviceClassType.C"/>
+        /// Relevant only for <see cref="LoRaDeviceClassType.C"/>.
         /// </summary>
         public string PreferredGatewayID => this.preferredGatewayID.Get();
 
@@ -142,11 +142,11 @@ namespace LoRaWan.NetworkServer
         private readonly object processingSyncLock = new object();
         private readonly Queue<LoRaRequest> queuedRequests = new Queue<LoRaRequest>();
 
-        public ushort DesiredRX2DataRate { get; set; }
+        public ushort? DesiredRX2DataRate { get; set; }
 
         public ushort DesiredRX1DROffset { get; set; }
 
-        public ushort ReportedRX2DataRate { get; set; }
+        public ushort? ReportedRX2DataRate { get; set; }
 
         public ushort ReportedRX1DROffset { get; set; }
 
@@ -169,12 +169,12 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         ///  Gets or sets a value indicating whether cloud to device messages are enabled for the device
-        ///  By default it is enabled. To disable, set the desired property "EnableC2D" to false
+        ///  By default it is enabled. To disable, set the desired property "EnableC2D" to false.
         /// </summary>
         public bool DownlinkEnabled { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating the timeout value in seconds for the device client connection
+        /// Gets or sets a value indicating the timeout value in seconds for the device client connection.
         /// </summary>
         public int KeepAliveTimeout { get; set; }
 
@@ -194,7 +194,7 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Initializes the device from twin properties
-        /// Throws InvalidLoRaDeviceException if the device does contain require properties
+        /// Throws InvalidLoRaDeviceException if the device does contain require properties.
         /// </summary>
         public async Task<bool> InitializeAsync()
         {
@@ -539,10 +539,10 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Saves device changes in reported twin properties
-        /// It will only save if required. Frame counters are only saved if the difference since last value is equal or greater than <see cref="Constants.MAX_FCNT_UNSAVED_DELTA"/>
+        /// It will only save if required. Frame counters are only saved if the difference since last value is equal or greater than <see cref="Constants.MAX_FCNT_UNSAVED_DELTA"/>.
         /// </summary>
-        /// <param name="reportedProperties">Pre populate reported properties</param>
-        /// <param name="force">Indicates if changes should be saved even if the difference between last saved and current frame counter are less than <see cref="Constants.MAX_FCNT_UNSAVED_DELTA"/></param>
+        /// <param name="reportedProperties">Pre populate reported properties.</param>
+        /// <param name="force">Indicates if changes should be saved even if the difference between last saved and current frame counter are less than <see cref="Constants.MAX_FCNT_UNSAVED_DELTA"/>.</param>
         public async Task<bool> SaveChangesAsync(TwinCollection reportedProperties = null, bool force = false)
         {
             try
@@ -572,9 +572,9 @@ namespace LoRaWan.NetworkServer
                 var fcntDownDelta = this.FCntDown >= this.LastSavedFCntDown ? this.FCntDown - this.LastSavedFCntDown : this.LastSavedFCntDown - this.FCntDown;
 
                 if (reportedProperties.Count > 0 ||
-                    fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
-                    fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
-                    (this.hasFrameCountChanges && force))
+                            fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
+                            fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
+                            (this.hasFrameCountChanges && force))
                 {
                     var savedFcntDown = this.FCntDown;
                     var savedFcntUp = this.FCntUp;
@@ -619,12 +619,12 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Gets a value indicating whether there are pending frame count changes
+        /// Gets a value indicating whether there are pending frame count changes.
         /// </summary>
         public bool HasFrameCountChanges => this.hasFrameCountChanges;
 
         /// <summary>
-        /// Accept changes to the frame count
+        /// Accept changes to the frame count.
         /// </summary>
         public void AcceptFrameCountChanges()
         {
@@ -641,7 +641,7 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Accept changes to the frame count
-        /// This method is not protected by locks
+        /// This method is not protected by locks.
         /// </summary>
         void InternalAcceptFrameCountChanges(uint savedFcntUp, uint savedFcntDown)
         {
@@ -652,7 +652,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Increments <see cref="FCntDown"/>
+        /// Increments <see cref="FCntDown"/>.
         /// </summary>
         public uint IncrementFcntDown(uint value)
         {
@@ -670,7 +670,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Sets a new value for <see cref="FCntDown"/>
+        /// Sets a new value for <see cref="FCntDown"/>.
         /// </summary>
         public void SetFcntDown(uint newValue)
         {
@@ -708,7 +708,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Optimized way to reset fcntUp and fcntDown to zero with a single lock
+        /// Optimized way to reset fcntUp and fcntDown to zero with a single lock.
         /// </summary>
         internal void ResetFcnt()
         {
@@ -761,10 +761,10 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Indicates whether or not we can resubmit an ack for the confirmation up message
+        /// Indicates whether or not we can resubmit an ack for the confirmation up message.
         /// </summary>
         /// <returns><c>true</c>, if resubmit is allowed, <c>false</c> otherwise.</returns>
-        /// <param name="payloadFcnt">Payload frame count</param>
+        /// <param name="payloadFcnt">Payload frame count.</param>
         public bool ValidateConfirmResubmit(uint payloadFcnt)
         {
             this.syncSave.Wait();
@@ -798,7 +798,7 @@ namespace LoRaWan.NetworkServer
         public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).RejectAsync(cloudToDeviceMessage);
 
         /// <summary>
-        /// Updates device on the server after a join succeeded
+        /// Updates device on the server after a join succeeded.
         /// </summary>
         internal async Task<bool> UpdateAfterJoinAsync(LoRaDeviceJoinUpdateProperties updateProperties)
         {
@@ -1076,7 +1076,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Updates the ADR properties of device
+        /// Updates the ADR properties of device.
         /// </summary>
         public void UpdatedADRProperties(int dataRate, int txPower, int nbRep)
         {
@@ -1086,7 +1086,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Gets the properties that are trackable
+        /// Gets the properties that are trackable.
         /// </summary>
         IEnumerable<IChangeTrackingProperty> GetTrackableProperties()
         {
@@ -1112,7 +1112,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Accepts changes in properties, for testing only!
+        /// Accepts changes in properties, for testing only!.
         /// </summary>
         internal void InternalAcceptChanges()
         {
@@ -1124,7 +1124,7 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Ends a device client connection activity
-        /// Called by <see cref="ScopedDeviceClientConnection.Dispose"/>
+        /// Called by <see cref="ScopedDeviceClientConnection.Dispose"/>.
         /// </summary>
         private void EndDeviceClientConnectionActivity()
         {
@@ -1140,7 +1140,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Disconnects the <see cref="ILoRaDeviceClient"/> if there is no pending activity
+        /// Disconnects the <see cref="ILoRaDeviceClient"/> if there is no pending activity.
         /// </summary>
         internal bool TryDisconnect()
         {
@@ -1158,7 +1158,7 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Defines a <see cref="ILoRaDeviceClient"/> scope.
-        /// While a connection activity is open the connection cannot be closed
+        /// While a connection activity is open the connection cannot be closed.
         /// </summary>
         private class ScopedDeviceClientConnection : IDisposable
         {

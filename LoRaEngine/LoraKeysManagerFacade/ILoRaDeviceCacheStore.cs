@@ -13,12 +13,14 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// Tries to acquire a lock for a specific key.
         /// </summary>
-        /// <param name="key">The lock key to try to acquire</param>
-        /// <param name="owner">The lock owner</param>
-        /// <param name="expiration">expiration timestamp, this specifies how long the lock will be held before automatically releasing</param>
-        /// <param name="block">true to retry getting the lock in contention cases, false to try once and return the result</param>
+        /// <param name="key">The lock key to try to acquire.</param>
+        /// <param name="owner">The lock owner.</param>
+        /// <param name="expiration">expiration timestamp, this specifies how long the lock will be held before automatically releasing.</param>
+        /// <param name="block">true to retry getting the lock in contention cases, false to try once and return the result.</param>
         /// <returns>true if the lock was acquired otherwise false.</returns>
         Task<bool> LockTakeAsync(string key, string owner, TimeSpan expiration, bool block = true);
+
+        public Task<TimeSpan?> GetObjectTTL(string key);
 
         string StringGet(string key);
 

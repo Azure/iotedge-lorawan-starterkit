@@ -8,7 +8,7 @@ namespace LoRaTools
     using Newtonsoft.Json;
 
     /// <summary>
-    /// LinkAdrRequest Downstream
+    /// LinkAdrRequest Downstream.
     /// </summary>
     public class LinkADRAnswer : MacCommand
     {

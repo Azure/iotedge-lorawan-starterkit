@@ -16,7 +16,7 @@ namespace LoraKeysManagerFacade
             var requestedVersion = req.GetRequestedVersion();
             if (requestedVersion == null || !currentApiVersion.SupportsVersion(requestedVersion))
             {
-                throw new IncompatibleVersionException($"Incompatible versions (requested: '{requestedVersion.Name ?? string.Empty}', current: '{currentApiVersion.Name}')");
+                throw new IncompatibleVersionException($"Incompatible versions (requested: '{requestedVersion?.Name ?? string.Empty}', current: '{currentApiVersion.Name}')");
             }
         }
     }

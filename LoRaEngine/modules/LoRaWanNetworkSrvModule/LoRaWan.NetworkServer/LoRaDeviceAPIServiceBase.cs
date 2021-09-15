@@ -12,17 +12,17 @@ namespace LoRaWan.NetworkServer
     using LoRaWan.NetworkServer.ADR;
 
     /// <summary>
-    /// LoRa Device API contract
+    /// LoRa Device API contract.
     /// </summary>
     public abstract class LoRaDeviceAPIServiceBase
     {
         /// <summary>
-        /// Gets URL of the API
+        /// Gets URL of the API.
         /// </summary>
         public string URL { get; private set; }
 
         /// <summary>
-        /// Gets the authentication code for the API
+        /// Gets the authentication code for the API.
         /// </summary>
         public string AuthCode { get; private set; }
 
@@ -31,19 +31,19 @@ namespace LoRaWan.NetworkServer
         public abstract Task<bool> ABPFcntCacheResetAsync(string devEUI, uint fcntUp, string gatewayId);
 
         /// <summary>
-        /// Searchs devices based on devAddr
+        /// Searchs devices based on devAddr.
         /// </summary>
         public abstract Task<SearchDevicesResult> SearchByDevAddrAsync(string devAddr);
 
         /// <summary>
-        /// Search and locks device for join request
+        /// Search and locks device for join request.
         /// </summary>
         public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string appEUI, string devNonce);
 
         public abstract Task<SearchDevicesResult> SearchByDevEUIAsync(string devEUI);
 
         /// <summary>
-        /// Sets the new URL value
+        /// Sets the new URL value.
         /// </summary>
         public void SetURL(string value) => this.URL = this.SanitizeApiURL(value);
 
@@ -60,17 +60,17 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Sets the authorization code for the URL
+        /// Sets the authorization code for the URL.
         /// </summary>
         public void SetAuthCode(string value) => this.AuthCode = value;
 
         /// <summary>
         /// Validates if the specified message from the device
-        /// was already processed by any gateway in the system
+        /// was already processed by any gateway in the system.
         /// </summary>
-        /// <param name="devEUI">Device identifier</param>
-        /// <param name="fcntUp">frame count of the message we received</param>
-        /// <param name="gatewayId">The current processing gateway</param>
+        /// <param name="devEUI">Device identifier.</param>
+        /// <param name="fcntUp">frame count of the message we received.</param>
+        /// <param name="gatewayId">The current processing gateway.</param>
         /// <param name="fcntDown">The frame count down of the client.</returns>
         public abstract Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown);
 

@@ -6,7 +6,7 @@ namespace LoRaTools.Regions
     using System;
 
     /// <summary>
-    /// Exception representing invalid region parameters
+    /// Exception representing invalid region parameters.
     /// </summary>
     public class RegionLimitException : Exception
     {

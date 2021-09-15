@@ -117,6 +117,7 @@ namespace LoraKeysManagerFacade
                     else
                     {
                         ownGlobalLock = true;
+                        this.logger.LogDebug("A full reload was started");
                         await this.PerformFullReload(registryManager);
                         this.logger.LogDebug("A full reload was completed");
                         // if successfull i set the delta lock to 5 minutes and release the global lock
@@ -151,6 +152,7 @@ namespace LoraKeysManagerFacade
                 {
                     if (await this.cacheStore.LockTakeAsync(DeltaUpdateKey, this.lockOwner, TimeSpan.FromMinutes(5)))
                     {
+                        this.logger.LogDebug("A delta reload was started");
                         await this.PerformDeltaReload(registryManager);
                         this.logger.LogDebug("A delta reload was completed");
                     }
@@ -165,6 +167,8 @@ namespace LoraKeysManagerFacade
                 }
             }
         }
+
+        public async Task<TimeSpan?> GetTTLInformation(string key) => await this.cacheStore.GetObjectTTL(key);
 
         /// <summary>
         /// Perform a full relaoad on the dev address cache. This occur typically once every 24 h.
@@ -231,9 +235,9 @@ namespace LoraKeysManagerFacade
         }
 
         /// <summary>
-        /// Method to bulk save a devAddrCacheInfo list in redis in a call per devAddr
+        /// Method to bulk save a devAddrCacheInfo list in redis in a call per devAddr.
         /// </summary>
-        /// <param name="canDeleteDeviceWithDevAddr"> Should delete all other elements non present in this list?</param>
+        /// <param name="canDeleteDeviceWithDevAddr"> Should delete all other elements non present in this list?.</param>
         private void BulkSaveDevAddrCache(List<DevAddrCacheInfo> devAddrCacheInfos, bool canDeleteDeviceWithDevAddr)
         {
             // elements will naturally expire we only need to add new ones

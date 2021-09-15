@@ -8,12 +8,12 @@ namespace LoRaWan.Test.Shared
     using Microsoft.Azure.EventHubs;
 
     /// <summary>
-    /// Utility class
+    /// Utility class.
     /// </summary>
     public static class Utility
     {
         /// <summary>
-        /// Gets mac adderss
+        /// Gets mac adderss.
         /// </summary>
         public static byte[] GetMacAddress()
         {

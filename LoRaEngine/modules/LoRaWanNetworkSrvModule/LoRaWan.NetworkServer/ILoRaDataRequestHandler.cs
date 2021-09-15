@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
 
     /// <summary>
-    /// Request handler for data requests
+    /// Request handler for data requests.
     /// </summary>
     public interface ILoRaDataRequestHandler
     {

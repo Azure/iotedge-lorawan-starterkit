@@ -13,7 +13,6 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.Build.Framework;
     using Newtonsoft.Json;
 
     public class CreateEdgeDevice

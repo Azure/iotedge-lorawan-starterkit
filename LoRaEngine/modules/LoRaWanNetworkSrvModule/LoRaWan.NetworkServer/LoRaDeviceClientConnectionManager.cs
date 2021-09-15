@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Logging;
 
     /// <summary>
-    /// Manages <see cref="ILoRaDeviceClient"/> connections for <see cref="LoRaDevice"/>
+    /// Manages <see cref="ILoRaDeviceClient"/> connections for <see cref="LoRaDevice"/>.
     /// </summary>
     public class LoRaDeviceClientConnectionManager : ILoRaDeviceClientConnectionManager
     {
@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Sets the schedule for a device client disconnect
+        /// Sets the schedule for a device client disconnect.
         /// </summary>
         private void SetupSchedule(ManagedConnection managedConnection)
         {
@@ -119,7 +119,7 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Tries to trigger scanning of expired items
-        /// For tests only
+        /// For tests only.
         /// </summary>
         public void TryScanExpiredItems()
         {

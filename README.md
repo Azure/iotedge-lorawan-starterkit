@@ -1,10 +1,10 @@
 
-[![Build Status](https://dev.azure.com/epicstuff/Azure%20IoT%20Edge%20LoRaWAN%20Starter%20Kit/_apis/build/status/CI-MultiGateway?branchName=master)](https://dev.azure.com/epicstuff/Azure%20IoT%20Edge%20LoRaWAN%20Starter%20Kit/_build/latest?definitionId=62&branchName=master)
-[![Build Status](https://dev.azure.com/epicstuff/Azure%20IoT%20Edge%20LoRaWAN%20Starter%20Kit/_apis/build/status/CI-MultiGateway?branchName=dev)](https://dev.azure.com/epicstuff/Azure%20IoT%20Edge%20LoRaWAN%20Starter%20Kit/_build/latest?definitionId=62&branchName=dev)
+[![LoRa CI](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/ci.yaml)
+[![LoRa CI](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/ci.yaml/badge.svg?branch=dev)](https://github.com/Azure/iotedge-lorawan-starterkit/actions/workflows/ci.yaml)
 
 # Azure IoT Edge LoRaWAN Starter Kit
 
-The LoRaWAN starter kit is an *experimental* cross platform private network implementation of the [LoRaWAN specification]('https://lora-alliance.org/resource-hub/lorawantm-specification-v102') built for connectivity to Azure IoT Hub. It enables users to setup their own LoRaWAN network that can connect to LoRa based nodes (sensors) and send decoded message packets to Azure IoT Hub for cloud based processing, analytics and other workloads. Alternatively, it allows sending commands from the cloud to the end nodes. The goal of the the project is to provide guidance and a reference for Azure IoT Edge users to experiment with LoRaWAN technology.
+The LoRaWAN starter kit is an OSS cross platform private network implementation of the [LoRaWAN specification](https://lora-alliance.org/resource-hub/lorawantm-specification-v102) built for connectivity to Azure IoT Hub. It enables users to setup their own LoRaWAN network that can connect to LoRa based nodes (sensors) and send decoded message packets to Azure IoT Hub for cloud based processing, analytics and other workloads. Alternatively, it allows sending commands from the cloud to the end nodes. The goal of the the project is to provide guidance and a reference for Azure IoT Edge users to experiment with LoRaWAN technology.
 
 ![Architecture](/Docs/Pictures/EdgeArchitecture.png)
   
@@ -45,8 +45,8 @@ We plan to support the following key features of LoRaWAN 1.0.2 specification, ho
 ## Prerequisites
 The following should be completed before proceeding with the LoRaWAN starter kit development or deployment in your environment.
 
-- You must have an Azure subscription. Get an [Azure Free account]('https://azure.microsoft.com/en-us/offers/ms-azr-0044p/') to get started.
-- We are based on Azure IoT Edge so it is important that you understand the concepts and deployment model for Azure IoT Edge. Refer to Azure [IoT Edge documentation]('https://docs.microsoft.com/en-us/azure/iot-edge/') to see how it works.
+- You must have an Azure subscription. Get an [Azure Free account](https://azure.microsoft.com/en-us/offers/ms-azr-0044p/) to get started.
+- We are based on Azure IoT Edge so it is important that you understand the concepts and deployment model for Azure IoT Edge. Refer to Azure [IoT Edge documentation](https://docs.microsoft.com/en-us/azure/iot-edge/) to see how it works.
 - Understand how LoRa and LoRaWAN works. A great primer is available at the [LoRa Alliance website](https://lora-alliance.org/resource_hub/what-is-lorawan/).
 - To test the solution on a device, you need to have a LoRaWAN Device Kit Gateway and a LoRa end node. We have some recommendations in the [Tested Gateways](#tested-gateways) section below.
 

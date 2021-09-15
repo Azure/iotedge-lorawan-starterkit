@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer
         void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient);
 
         /// <summary>
-        /// Tries to trigger scanning of expired items
+        /// Tries to trigger scanning of expired items.
         /// </summary>
         void TryScanExpiredItems();
     }

@@ -1,10 +1,98 @@
 # Upgrade LoRaWAN to a new version
 
+## Release 1.0.6
+
+> Note that this version switch IoT Edge to use version 1.2 of IoT Edge that include major changes on the edge. Please follow this [documentation](https://docs.microsoft.com/azure/iot-edge/how-to-update-iot-edge?view=iotedge-2020-11&tabs=linux) to upgrade IoT Edge to 1.2.
+
+To update from version 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
+
+### Updating from 1.0.5, 1.0.4 or 1.0.3
+
+|Deployment Module|Image URI|
+|-|-|
+|LoRaWanNetworkSrvModule|loraedge/lorawannetworksrvmodule:1.0.6|
+|LoRaWanPktFwdModule|loraedge/lorawanpktfwdmodule:1.0.6|
+
+On the same `Set Modules` page, also update your current edge version to 1.2.2 by pressing the `Configure Advanced Edge Runtime settings` button. On the menu, ensure the edge hub and edge agent are using version 1.2.2 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.2.2 and mcr.microsoft.com/azureiotedge-agent:1.2.2.
+
+### Updating the Azure Function Facade
+
+There are no changes on the Azure function therefore you can use the same versioning as Release 1.0.5 just below.
+
+## Release 1.0.5
+
+To update from version 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
+
+### Updating from 1.0.4 or 1.0.3
+
+|Deployment Module|Image URI|
+|-|-|
+|LoRaWanNetworkSrvModule|loraedge/lorawannetworksrvmodule:1.0.5|
+|LoRaWanPktFwdModule|loraedge/lorawanpktfwdmodule:1.0.5|
+
+On the same `Set Modules` page, also update your current edge version to 1.0.9.5 by pressing the `Configure Advanced Edge Runtime settings` button. On the menu, ensure the edge hub and edge agent are using version 1.0.9.5 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.0.9.5 and mcr.microsoft.com/azureiotedge-agent:1.0.9.5.
+
+### Updating the Azure Function Facade
+
+If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+
+If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an `App Setting` in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:
+
+```
+https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.5/function-1.0.5.zip
+```
+
+## Release 1.0.4
+To update from version 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
+
+### Updating from 1.0.3
+|Deployment Module|Image URI|
+|-|-|
+|LoRaWanNetworkSrvModule|loraedge/lorawannetworksrvmodule:1.0.4|
+|LoRaWanPktFwdModule|loraedge/lorawanpktfwdmodule:1.0.4|
+
+On the same `Set Modules` page, also update your current edge version to 1.0.9.4 by pressing the `Configure Advanced Edge Runtime settings` button. On the menu, ensure the edge hub and edge agent are using version 1.0.9.4 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.0.9.4 and mcr.microsoft.com/azureiotedge-agent:1.0.9.4.
+
+### Updating the Azure Function Facade
+
+If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+
+If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an `App Setting` in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:
+
+```
+https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.4/function-1.0.4.zip
+```
+
+## Release 1.0.3
+
+To update from 1.0.1 or 1.0.2 you can follow the below instructions. If you want to update manually from a version prior to 1.0.1, please refer to [Updating existing installations from 1.0.0 to release 1.0.1](##Updating-existing-installations-from-1.0.0-to-release-1.0.1) section below.
+
+### Updating existing installations from 1.0.1 or 1.0.2 to release 1.0.3
+
+Go to your solution's Azure IoT Hub and under IoT Edge, select each of your gateways. Select `Set Modules` and configure the two deployment modules `LoRaWanNetworkSrvModule` and `LoRaWanPktFwdModule`. Make sure, the following image URIs are configured:
+
+|Deployment Module|Image URI|
+|-|-|
+|LoRaWanNetworkSrvModule|loraedge/lorawannetworksrvmodule:1.0.3|
+|LoRaWanPktFwdModule|loraedge/lorawanpktfwdmodule:1.0.3|
+
+On the same `Set Modules` page, also update your current edge version to 1.0.9 by pressing the `Configure Advanced Edge Runtime settings` button. On the menu, ensure the edge hub and edge agent are using version 1.0.9 by respectively setting image name to mcr.microsoft.com/azureiotedge-hub:1.0.9 and mcr.microsoft.com/azureiotedge-agent:1.0.9.
+
+### Updating the Azure Function Facade
+
+If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+
+If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an `App Setting` in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:
+
+```
+https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.3/function-1.0.3.zip
+```
+
 ## Release 1.0.2
 
 We recommend re-deploying your solution based on the 1.0.2 release if you have been working with a solution before version 1.0.2. To update from 1.0.1 you can follow the below instructions. If you want to update manually from a version prior to 1.0.1, please refer to [Updating existing installations from 1.0.0 to release 1.0.1](##Updating-existing-installations-from-1.0.0-to-release-1.0.1) section below.
 
-## Updating existing installations from 1.0.1 to release 1.0.2
+### Updating existing installations from 1.0.1 to release 1.0.2
 
 Go to your solution's Azure IoT Hub and under IoT Edge, select each of your gateways. Select `Set Modules` and configure the two deployment modules `LoRaWanNetworkSrvModule` and `LoRaWanPktFwdModule`. Make sure, the following image URIs are configured:
 

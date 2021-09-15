@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer
     using Newtonsoft.Json;
 
     /// <summary>
-    /// Interface between IoT Hub and device
+    /// Interface between IoT Hub and device.
     /// </summary>
     public sealed class LoRaDeviceClient : ILoRaDeviceClient
     {
@@ -276,7 +276,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Disconnects device client
+        /// Disconnects device client.
         /// </summary>
         public bool Disconnect()
         {
@@ -304,7 +304,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Ensures that the connection is open
+        /// Ensures that the connection is open.
         /// </summary>
         public bool EnsureConnected()
         {

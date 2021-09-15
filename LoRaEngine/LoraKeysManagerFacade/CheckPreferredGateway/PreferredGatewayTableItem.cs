@@ -16,14 +16,14 @@ namespace LoraKeysManagerFacade
         }
 
         /// <summary>
-        /// Creates a string representation of the object for caching
+        /// Creates a string representation of the object for caching.
         /// </summary>
-        /// <returns>A string containing {GatewayID};{Rssi}</returns>
+        /// <returns>A string containing {GatewayID};{Rssi}.</returns>
         public string ToCachedString() => string.Concat(this.GatewayID, ";", this.Rssi);
 
         /// <summary>
         /// Creates a <see cref="PreferredGatewayTableItem"/> from a string
-        /// String format should be: {GatewayID};{Rssi}
+        /// String format should be: {GatewayID};{Rssi}.
         /// </summary>
         public static PreferredGatewayTableItem CreateFromCachedString(string cachedString)
         {

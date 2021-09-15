@@ -29,7 +29,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Tries to parse the <see cref="Message.GetBytes"/> to a json representation of <see cref="LoRaCloudToDeviceMessage"/>
+        /// Tries to parse the <see cref="Message.GetBytes"/> to a json representation of <see cref="LoRaCloudToDeviceMessage"/>.
         /// </summary>
         private void ParseMessage()
         {

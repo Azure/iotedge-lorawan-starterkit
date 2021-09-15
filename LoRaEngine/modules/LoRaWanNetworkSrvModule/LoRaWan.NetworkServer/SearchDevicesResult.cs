@@ -6,17 +6,17 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
 
     /// <summary>
-    /// Results of a <see cref="LoRaDeviceAPIServiceBase.SearchDevicesAsync"/> call
+    /// Results of a <see cref="LoRaDeviceAPIServiceBase.SearchDevicesAsync"/> call.
     /// </summary>
     public class SearchDevicesResult
     {
         /// <summary>
-        /// Gets list of devices that match the criteria
+        /// Gets list of devices that match the criteria.
         /// </summary>
         public IReadOnlyList<IoTHubDeviceInfo> Devices { get; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the dev nonce was already used
+        /// Gets or sets a value indicating whether the dev nonce was already used.
         /// </summary>
         public bool IsDevNonceAlreadyUsed { get; set; }
 

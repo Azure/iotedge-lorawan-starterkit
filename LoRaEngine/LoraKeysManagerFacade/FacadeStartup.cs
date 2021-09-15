@@ -12,7 +12,6 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.Functions.Extensions.DependencyInjection;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Hosting;
     using StackExchange.Redis;
 
     public class FacadeStartup : FunctionsStartup
@@ -49,7 +48,7 @@ namespace LoraKeysManagerFacade
             builder.Services.AddSingleton<IFunctionBundlerExecutionItem, DeduplicationExecutionItem>();
             builder.Services.AddSingleton<IFunctionBundlerExecutionItem, ADRExecutionItem>();
             builder.Services.AddSingleton<IFunctionBundlerExecutionItem, PreferredGatewayExecutionItem>();
-            builder.Services.AddSingleton<IHostedService, DevAddressCacheManager>();
+            builder.Services.AddSingleton<LoRaDevAddrCache>();
         }
 
         abstract class ConfigHandler

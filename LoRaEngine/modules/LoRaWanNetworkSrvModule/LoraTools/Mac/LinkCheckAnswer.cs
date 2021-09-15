@@ -8,7 +8,7 @@ namespace LoRaTools
     using Newtonsoft.Json;
 
     /// <summary>
-    /// LinkCheckAns Downstream
+    /// LinkCheckAns Downstream.
     /// </summary>
     public class LinkCheckAnswer : MacCommand
     {
@@ -22,7 +22,7 @@ namespace LoRaTools
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkCheckAnswer"/> class.
-        /// Upstream Constructor
+        /// Upstream Constructor.
         /// </summary>
         public LinkCheckAnswer(uint margin, uint gwCnt)
         {
@@ -33,7 +33,7 @@ namespace LoRaTools
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkCheckAnswer"/> class.
-        /// Test Constructor
+        /// Test Constructor.
         /// </summary>
         public LinkCheckAnswer(ReadOnlySpan<byte> input)
         {

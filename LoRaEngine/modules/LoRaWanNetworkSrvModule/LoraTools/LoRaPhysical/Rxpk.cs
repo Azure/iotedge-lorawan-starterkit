@@ -63,10 +63,10 @@ namespace LoRaTools.LoRaPhysical
         /// <summary>
         /// Gets required Signal-to-noise ratio to demodulate a LoRa signal given a spread Factor
         /// Spreading Factor -> Required SNR
-        /// taken from https://www.semtech.com/uploads/documents/DS_SX1276-7-8-9_W_APP_V5.pdf
+        /// taken from https://www.semtech.com/uploads/documents/DS_SX1276-7-8-9_W_APP_V5.pdf.
         /// </summary>
         private Dictionary<int, double> SpreadFactorToSNR { get; } = new Dictionary<int, double>()
-         {
+        {
             { 6,  -5 },
             { 7, -7.5 },
             { 8,  -10 },
@@ -83,8 +83,8 @@ namespace LoRaTools.LoRaPhysical
         /// Method to create a Rxpk object from a byte array.
         /// This is typically used for an upstream communication.
         /// </summary>
-        /// <param name="inputMessage">Input byte array</param>
-        /// <returns>List of rxpk or null if no Rxpk was found</returns>
+        /// <param name="inputMessage">Input byte array.</param>
+        /// <returns>List of rxpk or null if no Rxpk was found.</returns>
         public static List<Rxpk> CreateRxpk(byte[] inputMessage)
         {
             PhysicalPayload physicalPayload = new PhysicalPayload(inputMessage);

@@ -22,7 +22,7 @@ namespace LoraKeysManagerFacade
     /// <summary>
     /// Http function to sends cloud to device messages
     /// - For class C devices it sends the message through the preferred gateway
-    /// - For other devices it adds to the device message queue
+    /// - For other devices it adds to the device message queue.
     /// </summary>
     public class SendCloudToDeviceMessage
     {
@@ -200,7 +200,7 @@ namespace LoraKeysManagerFacade
         }
 
         /// <summary>
-        /// Gets if the http status code indicates success
+        /// Gets if the http status code indicates success.
         /// </summary>
         static bool IsSuccessStatusCode(int statusCode) => (statusCode >= 200) && (statusCode <= 299);
     }

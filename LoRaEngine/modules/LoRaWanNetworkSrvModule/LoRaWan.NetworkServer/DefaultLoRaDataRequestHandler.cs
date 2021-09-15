@@ -338,8 +338,7 @@ namespace LoRaWan.NetworkServer
                                     if (!fcntDown.HasValue || fcntDown <= 0)
                                     {
                                         // We did not get a valid frame count down, therefore we should not process the message
-                                        _ = cloudToDeviceMessage.AbandonAsync();
-
+                                        // Not calling 'cloudToDeviceMessage.AbandonAsync()' as this created race condition in C2D Message between both
                                         cloudToDeviceMessage = null;
                                     }
                                     else
@@ -581,9 +580,9 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Helper method to resolve FcntDown in case one was not yet acquired
+        /// Helper method to resolve FcntDown in case one was not yet acquired.
         /// </summary>
-        /// <returns>0 if the resolution failed or > 0 if a valid frame count was acquired</returns>
+        /// <returns>0 if the resolution failed or > 0 if a valid frame count was acquired.</returns>
         async ValueTask<uint> EnsureHasFcntDownAsync(
             LoRaDevice loRaDevice,
             uint? fcntDown,

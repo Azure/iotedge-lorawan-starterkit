@@ -5,11 +5,12 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using LoRaTools.Mac;
     using LoRaTools.Utils;
     using Newtonsoft.Json;
 
     /// <summary>
-    /// LinkAdrRequest Downstream
+    /// LinkAdrRequest Downstream.
     /// </summary>
     public class LinkADRRequest : MacCommand
     {
@@ -45,7 +46,7 @@ namespace LoRaTools
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LinkADRRequest"/> class. For tests to serialize from byte
+        /// Initializes a new instance of the <see cref="LinkADRRequest"/> class. For tests to serialize from byte.
         /// </summary>
         public LinkADRRequest(byte[] input)
         {
@@ -85,12 +86,12 @@ namespace LoRaTools
                 }
                 else
                 {
-                    throw new Exception("LinkADRRequest C2D properties must be in String Integer style");
+                    throw new MacCommandException("LinkADRRequest C2D properties must be in String Integer style");
                 }
             }
             else
             {
-                throw new Exception("LinkADRRequest C2D must have have the following message properties set : datarate, txpower, chMask, chMaskCntl, nbTrans");
+                throw new MacCommandException("LinkADRRequest C2D must have have the following message properties set : datarate, txpower, chMask, chMaskCntl, nbTrans");
             }
         }
 

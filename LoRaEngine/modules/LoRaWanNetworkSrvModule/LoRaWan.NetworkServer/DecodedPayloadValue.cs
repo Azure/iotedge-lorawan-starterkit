@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer
 
     /// <summary>
     /// Defines a simple decoded payload value
-    /// Represents the value as: { "value":1 }
+    /// Represents the value as: { "value":1 }.
     /// </summary>
     public class DecodedPayloadValue
     {

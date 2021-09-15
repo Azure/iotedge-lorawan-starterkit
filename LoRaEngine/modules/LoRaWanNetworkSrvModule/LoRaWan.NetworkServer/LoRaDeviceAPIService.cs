@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer
     using Newtonsoft.Json;
 
     /// <summary>
-    /// LoRa Device API Service
+    /// LoRa Device API Service.
     /// </summary>
     public sealed class LoRaDeviceAPIService : LoRaDeviceAPIServiceBase
     {
@@ -104,7 +104,7 @@ namespace LoRaWan.NetworkServer
             => this.SearchDevicesAsync(devAddr: devAddr);
 
         /// <summary>
-        /// Helper method that calls the API GetDevice method
+        /// Helper method that calls the API GetDevice method.
         /// </summary>
         async Task<SearchDevicesResult> SearchDevicesAsync(string gatewayID = null, string devAddr = null, string devEUI = null, string appEUI = null, string devNonce = null)
         {

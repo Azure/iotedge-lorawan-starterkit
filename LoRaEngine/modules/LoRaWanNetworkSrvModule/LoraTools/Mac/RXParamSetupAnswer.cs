@@ -5,10 +5,11 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
+    using LoRaTools.Mac;
     using Newtonsoft.Json;
 
     /// <summary>
-    /// RXParamSetupAns
+    /// RXParamSetupAns.
     /// </summary>
     public class RXParamSetupAnswer : MacCommand
     {
@@ -36,7 +37,7 @@ namespace LoRaTools
         {
             if (readOnlySpan.Length < this.Length)
             {
-                throw new Exception("RXParamSetupAnswer detected but the byte format is not correct");
+                throw new MacCommandException("RXParamSetupAnswer detected but the byte format is not correct");
             }
             else
             {

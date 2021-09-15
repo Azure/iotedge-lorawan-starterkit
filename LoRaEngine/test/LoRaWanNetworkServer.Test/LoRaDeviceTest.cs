@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer.Test
     using Xunit;
 
     /// <summary>
-    /// Tests the <see cref="LoRaDevice"/>
+    /// Tests the <see cref="LoRaDevice"/>.
     /// </summary>
     public class LoRaDeviceTest
     {
@@ -786,8 +786,8 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal("mygateway", loRaDevice.GatewayID);
             Assert.Equal(9u, loRaDevice.FCntDown);
             Assert.Equal(100u, loRaDevice.FCntUp);
-            Assert.Equal(10, loRaDevice.ReportedRX2DataRate);
-            Assert.Equal(10, loRaDevice.DesiredRX2DataRate);
+            Assert.Equal(10, loRaDevice.ReportedRX2DataRate.Value);
+            Assert.Equal(10, loRaDevice.DesiredRX2DataRate.Value);
             Assert.Equal(appSKey, loRaDevice.AppSKey);
             Assert.Equal(nwkSKey, loRaDevice.NwkSKey);
             Assert.Equal(LoRaRegionType.US915, loRaDevice.LoRaRegion);

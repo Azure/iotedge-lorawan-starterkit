@@ -13,42 +13,42 @@ namespace LoRaTools.LoRaMessage
     using Org.BouncyCastle.Security;
 
     /// <summary>
-    /// The LoRaPayloadWrapper class wraps all the information any LoRa message share in common
+    /// The LoRaPayloadWrapper class wraps all the information any LoRa message share in common.
     /// </summary>
     public abstract class LoRaPayload
     {
         public LoRaMessageType LoRaMessageType { get; set; }
 
         /// <summary>
-        /// Gets or sets raw byte of the message
+        /// Gets or sets raw byte of the message.
         /// </summary>
         public byte[] RawMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets mACHeader of the message
+        /// Gets or sets mACHeader of the message.
         /// </summary>
         public Memory<byte> Mhdr { get; set; }
 
         /// <summary>
-        /// Gets or sets message Integrity Code
+        /// Gets or sets message Integrity Code.
         /// </summary>
         public Memory<byte> Mic { get; set; }
 
         /// <summary>
-        /// Gets or sets assigned Dev Address, TODO change??
+        /// Gets or sets assigned Dev Address, TODO change??.
         /// </summary>
         public Memory<byte> DevAddr { get; set; }
 
         /// <summary>
         /// Gets the representation of the 32bit Frame counter to be used
-        /// in the block if we are in 32bit mode
+        /// in the block if we are in 32bit mode.
         /// </summary>
         protected byte[] Server32BitFcnt { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayload"/> class.
         /// Wrapper of a LoRa message, consisting of the MIC and MHDR, common to all LoRa messages
-        /// This is used for uplink / decoding
+        /// This is used for uplink / decoding.
         /// </summary>
         public LoRaPayload(byte[] inputMessage)
         {
@@ -60,36 +60,36 @@ namespace LoRaTools.LoRaMessage
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayload"/> class.
-        /// This is used for downlink, The field will be computed at message creation
+        /// This is used for downlink, The field will be computed at message creation.
         /// </summary>
         public LoRaPayload()
         {
         }
 
         /// <summary>
-        /// Method to take the different fields and assemble them in the message bytes
+        /// Method to take the different fields and assemble them in the message bytes.
         /// </summary>
-        /// <returns>the message bytes</returns>
+        /// <returns>the message bytes.</returns>
         public abstract byte[] GetByteMessage();
 
         /// <summary>
-        /// Method to check a Mic
+        /// Method to check a Mic.
         /// </summary>
-        /// <param name="nwskey">The Network Secret Key</param>
+        /// <param name="nwskey">The Network Secret Key.</param>
         /// <param name="server32BitFcnt">Explicit 32bit count to use for calculating the block.</param>
         public abstract bool CheckMic(string nwskey, uint? server32BitFcnt = null);
 
         /// <summary>
-        /// Method to calculate the encrypted version of the payload
+        /// Method to calculate the encrypted version of the payload.
         /// </summary>
-        /// <param name="appSkey">the Application Secret Key</param>
-        /// <returns>the encrypted bytes</returns>
+        /// <param name="appSkey">the Application Secret Key.</param>
+        /// <returns>the encrypted bytes.</returns>
         public abstract byte[] PerformEncryption(string appSkey);
 
         /// <summary>
-        /// A Method to calculate the Mic of the message
+        /// A Method to calculate the Mic of the message.
         /// </summary>
-        /// <returns> the Mic bytes</returns>
+        /// <returns> the Mic bytes.</returns>
         public byte[] CalculateMic(string appKey, byte[] algoinput)
         {
             IMac mac = MacUtilities.GetMac("AESCMAC");
@@ -106,7 +106,7 @@ namespace LoRaTools.LoRaMessage
         }
 
         /// <summary>
-        /// Calculate the Netwok and Application Server Key used to encrypt data and compute MIC
+        /// Calculate the Netwok and Application Server Key used to encrypt data and compute MIC.
         /// </summary>
         public byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
@@ -155,7 +155,7 @@ namespace LoRaTools.LoRaMessage
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayload"/> class.
-        /// Constructor used by the simulator
+        /// Constructor used by the simulator.
         /// </summary>
         public static bool TryCreateLoRaPayloadForSimulator(Txpk txpk, string appKey, out LoRaPayload loRaPayload)
         {
@@ -203,10 +203,10 @@ namespace LoRaTools.LoRaMessage
         /// on the wire (lower 16bits). The result is the inferred counter as we
         /// assume it is on the client.
         /// </summary>
-        /// <param name="payloadFcnt">16bits counter sent in the package</param>
-        /// <param name="fcnt">Current server frame counter holding 32bits</param>
+        /// <param name="payloadFcnt">16bits counter sent in the package.</param>
+        /// <param name="fcnt">Current server frame counter holding 32bits.</param>
         /// <returns>The inferred 32bit framecounter value, with the higher 16bits holding the server
-        /// observed counter information and the lower 16bits the information we got on the wire</returns>
+        /// observed counter information and the lower 16bits the information we got on the wire.</returns>
         public static uint InferUpper32BitsForClientFcnt(ushort payloadFcnt, uint fcnt)
         {
             const uint MaskHigher16 = 0xFFFF0000;

@@ -4,7 +4,7 @@
 namespace LoRaTools.Regions
 {
     /// <summary>
-    /// Enum defining different exception that could rise on a region
+    /// Enum defining different exception that could rise on a region.
     /// </summary>
     public enum RegionLimitExceptionType
     {

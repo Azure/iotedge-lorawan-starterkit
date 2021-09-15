@@ -65,7 +65,7 @@ namespace LoRaWan.Test.Shared
         public bool IsMultiGw => string.IsNullOrEmpty(this.GatewayID);
 
         /// <summary>
-        /// Gets the desired properties for the <see cref="TestDeviceInfo"/>
+        /// Gets the desired properties for the <see cref="TestDeviceInfo"/>.
         /// </summary>
         public Dictionary<string, object> GetDesiredProperties()
         {
@@ -112,7 +112,7 @@ namespace LoRaWan.Test.Shared
         }
 
         /// <summary>
-        /// Creates a <see cref="TestDeviceInfo"/> with ABP authentication
+        /// Creates a <see cref="TestDeviceInfo"/> with ABP authentication.
         /// </summary>
         public static TestDeviceInfo CreateABPDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", uint netId = 1, char deviceClassType = 'A', bool supports32BitFcnt = false)
         {
@@ -144,9 +144,9 @@ namespace LoRaWan.Test.Shared
         }
 
         /// <summary>
-        /// Creates a <see cref="TestDeviceInfo"/> with OTAA authentication
+        /// Creates a <see cref="TestDeviceInfo"/> with OTAA authentication.
         /// </summary>
-        /// <param name="deviceID">Device identifier. It will padded with 0's</param>
+        /// <param name="deviceID">Device identifier. It will padded with 0's.</param>
         public static TestDeviceInfo CreateOTAADevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", char deviceClassType = 'A')
         {
             var value16 = deviceID.ToString("0000000000000000");

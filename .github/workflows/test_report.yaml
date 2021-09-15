@@ -1,0 +1,19 @@
+name: 'Test Report'
+on:
+  workflow_run:
+    workflows: ['LoRa CI']                     # runs after CI workflow
+    types:
+      - completed
+jobs:
+  report:
+    permissions:
+      checks: write 
+      pull-requests: write 
+    runs-on: ubuntu-latest
+    steps:
+    - uses: dorny/test-reporter@v1
+      with:
+        artifact: /(.*)results/
+        name: '$1 Test Results'
+        path: '*.trx'
+        reporter: dotnet-trx

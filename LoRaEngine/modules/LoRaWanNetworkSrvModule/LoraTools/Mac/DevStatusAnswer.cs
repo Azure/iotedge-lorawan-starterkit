@@ -8,7 +8,7 @@ namespace LoRaTools
     using Newtonsoft.Json;
 
     /// <summary>
-    /// DevStatusAns Upstream & DevStatusReq Downstream
+    /// DevStatusAns Upstream & DevStatusReq Downstream.
     /// </summary>
     public class DevStatusAnswer : MacCommand
     {
@@ -27,7 +27,7 @@ namespace LoRaTools
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DevStatusAnswer"/> class.
-        /// Upstream constructor
+        /// Upstream constructor.
         /// </summary>
         public DevStatusAnswer(byte battery, byte margin)
         {

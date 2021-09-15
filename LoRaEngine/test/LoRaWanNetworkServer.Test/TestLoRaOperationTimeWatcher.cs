@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.Regions;
 
     /// <summary>
-    /// Helper operation timer that returns a constant elapsed time
+    /// Helper operation timer that returns a constant elapsed time.
     /// </summary>
     internal class TestLoRaOperationTimeWatcher : LoRaOperationTimeWatcher
     {
@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         /// <summary>
-        /// Gets time passed since start
+        /// Gets time passed since start.
         /// </summary>
         protected internal override TimeSpan GetElapsedTime() => this.constantElapsedTime;
     }

@@ -14,7 +14,7 @@ namespace LoraKeysManagerFacade.Test
     using Xunit;
 
     /// <summary>
-    /// Test fixture for tests using Redis
+    /// Test fixture for tests using Redis.
     /// </summary>
     public class RedisFixture : IAsyncLifetime
     {

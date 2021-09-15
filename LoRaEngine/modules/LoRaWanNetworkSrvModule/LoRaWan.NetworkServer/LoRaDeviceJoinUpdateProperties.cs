@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.Regions;
 
     /// <summary>
-    /// Properties of newly joined device
+    /// Properties of newly joined device.
     /// </summary>
     public class LoRaDeviceJoinUpdateProperties
     {
@@ -27,12 +27,12 @@ namespace LoRaWan.NetworkServer
         public string AppNonce { get; set; }
 
         /// <summary>
-        /// Gets or sets value indicating if region should be saved in reported properties
+        /// Gets or sets value indicating if region should be saved in reported properties.
         /// </summary>
         public bool SaveRegion { get; set; }
 
         /// <summary>
-        /// Gets or sets value indicating if preferred gateway should be saved in reported properties
+        /// Gets or sets value indicating if preferred gateway should be saved in reported properties.
         /// </summary>
         public bool SavePreferredGateway { get; set; }
     }

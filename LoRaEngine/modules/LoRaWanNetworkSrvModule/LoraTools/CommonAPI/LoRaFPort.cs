@@ -4,17 +4,17 @@
 namespace LoRaTools.CommonAPI
 {
     /// <summary>
-    /// LoRa FPort information
+    /// LoRa FPort information.
     /// </summary>
     public static class LoRaFPort
     {
         /// <summary>
-        /// Starting Fport value reserved for future applications
+        /// Starting Fport value reserved for future applications.
         /// </summary>
         public const byte ReservedForFutureAplications = 224;
 
         /// <summary>
-        /// Fport value reserved for mac commands
+        /// Fport value reserved for mac commands.
         /// </summary>
         public const int MacCommand = 0;
     }

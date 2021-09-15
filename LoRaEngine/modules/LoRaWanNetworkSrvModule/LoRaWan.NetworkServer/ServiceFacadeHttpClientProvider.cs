@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer
     using LoRaWan.Shared;
 
     /// <summary>
-    /// Default implementation for <see cref="IServiceFacadeHttpClientProvider"/>
+    /// Default implementation for <see cref="IServiceFacadeHttpClientProvider"/>.
     /// </summary>
     public class ServiceFacadeHttpClientProvider : IServiceFacadeHttpClientProvider
     {

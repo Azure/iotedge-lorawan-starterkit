@@ -16,7 +16,7 @@ namespace LoRaTools.ADR
         public int? CurrentTxPower { get; set; }
 
         /// <summary>
-        /// Gets or sets the current number of repetion for device transmission
+        /// Gets or sets the current number of repetion for device transmission.
         /// </summary>
         public int? CurrentNbRep { get; set; }
 

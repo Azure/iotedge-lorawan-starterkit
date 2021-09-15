@@ -13,6 +13,9 @@ namespace LoRaWan.Test.Shared
     using Newtonsoft.Json.Linq;
     using Xunit;
 
+    /// <summary>
+    /// Integration test fixture.
+    /// </summary>
     public abstract partial class IntegrationTestFixtureBase : IDisposable, IAsyncLifetime
     {
         internal string GetMessageIdentifier(EventData eventData)
@@ -115,11 +118,11 @@ namespace LoRaWan.Test.Shared
         /// Searches the UDP log, matching the passed in predicate to
         /// ensure a particular message got reported by all gateways.
         /// The number of gateways can be driven by configuration.
-        /// <see cref="TestConfiguration.NumberOfGateways"/>
+        /// <see cref="TestConfiguration.NumberOfGateways"/>.
         /// </summary>
-        /// <param name="predicate">predicate used to match the log entries</param>
-        /// <param name="maxAttempts">max retry attempts if the message is not found on all Gateways</param>
-        /// <returns>true, if it was found on all configured gateways otherwise false</returns>
+        /// <param name="predicate">predicate used to match the log entries.</param>
+        /// <param name="maxAttempts">max retry attempts if the message is not found on all Gateways.</param>
+        /// <returns>true, if it was found on all configured gateways otherwise false.</returns>
         public async Task<bool> ValidateMultiGatewaySources(Func<string, bool> predicate, int maxAttempts = 5)
         {
             int numberOfGw = this.Configuration.NumberOfGateways;
@@ -190,10 +193,10 @@ namespace LoRaWan.Test.Shared
         /// This makes sure that after a join, the DevAddr is
         /// available from the twins. Call this in case of an OTTA join with
         /// a multi GW setup, where you want to make sure both GW will be able
-        /// to process the next message
+        /// to process the next message.
         /// </summary>
-        /// <param name="serialLog">serial log from the attached device</param>
-        /// <param name="devEUI">The device EUI of the current device</param>
+        /// <param name="serialLog">serial log from the attached device.</param>
+        /// <param name="devEUI">The device EUI of the current device.</param>
         public async Task<bool> WaitForTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, string devEUI)
         {
             var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID"));
@@ -263,8 +266,8 @@ namespace LoRaWan.Test.Shared
         /// </summary>
         public async Task CheckAnswerTimingAsync(uint rxDelay, bool isSecondWindow, string gatewayId)
         {
-            var upstreamMessageTimingResult = await this.TryFindMessageTimeAsync("rxpk", gatewayId);
-            var downstreamMessageTimingResult = await this.TryFindMessageTimeAsync("txpk", gatewayId);
+            var upstreamMessageTimingResult = await this.TryFindMessageTimeAsync("rawdata", gatewayId, true);
+            var downstreamMessageTimingResult = await this.TryFindMessageTimeAsync("txpk", gatewayId, false);
 
             if (upstreamMessageTimingResult.Success && upstreamMessageTimingResult.Success)
             {
@@ -279,10 +282,19 @@ namespace LoRaWan.Test.Shared
         /// <summary>
         /// Helper method to find the time of the message that contain the message argument.
         /// </summary>
-        async Task<FindTimeResult> TryFindMessageTimeAsync(string message, string sourceIdFilter)
+        async Task<FindTimeResult> TryFindMessageTimeAsync(string message, string sourceIdFilter, bool isUpstream = false)
         {
             const string token = @"""tmst"":";
-            var log = await this.SearchUdpLogs(x => x.Contains(message), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+            SearchLogResult log;
+            if (isUpstream)
+            {
+                log = await this.SearchIoTHubLogs(x => x.Contains(message), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+            }
+            else
+            {
+                log = await this.SearchUdpLogs(x => x.Contains(message), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+            }
+
             int timeIndexStart = log.FoundLogResult.IndexOf(token) + token.Length;
             int timeIndexStop = log.FoundLogResult.IndexOf(",", timeIndexStart);
             uint parsedValue = 0;

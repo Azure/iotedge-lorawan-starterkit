@@ -9,6 +9,9 @@ namespace LoRaWan.IntegrationTest
     using System.Threading.Tasks;
     using LoRaWan.Test.Shared;
 
+    /// <summary>
+    /// Lora Arduino Serial Class.
+    /// </summary>
     public sealed partial class LoRaArduinoSerial
     {
         public static LoRaArduinoSerial CreateFromPort(string port)
@@ -17,48 +20,27 @@ namespace LoRaWan.IntegrationTest
 
             LoRaArduinoSerial result = null;
 
-            if (!isWindows)
+            TestLogger.Log($"** Starting serial port '{port}' **");
+
+            var serialPort = new SerialPort(port)
             {
-                TestLogger.Log($"** Starting serial port '{port}' on non-Windows **");
+                BaudRate = 115200,
+                Parity = Parity.None,
+                StopBits = StopBits.One,
+                DataBits = 8,
+                DtrEnable = true,
+                Handshake = Handshake.None
+            };
+            result = new LoRaArduinoSerial(serialPort);
 
-                var serialPort = new SerialDevice(port, BaudRate.B115200);
-                result = new LoRaArduinoSerial(serialPort);
-
-                TestLogger.Log($"Opening serial port");
-                try
-                {
-                    serialPort.Open();
-                }
-                catch (Exception ex)
-                {
-                    TestLogger.Log($"Error opening serial port '{port}': {ex.ToString()}");
-                    throw;
-                }
+            try
+            {
+                serialPort.Open();
             }
-            else
+            catch (Exception ex)
             {
-                TestLogger.Log($"** Starting serial port '{port}' on Windows **");
-
-                var serialPortWin = new SerialPort(port)
-                {
-                    BaudRate = 115200,
-                    Parity = Parity.None,
-                    StopBits = StopBits.One,
-                    DataBits = 8,
-                    DtrEnable = true,
-                    Handshake = Handshake.None
-                };
-                result = new LoRaArduinoSerial(serialPortWin);
-
-                try
-                {
-                    serialPortWin.Open();
-                }
-                catch (Exception ex)
-                {
-                    TestLogger.Log($"Error opening serial port '{port}': {ex.ToString()}");
-                    throw;
-                }
+                TestLogger.Log($"Error opening serial port '{port}': {ex.ToString()}");
+                throw;
             }
 
             return result;

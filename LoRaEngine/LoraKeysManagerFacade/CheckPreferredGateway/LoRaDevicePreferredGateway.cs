@@ -8,7 +8,7 @@ namespace LoraKeysManagerFacade
 
     /// <summary>
     /// Contains the preferred gateway for a class C device
-    /// This information is kept in cache where key is "preferredGateway:{devEUI}"
+    /// This information is kept in cache where key is "preferredGateway:{devEUI}".
     /// </summary>
     public class LoRaDevicePreferredGateway
     {
@@ -30,14 +30,14 @@ namespace LoraKeysManagerFacade
         }
 
         /// <summary>
-        /// Creates a string representation of the object for caching
+        /// Creates a string representation of the object for caching.
         /// </summary>
-        /// <returns>A string containing {GatewayID};{FcntUp};{UpdateTime}</returns>
+        /// <returns>A string containing {GatewayID};{FcntUp};{UpdateTime}.</returns>
         string ToCachedString() => string.Concat(this.GatewayID, ";", this.FcntUp, ";", this.UpdateTime);
 
         /// <summary>
         /// Creates a <see cref="LoRaDevicePreferredGateway"/> from a string
-        /// String format should be: {GatewayID};{FcntUp};{UpdateTime}
+        /// String format should be: {GatewayID};{FcntUp};{UpdateTime}.
         /// </summary>
         static LoRaDevicePreferredGateway CreateFromCachedString(string cachedString)
         {

@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Process OTAA join request
+        /// Process OTAA join request.
         /// </summary>
         async Task ProcessJoinRequestAsync(LoRaRequest request)
         {
@@ -187,7 +187,8 @@ namespace LoRaWan.NetworkServer
                     Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Debug);
                     tmst = request.Rxpk.Tmst + loraRegion.Join_accept_delay2 * 1000000;
 
-                    (freq, datr) = loraRegion.GetDownstreamRX2DRAndFreq(devEUI, this.configuration.Rx2DataRate, this.configuration.Rx2DataFrequency, null);
+                    freq = loraRegion.GetDownstreamRX2Freq(devEUI, this.configuration.Rx2Frequency);
+                    datr = loraRegion.GetDownstreamRX2Datarate(devEUI, this.configuration.Rx2DataRate, null);
                 }
 
                 loRaDevice.IsOurDevice = true;
@@ -200,14 +201,17 @@ namespace LoRaWan.NetworkServer
                 // Build the DlSettings fields that is a superposition of RX2DR and RX1DROffset field
                 byte[] dlSettings = new byte[1];
 
-                if (request.Region.DRtoConfiguration.ContainsKey(loRaDevice.DesiredRX2DataRate))
+                if (loRaDevice.DesiredRX2DataRate.HasValue)
                 {
-                    dlSettings[0] =
-                        (byte)(loRaDevice.DesiredRX2DataRate & 0b00001111);
-                }
-                else
-                {
-                    Logger.Log(devEUI, $"twin RX2 DR value is not within acceptable values", LogLevel.Error);
+                    if (request.Region.DRtoConfiguration.ContainsKey(loRaDevice.DesiredRX2DataRate.Value))
+                    {
+                        dlSettings[0] =
+                            (byte)(loRaDevice.DesiredRX2DataRate & 0b00001111);
+                    }
+                    else
+                    {
+                        Logger.Log(devEUI, $"twin RX2 DR value is not within acceptable values", LogLevel.Error);
+                    }
                 }
 
                 if (request.Region.IsValidRX1DROffset(loRaDevice.DesiredRX1DROffset))

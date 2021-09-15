@@ -57,7 +57,7 @@ If you are using the the RAK833-USB, you'll need to adjust the template to use t
 
 This is an optional configuration that should only be executed if your concentrator needs to use a proxy server to communicate with Azure.
 
-Follow [this guide](./LoRaEngine#use-a-proxy-server-to-connect-your-concentrator-to-azure) to:
+Follow [this guide](./devguide.md#use-a-proxy-server-to-connect-your-concentrator-to-azure) to:
 
 1. Configure the Docker daemon and the IoT Edge daemon on your device to use a proxy server.
 2. Configure the `edgeAgent` properties in the `config.yaml` file on your device.
@@ -285,6 +285,16 @@ Log in to the gateway and use `sudo docker logs LoRaWanNetworkSrvModule -f` to f
 |----------------|-------|-----------------------------------------|
 | LOG_TO_CONSOLE | true  | Log to docker logs (default if omitted) |
 |                | false | Does not log to docker logs             |
+
+
+## Local Processing and Routing
+
+By default the network server does not use the local edge queue (edgeHub), sending directly messages to IoT Hub. If you need to do local processing, please set the following setting to true on the `LoRaWanNetworkSrvModule`.
+
+| Variable       | Value | Explanation                                                   |
+|----------------|-------|---------------------------------------------------------------|
+| ENABLE_GATEWAY | true  | Messages go to edgeHub and then to IoT Hub                    |
+|                | false | Messages go directly to IoT Hub, skipping local edgeHub Queue |
 
 ## Customize the solution & Deep dive
 

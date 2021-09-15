@@ -192,7 +192,7 @@ namespace LoRaWan.NetworkServer.Test
         }
 
         /// <summary>
-        /// If cannot get a fcntdown from api should drop the c2d message
+        /// If cannot get a fcntdown from api should drop the c2d message.
         /// </summary>
         [Fact]
         public async Task When_Getting_C2D_Message_Fails_To_Resolve_Fcnt_Down_Should_Drop_Message_And_Return_Null()
@@ -218,9 +218,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync(cloudToDeviceMessage);
 
-            // C2D message will be abandonned
-            this.LoRaDeviceClient.Setup(x => x.AbandonAsync(cloudToDeviceMessage))
-                .ReturnsAsync(true);
+            // C2D message will not be abandoned
 
             // getting the fcnt down will return 0!
             this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, initialFcntDown, payloadFcnt, this.ServerConfiguration.GatewayID))
@@ -252,7 +250,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(unconfirmedMessagePayload.GetFcnt(), loRaDevice.FCntUp);
 
             this.LoRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsAny<TimeSpan>()), Times.Once());
-            this.LoRaDeviceClient.Verify(x => x.AbandonAsync(It.IsAny<Message>()), Times.Once());
+            this.LoRaDeviceClient.Verify(x => x.AbandonAsync(It.IsAny<Message>()), Times.Never());
 
             this.LoRaDeviceClient.VerifyAll();
             this.LoRaDeviceApi.VerifyAll();

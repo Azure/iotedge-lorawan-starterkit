@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer
 
     /// <summary>
     /// Loads devices for join requests
-    /// This object remains in cache until join succeeds or timeout expires (2 minutes)
+    /// This object remains in cache until join succeeds or timeout expires (2 minutes).
     /// </summary>
     internal class JoinDeviceLoader
     {
@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Returns Task containing the device loading execution.
-        /// Waiting for it will suspend your thread/task until the device join is complete
+        /// Waiting for it will suspend your thread/task until the device join is complete.
         /// </summary>
         internal Task<LoRaDevice> WaitCompleteAsync() => this.loading;
 
