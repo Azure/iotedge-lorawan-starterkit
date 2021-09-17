@@ -15,6 +15,13 @@ else
     fi
 fi
 
+if [ ! -z "$NETWORK_SERVER" ]; then
+    echo "custom server address $NETWORK_SERVER was defined"
+    sed -i "s/172.17.0.1/$NETWORK_SERVER/g" /LoRa/local_conf.json 
+else
+  echo "No custom server address was defined"
+fi
+
 ./reset_lgw.sh start $RESET_PIN
 
 #get current architecture for the mess processor
