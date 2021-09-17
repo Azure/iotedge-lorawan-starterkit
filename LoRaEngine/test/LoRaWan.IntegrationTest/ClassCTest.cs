@@ -26,7 +26,7 @@ namespace LoRaWan.IntegrationTest
 
         // Ensures that class C devices can receive messages from a direct method call
         // Uses Device24_ABP
-        [Fact(Skip="Waiting for Edge Hub v1.0.7")]
+        [Fact]
         public async Task Test_ClassC_Send_Message_From_Direct_Method_Should_Be_Received()
         {
             const int MAX_MODULE_DIRECT_METHOD_CALL_TRIES = 3;
