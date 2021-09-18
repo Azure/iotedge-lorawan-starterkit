@@ -9,8 +9,6 @@ namespace LoraKeysManagerFacade
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Newtonsoft.Json;
@@ -51,8 +49,9 @@ namespace LoraKeysManagerFacade
 
             // Get function facade key
             var base64Auth = Convert.ToBase64String(Encoding.Default.GetBytes($"{publishingUserName}:{publishingPassword}"));
-            var apiUrl = new Uri($"https://{Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE")}.scm.azurewebsites.net/api");
-            var siteUrl = new Uri($"https://{Environment.GetEnvironmentVariable("WEBSITE_CONTENTSHARE")}.azurewebsites.net");
+            var apiUrl = new Uri($"https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.scm.azurewebsites.net/api");
+            var siteUrl = new Uri($"https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.azurewebsites.net");
+
             string jwt;
             using (var client = new HttpClient())
             {
@@ -71,60 +70,17 @@ namespace LoraKeysManagerFacade
                 facadeKey = resObject.keys[0].value;
             }
 
-            var edgeGatewayDevice = new Device(deviceName)
-            {
-                Capabilities = new DeviceCapabilities()
-                {
-                    IotEdge = true
-                }
-            };
-
             try
             {
-                _ = await this.registryManager.AddDeviceAsync(edgeGatewayDevice);
-
-                var deviceConfigurationUrl = Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION");
-                string json = null;
-
-                // todo correct
-                using (var wc = new WebClient())
-                {
-                    json = wc.DownloadString(deviceConfigurationUrl);
-                }
-
-                json = ReplaceJsonWithCorrectValues(region, resetPin, json, spiSpeed, spiDev);
-
-                var spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
-                _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
-
-                await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, spec);
-
-                var twin = new Twin();
-                twin.Properties.Desired = new TwinCollection($"{{FacadeServerUrl:'https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.azurewebsites.net/api/',FacadeAuthCode: '{facadeKey}'}}");
-                var remoteTwin = await this.registryManager.GetTwinAsync(deviceName);
-
-                _ = await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
-
-                // This section will get deployed ONLY if the user selected the "deploy end device" options.
-                // Information in this if clause, is for demo purpose only and should not be used for productive workloads.
-                if (deployEndDevice)
-                {
-                    var otaaDevice = new Device(OtaaDeviceId);
-
-                    _ = await this.registryManager.AddDeviceAsync(otaaDevice);
-
-                    var otaaEndTwin = new Twin();
-                    otaaEndTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:'',SensorDecoder:'DecoderValueSensor'}");
-                    var otaaRemoteTwin = _ = await this.registryManager.GetTwinAsync(OtaaDeviceId);
-                    _ = await this.registryManager.UpdateTwinAsync(OtaaDeviceId, otaaEndTwin, otaaRemoteTwin.ETag);
-
-                    var abpDevice = new Device(AbpDeviceId);
-                    _ = await this.registryManager.AddDeviceAsync(abpDevice);
-                    var abpTwin = new Twin();
-                    abpTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:'',DevAddr:'0228B1B1',SensorDecoder:'DecoderValueSensor'}");
-                    var abpRemoteTwin = await this.registryManager.GetTwinAsync(AbpDeviceId);
-                    _ = await this.registryManager.UpdateTwinAsync(AbpDeviceId, abpTwin, abpRemoteTwin.ETag);
-                }
+                await this.registryManager.CreateEdgeDeviceAsync(
+                    deviceName,
+                    deployEndDevice,
+                    $"{siteUrl}/api/",
+                    facadeKey,
+                    region,
+                    resetPin,
+                    spiSpeed,
+                    spiDev);
             }
 #pragma warning disable CA1031 // Do not catch general exception types. This will go away when we implement #242
             catch (Exception)
@@ -140,8 +96,8 @@ namespace LoraKeysManagerFacade
 
                 if (deployEndDevice)
                 {
-                    var abpDevice = await this.registryManager.GetDeviceAsync(AbpDeviceId);
-                    var otaaDevice = await this.registryManager.GetDeviceAsync(OtaaDeviceId);
+                    var abpDevice = await this.registryManager.GetDeviceAsync(DeviceFeedConstants.AbpDeviceId);
+                    var otaaDevice = await this.registryManager.GetDeviceAsync(DeviceFeedConstants.OtaaDeviceId);
 
                     if (abpDevice == null || otaaDevice == null)
                     {
@@ -153,42 +109,6 @@ namespace LoraKeysManagerFacade
             }
 
             return PrepareResponse(HttpStatusCode.OK);
-        }
-
-        private static string ReplaceJsonWithCorrectValues(string region, string resetPin, string json, string spiSpeed, string spiDev)
-        {
-            json = json.Replace("[$region]", region, StringComparison.Ordinal);
-            json = json.Replace("[$reset_pin]", resetPin, StringComparison.Ordinal);
-
-            if (string.Equals(spiSpeed, "8", StringComparison.OrdinalIgnoreCase) ||
-                string.IsNullOrEmpty(spiSpeed))
-            {
-                // default case
-                json = json.Replace("[$spi_speed]", string.Empty, StringComparison.Ordinal);
-            }
-            else
-            {
-                json = json.Replace(
-                    "[$spi_speed]",
-                    ",'SPI_SPEED':{'value':'2'}",
-                    StringComparison.Ordinal);
-            }
-
-            if (string.Equals(spiDev, "2", StringComparison.OrdinalIgnoreCase) ||
-                string.IsNullOrEmpty(spiDev))
-            {
-                // default case
-                json = json.Replace("[$spi_dev]", string.Empty, StringComparison.Ordinal);
-            }
-            else
-            {
-                json = json.Replace(
-                    "[$spi_dev]",
-                    ",'SPI_DEV':{'value':'1'}",
-                    StringComparison.Ordinal);
-            }
-
-            return json;
         }
 
         private static HttpResponseMessage PrepareResponse(HttpStatusCode httpStatusCode)

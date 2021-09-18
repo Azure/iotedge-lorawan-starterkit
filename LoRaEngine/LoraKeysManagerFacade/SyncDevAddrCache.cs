@@ -5,19 +5,16 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
 
     public class SyncDevAddrCache
     {
         private readonly LoRaDevAddrCache loRaDevAddrCache;
-        private readonly IDeviceRegistryManager registryManager;
 
-        public SyncDevAddrCache(LoRaDevAddrCache loRaDevAddrCache, IDeviceRegistryManager registryManager)
+        public SyncDevAddrCache(LoRaDevAddrCache loRaDevAddrCache)
         {
             this.loRaDevAddrCache = loRaDevAddrCache;
-            this.registryManager = registryManager;
         }
 
         [FunctionName("SyncDevAddrCache")]
@@ -27,7 +24,7 @@ namespace LoraKeysManagerFacade
 
             log.LogDebug($"{(myTimer.IsPastDue ? "The timer is past due" : "The timer is on schedule")}, Function last ran at {myTimer.ScheduleStatus.Last} Function next scheduled run at {myTimer.ScheduleStatus.Next})");
 
-            await this.loRaDevAddrCache.PerformNeededSyncs(this.registryManager);
+            await this.loRaDevAddrCache.PerformNeededSyncs();
         }
     }
 }
