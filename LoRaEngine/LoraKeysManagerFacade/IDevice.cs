@@ -5,6 +5,8 @@ namespace LoraKeysManagerFacade
 {
     public interface IDevice
     {
+        string DeviceId { get; }
+
         string PrimaryKey { get; }
     }
 }

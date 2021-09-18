@@ -8,5 +8,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
     internal class IoTCentralDevice : IDevice
     {
         public string PrimaryKey => throw new NotImplementedException();
+
+        public string DeviceId => throw new NotImplementedException();
     }
 }
