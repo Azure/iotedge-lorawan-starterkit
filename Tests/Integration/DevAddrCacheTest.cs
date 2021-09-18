@@ -67,6 +67,8 @@ namespace LoRaWan.Tests.Integration
                               .Returns(string.Empty);
                     mockDevice.Setup(t => t.GetLastUpdated())
                               .Returns(DateTime.UtcNow);
+                    mockDevice.Setup(t => t.GetNwkSKey())
+                              .Returns(string.Empty);
 
                     return mockDevice.Object;
                 });
@@ -99,10 +101,10 @@ namespace LoRaWan.Tests.Integration
                     foreach (var devaddrItem in devAddressesToConsider)
                     {
                         var mockDevice = new Mock<IDeviceTwin>(MockBehavior.Strict);
-                        mockDevice.SetupGet(t => t.DeviceId)
-                                .Returns(devaddrItem.DevEUI);
+                        mockDevice.SetupGet(t => t.DeviceId).Returns(devaddrItem.DevEUI);
                         mockDevice.Setup(t => t.GetGatewayID()).Returns(devaddrItem.GatewayId);
                         mockDevice.Setup(t => t.GetDevAddr()).Returns(devaddrItem.DevAddr);
+                        mockDevice.Setup(t => t.GetNwkSKey()).Returns(devaddrItem.NwkSKey);
                         mockDevice.Setup(t => t.GetLastUpdated()).Returns(devaddrItem.LastUpdatedTwins);
 
                         twins.Add(mockDevice.Object);
@@ -113,16 +115,16 @@ namespace LoRaWan.Tests.Integration
 
             mockRegistryManager
                 .Setup(x => x.FindDeviceByAddrAsync(It.IsAny<string>()))
-                .ReturnsAsync((string query) =>
+                .ReturnsAsync((string devAddr) =>
                 {
                     hasMoreShouldReturn = true;
-                    currentDevAddrContext = currentDevices.Where(v => v.DevAddr == query.Split('\'')[1]).ToList();
+                    currentDevAddrContext = currentDevices.Where(v => v.DevAddr == devAddr).ToList();
                     return cacheMissQueryMock.Object;
                 });
 
             mockRegistryManager
                 .Setup(x => x.FindConfiguredLoRaDevices())
-                .ReturnsAsync((string query) =>
+                .ReturnsAsync(() =>
                 {
                     hasMoreShouldReturn = true;
                     currentDevAddrContext = currentDevices;
@@ -279,8 +281,11 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(managerInput[0].GatewayId ?? string.Empty, resultObject.GatewayId);
             Assert.Equal(managerInput[0].DevEUI, resultObject.DevEUI);
 
-            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Once);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Never);
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Never);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
+
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Once);
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Once);
         }
 
@@ -462,11 +467,10 @@ namespace LoRaWan.Tests.Integration
             var query2Result = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, devAddrJoining));
             Assert.Single(query2Result);
 
-            // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
-            registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
-            // Should not query for the key as key is there
-            registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.Is((string x) => managerInput.Any(c => c.DevAddr == x))), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+            registryManagerMock.Verify(x => x.GetTwinAsync(It.Is((string x) => managerInput.Any(c => c.DevEUI == x))), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+            registryManagerMock.Verify(x => x.GetDeviceAsync(It.Is((string x) => managerInput.Any(c => c.DevEUI == x))), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.Is((string x) => string.Equals(x, devAddrJoining, StringComparison.OrdinalIgnoreCase))), Times.Once, "IoT Hub should have been called, as the device was not present in the cache.");
         }
 
         [Fact]
@@ -500,8 +504,7 @@ namespace LoRaWan.Tests.Integration
             items = await deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining);
 
             Assert.Single(items);
-            // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Once);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Once);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
             // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Once);
@@ -571,10 +574,12 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(2, foundItem);
 
             // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Once);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Never);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
-            // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+            // We expect to query for the key once (the device with an active connection)
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -683,11 +688,12 @@ namespace LoRaWan.Tests.Integration
             }
 
             // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Once);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
-            // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
             registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Never);
+
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -754,10 +760,12 @@ namespace LoRaWan.Tests.Integration
             }
 
             // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Once);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
-            // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Never);
+
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
@@ -851,10 +859,12 @@ namespace LoRaWan.Tests.Integration
             }
 
             // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Once);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
-            // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Never);
+
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Once);
         }
 
         [Fact]
@@ -923,10 +933,12 @@ namespace LoRaWan.Tests.Integration
             }
 
             // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Once);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
-            // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Never);
+
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Once);
         }
     }
 }

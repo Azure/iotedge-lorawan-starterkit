@@ -122,7 +122,6 @@ namespace LoraKeysManagerFacade
                 // ABP or normal message
 
                 // TODO check for sql injection
-                devAddr = devAddr.Replace('\'', ' ');
                 var devAddrCache = new LoRaDevAddrCache(this.cacheStore, this.registryManager, log, gatewayId);
                 if (await devAddrCache.TryTakeDevAddrUpdateLock(devAddr))
                 {
@@ -179,7 +178,7 @@ namespace LoraKeysManagerFacade
                                                     DevAddr = devAddr,
                                                     DevEUI = twin.DeviceId,
                                                     PrimaryKey = device.PrimaryKey,
-                                                    GatewayId = twin.GetGatewayID(),
+                                                    GatewayId = twin.GetGatewayID() ?? string.Empty,
                                                     NwkSKey = twin.GetNwkSKey(),
                                                     LastUpdatedTwins = twin.GetLastUpdated()
                                                 };
