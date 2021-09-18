@@ -179,7 +179,7 @@ namespace LoraKeysManagerFacade
                                                     DevAddr = devAddr,
                                                     DevEUI = twin.DeviceId,
                                                     PrimaryKey = device.PrimaryKey,
-                                                    GatewayId = twin.GetGatewayID() ?? string.Empty,
+                                                    GatewayId = twin.GetGatewayID(),
                                                     NwkSKey = twin.GetNwkSKey(),
                                                     LastUpdatedTwins = twin.GetLastUpdated()
                                                 };
