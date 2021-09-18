@@ -578,6 +578,7 @@ namespace LoRaWan.Tests.Integration
             registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<string>()), Times.Never);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+
             // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Once);
         }

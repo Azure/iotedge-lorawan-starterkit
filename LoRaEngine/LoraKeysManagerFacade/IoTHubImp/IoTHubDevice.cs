@@ -14,6 +14,8 @@ namespace LoraKeysManagerFacade.IoTHubImp
             this.device = device;
         }
 
+        public string DeviceId => this.device.Id;
+
         public string PrimaryKey => this.device.Authentication?.SymmetricKey?.PrimaryKey;
     }
 }

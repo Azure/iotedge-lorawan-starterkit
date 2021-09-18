@@ -117,6 +117,12 @@ namespace LoraKeysManagerFacade.IoTHubImp
             return Task.FromResult<IRegistryPageResult<IDeviceTwin>>(new DeviceTwinPageResult(query));
         }
 
+        public async Task<string> GetDevicePrimaryKey(string deviceName)
+        {
+            var device = await this.registryManager.GetDeviceAsync(deviceName);
+            return device.Authentication.SymmetricKey.PrimaryKey;
+        }
+
         private static string ReplaceJsonWithCorrectValues(string region, string resetPin, string json, string spiSpeed, string spiDev)
         {
             json = json.Replace("[$region]", region);
@@ -149,12 +155,6 @@ namespace LoraKeysManagerFacade.IoTHubImp
             }
 
             return json;
-        }
-
-        public async Task<string> GetDevicePrimaryKey(string deviceName)
-        {
-            var device = await this.registryManager.GetDeviceAsync(deviceName);
-            return device.Authentication.SymmetricKey.PrimaryKey;
         }
     }
 }
