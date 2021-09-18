@@ -157,29 +157,35 @@ namespace LoraKeysManagerFacade
                         // if the device is not found is the cache we query, if there was something, it is probably not our device.
                         if (results.Count == 0 && devAddressesInfo == null)
                         {
-                            var query = this.registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{devAddr}' OR properties.reported.DevAddr ='{devAddr}'", 100);
-                            var resultCount = 0;
-                            while (query.HasMoreResults)
+                            if (await devAddrCache.TryTakeDevAddrUpdateLock(devAddr))
                             {
-                                var page = await query.GetNextAsTwinAsync();
-
-                                foreach (var twin in page)
+                                try
                                 {
-                                    if (twin.DeviceId != null)
+                                    var query = await this.registryManager.FindDeviceByAddrAsync(devAddr);
+
+                                    int resultCount = 0;
+
+                                    while (query.HasMoreResults)
                                     {
-                                        var device = await this.registryManager.GetDeviceAsync(twin.DeviceId);
-                                        var iotHubDeviceInfo = new DevAddrCacheInfo
+                                        var page = await query.GetNextPageAsync();
+
+                                        foreach (var twin in page)
                                         {
-                                            DevAddr = devAddr,
-                                            DevEUI = twin.DeviceId,
-                                            PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey,
-                                            GatewayId = twin.GetGatewayID(),
-                                            NwkSKey = twin.GetNwkSKey(),
-                                            LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
-                                        };
-                                        results.Add(iotHubDeviceInfo);
-                                        _ = devAddrCache.StoreInfo(iotHubDeviceInfo);
-                                    }
+                                            if (twin.DeviceId != null)
+                                            {
+                                                var device = await this.registryManager.GetDeviceAsync(twin.DeviceId);
+                                                var iotHubDeviceInfo = new DevAddrCacheInfo
+                                                {
+                                                    DevAddr = devAddr,
+                                                    DevEUI = twin.DeviceId,
+                                                    PrimaryKey = device.PrimaryKey,
+                                                    GatewayId = twin.GetGatewayID(),
+                                                    NwkSKey = twin.GetNwkSKey(),
+                                                    LastUpdatedTwins = twin.GetLastUpdated()
+                                                };
+                                                results.Add(iotHubDeviceInfo);
+                                                _ = devAddrCache.StoreInfo(iotHubDeviceInfo);
+                                            }
 
                                     resultCount++;
                                 }
@@ -218,7 +224,7 @@ namespace LoraKeysManagerFacade
                 return null;
             }
 
-            return device.Authentication.SymmetricKey?.PrimaryKey;
+            return device.PrimaryKey;
         }
 
         private async Task<JoinInfo> TryGetJoinInfoAndValidateAsync(string devEUI, string gatewayId, ILogger log)
@@ -239,7 +245,7 @@ namespace LoraKeysManagerFacade
                         var device = await this.registryManager.GetDeviceAsync(devEUI);
                         if (device != null)
                         {
-                            joinInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
+                            joinInfo.PrimaryKey = device.PrimaryKey;
                             var twin = await this.registryManager.GetTwinAsync(devEUI);
                             var deviceGatewayId = twin.GetGatewayID();
                             if (!string.IsNullOrEmpty(deviceGatewayId))

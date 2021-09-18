@@ -3,30 +3,23 @@
 
 namespace LoraKeysManagerFacade
 {
+    using System;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
 
     public interface IDeviceRegistryManager
     {
-        Task AddDeviceAsync(Device edgeGatewayDevice);
+        Task CreateEdgeDeviceAsync(string edgeDeviceName, bool deployEndDevice, string facadeUrl, string facadeKey, string region, string resetPin, string spiSpeed, string spiDev);
 
-        Task AddModuleAsync(Module module);
+        Task<IDeviceTwin> GetTwinAsync(string deviceName);
 
-        Task ApplyConfigurationContentOnDeviceAsync(string deviceName, ConfigurationContent spec);
+        Task<IDevice> GetDeviceAsync(string deviceName);
 
-        Task<Twin> GetTwinAsync(string deviceName);
+        Task<IRegistryPageResult<IDeviceTwin>> FindDeviceByAddrAsync(string devAddr);
 
-        Task<Twin> UpdateTwinAsync(string deviceName, string jsonTwinPatch, string eTag);
+        Task<IRegistryPageResult<IDeviceTwin>> FindDevicesByLastUpdateDate(string updatedSince);
 
-        Task<Twin> UpdateTwinAsync(string otaaDeviceId, Twin otaaEndTwin, string eTag);
-
-        Task UpdateTwinAsync(string deviceName, string moduleId, Twin twin, string eTag);
-
-        Task<Device> GetDeviceAsync(string deviceName);
-
-        IQuery CreateQuery(string inputQuery);
-
-        IQuery CreateQuery(string inputQuery, int pageSize);
+        Task<IRegistryPageResult<IDeviceTwin>> FindConfiguredLoRaDevices();
     }
 }
