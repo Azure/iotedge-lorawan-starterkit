@@ -7,7 +7,6 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Net.Http.Headers;
-    using System.Text;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoraKeysManagerFacade.IoTCentralImp;
     using LoraKeysManagerFacade.IoTHubImp;
