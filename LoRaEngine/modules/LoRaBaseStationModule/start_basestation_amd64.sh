@@ -11,5 +11,5 @@ else
 
     #start basestation
     echo "Starting base station..."
-    RADIODEV=$SPI_DEV ../../build-rpi-std/bin/station -f
+    RADIODEV=$SPI_DEV ../../build-linux-std/bin/station -f
 fi

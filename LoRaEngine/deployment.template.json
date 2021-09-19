@@ -104,15 +104,21 @@
               },
               "LOG_TO_UDP_ADDRESS": {
                 "value": "$NET_SRV_LOG_TO_UDP_ADDRESS"
+              },
+              "USE_BASIC_STATION": {
+                "value": true
+              },
+              "REGION":{
+                "value": "EU868"
               }
             },
             "status": "running",
             "restartPolicy": "always"
           },
-          "LoRaWanPktFwdModule": {
+          "LoRaWanBaseStation": {
             "type": "docker",
             "settings": {
-              "image": "${MODULES.LoRaWanPktFwdModule}",
+              "image": "${MODULES.LoRaBaseStationModule}",
               "createOptions": {
                 "HostConfig": {
                   "NetworkMode": "host",
@@ -126,18 +132,18 @@
               }
             },
             "env": {
-              "RESET_PIN": {
-                "value": "$RESET_PIN"
-              },
               "REGION": {
                 "value": "$REGION"
               },
               "SPI_DEV":{
-                "value":"$PKT_FWD_SPI_DEV"
+                "value":"$LBS_SPI_DEV"
               },
               "SPI_SPEED":
               {
-               "value":"$PKT_FWD_SPI_SPEED"
+               "value":"$LBS_SPI_SPEED"
+              },
+              "TC_URI":{
+                "value": "$LBS_TC_URI"
               }
             },
             "version": "1.0",
