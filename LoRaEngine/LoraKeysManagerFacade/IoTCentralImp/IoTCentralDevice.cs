@@ -3,12 +3,21 @@
 
 namespace LoraKeysManagerFacade.IoTCentralImp
 {
-    using System;
+    using LoraKeysManagerFacade.IoTCentralImp.Definitions;
 
     internal class IoTCentralDevice : IDevice
     {
-        public string PrimaryKey => throw new NotImplementedException();
+        private readonly Device deviceObject;
+        private readonly SymmetricKeyAttestation attestationObject;
 
-        public string DeviceId => throw new NotImplementedException();
+        public IoTCentralDevice(Device deviceObject, SymmetricKeyAttestation attestationObject)
+        {
+            this.deviceObject = deviceObject;
+            this.attestationObject = attestationObject;
+        }
+
+        public string PrimaryKey => this.attestationObject.SymmetricKey.PrimaryKey;
+
+        public string DeviceId => this.deviceObject.Id;
     }
 }

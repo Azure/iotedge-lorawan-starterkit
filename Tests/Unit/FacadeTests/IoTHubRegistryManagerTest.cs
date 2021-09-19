@@ -66,7 +66,7 @@ namespace LoraKeysManagerFacade.Test
         // This test ensure that ioT Hub implementation of DeviceRegistry calls the IoT Hub with correct parameters and returns the correspondig answer
         public async Task Get_Device_Call_IoTHub()
         {
-            var deviceId = "device-123";
+            var deviceId = "xs7fwdsobs";
 
             var iotHubMock = new Mock<RegistryManager>(MockBehavior.Strict);
 
