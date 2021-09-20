@@ -94,14 +94,12 @@ namespace LoRaWan.NetworkServer
                 toCall = $"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport.ToString()}&payload={payloadEncoded}";
 
                 // Call SensorDecoderModule
-                return await this.CallSensorDecoderModule(devEUI, toCall, payload);
+                return await this.CallSensorDecoderModule(devEUI, toCall);
             }
         }
 
-        async Task<DecodePayloadResult> CallSensorDecoderModule(string devEUI, string sensorDecoderModuleUrl, byte[] payload)
+        async Task<DecodePayloadResult> CallSensorDecoderModule(string devEUI, string sensorDecoderModuleUrl)
         {
-            var base64Payload = ((payload?.Length ?? 0) == 0) ? string.Empty : Convert.ToBase64String(payload);
-
             try
             {
                 var httpClientToUse = this.httpClient ?? this.decodersHttpClient.Value;
