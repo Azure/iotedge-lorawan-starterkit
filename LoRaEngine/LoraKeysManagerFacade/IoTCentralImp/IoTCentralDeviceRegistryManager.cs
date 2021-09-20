@@ -75,9 +75,15 @@ namespace LoraKeysManagerFacade.IoTCentralImp
             return new IoTCentralDevice(deviceResponse, attestationResponse);
         }
 
-        public Task<IDeviceTwin> GetTwinAsync(string deviceName)
+        public async Task<IDeviceTwin> GetTwinAsync(string deviceName)
         {
-            throw new NotImplementedException();
+            var deviceRequest = await this.client.GetAsync($"/api/devices/{deviceName}/properties?{API_VERSION}");
+
+            deviceRequest.EnsureSuccessStatusCode();
+
+            var properties = await deviceRequest.Content.ReadAsAsync<DesiredProperties>();
+
+            return new DeviceTwin(deviceName, properties);
         }
 
         public Task CreateEdgeDeviceAsync(string edgeDeviceName, bool deployEndDevice, string facadeUrl, string facadeKey, string region, string resetPin, string spiSpeed, string spiDev)
@@ -87,17 +93,22 @@ namespace LoraKeysManagerFacade.IoTCentralImp
 
         public Task<IRegistryPageResult<IDeviceTwin>> FindDeviceByAddrAsync(string devAddr)
         {
-            throw new NotImplementedException();
+            var pageResult = new DeviceTwinPageResult(this.client, API_VERSION, c => c.GetDevAddr() == devAddr);
+            return Task.FromResult<IRegistryPageResult<IDeviceTwin>>(pageResult);
         }
 
         public Task<IRegistryPageResult<IDeviceTwin>> FindDevicesByLastUpdateDate(string updatedSince)
         {
-            throw new NotImplementedException();
+            var referenceDate = DateTime.Parse(updatedSince);
+            var pageResult = new DeviceTwinPageResult(this.client, API_VERSION, c => c.GetLastUpdated() >= referenceDate);
+
+            return Task.FromResult<IRegistryPageResult<IDeviceTwin>>(pageResult);
         }
 
         public Task<IRegistryPageResult<IDeviceTwin>> FindConfiguredLoRaDevices()
         {
-            throw new NotImplementedException();
+            var pageResult = new DeviceTwinPageResult(this.client, API_VERSION, c => c.GetDevAddr() != null && c.GetNwkSKey() != null);
+            return Task.FromResult<IRegistryPageResult<IDeviceTwin>>(pageResult);
         }
     }
 }

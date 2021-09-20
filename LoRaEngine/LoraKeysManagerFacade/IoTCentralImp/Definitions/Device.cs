@@ -3,7 +3,7 @@
 
 namespace LoraKeysManagerFacade.IoTCentralImp.Definitions
 {
-    internal class Device
+    public class Device
     {
         public string Id { get; set; }
 
