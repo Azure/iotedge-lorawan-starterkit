@@ -27,7 +27,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
         {
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?{ApiVersion.QueryStringParamName}={ApiVersion.Version_2019_02_12_Preview.Version}");
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
             var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<BadRequestObjectResult>(result);
@@ -38,7 +38,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
         {
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI=193123");
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
             var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<BadRequestObjectResult>(result);
@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
         {
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI=193123&{ApiVersion.QueryStringParamName}={version}");
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
             var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<BadRequestObjectResult>(result);
@@ -64,9 +64,9 @@ namespace LoRaWan.Tests.Unit.FacadeTests
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI={devEUI}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             registryManager.Setup(x => x.GetDeviceAsync(devEUI))
-                .ReturnsAsync((Device)null);
+                .ReturnsAsync((IDevice)null);
 
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
 
@@ -84,14 +84,19 @@ namespace LoRaWan.Tests.Unit.FacadeTests
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI={devEUI}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
 
-            var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
-            var deviceInfo = new Device(devEUI)
-            {
-                Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } },
-            };
+            var registryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
 
             registryManager.Setup(x => x.GetDeviceAsync(devEUI))
-                .ReturnsAsync(deviceInfo);
+                .ReturnsAsync((string x) =>
+                {
+                    var deviceMock = new Mock<IDevice>(MockBehavior.Strict);
+
+                    deviceMock.SetupGet(c => c.DeviceId).Returns(devEUI);
+                    deviceMock.SetupGet(c => c.PrimaryKey).Returns(primaryKey);
+                    deviceMock.SetupGet(c => c.DeviceId).Returns(primaryKey);
+
+                    return deviceMock.Object;
+                });
 
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
 
