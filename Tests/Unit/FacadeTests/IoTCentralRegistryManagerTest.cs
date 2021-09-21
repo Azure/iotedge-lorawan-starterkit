@@ -16,7 +16,6 @@ namespace LoraKeysManagerFacade.Test
     using LoraKeysManagerFacade.IoTCentralImp.Definitions;
     using Moq;
     using Moq.Protected;
-    using Newtonsoft.Json.Linq;
     using Xunit;
 
     public class IoTCentralRegistryManagerTest : FunctionTestBase
@@ -545,10 +544,10 @@ namespace LoraKeysManagerFacade.Test
         {
             var provisioningHelperMock = new Mock<IDeviceProvisioningHelper>(MockBehavior.Strict);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
-            var device = new IoTCentralImp.Definitions.Device
+            var device = new Device
             {
                 Id = NewUniqueEUI32(),
-                Provisionned = false
+                Provisioned = false
             };
 
             var devicePropertiesContent = new StringContent(
@@ -602,7 +601,7 @@ namespace LoraKeysManagerFacade.Test
                 .Verifiable();
 
             var mockHttpClient = this.InitHttpClient(handlerMock);
-            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(provisioningHelperMock.Object, mockHttpClient);
+            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
 
             var properties = await instance.GetTwinAsync(device.Id);
 
@@ -618,15 +617,15 @@ namespace LoraKeysManagerFacade.Test
             var provisioningHelperMock = new Mock<IDeviceProvisioningHelper>(MockBehavior.Strict);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-            var data = new IoTCentralImp.Definitions.DeviceCollection
+            var data = new DeviceCollection
             {
                 Value = Enumerable.Union(
                     new[]
                     {
-                        new IoTCentralImp.Definitions.Device { Id = "not-lora" },
-                        new IoTCentralImp.Definitions.Device { Id = "simulated", Simulated = true }
+                        new Device { Id = "not-lora" },
+                        new Device { Id = "simulated", Simulated = true }
                     },
-                    Enumerable.Range(0, 3).Select(x => new IoTCentralImp.Definitions.Device
+                    Enumerable.Range(0, 3).Select(x => new Device
                     {
                         Id = NewUniqueEUI32()
                     }))
@@ -677,7 +676,7 @@ namespace LoraKeysManagerFacade.Test
 
             var mockHttpClient = this.InitHttpClient(handlerMock);
 
-            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(provisioningHelperMock.Object, mockHttpClient);
+            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
 
             var results = await instance.FindConfiguredLoRaDevices();
 
@@ -705,16 +704,16 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddr = NewUniqueEUI32();
 
-            var data = new IoTCentralImp.Definitions.DeviceCollection
+            var data = new DeviceCollection
             {
                 Value = Enumerable.Union(
                     new[]
                     {
-                        new IoTCentralImp.Definitions.Device { Id = "not-lora" },
-                        new IoTCentralImp.Definitions.Device { Id = "simulated", Simulated = true },
-                        new IoTCentralImp.Definitions.Device { Id = devAddr }
+                        new Device { Id = "not-lora" },
+                        new Device { Id = "simulated", Simulated = true },
+                        new Device { Id = devAddr }
                     },
-                    Enumerable.Range(0, 3).Select(x => new IoTCentralImp.Definitions.Device
+                    Enumerable.Range(0, 3).Select(x => new Device
                     {
                         Id = NewUniqueEUI32()
                     }))
@@ -779,7 +778,7 @@ namespace LoraKeysManagerFacade.Test
 
             var mockHttpClient = this.InitHttpClient(handlerMock);
 
-            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(provisioningHelperMock.Object, mockHttpClient);
+            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
 
             var results = await instance.FindDeviceByAddrAsync(devAddr);
 
@@ -808,16 +807,16 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddr = NewUniqueEUI32();
 
-            var data = new IoTCentralImp.Definitions.DeviceCollection
+            var data = new DeviceCollection
             {
                 Value = Enumerable.Union(
                     new[]
                     {
-                        new IoTCentralImp.Definitions.Device { Id = "not-lora" },
-                        new IoTCentralImp.Definitions.Device { Id = "simulated", Simulated = true },
-                        new IoTCentralImp.Definitions.Device { Id = devAddr }
+                        new Device { Id = "not-lora" },
+                        new Device { Id = "simulated", Simulated = true },
+                        new Device { Id = devAddr }
                     },
-                    Enumerable.Range(0, 3).Select(x => new IoTCentralImp.Definitions.Device
+                    Enumerable.Range(0, 3).Select(x => new Device
                     {
                         Id = NewUniqueEUI32()
                     }))
@@ -909,7 +908,7 @@ namespace LoraKeysManagerFacade.Test
 
             var mockHttpClient = this.InitHttpClient(handlerMock);
 
-            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(provisioningHelperMock.Object, mockHttpClient);
+            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
 
             var results = await instance.FindDevicesByLastUpdateDate(DateTime.Now.AddMinutes(-5).ToString("o"));
 

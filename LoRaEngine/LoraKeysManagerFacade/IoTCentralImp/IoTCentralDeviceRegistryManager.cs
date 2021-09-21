@@ -23,7 +23,6 @@ namespace LoraKeysManagerFacade.IoTCentralImp
 
         public IoTCentralDeviceRegistryManager(HttpClient client, IDeviceProvisioningHelper provisioningHelper)
         {
-            this.provisioningHelper = provisioningHelper;
             this.client = client;
             this.provisioningHelper = provisioningHelper;
             this.formatter = new JsonMediaTypeFormatter

@@ -3,6 +3,8 @@
 
 namespace LoraKeysManagerFacade
 {
+    using System.Runtime.Serialization;
+
     internal enum DeviceRegistryMode
     {
         IoTHub,
