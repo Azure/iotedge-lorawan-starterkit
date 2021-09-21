@@ -6,9 +6,12 @@ namespace LoraKeysManagerFacade.IoTCentralImp
     using System;
     using System.Net;
     using System.Net.Http;
+    using System.Net.Http.Formatting;
+    using System.Security;
     using System.Security.Cryptography;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.IoTCentralImp.Definitions;
+    using Newtonsoft.Json.Serialization;
 
     internal class IoTCentralDeviceRegistryManager : IDeviceRegistryManager
     {
@@ -16,38 +19,24 @@ namespace LoraKeysManagerFacade.IoTCentralImp
 
         private readonly IDeviceProvisioningHelper provisioningHelper;
         private readonly HttpClient client;
+        private readonly JsonMediaTypeFormatter formatter;
 
-        public IoTCentralDeviceRegistryManager(IDeviceProvisioningHelper provisioningHelper, HttpClient client)
+        public IoTCentralDeviceRegistryManager(HttpClient client, IDeviceProvisioningHelper provisioningHelper)
         {
-            this.provisioningHelper = provisioningHelper;
             this.client = client;
-        }
-
-        private SymmetricKeyAttestation GenerateNewAttestation()
-        {
-            var bytes = new byte[64];
-            var random = new Random();
-
-            using (var hmac = new HMACSHA256(bytes))
+            this.provisioningHelper = provisioningHelper;
+            this.formatter = new JsonMediaTypeFormatter
             {
-                var attestation = new SymmetricKeyAttestation
+                SerializerSettings = new Newtonsoft.Json.JsonSerializerSettings
                 {
-                    Type = "symmetricKey",
-                    SymmetricKey = new SymmetricKey()
-                };
-
-                random.NextBytes(bytes);
-                attestation.SymmetricKey.PrimaryKey = Convert.ToBase64String(hmac.ComputeHash(bytes));
-                random.NextBytes(bytes);
-                attestation.SymmetricKey.SecondaryKey = Convert.ToBase64String(hmac.ComputeHash(bytes));
-
-                return attestation;
-            }
+                    ContractResolver = new CamelCasePropertyNamesContractResolver()
+                }
+            };
         }
 
-        public async Task<IDevice> GetDeviceAsync(string deviceName)
+        public async Task<IDevice> GetDeviceAsync(string deviceId)
         {
-            var deviceRequest = await this.client.GetAsync($"/api/devices/{deviceName}?{API_VERSION}");
+            var deviceRequest = await this.client.GetAsync($"/api/devices/{deviceId}?{API_VERSION}");
 
             if (deviceRequest.StatusCode == HttpStatusCode.NotFound)
             {
@@ -55,35 +44,29 @@ namespace LoraKeysManagerFacade.IoTCentralImp
             }
 
             var deviceResponse = await deviceRequest.Content.ReadAsAsync<Device>();
-            HttpResponseMessage attestationRequest = null;
+            SymmetricKeyAttestation attestation = null;
 
-            if (!deviceResponse.Provisionned)
+            if (!deviceResponse.Provisioned)
             {
-                var attestation = this.GenerateNewAttestation();
-                attestationRequest = await this.client.PutAsJsonAsync($"/api/devices/{deviceName}/attestation?{API_VERSION}", attestation);
-                await this.provisioningHelper.ProvisionDeviceAsync(deviceName, attestation);
+                attestation = await this.provisioningHelper.ProvisionDeviceAsync(deviceId);
             }
             else
             {
-                attestationRequest = await this.client.GetAsync($"/api/devices/{deviceName}/attestation?{API_VERSION}");
+                attestation = this.provisioningHelper.ComputeAttestation(deviceId);
             }
 
-            attestationRequest.EnsureSuccessStatusCode();
-
-            var attestationResponse = await attestationRequest.Content.ReadAsAsync<SymmetricKeyAttestation>();
-
-            return new IoTCentralDevice(deviceResponse, attestationResponse);
+            return new IoTCentralDevice(deviceResponse, attestation);
         }
 
-        public async Task<IDeviceTwin> GetTwinAsync(string deviceName)
+        public async Task<IDeviceTwin> GetTwinAsync(string deviceId)
         {
-            var deviceRequest = await this.client.GetAsync($"/api/devices/{deviceName}/properties?{API_VERSION}");
+            var deviceRequest = await this.client.GetAsync($"/api/devices/{deviceId}/properties?{API_VERSION}");
 
             deviceRequest.EnsureSuccessStatusCode();
 
             var properties = await deviceRequest.Content.ReadAsAsync<DesiredProperties>();
 
-            return new DeviceTwin(deviceName, properties);
+            return new DeviceTwin(deviceId, properties);
         }
 
         public Task CreateEdgeDeviceAsync(string edgeDeviceName, bool deployEndDevice, string facadeUrl, string facadeKey, string region, string resetPin, string spiSpeed, string spiDev)

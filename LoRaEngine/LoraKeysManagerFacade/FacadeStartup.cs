@@ -6,6 +6,7 @@
 namespace LoraKeysManagerFacade
 {
     using System;
+    using System.Net.Http.Formatting;
     using System.Net.Http.Headers;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoraKeysManagerFacade.IoTCentralImp;
@@ -24,11 +25,22 @@ namespace LoraKeysManagerFacade
             if (builder is null) throw new ArgumentNullException(nameof(builder));
 
             var configHandler = ConfigHandler.Create(builder);
-
             var iotHubConnectionString = configHandler.IoTHubConnectionString;
-            if (iotHubConnectionString == null)
+            var iotCentralEndpoint = configHandler.IoTCentralEndpoint;
+
+            if (configHandler.DeviceRegistryMode == DeviceRegistryMode.IoTHub)
             {
-                throw new InvalidOperationException($"Missing {ConfigHandler.IoTHubConnectionStringKey} in settings");
+                if (iotHubConnectionString == null)
+                {
+                    throw new Exception($"Missing {ConfigHandler.IoTHubConnectionStringKey} in settings");
+                }
+            }
+            else if (configHandler.DeviceRegistryMode == DeviceRegistryMode.IoTCentral)
+            {
+                if (iotCentralEndpoint == null)
+                {
+                    throw new Exception($"Missing {ConfigHandler.IoTCentralEndpointKey} in settings");
+                }
             }
 
             var redisConnectionString = configHandler.RedisConnectionString;
@@ -66,9 +78,15 @@ namespace LoraKeysManagerFacade
             }
             else if (configHandler.DeviceRegistryMode == DeviceRegistryMode.IoTCentral)
             {
-                _ = builder.Services.AddHttpClient<IoTCentralDeviceRegistryManager>(client =>
+                _ = builder.Services.AddTransient<IDeviceProvisioningHelper, DeviceProvisioningHelper>(sp =>
+                        new DeviceProvisioningHelper(
+                                        provisioningScopeId: configHandler.IoTCentralDeviceProvisioningScopeId,
+                                        primaryKey: configHandler.IoTCentralSASIoTDevicesPrimaryKey,
+                                        secondaryKey: configHandler.IoTCentralSASIoTDevicesSecondaryKey));
+
+                _ = builder.Services.AddHttpClient<IDeviceRegistryManager, IoTCentralDeviceRegistryManager>(client =>
                 {
-                    client.BaseAddress = new Uri(iotHubConnectionString);
+                    client.BaseAddress = new Uri(iotCentralEndpoint);
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("SharedAccessSignature", configHandler.IoTCentralToken);
                 });
                 _ = builder.Services.AddSingleton<IDeviceRegistryManager, IoTCentralDeviceRegistryManager>();
@@ -79,8 +97,12 @@ namespace LoraKeysManagerFacade
         {
             internal const string IoTHubConnectionStringKey = "IoTHubConnectionString";
             internal const string RedisConnectionStringKey = "RedisConnectionString";
-            internal const string IoTCentralTokenKey = "IoTCentralToken";
             internal const string DeviceRegistryModeKey = "DeviceRegistryMode";
+            internal const string IoTCentralEndpointKey = "IoTCentralEndpoint";
+            internal const string IoTCentralTokenKey = "IoTCentralToken";
+            internal const string IoTCentralDeviceProvisioningScopeIdKey = "IoTCentralDeviceProvisioningScopeId";
+            internal const string IoTCentralSASIoTDevicesPrimaryKeyKey = "IoTCentralSASIoTDevicesPrimaryKey";
+            internal const string IoTCentralSASIoTDevicesSecondaryKeyKey = "IoTCentralSASIoTDevicesSecondaryKey";
 
             internal static ConfigHandler Create(IFunctionsHostBuilder builder)
             {
@@ -102,6 +124,14 @@ namespace LoraKeysManagerFacade
 
             internal abstract string IoTCentralToken { get; }
 
+            internal abstract string IoTCentralEndpoint { get; }
+
+            internal abstract string IoTCentralDeviceProvisioningScopeId { get; }
+
+            internal abstract string IoTCentralSASIoTDevicesPrimaryKey { get; }
+
+            internal abstract string IoTCentralSASIoTDevicesSecondaryKey { get; }
+
             internal abstract DeviceRegistryMode DeviceRegistryMode { get; }
 
             class ProductionConfigHandler : ConfigHandler
@@ -117,6 +147,11 @@ namespace LoraKeysManagerFacade
                         throw new InvalidOperationException($"Device Registry Mode is set to {nameof(DeviceRegistryMode.IoTHub)}, please set the {IoTHubConnectionStringKey} ConnectionString.");
                     }
 
+                    if (this.DeviceRegistryMode == DeviceRegistryMode.IoTCentral && string.IsNullOrEmpty(this.IoTCentralEndpoint))
+                    {
+                        throw new InvalidOperationException($"Device Registry Mode is set to {nameof(DeviceRegistryMode.IoTCentral)}, please set the {IoTCentralEndpointKey} ConnectionString.");
+                    }
+
                     if (this.DeviceRegistryMode == DeviceRegistryMode.IoTCentral && string.IsNullOrEmpty(this.IoTCentralToken))
                     {
                         throw new InvalidOperationException($"Device Registry Mode is set to {nameof(DeviceRegistryMode.IoTCentral)}, please set the {IoTCentralTokenKey} ConnectionString.");
@@ -128,6 +163,14 @@ namespace LoraKeysManagerFacade
                 internal override string IoTHubConnectionString => this.config.GetConnectionString(IoTHubConnectionStringKey);
 
                 internal override string IoTCentralToken => this.config.GetConnectionString(IoTCentralTokenKey);
+
+                internal override string IoTCentralEndpoint => this.config.GetValue<string>(IoTCentralEndpointKey);
+
+                internal override string IoTCentralDeviceProvisioningScopeId => this.config.GetValue<string>(IoTCentralDeviceProvisioningScopeIdKey);
+
+                internal override string IoTCentralSASIoTDevicesPrimaryKey => this.config.GetValue<string>(IoTCentralSASIoTDevicesPrimaryKeyKey);
+
+                internal override string IoTCentralSASIoTDevicesSecondaryKey => this.config.GetValue<string>(IoTCentralSASIoTDevicesSecondaryKeyKey);
 
                 internal override DeviceRegistryMode DeviceRegistryMode => this.config.GetValue(DeviceRegistryModeKey, DeviceRegistryMode.IoTHub);
             }
@@ -162,6 +205,14 @@ namespace LoraKeysManagerFacade
                 internal override string IoTCentralToken => this.config.GetValue<string>(IoTCentralTokenKey, string.Empty);
 
                 internal override DeviceRegistryMode DeviceRegistryMode => this.config.GetValue(DeviceRegistryModeKey, DeviceRegistryMode.IoTHub);
+
+                internal override string IoTCentralEndpoint => this.config.GetValue<string>(IoTCentralEndpointKey, string.Empty);
+
+                internal override string IoTCentralDeviceProvisioningScopeId => this.config.GetValue<string>(IoTCentralDeviceProvisioningScopeIdKey, string.Empty);
+
+                internal override string IoTCentralSASIoTDevicesPrimaryKey => this.config.GetValue<string>(IoTCentralSASIoTDevicesPrimaryKeyKey);
+
+                internal override string IoTCentralSASIoTDevicesSecondaryKey => this.config.GetValue<string>(IoTCentralSASIoTDevicesSecondaryKeyKey);
             }
         }
     }

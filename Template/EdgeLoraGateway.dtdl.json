@@ -1,0 +1,92 @@
+[
+  {
+    "@id": "dtmi:iotedge:loraGateway;2",
+    "@type": "Interface",
+    "contents": [
+      {
+        "@id": "dtmi:iotedge:loraGateway:LoRaWanPktFwdModule;1",
+        "@type": [
+          "Relationship",
+          "EdgeModule"
+        ],
+        "maxMultiplicity": 1,
+        "name": "LoRaWanPktFwdModule",
+        "target": [
+          "dtmi:iotedge:lorawan:LoRaWanPktFwdModule;1"
+        ]
+      },
+      {
+        "@id": "dtmi:iotedge:loraGateway:LoRaWanNetworkSrvModule;1",
+        "@type": [
+          "Relationship",
+          "EdgeModule"
+        ],
+        "maxMultiplicity": 1,
+        "name": "LoRaWanNetworkSrvModule",
+        "target": [
+          "dtmi:iotedge:lorawan:LoRaWanNetworkSrvModule;2"
+        ]
+      },
+      {
+        "@id": "dtmi:iotedge:loraGateway:LoRaDevice;1",
+        "@type": [
+          "Relationship",
+          "GatewayDevice"
+        ],
+        "name": "LoRaDevice",
+        "target": []
+      }
+    ],
+    "displayName": {
+      "en": "EdgeLoraGateway"
+    },
+    "@context": [
+      "dtmi:iotcentral:context;2",
+      "dtmi:dtdl:context;2"
+    ]
+  },
+  {
+    "@id": "dtmi:iotedge:lorawan:LoRaWanPktFwdModule;1",
+    "@type": "Interface",
+    "displayName": {
+      "en": "LoRaWanPktFwdModule"
+    },
+    "@context": [
+      "dtmi:iotcentral:context;2",
+      "dtmi:dtdl:context;2"
+    ]
+  },
+  {
+    "@id": "dtmi:iotedge:lorawan:LoRaWanNetworkSrvModule;2",
+    "@type": "Interface",
+    "contents": [
+      {
+        "@id": "dtmi:iotedge:lorawan:LoRaWanNetworkSrvModule:FacadeServerUrl;2",
+        "@type": "Property",
+        "displayName": {
+          "en": "FacadeServerUrl"
+        },
+        "name": "FacadeServerUrl",
+        "schema": "string",
+        "writable": true
+      },
+      {
+        "@id": "dtmi:iotedge:lorawan:LoRaWanNetworkSrvModule:FacadeAuthCode;2",
+        "@type": "Property",
+        "displayName": {
+          "en": "FacadeAuthCode"
+        },
+        "name": "FacadeAuthCode",
+        "schema": "string",
+        "writable": true
+      }
+    ],
+    "displayName": {
+      "en": "LoRaWanNetworkSrvModule"
+    },
+    "@context": [
+      "dtmi:iotcentral:context;2",
+      "dtmi:dtdl:context;2"
+    ]
+  }
+]

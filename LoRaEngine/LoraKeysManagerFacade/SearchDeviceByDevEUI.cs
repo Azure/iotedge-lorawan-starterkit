@@ -16,9 +16,9 @@ namespace LoraKeysManagerFacade
 
     public class SearchDeviceByDevEUI
     {
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
 
-        public SearchDeviceByDevEUI(RegistryManager registryManager)
+        public SearchDeviceByDevEUI(IDeviceRegistryManager registryManager)
         {
             this.registryManager = registryManager;
         }

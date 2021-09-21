@@ -13,7 +13,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp.Definitions
 
         public bool Simulated { get; set; }
 
-        public bool Provisionned { get; set; }
+        public bool Provisioned { get; set; }
 
         public string Template { get; set; }
 
