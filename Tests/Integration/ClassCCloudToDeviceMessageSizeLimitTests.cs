@@ -24,7 +24,8 @@ namespace LoRaWan.Tests.Integration
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
     public sealed class ClassCCloudToDeviceMessageSizeLimitTests : IDisposable
     {
-        private const string ServerGatewayID = "test-gateway";
+        const string ServerGatewayID = "test-gateway";
+        const string IotHubHostName = "fake.azure-devices.net";
 
         private TestPacketForwarder PacketForwarder { get; }
 
@@ -83,7 +84,7 @@ namespace LoRaWan.Tests.Integration
 
             this.deviceApi.Setup(x => x.SearchByDevEUIAsync(devEUI))
                 .ReturnsAsync(new SearchDevicesResult(
-                    new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+                    new IoTHubDeviceInfo(string.Empty, devEUI, "123", IotHubHostName).AsList()));
 
             var twin = simulatedDevice.CreateABPTwin(reportedProperties: new Dictionary<string, object>
             {
@@ -170,7 +171,7 @@ namespace LoRaWan.Tests.Integration
             var devEUI = simulatedDevice.DevEUI;
 
             this.deviceApi.Setup(x => x.SearchByDevEUIAsync(devEUI))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(string.Empty, devEUI, "123", IotHubHostName).AsList()));
 
             this.deviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(simulatedDevice.CreateABPTwin());

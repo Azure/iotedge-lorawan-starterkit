@@ -20,6 +20,8 @@ namespace LoraKeysManagerFacade.Test
 
     public class IoTCentralRegistryManagerTest : FunctionTestBase
     {
+        private delegate SymmetricKeyAttestation ServiceProcessValue(string inputValue, out string outputValue);
+
         private HttpClient InitHttpClient(Mock<HttpMessageHandler> handlerMock)
         {
             return new HttpClient(handlerMock.Object)
@@ -56,6 +58,13 @@ namespace LoraKeysManagerFacade.Test
             provisioningHelperMock.Setup(x => x.ComputeAttestation(It.IsAny<string>()))
                                 .Returns(attestation);
 
+            provisioningHelperMock.Setup(c => c.ProvisionDevice(It.IsAny<string>(), out It.Ref<string>.IsAny))
+                           .Returns(new ServiceProcessValue((string deviceId, out string iotHubHostname) =>
+                           {
+                               iotHubHostname = string.Empty;
+                               return attestation;
+                           }));
+
             deviceResponseMock.Content = new StringContent(JsonSerializer.Serialize(device), Encoding.UTF8, "application/json");
 
             handlerMock
@@ -82,7 +91,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.Equal(device.Id, response.DeviceId);
             Assert.Equal(attestation.SymmetricKey.PrimaryKey, response.PrimaryKey);
 
-            provisioningHelperMock.Verify(x => x.ComputeAttestation(It.Is<string>(c => c == device.Id)), Times.Once());
+            provisioningHelperMock.Verify(c => c.ProvisionDevice(It.Is<string>(id => device.Id == id), out It.Ref<string>.IsAny), Times.Once());
             handlerMock.Protected().Verify("SendAsync", Times.Exactly(1), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/{device.Id}"), ItExpr.IsAny<CancellationToken>());
         }
 
@@ -119,8 +128,13 @@ namespace LoraKeysManagerFacade.Test
                 })
                 .Verifiable();
 
-            provisioningHelperMock.Setup(c => c.ProvisionDeviceAsync(It.IsAny<string>()))
-                       .ReturnsAsync((string deviceId) => new SymmetricKeyAttestation());
+            provisioningHelperMock.Setup(c => c.ProvisionDevice(It.IsAny<string>(), out It.Ref<string>.IsAny))
+                           .Returns(new ServiceProcessValue((string deviceId, out string iotHubHostname) =>
+                           {
+                               iotHubHostname = string.Empty;
+                               return new SymmetricKeyAttestation();
+                           }));
+
             var mockHttpClient = this.InitHttpClient(handlerMock);
 
             IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
@@ -132,7 +146,7 @@ namespace LoraKeysManagerFacade.Test
 
             handlerMock.Protected().Verify("SendAsync", Times.Exactly(1), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/{device.Id}"), ItExpr.IsAny<CancellationToken>());
 
-            provisioningHelperMock.Verify(c => c.ProvisionDeviceAsync(It.Is<string>(id => device.Id == id)), Times.Once());
+            provisioningHelperMock.Verify(c => c.ProvisionDevice(It.Is<string>(id => device.Id == id), out It.Ref<string>.IsAny), Times.Once());
         }
 
         [Fact]

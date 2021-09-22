@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 // Ownership is transferred to connection manager.
-                this.connectionManager.Register(loRaDevice, CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey));
+                this.connectionManager.Register(loRaDevice, CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey, deviceInfo.IoTHubHostName));
 #pragma warning restore CA2000 // Dispose objects before losing scope
             }
 

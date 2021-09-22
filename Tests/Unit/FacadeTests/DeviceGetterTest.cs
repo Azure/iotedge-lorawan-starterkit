@@ -16,6 +16,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
     public class DeviceGetterTest : FunctionTestBase
     {
         private const string PrimaryKey = "ABCDEFGH1234567890";
+        protected const string IotHubHostName = "fake.azure-devices.net";
 
         [Fact]
         public async void DeviceGetter_OTAA_Join()
@@ -44,6 +45,8 @@ namespace LoRaWan.Tests.Unit.FacadeTests
 
                     mockDevice.SetupGet(t => t.PrimaryKey)
                         .Returns(primaryKey);
+                    mockDevice.SetupGet(t => t.AssignedIoTHub)
+                            .Returns(IotHubHostName);
 
                     return mockDevice.Object;
                 });
