@@ -55,8 +55,8 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
+            this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123", IotHubHostName).AsList()));
 
             if (deviceGatewayID == null)
             {

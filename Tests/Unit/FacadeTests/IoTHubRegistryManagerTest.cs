@@ -16,6 +16,8 @@ namespace LoraKeysManagerFacade.Test
 
     public class IoTHubRegistryManagerTest : FunctionTestBase
     {
+        private readonly string iotHubHostName = "fake.azure-devices.net";
+
         [Fact]
         // This test ensure that IoT Hub implementation of DeviceRegistry Reflects the expected pagination features
         public async Task Page_Result_Executed()
@@ -40,7 +42,7 @@ namespace LoraKeysManagerFacade.Test
             iotHubMock.Setup(x => x.CreateQuery(It.IsAny<string>()))
                    .Returns((string x) => queryMock.Object);
 
-            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object);
+            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object, this.iotHubHostName);
 
             var result = await deviceRegistry.FindDeviceByAddrAsync(deviceId);
 
@@ -73,7 +75,7 @@ namespace LoraKeysManagerFacade.Test
             iotHubMock.Setup(x => x.GetDeviceAsync(It.IsAny<string>()))
                    .ReturnsAsync((string x) => new Device(x));
 
-            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object);
+            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object, this.iotHubHostName);
 
             var device = await deviceRegistry.GetDeviceAsync(deviceId);
 
@@ -94,7 +96,7 @@ namespace LoraKeysManagerFacade.Test
             iotHubMock.Setup(x => x.GetDeviceAsync(It.IsAny<string>()))
                    .ReturnsAsync((string x) => null);
 
-            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object);
+            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object, this.iotHubHostName);
 
             var device = await deviceRegistry.GetDeviceAsync(deviceId);
 
@@ -114,7 +116,7 @@ namespace LoraKeysManagerFacade.Test
             iotHubMock.Setup(x => x.GetTwinAsync(It.IsAny<string>()))
                    .ReturnsAsync((string x) => new Twin(x));
 
-            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object);
+            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object, this.iotHubHostName);
 
             var device = await deviceRegistry.GetTwinAsync(deviceId);
 
@@ -135,7 +137,7 @@ namespace LoraKeysManagerFacade.Test
             iotHubMock.Setup(x => x.GetTwinAsync(It.IsAny<string>()))
                    .ReturnsAsync((string x) => null);
 
-            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object);
+            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object, this.iotHubHostName);
 
             var device = await deviceRegistry.GetTwinAsync(deviceId);
 
@@ -162,7 +164,7 @@ namespace LoraKeysManagerFacade.Test
             iotHubMock.Setup(x => x.CreateQuery(It.IsAny<string>()))
                    .Returns((string x) => queryMock.Object);
 
-            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object);
+            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object, this.iotHubHostName);
 
             var result = await deviceRegistry.FindDeviceByAddrAsync(NewUniqueEUI64());
 
@@ -193,7 +195,7 @@ namespace LoraKeysManagerFacade.Test
             iotHubMock.Setup(x => x.CreateQuery(It.IsAny<string>()))
                    .Returns((string x) => queryMock.Object);
 
-            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object);
+            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object, this.iotHubHostName);
 
             var result = await deviceRegistry.FindDevicesByLastUpdateDate(DateTime.UtcNow.AddMinutes(-5).ToString());
 
@@ -224,7 +226,7 @@ namespace LoraKeysManagerFacade.Test
             iotHubMock.Setup(x => x.CreateQuery(It.IsAny<string>()))
                    .Returns((string x) => queryMock.Object);
 
-            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object);
+            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object, this.iotHubHostName);
 
             var result = await deviceRegistry.FindConfiguredLoRaDevices();
 
@@ -252,7 +254,7 @@ namespace LoraKeysManagerFacade.Test
                        Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = expectedPrimaryKey } }
                    });
 
-            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object);
+            var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object, this.iotHubHostName);
 
             var primaryKey = await deviceRegistry.GetDevicePrimaryKey(deviceId);
 

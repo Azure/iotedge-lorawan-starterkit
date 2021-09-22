@@ -90,8 +90,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI, It.IsAny<uint>(), It.IsNotNull<string>())).ReturnsAsync(true);
             }
 
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
+            this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc", IotHubHostName).AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory);
@@ -195,8 +195,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                     return Task.FromResult(true);
                 });
 
-            LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>())).ReturnsAsync((Message)null);
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr)).ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
+            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>())).ReturnsAsync((Message)null);
+            this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr)).ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc", IotHubHostName).AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory);
