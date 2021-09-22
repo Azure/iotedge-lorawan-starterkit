@@ -28,7 +28,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
             this.deviceProvisioningSecondaryKey = secondaryKey;
         }
 
-        public async Task<SymmetricKeyAttestation> ProvisionDeviceAsync(string deviceId)
+        public SymmetricKeyAttestation ProvisionDevice(string deviceId, out string assignedIoTHubHostname)
         {
             var attestation = this.ComputeAttestation(deviceId);
 
@@ -38,12 +38,15 @@ namespace LoraKeysManagerFacade.IoTCentralImp
                 new SecurityProviderSymmetricKey(deviceId, attestation.SymmetricKey.PrimaryKey, attestation.SymmetricKey.SecondaryKey),
                 new ProvisioningTransportHandlerHttp());
 
-            var registerResult = await provisioningClient.RegisterAsync();
+            var registerResult = provisioningClient.RegisterAsync().Result;
 
             if (registerResult.Status == ProvisioningRegistrationStatusType.Assigned)
             {
+                assignedIoTHubHostname = registerResult.AssignedHub;
                 return attestation;
             }
+
+            assignedIoTHubHostname = null;
 
             return null;
         }

@@ -96,7 +96,8 @@ namespace LoraKeysManagerFacade
                     var iotHubDeviceInfo = new IoTHubDeviceInfo
                     {
                         DevEUI = devEUI,
-                        PrimaryKey = joinInfo.PrimaryKey
+                        PrimaryKey = joinInfo.PrimaryKey,
+                        IoTHubHostname = joinInfo.AssignedIoTHub
                     };
 
                     results.Add(iotHubDeviceInfo);
@@ -245,6 +246,7 @@ namespace LoraKeysManagerFacade
                         if (device != null)
                         {
                             joinInfo.PrimaryKey = device.PrimaryKey;
+                            joinInfo.AssignedIoTHub = device.AssignedIoTHub;
                             var twin = await this.registryManager.GetTwinAsync(devEUI);
                             var deviceGatewayId = twin.GetGatewayID();
                             if (!string.IsNullOrEmpty(deviceGatewayId))

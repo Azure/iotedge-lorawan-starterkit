@@ -8,14 +8,18 @@ namespace LoraKeysManagerFacade.IoTHubImp
     internal class IoTHubDevice : IDevice
     {
         private readonly Device device;
+        private readonly string iotHubHostname;
 
-        public IoTHubDevice(Device device)
+        public IoTHubDevice(Device device, string iotHubHostname)
         {
             this.device = device;
+            this.iotHubHostname = iotHubHostname;
         }
 
         public string DeviceId => this.device.Id;
 
         public string PrimaryKey => this.device.Authentication?.SymmetricKey?.PrimaryKey;
+
+        public string AssignedIoTHub => this.iotHubHostname;
     }
 }

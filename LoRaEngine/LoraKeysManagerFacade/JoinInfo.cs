@@ -5,6 +5,8 @@ namespace LoraKeysManagerFacade
 {
     public class JoinInfo
     {
+        public string AssignedIoTHub { get; set; }
+
         public string PrimaryKey { get; set; }
 
         public string DesiredGateway { get; set; }

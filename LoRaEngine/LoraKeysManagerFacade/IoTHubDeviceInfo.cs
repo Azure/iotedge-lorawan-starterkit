@@ -10,5 +10,7 @@ namespace LoraKeysManagerFacade
         public string DevEUI { get; set; }
 
         public string PrimaryKey { get; set; }
+
+        public string IoTHubHostname { get; set; }
     }
 }

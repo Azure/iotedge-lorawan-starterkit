@@ -44,18 +44,10 @@ namespace LoraKeysManagerFacade.IoTCentralImp
             }
 
             var deviceResponse = await deviceRequest.Content.ReadAsAsync<Device>();
-            SymmetricKeyAttestation attestation = null;
 
-            if (!deviceResponse.Provisioned)
-            {
-                attestation = await this.provisioningHelper.ProvisionDeviceAsync(deviceId);
-            }
-            else
-            {
-                attestation = this.provisioningHelper.ComputeAttestation(deviceId);
-            }
+            var attestation = this.provisioningHelper.ProvisionDevice(deviceId, out string assignedIoTHubHostname);
 
-            return new IoTCentralDevice(deviceResponse, attestation);
+            return new IoTCentralDevice(deviceResponse, attestation, assignedIoTHubHostname);
         }
 
         public async Task<IDeviceTwin> GetTwinAsync(string deviceId)

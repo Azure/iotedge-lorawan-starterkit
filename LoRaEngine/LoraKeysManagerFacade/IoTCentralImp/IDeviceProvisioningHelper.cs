@@ -8,7 +8,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
 
     public interface IDeviceProvisioningHelper
     {
-        Task<SymmetricKeyAttestation> ProvisionDeviceAsync(string deviceId);
+        SymmetricKeyAttestation ProvisionDevice(string deviceId, out string assignedIoTHubHostname);
 
         SymmetricKeyAttestation ComputeAttestation(string deviceId);
     }
