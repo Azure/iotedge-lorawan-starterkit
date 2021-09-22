@@ -15,15 +15,18 @@ namespace LoRaWan.NetworkServer
 
         public string NwkSKey { get; set; }
 
+        public string IoTHubHostName { get; set; }
+
         public IoTHubDeviceInfo()
         {
         }
 
-        public IoTHubDeviceInfo(string devAddr, string devEUI, string primaryKey)
+        public IoTHubDeviceInfo(string devAddr, string devEUI, string primaryKey, string assignedIoTHubHostname)
         {
-            DevAddr = devAddr;
-            DevEUI = devEUI;
-            PrimaryKey = primaryKey;
+            this.DevAddr = devAddr;
+            this.DevEUI = devEUI;
+            this.PrimaryKey = primaryKey;
+            this.IoTHubHostName = assignedIoTHubHostname;
         }
     }
 }

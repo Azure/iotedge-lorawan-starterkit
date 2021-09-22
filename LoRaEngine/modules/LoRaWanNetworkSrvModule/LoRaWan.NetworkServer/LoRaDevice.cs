@@ -190,6 +190,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public int KeepAliveTimeout { get; set; }
 
+        public string AssignedIoTHubHostName { get; set; }
+
         public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
         {
             DevAddr = devAddr;
@@ -201,7 +203,8 @@ namespace LoRaWan.NetworkServer
             this.hasFrameCountChanges = false;
             this.confirmationResubmitCount = 0;
             this.queuedRequests = new Queue<LoRaRequest>();
-            ClassType = LoRaDeviceClassType.A;
+            this.ClassType = LoRaDeviceClassType.A;
+            this.AssignedIoTHubHostName = string.Empty;
         }
 
         /// <summary>
