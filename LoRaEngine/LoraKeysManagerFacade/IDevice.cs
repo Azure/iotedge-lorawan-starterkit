@@ -8,5 +8,7 @@ namespace LoraKeysManagerFacade
         string DeviceId { get; }
 
         string PrimaryKey { get; }
+
+        string AssignedIoTHub { get; }
     }
 }

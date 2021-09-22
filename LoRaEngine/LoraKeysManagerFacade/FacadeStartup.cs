@@ -8,6 +8,7 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Net.Http.Formatting;
     using System.Net.Http.Headers;
+    using System.Text.RegularExpressions;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoraKeysManagerFacade.IoTCentralImp;
     using LoraKeysManagerFacade.IoTHubImp;
@@ -70,9 +71,17 @@ namespace LoraKeysManagerFacade
 
             if (configHandler.DeviceRegistryMode == DeviceRegistryMode.IoTHub)
             {
+                var regex = new Regex("HostName=(.*[.]azure[-]devices[.]net);");
+                var match = regex.Match(iotHubConnectionString);
+
+                if (!match.Success)
+                {
+                    throw new ArgumentException($"Bad ConnectionString format for {ConfigHandler.IoTHubConnectionStringKey} in settings");
+                }
+
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 // Object is handled by DI container.
-                _ = builder.Services.AddSingleton<IDeviceRegistryManager>(sp => new IoTHubDeviceRegistryManager(RegistryManager.CreateFromConnectionString(iotHubConnectionString)));
+                _ = builder.Services.AddSingleton<IDeviceRegistryManager>(sp => new IoTHubDeviceRegistryManager(RegistryManager.CreateFromConnectionString(iotHubConnectionString), match.Groups[0].Value));
 #pragma warning restore CA2000 // Dispose objects before losing scope
                 _ = builder.Services.AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)));
             }
@@ -162,17 +171,17 @@ namespace LoraKeysManagerFacade
 
                 internal override string IoTHubConnectionString => this.config.GetConnectionString(IoTHubConnectionStringKey);
 
-                internal override string IoTCentralToken => this.config.GetConnectionString(IoTCentralTokenKey);
+                internal override DeviceRegistryMode DeviceRegistryMode => this.config.GetValue(DeviceRegistryModeKey, DeviceRegistryMode.IoTHub);
 
                 internal override string IoTCentralEndpoint => this.config.GetValue<string>(IoTCentralEndpointKey);
 
                 internal override string IoTCentralDeviceProvisioningScopeId => this.config.GetValue<string>(IoTCentralDeviceProvisioningScopeIdKey);
 
-                internal override string IoTCentralSASIoTDevicesPrimaryKey => this.config.GetValue<string>(IoTCentralSASIoTDevicesPrimaryKeyKey);
+                internal override string IoTCentralSASIoTDevicesPrimaryKey => this.config.GetConnectionString(IoTCentralSASIoTDevicesPrimaryKeyKey);
 
-                internal override string IoTCentralSASIoTDevicesSecondaryKey => this.config.GetValue<string>(IoTCentralSASIoTDevicesSecondaryKeyKey);
+                internal override string IoTCentralSASIoTDevicesSecondaryKey => this.config.GetConnectionString(IoTCentralSASIoTDevicesSecondaryKeyKey);
 
-                internal override DeviceRegistryMode DeviceRegistryMode => this.config.GetValue(DeviceRegistryModeKey, DeviceRegistryMode.IoTHub);
+                internal override string IoTCentralToken => this.config.GetConnectionString(IoTCentralTokenKey);
             }
 
             private class LocalConfigHandler : ConfigHandler

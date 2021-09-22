@@ -15,9 +15,12 @@ namespace LoraKeysManagerFacade.IoTHubImp
     {
         private readonly RegistryManager registryManager;
 
-        internal IoTHubDeviceRegistryManager(RegistryManager registryManager)
+        private readonly string iotHubHostname;
+
+        internal IoTHubDeviceRegistryManager(RegistryManager registryManager, string hostName)
         {
             this.registryManager = registryManager;
+            this.iotHubHostname = hostName;
         }
 
         public async Task CreateEdgeDeviceAsync(string edgeDeviceName, bool deployEndDevice, string facadeUrl, string facadeKey, string region, string resetPin, string spiSpeed, string spiDev)
@@ -84,7 +87,7 @@ namespace LoraKeysManagerFacade.IoTHubImp
                 return null;
             }
 
-            return new IoTHubDevice(device);
+            return new IoTHubDevice(device, this.iotHubHostname);
         }
 
         public async Task<IDeviceTwin> GetTwinAsync(string deviceName)

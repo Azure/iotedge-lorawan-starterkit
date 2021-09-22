@@ -9,15 +9,19 @@ namespace LoraKeysManagerFacade.IoTCentralImp
     {
         private readonly Device deviceObject;
         private readonly SymmetricKeyAttestation attestationObject;
+        private readonly string assignedIoTHubHostname;
 
-        public IoTCentralDevice(Device deviceObject, SymmetricKeyAttestation attestationObject)
+        public IoTCentralDevice(Device deviceObject, SymmetricKeyAttestation attestationObject, string assignedIoTHubHostname)
         {
             this.deviceObject = deviceObject;
             this.attestationObject = attestationObject;
+            this.assignedIoTHubHostname = assignedIoTHubHostname;
         }
 
         public string PrimaryKey => this.attestationObject.SymmetricKey.PrimaryKey;
 
         public string DeviceId => this.deviceObject.Id;
+
+        public string AssignedIoTHub => this.assignedIoTHubHostname;
     }
 }
