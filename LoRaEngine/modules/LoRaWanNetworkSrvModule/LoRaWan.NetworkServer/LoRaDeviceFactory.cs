@@ -32,7 +32,8 @@ namespace LoRaWan.NetworkServer
                 this.connectionManager)
             {
                 GatewayID = deviceInfo.GatewayId,
-                NwkSKey = deviceInfo.NwkSKey
+                NwkSKey = deviceInfo.NwkSKey,
+                AssignedIoTHubHostName = deviceInfo.IoTHubHostName
             };
 
             var isOurDevice = string.IsNullOrEmpty(deviceInfo.GatewayId) || string.Equals(deviceInfo.GatewayId, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
@@ -49,16 +50,18 @@ namespace LoRaWan.NetworkServer
             return loRaDevice;
         }
 
-        private string CreateIoTHubConnectionString(string devEUI)
+        private string CreateIoTHubConnectionString(string devEUI, string primaryKey, string assignedIoTHubHostname)
         {
             var connectionString = string.Empty;
 
-            if (string.IsNullOrEmpty(this.configuration.IoTHubHostName))
+            string effectiveIoTHubHostName = !string.IsNullOrEmpty(assignedIoTHubHostname) ? assignedIoTHubHostname : this.configuration.IoTHubHostName;
+
+            if (string.IsNullOrEmpty(effectiveIoTHubHostName))
             {
                 Logger.Log("Configuration/Environment variable IOTEDGE_IOTHUBHOSTNAME not found, creation of iothub connection not possible", LogLevel.Error);
             }
 
-            connectionString += $"HostName={this.configuration.IoTHubHostName};";
+            connectionString += $"HostName={effectiveIoTHubHostName};";
 
             if (this.configuration.EnableGateway)
             {
@@ -73,12 +76,12 @@ namespace LoRaWan.NetworkServer
             return connectionString;
         }
 
-        public ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey)
+        private LoRaDeviceClient CreateDeviceClient(string devEUI, string primaryKey, string assignedIoTHubHostName)
         {
             try
             {
-                var partConnection = CreateIoTHubConnectionString(eui);
-                var deviceConnectionStr = $"{partConnection}DeviceId={eui};SharedAccessKey={primaryKey}";
+                var partConnection = this.CreateIoTHubConnectionString(devEUI, primaryKey, assignedIoTHubHostName);
+                var deviceConnectionStr = $"{partConnection}DeviceId={devEUI};SharedAccessKey={primaryKey}";
 
                 // Enabling AMQP multiplexing
                 var transportSettings = new ITransportSettings[]
