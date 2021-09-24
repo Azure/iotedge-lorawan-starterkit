@@ -34,6 +34,6 @@ jobs:
         - name: Markdown Link Check
           uses: gaurav-nelson/github-action-markdown-link-check@v1
           with:
-            check-modified-files-only: 'no'
+            check-modified-files-only: 'no' #todo make this dependent on label 
             config-file: .markdown-link-check.jsonc
-            use-quiet-mode: 'no'
+            use-quiet-mode: 'yes'

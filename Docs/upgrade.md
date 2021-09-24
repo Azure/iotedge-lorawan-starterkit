@@ -58,7 +58,7 @@ On the same `Set Modules` page, also update your current edge version to 1.0.9.4
 
 ### Updating the Azure Function Facade
 
-If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](/Docs/devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
 
 If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an `App Setting` in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:
 
@@ -83,7 +83,7 @@ On the same `Set Modules` page, also update your current edge version to 1.0.9 b
 
 ### Updating the Azure Function Facade
 
-If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
 
 If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an `App Setting` in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:
 
@@ -108,7 +108,7 @@ On the same `Set Modules` page, also update your current edge version to 1.0.7 b
 
 ### Updating the Azure Function Facade
 
-If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
 
 If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an `App Setting` in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:
 
@@ -133,7 +133,7 @@ Go to your solution's Azure IoT Hub and under IoT Edge, select each of your gate
 
 ### Updating the Azure Function Facade
 
-If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
 
 If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an `App Setting` in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:
 
@@ -154,7 +154,7 @@ Make sure the IoT Hub and Redis connection strings are properly configured in th
 
 ### Updating the Azure Function Facade
 
-If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+If you have manually deployed the Azure Function, re-deploy the updated version of the Azure Function Facade as outlined [here](devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
 
 If you have deployed the solution and with it the Azure Function through the Azure Resource Manager template, you will see an `App Setting` in the function with the name "WEBSITE_RUN_FROM_ZIP". Update it's value to:
 
@@ -192,7 +192,7 @@ Make sure the **DevAddr** of your ABP LoRa devices starts with **"02"**: Due to 
 
 ### Updating the Azure Function Facade
 
-Re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+Re-deploy the updated version of the Azure Function Facade as outlined [here](devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
 
 Make sure the IoT Hub and Redis connection strings are properly configured in the function.
 
@@ -206,7 +206,7 @@ The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/
 
 ### Updating the Azure Function Facade
 
-Re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
+Re-deploy the updated version of the Azure Function Facade as outlined [here](devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
 
 Make sure the IoT Hub and Redis connection strings are properly configured in the function.
 
