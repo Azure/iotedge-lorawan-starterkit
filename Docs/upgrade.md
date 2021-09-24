@@ -211,6 +211,3 @@ Re-deploy the updated version of the Azure Function Facade as outlined [here](./
 Make sure the IoT Hub and Redis connection strings are properly configured in the function.
 
 <!-- markdownlint-enable MD040 -->
-<!-- leave on obvious linting error here for testing CI-->
-
-
