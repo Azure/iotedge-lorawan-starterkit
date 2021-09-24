@@ -1,4 +1,5 @@
 # Universal Decoder
+<!-- markdownlint-disable MD040 -->
 
 This project gives access to decoders in the [TTN repo](https://github.com/TheThingsNetwork/lorawan-devices#payload-codecs) through a HTTP REST interface compliant with the LoraWan implementation in this repository. 
 
@@ -7,32 +8,38 @@ Codecs provided by TTN are stored in a well defined [folder structure](https://g
 ## Quick start
 
 Install node dependencies and copy/patch codecs from the TTN repository:
-```
+
+```bash
 npm install
 npm run codecs
 ```
 
 Create docker image (replace `amd64` with the architecture of your choice)
-```
+
+```bash
 docker build . -f Dockerfile.amd64 -t universaldecoder
 ```
 
 Run docker image:
-```
+
+```bash
 docker run --rm -d -p 8080:8080 universaldecoder
 ```
 
 Call the built-in `DecoderValueSensor` decoder at the following url. You should see the result as JSON string.
+
 ```
 http://localhost:8080/api/DecoderValueSensor?devEui=0000000000000000&fport=1&payload=QUJDREUxMjM0NQ%3D%3D
 ```
 
 Finally list all available decoders with the following url:
+
 ```
 http://localhost:8080/decoders
 ```
 
 You can finally call any other supported decoder at:
+
 ```
 http://localhost:8080/api/<decoder>?devEui=0000000000000000&fport=<fport>&payload=<payload>
 ```
@@ -41,7 +48,7 @@ http://localhost:8080/api/<decoder>?devEui=0000000000000000&fport=<fport>&payloa
 
 ### Start local server
 
-```
+```bash
 npm start
 ```
 
@@ -49,7 +56,7 @@ You can access the universal decoder at the url available in the output of the p
 
 ### Run tests
 
-```
+```bash
 npm test
 ```
 
@@ -78,6 +85,7 @@ LoRaWan Port field as integer value.
 Base64 and URL encoded payload to decode.
 
 For example, to test a payload of `ABCDE12345`, you:
+
 - Convert it to a base64 encoded string: `QUJDREUxMjM0NQ==`
 - Convert the result to a valid URL parameter: `QUJDREUxMjM0NQ%3D%3D`
 - Add this to your URL as the payload query parameter.
@@ -146,4 +154,4 @@ http://universaldecoder:8080/decoders
 
 In case the custom decoder is unreachable, throws an error or return invalid JSON, the error message will be shown in your device's messages in IoT Hub.
 
-  
+<!-- markdownlint-enable MD040 -->

@@ -4,7 +4,6 @@ This guide helps you to execute and author integration tests on your local envir
 
 ## Requirements
 
-
 ```ascii
 +----------+                          |
 | Dev      |                          A
@@ -31,33 +30,33 @@ This guide helps you to execute and author integration tests on your local envir
 
 1. Connect and setup Seeduino Arduino with the serial pass sketch
 
-```c
-void setup()
-{
-    Serial1.begin(9600);
-    SerialUSB.begin(115200);
-}
+    ```c
+    void setup()
+    {
+        Serial1.begin(9600);
+        SerialUSB.begin(115200);
+    }
 
-void loop()
-{
-    while(Serial1.available())
+    void loop()
     {
-        SerialUSB.write(Serial1.read());
+        while(Serial1.available())
+        {
+            SerialUSB.write(Serial1.read());
+        }
+        while(SerialUSB.available())
+        {
+            Serial1.write(SerialUSB.read());
+        }
     }
-    while(SerialUSB.available())
-    {
-        Serial1.write(SerialUSB.read());
-    }
-}
-```
+    ```
 
 2. Create/edit integration settings in file `appsettings.local.json`
 
-The value of `LeafDeviceSerialPort` in Windows will be the COM port where the Arduino board is connected to (Arduino IDE displays it). On macos you can discover through `ls /dev/tty*` and/or `ls /dev/cu*` bash commands. On Linux you can discover them with `ls /dev/ttyACM*`. 
+The value of `LeafDeviceSerialPort` in Windows will be the COM port where the Arduino board is connected to (Arduino IDE displays it). On macos you can discover through `ls /dev/tty*` and/or `ls /dev/cu*` bash commands. On Linux you can discover them with `ls /dev/ttyACM*`.
 
 ```json
-{
-  "testConfiguration": {
+{ 
+    "testConfiguration": {
     "IoTHubEventHubConnectionString": "Endpoint=sb://xxxx.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx;EntityPath=xxxxx",
     "IoTHubEventHubConsumerGroup": "your-iothub-consumer-group",
     "IoTHubConnectionString": "HostName=xxxx.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx",
@@ -85,30 +84,30 @@ To create a new device modify the IntegrationTestFixture class by:
 
 1. Creating a new property of type `TestDeviceInfo` as (increment the device ids by 1):
 
-```c#
-// Device13_OTAA: used for wrong AppEUI OTAA join
-public TestDeviceInfo Device13_OTAA { get; private set; }
-```
+    ```c#
+    // Device13_OTAA: used for wrong AppEUI OTAA join
+    public TestDeviceInfo Device13_OTAA { get; private set; }
+    ```
 
 2. Create the `TestDeviceInfo` instance in IntegrationTestFixture.SetupDevices() method
 
-```c#
-// Device13_OTAA: used for Join with wrong AppEUI
-this.Device13_OTAA = new TestDeviceInfo()
-{
-    DeviceID = "0000000000000013",
-    AppEUI = "BE7A00000000FEE3",
-    AppKey = "8AFE71A145B253E49C3031AD068277A3",
-    SensorDecoder = "DecoderValueSensor",
+    ```c#
+    // Device13_OTAA: used for Join with wrong AppEUI
+    this.Device13_OTAA = new TestDeviceInfo()
+    {
+        DeviceID = "0000000000000013",
+        AppEUI = "BE7A00000000FEE3",
+        AppKey = "8AFE71A145B253E49C3031AD068277A3",
+        SensorDecoder = "DecoderValueSensor",
 
-    // GatewayID property of the device
-    GatewayID = gatewayID,
+        // GatewayID property of the device
+        GatewayID = gatewayID,
 
-    // Indicates if the device exists in IoT Hub
-    // Some tests don't require a device to actually exist
-    IsIoTHubDevice = true,
-};
-```
+        // Indicates if the device exists in IoT Hub
+        // Some tests don't require a device to actually exist
+        IsIoTHubDevice = true,
+    };
+    ```
 
 3. Create the test method / fact in a test class. If a new test class is needed (to group logically test) read the section 'Creating Test Class'). Code should be similar to this:
 

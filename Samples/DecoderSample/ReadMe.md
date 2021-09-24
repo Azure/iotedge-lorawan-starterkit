@@ -1,4 +1,6 @@
 ﻿# Azure IoT Edge LoRaWAN Starter Kit
+<!-- markdownlint-disable MD040 -->
+
 ## DecoderSample
 
 This sample allows you to create and run your own LoRa message decoder in an independent container running on your LoRa gateway without having to edit the main LoRa Engine. This description shows you how to get started.
@@ -31,7 +33,7 @@ internal static class LoraDecoders
 }
 ```
 
-You can test the decoder on your machine by debugging the SensorDecoderModule project in Visual Studio. 
+You can test the decoder on your machine by debugging the SensorDecoderModule project in Visual Studio.
 
 When creating a debugging configuration in Visual Studio Code or a ```launchSettings.json``` file in Visual Studio, the default address that the webserver will try to use is ```http://localhost:5000``` or ```https://localhost:5001```. You can override this with any port of your choice.
 
@@ -40,6 +42,7 @@ On launching the debugger you will see a webbrowser with a ```404 Not Found``` e
 You will also manually need to [base64-encode](https://www.base64encode.org/) and [URL-encode](https://www.urlencoder.org/) the payload before adding it to the URL parameters.
 
 For example, to test a payload of `ABCDE12345`, you:
+
 - Convert it to a base64 encoded string: `QUJDREUxMjM0NQ==`
 - Convert the result to a valid URL parameter: `QUJDREUxMjM0NQ%3D%3D`
 - Add this to your test URL.
@@ -48,7 +51,8 @@ For the built-in sample decoder ```DecoderValueSensor``` with Visual Studio (Cod
 
 ```
 http://localhost:5000/api/DecoderValueSensor?devEui=0000000000000000&fport=1&payload=QUJDREUxMjM0NQ%3D%3D
-`````
+```
+
 You can call your decoder at:
 
 ```
@@ -104,7 +108,7 @@ Configure your IoT Edge gateway device to include the custom container. IoT Hub 
 
 ![Decoder Sample - Edge Module](/Docs/Pictures/decodersample-edgemodule.png)
 
-To activate the decoder for a LoRa device, navigate to your IoT Hub &rarr; IoT Devices &rarr; Device Details &rarr; Device Twin and set the ```SensorDecoder``` value in the desired properties to: 
+To activate the decoder for a LoRa device, navigate to your IoT Hub &rarr; IoT Devices &rarr; Device Details &rarr; Device Twin and set the ```SensorDecoder``` value in the desired properties to:
 
 ```
 http://<decoder module name>/api/<DecoderName>
@@ -115,3 +119,5 @@ http://<decoder module name>/api/<DecoderName>
 ![Decoder Sample - LoRa Device Twin](/Docs/Pictures/decodersample-devicetwin.png)
 
 In case the custom decoder is unreachable, throws an error or return invalid JSON, the error message will be shown in your device's messages in IoT Hub.
+
+<!-- markdownlint-enable MD040 -->

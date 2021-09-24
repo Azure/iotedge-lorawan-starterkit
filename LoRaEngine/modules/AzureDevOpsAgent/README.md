@@ -4,7 +4,7 @@ Part of our [Azure IoT Hub LoRaWan starter kit](https://github.com/Azure/iotedge
 
 Software tests are not the only one that we want to run as we want to be able to validate specific region settings and make sure any modification in the code will work great as well on a real  device. To run and automate test in a proper CI/CD chain, we're using Azure DevOps, formally known as VSTS (Visual Studio Team Services). Azure DevOps allow to run remote tests and gather results thru an agent running remotely. The pipeline is specifically build to run our hardware tests. In short, we are sending serial commands to an Arduino (a Seeeduino LoRaWan device) connected thru a serial port on a Raspberry Pi3. The Raspberry Pi has a LoRaWan shield and the needed Azure IoT Edge modules to manage the Lora device(s). The test compare what is sent thru serial port, what is received from the device with what arrives to the LoRaEngine gateway and what is finally published in Azure IoT Hub.
 
-So in order to run the test, deploy and manage them the best way, we've decided to build an Azure DevOps agent in a container. It will execute the tests written in C# in .NET Core. 
+So in order to run the test, deploy and manage them the best way, we've decided to build an Azure DevOps agent in a container. It will execute the tests written in C# in .NET Core.
 
 ## Building the container
 
@@ -77,9 +77,8 @@ To build and deploy the solution, we strongly encourage you to use VS Code and t
 
 ![deployment](/Docs/Pictures/iotedgebuildcontainer.png)
 
-Select ```deployment.template.json```, right click on it and then select ```Build and Push IoT Edge solution```. This will automatically create a ```deployment.json``` file in the ```config``` folder. Right click on it and select ```Create deployment for single device``` and select the Azure IoT Edge device you want to deploy the solution on. Of course, you can as well deploy it on any docker enable Linux arm32 device (or amd64 if you selected this configuration). 
+Select ```deployment.template.json```, right click on it and then select ```Build and Push IoT Edge solution```. This will automatically create a ```deployment.json``` file in the ```config``` folder. Right click on it and select ```Create deployment for single device``` and select the Azure IoT Edge device you want to deploy the solution on. Of course, you can as well deploy it on any docker enable Linux arm32 device (or amd64 if you selected this configuration).
 
 ## Building and deploying the solution part of other containers
 
 If you are deploying the solution part of other containers on an IoT Edge solution, make sure you have this module part of the same ```modules``` folder and that you merge the specific Azure DevOps modules option into the main file. You can find an example [here](https://github.com/Azure/iotedge-lorawan-starterkit/blob/oneweek-pipeline/LoRaEngine/deployment.test.template.json).
-

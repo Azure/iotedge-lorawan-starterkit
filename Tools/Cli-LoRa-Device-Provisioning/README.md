@@ -213,7 +213,7 @@ The update verb supports the following parameters:
 |--appeui|no|AppEUI (only for OTAA devices): A 16 bit hex string.|
 |--appkey|no|AppKey (only for OTAA devices): A 16 bit hex string.|
 |--gatewayid|no|GatewayID: A hostname. |
-|--decoder|no|SensorDecoder: The name of an integrated decoder function or the URI to a decoder in a custom decoder module in the format: http://modulename/api/decodername. |
+|--decoder|no|SensorDecoder: The name of an integrated decoder function or the URI to a decoder in a custom decoder module in the format: <http://modulename/api/decodername>. |
 |--classtype|no|ClassType: "A" (default) or "C". |
 |--downlinkenabled|no|DownlinkEnabled: True or false. |
 |--preferredwindow|no|PreferredWindow (Preferred receive window): 1 or 2. |
