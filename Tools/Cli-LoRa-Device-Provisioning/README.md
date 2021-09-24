@@ -41,7 +41,7 @@ dotnet .\bin\Release\netcoreapp3.1\loradeviceprovisioning.dll -- (add verbs and 
 }
 ```
 
-[appsettings.json](/appsettings.json) may **optionally** contain a Network Id (NetId) in case your solution does not use the default Network Id 000001. Since just the last byte from this 3 hex string byte array (6 characters) are used to create a valid DevAddr for ABP LoRa devices, the setting can be either the full 3 bytes (000000 to FFFFFF) or just the shortened, last byte (0 to FF).
+[appsettings.json](appsettings.json) may **optionally** contain a Network Id (NetId) in case your solution does not use the default Network Id 000001. Since just the last byte from this 3 hex string byte array (6 characters) are used to create a valid DevAddr for ABP LoRa devices, the setting can be either the full 3 bytes (000000 to FFFFFF) or just the shortened, last byte (0 to FF).
 
 ```json
 {
