@@ -23,10 +23,8 @@ on:
       - '**.markdown'
 
 jobs:
-  build:    
-    - name: Lint and Check Markdown
+  lint-and-check-markdown:    
       runs-on: ubuntu-latest
-
       steps:
         - name: Checkout Code
           uses: actions/checkout@v2
