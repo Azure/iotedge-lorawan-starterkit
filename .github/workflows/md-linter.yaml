@@ -1,0 +1,53 @@
+---
+#################################
+#################################
+## Super Linter GitHub Actions ##
+#################################
+#################################
+name: Lint Code Base
+
+#
+# Documentation:
+# https://help.github.com/en/articles/workflow-syntax-for-github-actions
+#
+
+#############################
+# Start the job on all push #
+#############################
+on:
+  pull_request:
+    branches: [master, dev]
+    # only trigger when the PR contains a markdown file
+    paths: 
+      - '**.md'
+      - '**.markdown'
+
+jobs:
+  build    
+    - name: Lint and Check Markdown
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Checkout Code
+          uses: actions/checkout@v2
+          with:
+            # Full git history is needed to get a proper list of changed files within `super-linter`
+            fetch-depth: 0
+
+        ################################
+        # Run Linter against code base #
+        # Use slim image as we are only targeting Markdown for now #
+        ################################
+        - name: Lint Code Base
+          uses: github/super-linter:slim-v4
+          env:
+            VALIDATE_ALL_CODEBASE: false
+            DEFAULT_BRANCH: dev
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            # only validate markdown for now
+            VALIDATE_MARKDOWN: true
+            FILTER_REGEX_INCLUDE: .**/**.md
+        
+        # Check the links of the documents
+        - name: Markdown Link Check
+          - uses: gaurav-nelson/github-action-markdown-link-check@v1
