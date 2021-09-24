@@ -1,19 +1,5 @@
----
-#################################
-#################################
-## Super Linter GitHub Actions ##
-#################################
-#################################
-name: Lint Code Base
+name: Lint and Check Markdown
 
-#
-# Documentation:
-# https://help.github.com/en/articles/workflow-syntax-for-github-actions
-#
-
-#############################
-# Start the job on all push #
-#############################
 on:
   pull_request:
     branches: [master, dev]
@@ -29,7 +15,6 @@ jobs:
         - name: Checkout Code
           uses: actions/checkout@v2
           with:
-            # Full git history is needed to get a proper list of changed files within `super-linter`
             fetch-depth: 0
         
         - name: Install npm
