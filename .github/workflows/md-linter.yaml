@@ -44,7 +44,8 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             # only validate markdown for now
             VALIDATE_MARKDOWN: true
-            FILTER_REGEX_INCLUDE: .**/**.md
+            MARKDOWN_CONFIG_FILE: .markdownlint.jsonc
+            FILTER_REGEX_INCLUDE: .*.md
         
         # Check the links of the documents
         - name: Markdown Link Check
