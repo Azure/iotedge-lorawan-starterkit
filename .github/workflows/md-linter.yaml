@@ -31,21 +31,16 @@ jobs:
           with:
             # Full git history is needed to get a proper list of changed files within `super-linter`
             fetch-depth: 0
+        
+        - name: Install npm
+        - uses: actions/setup-node@v2
+          with:
+            node-version: 'latest'
 
-        ################################
-        # Run Linter against code base #
-        # Use slim image as we are only targeting Markdown for now #
-        ################################
-        - name: Lint Code Base
-          uses: github/super-linter/slim@v4
-          env:
-            VALIDATE_ALL_CODEBASE: false
-            DEFAULT_BRANCH: dev
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            # only validate markdown for now
-            VALIDATE_MARKDOWN: true
-            MARKDOWN_CONFIG_FILE: .markdownlint.jsonc
-            FILTER_REGEX_INCLUDE: .*.md
+        - name: Lint Markdown
+          run: |
+            npm install markdownlint-cli
+            node_modules/.bin/markdownlint -c .markdownlint.jsonc .
         
         # Check the links of the documents
         - name: Markdown Link Check
