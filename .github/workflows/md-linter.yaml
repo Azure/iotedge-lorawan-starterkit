@@ -23,7 +23,7 @@ on:
       - '**.markdown'
 
 jobs:
-  build    
+  build:    
     - name: Lint and Check Markdown
       runs-on: ubuntu-latest
 
