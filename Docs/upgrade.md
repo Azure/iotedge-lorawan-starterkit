@@ -1,5 +1,6 @@
 # Upgrade LoRaWAN to a new version
-
+<!-- allow github to generate 'copy' buttons for coded URLs -->
+<!-- markdownlint-disable MD040 -->
 ## Release 1.0.6
 
 > Note that this version switch IoT Edge to use version 1.2 of IoT Edge that include major changes on the edge. Please follow this [documentation](https://docs.microsoft.com/azure/iot-edge/how-to-update-iot-edge?view=iotedge-2020-11&tabs=linux) to upgrade IoT Edge to 1.2.
@@ -43,9 +44,11 @@ https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.5/fun
 ```
 
 ## Release 1.0.4
+
 To update from version 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
 
 ### Updating from 1.0.3
+
 |Deployment Module|Image URI|
 |-|-|
 |LoRaWanNetworkSrvModule|loraedge/lorawannetworksrvmodule:1.0.4|
@@ -169,9 +172,9 @@ Make sure the IoT Hub and Redis connection strings are properly configured in th
 
 ## Updating existing installations from 0.3.0-preview to 0.4.0-preview
 
-### Updating IoT Edge Runtime Containers to Version 1.0.6 ###
+### Updating IoT Edge Runtime Containers to Version 1.0.6
 
-We highly recommend running the latest version of the IoT Edge runtime containers on your gateway to Version 1.0.6. The way that you update the `IoT Edge agent` and `IoT Edge hub` containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment. 
+We highly recommend running the latest version of the IoT Edge runtime containers on your gateway to Version 1.0.6. The way that you update the `IoT Edge agent` and `IoT Edge hub` containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment.
 
 The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-update-iot-edge#update-the-runtime-containers).
 
@@ -197,7 +200,7 @@ Make sure the IoT Hub and Redis connection strings are properly configured in th
 
 ### Updating IoT Edge Runtime Containers to Version 1.0.5
 
-We highly recommend running the latest version of the IoT Edge runtime containers on your gateway (Version 1.0.5 at the time of writing). The way that you update the `IoT Edge agent` and `IoT Edge hub` containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment. 
+We highly recommend running the latest version of the IoT Edge runtime containers on your gateway (Version 1.0.5 at the time of writing). The way that you update the `IoT Edge agent` and `IoT Edge hub` containers depends on whether you use rolling tags (like 1.0) or specific tags (like 1.0.2) in your deployment.
 
 The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-update-iot-edge#update-the-runtime-containers).
 
@@ -206,3 +209,8 @@ The process is outlined in detail [here](https://docs.microsoft.com/en-us/azure/
 Re-deploy the updated version of the Azure Function Facade as outlined [here](./devguide.md#setup-azure-function-facade-and-azure-container-registry) if you have a previous version of this Azure Function running.
 
 Make sure the IoT Hub and Redis connection strings are properly configured in the function.
+
+<!-- markdownlint-enable MD040 -->
+<!-- leave on obvious linting error here for testing CI-->
+
+
