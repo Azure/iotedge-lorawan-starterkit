@@ -31,9 +31,9 @@ dotnet .\bin\Release\netcoreapp3.1\loradeviceprovisioning.dll -- (add verbs and 
 
 ## Setting up
 
-[appsettings.json](/appsettings.json) needs to be in the same directory as the cli-lora-device-provisioning binary (verifyloradevice.dll or verifyloradevice.exe).
+[appsettings.json](appsettings.json) needs to be in the same directory as the cli-lora-device-provisioning binary (verifyloradevice.dll or verifyloradevice.exe).
 
-[appsettings.json](/appsettings.json) needs to contain a connection string from the Azure IoT Hub you want to work with. This connection string needs to belong to a shared access policy with **registry read**, **registry write** and **service connect** permissions enabled. You can use the default policy named **iothubowner**.
+[appsettings.json](appsettings.json) needs to contain a connection string from the Azure IoT Hub you want to work with. This connection string needs to belong to a shared access policy with **registry read**, **registry write** and **service connect** permissions enabled. You can use the default policy named **iothubowner**.
 
 ```json
 {

@@ -357,7 +357,7 @@ The solution support sending Cloud to device (C2D) messages to LoRa class A devi
 The following tools can be used to send cloud to devices messages from Azure :
 
 - [Azure Portal](http://portal.azure.com) &rarr; IoT Hub &rarr; Devices &rarr; message to device
-- [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer)
+- [Azure IoT CLI Extension](https://github.com/azure/azure-iot-cli-extension)
 - [Visual Studio Code IoT Hub Extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit)
 
 In confirmed messages a ConfirmedDataDown message will be send to the LoRa device (as in picture above and below). You can enable additional message tracking options by setting the C2D message id to a value (C2D message ID is automatically populated with the Device Explorer tool used in the image below).

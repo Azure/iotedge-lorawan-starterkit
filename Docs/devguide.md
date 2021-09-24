@@ -205,7 +205,7 @@ Look out for these code lines:
 lora.setId(NULL, "47AAC86800430010", "BE7A0000000014E3");
 lora.setKey(NULL, NULL, "8AFE71A145B253E49C3031AD068277A3");
 ```
-
+<!-- markdown-link-check-disable -->
 To provisioning a device in Azure IoT Hub with these identifiers and capable to [decode](/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoraPayloadDecoder.cs) simple value payload into Json you have to create a device with:
 
 Device Id: `47AAC86800430010` and Device Twin's deired properties:
@@ -219,6 +219,8 @@ Device Id: `47AAC86800430010` and Device Twin's deired properties:
 ```
 
 You can  provision the device manually in the Azure portal or use the provided [Command Line Interface Provisioning Tool to list, query, verify add, update, and remove  devices](../Tools/Cli-LoRa-Device-Provisioning).
+
+<!-- markdown-link-check-enable -->
 
 The command to execute is:
 
@@ -300,6 +302,8 @@ The Arduino example provided above will print the message on the console. Keep i
 
 ## Debugging in Visual Studio, outside of IoT Edge and Docker
 
+<!-- markdown-link-check-disable -->
+
 It is possible to run the LoRaEngine locally from Visual Studio in order to enable a better debugging experience. Here are the steps you will need to follow in order to enable this feature:
 
 1. Either change the value *server_adress* in the file [local_conf.json](/LoraEngine/modules/LoRaWanPktFwdModule/local_conf.json) (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.
@@ -338,3 +342,5 @@ It is possible to run the LoRaEngine locally from Visual Studio in order to enab
 1. If you hit start in your VS solution, you will receive messages directly from your packet forwarder. You will be able to debug directly from your computer.
 
 Happy Debugging!
+
+<!-- markdown-link-check-enable -->

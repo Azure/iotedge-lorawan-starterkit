@@ -73,7 +73,7 @@ We are using the [Azure IoT Edge for Visual Studio Code](https://marketplace.vis
 
 Make sure you are logged in to the Azure Container Registry you are using. Run `docker login <mycontainerregistry>.azurecr.io` on your development machine.
 
-Edit the file [module.json](./module.json) to contain your container registry address, image name and version number:
+Edit the file [module.json](/Samples/DecoderSample/module.json) to contain your container registry address, image name and version number:
 
 ![Decoder Sample - module.json file](/Docs/Pictures/decodersample-module-json.png)
 

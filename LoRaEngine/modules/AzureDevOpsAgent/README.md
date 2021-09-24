@@ -81,4 +81,4 @@ Select ```deployment.template.json```, right click on it and then select ```Buil
 
 ## Building and deploying the solution part of other containers
 
-If you are deploying the solution part of other containers on an IoT Edge solution, make sure you have this module part of the same ```modules``` folder and that you merge the specific Azure DevOps modules option into the main file. You can find an example [here](https://github.com/Azure/iotedge-lorawan-starterkit/blob/oneweek-pipeline/LoRaEngine/deployment.test.template.json).
+If you are deploying the solution part of other containers on an IoT Edge solution, make sure you have this module part of the same ```modules``` folder and that you merge the specific Azure DevOps modules option into the main file. You can find an example [here](/LoRaEngine/deployment.test.template.json).
