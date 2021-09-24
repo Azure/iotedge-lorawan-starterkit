@@ -16,7 +16,8 @@ jobs:
       - uses: actions/setup-node@v2
       - run: |
           npm install markdownlint-cli
-          node_modules/.bin/markdownlint -c .markdownlint.jsonc -i node_modules/ .
+      - run: |
+         node_modules/.bin/markdownlint -c .markdownlint.jsonc -i node_modules/ .
          
   check-markdown-links:
     runs-on: ubuntu-latest
