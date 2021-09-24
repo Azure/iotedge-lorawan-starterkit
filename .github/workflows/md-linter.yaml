@@ -43,7 +43,7 @@ jobs:
 
         - name: Lint Markdown
           run: |
-            node_modules/.bin/markdownlint -c .markdownlint.jsonc .
+            node_modules/.bin/markdownlint -c .markdownlint.jsonc -i node_modules/ .
         
         # Check the links of the documents
         - name: Markdown Link Check
