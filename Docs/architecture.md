@@ -41,7 +41,7 @@ to the [dev guide](devguide.md).
 ### Adaptive Data Rate
 
 Solution support Adaptive Data Rate (ADR) device management as specified in
-[LoRa spec v1.0.2](https://lora-alliance.org/resource-hub/lorawantm-specification-v102).
+[LoRa spec v1.1](https://lora-alliance.org/resource_hub/lorawan-specification-v1-1/).
 The main goal of the ADR is to optimize the network for maximum capacity ensuring
 devices always transmit with their best settings possible (highest DR, lowest power),
 you can find more ADR information on this [page](https://www.sghoslya.com/p/how-does-lorawan-nodes-changes-their.html).

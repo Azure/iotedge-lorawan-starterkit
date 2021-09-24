@@ -13,9 +13,6 @@ workloads. Alternatively, it allows sending commands from the cloud to the end
 nodes. The goal of the the project is to provide guidance and a reference for
 Azure IoT Edge users to experiment with LoRaWAN technology.
 
-[wrong link](/non-existing/file.md)
-[another wrong](http://nonsensedasdsadsadfsdfdfs.com/com)
-
 ![Architecture](/Docs/Pictures/EdgeArchitecture.png)
   
 - [Features](#features)
@@ -129,5 +126,5 @@ an issue in this repo.
 ## Contributing
 
 If you would like to contribute to the IoT Edge LoRaWAN Starter Kit source code,
-please base your own branch and pull request (PR) off our [dev branch](/tree/dev).
+please base your own branch and pull request (PR) off our dev branch.
 Refer to the [Dev Guide](/Docs/devguide.md) for development and debugging instructions.

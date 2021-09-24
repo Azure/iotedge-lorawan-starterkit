@@ -43,7 +43,7 @@ This schema represent the various components and how they interact to have a bet
 > - The LoRaWan gateway must implement a UDP server on port 1680 to forward the LoRa commands from/to the ```LoRaWan Network Server``` module. In our case it is called ```LoRaWan Packet Forwarder```
 
 1. The LoRaWan Network Server request status for the LoRa devices. The Azure Function ```LoraKeysManagerFacade``` is used to aquire the device identity from IoT Hub.
-1. In the case you're using the demo device with the automatic deployment Azure Resource Manager (ARM) template: the Azure function ```LoraKeysManagerFacade``` will register the device ```47AAC86800430028``` into the Azure IoT Hub for you. Otherwise you need to provision a device yourself in IoT Hub: [device provisioning](/README.md/#lora-device-provisioning)
+1. In the case you're using the demo device with the automatic deployment Azure Resource Manager (ARM) template: the Azure function ```LoraKeysManagerFacade``` will register the device ```47AAC86800430028``` into the Azure IoT Hub for you. Otherwise you need to provision a device yourself in IoT Hub: [device provisioning](./Tools/Cli-LoRa-Device-Provisioning)
 1. The Azure function ```LoraKeysManagerFacade``` sends back the device identity to the module
 1. The ```LoRaWan Network Server``` module:
 
@@ -108,7 +108,7 @@ On your Visual Studio Solution, right click on the 'LoRaKeysManagerFacade' proje
 |-|-|
 |WEBSITE_RUN_FROM_ZIP|<https://github.com/Azure/iotedge-lorawan-starterkit/releases/download/v1.0.4/function-1.0.4.zip>|
 
-![Run Azure Function from Zip file](/Docs/Pictures/FunctionRunFromZip.PNG)
+![Run Azure Function from Zip file](/Docs/Pictures/FunctionRunFromZip.png)
 
 #### Follow these next steps in both cases
 
@@ -189,7 +189,7 @@ After that you can push the solution to your IoT Edge device by right clicking o
 
 ### Provision LoRa leaf device
 
-The [sample code](/Arduino/TemperatureOtaaLora/TemperatureOtaaLora.ino) used in this example is based on [Seeeduino LoRaWAN](http://wiki.seeedstudio.com/Seeeduino_LoRAWAN/) with a [Grove - Temperature Sensor](http://wiki.seeedstudio.com/Grove-Temperature_Sensor_V1.2/). It sends every 30 seconds its current temperature reading and prints out a Cloud-2-Device message if one is transmitted in its receive window.
+The [sample code](/Arduino/EU/TemperatureOtaaLora/TemperatureOtaaLora.ino) used in this example is based on [Seeeduino LoRaWAN](http://wiki.seeedstudio.com/Seeeduino_LoRAWAN/) with a [Grove - Temperature Sensor](http://wiki.seeedstudio.com/Grove-Temperature_Sensor_V1.2/). It sends every 30 seconds its current temperature reading and prints out a Cloud-2-Device message if one is transmitted in its receive window.
 
 The sample has configured the following sample [device identifiers and credentials](https://www.thethingsnetwork.org/docs/lorawan/security.html):
 
@@ -206,7 +206,7 @@ lora.setId(NULL, "47AAC86800430010", "BE7A0000000014E3");
 lora.setKey(NULL, NULL, "8AFE71A145B253E49C3031AD068277A3");
 ```
 
-To provisioning a device in Azure IoT Hub with these identifiers and capable to [decode](/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoraDecoders.cs) simple value payload into Json you have to create a device with:
+To provisioning a device in Azure IoT Hub with these identifiers and capable to [decode](/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoraPayloadDecoder.cs) simple value payload into Json you have to create a device with:
 
 Device Id: `47AAC86800430010` and Device Twin's deired properties:
 
@@ -302,13 +302,13 @@ The Arduino example provided above will print the message on the console. Keep i
 
 It is possible to run the LoRaEngine locally from Visual Studio in order to enable a better debugging experience. Here are the steps you will need to follow in order to enable this feature:
 
-1. Either change the value *server_adress* in the file [local_conf.json](./modules/LoRaWanPktFwdModule/local_conf.json) (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.
+1. Either change the value *server_adress* in the file [local_conf.json](/LoraEngine/modules/LoRaWanPktFwdModule/local_conf.json) (located in LoRaEngine/modules/LoRaWanPktFwdModule) to point to your computer. Rebuild and redeploy the container.
 
 1. **Alternatively**, configure your unmodified LoRaWanPktFwdModule Docker container / Edge module with the environment variable `NETWORK_SERVER=<ip of your computer>`
 
 1. If you are using a Wireless network in Windows, make sure it is configured as a private network in your Windows settings. Otherwise, the Windows Firewall will bock the incoming UDP packets.
 
-1. Open the properties of the project [LoRaWanNetworkServerModule](/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj) and set the following Environment Variables under the Debug tab:
+1. Open the properties of the project [LoRaWanNetworkServerModule](/LoraEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj) and set the following Environment Variables under the Debug tab:
 
     - IOTEDGE_IOTHUBHOSTNAME : XXX.azure-devices.net (XXX = your iot hub hostname)
     - ENABLE_GATEWAY : false
@@ -316,7 +316,7 @@ It is possible to run the LoRaEngine locally from Visual Studio in order to enab
     - FACADE_SERVER_URL : <http://localhost:7071/api/> (when debugging locally or any other URL of the Azure function you want to use)
     - IOTEDGE_DEVICEID : The Name of your PC
 
-1. Add a `local.settings.json` file to the project [LoRaKeysManagerFacade](./LoRaKeysManagerFacade) containing:
+1. Add a `local.settings.json` file to the project [LoRaKeysManagerFacade](/LoraEngine/LoRaKeysManagerFacade) containing:
 
     ```json
     {

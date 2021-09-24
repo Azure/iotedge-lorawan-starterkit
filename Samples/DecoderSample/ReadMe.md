@@ -7,7 +7,7 @@ This sample allows you to create and run your own LoRa message decoder in an ind
 
 ### Customizing
 
-To add a new decoder, simply copy or reuse  the sample ```DecoderValueSensor``` method from the ```LoraDecoders``` class in [LoraDecoder.cs](/Samples/DecoderSample/Classes/LoraDecoder.cs). You can name the method whatever you like and can create as many decoders as you need by adding new, individual methods to the ```LoraDecoders``` class.
+To add a new decoder, simply copy or reuse  the sample ```DecoderValueSensor``` method from the ```LoraDecoders``` class in [LoraDecoder.cs](/Samples/DecoderSample/Classes/LoraDecoders.cs). You can name the method whatever you like and can create as many decoders as you need by adding new, individual methods to the ```LoraDecoders``` class.
 
 The payload sent to the decoder is passed as string ```devEui```, byte[] ```payload``` and uint ```fport```.
 
@@ -82,7 +82,7 @@ We provide the Dockerfiles for the following architectures:
 - [Dockerfile.amd64](/Samples/DecoderSample/Dockerfile.amd64)
 - [Dockerfile.arm32v7](/Samples/DecoderSample/Dockerfile.arm32v7)
 
-To build the Docker image, right-click on the [module.json](./module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for (ARM32v7 or AMD64) from the drop-down menu.
+To build the Docker image, right-click on the [module.json](/Samples/DecoderSample/module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for (ARM32v7 or AMD64) from the drop-down menu.
 
 To **temporarily test** the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 80 to a free port on your host machine, like for example 8881.
 

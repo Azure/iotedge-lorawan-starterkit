@@ -100,17 +100,17 @@ Install the [Azure IoT Edge for Visual Studio Code](https://marketplace.visualst
 
 Make sure you are logged in to the Azure Container Registry you are using. Run `docker login <mycontainerregistry>.azurecr.io` on your development machine, or `az acr login -n mycontainerregistry` if the Azure CLI is available.
 
-Edit the file [module.json](./module.json) to contain your container registry address, image name and version number:
+Edit the file [module.json](/Samples/UniversalDecoder/module.json) to contain your container registry address, image name and version number:
 
 ![Decoder Sample - module.json file](/Docs/Pictures/decodersample-module-json.png)
 
 We provide the Dockerfiles for the following architectures:
 
-- [Dockerfile.amd64](./Dockerfile.amd64)
-- [Dockerfile.arm32v7](./Dockerfile.arm32v7)
-- [Dockerfile.arm64v8](./Dockerfile.arm64v8)
+- [Dockerfile.amd64](/Samples/UniversalDecoder//Dockerfile.amd64)
+- [Dockerfile.arm32v7](/Samples/UniversalDecoder//Dockerfile.arm32v7)
+- [Dockerfile.arm64v8](/Samples/UniversalDecoder//Dockerfile.arm64v8)
 
-To build the Docker image, right-click on the [module.json](./module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for from the drop-down menu.
+To build the Docker image, right-click on the [module.json](/Samples/UniversalDecoder/module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for from the drop-down menu.
 
 To **temporarily test** the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 8080 to a free port on your host machine (8080 is usually good).
 

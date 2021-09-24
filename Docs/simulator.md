@@ -84,7 +84,7 @@ Please note you'll have to create the devices and have the right Device Twin inf
 
 ## Creating the simulated gateway
 
-The gateway definition is stored in the same file as for the simulated devices. ```testconfig.json``` file located in [/LoRaSimulator/LoraSimulator](/LoRaSimulator/LoraSimulator) folder. As for the simulated devices, the file is copied when building the solution with the executable, once done, if you want to adjust it, make sure you'll do it in the build directory.
+The gateway definition is stored in the same file as for the simulated devices. ```testconfig.json``` file located in [/LoRaSimulator/LoraSimulator](/LoRaEngine/modules/LoRaSimulator/LoRaSimulator) folder. As for the simulated devices, the file is copied when building the solution with the executable, once done, if you want to adjust it, make sure you'll do it in the build directory.
 
 ```json
 "rxpk": {
@@ -118,7 +118,7 @@ and add the following environment variables:
 
 - IOTEDGE_IOTHUBHOSTNAME: XXX.azure-devices.net where XXX is your IoT Hub registry name
 - FACADE_AUTH_CODE: key. Where key is the secret key to access the function used to gather the device information like twins, get their own secret key to realize posting operation in Azure IoT Hub
-- FACADE_SERVER_URL: <https://XXX.azurewebsites.net/api> where XXX is the name of your function. If you want as well to debug the functions, you can do it. See full documentation [here](/LoRaEngine/README.md) if needed.
+- FACADE_SERVER_URL: <https://xxx.azurewebsites.net/api> where XXX is the name of your function. If you want as well to debug the functions, you can do it. See full documentation [here](/LoRaEngine/README.md) if needed.
 - LOG_LEVEL:
   - "1" or "Debug": Everything is logged, including the up- and downstream messages to the packet forwarder
   - "2" or "Information": Errors and information are logged.

@@ -58,7 +58,7 @@ If you are using the the RAK833-USB, you'll need to adjust the template to use t
 
 This is an optional configuration that should only be executed if your concentrator needs to use a proxy server to communicate with Azure.
 
-Follow [this guide](./devguide.md#use-a-proxy-server-to-connect-your-concentrator-to-azure) to:
+Follow [this guide](devguide.md#use-a-proxy-server-to-connect-your-concentrator-to-azure) to:
 
 1. Configure the Docker daemon and the IoT Edge daemon on your device to use a proxy server.
 2. Configure the `edgeAgent` properties in the `config.yaml` file on your device.
@@ -278,7 +278,7 @@ Setting **LOG_LEVEL** to **Debug** causes a lot of messages to be generated. Mak
 | LOG_TO_HUB | true  | Log info are sent from the module to IoT Hub.        |
 |            | false | Log info is not sent to IoT Hub (default if omitted) |
 
-You can use VSCode, [IoTHub explorer](https://github.com/Azure/iothub-explorer) or [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer) to monitor the log messages directly in IoT Hub if **LOG_TO_HUB** is set to **true**.
+You can use VSCode or [Azure IoT CLI extension](https://github.com/azure/azure-iot-cli-extension) to monitor the log messages directly in IoT Hub if **LOG_TO_HUB** is set to **true**.
 
 Log in to the gateway and use `sudo docker logs LoRaWanNetworkSrvModule -f` to follow the logs if you are not logging to IoT Hub.
 
