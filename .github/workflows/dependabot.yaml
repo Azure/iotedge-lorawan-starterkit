@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # Maintain dependencies the LoRa Engine
+  - package-ecosystem: "nuget"
+    directory: "/LoRaEngine"
+    schedule:
+      interval: "daily"
+    # Maintain dependencies for universal decoder
+  - package-ecosystem: "npm"
+    directory: "/Samples/UniversalDecoder"
+    schedule:
+      interval: "daily"
