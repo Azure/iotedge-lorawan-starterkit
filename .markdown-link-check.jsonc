@@ -1,0 +1,27 @@
+{
+    "ignorePatterns": [
+      {
+        "pattern": "^http://modulename"
+      },
+      {
+        "pattern": "^https://xxx"
+      },
+      {
+        "pattern": "^http://localhost"
+      },
+      {
+        "pattern": "^http://yourhost"
+      }
+    ],
+    "replacementPatterns": [
+      {
+        "pattern": "^/",
+        "replacement": "{{BASEURL}}/"
+      },
+      {
+        "pattern": "^./",
+        "replacement": "{{BASEURL}}/"
+      }
+    ],
+    "aliveStatusCodes": [200, 206]
+  }

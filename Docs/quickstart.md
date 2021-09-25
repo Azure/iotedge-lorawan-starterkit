@@ -22,22 +22,23 @@ The template will deploy in your Azure subscription the Following resources:
 ## Step-by-step instructions
 
 1. Press on the button here below to start your Azure Deployment.
-
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fmaster%2FTemplate%2Fazuredeploy.json" target="_blank">
-    <img src="http://azuredeploy.net/deploybutton.png"/>
-</a>
+    <!-- markdownlint-disable MD033 -->
+    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fiotedge-lorawan-starterkit%2Fmaster%2FTemplate%2Fazuredeploy.json" target="_blank">
+        <img src="http://azuredeploy.net/deploybutton.png"/>
+    </a>
+    <!-- markdownlint-enable MD033 -->
 
 2. You will get to a page asking you to fill the following fields :
 
-- **Resource Group** - A logical "folder" where all the template resource would be put into, just choose a meaningful name.
-- **Location** - In which DataCenter the resources should be deployed. Make sure to choose a location where [IoT Hub is available](https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&regions=all)
-- **Unique Solution Prefix** - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the [naming restrictions of Storage](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage) apply here.
-- **Edge gateway name** - the name of your LoRa Gateway node in the IoT Hub.
-- **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](/Arduino) would be ready to use immediately.
-- **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
-- **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)
+    - **Resource Group** - A logical "folder" where all the template resource would be put into, just choose a meaningful name.
+    - **Location** - In which DataCenter the resources should be deployed. Make sure to choose a location where [IoT Hub is available](https://azure.microsoft.com/en-us/global-infrastructure/services/?products=iot-hub&regions=all)
+    - **Unique Solution Prefix** - A string that would be used as prefix for all the resources name to ensure their uniqueness. Hence, avoid any standard prefix such as "lora" as it might already be in use and might make your deployment fail. NB: the template is creating a Storage account with the value specified here, therefore the [naming restrictions of Storage](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftstorage) apply here.
+    - **Edge gateway name** - the name of your LoRa Gateway node in the IoT Hub.
+    - **Deploy Device** - Do you want demo end devices to be already provisioned (one using OTAA and one using ABP)? If yes set this to true, the code located in the [Arduino folder](/Arduino) would be ready to use immediately.
+    - **Reset pin** - The reset pin of your gateway (the value should be 7 for the Seed Studio LoRaWam, 25 for the IC880A)
+    - **Region** - In what region are you operating your device (currently only EU868 and US915 is supported)
 
-  The deployment would take c.a. 10 minutes to complete.
+    The deployment would take c.a. 10 minutes to complete.
 
 3. During this time, you can proceed to [install IoT Edge to your gateway](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-edge-linux-arm).
 
@@ -57,7 +58,7 @@ If you are using the the RAK833-USB, you'll need to adjust the template to use t
 
 This is an optional configuration that should only be executed if your concentrator needs to use a proxy server to communicate with Azure.
 
-Follow [this guide](./devguide.md#use-a-proxy-server-to-connect-your-concentrator-to-azure) to:
+Follow [this guide](devguide.md#use-a-proxy-server-to-connect-your-concentrator-to-azure) to:
 
 1. Configure the Docker daemon and the IoT Edge daemon on your device to use a proxy server.
 2. Configure the `edgeAgent` properties in the `config.yaml` file on your device.
@@ -162,9 +163,9 @@ Customization's to lora devices are set by creating specific twin desired proper
 |Enable/disable downstream messages|Allows disabling the downstream (cloud to device) for a device. By default downstream messages are enabled| Add twin desired property `"Downlink": false` to disable downstream messages. The absence of the twin property or setting value to `true` will enable downlink messages.|Disabling downlink on devices decreases message processing latency, since the network server will not look for cloud to device messages when an uplink is received. Only disable it in devices that are not expecting messages from cloud. Acknowledgement of confirmed upstream are sent to devices even when downlink is set to false|
 |Preferred receive window|Allows setting the device preferred receive window (RX1 or RX2). The default preferred receive window is 1| Add twin desired property `"PreferredWindow": 2` sets RX2 as preferred window. The absence of the twin property or setting the value to `1` will set RX1 as preferred window.|Using the second receive window increases the chances that the end application can process the upstream message and send a cloud to device message to the lora device without requiring and additional upstream message. Basically completing the round trip in less than 2 seconds.|
 |Message Deduplication|Allows controlling the handling of duplicate messages received by multiple gateways.The default is None.| Add twin desired property `"Deduplication": "Drop"` to instruct dropping duplicate messages on the gateway, set it to `"Mark"` if you want to mark messages to the IotHub with `"dupmsg": true` in case the message was already processed. Example payload: Device: [47AAC86800430028], Data:[{"time":null,"tmms":0,"tmst":3201165987,"freq":868.3,"chan":1,"rfch":1,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","rssi":-61,"lsnr":8.2,"size":14,"data":{"value":1},"port":10,"fcnt":2,"rawdata":"QImRWQIAAgAK8I3rbqc=","eui":"47AAC86800430028","gatewayid":"simulatorpaschule1","edgets":1550501633879,`"dupmsg": true`}]|Deduplication on the gateway allows you to control how you want to handle duplicate messages in a multi gateway environment without having to add additional logic on the receiving or processing end. |
-| RX1 Datarate Offset | Allows setting an offset between received Datarate and retransmit datarate as specified in the LoRa Specifiations. Valid for OTAA devices. If an invalid value is provided the network server will use default value 0. | Add twin desired property `"RX1DROffset": # ` where # is a valid specification number to create an offset of # between received Datarate and Transmit Datarate. Please find the full table in the LoRa Specification example: upstream DR2, with a RX1DROffset of 1 will result in a transmission on DR1 | Setting an offset between receive and transmit could help deal with very saturated network. Warning, this is an advanced option, please only use if you are aware of your network specification.|
-| RX2 Datarate | Allows setting a custom Datarate for second receive windows. Valid for OTAA devices. If an invalid value is provided the network server will use default value 0 (DR0). | Add twin desired property `"RX2DataRate": # ` where # is a valid specification number to set the RX2 DR to DR#. Example: if a value of 2 is provided, second receive windows will use DR2 instead of the default DR0. | Setting a custom RX2 Datarate could help your RX2 devices to benefit of higher datarate. Warning, this is an advanced topic, changing it to higher datarate could be very dangerous and result in RX2 becoming unusable if the devices are not within reach of the specified datarate. Usage of this feature is especially not recommanded if ADR is enabled.
-| RX Delay | Allows setting a custom wait time between receiving and transmission as specified in the specification. | Add twin desired property `"RXDelay": # ` where # is a valid specification number to set the RxDelay to wait for # seconds. Note that values 0 and 1 are default. Example: if a value of 2 is provided, The RX1 transmit windows will open 2 second after receiving the message. RX2 windows will always stay 1 second after RX1 | Setting a custom RXDelay could be usefull in case of long processing time, this could give more time to the server/device to compute their answers and lower the risk of missing the transmission windows.  The defaults should work in most production scenarios, we recommend to use the default unless you have an explicit need for a longer delay|
+| RX1 Datarate Offset | Allows setting an offset between received Datarate and retransmit datarate as specified in the LoRa Specifiations. Valid for OTAA devices. If an invalid value is provided the network server will use default value 0. | Add twin desired property `"RX1DROffset": #` where # is a valid specification number to create an offset of # between received Datarate and Transmit Datarate. Please find the full table in the LoRa Specification example: upstream DR2, with a RX1DROffset of 1 will result in a transmission on DR1 | Setting an offset between receive and transmit could help deal with very saturated network. Warning, this is an advanced option, please only use if you are aware of your network specification.|
+| RX2 Datarate | Allows setting a custom Datarate for second receive windows. Valid for OTAA devices. If an invalid value is provided the network server will use default value 0 (DR0). | Add twin desired property `"RX2DataRate": #` where # is a valid specification number to set the RX2 DR to DR#. Example: if a value of 2 is provided, second receive windows will use DR2 instead of the default DR0. | Setting a custom RX2 Datarate could help your RX2 devices to benefit of higher datarate. Warning, this is an advanced topic, changing it to higher datarate could be very dangerous and result in RX2 becoming unusable if the devices are not within reach of the specified datarate. Usage of this feature is especially not recommanded if ADR is enabled.
+| RX Delay | Allows setting a custom wait time between receiving and transmission as specified in the specification. | Add twin desired property `"RXDelay": #` where # is a valid specification number to set the RxDelay to wait for # seconds. Note that values 0 and 1 are default. Example: if a value of 2 is provided, The RX1 transmit windows will open 2 second after receiving the message. RX2 windows will always stay 1 second after RX1 | Setting a custom RXDelay could be usefull in case of long processing time, this could give more time to the server/device to compute their answers and lower the risk of missing the transmission windows.  The defaults should work in most production scenarios, we recommend to use the default unless you have an explicit need for a longer delay|
 |Disable ABP relax mode|Allows to disable the relax mode when using ABP. By default relaxed mode is enabled | Add twin desired property `"ABPRelaxMode": false` will disable relaxed mode.|Disable the relaxed mode to minimize reply attack possiblitites. Allowing relaxed mode, allows a device to reset framecounters on the server by specifying 0/1. **Important**: in production deployments, we recommend turning relaxed mode off|
 |Specify frame counter up start value|Allows to explicitly specify a frame counter up start value. If the device joins, this value will be used to validate the first frame and initialize the server state for the device.| Add twin desired property `"FCntUpStart": 10` will set the frame counter up to 10.|If you disable ABP relax mode (see ABPRelaxMode) you usually want to set this value. In general, if your device starts with anything but 0 or 1, you specify the value here. If your device has relaxed mode disabled or uses 32 bit counters and got out of sync, this is a way to re-synchronize the counter between the server and the device. see 32bit counter support and reset counter|
 |Specify frame counter down start value|Allows to explicitly specify a frame counter down start value.| Add twin desired property `"FCntDownStart": 10` will set the frame counter up to 10.|If your device expects a frame counter down other than 1 in the first message, use this to configure the value|
@@ -277,7 +278,7 @@ Setting **LOG_LEVEL** to **Debug** causes a lot of messages to be generated. Mak
 | LOG_TO_HUB | true  | Log info are sent from the module to IoT Hub.        |
 |            | false | Log info is not sent to IoT Hub (default if omitted) |
 
-You can use VSCode, [IoTHub explorer](https://github.com/Azure/iothub-explorer) or [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer) to monitor the log messages directly in IoT Hub if **LOG_TO_HUB** is set to **true**.
+You can use VSCode or [Azure IoT CLI extension](https://github.com/azure/azure-iot-cli-extension) to monitor the log messages directly in IoT Hub if **LOG_TO_HUB** is set to **true**.
 
 Log in to the gateway and use `sudo docker logs LoRaWanNetworkSrvModule -f` to follow the logs if you are not logging to IoT Hub.
 
@@ -285,7 +286,6 @@ Log in to the gateway and use `sudo docker logs LoRaWanNetworkSrvModule -f` to f
 |----------------|-------|-----------------------------------------|
 | LOG_TO_CONSOLE | true  | Log to docker logs (default if omitted) |
 |                | false | Does not log to docker logs             |
-
 
 ## Local Processing and Routing
 
@@ -312,12 +312,12 @@ Sending cloud to device messages in the solution uses the following JSON format 
   "payload": "string",
   "rawPayload": "string",
   "macCommands":[
-  	  { "cid": "string" }
+    { "cid": "string" }
   ]
 }
 ```
 
-#### Fields
+### Fields
 
 |Field|Type|Description|Required|
 |-|-|-|-|
@@ -337,11 +337,13 @@ The companion Azure Function deployed with the solution has a HTTP based endpoin
 The function endpoint looks like `https://YOUR-FUNCTION-NAME.azurewebsites.net/api/cloudtodevicemessage/{devEUI}?code=YOUR-FUNCTION-APP-CODE`
 
 To send a message to a device send a POST request including the content as the body:
+
 ```bash
 curl -d '{"rawPayload": "AAA=","fport": 1}' -H "Content-Type: application/json" https://YOUR-FUNCTION-NAME.azurewebsites.net/api/cloudtodevicemessage/YOUR-DEVEUI?code=YOUR-FUNCTION-APP-CODE
 ```
 
 Should return
+
 ```json
 {"devEUI":"47AAC86800430028","messageID":"10c3e09f-0e58-4d28-8da1-37bb3fcf9435","deviceClassType":"A"}
 ```
@@ -354,9 +356,9 @@ The solution support sending Cloud to device (C2D) messages to LoRa class A devi
 
 The following tools can be used to send cloud to devices messages from Azure :
 
-* [Azure Portal](http://portal.azure.com) &rarr; IoT Hub &rarr; Devices &rarr; message to device
-* [Device Explorer](https://github.com/Azure/azure-iot-sdk-csharp/tree/master/tools/DeviceExplorer)
-* [Visual Studio Code IoT Hub Extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit)
+- [Azure Portal](http://portal.azure.com) &rarr; IoT Hub &rarr; Devices &rarr; message to device
+- [Azure IoT CLI Extension](https://github.com/azure/azure-iot-cli-extension)
+- [Visual Studio Code IoT Hub Extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit)
 
 In confirmed messages a ConfirmedDataDown message will be send to the LoRa device (as in picture above and below). You can enable additional message tracking options by setting the C2D message id to a value (C2D message ID is automatically populated with the Device Explorer tool used in the image below).
 
@@ -375,8 +377,8 @@ To send downstream messages to class C devices the following is required:
 
 Once the requirements are met, sending downstream messages is achieved by calling the direct method `CloudToDeviceMessage` in the module client. In Azure Portal:
 
-* [Azure Portal](http://portal.azure.com) &rarr; IoT Hub &rarr; IoT Edge &rarr; LoRaWanNetworkSrvModule (under Modules) &rarr; Direct Method
-* [Visual Studio Code IoT Hub Extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit)
+- [Azure Portal](http://portal.azure.com) &rarr; IoT Hub &rarr; IoT Edge &rarr; LoRaWanNetworkSrvModule (under Modules) &rarr; Direct Method
+- [Visual Studio Code IoT Hub Extension](https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.azure-iot-toolkit)
 
 The method name is `CloudToDeviceMessage` and the payload is the JSON following the structure previously described. Don't forget to set a value to the `devEUI` property.
 

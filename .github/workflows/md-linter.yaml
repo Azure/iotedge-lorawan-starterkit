@@ -1,0 +1,32 @@
+name: Lint and Check Markdown
+
+on:
+  pull_request:
+    branches: [master, dev]
+    # only trigger when the PR contains a markdown file
+    paths: 
+      - '**.md'
+      - '**.markdown'
+
+jobs:
+  lint-markdown:    
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: |
+          npm install markdownlint-cli
+      - run: |
+         node_modules/.bin/markdownlint -c .markdownlint.jsonc -i node_modules/ .
+         
+  check-markdown-links:
+    runs-on: ubuntu-latest
+    steps:      
+      - uses: actions/checkout@v2
+      - name: Markdown Link Check
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          check-modified-files-only: 'no' #todo make this dependent on label 
+          config-file: .markdown-link-check.jsonc
+          use-quiet-mode: 'yes'
+

@@ -31,9 +31,9 @@ dotnet .\bin\Release\netcoreapp3.1\loradeviceprovisioning.dll -- (add verbs and 
 
 ## Setting up
 
-[appsettings.json](/appsettings.json) needs to be in the same directory as the cli-lora-device-provisioning binary (verifyloradevice.dll or verifyloradevice.exe).
+[appsettings.json](appsettings.json) needs to be in the same directory as the cli-lora-device-provisioning binary (verifyloradevice.dll or verifyloradevice.exe).
 
-[appsettings.json](/appsettings.json) needs to contain a connection string from the Azure IoT Hub you want to work with. This connection string needs to belong to a shared access policy with **registry read**, **registry write** and **service connect** permissions enabled. You can use the default policy named **iothubowner**.
+[appsettings.json](appsettings.json) needs to contain a connection string from the Azure IoT Hub you want to work with. This connection string needs to belong to a shared access policy with **registry read**, **registry write** and **service connect** permissions enabled. You can use the default policy named **iothubowner**.
 
 ```json
 {
@@ -41,7 +41,7 @@ dotnet .\bin\Release\netcoreapp3.1\loradeviceprovisioning.dll -- (add verbs and 
 }
 ```
 
-[appsettings.json](/appsettings.json) may **optionally** contain a Network Id (NetId) in case your solution does not use the default Network Id 000001. Since just the last byte from this 3 hex string byte array (6 characters) are used to create a valid DevAddr for ABP LoRa devices, the setting can be either the full 3 bytes (000000 to FFFFFF) or just the shortened, last byte (0 to FF).
+[appsettings.json](appsettings.json) may **optionally** contain a Network Id (NetId) in case your solution does not use the default Network Id 000001. Since just the last byte from this 3 hex string byte array (6 characters) are used to create a valid DevAddr for ABP LoRa devices, the setting can be either the full 3 bytes (000000 to FFFFFF) or just the shortened, last byte (0 to FF).
 
 ```json
 {
@@ -213,7 +213,7 @@ The update verb supports the following parameters:
 |--appeui|no|AppEUI (only for OTAA devices): A 16 bit hex string.|
 |--appkey|no|AppKey (only for OTAA devices): A 16 bit hex string.|
 |--gatewayid|no|GatewayID: A hostname. |
-|--decoder|no|SensorDecoder: The name of an integrated decoder function or the URI to a decoder in a custom decoder module in the format: http://modulename/api/decodername. |
+|--decoder|no|SensorDecoder: The name of an integrated decoder function or the URI to a decoder in a custom decoder module in the format: <http://modulename/api/decodername>. |
 |--classtype|no|ClassType: "A" (default) or "C". |
 |--downlinkenabled|no|DownlinkEnabled: True or false. |
 |--preferredwindow|no|PreferredWindow (Preferred receive window): 1 or 2. |

@@ -1,11 +1,13 @@
 ﻿# Azure IoT Edge LoRaWAN Starter Kit
+<!-- markdownlint-disable MD040 -->
+
 ## DecoderSample
 
 This sample allows you to create and run your own LoRa message decoder in an independent container running on your LoRa gateway without having to edit the main LoRa Engine. This description shows you how to get started.
 
 ### Customizing
 
-To add a new decoder, simply copy or reuse  the sample ```DecoderValueSensor``` method from the ```LoraDecoders``` class in [LoraDecoder.cs](/Samples/DecoderSample/Classes/LoraDecoder.cs). You can name the method whatever you like and can create as many decoders as you need by adding new, individual methods to the ```LoraDecoders``` class.
+To add a new decoder, simply copy or reuse  the sample ```DecoderValueSensor``` method from the ```LoraDecoders``` class in [LoraDecoder.cs](/Samples/DecoderSample/Classes/LoraDecoders.cs). You can name the method whatever you like and can create as many decoders as you need by adding new, individual methods to the ```LoraDecoders``` class.
 
 The payload sent to the decoder is passed as string ```devEui```, byte[] ```payload``` and uint ```fport```.
 
@@ -31,7 +33,7 @@ internal static class LoraDecoders
 }
 ```
 
-You can test the decoder on your machine by debugging the SensorDecoderModule project in Visual Studio. 
+You can test the decoder on your machine by debugging the SensorDecoderModule project in Visual Studio.
 
 When creating a debugging configuration in Visual Studio Code or a ```launchSettings.json``` file in Visual Studio, the default address that the webserver will try to use is ```http://localhost:5000``` or ```https://localhost:5001```. You can override this with any port of your choice.
 
@@ -40,6 +42,7 @@ On launching the debugger you will see a webbrowser with a ```404 Not Found``` e
 You will also manually need to [base64-encode](https://www.base64encode.org/) and [URL-encode](https://www.urlencoder.org/) the payload before adding it to the URL parameters.
 
 For example, to test a payload of `ABCDE12345`, you:
+
 - Convert it to a base64 encoded string: `QUJDREUxMjM0NQ==`
 - Convert the result to a valid URL parameter: `QUJDREUxMjM0NQ%3D%3D`
 - Add this to your test URL.
@@ -48,7 +51,8 @@ For the built-in sample decoder ```DecoderValueSensor``` with Visual Studio (Cod
 
 ```
 http://localhost:5000/api/DecoderValueSensor?devEui=0000000000000000&fport=1&payload=QUJDREUxMjM0NQ%3D%3D
-`````
+```
+
 You can call your decoder at:
 
 ```
@@ -69,7 +73,7 @@ We are using the [Azure IoT Edge for Visual Studio Code](https://marketplace.vis
 
 Make sure you are logged in to the Azure Container Registry you are using. Run `docker login <mycontainerregistry>.azurecr.io` on your development machine.
 
-Edit the file [module.json](./module.json) to contain your container registry address, image name and version number:
+Edit the file [module.json](/Samples/DecoderSample/module.json) to contain your container registry address, image name and version number:
 
 ![Decoder Sample - module.json file](/Docs/Pictures/decodersample-module-json.png)
 
@@ -78,7 +82,7 @@ We provide the Dockerfiles for the following architectures:
 - [Dockerfile.amd64](/Samples/DecoderSample/Dockerfile.amd64)
 - [Dockerfile.arm32v7](/Samples/DecoderSample/Dockerfile.arm32v7)
 
-To build the Docker image, right-click on the [module.json](./module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for (ARM32v7 or AMD64) from the drop-down menu.
+To build the Docker image, right-click on the [module.json](/Samples/DecoderSample/module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for (ARM32v7 or AMD64) from the drop-down menu.
 
 To **temporarily test** the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 80 to a free port on your host machine, like for example 8881.
 
@@ -104,7 +108,7 @@ Configure your IoT Edge gateway device to include the custom container. IoT Hub 
 
 ![Decoder Sample - Edge Module](/Docs/Pictures/decodersample-edgemodule.png)
 
-To activate the decoder for a LoRa device, navigate to your IoT Hub &rarr; IoT Devices &rarr; Device Details &rarr; Device Twin and set the ```SensorDecoder``` value in the desired properties to: 
+To activate the decoder for a LoRa device, navigate to your IoT Hub &rarr; IoT Devices &rarr; Device Details &rarr; Device Twin and set the ```SensorDecoder``` value in the desired properties to:
 
 ```
 http://<decoder module name>/api/<DecoderName>
@@ -115,3 +119,5 @@ http://<decoder module name>/api/<DecoderName>
 ![Decoder Sample - LoRa Device Twin](/Docs/Pictures/decodersample-devicetwin.png)
 
 In case the custom decoder is unreachable, throws an error or return invalid JSON, the error message will be shown in your device's messages in IoT Hub.
+
+<!-- markdownlint-enable MD040 -->

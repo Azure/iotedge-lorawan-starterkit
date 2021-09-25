@@ -1,38 +1,45 @@
 # Universal Decoder
+<!-- markdownlint-disable MD040 -->
 
-This project gives access to decoders in the [TTN repo](https://github.com/TheThingsNetwork/lorawan-devices#payload-codecs) through a HTTP REST interface compliant with the LoraWan implementation in this repository. 
+This project gives access to decoders in the [TTN repo](https://github.com/TheThingsNetwork/lorawan-devices#payload-codecs) through a HTTP REST interface compliant with the LoraWan implementation in this repository.
 
 Codecs provided by TTN are stored in a well defined [folder structure](https://github.com/TheThingsNetwork/lorawan-devices#files-and-directories). The universal decoder copies the codec files into its docker image at build time for later use from the web application. As currently codecs are not implemented as node modules (see [open issue](https://github.com/TheThingsNetwork/lorawan-devices/issues/177)), these files were patched accordingly after being copied so that they can be imported and reused.
 
 ## Quick start
 
 Install node dependencies and copy/patch codecs from the TTN repository:
-```
+
+```bash
 npm install
 npm run codecs
 ```
 
 Create docker image (replace `amd64` with the architecture of your choice)
-```
+
+```bash
 docker build . -f Dockerfile.amd64 -t universaldecoder
 ```
 
 Run docker image:
-```
+
+```bash
 docker run --rm -d -p 8080:8080 universaldecoder
 ```
 
 Call the built-in `DecoderValueSensor` decoder at the following url. You should see the result as JSON string.
+
 ```
 http://localhost:8080/api/DecoderValueSensor?devEui=0000000000000000&fport=1&payload=QUJDREUxMjM0NQ%3D%3D
 ```
 
 Finally list all available decoders with the following url:
+
 ```
 http://localhost:8080/decoders
 ```
 
 You can finally call any other supported decoder at:
+
 ```
 http://localhost:8080/api/<decoder>?devEui=0000000000000000&fport=<fport>&payload=<payload>
 ```
@@ -41,7 +48,7 @@ http://localhost:8080/api/<decoder>?devEui=0000000000000000&fport=<fport>&payloa
 
 ### Start local server
 
-```
+```bash
 npm start
 ```
 
@@ -49,7 +56,7 @@ You can access the universal decoder at the url available in the output of the p
 
 ### Run tests
 
-```
+```bash
 npm test
 ```
 
@@ -78,6 +85,7 @@ LoRaWan Port field as integer value.
 Base64 and URL encoded payload to decode.
 
 For example, to test a payload of `ABCDE12345`, you:
+
 - Convert it to a base64 encoded string: `QUJDREUxMjM0NQ==`
 - Convert the result to a valid URL parameter: `QUJDREUxMjM0NQ%3D%3D`
 - Add this to your URL as the payload query parameter.
@@ -92,17 +100,17 @@ Install the [Azure IoT Edge for Visual Studio Code](https://marketplace.visualst
 
 Make sure you are logged in to the Azure Container Registry you are using. Run `docker login <mycontainerregistry>.azurecr.io` on your development machine, or `az acr login -n mycontainerregistry` if the Azure CLI is available.
 
-Edit the file [module.json](./module.json) to contain your container registry address, image name and version number:
+Edit the file [module.json](/Samples/UniversalDecoder/module.json) to contain your container registry address, image name and version number:
 
 ![Decoder Sample - module.json file](/Docs/Pictures/decodersample-module-json.png)
 
 We provide the Dockerfiles for the following architectures:
 
-- [Dockerfile.amd64](./Dockerfile.amd64)
-- [Dockerfile.arm32v7](./Dockerfile.arm32v7)
-- [Dockerfile.arm64v8](./Dockerfile.arm64v8)
+- [Dockerfile.amd64](/Samples/UniversalDecoder//Dockerfile.amd64)
+- [Dockerfile.arm32v7](/Samples/UniversalDecoder//Dockerfile.arm32v7)
+- [Dockerfile.arm64v8](/Samples/UniversalDecoder//Dockerfile.arm64v8)
 
-To build the Docker image, right-click on the [module.json](./module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for from the drop-down menu.
+To build the Docker image, right-click on the [module.json](/Samples/UniversalDecoder/module.json) file and select "Build IoT Edge Module Image" or "Build and Push IoT Edge Module Image". Select the architecture you want to build for from the drop-down menu.
 
 To **temporarily test** the container running you decoder using a webbrowser or Postman, you can manually start it in Docker and bind the container's port 8080 to a free port on your host machine (8080 is usually good).
 
@@ -146,4 +154,4 @@ http://universaldecoder:8080/decoders
 
 In case the custom decoder is unreachable, throws an error or return invalid JSON, the error message will be shown in your device's messages in IoT Hub.
 
-  
+<!-- markdownlint-enable MD040 -->
