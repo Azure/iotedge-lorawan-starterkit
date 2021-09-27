@@ -3,7 +3,7 @@
 <!-- markdownlint-disable MD040 -->
 ## Release 1.0.7
 
-> Note that this version switch IoT Edge to use version 1.2 of IoT Edge that include major changes on the edge. Please follow this [documentation](https://docs.microsoft.com/azure/iot-edge/how-to-update-iot-edge?view=iotedge-2020-11&tabs=linux) to upgrade IoT Edge to 1.2.
+> This release starts using Azure IoT Edge version 1.2 which includes major changes. Please follow this [documentation](https://docs.microsoft.com/azure/iot-edge/how-to-update-iot-edge?view=iotedge-2020-11&tabs=linux) to upgrade Azure IoT Edge to 1.2.
 
 To update from version 1.0.6, 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
 
@@ -22,7 +22,7 @@ If you are upgrading from release 1.0.5, There are no changes on the Azure funct
 
 ## Release 1.0.6
 
-> Note that this version switch IoT Edge to use version 1.2 of IoT Edge that include major changes on the edge. Please follow this [documentation](https://docs.microsoft.com/azure/iot-edge/how-to-update-iot-edge?view=iotedge-2020-11&tabs=linux) to upgrade IoT Edge to 1.2.
+> This release starts using Azure IoT Edge version 1.2 which includes major changes. Please follow this [documentation](https://docs.microsoft.com/azure/iot-edge/how-to-update-iot-edge?view=iotedge-2020-11&tabs=linux) to upgrade Azure IoT Edge to 1.2.
 
 To update from version 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
 
