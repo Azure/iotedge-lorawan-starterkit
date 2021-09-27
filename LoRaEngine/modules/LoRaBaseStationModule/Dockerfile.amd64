@@ -1,0 +1,18 @@
+#This docker builds a container for the LoRa Base station
+
+FROM debian as build
+RUN apt-get update
+RUN apt-get install -y git
+RUN apt-get install -y --no-install-recommends apt-utils build-essential
+RUN git clone https://github.com/lorabasics/basicstation.git
+WORKDIR /basicstation
+RUN cd examples/live-s2.sm.tc && rm -rf cups*
+RUN make platform=linux variant=std
+
+FROM debian
+WORKDIR /bin
+COPY --from=build /basicstation/build-linux-std/bin/station /bin/station
+COPY start_basestation_amd64.sh .
+COPY station.conf .
+COPY --from=build /basicstation/deps/lgw/platform-linux/reset_lgw.sh .
+ENTRYPOINT ["./start_basestation_amd64.sh"]
