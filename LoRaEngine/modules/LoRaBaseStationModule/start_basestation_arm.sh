@@ -9,6 +9,11 @@ else
     echo "Finished resetting the pin"
 fi
 
+if [[ -z "$SPI_DEV" ]] || [[ $SPI_DEV == '$LBS_SPI_DEV' ]]; then
+    echo "No custom SPI dev set up, defaulting to spi dev 0"
+    SPI_DEV = 0
+fi
+
 #Generate tc.uri file
 if [[ -z "$TC_URI" ]]; then
     echo "No TC_URI detected in environment variables."
@@ -18,7 +23,7 @@ else
 
     #start basestation
     echo "Starting base station..."
-    if [[ -z "$SPI_SPEED" ]]; then
+    if [[ -z "$SPI_SPEED"  ]] || [[ "$SPI_SPEED" == '$LBS_SPI_SPEED' ]]; then
         echo "No SPI Speed found defaulting to 8mbps"
         RADIODEV=/dev/spidev$SPI_DEV.0 /bin/station.std -f
     else 
