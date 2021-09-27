@@ -7,7 +7,7 @@
 
 To update from version 1.0.6, 1.0.5, 1.0.4 or 1.0.3 you can follow the below instructions. If you want to update manually from a version prior to 1.0.3, please refer to the instructions in the [Release 1.0.3](#Release-1.0.3) section below.
 
-### Updating from release after 1.0.3
+### Updating from release post 1.0.3
 
 |Deployment Module|Image URI|
 |-|-|
