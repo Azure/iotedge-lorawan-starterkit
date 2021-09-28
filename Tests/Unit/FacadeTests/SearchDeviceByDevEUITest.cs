@@ -80,6 +80,8 @@ namespace LoRaWan.Tests.Unit.FacadeTests
         public async Task When_Device_Is_Found_Should_Returns_Device_Information()
         {
             const string devEUI = "13213123212131";
+            const string assignedIoTHub = "fake.azure-devices.net";
+
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI={devEUI}&{ApiVersion.QueryStringParamName}={ApiVersion.LatestVersion}");
@@ -94,6 +96,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
                     deviceMock.SetupGet(c => c.DeviceId).Returns(devEUI);
                     deviceMock.SetupGet(c => c.PrimaryKey).Returns(primaryKey);
                     deviceMock.SetupGet(c => c.DeviceId).Returns(primaryKey);
+                    deviceMock.SetupGet(c => c.AssignedIoTHub).Returns(assignedIoTHub);
 
                     return deviceMock.Object;
                 });
@@ -107,6 +110,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
             Assert.Single(devices);
             Assert.Equal(devEUI, devices[0].DevEUI);
             Assert.Equal(primaryKey, devices[0].PrimaryKey);
+            Assert.Equal(assignedIoTHub, devices[0].IoTHubHostname);
 
             registryManager.VerifyAll();
         }
