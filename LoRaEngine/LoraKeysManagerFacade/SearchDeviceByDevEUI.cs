@@ -57,7 +57,8 @@ namespace LoraKeysManagerFacade
                 result.Add(new IoTHubDeviceInfo()
                 {
                     DevEUI = devEUI,
-                    PrimaryKey = device.PrimaryKey
+                    PrimaryKey = device.PrimaryKey,
+                    IoTHubHostname = device.AssignedIoTHub
                 });
 
                 log.LogDebug($"Search for {devEUI} found 1 device");
