@@ -84,7 +84,6 @@ jobs:
     # Run unit tests
     - name: Run unit tests
       run: |
-        mkdir $(Build.SourcesDirectory)\results
         dotnet test --logger trx LoRaEngine/test/LoRaWanNetworkServer.Test/*.csproj -r LoRaEngine/test/TestResults/  &&  dotnet test --logger trx LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaToolsTest/*.csproj -r LoRaEngine/test/TestResults/ && dotnet test --logger trx LoRaEngine/test/LoraKeysManagerFacade.Test/*.csproj -r LoRaEngine/test/TestResults/
       
     # Upload test results as artifact
