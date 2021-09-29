@@ -6,7 +6,6 @@ RUN apt-get install -y git
 RUN apt-get install -y --no-install-recommends apt-utils build-essential
 RUN git clone https://github.com/lorabasics/basicstation.git
 WORKDIR /basicstation
-RUN cd examples/live-s2.sm.tc && rm -rf cups*
 
 # make standard version
 RUN make platform=rpi variant=std
@@ -20,7 +19,6 @@ WORKDIR /basicstation
 RUN make platform=rpi variant=std clean
 # make spi speed 2 version
 RUN sed -i "s|8000000|2000000|g" /basicstation/deps/lgw/platform-rpi/libloragw/src/loragw_spi.native.c
-RUN cd examples/live-s2.sm.tc && rm -rf cups*
 RUN make platform=rpi variant=std
 
 FROM base
