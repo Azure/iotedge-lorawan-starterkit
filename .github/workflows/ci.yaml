@@ -65,6 +65,9 @@ jobs:
     - uses: actions/checkout@v2
       name: Checkout current branch
 
+    - name: .NET (Core) SDK Information
+      run: dotnet --info
+
     # build LoRa Engine
     - name: Build LoRa Engine
       run: dotnet build --configuration ${{ env.buildConfiguration }} LoRaEngine/LoRaEngine.sln
