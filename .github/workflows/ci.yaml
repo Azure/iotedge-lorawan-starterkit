@@ -62,11 +62,11 @@ jobs:
       - env_var
     if: needs.env_var.outputs.RunTestsOnly != 'true'
     steps:
-    - name: .NET (Core) SDK Information
-      run: dotnet --info
-
     - uses: actions/checkout@v2
       name: Checkout current branch
+
+    - name: .NET (Core) SDK Information
+      run: dotnet --info
 
     # build LoRa Engine
     - name: Build LoRa Engine
