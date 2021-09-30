@@ -91,7 +91,9 @@ jobs:
     # Run unit tests
     - name: Run unit tests
       run: |
-        dotnet test --logger trx LoRaEngine/test/LoRaWanNetworkServer.Test/*.csproj -r LoRaEngine/test/TestResults/  &&  dotnet test --logger trx LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaToolsTest/*.csproj -r LoRaEngine/test/TestResults/ && dotnet test --logger trx LoRaEngine/test/LoraKeysManagerFacade.Test/*.csproj -r LoRaEngine/test/TestResults/
+        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx LoRaEngine/test/LoRaWanNetworkServer.Test/*.csproj -r LoRaEngine/test/TestResults/
+        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaToolsTest/*.csproj -r LoRaEngine/test/TestResults/
+        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx LoRaEngine/test/LoraKeysManagerFacade.Test/*.csproj -r LoRaEngine/test/TestResults/
       
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
