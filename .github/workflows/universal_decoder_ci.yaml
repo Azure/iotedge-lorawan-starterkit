@@ -1,6 +1,6 @@
 name: Universal Decoder CI
 on: 
-  pr:
+  pull_request:
     branches:
       - master
       - dev
