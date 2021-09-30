@@ -1,5 +1,11 @@
 name: Universal Decoder CI
 on: 
+  pr:
+    branches:
+      - master
+      - dev
+    paths:
+      - 'Samples/UniversalDecoder/**'
   push:
     branches:
       - master

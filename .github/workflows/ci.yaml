@@ -5,6 +5,10 @@ on: # rebuild any PRs and main branch changes
     branches:
       - master
       - dev
+    paths-ignore:
+      - 'Docs/**'
+      - 'Arduino/**'
+      - 'Samples/**'
   push:
     branches:
       - master
