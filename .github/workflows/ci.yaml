@@ -104,10 +104,7 @@ jobs:
         path: LoRaEngine/test/TestResults
 
     - name: Upload to Codecov
-      run: |
-        curl -OsSL https://uploader.codecov.io/v0.1.0_4653/linux/codecov
-        chmod +x codecov
-        ./codecov
+      uses: codecov/codecov-action@v2
 
   check_if_deploy:
     needs: 
