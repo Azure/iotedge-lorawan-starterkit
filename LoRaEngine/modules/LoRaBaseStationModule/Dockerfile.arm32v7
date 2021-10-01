@@ -1,0 +1,30 @@
+#This docker builds a container for the LoRa Base station
+
+FROM arm32v7/debian:stretch-slim as build
+RUN apt-get update
+RUN apt-get install -y git
+RUN apt-get install -y --no-install-recommends apt-utils build-essential
+RUN git clone --branch v2.0.5 --single-branch --depth 1 https://github.com/lorabasics/basicstation.git
+WORKDIR /basicstation
+
+# make standard version
+RUN make platform=rpi variant=std
+
+FROM arm32v7/debian:stretch-slim as base
+COPY --from=build /basicstation/build-rpi-std/bin/station /bin/station.std
+
+FROM build as build2
+# #reset 
+WORKDIR /basicstation
+RUN make platform=rpi variant=std clean
+# make spi speed 2 version
+RUN sed -i "s|8000000|2000000|g" /basicstation/deps/lgw/platform-rpi/libloragw/src/loragw_spi.native.c
+RUN make platform=rpi variant=std
+
+FROM base
+WORKDIR /bin
+COPY --from=build /basicstation/deps/lgw/platform-rpi/reset_lgw.sh .
+COPY --from=build2 /basicstation/build-rpi-std/bin/station /bin/station.spispeed2
+COPY station.conf .
+COPY start_basestation_arm.sh .
+ENTRYPOINT ["./start_basestation_arm.sh"]
