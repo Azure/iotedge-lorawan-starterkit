@@ -49,11 +49,11 @@ We want to define a plan to build a basic support for the LoRa Basic Station in 
 
 ### ADR Interlude I
 
-- Websocket Connection Dictionary ADR
+- WebSocket Connection Dictionary ADR
 
 ### Phase IV
 
-- The Websocket connection Dictionary need to be implemented
+- The WebSocket connection Dictionary need to be implemented
 - Downlink message are added to DefaultMessageHandler and JoinMessageHandler
 
 ### ADR Interlude II
@@ -62,7 +62,7 @@ We want to define a plan to build a basic support for the LoRa Basic Station in 
 
 ### Phase V
 
-- E2E tests are renabled excepting Class C. We debug them.
+- E2E tests are reenabled excepting Class C. We debug them.
 - Refactor of existing tests (LoRaWanNetworkSrv.Test) to use LBS class and transfer to projects according to testing sttategy design.
 
 ## Subsequent work
