@@ -12,7 +12,6 @@ namespace LoraKeysManagerFacade.Test
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
-    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;

@@ -3,8 +3,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System;
-    using System.Threading;
     using System.Threading.Tasks;
 
     // Frame counter strategy for multi gateway scenarios

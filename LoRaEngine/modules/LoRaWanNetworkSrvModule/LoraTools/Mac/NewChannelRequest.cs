@@ -3,7 +3,6 @@
 
 namespace LoRaTools
 {
-    using System;
     using System.Collections.Generic;
     using LoRaTools.Utils;
     using Newtonsoft.Json;

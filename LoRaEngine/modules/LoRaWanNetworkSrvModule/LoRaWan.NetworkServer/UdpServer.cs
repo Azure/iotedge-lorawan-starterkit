@@ -4,23 +4,19 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Net;
-    using System.Net.Http;
     using System.Net.Sockets;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
-    using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.Shared;
     using Microsoft.Azure.Devices.Client;
-    using Microsoft.Azure.Devices.Client.Transport.Mqtt;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;

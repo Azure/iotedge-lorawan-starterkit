@@ -4,8 +4,6 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
 
     public class DevAddrCacheInfo : IoTHubDeviceInfo, IComparable
     {

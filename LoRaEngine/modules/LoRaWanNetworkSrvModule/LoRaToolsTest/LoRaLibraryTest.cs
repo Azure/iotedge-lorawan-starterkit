@@ -10,7 +10,6 @@ namespace LoRaWanTest
     using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
     using LoRaTools.Utils;
     using Xunit;
 

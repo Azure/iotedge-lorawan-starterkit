@@ -6,10 +6,8 @@ namespace LoRaWan.NetworkServer.Test
     using System;
     using System.Collections.Generic;
     using System.Text;
-    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
@@ -18,8 +16,6 @@ namespace LoRaWan.NetworkServer.Test
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
     using Xunit;
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)

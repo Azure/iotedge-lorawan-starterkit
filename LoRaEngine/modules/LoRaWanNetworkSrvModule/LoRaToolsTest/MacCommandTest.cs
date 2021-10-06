@@ -3,9 +3,7 @@
 
 namespace LoRaWanTest
 {
-    using System;
     using System.Collections.Generic;
-    using System.Text;
     using LoRaTools;
     using Newtonsoft.Json;
     using Xunit;

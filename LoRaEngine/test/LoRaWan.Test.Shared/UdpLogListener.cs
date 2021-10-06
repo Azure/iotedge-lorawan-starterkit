@@ -9,9 +9,7 @@ namespace LoRaWan.Test.Shared
     using System.Net;
     using System.Net.Sockets;
     using System.Text;
-    using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.Test.Shared;
 
     public class UdpLogListener : IDisposable
     {

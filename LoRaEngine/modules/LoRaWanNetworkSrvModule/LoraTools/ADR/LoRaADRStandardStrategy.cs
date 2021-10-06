@@ -3,10 +3,7 @@
 
 namespace LoRaTools.ADR
 {
-    using System;
     using System.Linq;
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
     using LoRaWan;
 
     /// <summary>

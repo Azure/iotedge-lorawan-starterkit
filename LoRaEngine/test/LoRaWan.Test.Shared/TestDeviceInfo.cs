@@ -3,7 +3,6 @@
 
 namespace LoRaWan.Test.Shared
 {
-    using System;
     using System.Collections.Generic;
     using LoRaTools.Utils;
 

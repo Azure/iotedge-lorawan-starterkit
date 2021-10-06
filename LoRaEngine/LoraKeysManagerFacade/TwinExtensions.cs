@@ -3,9 +3,6 @@
 
 namespace LoraKeysManagerFacade
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
     using Microsoft.Azure.Devices.Shared;
 
     internal static class TwinExtensions

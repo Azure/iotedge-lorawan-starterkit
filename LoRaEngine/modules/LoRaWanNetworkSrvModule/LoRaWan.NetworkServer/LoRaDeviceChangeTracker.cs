@@ -4,9 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Collections.Generic;
-    using LoRaTools.Regions;
-    using Microsoft.Azure.Devices.Shared;
 
     /// <summary>
     /// <see cref="LoRaDevice"/> change tracker

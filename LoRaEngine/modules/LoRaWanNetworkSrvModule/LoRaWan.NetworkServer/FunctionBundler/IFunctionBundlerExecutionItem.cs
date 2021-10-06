@@ -3,8 +3,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using LoRaTools.CommonAPI;
-
     public interface IFunctionBundlerExecutionItem
     {
         bool RequiresExecution(FunctionBundlerExecutionContext context);

@@ -7,8 +7,6 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
-    using LoRaTools.ADR;
-    using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 

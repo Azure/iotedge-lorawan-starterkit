@@ -3,10 +3,6 @@
 
 namespace LoRaTools.ADR
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-
     public class LoRaADRStrategyProvider : ILoRaADRStrategyProvider
     {
         /// <summary>

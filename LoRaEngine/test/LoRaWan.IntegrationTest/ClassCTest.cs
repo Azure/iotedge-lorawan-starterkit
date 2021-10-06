@@ -4,13 +4,9 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
     using LoRaWan.Test.Shared;
-    using Microsoft.Azure.Devices;
     using Newtonsoft.Json;
     using Xunit;
 

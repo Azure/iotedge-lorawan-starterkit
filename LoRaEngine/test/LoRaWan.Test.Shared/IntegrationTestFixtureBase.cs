@@ -11,9 +11,7 @@ namespace LoRaWan.Test.Shared
     using LoRaTools.CommonAPI;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Azure.EventHubs;
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
     using Xunit;
 
     /// <summary>

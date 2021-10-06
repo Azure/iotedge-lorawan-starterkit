@@ -4,12 +4,10 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Caching.Memory;

@@ -3,8 +3,6 @@
 
 namespace LoraKeysManagerFacade.FunctionBundler
 {
-    using System.Collections.Generic;
-    using LoRaTools.CommonAPI;
     using Microsoft.Extensions.Logging;
 
     public interface IPipelineExecutionContext

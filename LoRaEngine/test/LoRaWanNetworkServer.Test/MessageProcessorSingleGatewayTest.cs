@@ -10,7 +10,6 @@ namespace LoRaWan.NetworkServer.Test
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Mac;
     using LoRaWan.NetworkServer;
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices.Client;

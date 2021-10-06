@@ -8,7 +8,6 @@ namespace LoRaTools.LoRaMessage
     using System.Linq;
     using System.Runtime.InteropServices;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Mac;
     using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;

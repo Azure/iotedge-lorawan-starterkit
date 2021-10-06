@@ -5,7 +5,6 @@ namespace LoraKeysManagerFacade
 {
     using System.Threading.Tasks;
     using LoRaTools.ADR;
-    using Microsoft.Azure.WebJobs;
 
     public class LoRaADRServerManager : LoRaADRManagerBase
     {

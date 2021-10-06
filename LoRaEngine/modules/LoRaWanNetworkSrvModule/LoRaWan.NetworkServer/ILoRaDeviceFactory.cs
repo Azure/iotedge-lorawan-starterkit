@@ -3,8 +3,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System.Threading.Tasks;
-
     public interface ILoRaDeviceFactory
     {
         // Creates and initializes a new lora device

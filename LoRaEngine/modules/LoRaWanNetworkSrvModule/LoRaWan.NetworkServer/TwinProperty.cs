@@ -3,10 +3,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-
     /// <summary>
     /// Twin properties of a <see cref="LoRaDevice"/>.
     /// </summary>

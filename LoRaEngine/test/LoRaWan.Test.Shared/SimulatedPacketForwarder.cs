@@ -4,7 +4,6 @@
 namespace LoRaWan.Test.Shared
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Net;
     using System.Net.Sockets;
@@ -12,7 +11,6 @@ namespace LoRaWan.Test.Shared
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
-    using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using Newtonsoft.Json;
 

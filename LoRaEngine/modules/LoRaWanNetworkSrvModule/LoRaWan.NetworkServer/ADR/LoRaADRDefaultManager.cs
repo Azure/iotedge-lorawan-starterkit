@@ -3,10 +3,8 @@
 
 namespace LoRaWan.NetworkServer.ADR
 {
-    using System;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
-    using Microsoft.Extensions.Logging;
 
     public class LoRaADRDefaultManager : LoRaADRManagerBase
     {

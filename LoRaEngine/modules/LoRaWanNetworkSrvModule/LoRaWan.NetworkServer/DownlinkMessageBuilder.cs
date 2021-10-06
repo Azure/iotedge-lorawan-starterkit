@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
-    using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
@@ -15,9 +14,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.Mac;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
-    using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
-    using Newtonsoft.Json;
 
     /// <summary>
     /// Helper class to create <see cref="DownlinkPktFwdMessage"/>.

@@ -10,7 +10,6 @@ namespace LoRaWan.NetworkServer
     using LoRaTools;
     using LoRaTools.CommonAPI;
     using Microsoft.Azure.Devices.Client;
-    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
     class LoRaCloudToDeviceMessageWrapper : IReceivedLoRaCloudToDeviceMessage

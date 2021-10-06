@@ -6,7 +6,6 @@ namespace LoRaTools
     using System;
     using System.Collections.Generic;
     using LoRaTools.Mac;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;

@@ -4,12 +4,8 @@
 namespace LoRaTools.Regions
 {
     using System.Collections.Generic;
-    using System.Data;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
-    using LoRaWan;
-    using Microsoft.Extensions.Logging;
-    using Org.BouncyCastle.Utilities.Collections;
 
     public static class RegionManager
     {

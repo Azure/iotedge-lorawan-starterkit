@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
 
