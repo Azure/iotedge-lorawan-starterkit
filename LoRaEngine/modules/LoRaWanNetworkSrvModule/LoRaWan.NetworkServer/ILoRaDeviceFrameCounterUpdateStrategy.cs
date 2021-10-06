@@ -3,7 +3,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System;
     using System.Threading.Tasks;
 
     // Defines a contract to handle device frame counters

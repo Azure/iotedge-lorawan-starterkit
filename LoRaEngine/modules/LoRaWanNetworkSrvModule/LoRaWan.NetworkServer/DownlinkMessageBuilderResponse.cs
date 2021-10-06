@@ -3,7 +3,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System;
     using LoRaTools.LoRaPhysical;
 
     internal class DownlinkMessageBuilderResponse

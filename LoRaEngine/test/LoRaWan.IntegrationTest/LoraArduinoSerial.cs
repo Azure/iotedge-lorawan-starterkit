@@ -42,8 +42,6 @@ namespace LoRaWan.IntegrationTest
     using System.IO.Ports;
     using System.Linq;
     using System.Runtime.CompilerServices;
-    using System.Runtime.InteropServices;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.Test.Shared;

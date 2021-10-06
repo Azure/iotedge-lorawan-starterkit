@@ -3,9 +3,6 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using Microsoft.Azure.Devices.Shared;

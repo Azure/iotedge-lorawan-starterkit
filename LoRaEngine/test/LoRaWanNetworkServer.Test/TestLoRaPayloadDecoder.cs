@@ -3,15 +3,8 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
-    using System;
     using System.Threading.Tasks;
-    using LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Test.Shared;
-    using Microsoft.Azure.Devices.Client;
-    using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Logging;
-    using Moq;
 
     public class TestLoRaPayloadDecoder : ILoRaPayloadDecoder
     {

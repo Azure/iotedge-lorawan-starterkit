@@ -4,21 +4,15 @@
 namespace LoRaWan.NetworkServer.Test
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
-    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Test.Shared;
     using Microsoft.Azure.Devices.Client;
-    using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
 

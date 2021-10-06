@@ -4,7 +4,6 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaWan;

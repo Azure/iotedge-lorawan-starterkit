@@ -3,7 +3,6 @@
 
 namespace LoRaWan.IntegrationTest
 {
-    using System;
     using System.Threading;
 
     // Paylod generator ensures that sample payloads won't be duplicated in a single test execution

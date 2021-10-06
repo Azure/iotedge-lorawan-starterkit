@@ -4,7 +4,6 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using Newtonsoft.Json;
 
     /// <summary>
     /// Contains the preferred gateway for a class C device

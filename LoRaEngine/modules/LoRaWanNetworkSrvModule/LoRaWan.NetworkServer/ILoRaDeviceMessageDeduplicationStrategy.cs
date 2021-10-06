@@ -3,7 +3,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System;
     using System.Threading.Tasks;
 
     public interface ILoRaDeviceMessageDeduplicationStrategy

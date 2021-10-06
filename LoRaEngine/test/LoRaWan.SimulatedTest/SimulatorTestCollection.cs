@@ -7,14 +7,7 @@ namespace LoRaWan.SimulatedTest
     using System.Collections.Generic;
     using System.Linq;
     using System.Net;
-    using System.Net.NetworkInformation;
-    using System.Net.Sockets;
-    using System.Text;
-    using System.Threading;
     using System.Threading.Tasks;
-    using LoRaTools;
-    using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
     using LoRaWan.Test.Shared;
     using Xunit;
 

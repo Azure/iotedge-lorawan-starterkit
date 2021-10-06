@@ -3,8 +3,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System.Threading.Tasks;
-
     public interface ILoRaDeviceClientConnectionManager
     {
         bool EnsureConnected(LoRaDevice loRaDevice);

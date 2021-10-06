@@ -9,7 +9,6 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
-    using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 

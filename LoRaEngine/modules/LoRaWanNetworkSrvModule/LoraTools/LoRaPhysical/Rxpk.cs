@@ -5,9 +5,7 @@ namespace LoRaTools.LoRaPhysical
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Text;
-    using LoRaTools.Regions;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;

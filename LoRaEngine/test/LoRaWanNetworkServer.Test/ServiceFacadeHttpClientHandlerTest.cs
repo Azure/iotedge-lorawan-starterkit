@@ -4,13 +4,10 @@
 namespace LoRaWan.NetworkServer.Test
 {
     using System;
-    using System.Collections.Generic;
     using System.Net;
     using System.Net.Http;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.NetworkServer;
     using LoRaWan.Shared;
     using Xunit;
 

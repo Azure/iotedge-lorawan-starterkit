@@ -6,16 +6,13 @@ namespace LoraKeysManagerFacade
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using LoRaWan.Shared;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
-    using StackExchange.Redis;
 
     public class DeviceGetter
     {

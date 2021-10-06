@@ -7,8 +7,6 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;

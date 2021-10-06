@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Collections.Generic;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using LoRaTools.Utils;

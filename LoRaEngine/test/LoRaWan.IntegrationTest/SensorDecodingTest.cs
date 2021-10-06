@@ -3,9 +3,7 @@
 
 namespace LoRaWan.IntegrationTest
 {
-    using System;
     using System.Threading.Tasks;
-    using LoRaWan.Test.Shared;
     using Xunit;
     using XunitRetryHelper;
 

@@ -12,9 +12,6 @@ namespace LoRaWan.Test.Shared
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
-    using LoRaWan;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
 
     /// <summary>
     /// Defines a simulated device.

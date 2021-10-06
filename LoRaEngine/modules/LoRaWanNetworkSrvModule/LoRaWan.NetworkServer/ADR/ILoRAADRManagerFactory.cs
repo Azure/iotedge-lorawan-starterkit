@@ -3,8 +3,6 @@
 
 namespace LoRaWan.NetworkServer.ADR
 {
-    using System;
-    using System.Threading.Tasks;
     using LoRaTools.ADR;
 
     public interface ILoRAADRManagerFactory

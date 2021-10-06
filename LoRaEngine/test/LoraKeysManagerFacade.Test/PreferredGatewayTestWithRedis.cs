@@ -5,7 +5,6 @@
 namespace LoraKeysManagerFacade.Test
 {
     using System;
-    using System.Linq;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.FunctionBundler;
     using Microsoft.Extensions.Logging.Abstractions;

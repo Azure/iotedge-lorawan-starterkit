@@ -3,10 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System;
-    using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Microsoft.Azure.Devices.Client;
 
     public interface ILoRaDeviceRegistry
     {

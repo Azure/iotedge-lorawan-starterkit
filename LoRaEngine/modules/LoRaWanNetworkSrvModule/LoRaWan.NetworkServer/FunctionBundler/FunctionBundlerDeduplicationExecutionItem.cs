@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using LoRaTools.CommonAPI;
-    using Microsoft.Extensions.Logging;
 
     public class FunctionBundlerDeduplicationExecutionItem : IFunctionBundlerExecutionItem
     {

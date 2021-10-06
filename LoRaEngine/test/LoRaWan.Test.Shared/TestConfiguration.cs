@@ -3,9 +3,6 @@
 
 namespace LoRaWan.Test.Shared
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
     using Microsoft.Extensions.Configuration;
 
     public class TestConfiguration

@@ -5,10 +5,8 @@ namespace LoRaWan.NetworkServer.Test
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
     using LoRaWan.NetworkServer;
     using Xunit;
-    using Xunit.Extensions;
 
     public class ConfigurationTest
     {

@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using LoRaTools.CommonAPI;
-    using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Logging;
 
     public class FunctionBundlerPreferredGatewayExecutionItem : IFunctionBundlerExecutionItem

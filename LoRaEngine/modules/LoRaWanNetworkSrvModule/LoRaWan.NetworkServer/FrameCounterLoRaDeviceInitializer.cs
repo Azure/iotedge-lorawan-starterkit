@@ -3,8 +3,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System;
-
     public class FrameCounterLoRaDeviceInitializer : ILoRaDeviceInitializer
     {
         private readonly string gatewayID;

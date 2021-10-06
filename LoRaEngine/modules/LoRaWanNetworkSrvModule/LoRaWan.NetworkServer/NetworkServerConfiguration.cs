@@ -4,9 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.IO;
 
     // Network server configuration
     public class NetworkServerConfiguration

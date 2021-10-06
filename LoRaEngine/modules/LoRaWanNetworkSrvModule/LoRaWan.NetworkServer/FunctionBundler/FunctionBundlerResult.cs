@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using LoRaTools.ADR;
-    using LoRaWan.NetworkServer;
 
     public class FunctionBundlerResult
     {

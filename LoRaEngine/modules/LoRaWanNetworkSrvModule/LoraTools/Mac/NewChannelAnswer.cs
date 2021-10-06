@@ -5,7 +5,6 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
-    using LoRaTools.Mac;
 
     public class NewChannelAnswer : MacCommand
     {

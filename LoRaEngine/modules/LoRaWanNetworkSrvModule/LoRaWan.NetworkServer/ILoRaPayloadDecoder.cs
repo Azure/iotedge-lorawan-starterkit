@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System.Threading.Tasks;
-    using Newtonsoft.Json.Linq;
 
     public interface ILoRaPayloadDecoder
     {

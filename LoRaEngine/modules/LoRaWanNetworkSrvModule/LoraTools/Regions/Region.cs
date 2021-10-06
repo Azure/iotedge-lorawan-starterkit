@@ -7,7 +7,6 @@ namespace LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
 

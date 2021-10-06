@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer.Test
 {
     using System;
-    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;

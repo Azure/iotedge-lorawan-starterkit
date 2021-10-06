@@ -4,7 +4,6 @@
 namespace LoRaTools.Regions
 {
     using System.Collections.Generic;
-    using Org.BouncyCastle.Utilities.Collections;
 
     public class RegionLimits
     {

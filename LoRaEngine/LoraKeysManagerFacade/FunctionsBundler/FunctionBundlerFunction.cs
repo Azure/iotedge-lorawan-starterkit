@@ -3,12 +3,8 @@
 
 namespace LoraKeysManagerFacade.FunctionBundler
 {
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using LoRaTools.ADR;
-    using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;

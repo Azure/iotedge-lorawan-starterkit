@@ -3,10 +3,6 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-
     public class IoTHubDeviceInfo
     {
         public string DevAddr { get; set; }
