@@ -21,14 +21,5 @@
     <ProjectReference Include="..\..\LoraKeysManagerFacade\LoraKeysManagerFacade.csproj" />
     <ProjectReference Include="..\LoRaWan.Test.Shared\LoRaWan.Test.Shared.csproj" />
   </ItemGroup>
-
-  <!-- StyleCop Setup -->
-  <ItemGroup>
-    <AdditionalFiles Include="../../../stylecop.json" Link="stylecop.json" />
-  </ItemGroup>
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>../../../stylecop.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <Import Project="../../../stylecop.props" />
   
 </Project>

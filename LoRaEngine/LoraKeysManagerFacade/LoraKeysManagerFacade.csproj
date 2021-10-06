@@ -4,14 +4,14 @@
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Docker.DotNet.X509" Version="3.125.2" />
-    <PackageReference Include="Microsoft.Azure.Devices" Version="1.33.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.1.5" />
-    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.5" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.5" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.13" />
-    <PackageReference Include="StackExchange.Redis" Version="2.1.58" />
+    <PackageReference Include="Docker.DotNet.X509" Version="$(DockerDotnetVersion)" />
+    <PackageReference Include="Microsoft.Azure.Devices" Version="$(MicrosoftAzureDevicesVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryVersion)" />
+    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="$(MicrosoftAzureFunctionsExtensionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="$(MicrosoftNETSdkFunctionsVersion)" />
+    <PackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisVersion)" />
   </ItemGroup>
   
   <!-- Add shared files -->
@@ -27,16 +27,8 @@
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>	
     </None>
   </ItemGroup>
-  <!-- StyleCop Setup -->
-  <ItemGroup>
-    <AdditionalFiles Include="../../stylecop.json" Link="stylecop.json" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
   </ItemGroup>
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>../../stylecop.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <Import Project="../../stylecop.props" />
   
 </Project>

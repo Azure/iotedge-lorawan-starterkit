@@ -21,15 +21,4 @@
   <ItemGroup>
     <ProjectReference Include="..\LoraTools\LoRaTools.csproj" />
   </ItemGroup>
-
-  <!-- StyleCop Setup -->
-  <ItemGroup>
-    <AdditionalFiles Include="../../../../stylecop.json" Link="stylecop.json" />
-  </ItemGroup>
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>../../../../stylecop.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <Import Project="../../../../stylecop.props" />
-  
-  
 </Project>
