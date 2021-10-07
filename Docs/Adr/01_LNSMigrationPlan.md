@@ -62,7 +62,7 @@ We want to define a plan to build a basic support for the LoRa Basic Station in 
 
 ### Phase V
 
-- E2E tests are reenabled excepting Class C. We debug them.
+- E2E tests are reenabled excepting Class C.
 - Refactor of existing tests (LoRaWanNetworkSrv.Test) to use LBS class and transfer to projects according to testing sttategy design.
 
 ## Subsequent work
