@@ -7,11 +7,10 @@ namespace LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
 
-    public class Region
+    public abstract class Region
     {
         private const ushort MAX_RX_DELAY = 15;
 
@@ -121,7 +120,7 @@ namespace LoRaTools.Regions
         /// Implement correct logic to get the correct transmission frequency based on the region.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        public bool TryGetUpstreamChannelFrequency(Rxpk upstreamChannel, out double frequency)
+        public virtual bool TryGetUpstreamChannelFrequency(Rxpk upstreamChannel, out double frequency)
         {
             frequency = 0;
 
@@ -255,7 +254,7 @@ namespace LoRaTools.Regions
         /// <summary>
         /// This method Check that a received packet is within the correct frenquency range and has a valid Datr.
         /// </summary>
-        private bool IsValidUpstreamRxpk(Rxpk rxpk)
+        protected bool IsValidUpstreamRxpk(Rxpk rxpk)
         {
             if (rxpk.Freq < this.RegionLimits.FrequencyRange.min ||
                 rxpk.Freq > this.RegionLimits.FrequencyRange.max ||

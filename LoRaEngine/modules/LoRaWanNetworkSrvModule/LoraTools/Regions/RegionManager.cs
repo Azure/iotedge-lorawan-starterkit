@@ -88,8 +88,7 @@ namespace LoRaTools.Regions
 
         private static void CreateEU868Region()
         {
-            eu868 = new Region(
-                LoRaRegionType.EU868,
+            eu868 = new RegionEU868(
                 0x34,
                 ConversionHelper.StringToByteArray("C194C1"),
                 (frequency: 869.525, datr: 0),
@@ -169,8 +168,7 @@ namespace LoRaTools.Regions
 
         private static void CreateUS915Region()
         {
-            us915 = new Region(
-                LoRaRegionType.US915,
+            us915 = new RegionUS915(
                 0x34,
                 null, // no GFSK in US Band
                 (frequency: 923.3, datr: 8),
