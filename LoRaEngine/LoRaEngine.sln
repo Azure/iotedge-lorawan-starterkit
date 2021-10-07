@@ -18,6 +18,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.IntegrationTest", "test\LoRaWan.IntegrationTest\LoRaWan.IntegrationTest.csproj", "{26DF2637-43E0-4FFF-92BD-F4395C88DD50}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A3AF6806-947C-426F-8063-7229B71A4472}"
+	ProjectSection(SolutionItems) = preProject
+		test\.editorconfig = test\.editorconfig
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkServer.Test", "test\LoRaWanNetworkServer.Test\LoRaWanNetworkServer.Test.csproj", "{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}"
 EndProject
