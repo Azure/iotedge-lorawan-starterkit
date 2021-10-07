@@ -1,19 +1,14 @@
 <Project>
-    <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.2">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
     <PropertyGroup>
+      <EnableNETAnalyzers>true</EnableNETAnalyzers>
+      <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+      <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+      <AnalysisLevel>5.0</AnalysisLevel>
       <LangVersion>9.0</LangVersion>
       <!-- <TreatWarningsAsErrors>true</TreatWarningsAsErrors> -->
+    </PropertyGroup>
+    <PropertyGroup>
       <DockerDotnetVersion>3.125.2</DockerDotnetVersion>
-      <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)/CodeAnalysis.ruleset</CodeAnalysisRuleSet>
       <MicrosoftAzureDevicesVersion>1.33.0</MicrosoftAzureDevicesVersion>
       <MicrosoftAzureDevicesClientVersion>1.37.1</MicrosoftAzureDevicesClientVersion>
       <MicrosoftExtensionsCachingMemoryVersion>3.1.5</MicrosoftExtensionsCachingMemoryVersion>
