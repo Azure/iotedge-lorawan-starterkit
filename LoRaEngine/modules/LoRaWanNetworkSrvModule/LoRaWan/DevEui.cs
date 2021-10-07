@@ -15,7 +15,7 @@ namespace LoRaWan
     /// is executed. ABP devices do not need the DevEUI to be stored in the device itself, but
     /// it is recommended to do so.
     /// </remarks>
-    readonly struct DevEui : IEquatable<DevEui>
+    public readonly struct DevEui : IEquatable<DevEui>
     {
         readonly ulong value;
 

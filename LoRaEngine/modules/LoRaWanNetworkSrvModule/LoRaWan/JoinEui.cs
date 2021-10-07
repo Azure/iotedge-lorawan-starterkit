@@ -15,7 +15,7 @@ namespace LoRaWan
     /// For OTAA devices, the JoinEUI MUST be stored in the end-device before the Join procedure
     /// is executed. The JoinEUI is not required for ABP only end-devices.
     /// </remarks>
-    readonly struct JoinEui : IEquatable<JoinEui>
+    public readonly struct JoinEui : IEquatable<JoinEui>
     {
         readonly ulong value;
 
