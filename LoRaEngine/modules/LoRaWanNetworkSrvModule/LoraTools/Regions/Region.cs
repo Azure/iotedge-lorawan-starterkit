@@ -120,40 +120,7 @@ namespace LoRaTools.Regions
         /// Implement correct logic to get the correct transmission frequency based on the region.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        public virtual bool TryGetUpstreamChannelFrequency(Rxpk upstreamChannel, out double frequency)
-        {
-            frequency = 0;
-
-            if (this.IsValidUpstreamRxpk(upstreamChannel))
-            {
-                if (this.LoRaRegion == LoRaRegionType.EU868)
-                {
-                    // in case of EU, you respond on same frequency as you sent data.
-                    frequency = upstreamChannel.Freq;
-                    return true;
-                }
-                else if (this.LoRaRegion == LoRaRegionType.US915)
-                {
-                    int upstreamChannelNumber;
-                    // if DR4 the coding are different.
-                    if (upstreamChannel.Datr == "SF8BW500")
-                    {
-                        // ==DR4
-                        upstreamChannelNumber = 64 + (int)Math.Round((upstreamChannel.Freq - 903) / 1.6, 0);
-                    }
-                    else
-                    {
-                        // if not DR4 other encoding
-                        upstreamChannelNumber = (int)((upstreamChannel.Freq - 902.3) / 0.2);
-                    }
-
-                    frequency = Math.Round(923.3 + upstreamChannelNumber % 8 * 0.6, 1);
-                    return true;
-                }
-            }
-
-            return false;
-        }
+        public abstract bool TryGetUpstreamChannelFrequency(Rxpk upstreamChannel, out double frequency);
 
         /// <summary>
         /// Get the downstream RX2 frequency.
