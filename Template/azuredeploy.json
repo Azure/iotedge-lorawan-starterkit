@@ -140,10 +140,6 @@
                     ],
                     "appSettings": [
                         {
-                            "name": "AzureWebJobsDashboard",
-                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
-                        },
-                        {
                             "name": "AzureWebJobsStorage",
                             "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName'), ';AccountKey=', listKeys(variables('storageAccountId'),'2015-05-01-preview').key1)]"
                         },
@@ -160,14 +156,14 @@
                             "value": "[toLower(variables('functionAppName'))]"
                         },
                         {
-                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
-                            "value": "6.5.0"
-                        },
-                        {
                             "name": "FACADE_HOST_NAME",
                             "value": "[variables('functionAppName')]"
                         },
-                         {
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "dotnet"
+                        },
+                        {
                             "name": "FUNCTIONS_EXTENSION_VERSION",
                             "value": "~3"
                         },
@@ -184,7 +180,7 @@
                             "value": "[reference(concat('microsoft.insights/components/', variables('appInsightName'))).InstrumentationKey]"
                         },
                         {
-                            "name": "WEBSITE_RUN_FROM_ZIP",
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
                             "value": "[variables('functionZipBinary')]"
                         }
                     ]
