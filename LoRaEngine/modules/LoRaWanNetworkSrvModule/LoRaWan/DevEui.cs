@@ -4,6 +4,7 @@
 namespace LoRaWan
 {
     using System;
+    using System.Globalization;
 
     /// <summary>
     /// Global end-device ID in IEEE EUI-64 (64-bit Extended Unique Identifier) address space
@@ -23,6 +24,8 @@ namespace LoRaWan
         public bool Equals(DevEui other) => this.value == other.value;
         public override bool Equals(object obj) => obj is DevEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
+
+        public override string ToString() => this.value.ToString("x16", CultureInfo.InvariantCulture);
 
         public static bool operator ==(DevEui left, DevEui right) => left.Equals(right);
         public static bool operator !=(DevEui left, DevEui right) => !left.Equals(right);
