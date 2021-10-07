@@ -21,13 +21,10 @@ namespace LoRaWan
         public DevEui(ulong value) => this.value = value;
 
         public bool Equals(DevEui other) => this.value == other.value;
-
         public override bool Equals(object obj) => obj is DevEui other && this.Equals(other);
-
         public override int GetHashCode() => this.value.GetHashCode();
 
         public static bool operator ==(DevEui left, DevEui right) => left.Equals(right);
-
         public static bool operator !=(DevEui left, DevEui right) => !left.Equals(right);
     }
 }
