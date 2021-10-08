@@ -1,6 +1,9 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace LoRaWan.NetworkServer.BasicStation.Controllers
 {
     using System;
@@ -10,6 +13,7 @@ namespace LoRaWan.NetworkServer.BasicStation.Controllers
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer.BasicStation.Processors;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
 
@@ -34,13 +38,16 @@ namespace LoRaWan.NetworkServer.BasicStation.Controllers
         public Task Discovery(CancellationToken cancellationToken)
             => this.ProcessIncomingRequestAsync(this.lnsProcessor.HandleDiscoveryAsync, cancellationToken);
 
-        private async Task ProcessIncomingRequestAsync(Func<string, WebSocket, CancellationToken, Task> handler,
+        internal virtual HttpContext GetHttpContext() => HttpContext;
+
+        internal async Task ProcessIncomingRequestAsync(Func<string, WebSocket, CancellationToken, Task> handler,
                                                        CancellationToken cancellationToken)
         {
-            if (this.HttpContext.WebSockets.IsWebSocketRequest)
+            var httpContext = GetHttpContext();
+            if (httpContext.WebSockets.IsWebSocketRequest)
             {
-                using var webSocket = await this.HttpContext.WebSockets.AcceptWebSocketAsync();
-                this.logger.Log(LogLevel.Debug, $"WebSocket connection from {HttpContext.Connection.RemoteIpAddress} established");
+                using var webSocket = await httpContext.WebSockets.AcceptWebSocketAsync();
+                this.logger.Log(LogLevel.Debug, $"WebSocket connection from {httpContext.Connection.RemoteIpAddress} established");
                 ValueWebSocketReceiveResult result;
                 var byteArray = ArrayPool<byte>.Shared.Rent(1024);
                 try
@@ -55,13 +62,14 @@ namespace LoRaWan.NetworkServer.BasicStation.Controllers
                         if (result.MessageType == WebSocketMessageType.Close)
                         {
                             await CloseSocketAsync(webSocket, cancellationToken);
+                            return;
                         }
                         else
                         {
                             if (chunksReceived == 0)
-                                framePayload = new Memory<byte>(new byte[result.Count]);
+                                framePayload = new Memory<byte>(new byte[1024]);
 
-                            var data = buffer.Slice(0, result.Count);
+                            var data = buffer.Slice(framePayloadSize, result.Count);
                             data.CopyTo(framePayload.Slice(framePayloadSize, result.Count));
                             framePayloadSize += result.Count;
                             chunksReceived++;
@@ -86,11 +94,11 @@ namespace LoRaWan.NetworkServer.BasicStation.Controllers
             }
             else
             {
-                this.HttpContext.Response.StatusCode = 400;
+                httpContext.Response.StatusCode = 400;
             }
         }
 
-        private async Task CloseSocketAsync(WebSocket socket, CancellationToken cancellationToken)
+        internal async Task CloseSocketAsync(WebSocket socket, CancellationToken cancellationToken)
         {
             if (socket.State is WebSocketState.Open)
             {
