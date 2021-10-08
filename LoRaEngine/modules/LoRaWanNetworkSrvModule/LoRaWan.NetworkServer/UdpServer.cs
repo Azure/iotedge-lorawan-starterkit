@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Defines udp Server communicating with packet forwarder.
     /// </summary>
-    public class UdpServer : IDisposable, IPacketForwarder
+    public class UdpServer : IPacketForwarder, INetworkServer
     {
         const int PORT = 1680;
         private readonly NetworkServerConfiguration configuration;
@@ -95,7 +95,7 @@ namespace LoRaWan.NetworkServer
             this.loRaDeviceRegistry = loRaDeviceRegistry;
         }
 
-        public async Task RunServer()
+        public async Task RunServerAsync(CancellationToken cancellationToken = default)
         {
             Logger.LogAlways("Starting LoRaWAN Server...");
 
@@ -206,7 +206,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                ITransportSettings transportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+                ITransportSettings transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_Tcp_Only);
 
                 ITransportSettings[] settings = { transportSettings };
 
