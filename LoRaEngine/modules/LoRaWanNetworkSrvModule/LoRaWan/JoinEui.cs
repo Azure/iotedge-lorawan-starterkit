@@ -4,6 +4,7 @@
 namespace LoRaWan
 {
     using System;
+    using System.Buffers.Binary;
     using System.Globalization;
 
     /// <summary>
@@ -17,6 +18,8 @@ namespace LoRaWan
     /// </remarks>
     public readonly struct JoinEui : IEquatable<JoinEui>
     {
+        public const int Size = sizeof(ulong);
+
         readonly ulong value;
 
         public JoinEui(ulong value) => this.value = value;
@@ -29,5 +32,11 @@ namespace LoRaWan
 
         public static bool operator ==(JoinEui left, JoinEui right) => left.Equals(right);
         public static bool operator !=(JoinEui left, JoinEui right) => !left.Equals(right);
+
+        public Span<byte> Write(Span<byte> buffer)
+        {
+            BinaryPrimitives.WriteUInt64LittleEndian(buffer, this.value);
+            return buffer[Size..];
+        }
     }
 }

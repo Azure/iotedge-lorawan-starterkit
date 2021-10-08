@@ -4,6 +4,7 @@
 namespace LoRaWan
 {
     using System;
+    using System.Buffers.Binary;
     using System.Globalization;
 
     /// <summary>
@@ -17,6 +18,8 @@ namespace LoRaWan
     /// </remarks>
     public readonly struct DevNonce : IEquatable<DevNonce>
     {
+        public const int Size = sizeof(ushort);
+
         readonly ushort value;
 
         public DevNonce(ushort value) => this.value = value;
@@ -29,5 +32,11 @@ namespace LoRaWan
 
         public static bool operator ==(DevNonce left, DevNonce right) => left.Equals(right);
         public static bool operator !=(DevNonce left, DevNonce right) => !left.Equals(right);
+
+        public Span<byte> Write(Span<byte> buffer)
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(buffer, this.value);
+            return buffer[Size..];
+        }
     }
 }

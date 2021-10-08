@@ -4,9 +4,12 @@
 namespace LoRaWan
 {
     using System;
+    using System.Buffers.Binary;
 
     public readonly struct UInt128 : IEquatable<UInt128>
     {
+        public const int Size = sizeof(ulong) * 2;
+
         readonly ulong lo;
         readonly ulong hi;
 
@@ -25,6 +28,14 @@ namespace LoRaWan
             Hexadecimal.Write(this.lo, digits[..16]);
             Hexadecimal.Write(this.hi, digits[16..]);
             return new string(digits);
+        }
+
+        public byte[] GetBytes()
+        {
+            var bytes = new byte[Size];
+            BinaryPrimitives.WriteUInt64LittleEndian(bytes.AsSpan(), this.lo);
+            BinaryPrimitives.WriteUInt64LittleEndian(bytes.AsSpan(8), this.hi);
+            return bytes;
         }
     }
 }

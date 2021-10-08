@@ -11,6 +11,8 @@ namespace LoRaWan
     /// </summary>
     public readonly struct AppKey : IEquatable<AppKey>
     {
+        public const int Size = UInt128.Size;
+
         readonly UInt128 value;
 
         public AppKey(UInt128 value) => this.value = value;
@@ -23,5 +25,7 @@ namespace LoRaWan
 
         public static bool operator ==(AppKey left, AppKey right) => left.Equals(right);
         public static bool operator !=(AppKey left, AppKey right) => !left.Equals(right);
+
+        public byte[] GetBytes() => this.value.GetBytes();
     }
 }

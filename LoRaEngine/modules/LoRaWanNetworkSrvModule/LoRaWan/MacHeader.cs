@@ -12,6 +12,8 @@ namespace LoRaWan
     /// </summary>
     public readonly struct MacHeader : IEquatable<MacHeader>
     {
+        public const int Size = sizeof(byte);
+
         readonly byte value;
 
         public MacHeader(byte value) => this.value = value;
@@ -27,5 +29,11 @@ namespace LoRaWan
 
         public static bool operator ==(MacHeader left, MacHeader right) => left.Equals(right);
         public static bool operator !=(MacHeader left, MacHeader right) => !left.Equals(right);
+
+        public Span<byte> Write(Span<byte> buffer)
+        {
+            buffer[0] = this.value;
+            return buffer[Size..];
+        }
     }
 }
