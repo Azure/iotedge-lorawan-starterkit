@@ -39,7 +39,7 @@ namespace LoRaWan
         public override bool Equals(object obj) => obj is Mic other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => this.value.ToString("x4", CultureInfo.InvariantCulture);
+        public override string ToString() => this.value.ToString("X4", CultureInfo.InvariantCulture);
 
         public static bool operator ==(Mic left, Mic right) => left.Equals(right);
         public static bool operator !=(Mic left, Mic right) => !left.Equals(right);

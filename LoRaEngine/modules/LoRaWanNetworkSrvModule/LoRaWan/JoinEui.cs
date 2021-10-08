@@ -28,7 +28,7 @@ namespace LoRaWan
         public override bool Equals(object obj) => obj is JoinEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => this.value.ToString("x16", CultureInfo.InvariantCulture);
+        public override string ToString() => this.value.ToString("X16", CultureInfo.InvariantCulture);
 
         public static bool operator ==(JoinEui left, JoinEui right) => left.Equals(right);
         public static bool operator !=(JoinEui left, JoinEui right) => !left.Equals(right);

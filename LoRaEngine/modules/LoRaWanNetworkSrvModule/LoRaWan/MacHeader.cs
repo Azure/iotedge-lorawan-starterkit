@@ -25,7 +25,7 @@ namespace LoRaWan
         public override bool Equals(object obj) => obj is MacHeader other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => value.ToString("x2", CultureInfo.InvariantCulture);
+        public override string ToString() => value.ToString("X2", CultureInfo.InvariantCulture);
 
         public static bool operator ==(MacHeader left, MacHeader right) => left.Equals(right);
         public static bool operator !=(MacHeader left, MacHeader right) => !left.Equals(right);

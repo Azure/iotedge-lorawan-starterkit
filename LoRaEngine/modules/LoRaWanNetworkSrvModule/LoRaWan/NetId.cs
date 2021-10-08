@@ -27,7 +27,7 @@ namespace LoRaWan
         public override bool Equals(object obj) => obj is NetId other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => value.ToString("x6", CultureInfo.InvariantCulture);
+        public override string ToString() => value.ToString("X6", CultureInfo.InvariantCulture);
 
         public static bool operator ==(NetId left, NetId right) => left.Equals(right);
         public static bool operator !=(NetId left, NetId right) => !left.Equals(right);
