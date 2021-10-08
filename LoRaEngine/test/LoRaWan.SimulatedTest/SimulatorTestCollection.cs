@@ -8,7 +8,7 @@ namespace LoRaWan.SimulatedTest
     using System.Linq;
     using System.Net;
     using System.Threading.Tasks;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Xunit;
 
     // Tests ABP requests

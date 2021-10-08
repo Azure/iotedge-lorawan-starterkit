@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
+    <ProjectReference Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
   </ItemGroup>
 
   <ItemGroup>

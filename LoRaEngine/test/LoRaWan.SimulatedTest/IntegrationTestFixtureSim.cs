@@ -5,7 +5,7 @@ namespace LoRaWan.SimulatedTest
 {
     using System;
     using System.Collections.Generic;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
 
     public class IntegrationTestFixtureSim : IntegrationTestFixtureBase
     {

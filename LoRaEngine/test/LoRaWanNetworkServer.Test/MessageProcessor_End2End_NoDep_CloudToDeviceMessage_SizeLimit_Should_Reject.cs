@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Moq;
     using Xunit;
 
