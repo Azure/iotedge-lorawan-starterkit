@@ -8,10 +8,12 @@ namespace LoRaTools.Regions
 
     public class RegionUS915 : Region
     {
+        private static double[] DownstreamChannelFrequencies = new double[] { 923.3, 923.9, 924.5, 925.1, 925.7, 926.3, 926.9, 927.5 };
+
         public RegionUS915()
             : base(
-                  LoRaRegionType.US915, 
-                  0x34, 
+                  LoRaRegionType.US915,
+                  0x34,
                   null, // no GFSK in US Band
                   (frequency: 923.3, datr: 8),
                   1,
@@ -40,15 +42,15 @@ namespace LoRaTools.Regions
                 if (upstreamChannel.Datr == "SF8BW500")
                 {
                     // ==DR4
-                    upstreamChannelNumber = 64 + (int)((upstreamChannel.Freq - 903) / 1.6);
+                    upstreamChannelNumber = 64 + (int)Math.Round((upstreamChannel.Freq - 903) / 1.6, 0, MidpointRounding.AwayFromZero);
                 }
                 else
                 {
                     // if not DR4 other encoding
-                    upstreamChannelNumber = (int)((upstreamChannel.Freq - 902.3) / 0.2);
+                    upstreamChannelNumber = (int)Math.Round((upstreamChannel.Freq - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
                 }
 
-                frequency = Math.Round(923.3 + upstreamChannelNumber % 8 * 0.6, 1); // change to use a table
+                frequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
                 return true;
             }
 
