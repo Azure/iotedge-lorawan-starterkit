@@ -59,7 +59,7 @@ namespace LoRaWan.NetworkServer
         // Creates a new instance of UdpServer
         public static UdpServer Create()
         {
-            var configuration = NetworkServerConfiguration.CreateFromEnviromentVariables();
+            var configuration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
 
             var loRaDeviceAPIService = new LoRaDeviceAPIService(configuration, new ServiceFacadeHttpClientProvider(configuration, ApiVersion.LatestVersion));
             var frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(configuration.GatewayID, loRaDeviceAPIService);
