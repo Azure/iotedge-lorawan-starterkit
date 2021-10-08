@@ -4,10 +4,12 @@
 namespace LoRaWan
 {
     using System;
+    using System.Buffers.Binary;
+    using System.Globalization;
 
     static class Hexadecimal
     {
-        const string Digits = "0123456789abcdef";
+        const string Digits = "0123456789ABCDEF";
 
         public static void Write(ulong value, Span<char> buffer)
         {
