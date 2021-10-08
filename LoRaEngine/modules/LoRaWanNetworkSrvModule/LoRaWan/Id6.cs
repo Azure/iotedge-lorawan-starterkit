@@ -21,7 +21,7 @@ namespace LoRaWan
     // Source: https://doc.sm.tc/station/glossary.html#term-id6
     // Copyright 2019, Semtech Corp
 
-    public static class Id6Parser
+    public static class Id6
     {
         struct WordAccumulator
         {

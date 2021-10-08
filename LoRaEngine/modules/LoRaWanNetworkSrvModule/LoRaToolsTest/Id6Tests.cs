@@ -6,7 +6,7 @@ namespace LoRaWanTest
     using LoRaWan;
     using Xunit;
 
-    public class Id6ParserTests
+    public class Id6Tests
     {
         [Theory]
         [InlineData("::"         , 0UL)]
@@ -58,9 +58,9 @@ namespace LoRaWanTest
         [InlineData("::a:b"      , 0x0000_0000_000a_000bUL)]
         [InlineData("f::1"       , 0x000f_0000_0000_0001UL)]
         [InlineData("f:a123:f8:100", 0x000f_a123_00f8_0100UL)]
-        public void Success(string input, ulong expected)
+        public void TryParse_Valid(string input, ulong expected)
         {
-            var succeeded = Id6Parser.TryParse(input, out var result);
+            var succeeded = Id6.TryParse(input, out var result);
             Assert.True(succeeded);
             Assert.True(expected == result, $"{result:x16} does not equal the expected value of {expected:x16}.");
         }
@@ -88,9 +88,9 @@ namespace LoRaWanTest
         [InlineData("1:g:1:1")]
         [InlineData("1:1:g:1")]
         [InlineData("1:1:1:g")]
-        public void Failure(string input)
+        public void TryParse_Invalid(string input)
         {
-            var succeeded = Id6Parser.TryParse(input, out var result);
+            var succeeded = Id6.TryParse(input, out var result);
             Assert.False(succeeded);
             Assert.Equal(0UL, result);
         }
