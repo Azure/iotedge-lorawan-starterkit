@@ -32,10 +32,6 @@ namespace LoRaWan.NetworkServer
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string ErrorMessage { get; set; }
 
-        public PreferredGatewayResult()
-        {
-        }
-
         /// <summary>
         /// Indicates if the preferred gateway resolution was executed successfully.
         /// </summary>

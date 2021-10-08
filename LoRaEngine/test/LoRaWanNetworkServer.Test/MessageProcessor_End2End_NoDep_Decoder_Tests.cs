@@ -19,10 +19,6 @@ namespace LoRaWan.NetworkServer.Test
     // Decoder tests tests
     public class MessageProcessor_End2End_NoDep_Decoder_Tests : MessageProcessorTestBase
     {
-        public MessageProcessor_End2End_NoDep_Decoder_Tests()
-        {
-        }
-
         /// <summary>
         /// SensorDecoder: none
         /// Payload: multiple

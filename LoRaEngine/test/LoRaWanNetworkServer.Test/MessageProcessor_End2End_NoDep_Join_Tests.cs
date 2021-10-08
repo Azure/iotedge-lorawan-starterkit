@@ -20,10 +20,6 @@ namespace LoRaWan.NetworkServer.Test
     // Only join tests
     public class MessageProcessor_End2End_NoDep_Join_Tests : MessageProcessorTestBase
     {
-        public MessageProcessor_End2End_NoDep_Join_Tests()
-        {
-        }
-
         [Theory]
         [InlineData(ServerGatewayID, 200, 50, 0, 0)]
         [InlineData(ServerGatewayID, 200, 50, 17, 1)]

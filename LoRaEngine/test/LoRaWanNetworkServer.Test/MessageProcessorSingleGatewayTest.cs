@@ -22,10 +22,6 @@ namespace LoRaWan.NetworkServer.Test
     /// </summary>
     public class MessageProcessorSingleGatewayTest : MessageProcessorTestBase
     {
-        public MessageProcessorSingleGatewayTest()
-        {
-        }
-
         [Theory]
         [InlineData(0)]
         [InlineData(2100)]

@@ -24,10 +24,6 @@ namespace LoRaWan.NetworkServer.Test
     // Cloud to device message processing tests (Join tests are handled in other class)
     public class MessageProcessor_End2End_NoDep_CloudToDeviceMessage_Tests : MessageProcessorTestBase
     {
-        public MessageProcessor_End2End_NoDep_CloudToDeviceMessage_Tests()
-        {
-        }
-
         [Theory]
         [InlineData(ServerGatewayID)]
         [InlineData(null)]

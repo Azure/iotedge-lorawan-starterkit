@@ -23,10 +23,6 @@ namespace LoRaWan.NetworkServer.Test
     // Class C device tests
     public class MessageProcessor_End2End_NoDep_ClassC_Tests : MessageProcessorTestBase
     {
-        public MessageProcessor_End2End_NoDep_ClassC_Tests()
-        {
-        }
-
         [Theory]
         [InlineData(null, 0U, 0U)]
         [InlineData(null, 0U, 9U)]
