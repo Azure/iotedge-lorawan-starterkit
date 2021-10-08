@@ -5,7 +5,6 @@ namespace LoRaWan
 {
     using System;
 
-
     // ID6
     //
     // An alternative syntax for representing an EUI, which mimics the encoding rules of IPv6
