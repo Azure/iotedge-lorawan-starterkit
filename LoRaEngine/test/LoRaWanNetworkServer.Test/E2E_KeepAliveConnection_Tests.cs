@@ -32,10 +32,6 @@ namespace LoRaWan.NetworkServer.Test
             }
         }
 
-        public E2E_KeepAliveConnection_Tests()
-        {
-        }
-
         private async Task EnsureDisconnectedAsync(SemaphoreSlim disconnectedEvent, int? timeout = null)
         {
             var actualTimeout = timeout ?? this.MaxWaitForDeviceConnectionInMs;

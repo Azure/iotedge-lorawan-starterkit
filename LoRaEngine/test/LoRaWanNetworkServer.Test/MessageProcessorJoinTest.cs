@@ -18,10 +18,6 @@ namespace LoRaWan.NetworkServer.Test
 
     public class MessageProcessorJoinTest : MessageProcessorTestBase
     {
-        public MessageProcessorJoinTest()
-        {
-        }
-
         [Fact]
         public async Task When_Device_Is_Not_Found_In_Api_Should_Return_Null()
         {

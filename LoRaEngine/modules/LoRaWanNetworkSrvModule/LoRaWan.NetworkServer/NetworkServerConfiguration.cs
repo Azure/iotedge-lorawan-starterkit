@@ -107,13 +107,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public HashSet<string> AllowedDevAddresses { get; internal set; }
 
-        // Creates a new instance of NetworkServerConfiguration
-        public NetworkServerConfiguration()
-        {
-        }
-
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
-        public static NetworkServerConfiguration CreateFromEnviromentVariables()
+        public static NetworkServerConfiguration CreateFromEnvironmentVariables()
         {
             var config = new NetworkServerConfiguration();
 
