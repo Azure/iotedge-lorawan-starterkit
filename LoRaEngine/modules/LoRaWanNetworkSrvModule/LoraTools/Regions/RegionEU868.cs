@@ -4,19 +4,32 @@
 namespace LoRaTools.Regions
 {
     using LoRaTools.LoRaPhysical;
+    using LoRaTools.Utils;
 
     public class RegionEU868 : Region
     {
-        public RegionEU868(byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
-            : base(LoRaRegionType.EU868, loRaSyncWord, gFSKSyncWord, rx2DefaultReceiveWindows, receive_delay1, receive_delay2, join_accept_delay1, join_accept_delay2, max_fcnt_gap, adr_ack_limit, adr_adr_delay, ack_timeout)
+        public RegionEU868()
+            : base(
+                  LoRaRegionType.EU868,
+                  0x34,
+                  ConversionHelper.StringToByteArray("C194C1"),
+                  (frequency: 869.525, datr: 0),
+                  1,
+                  2,
+                  5,
+                  6,
+                  16384,
+                  64,
+                  32,
+                  (min: 1, max: 3))
         {
         }
 
         /// <summary>
-        /// Logic to get the correct transmission frequency for region EU868.
+        /// Logic to get the correct downstream transmission frequency for region EU868.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        public override bool TryGetUpstreamChannelFrequency(Rxpk upstreamChannel, out double frequency)
+        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency)
         {
             frequency = 0;
 
