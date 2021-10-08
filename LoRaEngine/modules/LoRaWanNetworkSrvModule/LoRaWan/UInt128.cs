@@ -13,7 +13,7 @@ namespace LoRaWan
         readonly ulong lo;
         readonly ulong hi;
 
-        public UInt128(ulong lo, ulong hi) => (this.hi, this.lo) = (hi, lo);
+        public UInt128(ulong hi, ulong lo) => (this.hi, this.lo) = (hi, lo);
 
         public bool Equals(UInt128 other) => this.lo == other.lo && this.hi == other.hi;
         public override bool Equals(object obj) => obj is UInt128 other && this.Equals(other);
