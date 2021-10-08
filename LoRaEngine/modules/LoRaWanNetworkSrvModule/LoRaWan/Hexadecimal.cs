@@ -9,14 +9,16 @@ namespace LoRaWan
 
     static class Hexadecimal
     {
-        const string Digits = "0123456789ABCDEF";
+        const string UpperCaseDigits = "0123456789ABCDEF";
+        const string LowerCaseDigits = "0123456789abcdef";
 
-        public static void Write(ulong value, Span<char> buffer)
+        public static void Write(ulong value, Span<char> buffer, LetterCasing casing = LetterCasing.Upper)
         {
+            var digits = casing == LetterCasing.Lower ? LowerCaseDigits : UpperCaseDigits;
             var ci = buffer.Length;
             for (var i = 0; i < 16; i++)
             {
-                buffer[--ci] = Digits[(int)(value & 0x0000000f)];
+                buffer[--ci] = digits[(int)(value & 0x0000000f)];
                 value >>= 4;
             }
         }
