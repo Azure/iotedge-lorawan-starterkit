@@ -22,10 +22,6 @@ namespace LoRaWan.NetworkServer.Test
     // General message processor tests (Join tests are handled in other class)
     public class MessageProcessor_End2End_NoDep_Processing_Tests : MessageProcessorTestBase
     {
-        public MessageProcessor_End2End_NoDep_Processing_Tests()
-        {
-        }
-
         [Theory]
         [InlineData(ServerGatewayID, 0, 0, 0)]
         [InlineData(ServerGatewayID, 0, 1, 1)]
