@@ -113,7 +113,7 @@ namespace LoRaWan.NetworkServer
         }
 
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
-        public static NetworkServerConfiguration CreateFromEnviromentVariables()
+        public static NetworkServerConfiguration CreateFromEnvironmentVariables()
         {
             var config = new NetworkServerConfiguration();
 
