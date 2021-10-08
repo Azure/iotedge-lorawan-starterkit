@@ -154,7 +154,7 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error in serial data rx. {ex.ToString()}");
+                TestLogger.Log($"Error in serial data rx. {ex}");
             }
         }
 
@@ -188,7 +188,7 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error processing serial data. {ex.ToString()}");
+                TestLogger.Log($"Error processing serial data. {ex}");
             }
         }
 
@@ -277,7 +277,7 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.setIdAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.setIdAsync)}. {ex}");
             }
         }
 
@@ -342,7 +342,7 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.setKeyAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.setKeyAsync)}. {ex}");
             }
         }
 
@@ -547,7 +547,7 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.transferPacketAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.transferPacketAsync)}. {ex}");
                 return false;
             }
         }
@@ -576,7 +576,7 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.transferHexPacketAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.transferHexPacketAsync)}. {ex}");
                 return false;
             }
         }
@@ -654,7 +654,7 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.transferPacketWithConfirmedAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.transferPacketWithConfirmedAsync)}. {ex}");
                 return false;
             }
         }
@@ -866,7 +866,7 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex}");
             }
 
             await this.EnsureSerialAnswerAsync("+MODE:", 30);
@@ -975,7 +975,7 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex}");
             }
 
             await this.EnsureSerialAnswerAsync("+FDEFAULT:", 10);
@@ -1004,7 +1004,7 @@ namespace LoRaWan.IntegrationTest
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error writing to serial port. {ex.ToString()}");
+                TestLogger.Log($"Error writing to serial port. {ex}");
                 throw;
             }
         }
