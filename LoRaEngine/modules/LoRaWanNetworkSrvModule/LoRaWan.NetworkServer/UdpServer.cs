@@ -317,12 +317,9 @@ namespace LoRaWan.NetworkServer
 
             var c2d = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
             Logger.Log(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
+            using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value): null;
 
-            CancellationToken cts = CancellationToken.None;
-            if (methodRequest.ResponseTimeout.HasValue)
-                cts = new CancellationTokenSource(methodRequest.ResponseTimeout.Value).Token;
-
-            if (await this.classCMessageSender.SendAsync(c2d, cts))
+            if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
             {
                 return new MethodResponse((int)HttpStatusCode.OK);
             }

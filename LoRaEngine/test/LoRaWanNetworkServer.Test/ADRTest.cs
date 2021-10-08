@@ -44,7 +44,8 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .ReturnsAsync(true);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var nonEmptyCache = this.NewNonEmptyCache(loraDevice);
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, nonEmptyCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
             var messageProcessor = new MessageDispatcher(
@@ -174,8 +175,9 @@ namespace LoRaWan.NetworkServer.Test
                         twinTxPower = (int)t[TwinProperty.TxPower];
                 })
                 .ReturnsAsync(true);
+            using var nonEmptyCache = this.NewNonEmptyCache(loraDevice);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, nonEmptyCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
             var messageProcessor = new MessageDispatcher(
@@ -272,8 +274,9 @@ namespace LoRaWan.NetworkServer.Test
                     reportedTxPower = t[TwinProperty.TxPower].Value;
             })
         .ReturnsAsync(true);
+            using var nonEmptyCache = this.NewNonEmptyCache(loraDevice);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, nonEmptyCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
             var messageProcessor = new MessageDispatcher(
@@ -410,8 +413,9 @@ namespace LoRaWan.NetworkServer.Test
                     reportedNbRep = (int)t[TwinProperty.NbRep];
             })
         .ReturnsAsync(true);
+            using var nonEmptyCache = this.NewNonEmptyCache(loraDevice);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, nonEmptyCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
             var messageProcessor = new MessageDispatcher(

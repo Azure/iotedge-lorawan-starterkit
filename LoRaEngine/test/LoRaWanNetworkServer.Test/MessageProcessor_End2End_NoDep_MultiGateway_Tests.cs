@@ -38,7 +38,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(devEUI, It.IsAny<uint>(), It.IsNotNull<string>()))
                     .ReturnsAsync(true);
 
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var device = this.CreateLoRaDevice(simulatedDevice);
 
             var dicForDevAddr = new DevEUIToLoRaDeviceDictionary();
@@ -144,7 +144,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
 
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -213,7 +213,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true);
 
             var c2dMessage = new ReceivedLoRaCloudToDeviceMessage() { Fport = 1 };
-            var cloudToDeviceMessage = c2dMessage.CreateMessage();
+            using var cloudToDeviceMessage = c2dMessage.CreateMessage();
             // C2D message will be retrieved
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync(cloudToDeviceMessage);
@@ -225,7 +225,9 @@ namespace LoRaWan.NetworkServer.Test
                  .ReturnsAsync((ushort)0);
 
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(cachedDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var nonEmptyCache = this.NewNonEmptyCache(cachedDevice);
+
+            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, nonEmptyCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
             var messageDispatcher = new MessageDispatcher(

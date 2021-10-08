@@ -72,7 +72,8 @@ namespace LoRaWan.NetworkServer.Test
             var functionBundlerProvider = new FunctionBundlerProvider(this.LoRaDeviceApi.Object);
             this.RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
             this.LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.ConnectionManager = new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) }));
+            using var memoryCache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
+            this.ConnectionManager = new LoRaDeviceClientConnectionManager(memoryCache);
             this.LoRaDeviceFactory = new TestLoRaDeviceFactory(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.LoRaDeviceClient.Object, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, this.ConnectionManager);
         }
 

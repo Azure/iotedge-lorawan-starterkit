@@ -59,7 +59,8 @@ namespace LoRaWan.NetworkServer.Test
             var functionBundlerProvider = new FunctionBundlerProvider(this.SecondLoRaDeviceApi.Object);
             this.secondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.SecondServerConfiguration, this.SecondFrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider);
             this.SecondLoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.SecondConnectionManager = new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) }));
+            using var memoryCache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
+            this.SecondConnectionManager = new LoRaDeviceClientConnectionManager(memoryCache);
             this.SecondLoRaDeviceFactory = new TestLoRaDeviceFactory(this.SecondServerConfiguration, this.SecondFrameCounterUpdateStrategyProvider, this.SecondLoRaDeviceClient.Object, deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider, this.SecondConnectionManager);
         }
 
@@ -91,8 +92,11 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice1 = this.CreateLoRaDevice(simulatedDevice);
             var loRaDevice2 = this.CreateSecondLoRaDevice(simulatedDevice);
 
-            var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice1), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
-            var loRaDeviceRegistry2 = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice2), this.SecondLoRaDeviceApi.Object, this.SecondLoRaDeviceFactory);
+            using var nonEmptyCache1 = this.NewNonEmptyCache(loRaDevice1);
+            using var nonEmptyCache2 = this.NewNonEmptyCache(loRaDevice2);
+
+            var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, nonEmptyCache1, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            var loRaDeviceRegistry2 = new LoRaDeviceRegistry(this.ServerConfiguration, nonEmptyCache2, this.SecondLoRaDeviceApi.Object, this.SecondLoRaDeviceFactory);
 
             // Send to message processor
             var messageProcessor1 = new MessageDispatcher(

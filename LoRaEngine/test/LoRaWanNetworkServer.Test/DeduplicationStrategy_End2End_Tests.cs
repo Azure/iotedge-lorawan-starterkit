@@ -93,8 +93,10 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
             loRaDevice.Deduplication = mode;
 
-            var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
-            var loRaDeviceRegistry2 = new LoRaDeviceRegistry(this.SecondServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var nonEmptyCache = this.NewNonEmptyCache(loRaDevice);
+
+            var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, nonEmptyCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            var loRaDeviceRegistry2 = new LoRaDeviceRegistry(this.SecondServerConfiguration, nonEmptyCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             var messageProcessor1 = new MessageDispatcher(
                 this.ServerConfiguration,
