@@ -58,7 +58,7 @@ namespace LoRaWan
                 return output[..2];
             }
 
-            var casing = (options & FormatOptions.Lowercase) != 0 ? LetterCasing.Lower : LetterCasing.Upper;
+            var casing = (options & FormatOptions.Lowercase) != 0 ? LetterCase.Lower : LetterCase.Upper;
 
             Span<byte> bytes = stackalloc byte[sizeof(ulong)];
             Span<char> chars = stackalloc char[bytes.Length * 2 + 3 /* colons */];

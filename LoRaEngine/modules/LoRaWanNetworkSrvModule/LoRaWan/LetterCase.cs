@@ -3,7 +3,7 @@
 
 namespace LoRaWan
 {
-    public enum LetterCasing
+    public enum LetterCase
     {
         Upper,
         Lower
