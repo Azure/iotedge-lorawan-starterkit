@@ -54,23 +54,37 @@ namespace LoRaWan
         }
 
         /// <remarks>
-        /// When this method returns <c>false</c>, the content of <paramref name="output"/> should
-        /// be discarded. This is because bytes are written to <paramref name="output"/> as they are
-        /// parsed. If parsing fails partway then <paramref name="output"/> will contain partial
-        /// results and should be discarded.
+        /// For an output of over 128 bytes, this method makes a heap allocation for a temporary
+        /// buffer of the expected size. Otherwise all parsing induces no heap allocation.
         /// </remarks>
         public static bool TryParse(ReadOnlySpan<char> chars, Span<byte> output, char? separator = null)
         {
-            if (chars.Length == 1 || separator is null && chars.Length % 2 != 0)
+            static bool IsHexDigit(char ch) => ch is >= '0' and <= '9'
+                                                  or >= 'A' and <= 'F'
+                                                  or >= 'a' and <= 'f';
+
+            // Fail early for the following cases:
+            // - not enough source characters
+            // - first or last character is not a hexadecimal digit
+
+            if (chars.Length == 1 || !IsHexDigit(chars[0]) || !IsHexDigit(chars[^1]) || separator is null && chars.Length % 2 == 0)
                 return false;
 
+            // Create a temporary working buffer of the expected size so that we do not put partial
+            // results into the final output buffer if there is a parsing error partway.
+
+            var size = separator is null ? chars.Length / 2 : chars.Length / 3 + 1;
+            var temp = size <= 128 ? stackalloc byte[size] : new byte[size];
+
+            var i = 0;
             while (!chars.IsEmpty)
             {
                 if (!byte.TryParse(chars[..2], NumberStyles.AllowHexSpecifier, null, out var b))
                     return false;
-                output[0] = b;
-                output = output[1..];
+
+                temp[i++] = b;
                 chars = chars[2..];
+
                 if (!chars.IsEmpty && separator is { } someSeparator)
                 {
                     if (chars.Length < 3 || chars[0] != someSeparator)
@@ -78,6 +92,11 @@ namespace LoRaWan
                     chars = chars[1..];
                 }
             }
+
+            if (output.Length < i)
+                throw new ArgumentException(null, nameof(output));
+
+            temp[..i].CopyTo(output);
             return true;
         }
     }
