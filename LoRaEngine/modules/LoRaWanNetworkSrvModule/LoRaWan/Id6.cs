@@ -4,6 +4,7 @@
 namespace LoRaWan
 {
     using System;
+    using System.Buffers.Binary;
 
     // ID6
     //
@@ -23,6 +24,94 @@ namespace LoRaWan
 
     public static class Id6
     {
+        [Flags]
+        public enum FormatOptions
+        {
+            None = 0,
+            Lowercase = 1,
+            FixedWidth = 2,
+        }
+
+        enum FormatterState
+        {
+            Init,
+            Word,
+            WordColonBlank,
+            Blank,
+            BlankColonBlank,
+            ColonColon,
+            ColonColonWord,
+        }
+
+        public static string Format(ulong value, FormatOptions options = FormatOptions.None) =>
+            new(Format(value, stackalloc char[sizeof(ulong) * 2 + 3 /* colons */], options));
+
+        public static Span<char> Format(ulong value, Span<char> output, FormatOptions options = FormatOptions.None)
+        {
+            if (output.Length < 2) throw new ArgumentException(null, nameof(output));
+
+            var fixedWidth = (options & FormatOptions.FixedWidth) != 0;
+
+            if (!fixedWidth && value == 0) // bail out early with the 0 == "::" case
+            {
+                output[0] = output[1] = ':';
+                return output[..2];
+            }
+
+            var casing = (options & FormatOptions.Lowercase) != 0 ? LetterCasing.Lower : LetterCasing.Upper;
+
+            Span<byte> bytes = stackalloc byte[sizeof(ulong)];
+            Span<char> chars = stackalloc char[bytes.Length * 2 + 3 /* colons */];
+            BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
+
+            Span<char> word = stackalloc char[sizeof(ushort) * 2];
+            var state = FormatterState.Init;
+
+            var i = 0;
+            for (; !bytes.IsEmpty; bytes = bytes[sizeof(ushort)..])
+            {
+                bool colon;
+                (colon, state) = state switch
+                {
+                    var s and (FormatterState.Word or FormatterState.Blank or FormatterState.ColonColonWord)  => (true, s),
+                    FormatterState.WordColonBlank or FormatterState.BlankColonBlank => (true, FormatterState.ColonColon),
+                    var s => (false, s)
+                };
+                if (colon)
+                    chars[i++] = ':';
+                var @short = BinaryPrimitives.ReadUInt16BigEndian(bytes);
+                Hexadecimal.Write(@short, word, casing);
+                var tw = fixedWidth ? word : word.TrimStart('0');
+                if (tw.Length != 0)
+                {
+                    tw.CopyTo(chars[i..]);
+                    i += tw.Length;
+                    state = (state, colon) switch
+                    {
+                        (FormatterState.Init, _) or (FormatterState.Word or FormatterState.Blank, true) => FormatterState.Word,
+                        (FormatterState.ColonColon, _) or (FormatterState.ColonColonWord, true) => FormatterState.ColonColonWord,
+                        var (s, _) => s,
+                    };
+                }
+                else
+                {
+                    state = (state, colon) switch
+                    {
+                        (FormatterState.Init, _) => FormatterState.Blank,
+                        (FormatterState.Word, true) => FormatterState.WordColonBlank,
+                        (FormatterState.Blank, true) => FormatterState.BlankColonBlank,
+                        var (s, _) => s,
+                    };
+                }
+            }
+
+            if (output.Length < i)
+                throw new ArgumentException(null, nameof(output));
+
+            chars[..i].CopyTo(output);
+            return output[..i];
+        }
+
         struct WordAccumulator
         {
             byte digits;

@@ -12,6 +12,24 @@ namespace LoRaWan
         const string UpperCaseDigits = "0123456789ABCDEF";
         const string LowerCaseDigits = "0123456789abcdef";
 
+        public static void Write(byte value, Span<char> buffer, LetterCasing casing = LetterCasing.Upper)
+        {
+            var digits = casing == LetterCasing.Lower ? LowerCaseDigits : UpperCaseDigits;
+            buffer[0] = digits[value >> 4];
+            buffer[1] = digits[value & 0x0f];
+        }
+
+        public static void Write(ushort value, Span<char> buffer, LetterCasing casing = LetterCasing.Upper)
+        {
+            var digits = casing == LetterCasing.Lower ? LowerCaseDigits : UpperCaseDigits;
+            var ci = buffer.Length;
+            for (var i = 0; i < 4; i++)
+            {
+                buffer[--ci] = digits[value & 0x000f];
+                value >>= 4;
+            }
+        }
+
         public static void Write(ulong value, Span<char> buffer, LetterCasing casing = LetterCasing.Upper)
         {
             var digits = casing == LetterCasing.Lower ? LowerCaseDigits : UpperCaseDigits;
