@@ -53,10 +53,10 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(true);
 
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
-                .ReturnsAsync((Message)null);
+                .ReturnsAsync(() => null);
 
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr.Value))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123", IotHubHostName).AsList()));
 
             if (deviceGatewayID == null)
             {
@@ -167,7 +167,7 @@ namespace LoRaWan.Tests.Integration
             }
 
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, simDevice.DevEUI, It.IsAny<DevNonce>()))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123", IotHubHostName).AsList()));
 
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -371,7 +371,7 @@ namespace LoRaWan.Tests.Integration
                 });
 
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, simDevice.DevEUI, It.IsAny<DevNonce>()))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123", IotHubHostName).AsList()));
 
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);

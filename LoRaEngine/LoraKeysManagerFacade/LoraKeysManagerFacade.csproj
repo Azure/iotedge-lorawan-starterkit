@@ -6,12 +6,16 @@
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
     <PackageReference Include="Microsoft.Azure.Devices" Version="$(MicrosoftAzureDevicesVersion)" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Client" Version="$(MicrosoftAzureDevicesProvisioningClientVersion)" />
+    <PackageReference Include="Microsoft.Azure.Devices.Provisioning.Transport.Http" Version="$(MicrosoftAzureDevicesProvisioningTransportHttpVersion)" />
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryVersion)" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="$(MicrosoftAzureFunctionsExtensionsVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpVersion)" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="$(MicrosoftNETSdkFunctionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="$(MicrosoftExtensionsHttpPollyVersion)" />
     <PackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisVersion)" />
   </ItemGroup>
 

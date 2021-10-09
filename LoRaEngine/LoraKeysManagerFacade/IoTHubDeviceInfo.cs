@@ -34,5 +34,7 @@ namespace LoraKeysManagerFacade
         }
 
         public string PrimaryKey { get; set; }
+
+        public string IoTHubHostname { get; set; }
     }
 }

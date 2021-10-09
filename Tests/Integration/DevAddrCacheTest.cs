@@ -11,8 +11,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoraKeysManagerFacade;
     using LoRaWan.Tests.Common;
-    using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Shared;
     using Moq;
     using Newtonsoft.Json;
     using StackExchange.Redis;
@@ -26,6 +24,7 @@ namespace LoRaWan.Tests.Integration
         private const string CacheKeyPrefix = "devAddrTable:";
 
         private const string PrimaryKey = "ABCDEFGH1234567890";
+        private const string IotHubHostName = "fake.azure-devices.net";
 
         private readonly ILoRaDeviceCacheStore cache;
 
@@ -35,26 +34,51 @@ namespace LoRaWan.Tests.Integration
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
         }
 
-        private static Mock<RegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds, int numberOfDeviceDeltaUpdates = 2)
+        private static Mock<IDeviceRegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds, int numberOfDeviceDeltaUpdates = 2)
         {
             var currentDevAddrContext = new List<DevAddrCacheInfo>();
             var currentDevices = deviceIds;
-            var mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Strict);
+            var mockRegistryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var hasMoreShouldReturn = true;
 
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
             mockRegistryManager
-                .Setup(x => x.GetDeviceAsync(It.IsAny<string>()))
-                .ReturnsAsync((string deviceId) => new Device(deviceId) { Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } } });
+                 .Setup(x => x.GetDeviceAsync(It.IsAny<string>()))
+                 .ReturnsAsync((string deviceId) =>
+                 {
+                     var mockDevice = new Mock<IDevice>(MockBehavior.Strict);
+
+                     mockDevice.SetupGet(t => t.PrimaryKey)
+                         .Returns(primaryKey);
+
+                     mockDevice.SetupGet(t => t.AssignedIoTHub)
+                        .Returns(IotHubHostName);
+
+                     return mockDevice.Object;
+                 });
 
             mockRegistryManager
                 .Setup(x => x.GetTwinAsync(It.IsNotNull<string>()))
-                .ReturnsAsync((string deviceId) => new Twin(deviceId));
+                .ReturnsAsync((string deviceId) =>
+                {
+                    var mockDevice = new Mock<IDeviceTwin>(MockBehavior.Strict);
 
-            var numberOfDevices = deviceIds.Count;
+                    mockDevice.SetupGet(t => t.DeviceId)
+                        .Returns(deviceId);
+                    mockDevice.Setup(t => t.GetDevAddr())
+                              .Returns(CreateDevAddr());
+                    mockDevice.Setup(t => t.GetGatewayID())
+                              .Returns(string.Empty);
+                    mockDevice.Setup(t => t.GetLastUpdated())
+                              .Returns(DateTime.UtcNow);
+                    mockDevice.Setup(t => t.GetNwkSKey())
+                              .Returns(string.Empty);
+
+                    return mockDevice.Object;
+                });
 
             // CacheMiss query
-            var cacheMissQueryMock = new Mock<IQuery>(MockBehavior.Strict);
+            var cacheMissQueryMock = new Mock<IRegistryPageResult<IDeviceTwin>>(MockBehavior.Strict);
 
             // we only want to run hasmoreresult once
             cacheMissQueryMock
@@ -71,40 +95,38 @@ namespace LoRaWan.Tests.Integration
                 });
 
             cacheMissQueryMock
-                .Setup(x => x.GetNextAsTwinAsync())
+                .Setup(x => x.GetNextPageAsync())
                 .ReturnsAsync(() =>
                 {
                     var devAddressesToConsider = currentDevAddrContext;
-                    var twins = new List<Twin>();
+                    var twins = new List<IDeviceTwin>();
                     foreach (var devaddrItem in devAddressesToConsider)
                     {
-                        var deviceTwin = new Twin
-                        {
-                            DeviceId = devaddrItem.DevEUI.Value.ToString(),
-                            Properties = new TwinProperties()
-                            {
-                                Desired = new TwinCollection($"{{\"{LoraKeysManagerFacadeConstants.TwinProperty_DevAddr}\": \"{devaddrItem.DevAddr}\", \"{LoraKeysManagerFacadeConstants.TwinProperty_GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
-                            }
-                        };
+                        var mockDevice = new Mock<IDeviceTwin>(MockBehavior.Strict);
+                        mockDevice.SetupGet(t => t.DeviceId).Returns(devaddrItem.DevEUI);
+                        mockDevice.Setup(t => t.GetGatewayID()).Returns(devaddrItem.GatewayId);
+                        mockDevice.Setup(t => t.GetDevAddr()).Returns(devaddrItem.DevAddr);
+                        mockDevice.Setup(t => t.GetNwkSKey()).Returns(devaddrItem.NwkSKey);
+                        mockDevice.Setup(t => t.GetLastUpdated()).Returns(devaddrItem.LastUpdatedTwins);
 
-                        twins.Add(deviceTwin);
+                        twins.Add(mockDevice.Object);
                     }
 
                     return twins;
                 });
 
             mockRegistryManager
-                .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM devices WHERE properties.desired.DevAddr =", StringComparison.Ordinal)), 100))
-                .Returns((string query, int pageSize) =>
+                .Setup(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()))
+                .ReturnsAsync((string devAddr) =>
                 {
                     hasMoreShouldReturn = true;
-                    currentDevAddrContext = currentDevices.Where(v => v.DevAddr.ToString() == query.Split('\'')[1]).ToList();
+                    currentDevAddrContext = currentDevices.Where(v => v.DevAddr.ToString() == devAddr.Split('\'')[1]).ToList();
                     return cacheMissQueryMock.Object;
                 });
 
             mockRegistryManager
-                .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) ", StringComparison.Ordinal))))
-                .Returns((string query) =>
+                .Setup(x => x.FindConfiguredLoRaDevices())
+                .ReturnsAsync(() =>
                 {
                     hasMoreShouldReturn = true;
                     currentDevAddrContext = currentDevices;
@@ -112,8 +134,8 @@ namespace LoRaWan.Tests.Integration
                 });
 
             mockRegistryManager
-                .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >=", StringComparison.Ordinal))))
-                .Returns((string query) =>
+                .Setup(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()))
+                .ReturnsAsync((string query) =>
                 {
                     currentDevAddrContext = currentDevices.Take(numberOfDeviceDeltaUpdates).ToList();
                     // reset device count in case HasMoreResult is called more than once
@@ -140,12 +162,16 @@ namespace LoRaWan.Tests.Integration
         [InlineData(FullUpdateKey)]
         public async Task When_PerformNeededSyncs_Fails_Should_Release_Lock(string lockToTake)
         {
-            var devAddrcache = new LoRaDevAddrCache(this.cache, null, null);
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake == null ? null : new[] { lockToTake });
             var managerInput = new List<DevAddrCacheInfo> { new DevAddrCacheInfo() { DevEUI = TestEui.GenerateDevEui(), DevAddr = CreateDevAddr() } };
             var registryManagerMock = InitRegistryManager(managerInput);
-            registryManagerMock.Setup(x => x.CreateQuery(It.IsAny<string>())).Throws(new RedisException(string.Empty));
-            await devAddrcache.PerformNeededSyncs(registryManagerMock.Object);
+
+            registryManagerMock.Setup(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>())).Throws(new RedisException(string.Empty));
+            registryManagerMock.Setup(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>())).Throws(new RedisException(string.Empty));
+            registryManagerMock.Setup(x => x.FindConfiguredLoRaDevices()).Throws(new RedisException(string.Empty));
+
+            var devAddrcache = new LoRaDevAddrCache(this.cache, registryManagerMock.Object, null, null);
+            await devAddrcache.PerformNeededSyncs();
 
             // When doing a full update, the FullUpdateKey lock should be reset to 1min, the GlobalDevAddrUpdateKey should be gone
             // When doing a partial update, the GlobalDevAddrUpdateKey should be gone
@@ -205,7 +231,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(managerInput[0].GatewayId ?? string.Empty, resultObject.GatewayId);
             Assert.Equal(managerInput[0].DevEUI, resultObject.DevEUI);
 
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>(), It.IsAny<int>()), Times.Once);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()), Times.Once);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Once);
         }
@@ -255,8 +281,11 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(managerInput[0].GatewayId ?? string.Empty, resultObject.GatewayId);
             Assert.Equal(managerInput[0].DevEUI, resultObject.DevEUI);
 
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>(), It.IsAny<int>()), Times.Once);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Never);
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Never);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
+
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()), Times.Once);
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Once);
         }
 
@@ -299,11 +328,11 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(resultObject.PrimaryKey);
 
             // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+
             // Should query for the key as key is missing
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Once);
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
         }
 
         [Fact]
@@ -340,8 +369,7 @@ namespace LoRaWan.Tests.Integration
 
             await Task.WhenAll(tasks);
             // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>(), It.IsAny<int>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
             // Should query for the key as key is missing
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Once);
@@ -387,7 +415,7 @@ namespace LoRaWan.Tests.Integration
 
             Assert.Single(items);
             // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
             // Should not query for the key as key is there
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
@@ -436,11 +464,9 @@ namespace LoRaWan.Tests.Integration
             var query2Result = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, devAddrJoining));
             Assert.Single(query2Result);
 
-            // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
-            registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
-            // Should not query for the key as key is there
-            registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.Is((DevAddr x) => managerInput.Any(c => c.DevAddr == x))), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+            registryManagerMock.Verify(x => x.GetTwinAsync(It.Is((string x) => managerInput.Any(c => c.DevEUI == x))), Times.Never, "IoT Hub should not have been called, as the device was present in the cache.");
+            registryManagerMock.Verify(x => x.GetDeviceAsync(It.Is((string x) => managerInput.Any(c => c.DevEUI == x))), Times.Never);
         }
 
         [Fact]
@@ -474,9 +500,9 @@ namespace LoRaWan.Tests.Integration
             items = await deviceGetter.GetDeviceList(null, gatewayId, new DevNonce(0xABCD), devAddrJoining);
 
             Assert.Single(items);
-            // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Once);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Once);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
+
             // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Once);
 
@@ -518,8 +544,8 @@ namespace LoRaWan.Tests.Integration
             var locksToTake = new string[1] { FullUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, locksToTake);
 
-            var devAddrCache = new LoRaDevAddrCache(this.cache, null, gatewayId);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+            var devAddrCache = new LoRaDevAddrCache(this.cache, registryManagerMock.Object, null, gatewayId);
+            await devAddrCache.PerformNeededSyncs();
 
             while (!string.IsNullOrEmpty(this.cache.StringGet(GlobalDevAddrUpdateKey)))
             {
@@ -545,10 +571,15 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(2, foundItem);
 
             // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Once);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()), Times.Never);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
-            // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+
+            // We expect to query for the key once (the device with an active connection)
+            // The first time during the LoRaDevAddrCache constructor
+            // The second time during the delta synchronization
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Exactly(2));
         }
 
         [Fact]
@@ -621,8 +652,8 @@ namespace LoRaWan.Tests.Integration
             var locksToTake = new string[1] { FullUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, locksToTake);
 
-            var devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+            var devAddrCache = new LoRaDevAddrCache(this.cache, registryManagerMock.Object, null, newGatewayId);
+            await devAddrCache.PerformNeededSyncs();
 
             // we expect the devices are saved
             for (var i = 0; i < managerInput.Count; i++)
@@ -657,11 +688,14 @@ namespace LoRaWan.Tests.Integration
             }
 
             // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Once);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
-            // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Never);
+
+            // The first time during the LoRaDevAddrCache constructor
+            // The second time during the delta synchronization
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Exactly(2));
         }
 
         [Fact]
@@ -711,8 +745,8 @@ namespace LoRaWan.Tests.Integration
             var locksToTake = new string[1] { FullUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, locksToTake);
 
-            var devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+            var devAddrCache = new LoRaDevAddrCache(this.cache, registryManagerMock.Object, null, newGatewayId);
+            await devAddrCache.PerformNeededSyncs();
 
             // we expect the devices are saved
             for (var i = 0; i < managerInput.Count; i++)
@@ -727,10 +761,15 @@ namespace LoRaWan.Tests.Integration
             }
 
             // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Once);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
-            // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Never);
+
+            // We expect to query for the key once (the device with an active connection)
+            // The first time during the LoRaDevAddrCache constructor
+            // The second time during the delta synchronization
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Exactly(2));
         }
 
         [Fact]
@@ -806,8 +845,8 @@ namespace LoRaWan.Tests.Integration
             // initialize locks for test to run correctly
             await LockDevAddrHelper.PrepareLocksForTests(this.cache);
 
-            var devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+            var devAddrCache = new LoRaDevAddrCache(this.cache, registryManagerMock.Object, null, newGatewayId);
+            await devAddrCache.PerformNeededSyncs();
 
             // we expect the devices are saved, the double device id should not be there anymore
             for (var i = 0; i < newValues.Count; i++)
@@ -823,11 +862,12 @@ namespace LoRaWan.Tests.Integration
                 }
             }
 
-            // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Once);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
-            // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()), Times.Never);
+
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Once);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Once);
         }
 
         [Fact]
@@ -854,6 +894,7 @@ namespace LoRaWan.Tests.Integration
                     DevEUI = TestEui.GenerateDevEui(),
                     DevAddr = CreateDevAddr(),
                     GatewayId = newGatewayId,
+                    PrimaryKey = string.Empty,
                     LastUpdatedTwins = updateDateTime
                 });
             }
@@ -880,8 +921,8 @@ namespace LoRaWan.Tests.Integration
             // initialize locks for test to run correctly
             await LockDevAddrHelper.PrepareLocksForTests(this.cache);
 
-            var devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
-            await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
+            var devAddrCache = new LoRaDevAddrCache(this.cache, registryManagerMock.Object, null, newGatewayId);
+            await devAddrCache.PerformNeededSyncs();
 
             // we expect the devices are saved, the double device id should not be there anymore
             for (var i = 0; i < newValues.Count; i++)
@@ -891,14 +932,15 @@ namespace LoRaWan.Tests.Integration
                 var result2Object = JsonConvert.DeserializeObject<DevAddrCacheInfo>(queryResult[0].Value);
                 Assert.Equal(newGatewayId, result2Object.GatewayId);
                 Assert.Equal(newValues[i].DevEUI, result2Object.DevEUI);
-                Assert.Equal(string.Empty, result2Object.PrimaryKey);
+                Assert.Null(result2Object.PrimaryKey);
             }
 
-            // Iot hub should never have been called.
-            registryManagerMock.Verify(x => x.CreateQuery(It.IsAny<string>()), Times.Once);
             registryManagerMock.Verify(x => x.GetTwinAsync(It.IsAny<string>()), Times.Never);
-            // We expect to query for the key once (the device with an active connection)
             registryManagerMock.Verify(x => x.GetDeviceAsync(It.IsAny<string>()), Times.Never);
+            registryManagerMock.Verify(x => x.FindDeviceByAddrAsync(It.IsAny<DevAddr>()), Times.Never);
+
+            registryManagerMock.Verify(x => x.FindDevicesByLastUpdateDate(It.IsAny<string>()), Times.Once);
+            registryManagerMock.Verify(x => x.FindConfiguredLoRaDevices(), Times.Once);
         }
 
         private static DevAddr CreateDevAddr() => new DevAddr((uint)RandomNumberGenerator.GetInt32(int.MaxValue));

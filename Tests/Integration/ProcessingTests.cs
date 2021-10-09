@@ -705,7 +705,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceApi.SetupSequence(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult())
                 .ReturnsAsync(new SearchDevicesResult())
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc", IotHubHostName).AsList()));
 
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(
@@ -899,7 +899,7 @@ namespace LoRaWan.Tests.Integration
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb", IotHubHostName).AsList()));
 
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -972,11 +972,11 @@ namespace LoRaWan.Tests.Integration
 
             // C2D message will be checked
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
-                .ReturnsAsync((Message)null);
+                .ReturnsAsync(()=> null);
 
             // will search for the device twice
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(loRaDevice.DevAddr.Value))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(loRaDevice.DevAddr, loRaDevice.DevEUI, "aaa").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(loRaDevice.DevAddr, loRaDevice.DevEUI, "aaa", IotHubHostName).AsList()));
 
             // add device to cache already
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -1050,7 +1050,7 @@ namespace LoRaWan.Tests.Integration
 
             // will search for the device twice
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(loRaDevice.DevAddr.Value))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(loRaDevice.DevAddr, loRaDevice.DevEUI, "aaa").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(loRaDevice.DevAddr, loRaDevice.DevEUI, "aaa", IotHubHostName).AsList()));
 
             using var cache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -1259,8 +1259,8 @@ namespace LoRaWan.Tests.Integration
             // device api will be searched for payload
             var searchDevicesResult = new SearchDevicesResult(new[]
             {
-                new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "device1"),
-                new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "device2"),
+                new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "device1", IotHubHostName),
+                new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "device2", IotHubHostName),
             });
 
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
@@ -1353,8 +1353,8 @@ namespace LoRaWan.Tests.Integration
             // device api will be searched for payload
             var searchDevicesResult = new SearchDevicesResult(new[]
             {
-                new IoTHubDeviceInfo(simulatedDevice1.DevAddr, simulatedDevice1.DevEUI, "device1"),
-                new IoTHubDeviceInfo(simulatedDevice2.DevAddr, simulatedDevice2.DevEUI, "device2"),
+                new IoTHubDeviceInfo(simulatedDevice1.DevAddr, simulatedDevice1.DevEUI, "device1", IotHubHostName),
+                new IoTHubDeviceInfo(simulatedDevice2.DevAddr, simulatedDevice2.DevEUI, "device2", IotHubHostName),
             });
 
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
@@ -1468,8 +1468,8 @@ namespace LoRaWan.Tests.Integration
             // device api will be searched for payload
             var searchDevicesResult = new SearchDevicesResult(new[]
             {
-                new IoTHubDeviceInfo(simulatedDevice1.DevAddr, simulatedDevice1.DevEUI, "device1"),
-                new IoTHubDeviceInfo(simulatedDevice2.DevAddr, simulatedDevice2.DevEUI, "device2"),
+                new IoTHubDeviceInfo(simulatedDevice1.DevAddr, simulatedDevice1.DevEUI, "device1", IotHubHostName),
+                new IoTHubDeviceInfo(simulatedDevice2.DevAddr, simulatedDevice2.DevEUI, "device2", IotHubHostName),
             });
 
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
@@ -1642,7 +1642,7 @@ namespace LoRaWan.Tests.Integration
             };
 
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr.Value))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123", IotHubHostName).AsList()));
 
             LoRaDeviceClient.SetupSequence(x => x.GetTwinAsync(CancellationToken.None))
                 .ThrowsAsync(new TimeoutException())
@@ -1690,7 +1690,7 @@ namespace LoRaWan.Tests.Integration
             var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: gatewayID));
 
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr.Value))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123", IotHubHostName).AsList()));
 
             if (string.IsNullOrEmpty(gatewayID))
             {

@@ -53,7 +53,7 @@ namespace LoRaWan.Tests.Integration
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequestPayload1.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb", IotHubHostName).AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -77,7 +77,7 @@ namespace LoRaWan.Tests.Integration
 
             // setup response to this device search
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequestPayload2.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb", IotHubHostName).AsList()));
 
             using var joinRequest2 = CreateWaitableRequest(joinRequestPayload2);
             messageProcessor.DispatchRequest(joinRequest2);

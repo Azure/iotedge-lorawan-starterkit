@@ -10,7 +10,6 @@ namespace LoraKeysManagerFacade
     using LoRaWan;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
@@ -18,10 +17,10 @@ namespace LoraKeysManagerFacade
 
     public class DeviceGetter
     {
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
         private readonly ILoRaDeviceCacheStore cacheStore;
 
-        public DeviceGetter(RegistryManager registryManager, ILoRaDeviceCacheStore cacheStore)
+        public DeviceGetter(IDeviceRegistryManager registryManager, ILoRaDeviceCacheStore cacheStore)
         {
             this.registryManager = registryManager;
             this.cacheStore = cacheStore;
@@ -106,7 +105,8 @@ namespace LoraKeysManagerFacade
                     var iotHubDeviceInfo = new IoTHubDeviceInfo
                     {
                         DevEUI = someDevEui,
-                        PrimaryKey = joinInfo.PrimaryKey
+                        PrimaryKey = joinInfo.PrimaryKey,
+                        IoTHubHostname = joinInfo.AssignedIoTHub
                     };
 
                     results.Add(iotHubDeviceInfo);
@@ -166,11 +166,11 @@ namespace LoraKeysManagerFacade
                         // if the device is not found is the cache we query, if there was something, it is probably not our device.
                         if (results.Count == 0 && devAddressesInfo == null)
                         {
-                            var query = this.registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{someDevAddr}' OR properties.reported.DevAddr ='{someDevAddr}'", 100);
+                            var query = await this.registryManager.FindDeviceByAddrAsync(someDevAddr);
                             var resultCount = 0;
                             while (query.HasMoreResults)
                             {
-                                var page = await query.GetNextAsTwinAsync();
+                                var page = await query.GetNextPageAsync();
 
                                 foreach (var twin in page)
                                 {
@@ -184,7 +184,7 @@ namespace LoraKeysManagerFacade
                                             PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey,
                                             GatewayId = twin.GetGatewayID(),
                                             NwkSKey = twin.GetNwkSKey(),
-                                            LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
+                                            IoTHubHostname = device.AssignedIoTHub
                                         };
                                         results.Add(iotHubDeviceInfo);
                                         _ = devAddrCache.StoreInfo(iotHubDeviceInfo);
@@ -226,7 +226,7 @@ namespace LoraKeysManagerFacade
                 return null;
             }
 
-            return device.Authentication.SymmetricKey?.PrimaryKey;
+            return device.PrimaryKey;
         }
 
         private async Task<JoinInfo> TryGetJoinInfoAndValidateAsync(DevEui devEUI, string gatewayId, ILogger log)
@@ -248,6 +248,7 @@ namespace LoraKeysManagerFacade
                         if (device != null)
                         {
                             joinInfo.PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey;
+                            joinInfo.AssignedIoTHub = device.AssignedIoTHub;
                             var twin = await this.registryManager.GetTwinAsync(devEUI.ToString());
                             var deviceGatewayId = twin.GetGatewayID();
                             if (!string.IsNullOrEmpty(deviceGatewayId))

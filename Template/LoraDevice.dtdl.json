@@ -1,0 +1,593 @@
+{
+    "@id": "dtmi:iotcentral:LoRaDevice;1",
+    "@type": "Interface",
+    "contents": [
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:AppEUI;1",
+            "@type": "Property",
+            "description": {
+                "en": "This is the unique ID of the Application server."
+            },
+            "displayName": {
+                "en": "AppEUI"
+            },
+            "name": "AppEUI",
+            "schema": "string",
+            "writable": true
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:AppKey;1",
+            "@type": "Property",
+            "description": {
+                "en": "The data encryption key used to \"encode\" the messages between the end nodes and the Application Server"
+            },
+            "displayName": {
+                "en": "AppKey"
+            },
+            "name": "AppKey",
+            "schema": "string",
+            "writable": true
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:SensorDecoder;1",
+            "@type": "Property",
+            "description": {
+                "en": "The name of an integrated decoder function or the URI to a decoder in a custom decoder module in the format: http://modulename/api/decodername."
+            },
+            "displayName": {
+                "en": "SensorDecoder"
+            },
+            "name": "SensorDecoder",
+            "schema": "string",
+            "writable": true
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate;1",
+            "@type": "Property",
+            "description": {
+                "en": "Rx2DataRate (Receive window 2 data rate, currently only supported for OTAA devices): Any of the allowed data rates."
+            },
+            "displayName": {
+                "en": "RX2DataRate"
+            },
+            "name": "RX2DataRate",
+            "schema": {
+                "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema;1",
+                "@type": "Enum",
+                "displayName": {
+                    "en": "Enum"
+                },
+                "enumValues": [
+                    {
+                        "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema:SF12BW125;1",
+                        "displayName": {
+                            "en": "SF12BW125"
+                        },
+                        "enumValue": "SF12BW125",
+                        "name": "SF12BW125"
+                    },
+                    {
+                        "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema:SF11BW125;1",
+                        "displayName": {
+                            "en": "SF11BW125"
+                        },
+                        "enumValue": "SF11BW125",
+                        "name": "SF11BW125"
+                    },
+                    {
+                        "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema:SF10BW125;1",
+                        "displayName": {
+                            "en": "SF10BW125"
+                        },
+                        "enumValue": "SF10BW125",
+                        "name": "SF10BW125"
+                    },
+                    {
+                        "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema:SF8BW125;1",
+                        "displayName": {
+                            "en": "SF8BW125"
+                        },
+                        "enumValue": "SF8BW125",
+                        "name": "SF8BW125"
+                    },
+                    {
+                        "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema:SF7BW250;1",
+                        "displayName": {
+                            "en": "SF7BW250"
+                        },
+                        "enumValue": "SF7BW250",
+                        "name": "SF7BW250"
+                    },
+                    {
+                        "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema:SF7BW125;1",
+                        "displayName": {
+                            "en": "SF7BW125"
+                        },
+                        "enumValue": "SF7BW125",
+                        "name": "SF7BW125"
+                    },
+                    {
+                        "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema:SF9BW125;1",
+                        "displayName": {
+                            "en": "SF9BW125"
+                        },
+                        "enumValue": "SF9BW125",
+                        "name": "SF9BW125"
+                    },
+                    {
+                        "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema:SF8BW500;1",
+                        "displayName": {
+                            "en": "SF8BW500"
+                        },
+                        "enumValue": "SF8BW500",
+                        "name": "SF8BW500"
+                    },
+                    {
+                        "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema:SF11BW500;1",
+                        "displayName": {
+                            "en": "SF11BW500"
+                        },
+                        "enumValue": "SF11BW500",
+                        "name": "SF11BW500"
+                    },
+                    {
+                        "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema:SF10BW500;1",
+                        "displayName": {
+                            "en": "SF10BW500"
+                        },
+                        "enumValue": "SF10BW500",
+                        "name": "SF10BW500"
+                    },
+                    {
+                        "@id": "dtmi:iotcentral:LoRaDevice:RX2DataRate:schema:SF9BW500;1",
+                        "displayName": {
+                            "en": "SF9BW500"
+                        },
+                        "enumValue": "SF9BW500",
+                        "name": "SF9BW500"
+                    }
+                ],
+                "valueSchema": "string"
+            },
+            "writable": true
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:tmst;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": "Internal timestamp of \"RX finished\" event (32b unsigned)"
+            },
+            "displayName": {
+                "en": "TimeStamp"
+            },
+            "name": "tmst",
+            "schema": "integer"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:time;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": "UTC time of pkt RX, us precision, ISO 8601 'compact' format"
+            },
+            "displayName": {
+                "en": "Time"
+            },
+            "name": "time",
+            "schema": "string"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:tmms;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": "GPS time of pkt RX, number of milliseconds since 06.Jan.1980"
+            },
+            "displayName": {
+                "en": "GPS Time"
+            },
+            "name": "tmms",
+            "schema": "integer"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:freq;1",
+            "@type": [
+                "Telemetry",
+                "Frequency"
+            ],
+            "description": {
+                "en": "RX central frequency in MHz (unsigned float, Hz precision)"
+            },
+            "displayName": {
+                "en": "Frequency"
+            },
+            "name": "freq",
+            "schema": "float",
+            "unit": "megahertz"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:chan;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": "Concentrator \"IF\" channel used for RX (unsigned integer)"
+            },
+            "displayName": {
+                "en": "Channel"
+            },
+            "name": "chan",
+            "schema": "integer"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:rfch;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": "Concentrator \"RF chain\" used for RX (unsigned integer)"
+            },
+            "displayName": {
+                "en": "RF Chain"
+            },
+            "name": "rfch",
+            "schema": "integer"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:stat;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": " CRC status: 1 = OK, -1 = fail, 0 = no CRC"
+            },
+            "displayName": {
+                "en": "Status"
+            },
+            "name": "stat",
+            "schema": "integer"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:datr;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": "LoRa datarate identifier (eg. SF12BW500)"
+            },
+            "displayName": {
+                "en": "Data Rate"
+            },
+            "name": "datr",
+            "schema": "string"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:codr;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": "FSK datarate (unsigned, in bits per second)"
+            },
+            "displayName": {
+                "en": "Coding Rate"
+            },
+            "name": "codr",
+            "schema": "string"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:rssi;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": "RSSI in dBm (signed integer, 1 dB precision)"
+            },
+            "displayName": {
+                "en": "RSSI"
+            },
+            "name": "rssi",
+            "schema": "integer"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:lsnr;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": "Lora SNR ratio in dB (signed float, 0.1 dB precision)"
+            },
+            "displayName": {
+                "en": "LSNR"
+            },
+            "name": "lsnr",
+            "schema": "double"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:size;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": "RF packet payload size in bytes (unsigned integer)"
+            },
+            "displayName": {
+                "en": "RF Size"
+            },
+            "name": "size",
+            "schema": "integer"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:modu;1",
+            "@type": "Telemetry",
+            "description": {
+                "en": "Modulation identifier \"LORA\" or \"FSK\""
+            },
+            "displayName": {
+                "en": "Modulation"
+            },
+            "name": "modu",
+            "schema": "string"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:rawdata;1",
+            "@type": "Telemetry",
+            "displayName": {
+                "en": "Raw Data"
+            },
+            "name": "rawdata",
+            "schema": "string"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:fcnt;1",
+            "@type": "Telemetry",
+            "displayName": {
+                "en": "Frame Counter"
+            },
+            "name": "fcnt",
+            "schema": "integer"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:port;1",
+            "@type": "Telemetry",
+            "displayName": {
+                "en": "Port"
+            },
+            "name": "port",
+            "schema": "integer"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:gatewayid;1",
+            "@type": "Telemetry",
+            "displayName": {
+                "en": "Gateway ID"
+            },
+            "name": "gatewayid",
+            "schema": "string"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:edgets;1",
+            "@type": "Telemetry",
+            "displayName": {
+                "en": "Edge TimeStamp"
+            },
+            "name": "edgets",
+            "schema": "integer"
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:AppSKey;1",
+            "@type": "Property",
+            "displayName": {
+                "en": "AppSKey"
+            },
+            "name": "AppSKey",
+            "schema": "string",
+            "writable": true
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:NwkSKey;1",
+            "@type": "Property",
+            "displayName": {
+                "en": "NwkSKey"
+            },
+            "name": "NwkSKey",
+            "schema": "string",
+            "writable": true
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:DevAddr;1",
+            "@type": "Property",
+            "displayName": {
+                "en": "DevAddr"
+            },
+            "name": "DevAddr",
+            "schema": "string",
+            "writable": true
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:FCntDown;1",
+            "@type": "Property",
+            "displayName": {
+                "en": "FCntDown"
+            },
+            "name": "FCntDown",
+            "schema": "integer",
+            "writable": false
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:FCntUp;1",
+            "@type": "Property",
+            "displayName": {
+                "en": "FCntUp"
+            },
+            "name": "FCntUp",
+            "schema": "integer",
+            "writable": false
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:DevEUI;1",
+            "@type": "Property",
+            "displayName": {
+                "en": "DevEUI"
+            },
+            "name": "DevEUI",
+            "schema": "string",
+            "writable": false
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:NetId;1",
+            "@type": "Property",
+            "displayName": {
+                "en": "NetId"
+            },
+            "name": "NetId",
+            "schema": "string",
+            "writable": false
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:DevNonce;1",
+            "@type": "Property",
+            "displayName": {
+                "en": "DevNonce"
+            },
+            "name": "DevNonce",
+            "schema": "string",
+            "writable": false
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:RX1DROffset;1",
+            "@type": "Property",
+            "displayName": {
+                "en": "RX1DROffset"
+            },
+            "name": "RX1DROffset",
+            "schema": "string",
+            "writable": false
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:RXDelay;1",
+            "@type": "Property",
+            "displayName": {
+                "en": "RXDelay"
+            },
+            "name": "RXDelay",
+            "schema": "string",
+            "writable": false
+        },
+        {
+            "@id": "dtmi:iotcentral:LoRaDevice:cloudtodevicemessage;1",
+            "@type": "Command",
+            "commandType": "synchronous",
+            "comment": "see documentation at: https://azure.github.io/iotedge-lorawan-starterkit/quickstart/#cloud-to-device-message",
+            "displayName": {
+                "en": "C2DMessage"
+            },
+            "name": "cloudtodevicemessage",
+            "request": {
+                "@type": "CommandPayload",
+                "displayName": {
+                    "en": "LoRa Message Request"
+                },
+                "name": "LoRaMessageRequest",
+                "schema": {
+                    "@type": "Object",
+                    "displayName": {
+                        "en": "Object"
+                    },
+                    "fields": [
+                        {
+                            "displayName": {
+                                "en": "DevEUI"
+                            },
+                            "name": "devEUI",
+                            "schema": "string"
+                        },
+                        {
+                            "displayName": {
+                                "en": "Fport"
+                            },
+                            "name": "Fport",
+                            "schema": "integer"
+                        },
+                        {
+                            "displayName": {
+                                "en": "Confirmed"
+                            },
+                            "name": "confirmed",
+                            "schema": "boolean"
+                        },
+                        {
+                            "displayName": {
+                                "en": "Payload"
+                            },
+                            "name": "payload",
+                            "schema": "string"
+                        },
+                        {
+                            "displayName": {
+                                "en": "RawPayload"
+                            },
+                            "name": "RawPayload",
+                            "schema": "string"
+                        }
+                    ]
+                }
+            },
+            "response": {
+                "@type": "CommandPayload",
+                "displayName": {
+                    "en": "LoRa Message Response"
+                },
+                "name": "LoRaMessageResponse",
+                "schema": {
+                    "@type": "Object",
+                    "displayName": {
+                        "en": "Object"
+                    },
+                    "fields": [
+                        {
+                            "displayName": {
+                                "en": "DevEUI"
+                            },
+                            "name": "DevEUI",
+                            "schema": "string"
+                        },
+                        {
+                            "displayName": {
+                                "en": "MessageID"
+                            },
+                            "name": "messageID",
+                            "schema": "string"
+                        },
+                        {
+                            "displayName": {
+                                "en": "DeviceClassType"
+                            },
+                            "name": "deviceClassType",
+                            "dtmi:dtdl:property:schema;2": {
+                                "@type": "Enum",
+                                "displayName": {
+                                    "en": "Enum"
+                                },
+                                "enumValues": [
+                                    {
+                                        "displayName": {
+                                            "en": "A"
+                                        },
+                                        "enumValue": "A",
+                                        "name": "A"
+                                    },
+                                    {
+                                        "displayName": {
+                                            "en": "B"
+                                        },
+                                        "enumValue": "B",
+                                        "name": "B"
+                                    },
+                                    {
+                                        "displayName": {
+                                            "en": "C"
+                                        },
+                                        "enumValue": "C",
+                                        "name": "C"
+                                    }
+                                ],
+                                "valueSchema": "string"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "displayName": {
+        "en": "LoRa Interface"
+    },
+    "name": "LoRa",
+    "@context": [
+        "dtmi:iotcentral:context;2",
+        "dtmi:dtdl:context;2"
+    ]
+}

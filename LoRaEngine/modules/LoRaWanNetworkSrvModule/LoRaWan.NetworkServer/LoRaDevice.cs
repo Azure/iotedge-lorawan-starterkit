@@ -211,6 +211,8 @@ namespace LoRaWan.NetworkServer
 
         public StationEui LastProcessingStationEui => this.lastProcessingStationEui.Get();
 
+        public string AssignedIoTHubHostName { get; set; }
+
         public LoRaDevice(DevAddr? devAddr, DevEui devEui, ILoRaDeviceClientConnectionManager connectionManager, ILogger<LoRaDevice> logger, Meter meter)
         {
             this.connectionManager = connectionManager;
@@ -223,6 +225,8 @@ namespace LoRaWan.NetworkServer
             PreferredWindow = 1;
             ClassType = LoRaDeviceClassType.A;
             this.unhandledExceptionCount = meter?.CreateCounter<int>(MetricRegistry.UnhandledExceptions);
+            this.AssignedIoTHubHostName = string.Empty;
+
         }
 
         /// <summary>

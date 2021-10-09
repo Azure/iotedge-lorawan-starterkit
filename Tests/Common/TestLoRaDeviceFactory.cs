@@ -47,7 +47,7 @@ namespace LoRaWan.Tests.Common
 
         public void SetClient(DevEui devEUI, ILoRaDeviceClient deviceClient) => this.deviceClientMap[devEUI] = deviceClient;
 
-        public override ILoRaDeviceClient CreateDeviceClient(string deviceId, string primaryKey) =>
+        public override ILoRaDeviceClient CreateDeviceClient(string deviceId, string primaryKey, string assignedIoTHubHostName) =>
             this.deviceClientMap.TryGetValue(DevEui.Parse(deviceId), out var deviceClientToAssign) ? deviceClientToAssign : this.loRaDeviceClient;
     }
 }

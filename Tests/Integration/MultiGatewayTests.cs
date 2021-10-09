@@ -143,7 +143,7 @@ namespace LoRaWan.Tests.Integration
 
             // device api will be searched for payload
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "abc").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "abc", IotHubHostName).AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);

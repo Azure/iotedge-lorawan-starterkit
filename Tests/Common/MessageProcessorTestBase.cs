@@ -21,6 +21,7 @@ namespace LoRaWan.Tests.Common
     public class MessageProcessorTestBase : IDisposable
     {
         public const string ServerGatewayID = "test-gateway";
+        public const string IotHubHostName = "fake.azure-devices.net";
 
         private readonly MemoryCache cache;
         private readonly byte[] macAddress;

@@ -22,6 +22,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
     {
         private const string ServerGatewayID = "test-gateway";
         private const FramePort TestPort = FramePorts.App10;
+        private const string IotHubHostName = "fake.azure-devices.net";
 
         private readonly NetworkServerConfiguration serverConfiguration;
         private readonly Region loRaRegion;

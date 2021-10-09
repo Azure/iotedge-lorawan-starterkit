@@ -15,9 +15,9 @@ namespace LoraKeysManagerFacade
 
     public class SearchDeviceByDevEUI
     {
-        private readonly RegistryManager registryManager;
+        private readonly IDeviceRegistryManager registryManager;
 
-        public SearchDeviceByDevEUI(RegistryManager registryManager)
+        public SearchDeviceByDevEUI(IDeviceRegistryManager registryManager)
         {
             this.registryManager = registryManager;
         }
@@ -55,7 +55,8 @@ namespace LoraKeysManagerFacade
                 return new OkObjectResult(new
                 {
                     DevEUI = devEui,
-                    device.Authentication.SymmetricKey.PrimaryKey
+                    device.Authentication.SymmetricKey.PrimaryKey,
+                    IoTHubHostname = device.AssignedIoTHub
                 });
             }
             else

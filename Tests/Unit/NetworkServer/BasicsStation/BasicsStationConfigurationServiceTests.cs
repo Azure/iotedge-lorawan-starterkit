@@ -116,7 +116,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
             var deviceTwin = new Twin(new TwinProperties { Desired = new TwinCollection(json) });
             var deviceClientMock = new Mock<ILoRaDeviceClient>();
             deviceClientMock.Setup(dc => dc.GetTwinAsync(CancellationToken.None)).Returns(Task.FromResult(deviceTwin));
-            this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(this.devEui.ToString(), primaryKey))
+            this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(this.devEui.ToString(), primaryKey, It.IsAny<string>()))
                                       .Returns(deviceClientMock.Object);
         }
 
@@ -275,7 +275,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer.BasicsStation
 
                 // assert
                 Assert.Equal(result.Length, numberOfConcurrentAccess);
-                this.loRaDeviceFactoryMock.Verify(ldf => ldf.CreateDeviceClient(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+                this.loRaDeviceFactoryMock.Verify(ldf => ldf.CreateDeviceClient(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
                 this.loRaDeviceApiServiceMock.Verify(ldf => ldf.GetPrimaryKeyByEuiAsync(It.IsAny<StationEui>()), Times.Once);
                 foreach (var r in result)
                     Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), r);

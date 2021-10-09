@@ -70,7 +70,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                                           LoRaProcessingErrorCode.InvalidDeviceConfiguration);
                     }
 
-                    using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key);
+                    using var client = this.loRaDeviceFactory.CreateDeviceClient(stationEui.ToString(), key, info.IoTHubHostName);
                     var twin = await client.GetTwinAsync(cancellationToken);
                     return twin.Properties.Desired;
                 });

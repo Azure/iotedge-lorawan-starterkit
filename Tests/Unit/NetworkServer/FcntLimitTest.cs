@@ -92,7 +92,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             }
 
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "abc").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "abc", IotHubHostName).AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -188,16 +188,16 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>(), It.IsAny<CancellationToken>()))
                 .Returns<TwinCollection, CancellationToken>((t, _) =>
                 {
-                    fcntUpSavedInTwin = (uint)t[TwinProperty.FCntUp];
-                    fcntDownSavedInTwin = (uint)t[TwinProperty.FCntDown];
-                    fcntStartUpSavedInTwin = (uint)t[TwinProperty.FCntUpStart];
-                    fcntStartDownSavedInTwin = (uint)t[TwinProperty.FCntDownStart];
+                    fcntUpSavedInTwin = t[TwinProperty.FCntUp];
+                    fcntDownSavedInTwin = t[TwinProperty.FCntDown];
+                    fcntStartUpSavedInTwin = t[TwinProperty.FCntUpStart];
+                    fcntStartDownSavedInTwin = t[TwinProperty.FCntDownStart];
 
                     return Task.FromResult(true);
                 });
 
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>())).ReturnsAsync((Message)null);
-            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr)).ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "abc").AsList()));
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr)).ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "abc", IotHubHostName).AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, memoryCache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);

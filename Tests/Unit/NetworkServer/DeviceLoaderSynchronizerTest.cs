@@ -16,6 +16,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
     public sealed class DeviceLoaderSynchronizerTest : IDisposable
     {
+        private const string IotHubHostName = "fake.azure-devices.net";
         private readonly MemoryCache memoryCache;
         private readonly LoRaDeviceClientConnectionManager connectionManager;
 
@@ -120,7 +121,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
-            var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DevEui, "pk")
+            var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DevEui, "pk", IotHubHostName)
             {
                 GatewayId = gatewayId,
                 NwkSKey = simulatedDevice.NwkSKey.Value
@@ -163,7 +164,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
-            var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DevEui, "pk")
+            var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DevEui, "pk", IotHubHostName)
             {
                 GatewayId = "a_different_one",
                 NwkSKey = simulatedDevice.NwkSKey.Value
@@ -214,7 +215,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
-            var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DevEui, "pk");
+            var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DevEui, "pk", IotHubHostName);
             apiService.Setup(x => x.SearchByDevAddrAsync(It.IsAny<DevAddr>()))
                 .ReturnsAsync(new SearchDevicesResult(iotHubDeviceInfo.AsList()));
 

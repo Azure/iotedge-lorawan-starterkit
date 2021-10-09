@@ -83,7 +83,7 @@ namespace LoRaWan.Tests.Integration
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequestPayload.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb", IotHubHostName).AsList()));
 
             // multi gateway will request a next frame count down from the lora device api, prepare it
             if (string.IsNullOrEmpty(deviceGatewayID))
@@ -245,7 +245,7 @@ namespace LoRaWan.Tests.Integration
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequestPayload1.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb", IotHubHostName).AsList()));
 
             // using factory to create mock of
             using var cache = NewMemoryCache();
@@ -269,7 +269,7 @@ namespace LoRaWan.Tests.Integration
 
             // will reload the device matched by deveui
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequestPayload2.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb", IotHubHostName).AsList()));
 
             using var joinRequest2 = CreateWaitableRequest(joinRequestPayload2);
             messageProcessor.DispatchRequest(joinRequest2);
@@ -330,7 +330,7 @@ namespace LoRaWan.Tests.Integration
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequestPayload.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb", IotHubHostName).AsList()));
 
             // using factory to create mock of
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -375,7 +375,7 @@ namespace LoRaWan.Tests.Integration
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequestPayload.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb", IotHubHostName).AsList()));
 
             // using factory to create mock of
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -430,7 +430,7 @@ namespace LoRaWan.Tests.Integration
 
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, joinRequestPayload.DevNonce))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb", IotHubHostName).AsList()));
 
             // using factory to create mock of
 
@@ -484,7 +484,7 @@ namespace LoRaWan.Tests.Integration
 
             // Lora device api will be search by devices with matching deveui
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEui, It.IsAny<DevNonce>()))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "aabb", IotHubHostName).AsList()));
 
             // using factory to create mock of
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());

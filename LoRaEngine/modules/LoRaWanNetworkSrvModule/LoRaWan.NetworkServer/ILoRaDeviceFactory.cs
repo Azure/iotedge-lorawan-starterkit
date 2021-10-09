@@ -26,6 +26,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         /// <param name="deviceId">ID of the device.</param>
         /// <param name="primaryKey">Primary key of the device.</param>
-        ILoRaDeviceClient CreateDeviceClient(string deviceId, string primaryKey);
+        /// <param name="assignedIoTHubHostName">The Assigned IoT Hub Hostname.</param>
+        ILoRaDeviceClient CreateDeviceClient(string deviceId, string primaryKey, string assignedIoTHubHostName);
     }
 }

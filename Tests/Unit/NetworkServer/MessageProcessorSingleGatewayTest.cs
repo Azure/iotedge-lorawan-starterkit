@@ -72,7 +72,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             var wrongSKey = TestKeys.CreateNetworkSessionKey(0xEEDDFF);
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
 
-            var searchResult = new SearchDevicesResult(new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "1321").AsList());
+            var searchResult = new SearchDevicesResult(new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "1321", IotHubHostName).AsList());
             if (searchDevicesDelayMs > 0)
             {
                 LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simulatedDevice.DevAddr.Value))
@@ -416,7 +416,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
             };
 
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simulatedDevice.DevAddr.Value))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "1234") { GatewayId = gateway2 }.AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "1234", IotHubHostName) { GatewayId = gateway2 }.AsList()));
 
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);
@@ -464,7 +464,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
 
-            var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DevEui, "pk");
+            var iotHubDeviceInfo = new IoTHubDeviceInfo(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DevEui, "pk", IotHubHostName);
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(It.IsAny<DevAddr>()))
                 .ReturnsAsync(new SearchDevicesResult(iotHubDeviceInfo.AsList()));
 
@@ -573,7 +573,7 @@ namespace LoRaWan.Tests.Unit.NetworkServer
 
             // device api will be searched for payload
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "abc").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEui, "abc", IotHubHostName).AsList()));
 
             using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory, DeviceCache);

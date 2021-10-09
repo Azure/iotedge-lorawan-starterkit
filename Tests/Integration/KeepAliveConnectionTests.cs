@@ -261,7 +261,7 @@ namespace LoRaWan.Tests.Integration
 
             // will search for the device by devAddr
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simulatedDevice.DevAddr.Value))
-                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "ada").AsList()));
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "ada", IotHubHostName).AsList()));
 
             // will read the device twins
             var twin = simulatedDevice.CreateABPTwin(desiredProperties: new Dictionary<string, object>
