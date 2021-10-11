@@ -12,7 +12,7 @@ assignees: ''
 
 ## Acceptance criteria
 
-<!-- 
+<!--
 
 Use a list of clear and concise acceptance criteria
 By using the list syntax ("[ ]"), github can track and visualize progress on the story.

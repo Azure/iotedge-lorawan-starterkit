@@ -15,7 +15,7 @@ nodes. The goal of the the project is to provide guidance and a reference for
 Azure IoT Edge users to experiment with LoRaWAN technology.
 
 ![Architecture](/Docs/Pictures/EdgeArchitecture.png)
-  
+
 - [Features](#features)
 - [LoRaWAN Specification Support](#lorawan-specification-support)
 - [Prerequisites](#prerequisites)
@@ -38,7 +38,7 @@ for more details)
 - Easy deployment and setup using Azure ARM templates.
 - Small to Midsize Scalability Tests.
 - Simulator for development and testing without the need to own a Gateway.
-  
+
 ## LoRaWAN Specification Support
 
 We plan to support the following key features of LoRaWAN 1.0.2 specification,

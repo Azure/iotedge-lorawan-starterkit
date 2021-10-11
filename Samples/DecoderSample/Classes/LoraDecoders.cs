@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace SensorDecoderModule.Classes
@@ -32,7 +32,7 @@ namespace SensorDecoderModule.Classes
             // Write code that decodes the payload here.
 
             // Return a JSON string containing the decoded data
-            var resultObject = new 
+            var resultObject = new
             {
                 value = decodedValue,
                 cloudToDeviceMessage = new LoRaCloudToDeviceMessage()

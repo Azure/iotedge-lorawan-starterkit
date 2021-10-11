@@ -55,7 +55,7 @@ This guide helps you to execute and author integration tests on your local envir
 The value of `LeafDeviceSerialPort` in Windows will be the COM port where the Arduino board is connected to (Arduino IDE displays it). On macos you can discover through `ls /dev/tty*` and/or `ls /dev/cu*` bash commands. On Linux you can discover them with `ls /dev/ttyACM*`.
 
 ```json
-{ 
+{
     "testConfiguration": {
     "IoTHubEventHubConnectionString": "Endpoint=sb://xxxx.servicebus.windows.net/;SharedAccessKeyName=iothubowner;SharedAccessKey=xxx;EntityPath=xxxxx",
     "IoTHubEventHubConsumerGroup": "your-iothub-consumer-group",

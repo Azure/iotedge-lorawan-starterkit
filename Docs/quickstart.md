@@ -127,7 +127,7 @@ It should look something like this for ABP:
   },
   "version": 324,
   "tags": {
-  
+
   },
   "properties": {
     "desired": {

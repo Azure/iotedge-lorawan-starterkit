@@ -11,7 +11,7 @@ inputs:
   folder_path:
     description: 'Folder path of the manifest file'
     required: true
-  target_platform: 
+  target_platform:
     description: 'Platform to target'
     required: false
 runs:
