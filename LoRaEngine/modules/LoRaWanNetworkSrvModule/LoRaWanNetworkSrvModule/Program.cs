@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using LoRaWan.NetworkServer;
-using LoRaWan.NetworkServer.BasicStation;
+using LoRaWan.NetworkServer.BasicsStation;
 
 using var cts = new CancellationTokenSource();
 var cancellationToken = cts.Token;
@@ -29,6 +29,6 @@ Console.CancelKeyPress += (_, args) =>
 };
 
 var configuration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
-var runnerTask = configuration.UseBasicStation ? BasicsStationNetworkServer.RunServerAsync(cancellationToken)
-                                               : UdpServer.RunServerAsync();
+var runnerTask = configuration.UseBasicsStation ? BasicsStationNetworkServer.RunServerAsync(cancellationToken)
+                                                : UdpServer.RunServerAsync();
 await runnerTask;

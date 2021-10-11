@@ -108,9 +108,9 @@ namespace LoRaWan.NetworkServer
         public HashSet<string> AllowedDevAddresses { get; internal set; }
 
         /// <summary>
-        /// Use Basic Station Server implementation.
+        /// Use Basics Station Server implementation.
         /// </summary>
-        public bool UseBasicStation { get; internal set; }
+        public bool UseBasicsStation { get; private set; }
 
         // Creates a new instance of NetworkServerConfiguration by reading values from environment variables
         public static NetworkServerConfiguration CreateFromEnvironmentVariables()
@@ -139,7 +139,7 @@ namespace LoRaWan.NetworkServer
             config.LogToUdpPort = envVars.GetEnvVar("LOG_TO_UDP_PORT", config.LogToUdpPort);
             config.NetId = envVars.GetEnvVar("NETID", config.NetId);
             config.AllowedDevAddresses = new HashSet<string>(envVars.GetEnvVar("AllowedDevAddresses", string.Empty).Split(";"));
-            config.UseBasicStation = envVars.GetEnvVar("USE_BASIC_STATION", false);
+            config.UseBasicsStation = envVars.GetEnvVar("USE_BASIC_STATION", false);
 
             return config;
         }

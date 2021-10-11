@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.Test.BasicStation
+namespace LoRaWan.NetworkServer.Test.BasicsStation
 {
-    using LoRaWan.NetworkServer.BasicStation.Processors;
+    using LoRaWan.NetworkServer.BasicsStation.Processors;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging;
     using Moq;

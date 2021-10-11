@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.BasicStation.Processors
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+
+namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
     using System.Buffers;
@@ -21,25 +25,35 @@ namespace LoRaWan.NetworkServer.BasicStation.Processors
             this.logger = logger;
         }
 
-        public async Task<bool> HandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
+        public async Task HandleDiscoveryAsync(HttpContext httpContext, CancellationToken token)
         {
-            if (socket is null) throw new ArgumentNullException(nameof(socket));
+            if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
 
-            // TO DO: Reply with proper response message, before closing the socket
+            await ProcessIncomingRequestAsync(httpContext, InternalHandleDiscoveryAsync, token);
+        }
+
+        public async Task HandleDataAsync(HttpContext httpContext, CancellationToken token)
+        {
+            if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
+
+            await ProcessIncomingRequestAsync(httpContext, InternalHandleDataAsync, token);
+        }
+
+        /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
+        internal async Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
+        {
             this.logger.LogInformation($"Received message: {json}");
             return false;
         }
 
-        public async Task<bool> HandleDataAsync(string json, WebSocket socket, CancellationToken token)
+        /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
+        internal async Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
         {
-            if (socket is null) throw new ArgumentNullException(nameof(socket));
-
-            // TO DO: Reply with proper response message, before closing the socket
             this.logger.LogInformation($"Received message: {json}");
             return false;
         }
 
-        public async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
+        internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
                                                                    Func<string, WebSocket, CancellationToken, Task<bool>> handler,
                                                                    CancellationToken cancellationToken)
         {
@@ -52,7 +66,7 @@ namespace LoRaWan.NetworkServer.BasicStation.Processors
                 this.logger.Log(LogLevel.Debug, $"WebSocket connection from {httpContext.Connection.RemoteIpAddress} established");
                 try
                 {
-                    do
+                    while (true)
                     {
                         ValueWebSocketReceiveResult result;
                         using var buffer = MemoryPool<byte>.Shared.Rent(1024);
@@ -83,7 +97,7 @@ namespace LoRaWan.NetworkServer.BasicStation.Processors
                             await CloseSocketAsync(webSocket, cancellationToken);
                             break;
                         }
-                    } while (true);
+                    };
                 }
                 catch (WebSocketException wsException)
                 {

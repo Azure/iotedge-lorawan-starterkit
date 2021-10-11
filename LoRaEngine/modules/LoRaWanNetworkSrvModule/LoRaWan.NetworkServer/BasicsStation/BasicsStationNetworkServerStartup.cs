@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.BasicStation
+namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System.Globalization;
-    using LoRaWan.NetworkServer.BasicStation.Processors;
+    using LoRaWan.NetworkServer.BasicsStation.Processors;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
@@ -50,12 +50,12 @@ namespace LoRaWan.NetworkServer.BasicStation
                 endpoints.MapGet("/router-info", async context =>
                 {
                     var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
-                    await lnsProtocolMessageProcessor.ProcessIncomingRequestAsync(context, lnsProtocolMessageProcessor.HandleDiscoveryAsync, context.RequestAborted);
+                    await lnsProtocolMessageProcessor.HandleDiscoveryAsync(context, context.RequestAborted);
                 });
                 endpoints.MapGet("/router-data", async context =>
                 {
                     var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
-                    await lnsProtocolMessageProcessor.ProcessIncomingRequestAsync(context, lnsProtocolMessageProcessor.HandleDataAsync, context.RequestAborted);
+                    await lnsProtocolMessageProcessor.HandleDataAsync(context, context.RequestAborted);
                 });
             });
         }
