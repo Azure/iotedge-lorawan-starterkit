@@ -25,8 +25,8 @@ namespace LoRaWan
         public override string ToString()
         {
             Span<char> digits = stackalloc char[32];
-            Hexadecimal.Write(this.lo, digits[..16]);
-            Hexadecimal.Write(this.hi, digits[16..]);
+            Hexadecimal.Write(this.hi, digits);
+            Hexadecimal.Write(this.lo, digits[16..]);
             return new string(digits);
         }
 
