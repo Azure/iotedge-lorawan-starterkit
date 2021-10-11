@@ -39,7 +39,7 @@ function decode(decoderName, payload, fPort) {
     logger.debug(`Decoder ${decoderName} input: ${JSON.stringify(input)}`);
     const output = decoder.decodeUplink(input);
     logger.debug(`Decoder ${decoderName} output: ${JSON.stringify(output)}`);
-    
+
     return output;
 }
 

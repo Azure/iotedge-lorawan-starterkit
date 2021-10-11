@@ -44,5 +44,5 @@
     <Compile Include="..\..\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\ApiVersion.cs" Link="ApiVersion.cs" />
     <Compile Include="..\..\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\ServiceFacadeHttpClientHandler.cs" Link="ServiceFacadeHttpClientHandler.cs" />
   </ItemGroup>
-  
+
 </Project>

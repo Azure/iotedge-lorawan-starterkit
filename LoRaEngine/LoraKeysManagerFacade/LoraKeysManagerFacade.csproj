@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="$(MicrosoftNETSdkFunctionsVersion)" />
     <PackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisVersion)" />
   </ItemGroup>
-  
+
   <!-- Add shared files -->
   <ItemGroup>
     <Compile Include="../modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/ApiVersion.cs" />
@@ -25,13 +25,13 @@
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="local.settings.json">	    
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>	      
+    <None Update="local.settings.json">	
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>	
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>	
     </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
   </ItemGroup>
-  
+
 </Project>

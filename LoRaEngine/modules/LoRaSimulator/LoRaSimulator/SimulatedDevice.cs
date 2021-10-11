@@ -120,10 +120,10 @@ namespace LoRaSimulator
             // Need to create Fops. If not, then MIC won't be correct
             standardData.Fopts = new byte[0];
             // First encrypt the data
-            standardData.PerformEncryption(this.LoRaDevice.AppSKey); 
+            standardData.PerformEncryption(this.LoRaDevice.AppSKey);
             // "0A501524F8EA5FCBF9BDB5AD7D126F75");
             // Now we have the full package, create the MIC
-            standardData.SetMic(this.LoRaDevice.NwkSKey); 
+            standardData.SetMic(this.LoRaDevice.NwkSKey);
             // "99D58493D1205B43EFF938F0F66C339E");
 
             return standardData.GetByteMessage();

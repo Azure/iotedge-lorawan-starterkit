@@ -14,7 +14,7 @@ FROM arm32v7/debian:stretch-slim as base
 COPY --from=build /basicstation/build-rpi-std/bin/station /bin/station.std
 
 FROM build as build2
-# #reset 
+# #reset
 WORKDIR /basicstation
 RUN make platform=rpi variant=std clean
 # make spi speed 2 version

@@ -32,7 +32,7 @@ namespace SensorDecoderModule.Classes
             // Write code that decodes the payload here.
 
             // Return a JSON string containing the decoded data
-            var resultObject = new 
+            var resultObject = new
             {
                 value = decodedValue,
                 cloudToDeviceMessage = new LoRaCloudToDeviceMessage()

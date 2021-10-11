@@ -1,5 +1,5 @@
 name: Universal Decoder CI
-on: 
+on:
   pull_request:
     branches:
       - master
@@ -74,9 +74,9 @@ jobs:
       - name: Build and push the tagged Docker image
         run: |
           docker login -u ${{ secrets.DOCKER_LOGIN }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker buildx build -f "Dockerfile.${{ matrix.image }}" -t ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{steps.vars.outputs.tag}}-${{ matrix.image }} --output type=image,push=true "." 
+          docker buildx build -f "Dockerfile.${{ matrix.image }}" -t ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{steps.vars.outputs.tag}}-${{ matrix.image }} --output type=image,push=true "."
 
-        
+
   Docker_Manifests:
     name: Create manifests
     runs-on: ubuntu-latest
@@ -89,4 +89,4 @@ jobs:
         run: docker manifest create ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}} ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}}-arm32v7  ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}}-amd64 --amend
       - name: Push manifest
         run: docker manifest push ${{ secrets.DOCKER_REPOSITORY }}/universaldecoder:${{needs.Build_And_Push.outputs.tag}}
-      
+

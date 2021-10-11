@@ -59,7 +59,7 @@ namespace LoRaSimulator
             catch (Exception)
             {
                 throw;
-            }    
+            }
         }
 
         //get the correct byte arrays for all properties
