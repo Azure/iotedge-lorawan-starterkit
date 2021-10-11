@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.E2E
 
     // Tests ABP requests
     [Collection(Constants.TestCollectionName)] // run in serial
-    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class ABPTest : IntegrationTestBaseCi
     {
         public ABPTest(IntegrationTestFixtureCi testFixture)

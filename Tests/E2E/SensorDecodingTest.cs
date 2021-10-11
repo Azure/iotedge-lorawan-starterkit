@@ -9,7 +9,6 @@ namespace LoRaWan.Tests.E2E
 
     // Tests sensor decoding test (http, reflection)
     [Collection(Constants.TestCollectionName)] // run in serial
-    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public class SensorDecodingTest : IntegrationTestBaseCi
     {
         public SensorDecodingTest(IntegrationTestFixtureCi testFixture)

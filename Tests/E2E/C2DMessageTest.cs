@@ -12,7 +12,6 @@ namespace LoRaWan.Tests.E2E
     using XunitRetryHelper;
 
     [Collection(Constants.TestCollectionName)] // run in serial
-    [Trait("Category", "SkipWhenLiveUnitTesting")]
     /// <summary>
     /// Tests Cloud to Device messages
     /// </summary>

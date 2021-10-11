@@ -13,7 +13,6 @@ namespace LoRaWan.SimulatedTest
     using Xunit;
 
     // Tests ABP requests
-    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class SimulatorTestCollection : IntegrationTestBaseSim
     {
         private readonly TimeSpan intervalBetweenMessages;
