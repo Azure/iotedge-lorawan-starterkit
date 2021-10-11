@@ -23,6 +23,11 @@ namespace LoRaWan
             this.value = value;
         }
 
+        /// <summary>
+        /// Gets the network identifier (NwkID), the 7 LBS.
+        /// </summary>
+        public int NetworkId => this.value & 0b111_1111;
+
         public bool Equals(NetId other) => this.value == other.value;
         public override bool Equals(object obj) => obj is NetId other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
