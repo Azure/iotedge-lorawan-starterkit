@@ -11,21 +11,15 @@
     {
         protected Region _region;
 
-        [Fact]
-        public virtual void Test_Region_Frequency_And_Data_Rate()
+        public void TestRegionFrequencyAndDataRate(string inputDr, double inputFreq, string outputDr, double outputFreq)
         {
-            foreach (var data in CreateValidTestData())
-            {
-                var rxpk = GenerateRxpk(data.inputDr, data.inputFreq);
-                Assert.True(_region.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
-                Assert.Equal(frequency, data.outputFreq);
-                Assert.Equal(_region.GetDownstreamDR(rxpk[0]), data.outputDr);
-            }
+            var rxpk = GenerateRxpk(inputDr, inputFreq);
+            Assert.True(_region.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
+            Assert.Equal(frequency, outputFreq);
+            Assert.Equal(_region.GetDownstreamDR(rxpk[0]), outputDr);
         }
 
-        protected abstract IEnumerable<(string inputDr, double inputFreq, string outputDr, double outputFreq)> CreateValidTestData();
-
-        private static List<Rxpk> GenerateRxpk(string dr, double freq)
+        protected static List<Rxpk> GenerateRxpk(string dr, double freq)
         {
             string jsonUplink =
                 @"{ ""rxpk"":[
@@ -50,6 +44,16 @@
             physicalUpstreamPyld[0] = 2;
             List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
             return rxpk;
+        }
+
+        public void TestDownstreamRx2FrequencyAndDataRate(LoRaRegionType loRaRegion, string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        {
+            var devEui = "testDevice";
+            RegionManager.TryTranslateToRegion(loRaRegion, out Region region);
+            var datr = region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins);
+            var freq = region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq);
+            Assert.Equal(expectedFreq, freq);
+            Assert.Equal(expectedDr, datr);
         }
     }
 }
