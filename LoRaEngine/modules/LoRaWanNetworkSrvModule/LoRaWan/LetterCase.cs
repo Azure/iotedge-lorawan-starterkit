@@ -3,6 +3,9 @@
 
 namespace LoRaWan
 {
+    /// <summary>
+    /// Represents upper/lower casing choice for letter.
+    /// </summary>
     public enum LetterCase
     {
         Upper,
