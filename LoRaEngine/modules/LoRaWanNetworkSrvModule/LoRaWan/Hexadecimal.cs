@@ -43,9 +43,10 @@ namespace LoRaWan
         public static bool TryParse(ReadOnlySpan<char> chars, out ulong value, char? separator = null)
         {
             value = default;
-            if (chars.IsEmpty)
+            const int size = sizeof(ulong);
+            if (chars.IsEmpty || chars.Length != (separator is null ? size * 2 : size * 3 - 1))
                 return false;
-            Span<byte> bytes = stackalloc byte[sizeof(ulong)];
+            Span<byte> bytes = stackalloc byte[size];
             if (!TryParse(chars, bytes, separator))
                 return false;
             value = BinaryPrimitives.ReadUInt64BigEndian(bytes);
@@ -66,7 +67,7 @@ namespace LoRaWan
             // - not enough source characters
             // - first or last character is not a hexadecimal digit
 
-            if (chars.Length == 1 || !IsHexDigit(chars[0]) || !IsHexDigit(chars[^1]) || separator is null && chars.Length % 2 == 0)
+            if (chars.Length == 1 || !IsHexDigit(chars[0]) || !IsHexDigit(chars[^1]) || separator is null && chars.Length % 2 != 0)
                 return false;
 
             // Create a temporary working buffer of the expected size so that we do not put partial
