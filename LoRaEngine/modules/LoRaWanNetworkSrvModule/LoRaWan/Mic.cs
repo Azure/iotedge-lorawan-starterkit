@@ -6,7 +6,6 @@ namespace LoRaWan
     using System;
     using System.Buffers.Binary;
     using System.Globalization;
-    using Org.BouncyCastle.Crypto;
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
