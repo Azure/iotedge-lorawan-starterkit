@@ -3,10 +3,10 @@
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
     <!-- XML comment generation must be enabled -->
     <Rule Id="SA0001" Action="None" />
-    
+
     <!-- Constructor should not follow a property -->
     <Rule Id="SA1201" Action="None" />
-    
+
     <!-- public members before private -->
     <Rule Id="SA1202" Action="None" />
 
@@ -30,18 +30,18 @@
 
     <!-- Single-line comments should be preceded by blank line -->
     <Rule Id="SA1515" Action="None" />
-    
+
     <!-- elements should be documented -->
     <Rule Id="SA1600" Action="None" />
 
     <!-- enumeration items should be documented -->
     <Rule Id="SA1602" Action="None" />
-  
+
     <!-- Documentation for parameters -->
     <Rule Id="SA1611" Action="None" />
-  
+
     <!-- Element return value should be documented -->
     <Rule Id="SA1615" Action="None" />
-    
+
   </Rules>
 </RuleSet>

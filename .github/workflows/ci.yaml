@@ -17,7 +17,7 @@ on: # rebuild any PRs and main branch changes
     inputs:
       RunTestsOnly:
         description: 'Run tests only'
-        default: false   
+        default: false
       TestsToRun:
         default: '[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]'
         description: 'tests to run'
@@ -34,15 +34,15 @@ jobs:
       name: Set integration Matrix
       run: |
         if [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
-          echo "Set up for workflow dispatch"  
+          echo "Set up for workflow dispatch"
           echo "::set-output name=IntegrationTestsToRun::${{ github.event.inputs.TestsToRun }}"
         else
-          echo "::set-output name=IntegrationTestsToRun::[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]" 
+          echo "::set-output name=IntegrationTestsToRun::[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]"
         fi
 
     - id: check-if-run
       name: Check if deploy on local ci
-      if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'fullci' ) != true 
+      if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'fullci' ) != true
       run: |
         echo "::set-output name=StopFullCi::true"
 
@@ -58,11 +58,11 @@ jobs:
       RunTestsOnly: ${{ github.event.inputs.RunTestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunTestsOnly') == true}}
       IntegrationTestsToRun: ${{ steps.set-integration-matrix.outputs.IntegrationTestsToRun }}
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
-  
+
   build_and_test:
     name: Build and Test Solution
     runs-on: ubuntu-latest
-    needs: 
+    needs:
       - env_var
     if: needs.env_var.outputs.RunTestsOnly != 'true'
     steps:
@@ -78,11 +78,7 @@ jobs:
 
     # build C# Samples/DecoderSample
     - name: Build C# Samples/DecoderSample
-      run: dotnet build --configuration ${{ env.buildConfiguration }} Samples/DecoderSample 
-
-    # build LoRa Simulator
-    - name: Build LoRa Simulator
-      run: dotnet build --configuration ${{ env.buildConfiguration }} LoRaEngine/modules/LoRaSimulator/LoRaSimulator.sln
+      run: dotnet build --configuration ${{ env.buildConfiguration }} Samples/DecoderSample
 
     # Pull Redis Cache docker image
     - name: Pulling Redis Cache image
@@ -95,7 +91,7 @@ jobs:
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
           --filter 'FullyQualifiedName~LoRaWanTest|FullyQualifiedName~LoRaWan.NetworkServer.Test|FullyQualifiedName~LoraKeysManagerFacade.Test' \
           LoRaEngine
-      
+
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
       if: success() || failure()
@@ -107,7 +103,7 @@ jobs:
       uses: codecov/codecov-action@v2
 
   check_if_deploy:
-    needs: 
+    needs:
       - env_var
     runs-on: ubuntu-latest
     environment: CI
@@ -118,10 +114,10 @@ jobs:
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
-    needs: 
+    needs:
     - env_var
     - check_if_deploy
-    name: Build and Deploy Facade Azure Function   
+    name: Build and Deploy Facade Azure Function
     runs-on: ubuntu-latest
     if: needs.env_var.outputs.RunTestsOnly != 'true'
     env:
@@ -151,14 +147,14 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: 2
-      matrix: 
+      matrix:
         gateway: [ primary, secondary ]
         include:
           - gateway: primary
             architecture: arm32v7
           - gateway: secondary
             architecture: arm32v7
-    needs: 
+    needs:
     - env_var
     - check_if_deploy
     if: needs.env_var.outputs.RunTestsOnly != 'true'
@@ -190,13 +186,13 @@ jobs:
       MASTER_IMAGE_TAG: master
     runs-on: ubuntu-latest
     name: Run IoT Edge Deployment on ARM gateway
-    steps:  
+    steps:
       - uses: actions/checkout@v2
         name: Checkout current branch
 
       - run: |
           if [ ${{ github.ref	}} = "refs/heads/dev" ]; then
-          echo "dev"  
+          echo "dev"
           IMAGE_TAG="$DEV_IMAGE_TAG"
           elif [ ${{ github.ref	}} = "refs/heads/master" ]; then
           echo "master"
@@ -213,7 +209,7 @@ jobs:
           echo "Using image tag $IMAGE_TAG"
           echo "::set-env name=NET_SRV_VERSION::$IMAGE_TAG"
           echo "::set-env name=PKT_FWD_VERSION::$IMAGE_TAG"
-        env: 
+        env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
       - name: Iot Edge Push Solution
@@ -236,30 +232,30 @@ jobs:
 
       - name: Wait for IoT Edge Deployment
         run: |
-          az extension add --name azure-iot   
+          az extension add --name azure-iot
           until `az iot edge deployment show-metric --deployment-id ${{ env.IOT_EDGE_DEPLOYMENT_ID }} --metric-id reportedSuccessfulCount --metric-type system --login '${{ secrets.IOTHUB_CONNECTION_STRING }}' | grep -q $DEVICE_ID`; do sleep 10 && echo wait; done
-          
+
           # We add the 3 minutes sleep to let the container start up
           # TODO We might want to revisit this once there are some options to check that the network server started.
           sleep 3m
 
 # Runs integration tests in dedicated agent, while having modules deployed into PI (arm32v7)
   integration_test_ :
-    name: Run Test 
+    name: Run Test
     strategy:
       fail-fast: false
       max-parallel: 1
-      matrix: 
+      matrix:
         testsToRun: ${{ fromjson(needs.env_var.outputs.IntegrationTestsToRun) }}
-    if: always() && (needs.env_var.outputs.RunTestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success' && needs.build_and_test.result == 'success')) 
-    needs: 
+    if: always() && (needs.env_var.outputs.RunTestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success' && needs.build_and_test.result == 'success'))
+    needs:
       - deploy_arm_gw_iot_edge
       - deploy_facade_function
       - build_and_test
       - env_var
     runs-on: [ self-hosted, x64 ]
     timeout-minutes: 60
-    env:      
+    env:
       INTEGRATIONTEST_LeafDeviceSerialPort: '/dev/ttyACM0'
       INTEGRATIONTEST_IoTHubEventHubConsumerGroup: 'reserved_integrationtest_amd'
       INTEGRATIONTEST_LeafDeviceGatewayID: primary
@@ -273,37 +269,37 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true 
+      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       name: Checkout current branch
 
-    - name: 'Configure test in **/test/LoRaWan.IntegrationTest/appsettings.json' 
+    - name: 'Configure test in **/test/LoRaWan.IntegrationTest/appsettings.json'
       uses: cschleiden/replace-tokens@v1
-      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true 
+      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       with:
         files: '**/test/LoRaWan.IntegrationTest/appsettings.json'
-    
+
     # Runs Integration tests
     - name: Build IntegrationTest
-      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true 
+      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       run: dotnet build --configuration ${{ env.buildConfiguration }} **/test/LoRaWan.IntegrationTest/LoRaWan.IntegrationTest.csproj
 
     - name: Integration test ${{ matrix.testsToRun }}
-      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true 
+      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       id: integration_test
       run: |
         echo ${{ matrix.testsToRun }}
         dotnet test --logger trx --no-build --configuration ${{ env.buildConfiguration }} -p:ParallelizeTestCollections=false --filter "${{ matrix.testsToRun }}" **/test/LoRaWan.IntegrationTest/LoRaWan.IntegrationTest.csproj
-    
+
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
-      if: (success() || failure()) && contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true 
+      if: (success() || failure()) && contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       with:
         name: ${{ matrix.testsToRun }}-results
         path: LoRaEngine/test/LoRaWan.IntegrationTest/TestResults
 
     - name: Add ${{ matrix.testsToRun }} Test Label
       uses: buildsville/add-remove-label@v1
-      if: github.event_name == 'pull_request' && steps.integration_test.conclusion == 'Success' && contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true 
+      if: github.event_name == 'pull_request' && steps.integration_test.conclusion == 'Success' && contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       with:
         token: ${{secrets.GITHUB_TOKEN}}
         label: '${{ matrix.testsToRun }}'

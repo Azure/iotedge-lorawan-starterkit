@@ -64,7 +64,7 @@
               }
             }
           },
-          "modules": {          
+          "modules": {
             "LoRaWanNetworkSrvModule": {
               "type": "docker",
               "settings": {
@@ -176,4 +176,4 @@
       }
     }
   }
-  
+
