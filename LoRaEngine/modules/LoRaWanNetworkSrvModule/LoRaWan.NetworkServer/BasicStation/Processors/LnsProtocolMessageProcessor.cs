@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.BasicStation.Processors
@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer.BasicStation.Processors
         public async Task<bool> HandleDataAsync(string json, WebSocket socket, CancellationToken token)
         {
             if (socket is null) throw new ArgumentNullException(nameof(socket));
-            
+
             // TO DO: Reply with proper response message, before closing the socket
             this.logger.LogInformation($"Received message: {json}");
             return false;

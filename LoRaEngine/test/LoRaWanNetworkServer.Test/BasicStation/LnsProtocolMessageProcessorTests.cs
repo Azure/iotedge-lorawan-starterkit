@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test.BasicStation
@@ -108,7 +108,7 @@ namespace LoRaWan.NetworkServer.Test.BasicStation
                          })
                          .ReturnsAsync(new ValueWebSocketReceiveResult(testbytes.Length, WebSocketMessageType.Text, true));
             httpContextMock.Setup(m => m.WebSockets).Returns(webSocketsManager.Object);
-            
+
             // this is needed for logging the Basic Station (caller) remote ip address
             var connectionInfo = new Mock<ConnectionInfo>();
             connectionInfo.Setup(c => c.RemoteIpAddress).Returns(System.Net.IPAddress.Loopback);
@@ -174,7 +174,7 @@ namespace LoRaWan.NetworkServer.Test.BasicStation
                                                                   : new ValueWebSocketReceiveResult(4, WebSocketMessageType.Text, true));
 
             httpContextMock.Setup(m => m.WebSockets).Returns(webSocketsManager.Object);
-            
+
             // this is needed for logging the Basic Station (caller) remote ip address
             var connectionInfo = new Mock<ConnectionInfo>();
             connectionInfo.Setup(c => c.RemoteIpAddress).Returns(System.Net.IPAddress.Loopback);
