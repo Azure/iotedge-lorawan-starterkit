@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Net;
     using System.Net.Sockets;
     using System.Text;
@@ -156,6 +157,7 @@ namespace LoRaWan.NetworkServer
                         else
                         {
                             var logMsg = string.Format(
+                                    CultureInfo.InvariantCulture,
                                     "packet with id {0} had a problem to be transmitted over the air :{1}",
                                     receivedResults.Buffer.Length > 2 ? ConversionHelper.ByteArrayToString(receivedResults.Buffer.RangeSubset(1, 2)) : string.Empty,
                                     receivedResults.Buffer.Length > 12 ? Encoding.UTF8.GetString(receivedResults.Buffer.RangeSubset(12, receivedResults.Buffer.Length - 12)) : string.Empty);

@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Text;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Newtonsoft.Json;

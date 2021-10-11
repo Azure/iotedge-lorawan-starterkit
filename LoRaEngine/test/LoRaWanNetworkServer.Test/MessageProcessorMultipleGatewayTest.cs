@@ -4,11 +4,12 @@
 namespace LoRaWan.NetworkServer.Test
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
@@ -46,7 +47,7 @@ namespace LoRaWan.NetworkServer.Test
             {
                 GatewayID = SecondServerGatewayID,
                 LogToConsole = true,
-                LogLevel = ((int)LogLevel.Debug).ToString(),
+                LogLevel = ((int)LogLevel.Debug).ToString(CultureInfo.InvariantCulture),
             };
 
             this.SecondPacketForwarder = new TestPacketForwarder();

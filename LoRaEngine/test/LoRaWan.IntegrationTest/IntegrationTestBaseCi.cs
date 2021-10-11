@@ -5,7 +5,7 @@ namespace LoRaWan.IntegrationTest
 {
     using System;
     using System.Text;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Xunit;
 
     public class IntegrationTestBaseCi : IntegrationTestBase, IClassFixture<IntegrationTestFixtureCi>, IDisposable

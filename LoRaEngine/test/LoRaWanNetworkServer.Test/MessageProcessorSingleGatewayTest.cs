@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Moq;

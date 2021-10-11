@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
@@ -636,7 +636,7 @@ namespace LoRaWan.NetworkServer.Test
             var confirmedMessageResult = this.PacketForwarder.DownlinkMessages[0];
 
             // validates txpk according to eu region
-            Assert.True(RegionManager.EU868.TryGetUpstreamChannelFrequency(rxpk, out double frequency));
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk, out double frequency));
             Assert.Equal(frequency, confirmedMessageResult.Txpk.Freq);
             Assert.Equal("4/5", confirmedMessageResult.Txpk.Codr);
             Assert.False(confirmedMessageResult.Txpk.Imme);
@@ -809,7 +809,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Single(this.PacketForwarder.DownlinkMessages);
             var txpk = this.PacketForwarder.DownlinkMessages[0].Txpk;
             Assert.Equal(0U, txpk.Rfch);
-            Assert.True(RegionManager.EU868.TryGetUpstreamChannelFrequency(rxpk, out double frequency));
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk, out double frequency));
             Assert.Equal(frequency, txpk.Freq);
             Assert.Equal("4/5", txpk.Codr);
             Assert.False(txpk.Imme);
