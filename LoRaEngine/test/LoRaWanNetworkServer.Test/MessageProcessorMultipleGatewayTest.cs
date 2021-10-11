@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer.Test
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
@@ -46,7 +47,7 @@ namespace LoRaWan.NetworkServer.Test
             {
                 GatewayID = SecondServerGatewayID,
                 LogToConsole = true,
-                LogLevel = ((int)LogLevel.Debug).ToString(),
+                LogLevel = ((int)LogLevel.Debug).ToString(CultureInfo.InvariantCulture),
             };
 
             this.SecondPacketForwarder = new TestPacketForwarder();
