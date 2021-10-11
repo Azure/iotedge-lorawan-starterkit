@@ -4,7 +4,7 @@
 namespace LoRaWan
 {
     /// <summary>
-    /// MAC message type (MType) per section 4.2.1 of LoRaWAN Specification 1.1.
+    /// MAC message type (MType) per section 4.2.1 of LoRaWAN Specification 1.0.3.
     /// </summary>
 
     public enum MacMessageType
