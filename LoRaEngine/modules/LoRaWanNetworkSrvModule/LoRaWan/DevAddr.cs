@@ -19,6 +19,8 @@ namespace LoRaWan
            |  NwkID | NwkAddr |
            +--------|---------+ */
 
+        public const int Size = sizeof(uint);
+
         const uint NetworkAddressMask = 0x01ff_ffff;
 
         readonly uint value;

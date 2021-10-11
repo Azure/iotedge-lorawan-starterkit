@@ -12,6 +12,12 @@ namespace LoRaWanTest
         readonly DevAddr other = new(0x12345678);
 
         [Fact]
+        public void Size()
+        {
+            Assert.Equal(4, DevAddr.Size);
+        }
+
+        [Fact]
         public void NetworkId()
         {
             Assert.Equal(0x75, this.subject.NetworkId);
