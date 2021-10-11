@@ -80,10 +80,6 @@ jobs:
     - name: Build C# Samples/DecoderSample
       run: dotnet build --configuration ${{ env.buildConfiguration }} Samples/DecoderSample 
 
-    # build LoRa Simulator
-    - name: Build LoRa Simulator
-      run: dotnet build --configuration ${{ env.buildConfiguration }} LoRaEngine/modules/LoRaSimulator/LoRaSimulator.sln
-
     # Pull Redis Cache docker image
     - name: Pulling Redis Cache image
       run: docker pull redis:5.0.4-alpine
