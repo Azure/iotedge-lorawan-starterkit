@@ -90,8 +90,7 @@ clean upgrade.
 to contribute or customize the LoRaWAN starter kit, refer to our
 [Developer Guidance](/Docs/devguide.md) for more details on how to build, test
 and deploy the kit in your dev environment. We also support a
-[simulator](/Docs/simulator.md) that allows for developing without the need of
-an actual device gateway.
+
 - **Enable a gateway or device to be compatible with the starter kit**: We have
 developed the LoRaWAN starter kit agnostic of a device manufacturer
 implementation and focussed on the specifics on underlying architectures
