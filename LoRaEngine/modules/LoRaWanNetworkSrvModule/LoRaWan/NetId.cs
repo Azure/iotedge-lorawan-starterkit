@@ -7,8 +7,8 @@ namespace LoRaWan
     using System.Globalization;
 
     /// <summary>
-    /// NetID is a 24-bit value used for identifying LoRaWAN networks. It is assigned by the LoRa
-    /// Alliance. It is used by networks for assigning network-specific addresses to their
+    /// A NetID that is a 24-bit value used for identifying LoRaWAN networks. It is assigned by the
+    /// LoRa Alliance. It is used by networks for assigning network-specific addresses to their
     /// end-devices (i.e., DevAddr) so that uplink frames sent by those devices even when they are
     /// roaming outside their home network can be forwarded to their home network.
     /// </summary>
