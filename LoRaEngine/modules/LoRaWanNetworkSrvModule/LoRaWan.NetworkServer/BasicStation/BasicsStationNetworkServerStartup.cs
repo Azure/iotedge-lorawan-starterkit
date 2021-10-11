@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.BasicStation
 {
+    using System.Globalization;
     using LoRaWan.NetworkServer.BasicStation.Processors;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -10,14 +11,13 @@ namespace LoRaWan.NetworkServer.BasicStation
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
-    using System.Globalization;
 
-    public class BasicStationStartup
+    sealed class BasicsStationNetworkServerStartup
     {
         public IConfiguration Configuration { get; }
         public NetworkServerConfiguration NetworkServerConfiguration { get; }
 
-        public BasicStationStartup(IConfiguration configuration)
+        public BasicsStationNetworkServerStartup(IConfiguration configuration)
         {
             this.Configuration = configuration;
             this.NetworkServerConfiguration = NetworkServerConfiguration.CreateFromEnviromentVariables();
@@ -25,12 +25,11 @@ namespace LoRaWan.NetworkServer.BasicStation
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
             services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.SetMinimumLevel((LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture));
             });
-            services.AddTransient<ILnsProcessor, LnsProcessor>();
+            services.AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -44,13 +43,20 @@ namespace LoRaWan.NetworkServer.BasicStation
             // app.UseHttpsRedirection();
 
             app.UseRouting();
-
-            app.UseAuthorization();
             app.UseWebSockets();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapGet("/router-info", async context =>
+                {
+                    var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
+                    await lnsProtocolMessageProcessor.ProcessIncomingRequestAsync(context, lnsProtocolMessageProcessor.HandleDiscoveryAsync, context.RequestAborted);
+                });
+                endpoints.MapGet("/router-data", async context =>
+                {
+                    var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
+                    await lnsProtocolMessageProcessor.ProcessIncomingRequestAsync(context, lnsProtocolMessageProcessor.HandleDataAsync, context.RequestAborted);
+                });
             });
         }
     }
