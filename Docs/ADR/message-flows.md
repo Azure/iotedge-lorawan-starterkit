@@ -46,6 +46,7 @@ ValidFctDwn3-->|No|Done
 check2ndC2DTime-->|Yes|CheckAdditionalMessages
 CheckAdditionalMessages-->additionalC2DMsg{Has more messages?}
 additionalC2DMsg-->|Yes|setFpending[set fpending]
+additionalC2DMsg-->|No|SendDownlinkMsg
 setFpending-->SendDownlinkMsg
 check2ndC2DTime-->|No|SendDownlinkMsg
 SendDownlinkMsg-->Done(Done)
