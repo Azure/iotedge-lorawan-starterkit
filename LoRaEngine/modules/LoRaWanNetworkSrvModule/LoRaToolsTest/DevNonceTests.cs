@@ -70,7 +70,7 @@ namespace LoRaWanTest
         }
 
         [Fact]
-        public void StringRepresentation()
+        public void ToString_Returns_Hexadecimal_String()
         {
             Assert.Equal("1234", this.subject.ToString());
         }
