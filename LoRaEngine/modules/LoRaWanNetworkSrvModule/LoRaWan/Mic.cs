@@ -4,6 +4,7 @@
 namespace LoRaWan
 {
     using System;
+    using System.Buffers.Binary;
     using System.Globalization;
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
@@ -27,9 +28,6 @@ namespace LoRaWan
         public const int Size = sizeof(uint);
 
         readonly uint value;
-
-        Mic(byte a, byte b, byte c, byte d) :
-            this(unchecked((uint)(a << 24 | b << 16 | c << 8 | d))) { }
 
         public Mic(uint value) => this.value = value;
 
@@ -61,7 +59,7 @@ namespace LoRaWan
             mac.BlockUpdate(input, 0, input.Length);
             var cmac = MacUtilities.DoFinal(mac);
 
-            return new Mic(cmac[0], cmac[1], cmac[2], cmac[3]);
+            return new Mic(BinaryPrimitives.ReadUInt32LittleEndian(cmac));
         }
     }
 }
