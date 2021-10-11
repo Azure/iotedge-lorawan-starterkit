@@ -19,7 +19,7 @@ namespace LoRaWan
            |  NwkID | NwkAddr |
            +--------|---------+ */
 
-        const uint NetworkAddressMask = 0x1fff_ffff;
+        const uint NetworkAddressMask = 0x01ff_ffff;
 
         readonly uint value;
 
@@ -28,7 +28,7 @@ namespace LoRaWan
         /// <summary>
         /// The <c>NwkID</c> (bits 25..31).
         /// </summary>
-        public int NetworkId => unchecked((int)((this.value & ~NetworkAddressMask) >> 24));
+        public int NetworkId => unchecked((int)((this.value & ~NetworkAddressMask) >> 25));
 
         /// <summary>
         /// The <c>NwkAddr</c> (bits 0..24).
