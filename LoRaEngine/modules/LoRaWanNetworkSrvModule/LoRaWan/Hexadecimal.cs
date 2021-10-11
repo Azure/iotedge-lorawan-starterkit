@@ -33,10 +33,9 @@ namespace LoRaWan
         public static void Write(ulong value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
         {
             var digits = letterCase == LetterCase.Lower ? LowerCaseDigits : UpperCaseDigits;
-            var ci = buffer.Length;
-            for (var i = 0; i < 16; i++)
+            for (var i = 15; i >= 0; i--)
             {
-                buffer[--ci] = digits[(int)(value & 0x0000000f)];
+                buffer[i] = digits[unchecked((int)(value & 0xfUL))];
                 value >>= 4;
             }
         }
