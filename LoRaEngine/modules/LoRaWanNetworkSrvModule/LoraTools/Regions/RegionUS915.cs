@@ -8,7 +8,8 @@ namespace LoRaTools.Regions
 
     public class RegionUS915 : Region
     {
-        // Frequencies calculated according to formula: 923.3 + upstreamChannelNumber % 8 * 0.6,
+        // Frequencies calculated according to formula:
+        // 923.3 + upstreamChannelNumber % 8 * 0.6,
         // rounded to first decimal point
         private static double[] DownstreamChannelFrequencies = new double[] { 923.3, 923.9, 924.5, 925.1, 925.7, 926.3, 926.9, 927.5 };
 
