@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Defines udp Server communicating with packet forwarder.
     /// </summary>
-    public class UdpServer : IPacketForwarder, INetworkServer
+    public class UdpServer : IPacketForwarder
     {
         const int PORT = 1680;
         private readonly NetworkServerConfiguration configuration;
@@ -95,13 +95,14 @@ namespace LoRaWan.NetworkServer
             this.loRaDeviceRegistry = loRaDeviceRegistry;
         }
 
-        public async Task RunServerAsync(CancellationToken cancellationToken = default)
+        public static async Task RunServerAsync()
         {
             Logger.LogAlways("Starting LoRaWAN Server...");
+            var udpServer = UdpServer.Create();
 
-            await this.InitCallBack();
+            await udpServer.InitCallBack();
 
-            await this.RunUdpListener();
+            await udpServer.RunUdpListener();
         }
 
         async Task UdpSendMessageAsync(byte[] messageToSend, string remoteLoRaAggregatorIp, int remoteLoRaAggregatorPort)
