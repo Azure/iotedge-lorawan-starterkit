@@ -1,50 +1,34 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWanNetworkSrvModule
+using System;
+using System.Threading;
+using LoRaWan.NetworkServer;
+using LoRaWan.NetworkServer.BasicStation;
+
+using var cts = new CancellationTokenSource();
+var cancellationToken = cts.Token;
+var cancelKeyPresses = 0;
+
+Console.CancelKeyPress += (_, args) =>
 {
-    using System;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using LoRaWan.NetworkServer;
-    using LoRaWan.NetworkServer.BasicStation;
+    if (Interlocked.Increment(ref cancelKeyPresses) != 1)
+        return;
 
-    internal class Program
+    Console.WriteLine("Stopping...");
+    try
     {
-        private static async Task Main()
-        {
-            using var cts = new CancellationTokenSource();
-            var cancelKeyPresses = 0;
-            Console.CancelKeyPress += (s, e) =>
-            {
-                if (Interlocked.Increment(ref cancelKeyPresses) == 1)
-                {
-                    Console.WriteLine("Stopping...");
-                    try
-                    {
-                        cts.Cancel();
-                    }
-                    catch (AggregateException ex)
-                    {
-                        Console.Error.WriteLine(ex);
-                    }
-                    e.Cancel = true;
-                }
-            };
-            
-            await RunAsync(cts.Token);
-        }
-
-        /// <summary>
-        /// Initializes the DeviceClient and sets up the callback to receive
-        /// messages containing temperature information
-        /// </summary>
-        private static async Task RunAsync(CancellationToken cancellationToken)
-        {
-            var configuration = NetworkServerConfiguration.CreateFromEnviromentVariables();
-            using INetworkServer networkServer = configuration.UseBasicStation ? BasicStationServer.Create()
-                                                                               : UdpServer.Create();
-            await networkServer.RunServerAsync(cancellationToken);
-        }
+        cts.Cancel();
     }
-}
+    catch (AggregateException ex)
+    {
+        Console.Error.WriteLine(ex);
+    }
+
+    args.Cancel = true;
+};
+
+var configuration = NetworkServerConfiguration.CreateFromEnviromentVariables();
+var runnerTask = configuration.UseBasicStation ? BasicsStationNetworkServer.RunServerAsync(cancellationToken)
+                                               : UdpServer.RunServerAsync();
+await runnerTask;
