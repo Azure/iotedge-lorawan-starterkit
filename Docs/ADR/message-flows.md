@@ -2,7 +2,7 @@
 
 ## DefaultLoRaDataRequestHandler:ProcessRequestAsync
 
-````mermaid
+```mermaid
 flowchart TB
 ProcessRequestAsync-->ReqVal{IsValidRequest?}
 ReqVal-->|Yes|PerformADR
@@ -50,11 +50,7 @@ additionalC2DMsg-->|No|SendDownlinkMsg
 setFpending-->SendDownlinkMsg
 check2ndC2DTime-->|No|SendDownlinkMsg
 SendDownlinkMsg-->Done(Done)
-
-
-````
-
-
+```
 
 ## Incoming message - device not cached
 
@@ -80,7 +76,7 @@ DeviceLoaderSynchronizer->>LoRaDevice: Queue
 LoRaDevice->>DefaultLoRaDataRequestHandler: ProcessRequestAsync
 ```
 
-1. The message dispatcher requests the `ILoRaDeviceRequestQueue` from the `LoRaDeviceRegistry` where the `LoRaRequest` can be sent to. The `LoRaDeviceRegistry` maintains an in memory cache per `DevAddr` and checks, if it has a cache and if it contains a valid device matching the `NwkSKey`.  If it does not, the `LoRaDeviceRegistry` initializes a ` DeviceLoaderSynchronizer` as `ILoRaDeviceRequestQueue`, and adds it to its cache under the prefix `devloader`.
+1. The message dispatcher requests the `ILoRaDeviceRequestQueue` from the `LoRaDeviceRegistry` where the `LoRaRequest` can be sent to. The `LoRaDeviceRegistry` maintains an in memory cache per `DevAddr` and checks, if it has a cache and if it contains a valid device matching the `NwkSKey`.  If it does not, the `LoRaDeviceRegistry` initializes a `DeviceLoaderSynchronizer` as `ILoRaDeviceRequestQueue`, and adds it to its cache under the prefix `devloader`.
 2. The `DeviceLoaderSynchronizer` ctor does trigger an async initialization
 3. Load of the devices matching the `DevAddr` is triggered
 4. The `MessageDispatcher` receives the `DeviceLoaderSynchronizer` 
@@ -88,7 +84,7 @@ LoRaDevice->>DefaultLoRaDataRequestHandler: ProcessRequestAsync
 6. The `SearchByDevAddrAsync`  is calling the function and tries to get a list for that particular `DevAddr` . The result is a list of `IoTHubDeviceInfo` which contains everything required to connect the device to IoT Hub as well as the `NwkSKey`.
 7. The `DeviceLoaderSynchronizer` iterates over the result and asks for each of the result item to be materialized into a `LoRaDevice`.
 8. The `LoRaDeviceFactory` creates a `LoRaDevice` from the `IoTHubDeviceInfo` 
-9. The `LoRaDeviceFactory` also maintains the connections per device to IoT Hub. It does that through the `LoRaDeviceClientConnectionManager` where `LoRaDeviceClient` are registered per `DevEUI`. 
+9. The `LoRaDeviceFactory` also maintains the connections per device to IoT Hub. It does that through the `LoRaDeviceClientConnectionManager` where `LoRaDeviceClient` are registered per `DevEUI`.
 10. Each device is initialized to get ready for processing messages
 11. The initialization is triggering the load of the twins through the `LoRaDeviceClient`
 12. Once the device is initialized, the messages for the device are dispatched 
@@ -101,7 +97,7 @@ LoRaDevice->>DefaultLoRaDataRequestHandler: ProcessRequestAsync
 
 ## Incoming message - device cached
 
-````mermaid
+```mermaid
 sequenceDiagram
 autonumber
 MessageDispatcher->>LoRaDeviceRegistry: GetLoRaRequestQueue
@@ -112,7 +108,7 @@ else
 end
 MessageDispatcher->>LoRaDevice: Queue
 LoRaDevice->>DefaultLoRaDataRequestHandler: ProcessRequestAsync
-````
+```
 
 1. The message dispatcher requests the `ILoRaDeviceRequestQueue` from the `LoRaDeviceRegistry`
 2. If the device was in cache, but does not belong to our gateway, we return a `ExternalGatewayLoRaRequestQueue`. That queue is basically dropping any messages that are sent to it.
@@ -149,14 +145,7 @@ JoinRequestMessageHandler->>LoRaOperationTimeWatcher: InTimeForJoinAccept
 JoinRequestMessageHandler->>LoRaDevice: UpdateAfterJoinAsync
 deactivate LoRaDevice
 
-
-
-
-
-
 ```
-
-
 
 1. The `MessageDispatcher` delegates the handling of the join request to the `JoinRequestMessageHandler`
 
@@ -194,11 +183,9 @@ deactivate LoRaDevice
 
 17. Validate that we can confirm the join to the device and are within `Join_accept_delay2` for the current region.
 
-18. Writing `DevAddr`, `NwkSKey`, `AppSKey`, `AppNonce `, `DevNonce`, `NetID`, `Region`, `PreferredGatewayID`
+18. Writing `DevAddr`, `NwkSKey`, `AppSKey`, `AppNonce`, `DevNonce`, `NetID`, `Region`, `PreferredGatewayID`
 
 19. If we are still in time for a valid receive window, a `JoinAccept` will be sent to the device after calculating the DR and Frequency.
-
-    
 
 ## Function GetDevice - OTAA
 
@@ -231,18 +218,13 @@ else
 		end
 	DeviceGetter->>LNS: IoTHubDeviceInfo
 end
-
-
-
 ```
-
-
 
 1. The LNS requests the device for a [join request](#Join-Request---OTAA)
 
 2. The DeviceGetter calls `TryGetJoinInfoAndValidateAsync`
 
-3. Try to get the `JoinInfo` (containing the primary key and the desired gateway id for the device) from Redis. 
+3. Try to get the `JoinInfo` (containing the primary key and the desired gateway id for the device) from Redis.
 
 4. If the device was not in the cache, we use the IoT Hub  `RegistryManager` to fetch the Device
 
@@ -264,6 +246,4 @@ end
 
 13. We return the `IoTHubDeviceInfo`
 
-
 **Bug?**: It looks like we do not store anything ever under the DevEUI key. The invalidation of the cache looks like it should have targeted the the DevAddr hash table and removed the entry from there. That would enforce to re-fetch the information from the twins after a re-join.
-
