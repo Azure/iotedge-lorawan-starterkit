@@ -1,4 +1,4 @@
-﻿namespace LoRaSimulator
+namespace LoRaSimulator
 {
     using System;
     using System.Collections.Generic;
