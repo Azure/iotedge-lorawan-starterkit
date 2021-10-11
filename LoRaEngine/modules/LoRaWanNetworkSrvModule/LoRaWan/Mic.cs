@@ -4,7 +4,6 @@
 namespace LoRaWan
 {
     using System;
-    using System.Buffers.Binary;
     using System.Globalization;
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
@@ -42,12 +41,6 @@ namespace LoRaWan
 
         public static bool operator ==(Mic left, Mic right) => left.Equals(right);
         public static bool operator !=(Mic left, Mic right) => !left.Equals(right);
-
-        public Span<byte> Write(Span<byte> buffer)
-        {
-            BinaryPrimitives.WriteUInt32LittleEndian(buffer, this.value);
-            return buffer[Size..];
-        }
 
         public static Mic Compute(AppKey appKey, MacHeader mhdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce)
         {
