@@ -41,7 +41,7 @@ namespace LoRaWan
         public override bool Equals(object obj) => obj is DevAddr other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);
+        public override string ToString() => this.value.ToString("X8", CultureInfo.InvariantCulture);
 
         public static bool operator ==(DevAddr left, DevAddr right) => left.Equals(right);
         public static bool operator !=(DevAddr left, DevAddr right) => !left.Equals(right);
