@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer.Test
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
@@ -266,7 +267,7 @@ namespace LoRaWan.NetworkServer.Test
             var requests = new List<WaitableLoRaRequest>();
             for (uint i = 0; i < messagePerDeviceCount; ++i)
             {
-                var rxpk = device.CreateUnconfirmedMessageUplink((i + 1).ToString(), fcnt: payloadInitialFcnt + i).Rxpk[0];
+                var rxpk = device.CreateUnconfirmedMessageUplink((i + 1).ToString(CultureInfo.InvariantCulture), fcnt: payloadInitialFcnt + i).Rxpk[0];
                 var req = this.CreateWaitableRequest(rxpk);
                 dispatcher.DispatchRequest(req);
                 requests.Add(req);
