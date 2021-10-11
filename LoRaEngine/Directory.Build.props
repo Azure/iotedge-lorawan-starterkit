@@ -17,7 +17,7 @@
       <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>3.1.5</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
       <MicrosoftNETSdkFunctionsVersion>3.0.13</MicrosoftNETSdkFunctionsVersion>
       <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
-      <PortableBouncyCastleVersion>1.8.6.7</PortableBouncyCastleVersion>
+      <PortableBouncyCastleVersion>1.8.10</PortableBouncyCastleVersion>
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
       <StackExchangeRedisVersion>2.1.58</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
