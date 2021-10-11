@@ -30,12 +30,11 @@ namespace LoRaWan
             return new string(digits);
         }
 
-        public byte[] GetBytes()
+        public Span<byte> WriteLittleEndian(Span<byte> buffer)
         {
-            var bytes = new byte[Size];
-            BinaryPrimitives.WriteUInt64LittleEndian(bytes.AsSpan(), this.lo);
-            BinaryPrimitives.WriteUInt64LittleEndian(bytes.AsSpan(8), this.hi);
-            return bytes;
+            BinaryPrimitives.WriteUInt64LittleEndian(buffer, this.lo);
+            BinaryPrimitives.WriteUInt64LittleEndian(buffer[8..], this.hi);
+            return buffer[16..];
         }
     }
 }

@@ -17,6 +17,8 @@ namespace LoRaWan
 
         public AppKey(UInt128 value) => this.value = value;
 
+        public UInt128 AsUInt128 => this.value;
+
         public bool Equals(AppKey other) => this.value == other.value;
         public override bool Equals(object obj) => obj is AppKey other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
@@ -25,7 +27,5 @@ namespace LoRaWan
 
         public static bool operator ==(AppKey left, AppKey right) => left.Equals(right);
         public static bool operator !=(AppKey left, AppKey right) => !left.Equals(right);
-
-        public byte[] GetBytes() => this.value.GetBytes();
     }
 }
