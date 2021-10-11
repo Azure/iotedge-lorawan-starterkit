@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
@@ -24,10 +24,6 @@ namespace LoRaWan.NetworkServer.Test
     // Cloud to device message processing tests (Join tests are handled in other class)
     public class MessageProcessor_End2End_NoDep_CloudToDeviceMessage_Tests : MessageProcessorTestBase
     {
-        public MessageProcessor_End2End_NoDep_CloudToDeviceMessage_Tests()
-        {
-        }
-
         [Theory]
         [InlineData(ServerGatewayID)]
         [InlineData(null)]
@@ -373,7 +369,7 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
             var txpk = downlinkMessage.Txpk;
             var euRegion = RegionManager.EU868;
-            Assert.True(euRegion.TryGetUpstreamChannelFrequency(rxpk, out double frequency));
+            Assert.True(euRegion.TryGetDownstreamChannelFrequency(rxpk, out double frequency));
             // Ensure we are using second window frequency
             Assert.Equal(frequency, txpk.Freq);
 

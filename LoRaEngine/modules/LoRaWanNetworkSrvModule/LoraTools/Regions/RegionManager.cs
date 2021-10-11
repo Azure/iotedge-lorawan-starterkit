@@ -84,19 +84,7 @@ namespace LoRaTools.Regions
 
         private static void CreateEU868Region()
         {
-            eu868 = new Region(
-                LoRaRegionType.EU868,
-                0x34,
-                ConversionHelper.StringToByteArray("C194C1"),
-                (frequency: 869.525, datr: 0),
-                1,
-                2,
-                5,
-                6,
-                16384,
-                64,
-                32,
-                (min: 1, max: 3));
+            eu868 = new RegionEU868();
             eu868.DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
             eu868.DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
             eu868.DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 59));
@@ -165,19 +153,7 @@ namespace LoRaTools.Regions
 
         private static void CreateUS915Region()
         {
-            us915 = new Region(
-                LoRaRegionType.US915,
-                0x34,
-                null, // no GFSK in US Band
-                (frequency: 923.3, datr: 8),
-                1,
-                2,
-                5,
-                6,
-                16384,
-                64,
-                32,
-                (min: 1, max: 3));
+            us915 = new RegionUS915();
             us915.DRtoConfiguration.Add(0, (configuration: "SF10BW125", maxPyldSize: 19));
             us915.DRtoConfiguration.Add(1, (configuration: "SF9BW125", maxPyldSize: 61));
             us915.DRtoConfiguration.Add(2, (configuration: "SF8BW125", maxPyldSize: 133));

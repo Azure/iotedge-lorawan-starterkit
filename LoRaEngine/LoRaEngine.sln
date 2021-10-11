@@ -18,12 +18,13 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.IntegrationTest", "test\LoRaWan.IntegrationTest\LoRaWan.IntegrationTest.csproj", "{26DF2637-43E0-4FFF-92BD-F4395C88DD50}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A3AF6806-947C-426F-8063-7229B71A4472}"
+	ProjectSection(SolutionItems) = preProject
+		test\.editorconfig = test\.editorconfig
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkServer.Test", "test\LoRaWanNetworkServer.Test\LoRaWanNetworkServer.Test.csproj", "{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoraKeysManagerFacade.Test", "test\LoraKeysManagerFacade.Test\LoraKeysManagerFacade.Test.csproj", "{BDC96E16-510C-41DA-A075-4336CB5D58A1}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Test.Shared", "test\LoRaWan.Test.Shared\LoRaWan.Test.Shared.csproj", "{727AF443-9B5E-4730-BC04-255F82D87C66}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.SimulatedTest", "test\LoRaWan.SimulatedTest\LoRaWan.SimulatedTest.csproj", "{4FA0718D-15A2-4D4E-9310-7FB17B285757}"
 EndProject
@@ -32,7 +33,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{67C7C34B-B11C-4E10-9D97-728FB122683F}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
+		README.md = README.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRaWan.Tests.Shared", "..\Tests\Shared\LoRaWan.Tests.Shared.csproj", "{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -114,14 +119,6 @@ Global
 		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Release|x86.ActiveCfg = Release|Any CPU
 		{BDC96E16-510C-41DA-A075-4336CB5D58A1}.Release|x86.Build.0 = Release|Any CPU
-		{727AF443-9B5E-4730-BC04-255F82D87C66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{727AF443-9B5E-4730-BC04-255F82D87C66}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{727AF443-9B5E-4730-BC04-255F82D87C66}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{727AF443-9B5E-4730-BC04-255F82D87C66}.Debug|x86.Build.0 = Debug|Any CPU
-		{727AF443-9B5E-4730-BC04-255F82D87C66}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{727AF443-9B5E-4730-BC04-255F82D87C66}.Release|Any CPU.Build.0 = Release|Any CPU
-		{727AF443-9B5E-4730-BC04-255F82D87C66}.Release|x86.ActiveCfg = Release|Any CPU
-		{727AF443-9B5E-4730-BC04-255F82D87C66}.Release|x86.Build.0 = Release|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -138,6 +135,14 @@ Global
 		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Release|x86.ActiveCfg = Release|Any CPU
 		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Release|x86.Build.0 = Release|Any CPU
+		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}.Debug|x86.Build.0 = Debug|Any CPU
+		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}.Release|x86.ActiveCfg = Release|Any CPU
+		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -147,7 +152,7 @@ Global
 		{26DF2637-43E0-4FFF-92BD-F4395C88DD50} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{BDC96E16-510C-41DA-A075-4336CB5D58A1} = {A3AF6806-947C-426F-8063-7229B71A4472}
-		{727AF443-9B5E-4730-BC04-255F82D87C66} = {A3AF6806-947C-426F-8063-7229B71A4472}
+		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{25916C24-E17B-4FB3-8E18-A386A18FC9D0} = {A3AF6806-947C-426F-8063-7229B71A4472}
 	EndGlobalSection

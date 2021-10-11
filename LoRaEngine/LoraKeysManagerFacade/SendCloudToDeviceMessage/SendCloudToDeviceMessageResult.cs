@@ -10,10 +10,6 @@ namespace LoraKeysManagerFacade
     /// </summary>
     public class SendCloudToDeviceMessageResult
     {
-        public SendCloudToDeviceMessageResult()
-        {
-        }
-
         /// <summary>
         /// Gets or sets the device identifier.
         /// </summary>

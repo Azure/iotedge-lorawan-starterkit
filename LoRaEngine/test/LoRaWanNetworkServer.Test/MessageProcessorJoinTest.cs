@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
@@ -18,10 +18,6 @@ namespace LoRaWan.NetworkServer.Test
 
     public class MessageProcessorJoinTest : MessageProcessorTestBase
     {
-        public MessageProcessorJoinTest()
-        {
-        }
-
         [Fact]
         public async Task When_Device_Is_Not_Found_In_Api_Should_Return_Null()
         {

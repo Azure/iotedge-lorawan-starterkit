@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Moq;
@@ -22,10 +22,6 @@ namespace LoRaWan.NetworkServer.Test
     /// </summary>
     public class MessageProcessorSingleGatewayTest : MessageProcessorTestBase
     {
-        public MessageProcessorSingleGatewayTest()
-        {
-        }
-
         [Theory]
         [InlineData(0)]
         [InlineData(2100)]

@@ -33,7 +33,7 @@ namespace LoRaWan
                 InitializeUdpLogger(isRetry: false);
 
                 // If udp client was not created set a timer to retry every x seconds
-                // The listening container might not have started yet (i.e. AzureDevOpsAgent)
+                // The listening container might not have started yet
                 if (udpClient == null)
                 {
                     // retry in 10 seconds

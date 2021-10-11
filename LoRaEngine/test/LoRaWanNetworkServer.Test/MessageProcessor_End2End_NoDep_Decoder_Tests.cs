@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Text;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Newtonsoft.Json;
@@ -19,10 +19,6 @@ namespace LoRaWan.NetworkServer.Test
     // Decoder tests tests
     public class MessageProcessor_End2End_NoDep_Decoder_Tests : MessageProcessorTestBase
     {
-        public MessageProcessor_End2End_NoDep_Decoder_Tests()
-        {
-        }
-
         /// <summary>
         /// SensorDecoder: none
         /// Payload: multiple

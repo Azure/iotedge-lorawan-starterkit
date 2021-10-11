@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Threading.Tasks;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Moq;
@@ -30,10 +30,6 @@ namespace LoRaWan.NetworkServer.Test
 
                 return 15 * 1000;
             }
-        }
-
-        public E2E_KeepAliveConnection_Tests()
-        {
         }
 
         private async Task EnsureDisconnectedAsync(SemaphoreSlim disconnectedEvent, int? timeout = null)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.Regions
@@ -10,7 +10,7 @@ namespace LoRaTools.Regions
     using LoRaWan;
     using Microsoft.Extensions.Logging;
 
-    public class Region
+    public abstract class Region
     {
         private const ushort MAX_RX_DELAY = 15;
 
@@ -117,43 +117,10 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Implement correct logic to get the correct transmission frequency based on the region.
+        /// Implements logic to get the correct downstream transmission frequency for the given region based on the upstream channel frequency.
         /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        public bool TryGetUpstreamChannelFrequency(Rxpk upstreamChannel, out double frequency)
-        {
-            frequency = 0;
-
-            if (this.IsValidUpstreamRxpk(upstreamChannel))
-            {
-                if (this.LoRaRegion == LoRaRegionType.EU868)
-                {
-                    // in case of EU, you respond on same frequency as you sent data.
-                    frequency = upstreamChannel.Freq;
-                    return true;
-                }
-                else if (this.LoRaRegion == LoRaRegionType.US915)
-                {
-                    int upstreamChannelNumber;
-                    // if DR4 the coding are different.
-                    if (upstreamChannel.Datr == "SF8BW500")
-                    {
-                        // ==DR4
-                        upstreamChannelNumber = 64 + (int)Math.Round((upstreamChannel.Freq - 903) / 1.6, 0);
-                    }
-                    else
-                    {
-                        // if not DR4 other encoding
-                        upstreamChannelNumber = (int)((upstreamChannel.Freq - 902.3) / 0.2);
-                    }
-
-                    frequency = Math.Round(923.3 + upstreamChannelNumber % 8 * 0.6, 1);
-                    return true;
-                }
-            }
-
-            return false;
-        }
+        /// <param name="upstreamChannel">the channel at which the upstream message was transmitted.</param>
+        public abstract bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency);
 
         /// <summary>
         /// Get the downstream RX2 frequency.
@@ -254,7 +221,7 @@ namespace LoRaTools.Regions
         /// <summary>
         /// This method Check that a received packet is within the correct frenquency range and has a valid Datr.
         /// </summary>
-        private bool IsValidUpstreamRxpk(Rxpk rxpk)
+        protected bool IsValidUpstreamRxpk(Rxpk rxpk)
         {
             if (rxpk.Freq < this.RegionLimits.FrequencyRange.min ||
                 rxpk.Freq > this.RegionLimits.FrequencyRange.max ||

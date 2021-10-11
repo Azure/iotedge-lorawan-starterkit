@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer.Test
     using System;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
