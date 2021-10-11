@@ -9,7 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="../../modules/LoRaWanNetworkSrvModule/Logger/Logger.csproj" />
     <ProjectReference Include="../../modules/LoRaWanNetworkSrvModule/LoraTools/LoRaTools.csproj" />
-    <ProjectReference Include="..\LoRaWan.Test.Shared\LoRaWan.Test.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Tests\Shared\LoRaWan.Tests.Shared.csproj" />
     <ProjectReference Include="..\XunitRetryHelper\XunitRetryHelper.csproj" />
   </ItemGroup>
 

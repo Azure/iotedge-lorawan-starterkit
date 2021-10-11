@@ -44,7 +44,7 @@ namespace LoRaWan.IntegrationTest
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
 
     /// <summary>
     /// Arduino driver for the LoRaWAN device.

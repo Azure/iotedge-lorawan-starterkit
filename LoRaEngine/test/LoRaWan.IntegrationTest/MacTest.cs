@@ -7,7 +7,7 @@ namespace LoRaWan.IntegrationTest
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.CommonAPI;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Xunit;
     using XunitRetryHelper;
 

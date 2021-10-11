@@ -4,7 +4,7 @@
 namespace LoRaWan.NetworkServer.Test
 {
     using LoRaTools.LoRaPhysical;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
 
     public class MessageProcessor_End2End_NoDep_CloudToDeviceMessage_SizeLimitBase : MessageProcessorTestBase
     {
