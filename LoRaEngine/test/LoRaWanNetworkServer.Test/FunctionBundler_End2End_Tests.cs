@@ -5,7 +5,7 @@ namespace LoRaWan.NetworkServer.Test
 {
     using System;
     using System.Threading.Tasks;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;

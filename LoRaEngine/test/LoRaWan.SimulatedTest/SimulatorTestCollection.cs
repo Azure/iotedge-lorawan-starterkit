@@ -5,10 +5,11 @@ namespace LoRaWan.SimulatedTest
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Net;
     using System.Threading.Tasks;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Xunit;
 
     // Tests ABP requests
@@ -78,7 +79,7 @@ namespace LoRaWan.SimulatedTest
 
                 for (int i = 1; i <= MessageCount; i++)
                 {
-                    await simulatedDevice.SendUnconfirmedMessageAsync(simulatedPacketForwarder, i.ToString());
+                    await simulatedDevice.SendUnconfirmedMessageAsync(simulatedPacketForwarder, i.ToString(CultureInfo.InvariantCulture));
                     // await simulatedDevice.SendConfirmedMessageAsync(simulatedPacketForwarder, i.ToString());
                     await Task.Delay(this.intervalBetweenMessages);
                 }
@@ -140,7 +141,7 @@ namespace LoRaWan.SimulatedTest
 
                 for (int i = 1; i <= 3; i++)
                 {
-                    await simulatedDevice.SendUnconfirmedMessageAsync(simulatedPacketForwarder, i.ToString());
+                    await simulatedDevice.SendUnconfirmedMessageAsync(simulatedPacketForwarder, i.ToString(CultureInfo.InvariantCulture));
                     await Task.Delay(this.intervalBetweenMessages);
                 }
 

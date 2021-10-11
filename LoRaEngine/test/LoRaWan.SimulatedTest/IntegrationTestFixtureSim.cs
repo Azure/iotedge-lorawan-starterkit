@@ -5,7 +5,8 @@ namespace LoRaWan.SimulatedTest
 {
     using System;
     using System.Collections.Generic;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
+    using System.Globalization;
 
     public class IntegrationTestFixtureSim : IntegrationTestFixtureBase
     {
@@ -84,15 +85,15 @@ namespace LoRaWan.SimulatedTest
                 this.deviceRange1000_ABP.Add(
                     new TestDeviceInfo
                     {
-                        DeviceID = deviceID.ToString("0000000000000000"),
-                        AppEUI = deviceID.ToString("0000000000000000"),
-                        AppKey = deviceID.ToString("00000000000000000000000000000000"),
+                        DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
+                        AppEUI = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
+                        AppKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
-                        AppSKey = deviceID.ToString("00000000000000000000000000000000"),
-                        NwkSKey = deviceID.ToString("00000000000000000000000000000000"),
-                        DevAddr = deviceID.ToString("00000000"),
+                        AppSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
+                        NwkSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
+                        DevAddr = deviceID.ToString("00000000", CultureInfo.InvariantCulture),
                     });
             }
 
@@ -102,14 +103,14 @@ namespace LoRaWan.SimulatedTest
                 this.deviceRange2000_1000_ABP.Add(
                     new TestDeviceInfo
                     {
-                        DeviceID = deviceID.ToString("0000000000000000"),
+                        DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",
                         KeepAliveTimeout = 0,
-                        AppSKey = deviceID.ToString("00000000000000000000000000000000"),
-                        NwkSKey = deviceID.ToString("00000000000000000000000000000000"),
-                        DevAddr = deviceID.ToString("00000000"),
+                        AppSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
+                        NwkSKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
+                        DevAddr = deviceID.ToString("00000000", CultureInfo.InvariantCulture),
                     });
             }
 
@@ -119,9 +120,9 @@ namespace LoRaWan.SimulatedTest
                 this.deviceRange3000_10_OTAA.Add(
                     new TestDeviceInfo
                     {
-                        DeviceID = deviceID.ToString("0000000000000000"),
-                        AppEUI = deviceID.ToString("0000000000000000"),
-                        AppKey = deviceID.ToString("00000000000000000000000000000000"),
+                        DeviceID = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
+                        AppEUI = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture),
+                        AppKey = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture),
                         GatewayID = gatewayID,
                         IsIoTHubDevice = true,
                         SensorDecoder = "DecoderValueSensor",

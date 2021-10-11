@@ -20,6 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\LoRaWan.NetworkServer.csproj" />
-    <ProjectReference Include="..\LoRaWan.Test.Shared\LoRaWan.Test.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Tests\Shared\LoRaWan.Tests.Shared.csproj" />
   </ItemGroup>
 </Project>

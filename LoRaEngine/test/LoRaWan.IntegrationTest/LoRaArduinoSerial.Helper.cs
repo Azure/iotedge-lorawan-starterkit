@@ -7,7 +7,7 @@ namespace LoRaWan.IntegrationTest
     using System.IO.Ports;
     using System.Runtime.InteropServices;
     using System.Threading.Tasks;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
 
     /// <summary>
     /// Lora Arduino Serial Class.

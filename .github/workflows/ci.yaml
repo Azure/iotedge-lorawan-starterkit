@@ -91,7 +91,7 @@ jobs:
     # Run unit tests
     - name: Run unit tests
       run: |
-        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r LoRaEngine/test/TestResults \
+        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r Tests/TestResults \
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
           --filter 'FullyQualifiedName~LoRaWanTest|FullyQualifiedName~LoRaWan.NetworkServer.Test|FullyQualifiedName~LoraKeysManagerFacade.Test' \
           LoRaEngine
@@ -101,7 +101,7 @@ jobs:
       if: success() || failure()
       with:
         name: unit-test-results
-        path: LoRaEngine/test/TestResults
+        path: Tests/TestResults
 
     - name: Upload to Codecov
       uses: codecov/codecov-action@v2

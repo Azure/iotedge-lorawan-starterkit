@@ -8,7 +8,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Linq;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Test.Shared;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
