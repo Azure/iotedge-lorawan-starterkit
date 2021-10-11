@@ -1,16 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-
     <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../modules/LoRaWanNetworkSrvModule/Logger/Logger.csproj" />
-    <ProjectReference Include="../../modules/LoRaWanNetworkSrvModule/LoraTools/LoRaTools.csproj" />
-    <ProjectReference Include="..\..\..\Tests\Shared\LoRaWan.Tests.Shared.csproj" />
-    <ProjectReference Include="..\XunitRetryHelper\XunitRetryHelper.csproj" />
+    <ProjectReference Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\Logger\Logger.csproj" />
+    <ProjectReference Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
+    <ProjectReference Include="..\Shared\LoRaWan.Tests.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,8 +40,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\ApiVersion.cs" Link="ApiVersion.cs" />
-    <Compile Include="..\..\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\ServiceFacadeHttpClientHandler.cs" Link="ServiceFacadeHttpClientHandler.cs" />
+    <Compile Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\ApiVersion.cs" Link="ApiVersion.cs" />
+    <Compile Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\ServiceFacadeHttpClientHandler.cs" Link="ServiceFacadeHttpClientHandler.cs" />
   </ItemGroup>
   
 </Project>

@@ -1,17 +1,17 @@
-# Integration Tests
+# E2E Tests
 
-This guide helps you to execute and author integration tests on your local environment.
+This guide helps you to execute and author E2E tests on your local environment.
 
 ## Requirements
 
 ```ascii
-+----------+                          |
-| Dev      |                          A
-| Machine  |               +----------+
-|          |               | IoT Edge |
-+----------+       )       | PktFwd   |
-  |              ) )       | NtwSrv   |
-  | (usb)  |   ) ) )       +----------+
++----------+                            |
+| Dev      |                            A
+| Machine  |               +------------+
+|          |               | IoT Edge   |
++----------+       )       | LBS/PktFwd |
+  |              ) )       | NtwSrv     |
+  | (usb)  |   ) ) )       +------------+
   |        A     ) )
  +---------+       )
  | Arduino |
@@ -19,12 +19,12 @@ This guide helps you to execute and author integration tests on your local envir
 ```
 
 * LoRaWan solution up and running (IoT Edge Device, IoT Hub, LoRa Keys Azure Function, Redis, etc.)
-* Seeeduino LoRaWan device (leaf test device) connected via USB to a computer where the LoRaWan.IntegrationTest will run.
+* Seeeduino LoRaWan device (leaf test device) connected via USB to a computer where the LoRaWan.Tests.E2E will run.
 * Module LoRaWanNetworkSrvModule logging configured with following environment variables:
   * LOG_LEVEL: 1
   * LOG_TO_UDP: true
   * LOG_TO_UDP_ADDRESS: development machine IP address (ensure IoT Edge machine can ping it)
-* Integration test configuration (in file `appsettings.local.json`) has UDP logging enabled `"UdpLog": "true"`
+* E2E test configuration (in file `appsettings.local.json`) has UDP logging enabled `"UdpLog": "true"`
 
 ## Installation
 
@@ -50,7 +50,7 @@ This guide helps you to execute and author integration tests on your local envir
     }
     ```
 
-2. Create/edit integration settings in file `appsettings.local.json`
+2. Create/edit E2E settings in file `appsettings.local.json`
 
 The value of `LeafDeviceSerialPort` in Windows will be the COM port where the Arduino board is connected to (Arduino IDE displays it). On macos you can discover through `ls /dev/tty*` and/or `ls /dev/cu*` bash commands. On Linux you can discover them with `ls /dev/ttyACM*`.
 
@@ -140,7 +140,7 @@ public async Task Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error()
 
 ## Creating Test Class
 
-Integration tests cannot be parallelized because they all share dependency to Arduino device. Those classes also rely on Udp and IoT Event Hub listeners that should be created once per test execution, not per test.
+E2E tests cannot be parallelized because they all share dependency to Arduino device. Those classes also rely on Udp and IoT Event Hub listeners that should be created once per test execution, not per test.
 
 Therefore, when creating a new test class follow the guidelines:
 
