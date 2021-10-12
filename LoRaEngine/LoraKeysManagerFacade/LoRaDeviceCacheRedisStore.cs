@@ -53,7 +53,7 @@ namespace LoraKeysManagerFacade
             {
                 return JsonConvert.DeserializeObject<T>(str);
             }
-            catch
+            catch(JsonSerializationException)
             {
                 return null;
             }
