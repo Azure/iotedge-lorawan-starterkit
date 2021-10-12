@@ -19,6 +19,13 @@ namespace LoRaWanTest
             Assert.Equal(_region.GetDownstreamDR(rxpk[0]), outputDr);
         }
 
+        protected void TestRegionLimit(double freq, string datarate)
+        {
+            var rxpk = GenerateRxpk(datarate, freq);
+            Assert.False(_region.TryGetDownstreamChannelFrequency(rxpk[0], out _) &&
+                _region.GetDownstreamDR(rxpk[0]) != null);
+        }
+
         protected static List<Rxpk> GenerateRxpk(string dr, double freq)
         {
             var jsonUplink =
@@ -43,6 +50,11 @@ namespace LoRaWanTest
             var physicalUpstreamPyld = new byte[12];
             physicalUpstreamPyld[0] = 2;
             return Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
+        }
+
+        protected void TestRegionMaxPayloadLength(string datr, uint maxPyldSize)
+        {
+            Assert.Equal(_region.GetMaxPayloadSize(datr), maxPyldSize);
         }
 
         protected void TestDownstreamRX2FrequencyAndDataRate(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
