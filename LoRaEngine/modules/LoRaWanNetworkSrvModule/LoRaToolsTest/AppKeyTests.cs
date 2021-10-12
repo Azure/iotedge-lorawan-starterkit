@@ -21,7 +21,7 @@ namespace LoRaWanTest
         [Fact]
         public void Equals_Returns_True_When_Value_Equals()
         {
-            var other = subject; // assignment = value copy semantics
+            var other = this.subject; // assignment = value copy semantics
             Assert.True(this.subject.Equals(other));
         }
 
@@ -47,7 +47,7 @@ namespace LoRaWanTest
         [Fact]
         public void Op_Equality_Returns_True_When_Values_Equal()
         {
-            var other = subject; // assignment = value copy semantics
+            var other = this.subject; // assignment = value copy semantics
             Assert.True(this.subject == other);
         }
 
@@ -60,7 +60,7 @@ namespace LoRaWanTest
         [Fact]
         public void Op_Inequality_Returns_False_When_Values_Equal()
         {
-            var other = subject; // assignment = value copy semantics
+            var other = this.subject; // assignment = value copy semantics
             Assert.False(this.subject != other);
         }
 
