@@ -7,7 +7,7 @@ namespace LoRaWan
     using System.Globalization;
 
     /// <summary>
-    /// Represent a frequency in Hertz.
+    /// Represents a frequency in Hertz.
     /// </summary>
     public readonly struct Hertz : IEquatable<Hertz>
     {
