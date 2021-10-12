@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.ADR
@@ -52,7 +52,7 @@ namespace LoRaTools.ADR
 
             // This is a case of standard ADR calculus.
             var newNbRep = this.ComputeNbRepetion(table.Entries[0].FCnt, table.Entries[LoRaADRTable.FrameCountCaptureCount - 1].FCnt, table.CurrentNbRep.GetValueOrDefault());
-            (int newTxPowerIndex, int newDatarate) = this.GetPowerAndDRConfiguration(requiredSnr, upstreamDataRate, table.Entries.Max(x => x.Snr), table.CurrentTxPower.GetValueOrDefault(), minTxPower, maxDr);
+            (var newTxPowerIndex, var newDatarate) = this.GetPowerAndDRConfiguration(requiredSnr, upstreamDataRate, table.Entries.Max(x => x.Snr), table.CurrentTxPower.GetValueOrDefault(), minTxPower, maxDr);
 
             if (newNbRep != table.CurrentNbRep || newTxPowerIndex != table.CurrentTxPower || newDatarate != upstreamDataRate)
             {
@@ -69,11 +69,11 @@ namespace LoRaTools.ADR
 
         private (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex, int maxDr)
         {
-            double snrMargin = maxSnr - requiredSnr - MarginDb;
+            var snrMargin = maxSnr - requiredSnr - MarginDb;
 
-            int computedDataRate = dataRate;
+            var computedDataRate = dataRate;
 
-            int nStep = (int)snrMargin;
+            var nStep = (int)snrMargin;
 
             while (nStep != 0)
             {

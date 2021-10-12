@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools
@@ -66,17 +66,17 @@ namespace LoRaTools
         /// </summary>
         public LinkADRRequest(IDictionary<string, string> dictionary)
         {
-            if (dictionary.TryGetValueCaseInsensitive("datarate", out string dataratestr) &&
-                dictionary.TryGetValueCaseInsensitive("txpower", out string txpowerstr) &&
-                dictionary.TryGetValueCaseInsensitive("chMask", out string chMaskstr) &&
-                dictionary.TryGetValueCaseInsensitive("chMaskCntl", out string chMaskCntlstr) &&
-                dictionary.TryGetValueCaseInsensitive("nbTrans", out string nbTransstr))
+            if (dictionary.TryGetValueCaseInsensitive("datarate", out var dataratestr) &&
+                dictionary.TryGetValueCaseInsensitive("txpower", out var txpowerstr) &&
+                dictionary.TryGetValueCaseInsensitive("chMask", out var chMaskstr) &&
+                dictionary.TryGetValueCaseInsensitive("chMaskCntl", out var chMaskCntlstr) &&
+                dictionary.TryGetValueCaseInsensitive("nbTrans", out var nbTransstr))
             {
-                if (byte.TryParse(dataratestr, out byte datarate) &&
-                    byte.TryParse(txpowerstr, out byte txPower) &&
-                    ushort.TryParse(chMaskstr, out ushort chMask) &&
-                    byte.TryParse(chMaskCntlstr, out byte chMaskCntl) &&
-                    byte.TryParse(nbTransstr, out byte nbTrans))
+                if (byte.TryParse(dataratestr, out var datarate) &&
+                    byte.TryParse(txpowerstr, out var txPower) &&
+                    ushort.TryParse(chMaskstr, out var chMask) &&
+                    byte.TryParse(chMaskCntlstr, out var chMaskCntl) &&
+                    byte.TryParse(nbTransstr, out var nbTrans))
                 {
                     this.Cid = CidEnum.LinkADRCmd;
                     this.DataRateTXPower = (byte)((datarate << 4) | txPower);

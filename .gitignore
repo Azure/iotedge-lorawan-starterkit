@@ -302,5 +302,5 @@ Tools/Cli-LoRa-Device-Provisioning/settings\.local\.json
 # test coverage output
 *.cobertura.xml
 
-#codecs 
+#codecs
 **/codecs

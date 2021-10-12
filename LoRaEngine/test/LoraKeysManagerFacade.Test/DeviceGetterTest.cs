@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.Test
@@ -18,9 +18,9 @@ namespace LoraKeysManagerFacade.Test
         [Fact]
         public async void DeviceGetter_OTAA_Join()
         {
-            string devEUI = NewUniqueEUI64();
-            string devEUI2 = NewUniqueEUI64();
-            string gatewayId = NewUniqueEUI64();
+            var devEUI = NewUniqueEUI64();
+            var devEUI2 = NewUniqueEUI64();
+            var gatewayId = NewUniqueEUI64();
 
             var deviceGetter = new DeviceGetter(this.InitRegistryManager(devEUI, devEUI2), new LoRaInMemoryDeviceStore());
             var items = await deviceGetter.GetDeviceList(devEUI, gatewayId, "ABCD", null);
@@ -42,14 +42,14 @@ namespace LoraKeysManagerFacade.Test
                 .ReturnsAsync((string deviceId) => new Twin(deviceId));
 
             const int numberOfDevices = 2;
-            int deviceCount = 0;
+            var deviceCount = 0;
 
             var queryMock = new Mock<IQuery>(MockBehavior.Loose);
             queryMock
                 .Setup(x => x.HasMoreResults)
                 .Returns(() => (deviceCount < numberOfDevices));
 
-            string[] deviceIds = new string[numberOfDevices] { devEui1, devEui2 };
+            var deviceIds = new string[numberOfDevices] { devEui1, devEui2 };
 
             IEnumerable<Twin> Twins()
             {

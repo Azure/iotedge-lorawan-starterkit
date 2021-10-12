@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools
@@ -21,7 +21,7 @@ namespace LoRaTools
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            JObject item = JObject.Load(reader);
+            var item = JObject.Load(reader);
             var cidPropertyValue = item["cid"].Value<string>();
             if (string.IsNullOrEmpty(cidPropertyValue))
             {

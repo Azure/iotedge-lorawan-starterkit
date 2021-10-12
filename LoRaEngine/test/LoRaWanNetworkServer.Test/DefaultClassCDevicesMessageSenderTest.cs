@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -56,7 +56,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0, downlink.Txpk.Tmst);
             Assert.NotEmpty(downlink.Txpk.Data);
 
-            byte[] downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
+            var downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(sentMessage.Fport, downstreamPayload.GetFPort());
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));

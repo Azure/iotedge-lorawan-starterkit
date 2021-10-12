@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -188,7 +188,7 @@ namespace LoRaWan.NetworkServer.Test
             var downstreamMessage = this.PacketForwarder.DownlinkMessages[1];
 
             // validates txpk according to eu region
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(confirmedMessageRxpk, out double frequency));
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(confirmedMessageRxpk, out var frequency));
             Assert.Equal(frequency, downstreamMessage.Txpk.Freq);
             Assert.Equal("4/5", downstreamMessage.Txpk.Codr);
             Assert.False(downstreamMessage.Txpk.Imme);
@@ -479,7 +479,7 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkJoinAcceptMessage = this.PacketForwarder.DownlinkMessages[0];
             // validates txpk according to eu region
             Assert.Equal(0U, downlinkJoinAcceptMessage.Txpk.Rfch);
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(joinRxpk, out double receivedFrequency));
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(joinRxpk, out var receivedFrequency));
             Assert.Equal(receivedFrequency, downlinkJoinAcceptMessage.Txpk.Freq);
             Assert.Equal("4/5", downlinkJoinAcceptMessage.Txpk.Codr);
             Assert.False(downlinkJoinAcceptMessage.Txpk.Imme);

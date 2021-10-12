@@ -8,7 +8,7 @@ var args = process.argv.slice(2);
 const srcDir = args[0] || './node_modules/lorawan-devices/vendor';
 const dstDir = args[1] || './codecs';
 
-glob.sync(`**/*`, 
+glob.sync(`**/*`,
   {
     cwd: srcDir,
     nodir: true,

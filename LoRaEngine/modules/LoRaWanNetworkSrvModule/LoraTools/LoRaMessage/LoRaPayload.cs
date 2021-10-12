@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.LoRaMessage
@@ -92,13 +92,13 @@ namespace LoRaTools.LoRaMessage
         /// <returns> the Mic bytes.</returns>
         public byte[] CalculateMic(string appKey, byte[] algoinput)
         {
-            IMac mac = MacUtilities.GetMac("AESCMAC");
-            KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(appKey));
+            var mac = MacUtilities.GetMac("AESCMAC");
+            var key = new KeyParameter(ConversionHelper.StringToByteArray(appKey));
             mac.Init(key);
-            byte[] rfu = new byte[1];
+            var rfu = new byte[1];
             rfu[0] = 0x0;
-            byte[] msgLength = BitConverter.GetBytes(algoinput.Length);
-            byte[] result = new byte[16];
+            var msgLength = BitConverter.GetBytes(algoinput.Length);
+            var result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);
             this.Mic = result.Take(4).ToArray();
@@ -110,7 +110,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
-            byte[] type = new byte[1];
+            var type = new byte[1];
             type[0] = (byte)keyType;
             Aes aes = new AesManaged
             {
@@ -119,7 +119,7 @@ namespace LoRaTools.LoRaMessage
                 Padding = PaddingMode.None
             };
 
-            byte[] pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
+            var pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
@@ -130,7 +130,7 @@ namespace LoRaTools.LoRaMessage
 
         public static bool TryCreateLoRaPayload(Rxpk rxpk, out LoRaPayload loRaPayloadMessage)
         {
-            byte[] convertedInputMessage = Convert.FromBase64String(rxpk.Data);
+            var convertedInputMessage = Convert.FromBase64String(rxpk.Data);
             var messageType = convertedInputMessage[0];
 
             switch (messageType)
@@ -161,7 +161,7 @@ namespace LoRaTools.LoRaMessage
         {
             if (txpk.Data != null)
             {
-                byte[] convertedInputMessage = Convert.FromBase64String(txpk.Data);
+                var convertedInputMessage = Convert.FromBase64String(txpk.Data);
                 switch ((LoRaMessageType)convertedInputMessage[0])
                 {
                     case LoRaMessageType.JoinRequest:

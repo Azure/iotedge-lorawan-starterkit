@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWanTest
@@ -14,7 +14,7 @@ namespace LoRaWanTest
         [Fact]
         public void When_Creating_From_Json_Has_Correct_Value()
         {
-            string jsonUplink = @"{ ""rxpk"":[
+            var jsonUplink = @"{ ""rxpk"":[
                 {
                     ""time"":""2013-03-31T16:21:17.528002Z"",
                     ""tmst"":3512348611,
@@ -31,7 +31,7 @@ namespace LoRaWanTest
                     ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
                 }]}";
 
-            byte[] physicalUpstreamPyld = new byte[12];
+            var physicalUpstreamPyld = new byte[12];
             physicalUpstreamPyld[0] = 2;
             var request = Encoding.Default.GetBytes(jsonUplink);
             var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());
@@ -42,7 +42,7 @@ namespace LoRaWanTest
         [Fact]
         public void When_Creating_From_Json_With_Custom_Elements_Has_Correct_Value()
         {
-            string jsonUplink = @"{ ""rxpk"":[
+            var jsonUplink = @"{ ""rxpk"":[
                 {
                     ""time"":""2013-03-31T16:21:17.528002Z"",
                     ""tmst"":3512348611,
@@ -61,7 +61,7 @@ namespace LoRaWanTest
                     ""custom_prop_b"":10
                 }]}";
 
-            byte[] physicalUpstreamPyld = new byte[12];
+            var physicalUpstreamPyld = new byte[12];
             physicalUpstreamPyld[0] = 2;
             var request = Encoding.Default.GetBytes(jsonUplink);
             var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());
@@ -76,8 +76,8 @@ namespace LoRaWanTest
         [Fact]
         public void Multiple_Rxpk_Are_Detected_Correctly()
         {
-            string jsonUplink = @"{""rxpk"":[{""tmst"":373051724,""time"":""2020-02-19T04:08:57.265951Z"",""chan"":0,""rfch"":0,""freq"":923.200000,""stat"":1,""modu"":""LORA"",""datr"":""SF9BW125"",""codr"":""4/5"",""lsnr"":12.5,""rssi"":-47,""size"":21,""data"":""gAMAABKgmAAIAvEgIbhjS0LBeM/d""},{""tmst"":373053772,""time"":""2020-02-19T04:08:57.265951Z"",""chan"":6,""rfch"":0,""freq"":923.000000,""stat"":-1,""modu"":""LORA"",""datr"":""SF9BW125"",""codr"":""4/5"",""lsnr"":-13.0,""rssi"":-97,""size"":21,""data"":""gJni7n4+wQBUl/E0sO4vB4gFePx7""}]}";
-            byte[] physicalUpstreamPyld = new byte[12];
+            var jsonUplink = @"{""rxpk"":[{""tmst"":373051724,""time"":""2020-02-19T04:08:57.265951Z"",""chan"":0,""rfch"":0,""freq"":923.200000,""stat"":1,""modu"":""LORA"",""datr"":""SF9BW125"",""codr"":""4/5"",""lsnr"":12.5,""rssi"":-47,""size"":21,""data"":""gAMAABKgmAAIAvEgIbhjS0LBeM/d""},{""tmst"":373053772,""time"":""2020-02-19T04:08:57.265951Z"",""chan"":6,""rfch"":0,""freq"":923.000000,""stat"":-1,""modu"":""LORA"",""datr"":""SF9BW125"",""codr"":""4/5"",""lsnr"":-13.0,""rssi"":-97,""size"":21,""data"":""gJni7n4+wQBUl/E0sO4vB4gFePx7""}]}";
+            var physicalUpstreamPyld = new byte[12];
             physicalUpstreamPyld[0] = 2;
             var request = Encoding.Default.GetBytes(jsonUplink);
             var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());
@@ -92,7 +92,7 @@ namespace LoRaWanTest
         [InlineData(868.1, "SF36BW125", null)]
         public void CheckEUValidUpstreamRxpk(double frequency, string datr, string expectedDatr)
         {
-            string jsonUplink =
+            var jsonUplink =
                 "{\"rxpk\":[{\"time\":\"2013-03-31T16:21:17.528002Z\"," +
                 "\"tmst\":3512348611," +
                 "\"chan\":2," +
@@ -109,7 +109,7 @@ namespace LoRaWanTest
                "\"custom_prop_a\":\"a\"," +
                "\"custom_prop_b\":10" +
                " }]}";
-            byte[] physicalUpstreamPyld = new byte[12];
+            var physicalUpstreamPyld = new byte[12];
             physicalUpstreamPyld[0] = 2;
             var request = Encoding.Default.GetBytes(jsonUplink);
             var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());
@@ -125,7 +125,7 @@ namespace LoRaWanTest
         [InlineData(915, "SF36BW125", null)]
         public void CheckUSValidUpstreamRxpk(double frequency, string datr, string expectedDatr)
         {
-            string jsonUplink =
+            var jsonUplink =
                 "{\"rxpk\":[{\"time\":\"2013-03-31T16:21:17.528002Z\"," +
                 "\"tmst\":3512348611," +
                 "\"chan\":2," +
@@ -142,7 +142,7 @@ namespace LoRaWanTest
                "\"custom_prop_a\":\"a\"," +
                "\"custom_prop_b\":10" +
                " }]}";
-            byte[] physicalUpstreamPyld = new byte[12];
+            var physicalUpstreamPyld = new byte[12];
             physicalUpstreamPyld[0] = 2;
             var request = Encoding.Default.GetBytes(jsonUplink);
             var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());

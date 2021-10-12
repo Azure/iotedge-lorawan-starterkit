@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.Test
@@ -19,9 +19,9 @@ namespace LoraKeysManagerFacade.Test
         [Fact]
         public async Task MessageDeduplication_Duplicates_Found()
         {
-            string gateway1Id = NewUniqueEUI64();
-            string gateway2Id = NewUniqueEUI64();
-            string dev1EUI = NewUniqueEUI64();
+            var gateway1Id = NewUniqueEUI64();
+            var gateway2Id = NewUniqueEUI64();
+            var dev1EUI = NewUniqueEUI64();
 
             var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
@@ -35,8 +35,8 @@ namespace LoraKeysManagerFacade.Test
         [Fact]
         public async Task MessageDeduplication_Resubmit_Allowed()
         {
-            string gateway1Id = NewUniqueEUI64();
-            string dev1EUI = NewUniqueEUI64();
+            var gateway1Id = NewUniqueEUI64();
+            var dev1EUI = NewUniqueEUI64();
 
             var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);
@@ -50,10 +50,10 @@ namespace LoraKeysManagerFacade.Test
         [Fact]
         public async Task MessageDeduplication_DifferentDevices_Allowed()
         {
-            string gateway1Id = NewUniqueEUI64();
-            string gateway2Id = NewUniqueEUI64();
-            string dev1EUI = NewUniqueEUI64();
-            string dev2EUI = NewUniqueEUI64();
+            var gateway1Id = NewUniqueEUI64();
+            var gateway2Id = NewUniqueEUI64();
+            var dev1EUI = NewUniqueEUI64();
+            var dev2EUI = NewUniqueEUI64();
 
             var result = await this.deduplicationExecutionItem.GetDuplicateMessageResultAsync(dev1EUI, gateway1Id, 1, 1);
             Assert.False(result.IsDuplicate);

@@ -29,7 +29,7 @@ namespace LoRaWan.Tests.Shared
 
         public UdpLogListener(int port)
         {
-            IPAddress ip = IPAddress.Any;
+            var ip = IPAddress.Any;
             this.events = new ConcurrentQueue<string>();
             this.udpClient = new UdpClient(new IPEndPoint(ip, port));
             TestLogger.Log($"*** UDP Log Listener created: {ip}:{port} ***");

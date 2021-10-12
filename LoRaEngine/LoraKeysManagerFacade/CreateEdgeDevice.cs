@@ -34,15 +34,15 @@ namespace LoraKeysManagerFacade
             // parse query parameter
             var queryStrings = req.GetQueryParameterDictionary();
 
-            queryStrings.TryGetValue("deviceName", out string deviceName);
-            queryStrings.TryGetValue("publishingUserName", out string publishingUserName);
-            queryStrings.TryGetValue("publishingPassword", out string publishingPassword);
-            queryStrings.TryGetValue("region", out string region);
-            queryStrings.TryGetValue("resetPin", out string resetPin);
-            queryStrings.TryGetValue("spiSpeed", out string spiSpeed);
-            queryStrings.TryGetValue("spiDev", out string spiDev);
+            queryStrings.TryGetValue("deviceName", out var deviceName);
+            queryStrings.TryGetValue("publishingUserName", out var publishingUserName);
+            queryStrings.TryGetValue("publishingPassword", out var publishingPassword);
+            queryStrings.TryGetValue("region", out var region);
+            queryStrings.TryGetValue("resetPin", out var resetPin);
+            queryStrings.TryGetValue("spiSpeed", out var spiSpeed);
+            queryStrings.TryGetValue("spiDev", out var spiDev);
 
-            bool.TryParse(Environment.GetEnvironmentVariable("DEPLOY_DEVICE"), out bool deployEndDevice);
+            bool.TryParse(Environment.GetEnvironmentVariable("DEPLOY_DEVICE"), out var deployEndDevice);
 
             // Get function facade key
             var base64Auth = Convert.ToBase64String(Encoding.Default.GetBytes($"{publishingUserName}:{publishingPassword}"));
@@ -56,17 +56,17 @@ namespace LoraKeysManagerFacade
                 jwt = result.Content.ReadAsStringAsync().Result.Trim('"'); // get  JWT for call funtion key
             }
 
-            string facadeKey = string.Empty;
+            var facadeKey = string.Empty;
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + jwt);
 
-                string jsonResult = client.GetAsync($"{siteUrl}/admin/host/keys").Result.Content.ReadAsStringAsync().Result;
+                var jsonResult = client.GetAsync($"{siteUrl}/admin/host/keys").Result.Content.ReadAsStringAsync().Result;
                 dynamic resObject = JsonConvert.DeserializeObject(jsonResult);
                 facadeKey = resObject.keys[0].value;
             }
 
-            Device edgeGatewayDevice = new Device(deviceName);
+            var edgeGatewayDevice = new Device(deviceName);
             edgeGatewayDevice.Capabilities = new DeviceCapabilities()
             {
                 IotEdge = true
@@ -76,23 +76,23 @@ namespace LoraKeysManagerFacade
             {
                 await this.registryManager.AddDeviceAsync(edgeGatewayDevice);
 
-                string deviceConfigurationUrl = Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION");
+                var deviceConfigurationUrl = Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION");
                 string json = null;
 
                 // todo correct
-                using (WebClient wc = new WebClient())
+                using (var wc = new WebClient())
                 {
                     json = wc.DownloadString(deviceConfigurationUrl);
                 }
 
                 json = ReplaceJsonWithCorrectValues(region, resetPin, json, spiSpeed, spiDev);
 
-                ConfigurationContent spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
+                var spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
                 await this.registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
 
                 await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, spec);
 
-                Twin twin = new Twin();
+                var twin = new Twin();
                 twin.Properties.Desired = new TwinCollection(@"{FacadeServerUrl:'" + string.Format("https://{0}.azurewebsites.net/api/", GetEnvironmentVariable("FACADE_HOST_NAME")) + "',FacadeAuthCode: " +
                     "'" + facadeKey + "'}");
                 var remoteTwin = await this.registryManager.GetTwinAsync(deviceName);
@@ -184,7 +184,7 @@ namespace LoraKeysManagerFacade
         private static HttpResponseMessage PrepareResponse(HttpStatusCode httpStatusCode)
         {
             var template = @"{'$schema': 'https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#', 'contentVersion': '1.0.0.0', 'parameters': {}, 'variables': {}, 'resources': []}";
-            HttpResponseMessage response = new HttpResponseMessage(httpStatusCode);
+            var response = new HttpResponseMessage(httpStatusCode);
             if (httpStatusCode == HttpStatusCode.OK)
             {
                 response.Content = new StringContent(template, Encoding.UTF8, "application/json");

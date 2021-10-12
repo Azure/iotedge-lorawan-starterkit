@@ -92,7 +92,7 @@ namespace LoRaWan.Tests.E2E
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 var msg = PayloadGenerator.Next().ToString();
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);

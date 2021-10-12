@@ -1,10 +1,10 @@
-/* 
+/*
 This samples sends using the "longest" datarate gps coordinates every 30 seconds
 -> Create a new device in IoT Hub with this name: 7A7A7A00000014E2
 -> Add the following desired properties to the device twin:
 "desired": {
     "AppEUI": "BE7A0000000014E2",
-    "AppKey": "634B4631BB1BCCCC006A2608E5601717",   
+    "AppKey": "634B4631BB1BCCCC006A2608E5601717",
     "GatewayID" :"",
     "SensorDecoder" :"DecoderGpsSensor"
     },
@@ -46,7 +46,7 @@ void setup(void)
 
 
 
-  lora.init(); 
+  lora.init();
   lora.setDeviceDefault();
 
   lora.setId(NULL , "7A7A7A00000014E2", "BE7A0000000014E2");

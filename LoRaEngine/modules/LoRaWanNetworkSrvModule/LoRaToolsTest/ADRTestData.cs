@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWanTest
@@ -29,7 +29,7 @@ namespace LoRaWanTest
                 });
             }
 
-            Rxpk rxpk = new Rxpk();
+            var rxpk = new Rxpk();
             rxpk.Datr = "SF7BW125";
             this.AddRow("Not enough entries to calculate ADR", deviceNameNotEnoughEntries, tableentries, rxpk, true, new LoRaADRResult()
             {
@@ -57,10 +57,10 @@ namespace LoRaWanTest
                 });
             }
 
-            Rxpk notenoughentriesrxpk = new Rxpk();
+            var notenoughentriesrxpk = new Rxpk();
             // Set Input DR to 5
             notenoughentriesrxpk.Datr = "SF7BW125";
-            LoRaADRResult loRaADRResult = new LoRaADRResult()
+            var loRaADRResult = new LoRaADRResult()
             {
                 DataRate = 0,
                 NbRepetition = 1,
@@ -85,10 +85,10 @@ namespace LoRaWanTest
                 });
             }
 
-            Rxpk increaseNbReprxpk = new Rxpk();
+            var increaseNbReprxpk = new Rxpk();
             // DR5
             increaseNbReprxpk.Datr = "SF7BW125";
-            LoRaADRResult increaseNbReploRaADRResult = new LoRaADRResult()
+            var increaseNbReploRaADRResult = new LoRaADRResult()
             {
                 DataRate = 5,
                 NbRepetition = 3,
@@ -130,10 +130,10 @@ namespace LoRaWanTest
                     });
             }
 
-            Rxpk decreaseNbReprxpk = new Rxpk();
+            var decreaseNbReprxpk = new Rxpk();
             // DR5
             decreaseNbReprxpk.Datr = "SF7BW125";
-            LoRaADRResult decreaseNbReploRaADRResult = new LoRaADRResult()
+            var decreaseNbReploRaADRResult = new LoRaADRResult()
             {
                 DataRate = 5,
                 NbRepetition = 1,

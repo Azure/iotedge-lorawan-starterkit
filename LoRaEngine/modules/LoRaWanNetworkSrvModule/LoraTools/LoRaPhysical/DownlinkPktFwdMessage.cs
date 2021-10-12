@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.LoRaPhysical
@@ -66,7 +66,7 @@ namespace LoRaTools.LoRaPhysical
         [Obsolete("ad")]
         public override PktFwdMessageAdapter GetPktFwdMessage()
         {
-            PktFwdMessageAdapter pktFwdMessageAdapter = new PktFwdMessageAdapter
+            var pktFwdMessageAdapter = new PktFwdMessageAdapter
             {
                 Txpk = this.Txpk
             };
