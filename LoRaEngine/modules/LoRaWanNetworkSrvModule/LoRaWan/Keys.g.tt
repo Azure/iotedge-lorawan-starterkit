@@ -61,5 +61,5 @@ namespace LoRaWan
 
         public Span<byte> Write(Span<byte> buffer) => this.value.WriteBigEndian(buffer);
     }
-<# } #>
+<#  } #>
 }
