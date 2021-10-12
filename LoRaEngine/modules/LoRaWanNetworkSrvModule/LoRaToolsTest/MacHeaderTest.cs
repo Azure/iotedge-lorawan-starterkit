@@ -43,7 +43,7 @@ namespace LoRaWanTest
         }
 
         [Fact]
-        public void Op_Equality_Returns_True_When_Values_Differ()
+        public void Op_Equality_Returns_False_When_Values_Differ()
         {
             Assert.False(this.confirmedDataDown == this.unconfirmedDataUp);
         }

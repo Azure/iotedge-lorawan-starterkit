@@ -53,7 +53,7 @@ namespace LoRaWanTest
         }
 
         [Fact]
-        public void Op_Equality_Returns_True_When_Values_Differ()
+        public void Op_Equality_Returns_False_When_Values_Differ()
         {
             Assert.False(this.MHz863 == this.MHz902);
         }
@@ -72,7 +72,7 @@ namespace LoRaWanTest
         }
 
         [Fact]
-        public void ToString_Returns_Hex_String()
+        public void ToString_Returns_Decimal_String()
         {
             Assert.Equal("863000000", this.MHz863.ToString());
         }
