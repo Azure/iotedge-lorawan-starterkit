@@ -45,7 +45,7 @@ namespace LoRaWan
             var mac = MacUtilities.GetMac("AESCMAC");
 
             var keyBytes = new byte[AppKey.Size];
-            appKey.AsUInt128.WriteLittleEndian(keyBytes);
+            appKey.AsUInt128.WriteBigEndian(keyBytes);
             var key = new KeyParameter(keyBytes);
             mac.Init(key);
 

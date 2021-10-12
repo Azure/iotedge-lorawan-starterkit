@@ -36,5 +36,12 @@ namespace LoRaWan
             BinaryPrimitives.WriteUInt64LittleEndian(buffer[8..], this.hi);
             return buffer[16..];
         }
+
+        public Span<byte> WriteBigEndian(Span<byte> buffer)
+        {
+            BinaryPrimitives.WriteUInt64BigEndian(buffer, this.hi);
+            BinaryPrimitives.WriteUInt64BigEndian(buffer[8..], this.lo);
+            return buffer[16..];
+        }
     }
 }
