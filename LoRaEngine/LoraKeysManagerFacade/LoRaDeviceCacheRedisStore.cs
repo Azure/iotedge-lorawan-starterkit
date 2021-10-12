@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using Newtonsoft.Json;
@@ -22,11 +23,11 @@ namespace LoraKeysManagerFacade
 
         public async Task<bool> LockTakeAsync(string key, string owner, TimeSpan expiration, bool block = true)
         {
-            var start = DateTime.UtcNow;
+            var sw = Stopwatch.StartNew();
             bool taken;
             while (!(taken = this.redisCache.LockTake(key, owner, expiration, CommandFlags.DemandMaster)) && block)
             {
-                if (DateTime.UtcNow - start > LockTimeout)
+                if (sw.Elapsed > LockTimeout)
                     break;
                 await Task.Delay(100);
             }
