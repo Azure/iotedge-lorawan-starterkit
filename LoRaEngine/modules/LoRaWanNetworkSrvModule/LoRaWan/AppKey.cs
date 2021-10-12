@@ -27,5 +27,22 @@ namespace LoRaWan
 
         public static bool operator ==(AppKey left, AppKey right) => left.Equals(right);
         public static bool operator !=(AppKey left, AppKey right) => !left.Equals(right);
+
+        public static AppKey Parse(ReadOnlySpan<char> input) =>
+            TryParse(input, out var result) ? result : throw new FormatException();
+
+        public static bool TryParse(ReadOnlySpan<char> input, out AppKey result)
+        {
+            if (UInt128.TryParse(input, out var raw))
+            {
+                result = new AppKey(raw);
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
     }
 }

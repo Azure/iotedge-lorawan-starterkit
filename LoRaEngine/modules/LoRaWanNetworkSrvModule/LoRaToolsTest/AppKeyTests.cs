@@ -3,6 +3,7 @@
 
 namespace LoRaWanTest
 {
+    using System;
     using LoRaWan;
     using Xunit;
 
@@ -73,6 +74,50 @@ namespace LoRaWanTest
         public void ToString_Returns_Hexadecimal_String()
         {
             Assert.Equal("0123456789ABCDEFFEDCBA9876543210", this.subject.ToString());
+        }
+
+        [Fact]
+        public void Parse_Returns_Parsed_Value_When_Input_Is_Valid()
+        {
+            var result = AppKey.Parse(this.subject.ToString());
+            Assert.Equal(subject, result);
+        }
+
+        [Fact]
+        public void Parse_Input_Is_Case_Insensitive()
+        {
+            var result = AppKey.Parse(this.subject.ToString().ToLowerInvariant());
+            Assert.Equal(subject, result);
+        }
+
+        [Fact]
+        public void Parse_Throws_When_Input_Is_Invalid()
+        {
+            _ = Assert.Throws<FormatException>(() => AppKey.Parse("foobar"));
+        }
+
+        [Fact]
+        public void TryParse_Returns_True_And_Outputs_Parsed_Value_When_Input_Is_Valid()
+        {
+            var succeeded = AppKey.TryParse(this.subject.ToString(), out var result);
+            Assert.True(succeeded);
+            Assert.Equal(subject, result);
+        }
+
+        [Fact]
+        public void TryParse_Input_Is_Case_Insensitive()
+        {
+            var succeeded = AppKey.TryParse(this.subject.ToString().ToLowerInvariant(), out var result);
+            Assert.True(succeeded);
+            Assert.Equal(subject, result);
+        }
+
+        [Fact]
+        public void TryParse_Returns_False_When_Input_Is_Invalid()
+        {
+            var succeeded = AppKey.TryParse("foobar", out var result);
+            Assert.False(succeeded);
+            Assert.True(result == default);
         }
     }
 }
