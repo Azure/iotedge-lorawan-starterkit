@@ -7,7 +7,11 @@ namespace LoRaWan
     using System.Globalization;
 
     [Flags]
+#pragma warning disable CA1028 // Enum Storage should be Int32
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+#pragma warning disable CA2217 // Do not mark enums with FlagsAttribute
     public enum FCtrlFlags : byte
+#pragma warning restore CA2217, CA1711, CA1028
     {
         Adr          = 0x80,
         AdrAckReq    = 0x40,
