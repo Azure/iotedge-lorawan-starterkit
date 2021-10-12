@@ -23,7 +23,7 @@ namespace LoraKeysManagerFacade
         public async Task<bool> LockTakeAsync(string key, string lockOwner, TimeSpan expiration, bool block = true)
         {
             var start = DateTime.UtcNow;
-            var taken = false;
+            bool taken;
             while (!(taken = this.redisCache.LockTake(key, lockOwner, expiration, CommandFlags.DemandMaster)) && block)
             {
                 if (DateTime.UtcNow - start > LockTimeout)
