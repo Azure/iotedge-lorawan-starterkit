@@ -74,30 +74,23 @@ namespace LoraKeysManagerFacade
             return info?.Count > 0;
         }
 
-        public bool StoreInfo(DevAddrCacheInfo info, bool initialize = false)
+        public bool StoreInfo(DevAddrCacheInfo info)
         {
-            if (info == null)
-            {
-                throw new ArgumentNullException("Required DevAddrCacheInfo argument was null");
-            }
+            _ = info ?? throw new ArgumentNullException(nameof(info));
 
-            bool success = false;
             var serializedObjectValue = JsonConvert.SerializeObject(info);
 
             string cacheKeyToUse = GenerateKey(info.DevAddr);
 
-            success = this.cacheStore.TrySetHashObject(cacheKeyToUse, info.DevEUI, serializedObjectValue);
-
-            if (success)
+            if(this.cacheStore.TrySetHashObject(cacheKeyToUse, info.DevEUI, serializedObjectValue))
             {
                 this.logger.LogInformation($"Successfully saved dev address info on dictionary key: {cacheKeyToUse}, hashkey: {info.DevEUI}, object: {serializedObjectValue}");
-            }
-            else
-            {
-                this.logger.LogError($"Failure to save dev address info on dictionary key: {cacheKeyToUse}, hashkey: {info?.DevEUI}, object: {serializedObjectValue}");
+
+                return true;
             }
 
-            return success;
+            this.logger.LogError($"Failure to save dev address info on dictionary key: {cacheKeyToUse}, hashkey: {info.DevEUI}, object: {serializedObjectValue}");
+            return false;
         }
 
         internal async Task PerformNeededSyncs(RegistryManager registryManager)
