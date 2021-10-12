@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
                 var timeWatcher = new LoRaOperationTimeWatcher(loraRegion, request.StartTime);
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
-                byte[] udpMsgForPktForwarder = new byte[0];
+                var udpMsgForPktForwarder = new byte[0];
 
                 devEUI = joinReq.GetDevEUIAsString();
                 var appEUI = joinReq.GetAppEUIAsString();
@@ -197,7 +197,7 @@ namespace LoRaWan.NetworkServer
                 Array.Reverse(appNonceBytes);
 
                 // Build the DlSettings fields that is a superposition of RX2DR and RX1DROffset field
-                byte[] dlSettings = new byte[1];
+                var dlSettings = new byte[1];
 
                 if (loRaDevice.DesiredRX2DataRate.HasValue)
                 {

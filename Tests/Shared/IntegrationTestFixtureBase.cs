@@ -250,7 +250,7 @@ namespace LoRaWan.Tests.Shared
         {
             try
             {
-                Microsoft.Azure.Devices.Client.DeviceClient device = Microsoft.Azure.Devices.Client.DeviceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString, deviceId);
+                var device = Microsoft.Azure.Devices.Client.DeviceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString, deviceId);
                 var twinCollection = new TwinCollection();
                 twinCollection[twinName] = twinValue;
                 await device.UpdateReportedPropertiesAsync(twinCollection);

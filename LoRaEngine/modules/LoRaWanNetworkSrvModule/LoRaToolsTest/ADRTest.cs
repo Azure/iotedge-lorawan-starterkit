@@ -44,7 +44,7 @@ namespace LoRaWanTest
                 });
             }
 
-            for (int i = 0; i < tableEntries.Count; i++)
+            for (var i = 0; i < tableEntries.Count; i++)
             {
                 await loRaADRManager.Object.StoreADREntryAsync(tableEntries[i]);
             }
@@ -63,10 +63,10 @@ namespace LoRaWanTest
         [Fact]
         public async System.Threading.Tasks.Task CheckADRReturnsDefaultValueIfCacheCrash()
         {
-            string devEUI = "myloratest";
+            var devEUI = "myloratest";
             var region = RegionManager.EU868;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
-            Rxpk rxpk = new Rxpk();
+            var rxpk = new Rxpk();
             rxpk.Datr = "SF7BW125";
             var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider);
             loRaADRManager.CallBase = true;

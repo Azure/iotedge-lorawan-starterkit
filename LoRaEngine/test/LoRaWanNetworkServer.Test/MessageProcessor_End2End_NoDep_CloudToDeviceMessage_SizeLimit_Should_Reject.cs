@@ -35,7 +35,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var loraDevice = this.CreateLoRaDevice(simulatedDevice);
 
-            Rxpk rxpk = this.CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, datr, simulatedDevice);
+            var rxpk = this.CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, datr, simulatedDevice);
 
             if (!hasMacInUpstream)
             {

@@ -24,7 +24,7 @@ namespace LoraKeysManagerFacade.Test
 
             for (var i = 0; i < EUI64BitStringLength; i++)
             {
-                int n = 0;
+                var n = 0;
                 lock (RndLock)
                 {
                     n = Rnd.Next(0, ValidChars.Length);
@@ -53,7 +53,7 @@ namespace LoraKeysManagerFacade.Test
 
             for (var i = 0; i < EUI32BitStringLength; i++)
             {
-                int n = 0;
+                var n = 0;
                 lock (RndLock)
                 {
                     n = Rnd.Next(0, ValidChars.Length);

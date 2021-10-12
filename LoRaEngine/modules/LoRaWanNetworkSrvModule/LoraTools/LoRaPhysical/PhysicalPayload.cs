@@ -120,7 +120,7 @@ namespace LoRaTools
 
         public byte[] GetMessage()
         {
-            List<byte> returnList = new List<byte>
+            var returnList = new List<byte>
             {
                 this.protocolVersion
             };
@@ -138,7 +138,7 @@ namespace LoRaTools
         // Method used by Simulator
         public byte[] GetSyncHeader(byte[] mac)
         {
-            byte[] buff = new byte[12];
+            var buff = new byte[12];
             // first is the protocole version
             buff[0] = 2;
             // Random token
@@ -147,7 +147,7 @@ namespace LoRaTools
             // the identifier
             buff[3] = (byte)this.Identifier;
             // Then the MAC address specific to the server
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
                 buff[4 + i] = mac[i];
             return buff;
         }
