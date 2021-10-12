@@ -7,7 +7,7 @@ namespace LoRaWan.IntegrationTest
     using System.Threading.Tasks;
     using LoRaWan.Tests.Shared;
 
-    public class IntegrationTestFixtureCi : IntegrationTestFixtureBase, IDisposable
+    public class IntegrationTestFixtureCi : IntegrationTestFixtureBase
     {
         // Device1_OTAA: used for join test only
         public TestDeviceInfo Device1_OTAA { get; private set; }
