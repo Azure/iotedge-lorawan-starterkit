@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// LoRa device registry.
     /// </summary>
-    public sealed class LoRaDeviceRegistry : ILoRaDeviceRegistry, IDisposable
+    public sealed class LoRaDeviceRegistry : ILoRaDeviceRegistry
     {
         // Caches a device making join for 30 minutes
         const int INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES = 30;
@@ -179,7 +179,7 @@ namespace LoRaWan.NetworkServer
             if (!string.IsNullOrEmpty(oldDevAddr))
             {
                 var oldDevAddrDictionary = this.InternalGetCachedDevicesForDevAddr(oldDevAddr, createIfNotExists: false);
-                if (oldDevAddrDictionary != null && oldDevAddrDictionary.TryRemove(loRaDevice.DevEUI, out var existingDevice))
+                if (oldDevAddrDictionary != null && oldDevAddrDictionary.TryRemove(loRaDevice.DevEUI, out var _))
                 {
                     Logger.Log(loRaDevice.DevEUI, $"previous device devAddr ({oldDevAddr}) removed from cache.", LogLevel.Debug);
                 }

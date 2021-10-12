@@ -93,15 +93,17 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
             loRaDevice.Deduplication = mode;
 
-            var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
-            var loRaDeviceRegistry2 = new LoRaDeviceRegistry(this.SecondServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache1 = this.NewNonEmptyCache(loRaDevice);
+            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, cache1, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache2 = this.NewNonEmptyCache(loRaDevice);
+            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(this.SecondServerConfiguration, cache2, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var messageProcessor1 = new MessageDispatcher(
+            using var messageProcessor1 = new MessageDispatcher(
                 this.ServerConfiguration,
                 loRaDeviceRegistry1,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var messageProcessor2 = new MessageDispatcher(
+            using var messageProcessor2 = new MessageDispatcher(
                 this.SecondServerConfiguration,
                 loRaDeviceRegistry2,
                 this.SecondFrameCounterUpdateStrategyProvider);
@@ -111,8 +113,8 @@ namespace LoRaWan.NetworkServer.Test
             // Create Rxpk
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
 
-            var request1 = this.CreateWaitableRequest(rxpk);
-            var request2 = this.CreateWaitableRequest(rxpk);
+            using var request1 = this.CreateWaitableRequest(rxpk);
+            using var request2 = this.CreateWaitableRequest(rxpk);
 
             messageProcessor1.DispatchRequest(request1);
 

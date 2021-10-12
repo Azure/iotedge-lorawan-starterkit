@@ -93,7 +93,8 @@ namespace LoRaWan
 
                 if (configuration.LogToHub && configuration.ModuleClient != null)
                 {
-                    configuration.ModuleClient.SendEventAsync(new Message(UTF8Encoding.ASCII.GetBytes(msg)));
+                    using var m = new Message(UTF8Encoding.ASCII.GetBytes(msg));
+                    configuration.ModuleClient.SendEventAsync(m);
                 }
 
                 if (configuration.LogToConsole)

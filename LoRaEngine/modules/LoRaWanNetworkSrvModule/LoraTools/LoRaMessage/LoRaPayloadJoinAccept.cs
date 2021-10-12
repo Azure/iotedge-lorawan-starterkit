@@ -111,7 +111,7 @@ namespace LoRaTools.LoRaMessage
             var aesEngine = new AesEngine();
             var key = ConversionHelper.StringToByteArray(appKey);
             aesEngine.Init(true, new KeyParameter(key));
-            Aes aes = new AesManaged
+            using Aes aes = new AesManaged
             {
                 Key = key,
                 IV = new byte[16],
@@ -171,7 +171,7 @@ namespace LoRaTools.LoRaMessage
                 pt = this.AppNonce.ToArray().Concat(this.NetID.ToArray()).Concat(this.DevAddr.ToArray()).Concat(this.DlSettings.ToArray()).Concat(this.RxDelay.ToArray()).Concat(this.Mic.ToArray()).ToArray();
             }
 
-            Aes aes = new AesManaged
+            using Aes aes = new AesManaged
             {
                 Key = ConversionHelper.StringToByteArray(appSkey),
                 IV = new byte[16],

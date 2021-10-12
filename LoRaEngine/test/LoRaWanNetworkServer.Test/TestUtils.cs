@@ -18,11 +18,10 @@ namespace LoRaWan.NetworkServer.Test
     {
         internal static LoRaDevice CreateFromSimulatedDevice(
             SimulatedDevice simulatedDevice,
-            ILoRaDeviceClient loRaDeviceClient,
-            DefaultLoRaDataRequestHandler requestHandler = null,
-            ILoRaDeviceClientConnectionManager connectionManager = null)
+            ILoRaDeviceClientConnectionManager connectionManager,
+            DefaultLoRaDataRequestHandler requestHandler = null)
         {
-            var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, connectionManager ?? new SingleDeviceConnectionManager(loRaDeviceClient))
+            var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, connectionManager)
             {
                 AppEUI = simulatedDevice.LoRaDevice.AppEUI,
                 AppKey = simulatedDevice.LoRaDevice.AppKey,
@@ -189,6 +188,26 @@ namespace LoRaWan.NetworkServer.Test
         /// <summary>
         /// Helper method for testing.
         /// </summary>
-        public static LoRaDeviceClientConnectionManager CreateConnectionManager() => new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions()));
+        public static LoraDeviceClientConnectionManagerWrapper CreateConnectionManager() =>
+            new LoraDeviceClientConnectionManagerWrapper();
+
+        public sealed class LoraDeviceClientConnectionManagerWrapper : IDisposable
+        {
+            private readonly IMemoryCache memoryCache;
+
+            public LoraDeviceClientConnectionManagerWrapper()
+            {
+                this.memoryCache = new MemoryCache(new MemoryCacheOptions());
+                this.Value = new LoRaDeviceClientConnectionManager(this.memoryCache);
+            }
+
+            public LoRaDeviceClientConnectionManager Value { get; }
+
+            public void Dispose()
+            {
+                memoryCache.Dispose();
+                this.Value.Dispose();
+            }
+        }
     }
 }
