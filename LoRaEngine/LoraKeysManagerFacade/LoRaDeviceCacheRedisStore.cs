@@ -59,10 +59,10 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        public bool StringSet(string key, string value, TimeSpan? expiry, bool onlyIfNotExists = false)
+        public bool StringSet(string key, string value, TimeSpan? expiration, bool onlyIfNotExists = false)
         {
             var when = onlyIfNotExists ? When.NotExists : When.Always;
-            return this.redisCache.StringSet(key, value, expiry, when, CommandFlags.DemandMaster);
+            return this.redisCache.StringSet(key, value, expiration, when, CommandFlags.DemandMaster);
         }
 
         public async Task<TimeSpan?> GetObjectTTL(string key) => await this.redisCache.KeyTimeToLiveAsync(key);
