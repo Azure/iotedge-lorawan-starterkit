@@ -8,11 +8,11 @@ namespace LoRaWanTest
 
     public class HertzTest
     {
-        private const ulong EuropeanFrequencyInHertz = 863_000_000;
-        private const ulong USFrequencyInHertz = 902_000_000;
+        const ulong EuropeanFrequencyInHertz = 863_000_000;
+        const ulong USFrequencyInHertz = 902_000_000;
 
-        private readonly Hertz MHz863 = new Hertz(EuropeanFrequencyInHertz);
-        private readonly Hertz MHz902 = new Hertz(USFrequencyInHertz);
+        readonly Hertz MHz863 = new Hertz(EuropeanFrequencyInHertz);
+        readonly Hertz MHz902 = new Hertz(USFrequencyInHertz);
 
         [Fact]
         public void HertzConversions_Behave_Properly()
