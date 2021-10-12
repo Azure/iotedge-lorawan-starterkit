@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoraKeysManagerFacade.Test
+namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Collections.Generic;
@@ -10,6 +10,7 @@ namespace LoraKeysManagerFacade.Test
     using System.Threading.Tasks;
     using Docker.DotNet;
     using Docker.DotNet.Models;
+    using LoraKeysManagerFacade;
     using StackExchange.Redis;
     using Xunit;
 

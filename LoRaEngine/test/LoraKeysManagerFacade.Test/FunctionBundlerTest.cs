@@ -10,6 +10,7 @@ namespace LoraKeysManagerFacade.Test
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;

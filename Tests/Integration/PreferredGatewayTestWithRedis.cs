@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-// #define IS_REDIS_RUNNING
-namespace LoraKeysManagerFacade.Test
+namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Threading.Tasks;
+    using LoraKeysManagerFacade;
     using LoraKeysManagerFacade.FunctionBundler;
     using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;
@@ -13,7 +13,6 @@ namespace LoraKeysManagerFacade.Test
     /// <summary>
     /// Tests to run against a real redis instance.
     /// </summary>
-    [Trait("RequiresDocker", "true")]
     public class PreferredGatewayTestWithRedis : IClassFixture<RedisFixture>
     {
         private readonly ILoRaDeviceCacheStore cache;

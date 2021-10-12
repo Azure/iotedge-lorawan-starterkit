@@ -7,6 +7,7 @@ namespace LoraKeysManagerFacade.Test
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
+    using LoRaWan.Tests.Shared;
     using Moq;
     using Xunit;
 
