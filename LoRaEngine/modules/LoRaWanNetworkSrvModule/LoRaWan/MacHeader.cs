@@ -19,7 +19,14 @@ namespace LoRaWan
 
         public MacHeader(byte value) => this.value = value;
 
+        /// <summary>
+        /// Gets the message type (MType).
+        /// </summary>
         public MacMessageType MessageType => (MacMessageType)(this.value >> 5);
+
+        /// <summary>
+        /// Gets the major version (Major) of the frame format of the LoRaWAN layer specification.
+        /// </summary>
         public int Major => this.value & 0b11;
 
         public bool Equals(MacHeader other) => this.value == other.value;
