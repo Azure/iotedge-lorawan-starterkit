@@ -30,10 +30,10 @@ namespace LoraKeysManagerFacade.Test
             loRaDeviceCache.KeyDelete(DeltaUpdateKey);
         }
 
-        public static async Task PrepareLocksForTests(ILoRaDeviceCacheStore loRaDeviceCache, string[] neededLocksForTestToRun, string[] locksGuideTest)
+        public static async Task PrepareLocksForTests(ILoRaDeviceCacheStore loRaDeviceCache, string[] locksToTake = null)
         {
             LockDevAddrHelper.ReleaseAllLocks(loRaDeviceCache);
-            await LockDevAddrHelper.TakeLocksAsync(loRaDeviceCache, locksGuideTest);
+            await LockDevAddrHelper.TakeLocksAsync(loRaDeviceCache, locksToTake);
         }
 
         public static DevAddrCacheInfo GetCachedDevAddr(ILoRaDeviceCacheStore loRaDeviceCache, string key) => loRaDeviceCache.GetObject<DevAddrCacheInfo>(key);
