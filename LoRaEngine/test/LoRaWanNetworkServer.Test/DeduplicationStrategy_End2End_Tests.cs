@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.Test
         public async Task Validate_Dup_Message_Processing(DeduplicationMode mode)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
-            bool messageProcessed = mode == DeduplicationMode.Drop;
+            var messageProcessed = mode == DeduplicationMode.Drop;
             messageProcessed = false;
 
             this.LoRaDeviceApi.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))

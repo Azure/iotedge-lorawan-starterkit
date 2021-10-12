@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools
@@ -15,8 +15,8 @@ namespace LoRaTools
 
         public static string GetNwkId(byte[] netId)
         {
-            int nwkPart = netId[0] << 1;
-            byte[] devAddr = new byte[4];
+            var nwkPart = netId[0] << 1;
+            var devAddr = new byte[4];
 
             lock (RndLock)
             {
@@ -38,7 +38,7 @@ namespace LoRaTools
                 Padding = PaddingMode.None
             };
 
-            byte[] pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
+            var pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
@@ -80,7 +80,7 @@ namespace LoRaTools
 
         public static string GetAppNonce()
         {
-            byte[] appNonce = new byte[3];
+            var appNonce = new byte[3];
             lock (RndLock)
             {
                 RndKeysGenerator.NextBytes(appNonce);

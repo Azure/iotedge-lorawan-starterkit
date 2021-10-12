@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Defines udp Server communicating with packet forwarder.
     /// </summary>
-    public class UdpServer : IDisposable, IPacketForwarder
+    public class UdpServer : IPacketForwarder
     {
         const int PORT = 1680;
         private readonly NetworkServerConfiguration configuration;
@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
             try
             {
                 await this.randomLock.WaitAsync();
-                byte[] token = new byte[2];
+                var token = new byte[2];
                 this.random.NextBytes(token);
                 return token;
             }
@@ -96,13 +96,14 @@ namespace LoRaWan.NetworkServer
             this.loRaDeviceRegistry = loRaDeviceRegistry;
         }
 
-        public async Task RunServer()
+        public static async Task RunServerAsync()
         {
             Logger.LogAlways("Starting LoRaWAN Server...");
+            var udpServer = UdpServer.Create();
 
-            await this.InitCallBack();
+            await udpServer.InitCallBack();
 
-            await this.RunUdpListener();
+            await udpServer.RunUdpListener();
         }
 
         async Task UdpSendMessageAsync(byte[] messageToSend, string remoteLoRaAggregatorIp, int remoteLoRaAggregatorPort)
@@ -115,14 +116,14 @@ namespace LoRaWan.NetworkServer
 
         async Task RunUdpListener()
         {
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, PORT);
+            var endPoint = new IPEndPoint(IPAddress.Any, PORT);
             this.udpClient = new UdpClient(endPoint);
 
             Logger.LogAlways($"LoRaWAN server started on port {PORT}");
 
             while (true)
             {
-                UdpReceiveResult receivedResults = await this.udpClient.ReceiveAsync();
+                var receivedResults = await this.udpClient.ReceiveAsync();
                 var startTimeProcessing = DateTime.UtcNow;
 
                 switch (PhysicalPayload.GetIdentifierFromPayload(receivedResults.Buffer))
@@ -177,7 +178,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                List<Rxpk> messageRxpks = Rxpk.CreateRxpk(buffer);
+                var messageRxpks = Rxpk.CreateRxpk(buffer);
                 if (messageRxpks != null)
                 {
                     foreach (var rxpk in messageRxpks)
@@ -194,7 +195,7 @@ namespace LoRaWan.NetworkServer
 
         private void SendAcknowledgementMessage(UdpReceiveResult receivedResults, byte messageType, IPEndPoint remoteEndpoint)
         {
-            byte[] response = new byte[4]
+            var response = new byte[4]
             {
                 receivedResults.Buffer[0],
                 receivedResults.Buffer[1],
@@ -208,7 +209,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                ITransportSettings transportSettings = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+                ITransportSettings transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_Tcp_Only);
 
                 ITransportSettings[] settings = { transportSettings };
 
@@ -317,7 +318,7 @@ namespace LoRaWan.NetworkServer
             var c2d = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
             Logger.Log(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
 
-            CancellationToken cts = CancellationToken.None;
+            var cts = CancellationToken.None;
             if (methodRequest.ResponseTimeout.HasValue)
                 cts = new CancellationTokenSource(methodRequest.ResponseTimeout.Value).Token;
 
@@ -356,7 +357,7 @@ namespace LoRaWan.NetworkServer
             }
             catch (AggregateException ex)
             {
-                foreach (Exception exception in ex.InnerExceptions)
+                foreach (var exception in ex.InnerExceptions)
                 {
                     Logger.Log($"Error when receiving desired property: {exception}", LogLevel.Error);
                 }
@@ -378,7 +379,7 @@ namespace LoRaWan.NetworkServer
                     var jsonMsg = JsonConvert.SerializeObject(downstreamMessage);
                     var messageByte = Encoding.UTF8.GetBytes(jsonMsg);
                     var token = await this.GetTokenAsync();
-                    PhysicalPayload pyld = new PhysicalPayload(token, PhysicalIdentifier.PULL_RESP, messageByte);
+                    var pyld = new PhysicalPayload(token, PhysicalIdentifier.PULL_RESP, messageByte);
                     if (this.pullAckRemoteLoRaAggregatorPort != 0 && !string.IsNullOrEmpty(this.pullAckRemoteLoRaAddress))
                     {
                         Logger.Log("UDP", $"sending message with ID {ConversionHelper.ByteArrayToString(token)}, to {this.pullAckRemoteLoRaAddress}:{this.pullAckRemoteLoRaAggregatorPort}", LogLevel.Debug);

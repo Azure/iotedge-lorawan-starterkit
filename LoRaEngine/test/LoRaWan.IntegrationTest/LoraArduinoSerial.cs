@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 /*
@@ -147,7 +147,7 @@ namespace LoRaWan.IntegrationTest
             try
             {
                 var myserialPort = (SerialPort)sender;
-                string input = myserialPort.ReadLine();
+                var input = myserialPort.ReadLine();
                 // var readCount = myserialPort.Read(this.serialPortBuffer, 0, this.serialPortBuffer.Length);
                 // var dataread = System.Text.Encoding.UTF8.GetString(this.serialPortBuffer, 0, readCount);
                 this.OnSerialDataReceived(input);
@@ -220,7 +220,7 @@ namespace LoRaWan.IntegrationTest
         {
             if (!string.IsNullOrEmpty(DevAddr))
             {
-                string cmd = $"AT+ID=DevAddr,{DevAddr}\r\n";
+                var cmd = $"AT+ID=DevAddr,{DevAddr}\r\n";
                 this.sendCommand(cmd);
 
                 Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -228,14 +228,14 @@ namespace LoRaWan.IntegrationTest
 
             if (!string.IsNullOrEmpty(DevEUI))
             {
-                string cmd = $"AT+ID=DevEui,{DevEUI}\r\n";
+                var cmd = $"AT+ID=DevEui,{DevEUI}\r\n";
                 this.sendCommand(cmd);
                 Thread.Sleep(DEFAULT_TIMEWAIT);
             }
 
             if (!string.IsNullOrEmpty(AppEUI))
             {
-                string cmd = $"AT+ID=AppEui,{AppEUI}\r\n";
+                var cmd = $"AT+ID=AppEui,{AppEUI}\r\n";
                 this.sendCommand(cmd);
                 Thread.Sleep(DEFAULT_TIMEWAIT);
             }
@@ -249,7 +249,7 @@ namespace LoRaWan.IntegrationTest
             {
                 if (!string.IsNullOrEmpty(DevAddr))
                 {
-                    string cmd = $"AT+ID=DevAddr,{DevAddr}\r\n";
+                    var cmd = $"AT+ID=DevAddr,{DevAddr}\r\n";
                     this.sendCommand(cmd);
 
                     await this.EnsureSerialAnswerAsync("+ID: DevAddr", 30);
@@ -257,7 +257,7 @@ namespace LoRaWan.IntegrationTest
 
                 if (!string.IsNullOrEmpty(DevEUI))
                 {
-                    string cmd = $"AT+ID=DevEui,{DevEUI}\r\n";
+                    var cmd = $"AT+ID=DevEui,{DevEUI}\r\n";
                     this.sendCommand(cmd);
 
                     await this.EnsureSerialAnswerAsync("+ID: DevEui", 30);
@@ -265,7 +265,7 @@ namespace LoRaWan.IntegrationTest
 
                 if (!string.IsNullOrEmpty(AppEUI))
                 {
-                    string cmd = $"AT+ID=AppEui,{AppEUI}\r\n";
+                    var cmd = $"AT+ID=AppEui,{AppEUI}\r\n";
                     this.sendCommand(cmd);
 
                     await this.EnsureSerialAnswerAsync("+ID: AppEui", 30);
@@ -285,14 +285,14 @@ namespace LoRaWan.IntegrationTest
         {
             if (!string.IsNullOrEmpty(NwkSKey))
             {
-                string cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
+                var cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
                 this.sendCommand(cmd);
                 Thread.Sleep(DEFAULT_TIMEWAIT);
             }
 
             if (!string.IsNullOrEmpty(AppSKey))
             {
-                string cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
+                var cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
                 this.sendCommand(cmd);
 
                 Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -300,7 +300,7 @@ namespace LoRaWan.IntegrationTest
 
             if (!string.IsNullOrEmpty(AppKey))
             {
-                string cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
+                var cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
                 this.sendCommand(cmd);
 
                 Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -315,14 +315,14 @@ namespace LoRaWan.IntegrationTest
             {
                 if (!string.IsNullOrEmpty(NwkSKey))
                 {
-                    string cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
+                    var cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
                     this.sendCommand(cmd);
                     await this.EnsureSerialAnswerAsync("+KEY: NWKSKEY", 30);
                 }
 
                 if (!string.IsNullOrEmpty(AppSKey))
                 {
-                    string cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
+                    var cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
                     this.sendCommand(cmd);
 
                     await this.EnsureSerialAnswerAsync("+KEY: APPSKEY", 30);
@@ -330,7 +330,7 @@ namespace LoRaWan.IntegrationTest
 
                 if (!string.IsNullOrEmpty(AppKey))
                 {
-                    string cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
+                    var cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
                     this.sendCommand(cmd);
 
                     await this.EnsureSerialAnswerAsync("+KEY: APPKEY", 30);
@@ -373,7 +373,7 @@ namespace LoRaWan.IntegrationTest
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
-            string cmd = $"AT+DR={dataRate}\r\n";
+            var cmd = $"AT+DR={dataRate}\r\n";
             this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -410,7 +410,7 @@ namespace LoRaWan.IntegrationTest
 
             await Task.Delay(DEFAULT_TIMEWAIT);
 
-            string cmd = $"AT+DR={dataRate}\r\n";
+            var cmd = $"AT+DR={dataRate}\r\n";
             this.sendCommand(cmd);
 
             await this.EnsureSerialAnswerAsync("+DR:", 30);
@@ -418,7 +418,7 @@ namespace LoRaWan.IntegrationTest
 
         public LoRaArduinoSerial setPower(short power)
         {
-            string cmd = $"AT+POWER={power}\r\n";
+            var cmd = $"AT+POWER={power}\r\n";
             this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -428,7 +428,7 @@ namespace LoRaWan.IntegrationTest
 
         public async Task setPowerAsync(short power)
         {
-            string cmd = $"AT+POWER={power}\r\n";
+            var cmd = $"AT+POWER={power}\r\n";
             this.sendCommand(cmd);
 
             await this.EnsureSerialAnswerAsync("+POWER:", 30);
@@ -436,7 +436,7 @@ namespace LoRaWan.IntegrationTest
 
         public async Task setPortAsync(int port)
         {
-            string cmd = $"AT+PORT={port}\r\n";
+            var cmd = $"AT+PORT={port}\r\n";
             this.sendCommand(cmd);
 
             await this.EnsureSerialAnswerAsync("+PORT:", 30);
@@ -486,7 +486,7 @@ namespace LoRaWan.IntegrationTest
 
         public LoRaArduinoSerial setChannel(int channel, float frequency)
         {
-            string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
+            var cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
             this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -496,7 +496,7 @@ namespace LoRaWan.IntegrationTest
 
         public async Task setChannelAsync(int channel, float frequency)
         {
-            string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
+            var cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
             this.sendCommand(cmd);
 
             await this.EnsureSerialAnswerAsync("+CH:", 30);
@@ -504,7 +504,7 @@ namespace LoRaWan.IntegrationTest
 
         public LoRaArduinoSerial setChannel(char channel, float frequency, _data_rate_t dataRata)
         {
-            string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10},{dataRata}\r\n";
+            var cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10},{dataRata}\r\n";
             this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -514,7 +514,7 @@ namespace LoRaWan.IntegrationTest
 
         public LoRaArduinoSerial setChannel(char channel, float frequency, _data_rate_t dataRataMin, _data_rate_t dataRataMax)
         {
-            string cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10},{dataRataMin},{dataRataMax}\r\n";
+            var cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10},{dataRataMin},{dataRataMax}\r\n";
 
             this.sendCommand(cmd);
 
@@ -533,7 +533,7 @@ namespace LoRaWan.IntegrationTest
 
                 this.sendCommand("\"\r\n");
 
-                DateTime start = DateTime.UtcNow;
+                var start = DateTime.UtcNow;
 
                 while (true)
                 {
@@ -562,7 +562,7 @@ namespace LoRaWan.IntegrationTest
 
                 this.sendCommand("\"\r\n");
 
-                DateTime start = DateTime.UtcNow;
+                var start = DateTime.UtcNow;
 
                 while (true)
                 {
@@ -589,7 +589,7 @@ namespace LoRaWan.IntegrationTest
 
             this.sendCommand("\"\r\n");
 
-            DateTime start = DateTime.UtcNow;
+            var start = DateTime.UtcNow;
 
             while (true)
             {
@@ -617,7 +617,7 @@ namespace LoRaWan.IntegrationTest
             this.sendCommand(buffer);
             this.sendCommand("\"\r\n");
 
-            DateTime start = DateTime.UtcNow;
+            var start = DateTime.UtcNow;
 
             while (true)
             {
@@ -638,7 +638,7 @@ namespace LoRaWan.IntegrationTest
                 this.sendCommand(buffer);
                 this.sendCommand("\"\r\n");
 
-                DateTime start = DateTime.UtcNow;
+                var start = DateTime.UtcNow;
 
                 while (true)
                 {
@@ -666,7 +666,7 @@ namespace LoRaWan.IntegrationTest
             else if (time == 0)
                 time = 1;
 
-            string cmd = $"AT+REPT={time}\r\n";
+            var cmd = $"AT+REPT={time}\r\n";
             this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -681,7 +681,7 @@ namespace LoRaWan.IntegrationTest
             else if (time == 0)
                 time = 1;
 
-            string cmd = $"AT+RETRY={time}\r\n";
+            var cmd = $"AT+RETRY={time}\r\n";
             this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -696,7 +696,7 @@ namespace LoRaWan.IntegrationTest
             else if (time == 0)
                 time = 1;
 
-            string cmd = $"AT+RETRY={time}\r\n";
+            var cmd = $"AT+RETRY={time}\r\n";
             this.sendCommand(cmd);
 
             await Task.Delay(DEFAULT_TIMEWAIT);
@@ -716,7 +716,7 @@ namespace LoRaWan.IntegrationTest
 
         public LoRaArduinoSerial setReceiceWindowFirst(int channel, float frequency)
         {
-            string cmd = $"AT+RXWIN1={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
+            var cmd = $"AT+RXWIN1={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
             this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -726,7 +726,7 @@ namespace LoRaWan.IntegrationTest
 
         public async Task setReceiceWindowFirstAsync(int channel, float frequency)
         {
-            string cmd = $"AT+RXWIN1={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
+            var cmd = $"AT+RXWIN1={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
             this.sendCommand(cmd);
 
             await Task.Delay(DEFAULT_TIMEWAIT);
@@ -734,7 +734,7 @@ namespace LoRaWan.IntegrationTest
 
         public LoRaArduinoSerial setReceiceWindowSecond(float frequency, _data_rate_t dataRate)
         {
-            string cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{dataRate}\r\n";
+            var cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{dataRate}\r\n";
             this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -744,7 +744,7 @@ namespace LoRaWan.IntegrationTest
 
         public async Task setReceiceWindowSecondAsync(float frequency, _data_rate_t dataRate)
         {
-            string cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{dataRate}\r\n";
+            var cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{dataRate}\r\n";
             this.sendCommand(cmd);
 
             await this.EnsureSerialAnswerAsync("+RXWIN2:", 10);
@@ -752,7 +752,7 @@ namespace LoRaWan.IntegrationTest
 
         public LoRaArduinoSerial setReceiceWindowSecond(float frequency, _spreading_factor_t spreadingFactor, _band_width_t bandwidth)
         {
-            string cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{spreadingFactor},{bandwidth}\r\n";
+            var cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{spreadingFactor},{bandwidth}\r\n";
             this.sendCommand(cmd);
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
@@ -805,7 +805,7 @@ namespace LoRaWan.IntegrationTest
 
         public LoRaArduinoSerial setReceiceWindowDelay(_window_delay_t command, short _delay)
         {
-            string cmd = string.Empty;
+            var cmd = string.Empty;
 
             if (command == _window_delay_t.RECEIVE_DELAY1)
                 cmd = $"AT+DELAY=RX1,{_delay}\r\n";
@@ -881,7 +881,7 @@ namespace LoRaWan.IntegrationTest
 
             Thread.Sleep(DEFAULT_TIMEWAIT);
 
-            DateTime start = DateTime.UtcNow;
+            var start = DateTime.UtcNow;
             while (true)
             {
                 if (this.ReceivedSerial(x => x.StartsWith("+JOIN: Done")))
@@ -912,7 +912,7 @@ namespace LoRaWan.IntegrationTest
 
                 await Task.Delay(DEFAULT_TIMEWAIT);
 
-                DateTime start = DateTime.UtcNow;
+                var start = DateTime.UtcNow;
 
                 while (DateTime.UtcNow.Subtract(start).TotalMilliseconds < timeoutPerTry)
                 {
@@ -1019,7 +1019,7 @@ namespace LoRaWan.IntegrationTest
 
         async Task EnsureSerialAnswerAsync(string expectedSerialStartText, int retries = 10, [CallerMemberName] string memberName = "")
         {
-            for (int i = 0; i < retries; i++)
+            for (var i = 0; i < retries; i++)
             {
                 if (this.ReceivedSerial(x => x.StartsWith(expectedSerialStartText, StringComparison.InvariantCultureIgnoreCase)))
                 {

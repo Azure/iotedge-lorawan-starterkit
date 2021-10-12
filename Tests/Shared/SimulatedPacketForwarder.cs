@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.Tests.Shared
@@ -25,9 +25,9 @@ namespace LoRaWan.Tests.Shared
 
         public SimulatedPacketForwarder(IPEndPoint networkServerIPEndpoint, Rxpk rxpk = null)
         {
-            IPAddress ip = IPAddress.Any;
-            int port = 1681;
-            IPEndPoint endPoint = new IPEndPoint(ip, port);
+            var ip = IPAddress.Any;
+            var port = 1681;
+            var endPoint = new IPEndPoint(ip, port);
 
             this.udpClient = new UdpClient(endPoint);
             this.networkServerIPEndpoint = networkServerIPEndpoint;
@@ -79,7 +79,7 @@ namespace LoRaWan.Tests.Shared
         byte[] GetRandomToken()
         {
             // random is not thread safe
-            byte[] token = new byte[2];
+            var token = new byte[2];
             lock (this.random)
             {
                 this.random.NextBytes(token);
@@ -197,7 +197,7 @@ namespace LoRaWan.Tests.Shared
             var msg = "{\"rxpk\":[" + rxpkgateway + "]}";
 
             var gatewayInfo = Encoding.UTF8.GetBytes(msg);
-            byte[] packetData = new byte[syncHeader.Length + gatewayInfo.Length];
+            var packetData = new byte[syncHeader.Length + gatewayInfo.Length];
             Array.Copy(syncHeader, packetData, syncHeader.Length);
             Array.Copy(gatewayInfo, 0, packetData, syncHeader.Length, gatewayInfo.Length);
 

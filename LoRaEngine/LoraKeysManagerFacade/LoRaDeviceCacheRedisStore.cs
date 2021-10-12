@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade
@@ -127,8 +127,8 @@ namespace LoraKeysManagerFacade
                 this.redisCache.KeyDelete(cacheKey);
             }
 
-            HashEntry[] hashEntries = new HashEntry[input.Count];
-            int i = 0;
+            var hashEntries = new HashEntry[input.Count];
+            var i = 0;
             foreach (var element in input)
             {
                 hashEntries[i] = new HashEntry(element.Key, JsonConvert.SerializeObject(element.Value));

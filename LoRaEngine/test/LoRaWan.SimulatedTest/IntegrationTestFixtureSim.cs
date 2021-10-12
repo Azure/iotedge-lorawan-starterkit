@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.SimulatedTest
@@ -42,7 +42,7 @@ namespace LoRaWan.SimulatedTest
 
         public override void SetupTestDevices()
         {
-            string gatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID") ?? this.Configuration.LeafDeviceGatewayID;
+            var gatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID") ?? this.Configuration.LeafDeviceGatewayID;
 
             // Simulated devices start at 1000
 
@@ -80,7 +80,7 @@ namespace LoRaWan.SimulatedTest
                 SensorDecoder = "http://localhost:8888/api/DecoderValueSensor",
             };
 
-            for (int deviceID = 1100; deviceID <= 1110; deviceID++)
+            for (var deviceID = 1100; deviceID <= 1110; deviceID++)
             {
                 this.deviceRange1000_ABP.Add(
                     new TestDeviceInfo
@@ -98,7 +98,7 @@ namespace LoRaWan.SimulatedTest
             }
 
             // Range of 1000 ABP devices from 2000 to 2999: Used for load testing
-            for (int deviceID = 2000; deviceID <= 2999; deviceID++)
+            for (var deviceID = 2000; deviceID <= 2999; deviceID++)
             {
                 this.deviceRange2000_1000_ABP.Add(
                     new TestDeviceInfo
@@ -115,7 +115,7 @@ namespace LoRaWan.SimulatedTest
             }
 
             // Range of 10 OTAA devices from 3000 to 3009: Used for load testing
-            for (int deviceID = 3000; deviceID <= 3009; deviceID++)
+            for (var deviceID = 3000; deviceID <= 3009; deviceID++)
             {
                 this.deviceRange3000_10_OTAA.Add(
                     new TestDeviceInfo

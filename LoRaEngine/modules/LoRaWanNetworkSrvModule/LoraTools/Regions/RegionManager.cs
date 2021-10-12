@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.Regions
@@ -114,7 +114,7 @@ namespace LoRaTools.Regions
             { 6, 5, 4, 3, 2, 1 },
             { 7, 6, 5, 4, 3, 2 }
             };
-            HashSet<string> validDataRangeUpAndDownstream = new HashSet<string>()
+            var validDataRangeUpAndDownstream = new HashSet<string>()
             {
                 "SF12BW125", // 0
                 "SF11BW125", // 1
@@ -180,7 +180,7 @@ namespace LoRaTools.Regions
             { 13, 13, 12, 11 },
             };
 
-            HashSet<string> upstreamValidDataranges = new HashSet<string>()
+            var upstreamValidDataranges = new HashSet<string>()
             {
                 "SF10BW125", // 0
                 "SF9BW125", // 1
@@ -189,7 +189,7 @@ namespace LoRaTools.Regions
                 "SF8BW500", // 4
             };
 
-            HashSet<string> downstreamValidDataranges = new HashSet<string>()
+            var downstreamValidDataranges = new HashSet<string>()
             {
                 "SF12BW500", // 8
                 "SF11BW500", // 9

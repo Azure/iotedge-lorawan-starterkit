@@ -125,9 +125,9 @@ namespace LoRaWan.Tests.Shared
         /// <returns>true, if it was found on all configured gateways otherwise false.</returns>
         public async Task<bool> ValidateMultiGatewaySources(Func<string, bool> predicate, int maxAttempts = 5)
         {
-            int numberOfGw = this.Configuration.NumberOfGateways;
+            var numberOfGw = this.Configuration.NumberOfGateways;
             var sourceIds = new HashSet<string>(numberOfGw);
-            for (int i = 0; i < maxAttempts && sourceIds.Count < numberOfGw; i++)
+            for (var i = 0; i < maxAttempts && sourceIds.Count < numberOfGw; i++)
             {
                 if (i > 0)
                 {
@@ -158,9 +158,9 @@ namespace LoRaWan.Tests.Shared
 
         public async Task AssertSingleGatewaySource(Func<string, bool> predicate, int maxAttempts = 5)
         {
-            int numberOfGw = this.Configuration.NumberOfGateways;
+            var numberOfGw = this.Configuration.NumberOfGateways;
             var sourceIds = new HashSet<string>(numberOfGw);
-            for (int i = 0; i < maxAttempts && sourceIds.Count < numberOfGw; i++)
+            for (var i = 0; i < maxAttempts && sourceIds.Count < numberOfGw; i++)
             {
                 if (i > 0)
                 {
@@ -208,7 +208,7 @@ namespace LoRaWan.Tests.Shared
             const int DelayForJoinTwinStore = 20 * 1000;
             const string DevAddrProperty = "DevAddr";
             const int MaxRuns = 10;
-            bool reported = false;
+            var reported = false;
             for (var i = 0; i < MaxRuns && !reported; i++)
             {
                 await Task.Delay(DelayForJoinTwinStore);
@@ -295,10 +295,10 @@ namespace LoRaWan.Tests.Shared
                 log = await this.SearchUdpLogs(x => x.Contains(message), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
             }
 
-            int timeIndexStart = log.FoundLogResult.IndexOf(token) + token.Length;
-            int timeIndexStop = log.FoundLogResult.IndexOf(",", timeIndexStart);
+            var timeIndexStart = log.FoundLogResult.IndexOf(token) + token.Length;
+            var timeIndexStop = log.FoundLogResult.IndexOf(",", timeIndexStart);
             uint parsedValue = 0;
-            bool success = false;
+            var success = false;
             if (timeIndexStart > 0 && timeIndexStop > 0)
             {
                 if (uint.TryParse(log.FoundLogResult.Substring(timeIndexStart, timeIndexStop - timeIndexStart), out parsedValue))
@@ -318,7 +318,7 @@ namespace LoRaWan.Tests.Shared
         {
             var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
-            for (int i = 0; i < maxAttempts; i++)
+            for (var i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
                 {
@@ -368,7 +368,7 @@ namespace LoRaWan.Tests.Shared
         {
             var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
-            for (int i = 0; i < maxAttempts; i++)
+            for (var i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
                 {
@@ -419,7 +419,7 @@ namespace LoRaWan.Tests.Shared
         {
             var maxAttempts = options?.MaxAttempts ?? this.Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
-            for (int i = 0; i < maxAttempts; i++)
+            for (var i = 0; i < maxAttempts; i++)
             {
                 if (i > 0)
                 {

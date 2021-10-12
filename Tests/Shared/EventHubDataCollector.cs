@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Shared
             {
                 if (disposing)
                 {
-                    for (int i = this.receivers.Count - 1; i >= 0; i--)
+                    for (var i = this.receivers.Count - 1; i >= 0; i--)
                     {
                         try
                         {

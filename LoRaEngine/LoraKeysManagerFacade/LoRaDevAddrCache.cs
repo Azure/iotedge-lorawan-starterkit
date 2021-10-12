@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade
@@ -81,10 +81,10 @@ namespace LoraKeysManagerFacade
                 throw new ArgumentNullException("Required DevAddrCacheInfo argument was null");
             }
 
-            bool success = false;
+            var success = false;
             var serializedObjectValue = JsonConvert.SerializeObject(info);
 
-            string cacheKeyToUse = GenerateKey(info.DevAddr);
+            var cacheKeyToUse = GenerateKey(info.DevAddr);
 
             success = this.cacheStore.TrySetHashObject(cacheKeyToUse, info.DevEUI, serializedObjectValue);
 
@@ -290,7 +290,7 @@ namespace LoraKeysManagerFacade
         /// </summary>
         private IDictionary<string, DevAddrCacheInfo> MergeOldAndNewChanges(IDictionary<string, DevAddrCacheInfo> valueArrayBase, IDictionary<string, DevAddrCacheInfo> valueArrayimport, bool shouldImportFromNewValues)
         {
-            bool isSaveRequired = false;
+            var isSaveRequired = false;
             foreach (var baseValue in valueArrayBase)
             {
                 if (valueArrayimport.TryGetValue(baseValue.Key, out var importValue))

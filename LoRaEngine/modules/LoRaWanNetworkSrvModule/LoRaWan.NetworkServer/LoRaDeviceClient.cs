@@ -166,7 +166,7 @@ namespace LoRaWan.NetworkServer
 
                 Logger.Log(this.devEUI, $"checking cloud to device message for {timeout}", LogLevel.Debug);
 
-                Message msg = await this.deviceClient.ReceiveAsync(timeout);
+                var msg = await this.deviceClient.ReceiveAsync(timeout);
 
                 if (Logger.LoggerLevel >= LogLevel.Debug)
                 {

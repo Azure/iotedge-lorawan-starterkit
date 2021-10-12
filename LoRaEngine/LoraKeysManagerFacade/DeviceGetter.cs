@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade
@@ -57,7 +57,7 @@ namespace LoraKeysManagerFacade
             try
             {
                 var results = await this.GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
-                string json = JsonConvert.SerializeObject(results);
+                var json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);
             }
             catch (DeviceNonceUsedException)
@@ -127,9 +127,9 @@ namespace LoraKeysManagerFacade
                 {
                     try
                     {
-                        if (devAddrCache.TryGetInfo(devAddr, out List<DevAddrCacheInfo> devAddressesInfo))
+                        if (devAddrCache.TryGetInfo(devAddr, out var devAddressesInfo))
                         {
-                            for (int i = 0; i < devAddressesInfo.Count; i++)
+                            for (var i = 0; i < devAddressesInfo.Count; i++)
                             {
                                 if (!string.IsNullOrEmpty(devAddressesInfo[i].DevEUI))
                                 {
@@ -161,7 +161,7 @@ namespace LoraKeysManagerFacade
                                 try
                                 {
                                     var query = this.registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{devAddr}' OR properties.reported.DevAddr ='{devAddr}'", 100);
-                                    int resultCount = 0;
+                                    var resultCount = 0;
                                     while (query.HasMoreResults)
                                     {
                                         var page = await query.GetNextAsTwinAsync();

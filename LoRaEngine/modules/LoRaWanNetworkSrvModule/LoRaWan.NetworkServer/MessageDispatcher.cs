@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -42,7 +42,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void DispatchRequest(LoRaRequest request)
         {
-            if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out LoRaPayload loRaPayload))
+            if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out var loRaPayload))
             {
                 Logger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);
                 request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidRxpk);
@@ -99,7 +99,7 @@ namespace LoRaWan.NetworkServer
         bool IsValidNetId(LoRaPayloadData loRaPayload)
         {
             // Check if the current dev addr is in our network id
-            byte devAddrNwkid = loRaPayload.GetDevAddrNetID();
+            var devAddrNwkid = loRaPayload.GetDevAddrNetID();
             var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
             devAddrNwkid = (byte)(devAddrNwkid >> 1);
             if (devAddrNwkid == (netIdBytes[0] & 0b01111111))

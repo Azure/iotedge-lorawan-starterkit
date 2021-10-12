@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -165,12 +165,12 @@ namespace LoRaWan.NetworkServer.Test
 
         public static string GeneratePayload(string allowedChars, int length)
         {
-            Random random = new Random();
+            var random = new Random();
 
-            char[] chars = new char[length];
-            int setLength = allowedChars.Length;
+            var chars = new char[length];
+            var setLength = allowedChars.Length;
 
-            for (int i = 0; i < length; ++i)
+            for (var i = 0; i < length; ++i)
             {
                 chars[i] = allowedChars[random.Next(setLength)];
             }

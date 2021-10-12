@@ -5,7 +5,7 @@ We have developed the LoRaWAN starter kit agnostic of a device manufacturer impl
 - **Gateway Manufacturers**: Allow a gateway to be compatible with our kit. Gateway manufacturers will test / make our Edge Hub modules work on their gateway.
 
 - **LoRA Sensor Manufacturers**: These manufacturers will develop a custom decoder using our decoding framework for their sensors.
-  
+
 Please choose from a section that relates to your requirements.
 
 ## Device Gateway Manufacturer Guidance

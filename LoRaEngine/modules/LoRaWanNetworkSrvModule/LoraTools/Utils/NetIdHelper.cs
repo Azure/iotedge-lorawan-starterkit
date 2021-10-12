@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.Utils
@@ -12,9 +12,9 @@ namespace LoRaTools.Utils
         /// </summary>
         public static string SetNwkIdPart(string currentDevAddr, uint networkId)
         {
-            byte[] netId = BitConverter.GetBytes(networkId);
-            int nwkPart = netId[0] << 1;
-            byte[] deviceIdBytes = ConversionHelper.StringToByteArray(currentDevAddr);
+            var netId = BitConverter.GetBytes(networkId);
+            var nwkPart = netId[0] << 1;
+            var deviceIdBytes = ConversionHelper.StringToByteArray(currentDevAddr);
             deviceIdBytes[0] = (byte)((nwkPart & 0b11111110) | (deviceIdBytes[0] & 0b00000001));
             return ConversionHelper.ByteArrayToString(deviceIdBytes);
         }

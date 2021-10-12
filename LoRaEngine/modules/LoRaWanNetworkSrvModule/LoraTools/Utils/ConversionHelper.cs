@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.Utils
@@ -16,9 +16,9 @@ namespace LoRaTools.Utils
         /// <param name="hex">Input hex string.</param>
         public static byte[] StringToByteArray(string hex)
         {
-            int numberChars = hex.Length;
-            byte[] bytes = new byte[numberChars / 2];
-            for (int i = 0; i < numberChars; i += 2)
+            var numberChars = hex.Length;
+            var bytes = new byte[numberChars / 2];
+            for (var i = 0; i < numberChars; i += 2)
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
             return bytes;
         }
@@ -53,9 +53,9 @@ namespace LoRaTools.Utils
 
         static string ByteArrayToString(byte[] bytes)
         {
-            StringBuilder result = new StringBuilder(bytes.Length * 2);
+            var result = new StringBuilder(bytes.Length * 2);
 
-            foreach (byte b in bytes)
+            foreach (var b in bytes)
             {
                 result.Append(HexAlphabet[b >> 4]);
                 result.Append(HexAlphabet[b & 0xF]);

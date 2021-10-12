@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -59,7 +59,7 @@ namespace LoRaWan.NetworkServer
 
                 var payloadFcnt = loraPayload.GetFcnt();
 
-                uint payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
+                var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
                 Logger.Log(loRaDevice.DevEUI, $"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}", LogLevel.Debug);
 
                 var payloadPort = loraPayload.GetFPort();
@@ -79,12 +79,12 @@ namespace LoRaWan.NetworkServer
 
                 // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
                 // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
-                bool isFrameCounterFromNewlyStartedDevice = await this.DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
+                var isFrameCounterFromNewlyStartedDevice = await this.DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
 
                 // Reply attack or confirmed reply
                 // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
                 // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
-                if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, requiresConfirmation, out bool isConfirmedResubmit, out LoRaDeviceRequestProcessResult result))
+                if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, requiresConfirmation, out var isConfirmedResubmit, out var result))
                 {
                     return result;
                 }
@@ -139,7 +139,7 @@ namespace LoRaWan.NetworkServer
                     }
 
                     // if deduplication already processed the next framecounter down, use that
-                    uint? fcntDown = loRaADRResult?.FCntDown != null ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
+                    var fcntDown = loRaADRResult?.FCntDown != null ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
 
                     if (fcntDown.HasValue)
                     {
@@ -505,7 +505,7 @@ namespace LoRaWan.NetworkServer
 
             if (cloudToDeviceMsg.MacCommands?.Count > 0)
             {
-                foreach (MacCommand macCommand in cloudToDeviceMsg.MacCommands)
+                foreach (var macCommand in cloudToDeviceMsg.MacCommands)
                 {
                     totalPayload += macCommand.Length;
                 }
@@ -572,7 +572,7 @@ namespace LoRaWan.NetworkServer
             {
                 eventProperties = eventProperties ?? new Dictionary<string, string>(payloadData.MacCommands.Count);
 
-                for (int i = 0; i < payloadData.MacCommands.Count; i++)
+                for (var i = 0; i < payloadData.MacCommands.Count; i++)
                 {
                     eventProperties[payloadData.MacCommands[i].Cid.ToString()] = JsonConvert.SerializeObject(payloadData.MacCommands[i].ToString(), Formatting.None);
                 }

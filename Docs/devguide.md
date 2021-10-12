@@ -328,7 +328,7 @@ It is possible to run the LoRaEngine locally from Visual Studio in order to enab
       "values": {
         "AzureWebJobsStorage": "<Connection String of your deployed blob storage>",
         "WEBSITE_CONTENTSHARE": "<Name of your Azure function>"
-    
+
       },
       "ConnectionStrings": {
         "IoTHubConnectionString": "<Connection string of your IoT Hub Owner (go to keys -> IoT Hub owner and select the connection string)>",

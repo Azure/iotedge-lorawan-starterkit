@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -369,7 +369,7 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
             var txpk = downlinkMessage.Txpk;
             var euRegion = RegionManager.EU868;
-            Assert.True(euRegion.TryGetDownstreamChannelFrequency(rxpk, out double frequency));
+            Assert.True(euRegion.TryGetDownstreamChannelFrequency(rxpk, out var frequency));
             // Ensure we are using second window frequency
             Assert.Equal(frequency, txpk.Freq);
 

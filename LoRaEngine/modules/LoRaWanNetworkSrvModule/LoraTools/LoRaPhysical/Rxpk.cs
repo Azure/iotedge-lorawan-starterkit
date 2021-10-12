@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.LoRaPhysical
@@ -85,7 +85,7 @@ namespace LoRaTools.LoRaPhysical
         /// <returns>List of rxpk or null if no Rxpk was found.</returns>
         public static List<Rxpk> CreateRxpk(byte[] inputMessage)
         {
-            PhysicalPayload physicalPayload = new PhysicalPayload(inputMessage);
+            var physicalPayload = new PhysicalPayload(inputMessage);
             if (physicalPayload.Message != null)
             {
                 var payload = Encoding.UTF8.GetString(physicalPayload.Message);
@@ -116,7 +116,7 @@ namespace LoRaTools.LoRaPhysical
             var requiredSNR = this.SpreadFactorToSNR[this.SpreadingFactor];
 
             // get the link budget
-            int signedMargin = Math.Max(0, (int)(this.Lsnr - requiredSNR));
+            var signedMargin = Math.Max(0, (int)(this.Lsnr - requiredSNR));
 
             return (uint)signedMargin;
         }

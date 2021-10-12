@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -36,7 +36,7 @@ namespace LoRaWan.NetworkServer
                 return 0;
             }
 
-            string fcntDownString = await response.Content.ReadAsStringAsync();
+            var fcntDownString = await response.Content.ReadAsStringAsync();
 
             if (ushort.TryParse(fcntDownString, out var newFCntDown))
                 return newFCntDown;
