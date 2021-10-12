@@ -19,7 +19,7 @@ namespace LoRaWan.NetworkServer.Test
     /// <summary>
     /// Multiple gateway message processor tests.
     /// </summary>
-    public class MessageProcessorMultipleGatewayTest : MessageProcessorTestBase, IDisposable
+    public class MessageProcessorMultipleGatewayTest : MessageProcessorTestBase
     {
         const string SecondServerGatewayID = "second-gateway";
 
