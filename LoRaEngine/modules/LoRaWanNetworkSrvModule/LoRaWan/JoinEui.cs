@@ -38,5 +38,22 @@ namespace LoRaWan
             BinaryPrimitives.WriteUInt64LittleEndian(buffer, this.value);
             return buffer[Size..];
         }
+
+        public static JoinEui Parse(ReadOnlySpan<char> input) =>
+            TryParse(input, out var result) ? result : throw new FormatException();
+
+        public static bool TryParse(ReadOnlySpan<char> input, out JoinEui result)
+        {
+            if (Hexadecimal.TryParse(input, out var raw, '-'))
+            {
+                result = new JoinEui(raw);
+                return true;
+            }
+            else
+            {
+                result = default;
+                return false;
+            }
+        }
     }
 }
