@@ -101,7 +101,7 @@ namespace LoraKeysManagerFacade
 
                         if (await deviceCache.TryToLockAsync())
                         {
-                            deviceCache.ClearCache();
+                            deviceCache.ClearCache(); // clear the fcnt up/down after the join
                             log?.LogDebug("Removed key '{key}':{gwid}", devEUI, gatewayId);
                         }
                         else
