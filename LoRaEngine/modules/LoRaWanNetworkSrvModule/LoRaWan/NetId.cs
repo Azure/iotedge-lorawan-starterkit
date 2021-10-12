@@ -14,6 +14,8 @@ namespace LoRaWan
     /// </summary>
     public readonly struct NetId : IEquatable<NetId>
     {
+        public const int Size = 3;
+
         readonly int value; // 24-bit
 
         public NetId(int value)
