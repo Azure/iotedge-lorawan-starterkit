@@ -23,7 +23,7 @@ namespace LoRaWan
     /// <summary>
     /// MIC helpers (Message Integrity Code).
     /// </summary>
-    public readonly struct Mic
+    public readonly struct Mic : IEquatable<Mic>
     {
         public const int Size = sizeof(uint);
 
