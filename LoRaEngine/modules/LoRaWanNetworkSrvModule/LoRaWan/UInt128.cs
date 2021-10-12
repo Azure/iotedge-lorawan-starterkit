@@ -31,23 +31,13 @@ namespace LoRaWan
         }
 
         internal static UInt128 Parse(ReadOnlySpan<char> input) =>
-            TryParse(input, out var result) ? result : throw new FormatException();
+            TryParse(input) is (true, var result) ? result : throw new FormatException();
 
-        internal static bool TryParse(ReadOnlySpan<char> input, out UInt128 result)
-        {
-            if (input.Length == Size * 2
-                && Hexadecimal.TryParse(input[..16], out var hi)
-                && Hexadecimal.TryParse(input[16..], out var lo))
-            {
-                result = new UInt128(hi, lo);
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
+        internal static (bool, UInt128) TryParse(ReadOnlySpan<char> input) =>
+            input.Length == Size * 2 && Hexadecimal.TryParse(input[..16], out var hi)
+                                     && Hexadecimal.TryParse(input[16..], out var lo)
+                ? (true, new UInt128(hi, lo))
+                : default;
 
         public Span<byte> WriteLittleEndian(Span<byte> buffer)
         {

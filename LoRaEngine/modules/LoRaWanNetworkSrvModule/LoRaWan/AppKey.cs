@@ -33,7 +33,7 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, out AppKey result)
         {
-            if (UInt128.TryParse(input, out var raw))
+            if (UInt128.TryParse(input) is (true, var raw))
             {
                 result = new AppKey(raw);
                 return true;
