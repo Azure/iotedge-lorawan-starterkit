@@ -25,6 +25,8 @@ namespace LoRaWan
     /// </summary>
     public readonly struct FCtrl : IEquatable<FCtrl>
     {
+        public const int Size = sizeof(byte);
+
         readonly byte value;
 
         public FCtrl(byte value) => this.value = value;
