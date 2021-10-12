@@ -49,7 +49,7 @@ namespace LoRaWan
             var key = new KeyParameter(keyBytes);
             mac.Init(key);
 
-            var input = new byte[AppKey.Size + MacHeader.Size + JoinEui.Size + DevEui.Size + DevNonce.Size];
+            var input = new byte[MacHeader.Size + JoinEui.Size + DevEui.Size + DevNonce.Size];
             var b = input.AsSpan();
             b = mhdr.Write(b);
             b = joinEui.Write(b);
