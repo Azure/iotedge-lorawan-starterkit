@@ -30,7 +30,7 @@ namespace LoRaWan
         public override bool Equals(object obj) => obj is DevNonce other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => value.ToString("X4", CultureInfo.InvariantCulture);
+        public override string ToString() => value.ToString(CultureInfo.InvariantCulture);
 
         public static bool operator ==(DevNonce left, DevNonce right) => left.Equals(right);
         public static bool operator !=(DevNonce left, DevNonce right) => !left.Equals(right);
