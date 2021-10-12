@@ -6,7 +6,7 @@ The function is utilizing a [Redis](https://redis.io/) cache to store device rel
 
 ### LoRaDeviceCache
 
-Stores an instance of type `DeviceCacheInfo` by DevEUI to keep track of FCntUp, FCntDown, GatewayId per LoRaWAN Network Server (LNS). The cache is used to have a distributed lock in a multi gateway scenario. The info per gateway is stored using the DevEUI to determine what GW is allowed to process a particular message and respond to the sending device. 
+Stores an instance of type `DeviceCacheInfo` by DevEUI to keep track of FCntUp, FCntDown, GatewayId per LoRaWAN Network Server (LNS). The cache is used to have a distributed lock in a multi gateway scenario. The info per gateway is stored using the DevEUI to determine what GW is allowed to process a particular message and respond to the sending device.
 
 All the values in this cache are LoRaWAN related and don't require any other information than what we get from the device and the gateway handling a particular message.
 
@@ -53,8 +53,6 @@ The full reload will be performed at most once every 24h (unless the redis cache
 var query = $"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{lastUpdate}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{lastUpdate}'";
 ```
 
-
-
 ### Join related caching
 
 When we receive OTAA requests, we manage the potential of conflicting with multiple gateways as well with the redis cache. We maintain 2 caches:
@@ -75,7 +73,6 @@ When we receive OTAA requests, we manage the potential of conflicting with multi
    }
    ```
 
-   The DesiredGateway is used to determine, if the gateway making the request, is the desired gateway. If the value is not set, the first one to win the race, will handle the join. 
+   The DesiredGateway is used to determine, if the gateway making the request, is the desired gateway. If the value is not set, the first one to win the race, will handle the join.
 
    The PrimaryKey is used to create the device connection from the edge gateway to IoT Hub.
-
