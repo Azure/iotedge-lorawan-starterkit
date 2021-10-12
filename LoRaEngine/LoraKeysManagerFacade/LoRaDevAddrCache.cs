@@ -16,15 +16,23 @@ namespace LoraKeysManagerFacade
 
     public sealed class LoRaDevAddrCache
     {
-        private const string DeltaUpdateKey = "deltaUpdateKey";
         private const string LastDeltaUpdateKeyValue = "lastDeltaUpdateKeyValue";
+
+        /// <summary>
+        /// This is the lock controlling a complete update of the cache.
+        /// Complete updates of the cache are scheduled to happen every <see cref="FullUpdateKeyTimeSpan"/>.
+        /// The lock is used to set the TTL to that value, so it can only be taken once for that time span.
+        /// </summary>
         private const string FullUpdateLockKey = "fullUpdateKey";
+        /// <summary>
+        /// All changes no matter if they are full or incremental, will have to acquire this lock
+        /// </summary>
         private const string UpdatingDevAddrCacheLock = "globalUpdateKey";
+
         private const string CacheKeyPrefix = "devAddrTable:";
         private const string DevAddrLockName = "devAddrLock:";
         public static readonly TimeSpan LockExpiry = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan FullUpdateKeyTimeSpan = TimeSpan.FromHours(24);
-        private static readonly TimeSpan DeltaUpdateKeyTimeSpan = TimeSpan.FromMinutes(5);
         private static readonly TimeSpan UpdatingDevAddrCacheLockTimeSpan = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan DevAddrObjectsTTL = TimeSpan.FromHours(25);
 
@@ -98,25 +106,24 @@ namespace LoraKeysManagerFacade
             // If a full update is expected
             if (await this.cacheStore.LockTakeAsync(FullUpdateLockKey, this.lockOwner, FullUpdateKeyTimeSpan, block: false))
             {
-                var ownGlobalLock = false;
+                var ownsUpdateLock = false;
                 var fullUpdatePerformed = false;
                 try
                 {
-                    // if a full update is needed I take the global lock and perform a full reload
-                    if (!await this.cacheStore.LockTakeAsync(UpdatingDevAddrCacheLock, this.lockOwner, UpdatingDevAddrCacheLockTimeSpan, block: true))
+                    // if a full update is needed we take the global lock and perform a full reload
+                    if (ownsUpdateLock = await this.cacheStore.LockTakeAsync(UpdatingDevAddrCacheLock, this.lockOwner, UpdatingDevAddrCacheLockTimeSpan, block: true))
                     {
-                        this.logger.LogDebug("A full reload was needed but failed to acquire global update lock");
-                    }
-                    else
-                    {
-                        ownGlobalLock = true;
                         this.logger.LogDebug("A full reload was started");
                         await this.PerformFullReload(registryManager);
                         this.logger.LogDebug("A full reload was completed");
-                        // if successfull i set the delta lock to 5 minutes and release the global lock
-                        this.cacheStore.StringSet(FullUpdateLockKey, this.lockOwner, FullUpdateKeyTimeSpan);
-                        this.cacheStore.StringSet(DeltaUpdateKey, this.lockOwner, DeltaUpdateKeyTimeSpan);
+                        // we updated the full cache, we want to delay the next update to the time FullUpdateKeyTimeSpan
+                        // and only process incremental updates for that time.
+                        this.cacheStore.TryChangeLockTTL(FullUpdateLockKey, FullUpdateKeyTimeSpan);
                         fullUpdatePerformed = true;
+                    }
+                    else
+                    {
+                        this.logger.LogDebug("A full reload was needed but failed to acquire global update lock");
                     }
                 }
                 catch (Exception ex)
@@ -125,8 +132,12 @@ namespace LoraKeysManagerFacade
                 }
                 finally
                 {
-                    if (ownGlobalLock)
+                    if (ownsUpdateLock)
                     {
+                        // potentially, if an incremental update comes in right after this,
+                        // we would be doing an incremental update to soon. We could delay that
+                        // for the time we run the incremental updates, but that could delay it
+                        // longer than what we may want.
                         this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
                     }
 
@@ -143,12 +154,9 @@ namespace LoraKeysManagerFacade
             {
                 try
                 {
-                    if (await this.cacheStore.LockTakeAsync(DeltaUpdateKey, this.lockOwner, TimeSpan.FromMinutes(5)))
-                    {
-                        this.logger.LogDebug("A delta reload was started");
-                        await this.PerformDeltaReload(registryManager);
-                        this.logger.LogDebug("A delta reload was completed");
-                    }
+                    this.logger.LogDebug("A delta reload was started");
+                    await this.PerformDeltaReload(registryManager);
+                    this.logger.LogDebug("A delta reload was completed");
                 }
                 catch (Exception ex)
                 {
