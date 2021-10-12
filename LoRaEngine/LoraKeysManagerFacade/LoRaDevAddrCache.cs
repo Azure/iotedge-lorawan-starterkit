@@ -18,7 +18,7 @@ namespace LoraKeysManagerFacade
     {
         private const string DeltaUpdateKey = "deltaUpdateKey";
         private const string LastDeltaUpdateKeyValue = "lastDeltaUpdateKeyValue";
-        private const string FullUpdateKey = "fullUpdateKey";
+        private const string FullUpdateLockKey = "fullUpdateKey";
         private const string UpdatingDevAddrCacheLock = "globalUpdateKey";
         private const string CacheKeyPrefix = "devAddrTable:";
         private const string DevAddrLockName = "devAddrLock:";
@@ -96,7 +96,7 @@ namespace LoraKeysManagerFacade
         internal async Task PerformNeededSyncs(RegistryManager registryManager)
         {
             // If a full update is expected
-            if (await this.cacheStore.LockTakeAsync(FullUpdateKey, this.lockOwner, FullUpdateKeyTimeSpan, block: false))
+            if (await this.cacheStore.LockTakeAsync(FullUpdateLockKey, this.lockOwner, FullUpdateKeyTimeSpan, block: false))
             {
                 var ownGlobalLock = false;
                 var fullUpdatePerformed = false;
@@ -114,7 +114,7 @@ namespace LoraKeysManagerFacade
                         await this.PerformFullReload(registryManager);
                         this.logger.LogDebug("A full reload was completed");
                         // if successfull i set the delta lock to 5 minutes and release the global lock
-                        this.cacheStore.StringSet(FullUpdateKey, this.lockOwner, FullUpdateKeyTimeSpan);
+                        this.cacheStore.StringSet(FullUpdateLockKey, this.lockOwner, FullUpdateKeyTimeSpan);
                         this.cacheStore.StringSet(DeltaUpdateKey, this.lockOwner, DeltaUpdateKeyTimeSpan);
                         fullUpdatePerformed = true;
                     }
@@ -132,7 +132,7 @@ namespace LoraKeysManagerFacade
 
                     if (!fullUpdatePerformed)
                     {
-                        if (!this.cacheStore.TryChangeLockTTL(FullUpdateKey, timeToExpire: TimeSpan.FromMinutes(1)))
+                        if (!this.cacheStore.TryChangeLockTTL(FullUpdateLockKey, timeToExpire: TimeSpan.FromMinutes(1)))
                         {
                             this.logger.LogError("Could not change the TTL of the lock");
                         }
