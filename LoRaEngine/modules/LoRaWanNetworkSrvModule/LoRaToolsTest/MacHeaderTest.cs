@@ -28,14 +28,11 @@ namespace LoRaWanTest
         [InlineData(223, MacMessageType.RejoinRequest      , 3)]
         [InlineData(224, MacMessageType.Proprietary        , 0)]
         [InlineData(255, MacMessageType.Proprietary        , 3)]
-        public void MacHeader_Returns_ProperMessageType_And_Major(byte value, MacMessageType macMessageType, int major)
+        public void Properties_Return_Corresponding_Parts(byte value, MacMessageType macMessageType, int major)
         {
-            // arrange
-            var mhdr = new MacHeader(value);
-
-            // assert
-            Assert.Equal(macMessageType, mhdr.MessageType);
-            Assert.Equal(major, mhdr.Major);
+            var subject = new MacHeader(value);
+            Assert.Equal(macMessageType, subject.MessageType);
+            Assert.Equal(major, subject.Major);
         }
 
         [Fact]
