@@ -89,11 +89,11 @@ namespace LoraKeysManagerFacade
             return this.redisCache.LockRelease(key, value);
         }
 
-        public long ListAdd(string key, string value, TimeSpan? expiry = null)
+        public long ListAdd(string key, string value, TimeSpan? expiration = null)
         {
             var itemCount = this.redisCache.ListRightPush(key, value);
-            if (expiry.HasValue)
-                this.redisCache.KeyExpire(key, expiry);
+            if (expiration.HasValue)
+                this.redisCache.KeyExpire(key, expiration);
 
             return itemCount;
         }
@@ -104,12 +104,12 @@ namespace LoraKeysManagerFacade
             return list.Select(x => (string)x).ToList();
         }
 
-        public bool TrySetHashObject(string cacheKey, string subkey, string value, TimeSpan? timeToExpire = null)
+        public bool TrySetHashObject(string key, string subkey, string value, TimeSpan? timeToExpire = null)
         {
-            var returnValue = this.redisCache.HashSet(cacheKey, subkey, value);
+            var returnValue = this.redisCache.HashSet(key, subkey, value);
             if (timeToExpire.HasValue)
             {
-                this.redisCache.KeyExpire(cacheKey, DateTime.UtcNow.Add(timeToExpire.Value));
+                this.redisCache.KeyExpire(key, DateTime.UtcNow.Add(timeToExpire.Value));
             }
 
             return returnValue;
