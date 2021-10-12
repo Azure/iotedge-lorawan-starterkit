@@ -141,7 +141,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (reportedProperties != null)
             {
-               foreach (var kv in reportedProperties)
+                foreach (var kv in reportedProperties)
                 {
                     finalReportedProperties[kv.Key] = kv.Value;
                 }

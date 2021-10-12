@@ -27,10 +27,10 @@ namespace LoRaWan.NetworkServer
                 case DeduplicationMode.Drop: return new DeduplicationStrategyDrop(this.loRaDeviceAPIService, loRaDevice);
                 case DeduplicationMode.Mark: return new DeduplicationStrategyMark(this.loRaDeviceAPIService, loRaDevice);
                 default:
-                    {
-                        Logger.Log(loRaDevice.DevEUI, "no Deduplication Strategy selected", LogLevel.Debug);
-                        return null;
-                    }
+                {
+                    Logger.Log(loRaDevice.DevEUI, "no Deduplication Strategy selected", LogLevel.Debug);
+                    return null;
+                }
             }
         }
     }

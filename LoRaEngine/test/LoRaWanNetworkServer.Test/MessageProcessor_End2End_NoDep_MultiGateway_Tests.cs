@@ -29,7 +29,10 @@ namespace LoRaWan.NetworkServer.Test
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
             var devAddr = simulatedDevice.LoRaDevice.DevAddr;
 
-            this.LoRaDeviceApi.Setup(x => x.ExecuteFunctionBundlerAsync(devEUI, It.IsAny<FunctionBundlerRequest>())).ReturnsAsync(() => new FunctionBundlerResult
+            this.LoRaDeviceApi
+                .Setup(x => x.ExecuteFunctionBundlerAsync(devEUI, It.IsAny<FunctionBundlerRequest>()))
+                .ReturnsAsync(() =>
+                    new FunctionBundlerResult
                     {
                         AdrResult = new LoRaTools.ADR.LoRaADRResult { CanConfirmToDevice = true, FCntDown = 0 },
                         NextFCntDown = 0

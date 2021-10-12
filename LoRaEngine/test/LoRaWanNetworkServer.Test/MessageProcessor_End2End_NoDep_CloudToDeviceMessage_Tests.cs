@@ -97,7 +97,8 @@ namespace LoRaWan.NetworkServer.Test
                 // if we run with ADR, we will combine the call with the bundler
                 this.LoRaDeviceApi
                     .Setup(x => x.ExecuteFunctionBundlerAsync(devEUI, It.IsAny<FunctionBundlerRequest>()))
-                    .ReturnsAsync(() => new FunctionBundlerResult
+                    .ReturnsAsync(() =>
+                        new FunctionBundlerResult
                         {
                             AdrResult = new LoRaTools.ADR.LoRaADRResult
                             {

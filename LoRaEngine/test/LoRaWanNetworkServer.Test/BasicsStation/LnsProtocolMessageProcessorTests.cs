@@ -103,7 +103,8 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
                          });
             // setting up the mock so that when ReceiveAsync is invoked the "testbytes" are written to the Memory portion
             socketMock.Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                         .Callback<Memory<byte>, CancellationToken>((m, c) => {
+                         .Callback<Memory<byte>, CancellationToken>((m, c) =>
+                         {
                              testbytes.CopyTo(m);
                          })
                          .ReturnsAsync(new ValueWebSocketReceiveResult(testbytes.Length, WebSocketMessageType.Text, true));

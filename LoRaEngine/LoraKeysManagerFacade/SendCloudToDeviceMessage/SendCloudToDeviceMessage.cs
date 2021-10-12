@@ -151,7 +151,7 @@ namespace LoraKeysManagerFacade
                     MessageID = message.MessageId,
                     ClassType = "A",
                 });
-             }
+            }
             catch (Exception ex)
             {
                 this.log.LogError(ex, "Failed to send message to {devEUI}", devEUI);
