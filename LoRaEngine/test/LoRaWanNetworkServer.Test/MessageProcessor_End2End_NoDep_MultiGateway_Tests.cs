@@ -195,7 +195,7 @@ namespace LoRaWan.NetworkServer.Test
         /// If cannot get a fcntdown from api should drop the c2d message.
         /// </summary>
         [Fact]
-        public async Task When_Getting_C2D_Message_Fails_To_Resolve_Fcnt_Down_Should_Drop_Message_And_Return_Null()
+        public async Task When_Getting_C2D_Message_Fails_To_Resolve_Fcnt_Down_Should_Abandon_Message_And_Return_Null()
         {
             const uint initialFcntDown = 5;
             const uint initialFcntUp = 21;
@@ -250,7 +250,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(unconfirmedMessagePayload.GetFcnt(), loRaDevice.FCntUp);
 
             this.LoRaDeviceClient.Verify(x => x.ReceiveAsync(It.IsAny<TimeSpan>()), Times.Once());
-            this.LoRaDeviceClient.Verify(x => x.AbandonAsync(It.IsAny<Message>()), Times.Never());
+            this.LoRaDeviceClient.Verify(x => x.AbandonAsync(It.IsAny<Message>()), Times.Once());
 
             this.LoRaDeviceClient.VerifyAll();
             this.LoRaDeviceApi.VerifyAll();
