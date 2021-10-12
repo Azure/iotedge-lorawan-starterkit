@@ -9,8 +9,8 @@ namespace LoRaWanTest
 
     public class AppKeyTests
     {
-        readonly AppKey subject = new(new UInt128(0x0123456789abcdef, 0xfedcba9876543210));
-        readonly AppKey other = new(new UInt128(0xfedcba9876543210, 0x0123456789abcdef));
+        readonly AppKey subject = AppKey.Parse("0123456789abcdeffedcba9876543210");
+        readonly AppKey other = AppKey.Parse("fedcba98765432100123456789abcdef");
 
         [Fact]
         public void Size()
@@ -21,7 +21,7 @@ namespace LoRaWanTest
         [Fact]
         public void Equals_Returns_True_When_Value_Equals()
         {
-            var other = new AppKey(subject.AsUInt128);
+            var other = subject; // assignment = value copy semantics
             Assert.True(this.subject.Equals(other));
         }
 
@@ -47,7 +47,7 @@ namespace LoRaWanTest
         [Fact]
         public void Op_Equality_Returns_True_When_Values_Equal()
         {
-            var other = new AppKey(subject.AsUInt128);
+            var other = subject; // assignment = value copy semantics
             Assert.True(this.subject == other);
         }
 
@@ -60,7 +60,7 @@ namespace LoRaWanTest
         [Fact]
         public void Op_Inequality_Returns_False_When_Values_Equal()
         {
-            var other = new AppKey(subject.AsUInt128);
+            var other = subject; // assignment = value copy semantics
             Assert.False(this.subject != other);
         }
 

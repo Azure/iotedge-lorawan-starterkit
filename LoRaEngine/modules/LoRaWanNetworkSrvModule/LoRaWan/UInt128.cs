@@ -6,7 +6,7 @@ namespace LoRaWan
     using System;
     using System.Buffers.Binary;
 
-    public readonly struct UInt128 : IEquatable<UInt128>
+    readonly struct UInt128 : IEquatable<UInt128>
     {
         public const int Size = sizeof(ulong) * 2;
 
@@ -38,6 +38,34 @@ namespace LoRaWan
                                      && Hexadecimal.TryParse(input[16..], out var lo)
                 ? (true, new UInt128(hi, lo))
                 : default;
+
+        public static UInt128 ReadLittleEndian(ReadOnlySpan<byte> buffer)
+        {
+            var lo = BinaryPrimitives.ReadUInt64LittleEndian(buffer);
+            var hi = BinaryPrimitives.ReadUInt64LittleEndian(buffer[8..]);
+            return new UInt128(hi, lo);
+        }
+
+        public static UInt128 ReadLittleEndian(ref ReadOnlySpan<byte> buffer)
+        {
+            var result = ReadLittleEndian(buffer);
+            buffer = buffer[Size..];
+            return result;
+        }
+
+        public static UInt128 ReadBigEndian(ReadOnlySpan<byte> buffer)
+        {
+            var lo = BinaryPrimitives.ReadUInt64BigEndian(buffer);
+            var hi = BinaryPrimitives.ReadUInt64BigEndian(buffer[8..]);
+            return new UInt128(hi, lo);
+        }
+
+        public static UInt128 ReadBigEndian(ref ReadOnlySpan<byte> buffer)
+        {
+            var result = ReadBigEndian(buffer);
+            buffer = buffer[Size..];
+            return result;
+        }
 
         public Span<byte> WriteLittleEndian(Span<byte> buffer)
         {

@@ -13,7 +13,7 @@ namespace LoRaWan
     {
         readonly UInt128 value;
 
-        public NetworkSessionKey(UInt128 value) => this.value = value;
+        NetworkSessionKey(UInt128 value) => this.value = value;
 
         public bool Equals(NetworkSessionKey other) => this.value == other.value;
         public override bool Equals(object obj) => obj is NetworkSessionKey other && this.Equals(other);

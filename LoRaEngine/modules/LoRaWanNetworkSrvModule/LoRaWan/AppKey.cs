@@ -15,9 +15,7 @@ namespace LoRaWan
 
         readonly UInt128 value;
 
-        public AppKey(UInt128 value) => this.value = value;
-
-        public UInt128 AsUInt128 => this.value;
+        AppKey(UInt128 value) => this.value = value;
 
         public bool Equals(AppKey other) => this.value == other.value;
         public override bool Equals(object obj) => obj is AppKey other && this.Equals(other);
@@ -44,5 +42,13 @@ namespace LoRaWan
                 return false;
             }
         }
+
+        public static AppKey Read(ReadOnlySpan<byte> buffer) =>
+            new(UInt128.ReadBigEndian(buffer));
+
+        public static AppKey Read(ref ReadOnlySpan<byte> buffer) =>
+            new(UInt128.ReadBigEndian(ref buffer));
+
+        public Span<byte> Write(Span<byte> buffer) => this.value.WriteBigEndian(buffer);
     }
 }

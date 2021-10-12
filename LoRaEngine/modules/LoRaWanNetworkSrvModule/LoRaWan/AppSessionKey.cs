@@ -12,7 +12,7 @@ namespace LoRaWan
     {
         readonly UInt128 value;
 
-        public AppSessionKey(UInt128 value) => this.value = value;
+        AppSessionKey(UInt128 value) => this.value = value;
 
         public bool Equals(AppSessionKey other) => this.value == other.value;
         public override bool Equals(object obj) => obj is AppSessionKey other && this.Equals(other);
