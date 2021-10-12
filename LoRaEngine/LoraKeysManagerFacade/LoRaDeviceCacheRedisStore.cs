@@ -20,11 +20,11 @@ namespace LoraKeysManagerFacade
             this.redisCache = redisCache;
         }
 
-        public async Task<bool> LockTakeAsync(string key, string lockOwner, TimeSpan expiration, bool block = true)
+        public async Task<bool> LockTakeAsync(string key, string owner, TimeSpan expiration, bool block = true)
         {
             var start = DateTime.UtcNow;
             bool taken;
-            while (!(taken = this.redisCache.LockTake(key, lockOwner, expiration, CommandFlags.DemandMaster)) && block)
+            while (!(taken = this.redisCache.LockTake(key, owner, expiration, CommandFlags.DemandMaster)) && block)
             {
                 if (DateTime.UtcNow - start > LockTimeout)
                     break;
