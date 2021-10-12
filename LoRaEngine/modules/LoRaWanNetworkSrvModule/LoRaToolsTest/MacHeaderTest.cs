@@ -3,7 +3,6 @@
 
 namespace LoRaWanTest
 {
-    using System;
     using LoRaWan;
     using Xunit;
 
@@ -98,12 +97,13 @@ namespace LoRaWanTest
         }
 
         [Fact]
-        public void Write_Succeeds_And_Returns_SlicedSpan()
+        public void Write_Writes_Byte_And_Returns_Updated_Span()
         {
-            var rentedMemoryLength = 4;
-            Span<byte> memorySpan = stackalloc byte[rentedMemoryLength];
-            var newSpan = unconfirmedDataUp.Write(memorySpan);
-            Assert.Equal(rentedMemoryLength - 1, newSpan.Length);
+            var bytes = new byte[4];
+            var remainingBytes = unconfirmedDataUp.Write(bytes);
+            remainingBytes.Fill(0xff);
+            Assert.Equal(3, remainingBytes.Length);
+            Assert.Equal(new byte[] { 0x40, 0xff, 0xff, 0xff }, bytes);
         }
     }
 }
