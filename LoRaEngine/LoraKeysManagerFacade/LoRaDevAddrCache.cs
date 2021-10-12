@@ -208,7 +208,8 @@ namespace LoraKeysManagerFacade
         private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(RegistryManager registryManager, string inputQuery)
         {
             var query = registryManager.CreateQuery(inputQuery);
-            this.cacheStore.StringSet(LastDeltaUpdateKeyValue, DateTime.UtcNow.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
+            var lastQueryTs = DateTime.UtcNow.AddSeconds(-10); // account for some clock drift
+            this.cacheStore.StringSet(LastDeltaUpdateKeyValue, lastQueryTs.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
             var devAddrCacheInfos = new List<DevAddrCacheInfo>();
             while (query.HasMoreResults)
             {
