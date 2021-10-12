@@ -19,6 +19,8 @@ namespace LoRaWan
                 ? unchecked((byte)v)
                 : throw new ArgumentOutOfRangeException(nameof(value), value, null);
 
+        public int AsInt32 => this.value;
+
         public bool Equals(DataRate other) => this.value == other.value;
         public override bool Equals(object obj) => obj is DataRate other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
