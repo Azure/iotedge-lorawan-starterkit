@@ -33,6 +33,16 @@ namespace LoRaWan
         public static bool operator ==(JoinEui left, JoinEui right) => left.Equals(right);
         public static bool operator !=(JoinEui left, JoinEui right) => !left.Equals(right);
 
+        public static JoinEui Read(ReadOnlySpan<byte> buffer) =>
+            new(BinaryPrimitives.ReadUInt64LittleEndian(buffer));
+
+        public static JoinEui Read(ref ReadOnlySpan<byte> buffer)
+        {
+            var result = Read(buffer);
+            buffer = buffer[Size..];
+            return result;
+        }
+
         public Span<byte> Write(Span<byte> buffer)
         {
             BinaryPrimitives.WriteUInt64LittleEndian(buffer, this.value);

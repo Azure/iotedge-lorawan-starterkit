@@ -33,6 +33,16 @@ namespace LoRaWan
         public static bool operator ==(DevEui left, DevEui right) => left.Equals(right);
         public static bool operator !=(DevEui left, DevEui right) => !left.Equals(right);
 
+        public static DevEui Read(ReadOnlySpan<byte> buffer) =>
+            new(BinaryPrimitives.ReadUInt64LittleEndian(buffer));
+
+        public static DevEui Read(ref ReadOnlySpan<byte> buffer)
+        {
+            var result = Read(buffer);
+            buffer = buffer[Size..];
+            return result;
+        }
+
         public Span<byte> Write(Span<byte> buffer)
         {
             BinaryPrimitives.WriteUInt64LittleEndian(buffer, this.value);
