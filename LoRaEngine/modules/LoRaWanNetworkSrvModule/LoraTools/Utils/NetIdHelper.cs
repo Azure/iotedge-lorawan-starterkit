@@ -12,9 +12,9 @@ namespace LoRaTools.Utils
         /// </summary>
         public static string SetNwkIdPart(string currentDevAddr, uint networkId)
         {
-            byte[] netId = BitConverter.GetBytes(networkId);
-            int nwkPart = netId[0] << 1;
-            byte[] deviceIdBytes = ConversionHelper.StringToByteArray(currentDevAddr);
+            var netId = BitConverter.GetBytes(networkId);
+            var nwkPart = netId[0] << 1;
+            var deviceIdBytes = ConversionHelper.StringToByteArray(currentDevAddr);
             deviceIdBytes[0] = (byte)((nwkPart & 0b11111110) | (deviceIdBytes[0] & 0b00000001));
             return ConversionHelper.ByteArrayToString(deviceIdBytes);
         }

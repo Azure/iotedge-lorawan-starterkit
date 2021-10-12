@@ -128,8 +128,8 @@ namespace LoraKeysManagerFacade
                 this.redisCache.KeyDelete(cacheKey);
             }
 
-            HashEntry[] hashEntries = new HashEntry[input.Count];
-            int i = 0;
+            var hashEntries = new HashEntry[input.Count];
+            var i = 0;
             foreach (var element in input)
             {
                 hashEntries[i] = new HashEntry(element.Key, JsonConvert.SerializeObject(element.Value));

@@ -55,13 +55,13 @@ namespace LoRaTools.LoRaMessage
 
         public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
         {
-            byte[] rxDelay = new byte[1];
+            var rxDelay = new byte[1];
             if (rxDelayValue >= 0 && rxDelayValue < MaxRxDelayValue)
             {
                 rxDelay[0] = (byte)rxDelayValue;
             }
 
-            int cfListLength = cfList == null ? 0 : cfList.Length;
+            var cfListLength = cfList == null ? 0 : cfList.Length;
             this.RawMessage = new byte[1 + 12 + cfListLength];
             this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
             Array.Copy(new byte[] { 32 }, 0, this.RawMessage, 0, 1);
@@ -108,7 +108,7 @@ namespace LoRaTools.LoRaMessage
             // var decrypted = PerformEncryption(appKey);
             // Array.Copy(decrypted, 0, inputMessage, 0, decrypted.Length);
             // DecryptPayload(inputMessage);
-            AesEngine aesEngine = new AesEngine();
+            var aesEngine = new AesEngine();
             var key = ConversionHelper.StringToByteArray(appKey);
             aesEngine.Init(true, new KeyParameter(key));
             Aes aes = new AesManaged
@@ -122,7 +122,7 @@ namespace LoRaTools.LoRaMessage
             ICryptoTransform cipher;
 
             cipher = aes.CreateEncryptor();
-            byte[] pt = new byte[inputMessage.Length - 1];
+            var pt = new byte[inputMessage.Length - 1];
             Array.Copy(inputMessage, 1, pt, 0, pt.Length);
             // Array.Reverse(pt);
             var decryptedPayload = cipher.TransformFinalBlock(pt, 0, pt.Length);
@@ -190,7 +190,7 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] GetByteMessage()
         {
-            List<byte> messageArray = new List<byte>();
+            var messageArray = new List<byte>();
             messageArray.AddRange(this.Mhdr.ToArray());
             messageArray.AddRange(this.RawMessage);
 

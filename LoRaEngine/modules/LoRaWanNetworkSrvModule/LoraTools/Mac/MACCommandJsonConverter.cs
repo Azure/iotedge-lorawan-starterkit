@@ -21,7 +21,7 @@ namespace LoRaTools
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            JObject item = JObject.Load(reader);
+            var item = JObject.Load(reader);
             var cidPropertyValue = item["cid"].Value<string>();
             if (string.IsNullOrEmpty(cidPropertyValue))
             {

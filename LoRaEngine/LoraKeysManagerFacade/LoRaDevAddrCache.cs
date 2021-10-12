@@ -88,7 +88,7 @@ namespace LoraKeysManagerFacade
 
             var serializedObjectValue = JsonConvert.SerializeObject(info);
 
-            string cacheKeyToUse = GenerateKey(info.DevAddr);
+            var cacheKeyToUse = GenerateKey(info.DevAddr);
 
             if(this.cacheStore.TrySetHashObject(cacheKeyToUse, info.DevEUI, serializedObjectValue))
             {
@@ -291,7 +291,7 @@ namespace LoraKeysManagerFacade
         /// </summary>
         private IDictionary<string, DevAddrCacheInfo> MergeOldAndNewChanges(IDictionary<string, DevAddrCacheInfo> valueArrayBase, IDictionary<string, DevAddrCacheInfo> valueArrayimport, bool shouldImportFromNewValues)
         {
-            bool isSaveRequired = false;
+            var isSaveRequired = false;
             foreach (var baseValue in valueArrayBase)
             {
                 if (valueArrayimport.TryGetValue(baseValue.Key, out var importValue))

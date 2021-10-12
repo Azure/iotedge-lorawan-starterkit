@@ -18,12 +18,12 @@ namespace LoRaWanTest
       [CombinatorialValues("SF12BW125", "SF11BW125", "SF10BW125", "SF9BW125", "SF8BW125", "SF7BW125", "SF7BW250")]string datr,
       [CombinatorialValues(868.1, 868.3, 868.5)] double freq)
         {
-            List<Rxpk> rxpk = GenerateRxpk(datr, freq);
+            var rxpk = GenerateRxpk(datr, freq);
 
             // in EU in standard parameters the expectation is that the reply arrive at same place.
             var expFreq = freq;
             var expDatr = datr;
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency));
             Assert.Equal(frequency, expFreq);
             Assert.Equal(RegionManager.EU868.GetDownstreamDR(rxpk[0]), expDatr);
         }
@@ -34,12 +34,12 @@ namespace LoRaWanTest
            [CombinatorialValues("SF10BW125", "SF9BW125", "SF8BW125", "SF7BW125")] string datr,
            [CombinatorialValues(902.3, 902.5, 902.7, 902.9, 903.1, 903.3, 903.5, 903.7, 903.9)] double freq)
         {
-            List<Rxpk> rxpk = GenerateRxpk(datr, freq);
+            var rxpk = GenerateRxpk(datr, freq);
 
             // in EU in standard parameters the expectation is that the reply arrive at same place.
             double expFreq = 0;
 
-            string expDatr = string.Empty;
+            var expDatr = string.Empty;
 
             switch (datr)
             {
@@ -98,7 +98,7 @@ namespace LoRaWanTest
                     break;
             }
 
-            Assert.True(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
+            Assert.True(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency));
             Assert.Equal(frequency, expFreq);
             Assert.Equal(RegionManager.US915.GetDownstreamDR(rxpk[0]), expDatr);
         }
@@ -109,12 +109,12 @@ namespace LoRaWanTest
           [CombinatorialValues("SF8BW500")] string datr,
           [CombinatorialValues(903, 904.6, 906.2, 907.8, 909.4, 911, 912.6, 914.2)] double freq)
         {
-            List<Rxpk> rxpk = GenerateRxpk(datr, freq);
+            var rxpk = GenerateRxpk(datr, freq);
 
             // in EU in standard parameters the expectation is that the reply arrive at same place.
             double expFreq = 0;
 
-            string expDatr = "SF7BW500";
+            var expDatr = "SF7BW500";
 
             switch (freq)
             {
@@ -146,14 +146,14 @@ namespace LoRaWanTest
                     break;
             }
 
-            Assert.True(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
+            Assert.True(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency));
             Assert.Equal(frequency, expFreq);
             Assert.Equal(RegionManager.US915.GetDownstreamDR(rxpk[0]), expDatr);
         }
 
         private static List<Rxpk> GenerateRxpk(string datr, double freq)
         {
-            string jsonUplink =
+            var jsonUplink =
                 @"{ ""rxpk"":[
                 {
                     ""time"":""2013-03-31T16:21:17.528002Z"",
@@ -172,9 +172,9 @@ namespace LoRaWanTest
                 }]}";
 
             var multiRxpkInput = Encoding.Default.GetBytes(jsonUplink);
-            byte[] physicalUpstreamPyld = new byte[12];
+            var physicalUpstreamPyld = new byte[12];
             physicalUpstreamPyld[0] = 2;
-            List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
+            var rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
             return rxpk;
         }
 
@@ -194,13 +194,13 @@ namespace LoRaWanTest
             var rxpk = GenerateRxpk(datarate, freq);
             if (region == LoRaRegionType.EU868)
             {
-                Assert.False(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency) &&
+                Assert.False(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency) &&
                 RegionManager.EU868.GetDownstreamDR(rxpk[0]) != null);
             }
 
             if (region == LoRaRegionType.US915)
             {
-                Assert.False(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency) &&
+                Assert.False(RegionManager.US915.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency) &&
                 RegionManager.US915.GetDownstreamDR(rxpk[0]) != null);
             }
         }
@@ -248,7 +248,7 @@ namespace LoRaWanTest
         public void GetDownStreamRx2(LoRaRegionType loRaRegion, string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
         {
             var devEui = "testDevice";
-            RegionManager.TryTranslateToRegion(loRaRegion, out Region region);
+            RegionManager.TryTranslateToRegion(loRaRegion, out var region);
             var datr = region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins);
             var freq = region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq);
             Assert.Equal(expectedFreq, freq);

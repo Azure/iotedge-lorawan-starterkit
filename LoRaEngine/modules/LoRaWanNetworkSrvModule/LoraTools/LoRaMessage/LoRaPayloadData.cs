@@ -123,7 +123,7 @@ namespace LoRaTools.LoRaMessage
             : base(inputMessage)
         {
             // get the address
-            byte[] addrbytes = new byte[4];
+            var addrbytes = new byte[4];
             Array.Copy(inputMessage, 1, addrbytes, 0, 4);
             // address correct but inversed
             Array.Reverse(addrbytes);
@@ -145,13 +145,13 @@ namespace LoRaTools.LoRaMessage
             this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
             // Fctrl Frame Control Octet
             this.Fctrl = new Memory<byte>(inputMessage, 5, 1);
-            int foptsSize = this.Fctrl.Span[0] & 0x0f;
+            var foptsSize = this.Fctrl.Span[0] & 0x0f;
             // Fcnt
             this.Fcnt = new Memory<byte>(inputMessage, 6, 2);
             // FOpts
             this.Fopts = new Memory<byte>(inputMessage, 8, foptsSize);
             // in this case the message don't have a Fport as the payload is empty
-            int fportLength = 1;
+            var fportLength = 1;
             if (inputMessage.Length < 13)
             {
                 fportLength = 0;
@@ -177,7 +177,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
         {
-            List<byte> macBytes = new List<byte>(3);
+            var macBytes = new List<byte>(3);
             if (macCommands != null)
             {
                 foreach (var macCommand in macCommands)
@@ -189,9 +189,9 @@ namespace LoRaTools.LoRaMessage
             this.Ensure32BitFcntValue(server32bitFcnt);
 
             var fOpts = macBytes.ToArray();
-            int fOptsLen = fOpts == null ? 0 : fOpts.Length;
-            int frmPayloadLen = frmPayload == null ? 0 : frmPayload.Length;
-            int fPortLen = fPort == null ? 0 : fPort.Length;
+            var fOptsLen = fOpts == null ? 0 : fOpts.Length;
+            var frmPayloadLen = frmPayload == null ? 0 : frmPayload.Length;
+            var fPortLen = fPort == null ? 0 : fPort.Length;
 
             // TODO If there are mac commands to send and no payload, we need to put the mac commands in the frmpayload.
             if (macBytes.Count > 0 && (frmPayload == null || frmPayload?.Count() == 0))
@@ -204,7 +204,7 @@ namespace LoRaTools.LoRaMessage
                 fPort = new byte[1] { 0 };
             }
 
-            int macPyldSize = devAddr.Length + fctrl.Length + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;
+            var macPyldSize = devAddr.Length + fctrl.Length + fcnt.Length + fOptsLen + frmPayloadLen + fPortLen;
             this.RawMessage = new byte[1 + macPyldSize + 4];
             this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
             this.RawMessage[0] = (byte)mhdr;
@@ -318,8 +318,8 @@ namespace LoRaTools.LoRaMessage
             this.Ensure32BitFcntValue(server32BitFcnt);
             var byteMsg = this.GetByteMessage();
 
-            IMac mac = MacUtilities.GetMac("AESCMAC");
-            KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
+            var mac = MacUtilities.GetMac("AESCMAC");
+            var key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
             mac.Init(key);
 
             var fcntBytes = this.GetFcntBlockInfo();
@@ -331,7 +331,7 @@ namespace LoRaTools.LoRaMessage
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
 
-            byte[] result = new byte[16];
+            var result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);
             return this.Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
@@ -342,8 +342,8 @@ namespace LoRaTools.LoRaMessage
             var byteMsg = this.GetByteMessage();
             var fcntBytes = this.GetFcntBlockInfo();
 
-            IMac mac = MacUtilities.GetMac("AESCMAC");
-            KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
+            var mac = MacUtilities.GetMac("AESCMAC");
+            var key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
             mac.Init(key);
             byte[] block =
             {
@@ -375,8 +375,8 @@ namespace LoRaTools.LoRaMessage
         {
             if (!this.Frmpayload.Span.IsEmpty)
             {
-                AesEngine aesEngine = new AesEngine();
-                byte[] tmp = ConversionHelper.StringToByteArray(appSkey);
+                var aesEngine = new AesEngine();
+                var tmp = ConversionHelper.StringToByteArray(appSkey);
                 aesEngine.Init(true, new KeyParameter(tmp));
                 var fcntBytes = this.GetFcntBlockInfo();
 
@@ -387,8 +387,8 @@ namespace LoRaTools.LoRaMessage
                 };
 
                 byte[] sBlock = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                int size = this.Frmpayload.Length;
-                byte[] decrypted = new byte[size];
+                var size = this.Frmpayload.Length;
+                var decrypted = new byte[size];
                 byte bufferIndex = 0;
                 short ctr = 1;
                 int i;
@@ -443,7 +443,7 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] GetByteMessage()
         {
-            List<byte> messageArray = new List<byte>();
+            var messageArray = new List<byte>();
             messageArray.AddRange(this.Mhdr.ToArray());
             this.DevAddr.Span.Reverse();
             messageArray.AddRange(this.DevAddr.ToArray());

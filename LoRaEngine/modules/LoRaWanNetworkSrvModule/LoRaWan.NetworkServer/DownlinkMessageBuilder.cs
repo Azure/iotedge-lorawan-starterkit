@@ -42,7 +42,7 @@ namespace LoRaWan.NetworkServer
             var upstreamPayload = (LoRaPayloadData)request.Payload;
             var rxpk = request.Rxpk;
             var loRaRegion = request.Region;
-            bool isMessageTooLong = false;
+            var isMessageTooLong = false;
 
             // default fport
             byte fctrl = 0;
@@ -61,7 +61,7 @@ namespace LoRaWan.NetworkServer
                 return new DownlinkMessageBuilderResponse(null, isMessageTooLong);
             }
 
-            byte[] rndToken = new byte[2];
+            var rndToken = new byte[2];
 
             lock (RndLock)
             {
@@ -130,7 +130,7 @@ namespace LoRaWan.NetworkServer
                     // Add C2D Mac commands
                     if (macCommandsC2d?.Count > 0)
                     {
-                        foreach (MacCommand macCommand in macCommandsC2d)
+                        foreach (var macCommand in macCommandsC2d)
                         {
                             macCommands.Add(macCommand);
                         }
@@ -172,7 +172,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (macCommandsRequest?.Count > 0)
                 {
-                    foreach (MacCommand macCommand in macCommandsRequest)
+                    foreach (var macCommand in macCommandsRequest)
                     {
                         macCommands.Add(macCommand);
                     }
@@ -191,7 +191,7 @@ namespace LoRaWan.NetworkServer
 
             var srcDevAddr = upstreamPayload.DevAddr.Span;
             var reversedDevAddr = new byte[srcDevAddr.Length];
-            for (int i = reversedDevAddr.Length - 1; i >= 0; --i)
+            for (var i = reversedDevAddr.Length - 1; i >= 0; --i)
             {
                 reversedDevAddr[i] = srcDevAddr[srcDevAddr.Length - (1 + i)];
             }
@@ -236,16 +236,16 @@ namespace LoRaWan.NetworkServer
 
             // default fport
             byte fctrl = 0;
-            CidEnum macCommandType = CidEnum.Zero;
+            var macCommandType = CidEnum.Zero;
 
-            byte[] rndToken = new byte[2];
+            var rndToken = new byte[2];
 
             lock (RndLock)
             {
                 RndDownlinkMessageBuilder.NextBytes(rndToken);
             }
 
-            bool isMessageTooLong = false;
+            var isMessageTooLong = false;
 
             // Class C always uses RX2
             string datr;
@@ -299,7 +299,7 @@ namespace LoRaWan.NetworkServer
 
             var payloadDevAddr = ConversionHelper.StringToByteArray(loRaDevice.DevAddr);
             var reversedDevAddr = new byte[payloadDevAddr.Length];
-            for (int i = reversedDevAddr.Length - 1; i >= 0; --i)
+            for (var i = reversedDevAddr.Length - 1; i >= 0; --i)
             {
                 reversedDevAddr[i] = payloadDevAddr[payloadDevAddr.Length - (1 + i)];
             }
@@ -384,7 +384,7 @@ namespace LoRaWan.NetworkServer
             if (loRaADRResult?.CanConfirmToDevice == true)
             {
                 const int placeholderChannel = 25;
-                LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, placeholderChannel, 0, (byte)loRaADRResult.NbRepetition);
+                var linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, placeholderChannel, 0, (byte)loRaADRResult.NbRepetition);
                 macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
                 Logger.Log(devEUI, $"performing a rate adaptation: DR {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetition {loRaADRResult.NbRepetition}", LogLevel.Information);
             }
