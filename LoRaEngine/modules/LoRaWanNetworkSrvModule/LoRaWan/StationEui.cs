@@ -8,6 +8,9 @@ namespace LoRaWan
     /// ID in IEEE EUI-64 (64-bit Extended Unique Identifier) address space that uniquely identifies
     /// a station.
     /// </summary>
+    /// <remarks>
+    /// EUI are 8 bytes multi-octet fields and are transmitted as little endian.
+    /// </remarks>
     public readonly struct StationEui : IEquatable<StationEui>
     {
         public const int Size = sizeof(ulong);

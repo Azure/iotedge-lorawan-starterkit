@@ -13,8 +13,11 @@ namespace LoRaWan
     /// the Join procedure and the session keys derivation.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// For OTAA devices, the JoinEUI MUST be stored in the end-device before the Join procedure
-    /// is executed. The JoinEUI is not required for ABP only end-devices.
+    /// is executed. The JoinEUI is not required for ABP only end-devices.</para>
+    /// <para>
+    /// EUI are 8 bytes multi-octet fields and are transmitted as little endian.</para>
     /// </remarks>
     public readonly struct JoinEui : IEquatable<JoinEui>
     {

@@ -12,9 +12,12 @@ namespace LoRaWan
     /// that uniquely identifies the end-device.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// For OTAA devices, the DevEUI MUST be stored in the end-device before the Join procedure
     /// is executed. ABP devices do not need the DevEUI to be stored in the device itself, but
-    /// it is recommended to do so.
+    /// it is recommended to do so.</para>
+    /// <para>
+    /// EUI are 8 bytes multi-octet fields and are transmitted as little endian.</para>
     /// </remarks>
     public readonly struct DevEui : IEquatable<DevEui>
     {
