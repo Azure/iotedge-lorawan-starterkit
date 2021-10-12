@@ -101,7 +101,7 @@ namespace LoraKeysManagerFacade
 
                         if (await deviceCache.TryToLockAsync())
                         {
-                            this.cacheStore.KeyDelete(devEUI);
+                            deviceCache.ClearCache();
                             log?.LogDebug("Removed key '{key}':{gwid}", devEUI, gatewayId);
                         }
                         else
