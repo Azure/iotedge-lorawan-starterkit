@@ -80,10 +80,6 @@ jobs:
     - name: Build C# Samples/DecoderSample
       run: dotnet build --configuration ${{ env.buildConfiguration }} Samples/DecoderSample
 
-    # Pull Redis Cache docker image
-    - name: Pulling Redis Cache image
-      run: docker pull redis:5.0.4-alpine
-
     # Run unit tests
     - name: Run unit tests
       run: |
@@ -111,6 +107,17 @@ jobs:
     name: Deploy this run on the CI environment
     steps:
     - run : echo "Deployment was authorized"
+
+  # Pull Redis Cache docker image
+  - name: Pulling Redis Cache image
+    run: docker pull redis:5.0.4-alpine
+
+  # Run integration tests
+  - name: Run integration tests
+    run: |
+      dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r Tests/TestResults/Integration \
+        /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
+        tests/Integration/LoRaWan.Test.Integration.csproj
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
