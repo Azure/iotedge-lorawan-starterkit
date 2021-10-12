@@ -9,6 +9,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Eui.g.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Eui.g.cs</LastGenOutput>
+    </None>
     <None Update="Keys.g.tt">
       <CustomToolNamespace></CustomToolNamespace>
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -21,6 +25,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Eui.g.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Eui.g.tt</DependentUpon>
+    </Compile>
     <Compile Update="Keys.g.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
