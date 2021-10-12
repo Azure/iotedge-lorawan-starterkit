@@ -44,7 +44,7 @@ namespace LoRaWan
         //
         // Source: https://www.thethingsnetwork.org/docs/lorawan/message-types/#calculating-the-message-integrity-code
 
-        public static Mic Compute(AppKey appKey, MacHeader mhdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce)
+        public static Mic ComputeForJoinRequest(AppKey appKey, MacHeader mhdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce)
         {
             var mac = MacUtilities.GetMac("AESCMAC");
 
