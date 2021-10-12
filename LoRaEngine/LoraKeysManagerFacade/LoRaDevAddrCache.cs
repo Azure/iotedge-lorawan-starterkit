@@ -23,10 +23,10 @@ namespace LoraKeysManagerFacade
         private const string CacheKeyPrefix = "devAddrTable:";
         private const string DevAddrLockName = "devAddrLock:";
         public static readonly TimeSpan LockExpiry = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan FullUpdateKeyTimeSpan = TimeSpan.FromHours(25);
+        private static readonly TimeSpan FullUpdateKeyTimeSpan = TimeSpan.FromHours(24);
         private static readonly TimeSpan DeltaUpdateKeyTimeSpan = TimeSpan.FromMinutes(5);
         private static readonly TimeSpan UpdatingDevAddrCacheLockTimeSpan = TimeSpan.FromMinutes(2);
-        private static readonly TimeSpan DevAddrObjectsTTL = TimeSpan.FromHours(24);
+        private static readonly TimeSpan DevAddrObjectsTTL = TimeSpan.FromHours(25);
 
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly ILogger logger;
