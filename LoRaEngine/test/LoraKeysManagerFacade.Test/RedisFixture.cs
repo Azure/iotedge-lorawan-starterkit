@@ -118,7 +118,7 @@ namespace LoraKeysManagerFacade.Test
         public async Task DisposeAsync()
         {
             // we need to wait for all the common locks to be released, otherwise an error will be throwed as we try to access a disposed object
-            await Task.Delay((int)LoRaDevAddrCache.LockExpiry.TotalMilliseconds + 3000);
+            await Task.Delay((int)LoRaDevAddrCache.DefaultSingleLockExpiry.TotalMilliseconds + 3000);
             if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SYSTEM_DEFINITIONID")))
             {
                 if (!string.IsNullOrEmpty(this.containerId))

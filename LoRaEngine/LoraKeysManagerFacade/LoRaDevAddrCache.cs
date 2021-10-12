@@ -24,17 +24,29 @@ namespace LoraKeysManagerFacade
         /// The lock is used to set the TTL to that value, so it can only be taken once for that time span.
         /// </summary>
         private const string FullUpdateLockKey = "fullUpdateKey";
+        private static readonly TimeSpan FullUpdateKeyTimeSpan = TimeSpan.FromHours(24);
+
+        /// <summary>
+        /// Individual entries / hashes per dev address are made valide at least 1h longer than
+        /// the full update scheduled trigger. This avoids, invalidating the cache before we
+        /// re-populate it.
+        /// </summary>
+        private static readonly TimeSpan DevAddrObjectsTTL = FullUpdateKeyTimeSpan + TimeSpan.FromHours(1);
+
         /// <summary>
         /// All changes no matter if they are full or incremental, will have to acquire this lock
         /// </summary>
         private const string UpdatingDevAddrCacheLock = "globalUpdateKey";
 
+        /// <summary>
+        /// This is the time we hold onto the update lock.
+        /// REVIEW: this seems to be wrong. If a full update takes longer than this value, incremental updates can come in between?
+        /// </summary>
+        private static readonly TimeSpan UpdatingDevAddrCacheLockTimeSpan = TimeSpan.FromMinutes(2);
+
         private const string CacheKeyPrefix = "devAddrTable:";
         private const string DevAddrLockName = "devAddrLock:";
-        public static readonly TimeSpan LockExpiry = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan FullUpdateKeyTimeSpan = TimeSpan.FromHours(24);
-        private static readonly TimeSpan UpdatingDevAddrCacheLockTimeSpan = TimeSpan.FromMinutes(2);
-        private static readonly TimeSpan DevAddrObjectsTTL = TimeSpan.FromHours(25);
+        public static readonly TimeSpan DefaultSingleLockExpiry = TimeSpan.FromSeconds(10);
 
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly ILogger logger;
@@ -348,7 +360,7 @@ namespace LoraKeysManagerFacade
         /// </summary>
         public async Task<bool> TryTakeDevAddrUpdateLock(string devAddr)
         {
-            return await this.cacheStore.LockTakeAsync(string.Concat(DevAddrLockName, devAddr), this.lockOwner, LockExpiry, block: true);
+            return await this.cacheStore.LockTakeAsync(string.Concat(DevAddrLockName, devAddr), this.lockOwner, DefaultSingleLockExpiry, block: true);
         }
 
         public bool ReleaseDevAddrUpdateLock(string devAddr)
