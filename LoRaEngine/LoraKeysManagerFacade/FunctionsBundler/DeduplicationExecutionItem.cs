@@ -37,14 +37,14 @@ namespace LoraKeysManagerFacade.FunctionBundler
         internal async Task<DuplicateMsgResult> GetDuplicateMessageResultAsync(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown, ILogger logger = null)
         {
             var isDuplicate = true;
-            string processedDevice = gatewayId;
+            var processedDevice = gatewayId;
 
             using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId))
             {
                 if (await deviceCache.TryToLockAsync())
                 {
                     // we are owning the lock now
-                    if (deviceCache.TryGetInfo(out DeviceCacheInfo cachedDeviceState))
+                    if (deviceCache.TryGetInfo(out var cachedDeviceState))
                     {
                         var updateCacheState = false;
 

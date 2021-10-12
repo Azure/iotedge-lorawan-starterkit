@@ -31,7 +31,7 @@ namespace LoRaWan.NetworkServer
         {
             this.decodersHttpClient = new Lazy<HttpClient>(() =>
             {
-                HttpClient client = new HttpClient();
+                var client = new HttpClient();
                 client.DefaultRequestHeaders.Add("Connection", "Keep-Alive");
                 client.DefaultRequestHeaders.Add("Keep-Alive", "timeout=86400");
                 return client;
@@ -56,8 +56,8 @@ namespace LoRaWan.NetworkServer
             // Call local decoder (no "http://" in SensorDecoder)
             if (!sensorDecoder.Contains("http://"))
             {
-                Type decoderType = typeof(LoRaPayloadDecoder);
-                MethodInfo toInvoke = decoderType.GetMethod(sensorDecoder, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
+                var decoderType = typeof(LoRaPayloadDecoder);
+                var toInvoke = decoderType.GetMethod(sensorDecoder, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
 
                 if (toInvoke != null)
                 {
@@ -75,7 +75,7 @@ namespace LoRaWan.NetworkServer
             {
                 // Call SensorDecoderModule hosted in seperate container ("http://" in SensorDecoder)
                 // Format: http://containername/api/decodername
-                string toCall = sensorDecoder;
+                var toCall = sensorDecoder;
 
                 if (sensorDecoder.EndsWith("/"))
                 {
@@ -103,7 +103,7 @@ namespace LoRaWan.NetworkServer
             try
             {
                 var httpClientToUse = this.httpClient ?? this.decodersHttpClient.Value;
-                HttpResponseMessage response = await httpClientToUse.GetAsync(sensorDecoderModuleUrl);
+                var response = await httpClientToUse.GetAsync(sensorDecoderModuleUrl);
 
                 if (!response.IsSuccessStatusCode)
                 {

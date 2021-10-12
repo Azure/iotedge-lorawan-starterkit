@@ -36,7 +36,7 @@ namespace LoRaWan.NetworkServer
                 return 0;
             }
 
-            string fcntDownString = await response.Content.ReadAsStringAsync();
+            var fcntDownString = await response.Content.ReadAsStringAsync();
 
             if (ushort.TryParse(fcntDownString, out var newFCntDown))
                 return newFCntDown;

@@ -23,7 +23,7 @@ namespace LoRaWan.Tests.Shared
             {
                 randomLock.Wait();
 
-                byte[] token = new byte[2];
+                var token = new byte[2];
                 random.NextBytes(token);
                 return token;
             }
@@ -38,7 +38,7 @@ namespace LoRaWan.Tests.Shared
             try
             {
                 await randomLock.WaitAsync();
-                byte[] token = new byte[2];
+                var token = new byte[2];
                 random.NextBytes(token);
                 return token;
             }

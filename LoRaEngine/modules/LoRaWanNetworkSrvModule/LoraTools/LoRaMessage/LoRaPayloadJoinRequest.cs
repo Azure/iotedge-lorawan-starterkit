@@ -92,9 +92,9 @@ namespace LoRaTools.LoRaMessage
 
         private byte[] PerformMic(string appKey)
         {
-            IMac mac = MacUtilities.GetMac("AESCMAC");
+            var mac = MacUtilities.GetMac("AESCMAC");
 
-            KeyParameter key = new KeyParameter(ConversionHelper.StringToByteArray(appKey));
+            var key = new KeyParameter(ConversionHelper.StringToByteArray(appKey));
             mac.Init(key);
             var algoInputBytes = new byte[19];
             var algoInput = new Memory<byte>(algoInputBytes);
@@ -118,7 +118,7 @@ namespace LoRaTools.LoRaMessage
 
         public override byte[] GetByteMessage()
         {
-            List<byte> messageArray = new List<byte>(23);
+            var messageArray = new List<byte>(23);
             messageArray.AddRange(this.Mhdr.ToArray());
             messageArray.AddRange(this.AppEUI.ToArray());
             messageArray.AddRange(this.DevEUI.ToArray());

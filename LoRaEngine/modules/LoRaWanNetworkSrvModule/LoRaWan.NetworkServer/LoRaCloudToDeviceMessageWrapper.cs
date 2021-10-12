@@ -32,7 +32,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         private void ParseMessage()
         {
-            string json = string.Empty;
+            var json = string.Empty;
             var bytes = this.message.GetBytes();
             if (bytes?.Length > 0)
             {

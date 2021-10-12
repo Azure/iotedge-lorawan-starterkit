@@ -46,14 +46,14 @@ namespace LoRaTools
         /// </summary>
         public static List<MacCommand> CreateMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input)
         {
-            int pointer = 0;
+            var pointer = 0;
             var macCommands = new List<MacCommand>(3);
 
             try
             {
                 while (pointer < input.Length)
                 {
-                    CidEnum cid = (CidEnum)input.Span[pointer];
+                    var cid = (CidEnum)input.Span[pointer];
                     switch (cid)
                     {
                         case CidEnum.LinkCheckCmd:
@@ -86,19 +86,19 @@ namespace LoRaTools
                             }
                             else
                             {
-                                DevStatusAnswer devStatus = new DevStatusAnswer(input.Span.Slice(pointer));
+                                var devStatus = new DevStatusAnswer(input.Span.Slice(pointer));
                                 pointer += devStatus.Length;
                                 macCommands.Add(devStatus);
                             }
 
                             break;
                         case CidEnum.NewChannelCmd:
-                            NewChannelAnswer newChannel = new NewChannelAnswer(input.Span.Slice(pointer));
+                            var newChannel = new NewChannelAnswer(input.Span.Slice(pointer));
                             pointer += newChannel.Length;
                             macCommands.Add(newChannel);
                             break;
                         case CidEnum.RXTimingCmd:
-                            RXTimingSetupAnswer rxTimingSetup = new RXTimingSetupAnswer();
+                            var rxTimingSetup = new RXTimingSetupAnswer();
                             pointer += rxTimingSetup.Length;
                             macCommands.Add(rxTimingSetup);
                             break;
@@ -107,7 +107,7 @@ namespace LoRaTools
                             return null;
                     }
 
-                    MacCommand addedMacCommand = macCommands[macCommands.Count - 1];
+                    var addedMacCommand = macCommands[macCommands.Count - 1];
                     Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand.ToString()}", LogLevel.Debug);
                 }
             }
@@ -124,14 +124,14 @@ namespace LoRaTools
         /// </summary>
         public static List<MacCommand> CreateServerMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input)
         {
-            int pointer = 0;
+            var pointer = 0;
             var macCommands = new List<MacCommand>(3);
 
             while (pointer < input.Length)
             {
                 try
                 {
-                    CidEnum cid = (CidEnum)input.Span[pointer];
+                    var cid = (CidEnum)input.Span[pointer];
                     switch (cid)
                     {
                         case CidEnum.LinkCheckCmd:
@@ -149,7 +149,7 @@ namespace LoRaTools
                             return null;
                     }
 
-                    MacCommand addedMacCommand = macCommands[macCommands.Count - 1];
+                    var addedMacCommand = macCommands[macCommands.Count - 1];
                     Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand.ToString()}", LogLevel.Debug);
                 }
                 catch (MacCommandException ex)

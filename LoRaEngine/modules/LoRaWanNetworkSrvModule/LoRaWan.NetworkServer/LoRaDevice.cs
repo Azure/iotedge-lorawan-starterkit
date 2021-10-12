@@ -322,7 +322,7 @@ namespace LoRaWan.NetworkServer
                     if (twin.Properties.Desired.Contains(TwinProperty.Deduplication))
                     {
                         var val = twin.Properties.Desired[TwinProperty.Deduplication].Value as string;
-                        Enum.TryParse<DeduplicationMode>(val, true, out DeduplicationMode mode);
+                        Enum.TryParse<DeduplicationMode>(val, true, out var mode);
                         this.Deduplication = mode;
                     }
 
@@ -386,7 +386,7 @@ namespace LoRaWan.NetworkServer
         {
             var toReport = new TwinCollection();
 
-            bool reset = false;
+            var reset = false;
             // check if there is a reset we need to process
             if (twin.Properties.Desired.Contains(TwinProperty.FCntResetCounter))
             {
@@ -597,12 +597,12 @@ namespace LoRaWan.NetworkServer
                         {
                             this.InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
 
-                            for (int i = 0; i < savedProperties.Count; i++)
+                            for (var i = 0; i < savedProperties.Count; i++)
                                 savedProperties[i].AcceptChanges();
                         }
                         else
                         {
-                            for (int i = 0; i < savedProperties.Count; i++)
+                            for (var i = 0; i < savedProperties.Count; i++)
                                 savedProperties[i].Rollback();
                         }
 

@@ -43,9 +43,9 @@ namespace LoraKeysManagerFacade
 
             EUIValidator.ValidateDevEUI(devEUI);
 
-            if (!uint.TryParse(fCntUp, out uint clientFCntUp))
+            if (!uint.TryParse(fCntUp, out var clientFCntUp))
             {
-                string errorMsg = "Missing FCntUp";
+                var errorMsg = "Missing FCntUp";
                 throw new ArgumentException(errorMsg);
             }
 
@@ -73,10 +73,10 @@ namespace LoraKeysManagerFacade
             }
 
             // validate input parameters
-            if (!uint.TryParse(fCntDown, out uint clientFCntDown) ||
+            if (!uint.TryParse(fCntDown, out var clientFCntDown) ||
                 string.IsNullOrEmpty(gatewayId))
             {
-                string errorMsg = "Missing FCntDown or GatewayId";
+                var errorMsg = "Missing FCntDown or GatewayId";
                 throw new ArgumentException(errorMsg);
             }
 
@@ -92,7 +92,7 @@ namespace LoraKeysManagerFacade
             {
                 if (await deviceCache.TryToLockAsync())
                 {
-                    if (deviceCache.TryGetInfo(out DeviceCacheInfo serverStateForDeviceInfo))
+                    if (deviceCache.TryGetInfo(out var serverStateForDeviceInfo))
                     {
                         newFCntDown = ProcessExistingDeviceInfo(deviceCache, serverStateForDeviceInfo, gatewayId, clientFCntUp, clientFCntDown);
                     }

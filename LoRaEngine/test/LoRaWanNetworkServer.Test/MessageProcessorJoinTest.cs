@@ -420,7 +420,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(2, 0)]
         public async Task When_Getting_DLSettings_From_Twin_Returns_JoinAccept_With_Correct_Settings(int rx1DROffset, int rx2datarate)
         {
-            string deviceGatewayID = ServerGatewayID;
+            var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
 
@@ -486,14 +486,14 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(-2)]
         public async Task When_Getting_Custom_RX2_DR_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx2datarate)
         {
-            string deviceGatewayID = ServerGatewayID;
+            var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
             string afterJoinAppSKey = null;
             string afterJoinNwkSKey = null;
             string afterJoinDevAddr = null;
-            int afterJoinFcntDown = -1;
-            int afterJoinFcntUp = -1;
+            var afterJoinFcntDown = -1;
+            var afterJoinFcntUp = -1;
             uint startingPayloadFcnt = 0;
 
             // Create Rxpk
@@ -603,16 +603,16 @@ namespace LoRaWan.NetworkServer.Test
         {
             var beforeJoinValues = 2;
             var afterJoinValues = 3;
-            int reportedBeforeJoinRx1DROffsetValue = 0;
-            int reportedBeforeJoinRx2DRValue = 0;
-            int reportedBeforeJoinRxDelayValue = 0;
-            string deviceGatewayID = ServerGatewayID;
+            var reportedBeforeJoinRx1DROffsetValue = 0;
+            var reportedBeforeJoinRx2DRValue = 0;
+            var reportedBeforeJoinRxDelayValue = 0;
+            var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             string afterJoinAppSKey = null;
             string afterJoinNwkSKey = null;
             string afterJoinDevAddr = null;
-            int afterJoinFcntDown = -1;
-            int afterJoinFcntUp = -1;
+            var afterJoinFcntDown = -1;
+            var afterJoinFcntUp = -1;
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
             var appEUI = simulatedDevice.LoRaDevice.AppEUI;
@@ -712,14 +712,14 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(-2, 0)]
         public async Task When_Getting_RX1_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rx1offset, int expectedDR)
         {
-            string deviceGatewayID = ServerGatewayID;
+            var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
             string afterJoinAppSKey = null;
             string afterJoinNwkSKey = null;
             string afterJoinDevAddr = null;
-            int afterJoinFcntDown = -1;
-            int afterJoinFcntUp = -1;
+            var afterJoinFcntDown = -1;
+            var afterJoinFcntUp = -1;
             uint startingPayloadFcnt = 0;
 
             // Create Rxpk
@@ -836,14 +836,14 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(2147483647, 1)]
         public async Task When_Getting_RXDelay_Offset_From_Twin_Returns_JoinAccept_With_Correct_Settings_And_Behaves_Correctly(int rxDelay, uint expectedDelay)
         {
-            string deviceGatewayID = ServerGatewayID;
+            var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(1, gatewayID: deviceGatewayID));
             var joinRequest = simulatedDevice.CreateJoinRequest();
             string afterJoinAppSKey = null;
             string afterJoinNwkSKey = null;
             string afterJoinDevAddr = null;
-            int afterJoinFcntDown = -1;
-            int afterJoinFcntUp = -1;
+            var afterJoinFcntDown = -1;
+            var afterJoinFcntUp = -1;
             uint startingPayloadFcnt = 0;
 
             // Create Rxpk
