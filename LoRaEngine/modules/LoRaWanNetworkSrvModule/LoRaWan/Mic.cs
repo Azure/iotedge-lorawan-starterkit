@@ -9,17 +9,6 @@ namespace LoRaWan
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
-    // https://www.thethingsnetwork.org/docs/lorawan/message-types/#calculating-the-message-integrity-code
-    /*
-        The Message Integrity Code (MIC) ensures the integrity and authenticity of a message. The message integrity code is calculated over all the fields in the message and then added to the message. The following list shows what fields are used to calculate the MIC for each message type.
-
-        Data messages: MHDR | FHDR | FPort | FRMPayload
-        Join-request messages: MHDR | JoinEUI | DevEUI | DevNonce
-        Join-accept messages: MHDR | JoinNonce | NetID | DevAddr | DLSettings | RxDelay | CFList
-        Rejoin-request Type 0 and 2 messages: MHDR | Rejoin Type | NetID | DevEUI | RJcount0
-        Rejoin-request Type 1 messages: MHDR | Rejoin Type | JoinEUI | DevEUI | RJcount1
-    */
-
     /// <summary>
     /// MIC helpers (Message Integrity Code).
     /// </summary>
@@ -41,6 +30,19 @@ namespace LoRaWan
 
         public static bool operator ==(Mic left, Mic right) => left.Equals(right);
         public static bool operator !=(Mic left, Mic right) => !left.Equals(right);
+
+        //   The Message Integrity Code (MIC) ensures the integrity and authenticity of a message.
+        //   The message integrity code is calculated over all the fields in the message and then added
+        //   to the message. The following list shows what fields are used to calculate the MIC for each
+        //   message type.
+        //
+        //   - Data messages: MHDR | FHDR | FPort | FRMPayload
+        //   - Join-request messages: MHDR | JoinEUI | DevEUI | DevNonce
+        //   - Join-accept messages: MHDR | JoinNonce | NetID | DevAddr | DLSettings | RxDelay | CFList
+        //   - Rejoin-request Type 0 and 2 messages: MHDR | Rejoin Type | NetID | DevEUI | RJcount0
+        //   - Rejoin-request Type 1 messages: MHDR | Rejoin Type | JoinEUI | DevEUI | RJcount1
+        //
+        // Source: https://www.thethingsnetwork.org/docs/lorawan/message-types/#calculating-the-message-integrity-code
 
         public static Mic Compute(AppKey appKey, MacHeader mhdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce)
         {
