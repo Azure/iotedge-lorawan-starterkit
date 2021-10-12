@@ -344,14 +344,14 @@ namespace LoraKeysManagerFacade
         /// Method to take a lock when querying IoT Hub for a primary key.
         /// It is blocking as only one should access it.
         /// </summary>
-        public async Task<bool> TryTakeDevAddrUpdateLock(string devEUI)
+        public async Task<bool> TryTakeDevAddrUpdateLock(string devAddr)
         {
-            return await this.cacheStore.LockTakeAsync(string.Concat(DevAddrLockName, devEUI), this.lockOwner, LockExpiry, block: true);
+            return await this.cacheStore.LockTakeAsync(string.Concat(DevAddrLockName, devAddr), this.lockOwner, LockExpiry, block: true);
         }
 
-        public bool ReleaseDevAddrUpdateLock(string devEUI)
+        public bool ReleaseDevAddrUpdateLock(string devAddr)
         {
-            return this.cacheStore.LockRelease(string.Concat(DevAddrLockName, devEUI), this.lockOwner);
+            return this.cacheStore.LockRelease(string.Concat(DevAddrLockName, devAddr), this.lockOwner);
         }
     }
 }
