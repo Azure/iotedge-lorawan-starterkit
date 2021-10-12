@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.Test
         public async Task Validate_Dup_Message_Processing(DeduplicationMode mode)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
-            bool messageProcessed = mode == DeduplicationMode.Drop;
+            var messageProcessed = mode == DeduplicationMode.Drop;
             messageProcessed = false;
 
             this.LoRaDeviceApi.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))

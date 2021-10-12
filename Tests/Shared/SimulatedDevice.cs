@@ -75,10 +75,10 @@ namespace LoRaWan.Tests.Shared
 
         public LoRaPayloadJoinRequest CreateJoinRequest()
         {
-            byte[] devNonce = new byte[2];
+            var devNonce = new byte[2];
             if (string.IsNullOrEmpty(this.DevNonce) || (!this.isFirstJoinRequest))
             {
-                Random random = new Random();
+                var random = new Random();
                 // DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
                 random.NextBytes(devNonce);
                 this.DevNonce = BitConverter.ToString(devNonce).Replace("-", string.Empty);
@@ -105,15 +105,15 @@ namespace LoRaWan.Tests.Shared
         /// </summary>
         public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, byte fctrl = 0, bool isHexPayload = false, List<MacCommand> macCommands = null)
         {
-            byte[] devAddr = ConversionHelper.StringToByteArray(this.LoRaDevice.DevAddr);
+            var devAddr = ConversionHelper.StringToByteArray(this.LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
-            byte[] fCtrl = new byte[] { fctrl };
+            var fCtrl = new byte[] { fctrl };
             fcnt = fcnt ?? this.FrmCntUp + 1;
             this.FrmCntUp = fcnt.GetValueOrDefault();
 
             var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
 
-            byte[] fPort = new byte[] { fport };
+            var fPort = new byte[] { fport };
             // TestLogger.Log($"{LoRaDevice.DeviceID}: Simulated data: {data}");
             byte[] payload = null;
             if (data != null)
@@ -131,7 +131,7 @@ namespace LoRaWan.Tests.Shared
             }
 
             // 0 = uplink, 1 = downlink
-            int direction = 0;
+            var direction = 0;
 
             var payloadData = new LoRaPayloadData(
                 LoRaMessageType.UnconfirmedDataUp,
@@ -154,16 +154,16 @@ namespace LoRaWan.Tests.Shared
         /// </summary>
         public LoRaPayloadData CreateConfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, bool isHexPayload = false)
         {
-            byte[] devAddr = ConversionHelper.StringToByteArray(this.LoRaDevice.DevAddr);
+            var devAddr = ConversionHelper.StringToByteArray(this.LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
-            byte[] fCtrl = new byte[] { 0x80 };
+            var fCtrl = new byte[] { 0x80 };
 
             fcnt = fcnt ?? this.FrmCntUp + 1;
             this.FrmCntUp = fcnt.GetValueOrDefault();
 
             var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
 
-            byte[] fPort = new byte[] { fport };
+            var fPort = new byte[] { fport };
 
             byte[] payload = null;
 
@@ -182,7 +182,7 @@ namespace LoRaWan.Tests.Shared
             }
 
             // 0 = uplink, 1 = downlink
-            int direction = 0;
+            var direction = 0;
             var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, null, fPort, payload, direction, this.Supports32BitFCnt ? fcnt : (uint?)null);
 
             return payloadData;
@@ -241,7 +241,7 @@ namespace LoRaWan.Tests.Shared
             {
                 // handle join
                 var txpk = Txpk.CreateTxpk(response, this.LoRaDevice.AppKey);
-                byte[] convertedInputMessage = Convert.FromBase64String(txpk.Data);
+                var convertedInputMessage = Convert.FromBase64String(txpk.Data);
 
                 var joinAccept = new LoRaPayloadJoinAccept(convertedInputMessage, this.AppKey);
 

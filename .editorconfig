@@ -24,3 +24,8 @@ indent_size = 2
 [*.{cs,tt}]
 charset = utf-8
 indent_size = 4
+
+# Prefer "var" everywhere
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion

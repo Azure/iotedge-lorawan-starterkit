@@ -203,7 +203,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task ABP_Unconfirmed_Sends_Valid_Mac_Commands_As_Part_Of_Payload_And_Receives_Answer_As_Part_Of_Payload()
         {
-            string deviceGatewayID = ServerGatewayID;
+            var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
             loRaDevice.SensorDecoder = string.Empty;
@@ -224,7 +224,7 @@ namespace LoRaWan.NetworkServer.Test
                 this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed mac LinkCheckCmd
-            string msgPayload = "02";
+            var msgPayload = "02";
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1, isHexPayload: true, fport: 0);
             // only use nwkskey
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.NwkSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -233,11 +233,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(await request.WaitCompleteAsync());
             // Server should reply with MacCommand Answer
             Assert.NotNull(request.ResponseDownlink);
-            LoRaPayloadData data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
+            var data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
             Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
             data.PerformEncryption(simulatedDevice.NwkSKey);
             data.Frmpayload.Span.Reverse();
-            LoRaTools.LinkCheckAnswer link = new LoRaTools.LinkCheckAnswer(data.Frmpayload.Span);
+            var link = new LoRaTools.LinkCheckAnswer(data.Frmpayload.Span);
             Assert.NotNull(link);
             Assert.Equal(1, (int)link.GwCnt);
             Assert.Equal(15, (int)link.Margin);
@@ -251,7 +251,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task ABP_Unconfirmed_Sends_Valid_Mac_Commands_In_Fopts_And_Reply_In_Fopts()
         {
-            string deviceGatewayID = ServerGatewayID;
+            var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
             loRaDevice.SensorDecoder = string.Empty;
@@ -297,8 +297,8 @@ namespace LoRaWan.NetworkServer.Test
                 this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed mac LinkCheckCmd
-            string msgPayload = "Hello World";
-            List<LoRaTools.MacCommand> macCommands = new List<LoRaTools.MacCommand>()
+            var msgPayload = "Hello World";
+            var macCommands = new List<LoRaTools.MacCommand>()
             {
                 new LoRaTools.LinkCheckRequest()
             };
@@ -310,10 +310,10 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(await request.WaitCompleteAsync());
             // Server should reply with MacCommand Answer
             Assert.NotNull(request.ResponseDownlink);
-            LoRaPayloadData data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
+            var data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
             Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
             // FOpts are not encrypted
-            LoRaTools.LinkCheckAnswer link = new LoRaTools.LinkCheckAnswer(data.Fopts.Span);
+            var link = new LoRaTools.LinkCheckAnswer(data.Fopts.Span);
             Assert.NotNull(link);
             Assert.NotNull(eventProperties);
             Assert.Contains("LinkCheckCmd", eventProperties.Keys);
@@ -331,7 +331,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData("25")]
         public async Task ABP_Unconfirmed_Sends_Invalid_Mac_Commands_In_Fopts(string macCommand)
         {
-            string deviceGatewayID = ServerGatewayID;
+            var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
             loRaDevice.SensorDecoder = string.Empty;
@@ -369,7 +369,7 @@ namespace LoRaWan.NetworkServer.Test
                 this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed mac LinkCheckCmd
-            string msgPayload = "Hello World";
+            var msgPayload = "Hello World";
 
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
             unconfirmedMessagePayload.Fopts = ConversionHelper.StringToByteArray(macCommand);
@@ -381,11 +381,11 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(await request.WaitCompleteAsync());
             // Server should reply with MacCommand Answer
             Assert.NotNull(request.ResponseDownlink);
-            LoRaPayloadData data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
+            var data = new LoRaPayloadData(Convert.FromBase64String(request.ResponseDownlink.Txpk.Data));
             Assert.True(data.CheckMic(simulatedDevice.NwkSKey));
             // FOpts are not encrypted
             var payload = data.GetDecryptedPayload(simulatedDevice.AppSKey);
-            string c2dreceivedPayload = Encoding.UTF8.GetString(payload);
+            var c2dreceivedPayload = Encoding.UTF8.GetString(payload);
             Assert.Equal(c2dMessage.Payload, c2dreceivedPayload);
             // Nothing should be sent to IoT Hub
             Assert.NotNull(loRaDeviceTelemetry);
@@ -399,7 +399,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData("26")]
         public async Task ABP_Unconfirmed_Sends_Invalid_Mac_Commands_As_Part_Of_Payload(string macCommand)
         {
-            string deviceGatewayID = ServerGatewayID;
+            var deviceGatewayID = ServerGatewayID;
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
             var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
             loRaDevice.SensorDecoder = string.Empty;
@@ -426,7 +426,7 @@ namespace LoRaWan.NetworkServer.Test
                 this.FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed mac LinkCheckCmd
-            string msgPayload = macCommand;
+            var msgPayload = macCommand;
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1, isHexPayload: true, fport: 0);
             // only use nwkskey
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.NwkSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -450,13 +450,13 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(255, 255)]
         public async Task ABP_Device_NetId_Should_Match_Server(uint deviceNetId, uint serverNetId)
         {
-            string msgPayload = "1234";
+            var msgPayload = "1234";
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: deviceNetId));
             var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
             loRaDevice.SensorDecoder = null;
 
             // message will be sent if there is a match
-            bool netIdMatches = deviceNetId == serverNetId;
+            var netIdMatches = deviceNetId == serverNetId;
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
             if (netIdMatches)
             {
@@ -636,7 +636,7 @@ namespace LoRaWan.NetworkServer.Test
             var confirmedMessageResult = this.PacketForwarder.DownlinkMessages[0];
 
             // validates txpk according to eu region
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk, out double frequency));
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk, out var frequency));
             Assert.Equal(frequency, confirmedMessageResult.Txpk.Freq);
             Assert.Equal("4/5", confirmedMessageResult.Txpk.Codr);
             Assert.False(confirmedMessageResult.Txpk.Imme);
@@ -809,7 +809,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Single(this.PacketForwarder.DownlinkMessages);
             var txpk = this.PacketForwarder.DownlinkMessages[0].Txpk;
             Assert.Equal(0U, txpk.Rfch);
-            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk, out double frequency));
+            Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk, out var frequency));
             Assert.Equal(frequency, txpk.Freq);
             Assert.Equal("4/5", txpk.Codr);
             Assert.False(txpk.Imme);
@@ -1220,7 +1220,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task ABP_Device_With_Invalid_NetId_Should_Not_Load_Devices()
         {
-            string msgPayload = "1234";
+            var msgPayload = "1234";
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: 0));
             var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
 
@@ -1259,7 +1259,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task ABP_Device_With_Invalid_NetId_In_Allowed_DevAdr_Should_Be_Accepted()
         {
-            string msgPayload = "1234";
+            var msgPayload = "1234";
             var deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: 0, gatewayID: ServerGatewayID));
 

@@ -17,9 +17,9 @@ namespace LoRaWan.Tests.Shared
         /// </summary>
         public static byte[] GetMacAddress()
         {
-            string macAddresses = string.Empty;
+            var macAddresses = string.Empty;
 
-            foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
+            foreach (var adapter in NetworkInterface.GetAllNetworkInterfaces())
             {
                 if (adapter.OperationalStatus == OperationalStatus.Up)
                 {

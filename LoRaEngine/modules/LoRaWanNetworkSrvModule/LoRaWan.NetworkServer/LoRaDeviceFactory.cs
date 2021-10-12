@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer
 
         private string CreateIoTHubConnectionString(string devEUI, string primaryKey)
         {
-            string connectionString = string.Empty;
+            var connectionString = string.Empty;
 
             if (string.IsNullOrEmpty(this.configuration.IoTHubHostName))
             {
@@ -69,8 +69,8 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                string partConnection = this.CreateIoTHubConnectionString(devEUI, primaryKey);
-                string deviceConnectionStr = $"{partConnection}DeviceId={devEUI};SharedAccessKey={primaryKey}";
+                var partConnection = this.CreateIoTHubConnectionString(devEUI, primaryKey);
+                var deviceConnectionStr = $"{partConnection}DeviceId={devEUI};SharedAccessKey={primaryKey}";
 
                 // Enabling AMQP multiplexing
                 var transportSettings = new ITransportSettings[]

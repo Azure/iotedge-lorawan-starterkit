@@ -67,7 +67,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadFcnt++;
             }
 
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
             {
                 var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
                 var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
@@ -145,7 +145,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(5, -30, "SF9BW125", 3, 0)]
         public async Task Perform_DR_Adaptation_When_Needed(uint deviceId, float currentLsnr, string currentDR, int expectedDR, int expectedTxPower)
         {
-            int messageCount = 21;
+            var messageCount = 21;
             uint payloadFcnt = 0;
             const uint InitialDeviceFcntUp = 9;
             const uint ExpectedDeviceFcntDown = 0;
@@ -162,8 +162,8 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            int twinDR = 0;
-            int twinTxPower = 0;
+            var twinDR = 0;
+            var twinTxPower = 0;
 
             this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .Callback<TwinCollection>((t) =>
@@ -185,7 +185,7 @@ namespace LoRaWan.NetworkServer.Test
 
             payloadFcnt = await this.InitializeCacheToDefaultValuesAsync(payloadFcnt, simulatedDevice, messageProcessor);
 
-            for (int i = 0; i < messageCount; i++)
+            for (var i = 0; i < messageCount; i++)
             {
                 payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
             }
@@ -243,7 +243,7 @@ namespace LoRaWan.NetworkServer.Test
         public async Task Perform_TXPower_Adaptation_When_Needed()
         {
             uint deviceId = 44;
-            int messageCount = 21;
+            var messageCount = 21;
             uint payloadFcnt = 0;
             const uint InitialDeviceFcntUp = 9;
             const uint InitialDeviceFcntDown = 0;
@@ -260,8 +260,8 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            int reportedDR = 0;
-            int reportedTxPower = 0;
+            var reportedDR = 0;
+            var reportedTxPower = 0;
 
             this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
             .Callback<TwinCollection>((t) =>
@@ -286,10 +286,10 @@ namespace LoRaWan.NetworkServer.Test
             // ****************************************************
             // set to very good lsnr and DR3
             float currentLsnr = 20;
-            string currentDR = "SF9BW125";
+            var currentDR = "SF9BW125";
 
             // todo add case without buffer
-            for (int i = 0; i < messageCount; i++)
+            for (var i = 0; i < messageCount; i++)
             {
                 payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
             }
@@ -335,7 +335,7 @@ namespace LoRaWan.NetworkServer.Test
             currentDR = "SF7BW125";
 
             // todo add case without buffer
-            for (int i = 0; i < messageCount; i++)
+            for (var i = 0; i < messageCount; i++)
             {
                 payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
             }
@@ -384,9 +384,9 @@ namespace LoRaWan.NetworkServer.Test
         public async Task Perform_NbRep_Adaptation_When_Needed()
         {
             uint deviceId = 31;
-            string currentDR = "SF8BW125";
-            int currentLsnr = -20;
-            int messageCount = 20;
+            var currentDR = "SF8BW125";
+            var currentLsnr = -20;
+            var messageCount = 20;
             uint payloadFcnt = 0;
             const uint InitialDeviceFcntUp = 1;
             const uint ExpectedDeviceFcntDown = 4;
@@ -402,7 +402,7 @@ namespace LoRaWan.NetworkServer.Test
 
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
-            int reportedNbRep = 0;
+            var reportedNbRep = 0;
             this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
             .Callback<TwinCollection>((t) =>
             {
@@ -425,7 +425,7 @@ namespace LoRaWan.NetworkServer.Test
             // First part send messages with spaces in fcnt to simulate wrong network connectivity
             // ****************************************************
             // send a message with a fcnt every 4.
-            for (int i = 0; i < messageCount; i++)
+            for (var i = 0; i < messageCount; i++)
             {
                 payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt + 3, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
             }
@@ -460,7 +460,7 @@ namespace LoRaWan.NetworkServer.Test
             // Second part send normal messages to decrease NbRep
             // ****************************************************
             // send a message with a fcnt every 1
-            for (int i = 0; i < messageCount; i++)
+            for (var i = 0; i < messageCount; i++)
             {
                 payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
             }
@@ -502,7 +502,7 @@ namespace LoRaWan.NetworkServer.Test
             // Third part send normal messages to decrease NbRep to 1
             // ****************************************************
             // send a message with a fcnt every 1
-            for (int i = 0; i < messageCount; i++)
+            for (var i = 0; i < messageCount; i++)
             {
                 payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
             }
