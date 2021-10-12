@@ -262,13 +262,14 @@ namespace LoraKeysManagerFacade
         {
             // if the new value are not different we want to ensure we don't save, to not update the TTL of the item.
             var toSyncValues = newDevEUIList.ToDictionary(x => x.DevEUI);
-            var cacheValues = new Dictionary<string, DevAddrCacheInfo>();
 
             // If nothing is in the cache we want to return the new values.
             if (cacheDevEUIEntry.Length == 0)
             {
                 return toSyncValues;
             }
+
+            var cacheValues = new Dictionary<string, DevAddrCacheInfo>();
 
             foreach (var devEUIEntry in cacheDevEUIEntry)
             {
