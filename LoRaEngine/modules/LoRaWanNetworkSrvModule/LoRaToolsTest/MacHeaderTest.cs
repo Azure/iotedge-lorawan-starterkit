@@ -11,6 +11,33 @@ namespace LoRaWanTest
         readonly MacHeader confirmedDataDown = new(128);
         readonly MacHeader unconfirmedDataUp = new(64);
 
+        [Theory]
+        [InlineData(  0, MacMessageType.JoinRequest        , 0)]
+        [InlineData( 31, MacMessageType.JoinRequest        , 3)]
+        [InlineData( 32, MacMessageType.JoinAccept         , 0)]
+        [InlineData( 63, MacMessageType.JoinAccept         , 3)]
+        [InlineData( 64, MacMessageType.UnconfirmedDataUp  , 0)]
+        [InlineData( 95, MacMessageType.UnconfirmedDataUp  , 3)]
+        [InlineData( 96, MacMessageType.UnconfirmedDataDown, 0)]
+        [InlineData(127, MacMessageType.UnconfirmedDataDown, 3)]
+        [InlineData(128, MacMessageType.ConfirmedDataUp    , 0)]
+        [InlineData(159, MacMessageType.ConfirmedDataUp    , 3)]
+        [InlineData(160, MacMessageType.ConfirmedDataDown  , 0)]
+        [InlineData(191, MacMessageType.ConfirmedDataDown  , 3)]
+        [InlineData(192, MacMessageType.RejoinRequest      , 0)]
+        [InlineData(223, MacMessageType.RejoinRequest      , 3)]
+        [InlineData(224, MacMessageType.Proprietary        , 0)]
+        [InlineData(255, MacMessageType.Proprietary        , 3)]
+        public void MacHeader_Returns_ProperMessageType_And_Major(byte value, MacMessageType macMessageType, int major)
+        {
+            // arrange
+            var mhdr = new MacHeader(value);
+
+            // assert
+            Assert.Equal(macMessageType, mhdr.MessageType);
+            Assert.Equal(major, mhdr.Major);
+        }
+
         [Fact]
         public void Equals_Returns_True_When_Value_Equals()
         {
@@ -67,33 +94,6 @@ namespace LoRaWanTest
         public void ToString_Returns_Hex_String()
         {
             Assert.Equal("80", this.confirmedDataDown.ToString());
-        }
-
-        [Theory]
-        [InlineData(  0, MacMessageType.JoinRequest        , 0)]
-        [InlineData( 31, MacMessageType.JoinRequest        , 3)]
-        [InlineData( 32, MacMessageType.JoinAccept         , 0)]
-        [InlineData( 63, MacMessageType.JoinAccept         , 3)]
-        [InlineData( 64, MacMessageType.UnconfirmedDataUp  , 0)]
-        [InlineData( 95, MacMessageType.UnconfirmedDataUp  , 3)]
-        [InlineData( 96, MacMessageType.UnconfirmedDataDown, 0)]
-        [InlineData(127, MacMessageType.UnconfirmedDataDown, 3)]
-        [InlineData(128, MacMessageType.ConfirmedDataUp    , 0)]
-        [InlineData(159, MacMessageType.ConfirmedDataUp    , 3)]
-        [InlineData(160, MacMessageType.ConfirmedDataDown  , 0)]
-        [InlineData(191, MacMessageType.ConfirmedDataDown  , 3)]
-        [InlineData(192, MacMessageType.RejoinRequest      , 0)]
-        [InlineData(223, MacMessageType.RejoinRequest      , 3)]
-        [InlineData(224, MacMessageType.Proprietary        , 0)]
-        [InlineData(255, MacMessageType.Proprietary        , 3)]
-        public void MacHeader_Returns_ProperMessageType_And_Major(byte value, MacMessageType macMessageType, int major)
-        {
-            // arrange
-            var mhdr = new MacHeader(value);
-
-            // assert
-            Assert.Equal(macMessageType, mhdr.MessageType);
-            Assert.Equal(major, mhdr.Major);
         }
 
         [Fact]
