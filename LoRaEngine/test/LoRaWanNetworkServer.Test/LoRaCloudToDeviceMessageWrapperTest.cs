@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
     using System.Linq;
     using System.Text;
     using LoRaTools;
@@ -11,7 +12,7 @@ namespace LoRaWan.NetworkServer.Test
     using Moq;
     using Xunit;
 
-    public class LoRaCloudToDeviceMessageWrapperTest
+    public sealed class LoRaCloudToDeviceMessageWrapperTest : IDisposable
     {
         private readonly LoRaDevice sampleDevice;
 
@@ -95,5 +96,7 @@ namespace LoRaWan.NetworkServer.Test
             var dutyCycleCmd = (DutyCycleRequest)target.MacCommands.First();
             Assert.Equal(2, dutyCycleCmd.DutyCyclePL);
         }
+
+        public void Dispose() => this.sampleDevice.Dispose();
     }
 }

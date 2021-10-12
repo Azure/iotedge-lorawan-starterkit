@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer.Test
     using Moq;
     using Xunit;
 
-    public class DefaultClassCDevicesMessageSenderTest
+    public sealed class DefaultClassCDevicesMessageSenderTest : IDisposable
     {
         const string ServerGatewayID = "test-gateway";
 
@@ -369,5 +369,7 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
+
+        public void Dispose() => this.loRaDeviceRegistry.Dispose();
     }
 }

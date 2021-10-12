@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer.Test
     using Moq;
     using Xunit;
 
-    public class LoRaDeviceRegistryTest
+    public sealed class LoRaDeviceRegistryTest : IDisposable
     {
         const string ServerGatewayID = "test-gateway";
 
@@ -560,5 +560,7 @@ namespace LoRaWan.NetworkServer.Test
             deviceApi.VerifyAll();
             deviceClient.VerifyAll();
         }
+
+        public void Dispose() => this.cache.Dispose();
     }
 }

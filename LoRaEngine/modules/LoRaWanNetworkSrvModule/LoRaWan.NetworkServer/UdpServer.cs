@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Defines udp Server communicating with packet forwarder.
     /// </summary>
-    public class UdpServer : IPacketForwarder
+    public class UdpServer : IPacketForwarder, IDisposable
     {
         const int PORT = 1680;
         private readonly NetworkServerConfiguration configuration;

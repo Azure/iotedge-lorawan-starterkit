@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaWan.Shared;
     using Xunit;
 
-    public class ServiceFacadeHttpClientHandlerTest
+    public sealed class ServiceFacadeHttpClientHandlerTest : IDisposable
     {
         private HttpResponseMessage fakeHttpResponseMessage;
         private Uri fakeRequestedUri;
@@ -165,5 +165,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal("Version mismatch (expected: 2018-12-16-preview, function version: 2019-02-12-preview), ensure you have the latest version deployed", response.ReasonPhrase);
             Assert.Equal("https://mytest.test.com/api/Function1?code=aaabbbb&api-version=2018-12-16-preview", this.fakeRequestedUri.ToString());
         }
+
+        public void Dispose() => this.fakeHttpResponseMessage.Dispose();
     }
 }
