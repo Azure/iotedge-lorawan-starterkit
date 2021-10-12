@@ -31,6 +31,8 @@ namespace LoRaWan
 
         public Mic(uint value) => this.value = value;
 
+        public uint AsUInt32 => this.value;
+
         public bool Equals(Mic other) => this.value == other.value;
         public override bool Equals(object obj) => obj is Mic other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
