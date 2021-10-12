@@ -1,4 +1,4 @@
-﻿namespace LoRaWanTest
+namespace LoRaWanTest
 {
     using System.Collections.Generic;
     using LoRaTools.Regions;
@@ -37,8 +37,8 @@
         public void TestRegionLimit(double freq, string datarate)
         {
             var rxpk = GenerateRxpk(datarate, freq);
-            Assert.False(RegionManager.EU868.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency) &&
-            RegionManager.EU868.GetDownstreamDR(rxpk[0]) != null);
+            Assert.False(_region.TryGetDownstreamChannelFrequency(rxpk[0], out _) &&
+                _region.GetDownstreamDR(rxpk[0]) != null);
         }
 
         [Theory]
@@ -59,9 +59,9 @@
         [InlineData("", null, null, 869.525, "SF12BW125")] // Standard EU.
         [InlineData("SF9BW125", null, null, 869.525, "SF9BW125")] // nwksrvDR is correctly applied if no device twins.
         [InlineData("SF9BW125", 868.250, (ushort)6, 868.250, "SF7BW250")] // device twins are applied in priority.
-        public void TestDownstreamRx2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
         {
-            TestDownstreamRx2FrequencyAndDataRate(LoRaRegionType.EU868, nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
+            TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
         }
     }
 }

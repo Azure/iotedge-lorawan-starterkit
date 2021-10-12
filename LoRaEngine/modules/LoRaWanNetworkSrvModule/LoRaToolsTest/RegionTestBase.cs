@@ -1,4 +1,4 @@
-﻿namespace LoRaWanTest
+namespace LoRaWanTest
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -11,17 +11,17 @@
     {
         protected Region _region;
 
-        public void TestRegionFrequencyAndDataRate(string inputDr, double inputFreq, string outputDr, double outputFreq)
+        protected void TestRegionFrequencyAndDataRate(string inputDr, double inputFreq, string outputDr, double outputFreq)
         {
             var rxpk = GenerateRxpk(inputDr, inputFreq);
-            Assert.True(_region.TryGetDownstreamChannelFrequency(rxpk[0], out double frequency));
+            Assert.True(_region.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency));
             Assert.Equal(frequency, outputFreq);
             Assert.Equal(_region.GetDownstreamDR(rxpk[0]), outputDr);
         }
 
         protected static List<Rxpk> GenerateRxpk(string dr, double freq)
         {
-            string jsonUplink =
+            var jsonUplink =
                 @"{ ""rxpk"":[
                 {
                     ""time"":""2013-03-31T16:21:17.528002Z"",
@@ -40,18 +40,16 @@
                 }]}";
 
             var multiRxpkInput = Encoding.Default.GetBytes(jsonUplink);
-            byte[] physicalUpstreamPyld = new byte[12];
+            var physicalUpstreamPyld = new byte[12];
             physicalUpstreamPyld[0] = 2;
-            List<Rxpk> rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
-            return rxpk;
+            return Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
         }
 
-        public void TestDownstreamRx2FrequencyAndDataRate(LoRaRegionType loRaRegion, string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        protected void TestDownstreamRX2FrequencyAndDataRate(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
         {
             var devEui = "testDevice";
-            RegionManager.TryTranslateToRegion(loRaRegion, out Region region);
-            var datr = region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins);
-            var freq = region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq);
+            var datr = _region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins);
+            var freq = _region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq);
             Assert.Equal(expectedFreq, freq);
             Assert.Equal(expectedDr, datr);
         }
