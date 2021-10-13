@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.Test
+namespace LoRaWan.Tests.Shared
 {
     using System;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
 
-    class HttpMessageHandlerMock : HttpMessageHandler
+    public class HttpMessageHandlerMock : HttpMessageHandler
     {
         private Func<HttpRequestMessage, HttpResponseMessage> handler;
 

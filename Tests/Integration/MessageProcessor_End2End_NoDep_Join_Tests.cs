@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.Test
+namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Collections.Generic;
@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
+    using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
