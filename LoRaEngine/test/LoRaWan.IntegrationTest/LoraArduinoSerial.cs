@@ -33,6 +33,8 @@
 
 #pragma warning disable SA1300 // Elements should begin with an uppercase letter
 #pragma warning disable SA1313 // Parameters should begin with a lowercase letter
+#pragma warning disable IDE1006 // Naming Styles
+
 
 namespace LoRaWan.IntegrationTest
 {
