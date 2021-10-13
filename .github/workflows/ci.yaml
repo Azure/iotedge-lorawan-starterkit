@@ -98,6 +98,17 @@ jobs:
     - name: Upload to Codecov
       uses: codecov/codecov-action@v2
 
+    # Pull Redis Cache docker image
+    - name: Pulling Redis Cache image
+      run: docker pull redis:5.0.4-alpine
+
+    # Run integration tests
+    - name: Run integration tests
+      run: |
+        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r Tests/TestResults/Integration \
+          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
+          tests/Integration/LoRaWan.Test.Integration.csproj
+          
   check_if_deploy:
     needs:
       - env_var
@@ -107,17 +118,6 @@ jobs:
     name: Deploy this run on the CI environment
     steps:
     - run : echo "Deployment was authorized"
-
-  # Pull Redis Cache docker image
-  - name: Pulling Redis Cache image
-    run: docker pull redis:5.0.4-alpine
-
-  # Run integration tests
-  - name: Run integration tests
-    run: |
-      dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r Tests/TestResults/Integration \
-        /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
-        tests/Integration/LoRaWan.Test.Integration.csproj
 
   # Build and deploy Facade Azure Function
   deploy_facade_function:
