@@ -33,5 +33,7 @@ namespace LoRaWan.Tests.Shared
         public void TryScanExpiredItems()
         {
         }
+
+        public void Dispose() => this.singleDeviceClient.Dispose();
     }
 }

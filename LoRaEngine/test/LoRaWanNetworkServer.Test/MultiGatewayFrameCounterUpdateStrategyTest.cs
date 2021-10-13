@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer.Test
 
         public MultiGatewayFrameCounterUpdateStrategyTest()
         {
-            this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            this.deviceClient = new Mock<ILoRaDeviceClient>();
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.gatewayID = "test-gateway";
         }
@@ -31,7 +31,8 @@ namespace LoRaWan.NetworkServer.Test
         public async Task When_Device_Has_No_Changes_To_Fcnt_Should_Not_Save_Changes(uint fcntDown, uint fcntUp)
         {
             var target = new MultiGatewayFrameCounterUpdateStrategy(this.gatewayID, this.deviceApi.Object);
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
             device.SetFcntDown(fcntDown);
             device.SetFcntUp(fcntUp);
             device.AcceptFrameCountChanges();
@@ -48,7 +49,8 @@ namespace LoRaWan.NetworkServer.Test
         {
             var target = new MultiGatewayFrameCounterUpdateStrategy(this.gatewayID, this.deviceApi.Object);
 
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
             device.SetFcntUp(startFcntUp);
             device.AcceptFrameCountChanges();
 
@@ -69,7 +71,8 @@ namespace LoRaWan.NetworkServer.Test
         {
             var target = new MultiGatewayFrameCounterUpdateStrategy(this.gatewayID, this.deviceApi.Object);
 
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
             device.SetFcntDown(startFcntDown);
             device.AcceptFrameCountChanges();
 
@@ -105,7 +108,8 @@ namespace LoRaWan.NetworkServer.Test
                     Assert.Equal(0U, (uint)t[TwinProperty.FCntDown]);
                 });
 
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
             device.SetFcntUp(fcntUp);
             await target.SaveChangesAsync(device);
 
@@ -130,7 +134,8 @@ namespace LoRaWan.NetworkServer.Test
                     Assert.Equal(startingFcntUp, (uint)t[TwinProperty.FCntUp]);
                 });
 
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
             device.SetFcntUp(startingFcntUp);
             device.SetFcntDown(startingFcntDown);
             device.AcceptFrameCountChanges();
@@ -156,7 +161,8 @@ namespace LoRaWan.NetworkServer.Test
         {
             var target = new MultiGatewayFrameCounterUpdateStrategy(this.gatewayID, this.deviceApi.Object);
 
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
 
             // will reset the cloud cache
             this.deviceApi.Setup(x => x.ABPFcntCacheResetAsync(device.DevEUI, It.IsAny<uint>(), It.IsNotNull<string>()))

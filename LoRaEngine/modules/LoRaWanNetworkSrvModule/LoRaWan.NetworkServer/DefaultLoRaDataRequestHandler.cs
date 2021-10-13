@@ -216,7 +216,7 @@ namespace LoRaWan.NetworkServer
 
                                 if (decodePayloadResult.CloudToDeviceMessage != null)
                                 {
-                                    if (string.IsNullOrEmpty(decodePayloadResult.CloudToDeviceMessage.DevEUI) || string.Equals(loRaDevice.DevEUI, decodePayloadResult.CloudToDeviceMessage.DevEUI, StringComparison.InvariantCultureIgnoreCase))
+                                    if (string.IsNullOrEmpty(decodePayloadResult.CloudToDeviceMessage.DevEUI) || string.Equals(loRaDevice.DevEUI, decodePayloadResult.CloudToDeviceMessage.DevEUI, StringComparison.OrdinalIgnoreCase))
                                     {
                                         // sending c2d to same device
                                         cloudToDeviceMessage = decodePayloadResult.CloudToDeviceMessage;
@@ -338,7 +338,7 @@ namespace LoRaWan.NetworkServer
                                     if (!fcntDown.HasValue || fcntDown <= 0)
                                     {
                                         // We did not get a valid frame count down, therefore we should not process the message
-                                        // Not calling 'cloudToDeviceMessage.AbandonAsync()' as this created race condition in C2D Message between both
+                                        _ = cloudToDeviceMessage.AbandonAsync();
                                         cloudToDeviceMessage = null;
                                     }
                                     else

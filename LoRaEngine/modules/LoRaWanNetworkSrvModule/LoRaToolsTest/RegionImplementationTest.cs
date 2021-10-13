@@ -15,8 +15,8 @@ namespace LoRaWanTest
         [Theory]
         [CombinatorialData]
         public void TestPhysicalMappingEU(
-      [CombinatorialValues("SF12BW125", "SF11BW125", "SF10BW125", "SF9BW125", "SF8BW125", "SF7BW125", "SF7BW250")]string datr,
-      [CombinatorialValues(868.1, 868.3, 868.5)] double freq)
+            [CombinatorialValues("SF12BW125", "SF11BW125", "SF10BW125", "SF9BW125", "SF8BW125", "SF7BW125", "SF7BW250")] string datr,
+            [CombinatorialValues(868.1, 868.3, 868.5)] double freq)
         {
             var rxpk = GenerateRxpk(datr, freq);
 
@@ -221,6 +221,7 @@ namespace LoRaWanTest
         }
 
         [Theory]
+#pragma warning disable format
         [InlineData("SF10BW125",  19)]
         [InlineData("SF9BW125",   61)]
         [InlineData("SF8BW125",  133)]
@@ -231,6 +232,7 @@ namespace LoRaWanTest
         [InlineData("SF10BW500", 250)]
         [InlineData("SF9BW500",  250)]
         [InlineData("SF7BW500",  250)]
+#pragma warning restore format
 
         public void TestMaxPayloadLengthUS(string datr, uint maxPyldSize)
         {

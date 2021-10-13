@@ -36,7 +36,10 @@ namespace LoraKeysManagerFacade
             var redisCache = redis.GetDatabase();
             var deviceCacheStore = new LoRaDeviceCacheRedisStore(redisCache);
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // Object is handled by DI container.
             builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(iotHubConnectionString));
+#pragma warning restore CA2000 // Dispose objects before losing scope
             builder.Services.AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)));
             builder.Services.AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore);
             builder.Services.AddSingleton<ILoRaADRManager>(new LoRaADRServerManager(new LoRaADRRedisStore(redisCache), new LoRaADRStrategyProvider(), deviceCacheStore));

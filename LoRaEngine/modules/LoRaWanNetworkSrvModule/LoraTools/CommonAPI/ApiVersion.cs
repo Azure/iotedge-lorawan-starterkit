@@ -139,7 +139,7 @@ namespace LoRaTools.CommonAPI
         /// <returns>The <see cref="ApiVersion"/> from <paramref name="version"/>.</returns>
         public static ApiVersion Parse(string version, bool returnAsKnown = false)
         {
-            return GetApiVersions().FirstOrDefault(v => string.Equals(version, v.Version, StringComparison.InvariantCultureIgnoreCase))
+            return GetApiVersions().FirstOrDefault(v => string.Equals(version, v.Version, StringComparison.OrdinalIgnoreCase))
                 ?? new ApiVersion(version, name: null, isKnown: returnAsKnown);
         }
 
@@ -226,11 +226,11 @@ namespace LoRaTools.CommonAPI
                 (this.MinCompatibleVersion == null || this.MinCompatibleVersion <= other);
         }
 
-        public override int GetHashCode() => this.Version.GetHashCode();
+        public override int GetHashCode() => this.Version.GetHashCode(StringComparison.Ordinal);
 
         public int CompareTo(ApiVersion other)
         {
-            return string.Compare(this.Version, other.Version, true);
+            return string.Compare(this.Version, other.Version, StringComparison.Ordinal);
         }
 
         public override string ToString() => this.Version.ToString();

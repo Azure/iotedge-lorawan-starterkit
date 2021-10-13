@@ -55,10 +55,11 @@ namespace LoRaWan.Tests.Integration
                 .Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, NewNonEmptyCache(loRaDevice), LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var messageProcessor1 = new MessageDispatcher(
-                ServerConfiguration,
+            using var messageProcessor1 = new MessageDispatcher(
+                this.ServerConfiguration,
                 loRaDeviceRegistry1,
                 FrameCounterUpdateStrategyProvider);
 
@@ -67,7 +68,7 @@ namespace LoRaWan.Tests.Integration
             // Create Rxpk
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
 
-            var request = CreateWaitableRequest(rxpk);
+            using var request = this.CreateWaitableRequest(rxpk);
 
             messageProcessor1.DispatchRequest(request);
 

@@ -77,10 +77,11 @@ namespace LoRaWan.Tests.Integration
                     .ReturnsAsync(true);
             }
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
@@ -88,7 +89,7 @@ namespace LoRaWan.Tests.Integration
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -164,10 +165,11 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
@@ -175,7 +177,7 @@ namespace LoRaWan.Tests.Integration
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msgPayload, fcnt: 1);
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -247,10 +249,11 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
@@ -260,7 +263,7 @@ namespace LoRaWan.Tests.Integration
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             rxpk.ExtraData["x_power"] = 22.3;
             rxpk.ExtraData["x_wind"] = "NE";
-            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -327,15 +330,16 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var httpMessageHandler = new HttpMessageHandlerMock();
+            using var httpMessageHandler = new HttpMessageHandlerMock();
             httpMessageHandler.SetupHandler((r) =>
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -344,12 +348,13 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(new HttpClient(httpMessageHandler)));
+            using var httpClient = new HttpClient(httpMessageHandler);
+            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -411,15 +416,16 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var httpMessageHandler = new HttpMessageHandlerMock();
+            using var httpMessageHandler = new HttpMessageHandlerMock();
             httpMessageHandler.SetupHandler((r) =>
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -428,12 +434,13 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(new HttpClient(httpMessageHandler)));
+            using var httpClient = new HttpClient(httpMessageHandler);
+            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -497,15 +504,16 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var httpMessageHandler = new HttpMessageHandlerMock();
+            using var httpMessageHandler = new HttpMessageHandlerMock();
             httpMessageHandler.SetupHandler((r) =>
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -514,12 +522,13 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(new HttpClient(httpMessageHandler)));
+            using var httpClient = new HttpClient(httpMessageHandler);
+            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -583,17 +592,18 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             var decodedObject = new { temp = 10, humidity = 22.1, text = "abc" };
 
-            var httpMessageHandler = new HttpMessageHandlerMock();
+            using var httpMessageHandler = new HttpMessageHandlerMock();
             httpMessageHandler.SetupHandler((r) =>
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -602,12 +612,13 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(new HttpClient(httpMessageHandler)));
+            using var httpClient = new HttpClient(httpMessageHandler);
+            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -669,15 +680,16 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var httpMessageHandler = new HttpMessageHandlerMock();
+            using var httpMessageHandler = new HttpMessageHandlerMock();
             httpMessageHandler.SetupHandler((r) =>
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
@@ -686,12 +698,13 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(new HttpClient(httpMessageHandler)));
+            using var httpClient = new HttpClient(httpMessageHandler);
+            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 1);
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -728,17 +741,18 @@ namespace LoRaWan.Tests.Integration
             // C2D message will be checked
             // this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
             // .ReturnsAsync((Message)null);
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             var decodedObject = new { temp = 10, humidity = 22.1, text = "abc", cloudToDeviceMessage = new { test = 1 } };
 
-            var httpMessageHandler = new HttpMessageHandlerMock();
+            using var httpMessageHandler = new HttpMessageHandlerMock();
             httpMessageHandler.SetupHandler((r) =>
             {
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -747,12 +761,13 @@ namespace LoRaWan.Tests.Integration
                 };
             });
 
-            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(new HttpClient(httpMessageHandler)));
+            using var httpClient = new HttpClient(httpMessageHandler);
+            this.PayloadDecoder.SetDecoder(new LoRaPayloadDecoder(httpClient));
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 10);
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -770,7 +785,7 @@ namespace LoRaWan.Tests.Integration
             // sends unconfirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("1", fcnt: 10);
             var rxpk2 = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request2 = new WaitableLoRaRequest(rxpk2, this.PacketForwarder);
+            using var request2 = new WaitableLoRaRequest(rxpk2, this.PacketForwarder);
             messageDispatcher.DispatchRequest(request2);
             Assert.True(await request2.WaitCompleteAsync());
             Assert.NotNull(request2.ResponseDownlink);

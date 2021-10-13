@@ -182,7 +182,7 @@ namespace LoRaTools.Regions
             var defaultDatr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
             Logger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
             return defaultDatr;
-            }
+        }
 
         /// <summary>
         /// Implement correct logic to get the downstream data rate based on the region.

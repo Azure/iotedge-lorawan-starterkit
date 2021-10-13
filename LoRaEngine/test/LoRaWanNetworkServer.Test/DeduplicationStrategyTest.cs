@@ -19,7 +19,7 @@ namespace LoRaWan.NetworkServer.Test
             this.loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.factory = new DeduplicationStrategyFactory(this.loRaDeviceApi.Object);
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-
+            this.loRaDeviceClient.Setup(ldc => ldc.Dispose());
             this.loRaDeviceApi.Setup(x => x.CheckDuplicateMsgAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<string>(), It.IsAny<uint>()))
                 .Returns(() =>
                 {
@@ -33,8 +33,9 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task Validate_Drop_Strategy()
         {
-            var connectionManager = TestUtils.CreateConnectionManager();
-            var target = new LoRaDevice("1231", "12312", connectionManager);
+            using var connectionManagerWrapper = TestUtils.CreateConnectionManager();
+            var connectionManager = connectionManagerWrapper.Value;
+            using var target = new LoRaDevice("1231", "12312", connectionManager);
             target.Deduplication = DeduplicationMode.Drop;
             var strategy = this.factory.Create(target);
 
@@ -48,8 +49,9 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task Validate_Mark_Strategy()
         {
-            var connectionManager = TestUtils.CreateConnectionManager();
-            var target = new LoRaDevice("1231", "12312", connectionManager);
+            using var connectionManagerWrapper = TestUtils.CreateConnectionManager();
+            var connectionManager = connectionManagerWrapper.Value;
+            using var target = new LoRaDevice("1231", "12312", connectionManager);
             target.Deduplication = DeduplicationMode.Mark;
 
             connectionManager.Register(target, this.loRaDeviceClient.Object);

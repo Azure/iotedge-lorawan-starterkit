@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer.Test
     using Moq;
     using Xunit;
 
-    public class DefaultClassCDevicesMessageSenderTest
+    public sealed class DefaultClassCDevicesMessageSenderTest : IDisposable
     {
         const string ServerGatewayID = "test-gateway";
 
@@ -29,6 +29,7 @@ namespace LoRaWan.NetworkServer.Test
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceApi;
         private readonly Mock<ILoRaDeviceClient> deviceClient;
         private readonly TestLoRaDeviceFactory loRaDeviceFactory;
+        private readonly IMemoryCache cache;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterStrategyProvider;
 
         public DefaultClassCDevicesMessageSenderTest()
@@ -44,7 +45,8 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object);
-            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, new MemoryCache(new MemoryCacheOptions()), this.deviceApi.Object, this.loRaDeviceFactory);
+            this.cache = new MemoryCache(new MemoryCacheOptions());
+            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory);
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
@@ -368,6 +370,13 @@ namespace LoRaWan.NetworkServer.Test
             this.packetForwarder.VerifyAll();
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
+        }
+
+        public void Dispose()
+        {
+            this.loRaDeviceRegistry.Dispose();
+            this.cache.Dispose();
+            this.loRaDeviceFactory.Dispose();
         }
     }
 }

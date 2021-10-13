@@ -5,6 +5,7 @@ namespace XunitRetryHelper
 {
     using System;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Threading;
     using System.Threading.Tasks;
     using Xunit.Abstractions;
@@ -75,7 +76,7 @@ namespace XunitRetryHelper
 
         private static void LogMessage(string msg, TestFailed assertInfo = null)
         {
-            msg = $"{DateTime.UtcNow.ToString("HH:mm:ss.fff")} [Test] {msg}";
+            msg = $"{DateTime.UtcNow.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture)} [Test] {msg}";
 
             if (assertInfo != null)
             {

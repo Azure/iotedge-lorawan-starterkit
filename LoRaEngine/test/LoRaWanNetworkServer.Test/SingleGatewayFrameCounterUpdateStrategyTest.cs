@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer.Test
 
         public SingleGatewayFrameCounterUpdateStrategyTest()
         {
-            this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            this.deviceClient = new Mock<ILoRaDeviceClient>();
         }
 
         [Theory]
@@ -28,7 +28,8 @@ namespace LoRaWan.NetworkServer.Test
         {
             var target = new SingleGatewayFrameCounterUpdateStrategy();
 
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
             device.SetFcntDown(fcntDown);
             device.SetFcntUp(fcntUp);
             device.AcceptFrameCountChanges();
@@ -45,7 +46,8 @@ namespace LoRaWan.NetworkServer.Test
         {
             var target = new SingleGatewayFrameCounterUpdateStrategy();
 
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
             device.SetFcntUp(startFcntUp);
             device.AcceptFrameCountChanges();
 
@@ -65,7 +67,8 @@ namespace LoRaWan.NetworkServer.Test
         {
             var target = new SingleGatewayFrameCounterUpdateStrategy();
 
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
             device.SetFcntDown(startFcntDown);
             device.AcceptFrameCountChanges();
 
@@ -94,7 +97,8 @@ namespace LoRaWan.NetworkServer.Test
                     Assert.Equal(0U, (uint)t[TwinProperty.FCntDown]);
                 });
 
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
             device.SetFcntUp(fcntUp);
             await target.SaveChangesAsync(device);
 
@@ -118,7 +122,8 @@ namespace LoRaWan.NetworkServer.Test
                     Assert.Equal(startingFcntUp, (uint)t[TwinProperty.FCntUp]);
                 });
 
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
             device.SetFcntUp(startingFcntUp);
             device.SetFcntDown(startingFcntDown);
             device.AcceptFrameCountChanges();
@@ -137,7 +142,8 @@ namespace LoRaWan.NetworkServer.Test
         {
             var target = new SingleGatewayFrameCounterUpdateStrategy();
 
-            var device = new LoRaDevice("1", "2", new SingleDeviceConnectionManager(this.deviceClient.Object));
+            using var connectionManager = new SingleDeviceConnectionManager(this.deviceClient.Object);
+            using var device = new LoRaDevice("1", "2", connectionManager);
             await target.ResetAsync(device, 1, string.Empty);
             Assert.False(device.HasFrameCountChanges);
             this.deviceClient.VerifyAll();

@@ -64,14 +64,15 @@ namespace LoRaWan.Tests.Integration
                     .ReturnsAsync(new FunctionBundlerResult());
             }
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewMemoryCache(), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewMemoryCache();
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var request = this.CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("1", fcnt: payloadFcnt).Rxpk[0]);
+            using var request = this.CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("1", fcnt: payloadFcnt).Rxpk[0]);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
@@ -167,21 +168,22 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(this.ServerConfiguration.GatewayID, simDevice.DevEUI, simDevice.AppEUI, It.IsNotNull<string>()))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewMemoryCache(), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewMemoryCache();
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             var joinRxpk = simDevice.CreateJoinRequest().SerializeUplink(simDevice.AppKey).Rxpk[0];
-            var joinRequest = this.CreateWaitableRequest(joinRxpk);
+            using var joinRequest = this.CreateWaitableRequest(joinRxpk);
             messageDispatcher.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
 
             simDevice.SetupJoin(savedAppSKey, savedNwkSKey, savedDevAddr);
-            var request = this.CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("1").Rxpk[0]);
+            using var request = this.CreateWaitableRequest(simDevice.CreateUnconfirmedMessageUplink("1").Rxpk[0]);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
@@ -260,9 +262,10 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(decoderResult);
             this.PayloadDecoder.SetDecoder(payloadDecoder.Object);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var c2dMessageSent = new SemaphoreSlim(0);
+            using var c2dMessageSent = new SemaphoreSlim(0);
             var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
             classCMessageSender.Setup(x => x.SendAsync(It.IsNotNull<IReceivedLoRaCloudToDeviceMessage>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true)
@@ -275,14 +278,14 @@ namespace LoRaWan.Tests.Integration
             this.RequestHandlerImplementation.SetClassCMessageSender(classCMessageSender.Object);
 
             // Send to message processor
-            var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = this.CreateWaitableRequest(rxpk);
+            using var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -364,15 +367,16 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(this.ServerConfiguration.GatewayID, simDevice.DevEUI, simDevice.AppEUI, It.IsNotNull<string>()))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewMemoryCache(), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewMemoryCache();
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var messageDispatcher = new MessageDispatcher(
+            using var messageDispatcher = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             var joinRxpk = simDevice.CreateJoinRequest().SerializeUplink(simDevice.AppKey).Rxpk[0];
-            var joinRequest = this.CreateWaitableRequest(joinRxpk);
+            using var joinRequest = this.CreateWaitableRequest(joinRxpk);
             messageDispatcher.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
@@ -464,17 +468,18 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = this.CreateWaitableRequest(rxpk);
+            using var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -545,17 +550,18 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loraDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request = this.CreateWaitableRequest(rxpk);
+            using var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 

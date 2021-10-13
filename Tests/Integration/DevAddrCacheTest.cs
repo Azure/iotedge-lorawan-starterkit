@@ -89,7 +89,7 @@ namespace LoRaWan.Tests.Integration
                 });
 
             mockRegistryManager
-                .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM devices WHERE properties.desired.DevAddr =")), 100))
+                .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM devices WHERE properties.desired.DevAddr =", StringComparison.Ordinal)), 100))
                 .Returns((string query, int pageSize) =>
                 {
                     hasMoreShouldReturn = true;
@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.Integration
                 });
 
             mockRegistryManager
-                .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) "))))
+                .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) ", StringComparison.Ordinal))))
                 .Returns((string query) =>
                 {
                     hasMoreShouldReturn = true;
@@ -107,7 +107,7 @@ namespace LoRaWan.Tests.Integration
                 });
 
             mockRegistryManager
-                .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >="))))
+                .Setup(x => x.CreateQuery(It.Is<string>(z => z.Contains("SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >=", StringComparison.Ordinal))))
                 .Returns((string query) =>
                 {
                     currentDevAddrContext = currentDevices.Take(numberOfDeviceDeltaUpdates).ToList();

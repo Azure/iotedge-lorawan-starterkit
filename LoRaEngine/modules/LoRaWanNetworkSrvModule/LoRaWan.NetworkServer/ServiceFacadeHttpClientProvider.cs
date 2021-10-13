@@ -29,7 +29,7 @@ namespace LoRaWan.NetworkServer
 
         HttpClient CreateHttpClient()
         {
-            var handler = new ServiceFacadeHttpClientHandler(this.expectedFunctionVersion);
+            using var handler = new ServiceFacadeHttpClientHandler(this.expectedFunctionVersion);
 
             if (!string.IsNullOrEmpty(this.configuration.HttpsProxy))
             {

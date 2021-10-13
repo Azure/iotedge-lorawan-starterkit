@@ -60,17 +60,17 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(this.ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce1))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             // 1st join request
             // Should fail
-            var joinRequest1 = this.CreateWaitableRequest(joinRequestRxpk1);
+            using var joinRequest1 = this.CreateWaitableRequest(joinRequestRxpk1);
             messageProcessor.DispatchRequest(joinRequest1);
             Assert.True(await joinRequest1.WaitCompleteAsync());
             Assert.True(joinRequest1.ProcessingFailed);
@@ -86,7 +86,7 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(this.ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce2))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            var joinRequest2 = this.CreateWaitableRequest(joinRequestRxpk2);
+            using var joinRequest2 = this.CreateWaitableRequest(joinRequestRxpk2);
             messageProcessor.DispatchRequest(joinRequest2);
             Assert.True(await joinRequest2.WaitCompleteAsync());
             Assert.True(joinRequest2.ProcessingSucceeded);

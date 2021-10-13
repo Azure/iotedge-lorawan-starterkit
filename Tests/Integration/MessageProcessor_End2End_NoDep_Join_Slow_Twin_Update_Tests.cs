@@ -80,18 +80,19 @@ namespace LoRaWan.Tests.Integration
             this.LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(this.ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce2))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewMemoryCache(), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewMemoryCache();
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var joinRequest1 = this.CreateWaitableRequest(joinRequestRxpk1);
+            using var joinRequest1 = this.CreateWaitableRequest(joinRequestRxpk1);
             messageProcessor.DispatchRequest(joinRequest1);
             await Task.Delay(TimeSpan.FromSeconds(7));
 
-            var joinRequest2 = this.CreateWaitableRequest(joinRequestRxpk2);
+            using var joinRequest2 = this.CreateWaitableRequest(joinRequestRxpk2);
             messageProcessor.DispatchRequest(joinRequest2);
 
             await Task.WhenAll(joinRequest1.WaitCompleteAsync(), joinRequest2.WaitCompleteAsync());

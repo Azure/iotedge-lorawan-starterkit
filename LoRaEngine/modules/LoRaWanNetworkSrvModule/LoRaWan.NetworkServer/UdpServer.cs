@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Defines udp Server communicating with packet forwarder.
     /// </summary>
-    public class UdpServer : IPacketForwarder
+    public class UdpServer : IPacketForwarder, IDisposable
     {
         const int PORT = 1680;
         private readonly NetworkServerConfiguration configuration;
@@ -99,7 +99,7 @@ namespace LoRaWan.NetworkServer
         public static async Task RunServerAsync()
         {
             Logger.LogAlways("Starting LoRaWAN Server...");
-            var udpServer = UdpServer.Create();
+            using var udpServer = UdpServer.Create();
 
             await udpServer.InitCallBack();
 
@@ -294,11 +294,11 @@ namespace LoRaWan.NetworkServer
 
         async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
         {
-            if (string.Equals("clearcache", methodRequest.Name, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals("clearcache", methodRequest.Name, StringComparison.OrdinalIgnoreCase))
             {
                 return await this.ClearCache(methodRequest, userContext);
             }
-            else if (string.Equals(Constants.CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME, methodRequest.Name, StringComparison.InvariantCultureIgnoreCase))
+            else if (string.Equals(Constants.CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
             {
                 return await this.SendCloudToDeviceMessageAsync(methodRequest);
             }
@@ -318,11 +318,9 @@ namespace LoRaWan.NetworkServer
             var c2d = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
             Logger.Log(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
 
-            var cts = CancellationToken.None;
-            if (methodRequest.ResponseTimeout.HasValue)
-                cts = new CancellationTokenSource(methodRequest.ResponseTimeout.Value).Token;
+            using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
 
-            if (await this.classCMessageSender.SendAsync(c2d, cts))
+            if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
             {
                 return new MethodResponse((int)HttpStatusCode.OK);
             }
@@ -413,6 +411,8 @@ namespace LoRaWan.NetworkServer
                 {
                     this.udpClient?.Dispose();
                     this.udpClient = null;
+                    this.randomLock?.Dispose();
+                    this.messageDispatcher?.Dispose();
                 }
 
                 this.disposedValue = true;
