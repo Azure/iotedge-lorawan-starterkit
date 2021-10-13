@@ -42,7 +42,7 @@ namespace LoRaWanTest
             var netId = ConversionHelper.ByteArrayToString(netId1);
             var appkey = "00112233445566778899AABBCCDDEEFF";
             var joinAccept = new LoRaPayloadJoinAccept(netId, devAddr, appNonce, new byte[] { 0 }, 0, null);
-            var joinacceptbyte = joinAccept.Serialize(appkey, "SF10BW125", 866.349812, 10000);
+            var joinacceptbyte = joinAccept.Serialize(appkey, "SF10BW125", 866.349812, 10000, "test");
             var decodedJoinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinacceptbyte.Txpk.Data), appkey);
             var joinAcceptMic = new byte[4]
             {

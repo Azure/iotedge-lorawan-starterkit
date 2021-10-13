@@ -53,6 +53,11 @@ namespace LoRaWan
 
         public static void LogAlways(string message)
         {
+            LogAlways(null, message);
+        }
+
+        public static void LogAlways(string deviceId, string message)
+        {
             Log(null, message, LogLevel.Critical);
         }
 

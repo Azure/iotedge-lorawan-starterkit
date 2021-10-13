@@ -47,7 +47,8 @@ namespace LoRaTools.LoRaPhysical
         /// This method is used as part of Simulated device for testing purposes.
         /// </summary>
         /// <param name="inputMessage">The Input Message bytes.</param>
-        public static Txpk CreateTxpk(byte[] inputMessage)
+        /// <param name="appKey">The appKey.</param>
+        public static Txpk CreateTxpk(byte[] inputMessage, string appKey)
         {
             var physicalPayload = new PhysicalPayload(inputMessage, true);
             var payload = Encoding.UTF8.GetString(physicalPayload.Message);

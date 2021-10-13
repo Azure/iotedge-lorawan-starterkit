@@ -156,7 +156,7 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse();
+                var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse(loRaDevice);
                 if (windowToUse == Constants.INVALID_RECEIVE_WINDOW)
                 {
                     Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", LogLevel.Information);
@@ -240,7 +240,7 @@ namespace LoRaWan.NetworkServer
                     rxDelay,
                     null);
 
-                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, tmst);
+                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, tmst, devEUI);
                 if (joinAccept != null)
                 {
                     _ = request.PacketForwarder.SendDownstreamAsync(joinAccept);
