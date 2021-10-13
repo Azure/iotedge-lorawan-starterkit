@@ -129,13 +129,15 @@ namespace LoRaWan
 
         static void LogToConsole(string message, LogLevel logLevel = LogLevel.Information)
         {
+            var loggedMessage = FormattableString.Invariant($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}");
+
             if (logLevel == LogLevel.Error)
             {
-                Console.Error.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture), " ", message));
+                Console.Error.WriteLine(loggedMessage);
             }
             else
             {
-                Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture), " ", message));
+                Console.WriteLine(loggedMessage);
             }
         }
 
