@@ -139,7 +139,7 @@ namespace LoraKeysManagerFacade
         {
             try
             {
-                var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(c2dMessage)));
+                using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(c2dMessage)));
                 message.MessageId = string.IsNullOrEmpty(c2dMessage.MessageId) ? Guid.NewGuid().ToString() : c2dMessage.MessageId;
                 await this.serviceClient.SendAsync(devEUI, message);
 
@@ -151,7 +151,7 @@ namespace LoraKeysManagerFacade
                     MessageID = message.MessageId,
                     ClassType = "A",
                 });
-             }
+            }
             catch (Exception ex)
             {
                 this.log.LogError(ex, "Failed to send message to {devEUI}", devEUI);

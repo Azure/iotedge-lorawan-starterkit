@@ -3,7 +3,9 @@
 
 namespace LoRaWan.NetworkServer
 {
-    public interface ILoRaDeviceClientConnectionManager
+    using System;
+
+    public interface ILoRaDeviceClientConnectionManager : IDisposable
     {
         bool EnsureConnected(LoRaDevice loRaDevice);
 

@@ -87,7 +87,7 @@ namespace LoraKeysManagerFacade.Test
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var deviceInfo = new Device(devEUI)
             {
-               Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } },
+                Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } },
             };
 
             registryManager.Setup(x => x.GetDeviceAsync(devEUI))

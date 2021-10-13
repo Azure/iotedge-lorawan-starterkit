@@ -30,7 +30,7 @@ namespace LoRaTools
         // don't work with CFLIST atm
         public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
-            Aes aes = new AesManaged
+            using Aes aes = new AesManaged
             {
                 Key = appKey,
 
@@ -51,7 +51,7 @@ namespace LoRaTools
         // don't work with CFLIST atm
         public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, ReadOnlyMemory<byte> devnonce, byte[] appKey)
         {
-            Aes aes = new AesManaged
+            using Aes aes = new AesManaged
             {
                 Key = appKey,
                 Mode = CipherMode.ECB,

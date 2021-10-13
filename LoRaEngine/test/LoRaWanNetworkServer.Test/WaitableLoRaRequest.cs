@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
 
-    public class WaitableLoRaRequest : LoRaRequest
+    public sealed class WaitableLoRaRequest : LoRaRequest, IDisposable
     {
         SemaphoreSlim complete;
 
@@ -79,5 +79,7 @@ namespace LoRaWan.NetworkServer.Test
         internal void UseTimeWatcher(LoRaOperationTimeWatcher timeWatcher) => this.fixTimeWacher = timeWatcher;
 
         public override LoRaOperationTimeWatcher GetTimeWatcher() => this.fixTimeWacher ?? base.GetTimeWatcher();
+
+        public void Dispose() => this.complete.Dispose();
     }
 }

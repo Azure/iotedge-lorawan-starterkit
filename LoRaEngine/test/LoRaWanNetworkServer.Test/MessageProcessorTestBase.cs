@@ -17,12 +17,14 @@ namespace LoRaWan.NetworkServer.Test
     using Moq;
     using Xunit;
 
-    public class MessageProcessorTestBase
+    public class MessageProcessorTestBase : IDisposable
     {
         protected const string ServerGatewayID = "test-gateway";
 
+        private readonly MemoryCache cache;
         private readonly byte[] macAddress;
         private long startTime;
+        private bool disposedValue;
 
         public TestPacketForwarder PacketForwarder { get; }
 
@@ -72,7 +74,8 @@ namespace LoRaWan.NetworkServer.Test
             var functionBundlerProvider = new FunctionBundlerProvider(this.LoRaDeviceApi.Object);
             this.RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
             this.LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.ConnectionManager = new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) }));
+            this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
+            this.ConnectionManager = new LoRaDeviceClientConnectionManager(this.cache);
             this.LoRaDeviceFactory = new TestLoRaDeviceFactory(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.LoRaDeviceClient.Object, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, this.ConnectionManager);
         }
 
@@ -98,7 +101,7 @@ namespace LoRaWan.NetworkServer.Test
 
         public LoRaDevice CreateLoRaDevice(SimulatedDevice simulatedDevice)
         {
-            var device = TestUtils.CreateFromSimulatedDevice(simulatedDevice, this.LoRaDeviceClient.Object, this.RequestHandlerImplementation, this.ConnectionManager);
+            var device = TestUtils.CreateFromSimulatedDevice(simulatedDevice, this.ConnectionManager, this.RequestHandlerImplementation);
             this.ConnectionManager.Register(device, this.LoRaDeviceClient.Object);
             return device;
         }
@@ -116,6 +119,26 @@ namespace LoRaWan.NetworkServer.Test
             }
 
             return request;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    this.cache.Dispose();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

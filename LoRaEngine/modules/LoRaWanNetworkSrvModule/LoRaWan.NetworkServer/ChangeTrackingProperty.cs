@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets the property name.
         /// </summary>
-        public string PropertyName { get;  }
+        public string PropertyName { get; }
 
         /// <summary>
         /// Gets the value that must be persisted in twin collection.
