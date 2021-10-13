@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer.Test
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Globalization;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -153,7 +154,7 @@ namespace LoRaWan.NetworkServer.Test
             // sends unconfirmed message
             foreach (var msg in Enumerable.Range(1, 3))
             {
-                var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msg.ToString());
+                var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msg.ToString(CultureInfo.InvariantCulture));
                 var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
                 using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
                 messageDispatcher.DispatchRequest(request);

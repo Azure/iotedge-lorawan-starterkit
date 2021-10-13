@@ -4,6 +4,7 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaWan.Tests.Shared;
     using Xunit;
@@ -54,7 +55,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 5x unconfirmed messages
             for (var i = 0; i < MESSAGES_COUNT / 2; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = GeneratePayloadMessage();
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i + 1}/{MESSAGES_COUNT}");
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
@@ -79,7 +80,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 5x confirmed messages
             for (var i = 0; i < MESSAGES_COUNT / 2; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = GeneratePayloadMessage();
                 this.Log($"{device.DeviceID}: Sending confirmed '{msg}' {i + 1}/{MESSAGES_COUNT / 2}");
                 await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
@@ -117,7 +118,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 10x unconfirmed messages
             for (var i = 0; i < MESSAGES_COUNT; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = GeneratePayloadMessage();
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i + 1}/{MESSAGES_COUNT / 2}");
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
@@ -144,7 +145,7 @@ namespace LoRaWan.IntegrationTest
 
             for (var i = 0; i < 56; ++i)
             {
-                var message = PayloadGenerator.Next().ToString();
+                var message = GeneratePayloadMessage();
                 await this.ArduinoDevice.transferPacketAsync(message, 10);
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
@@ -170,7 +171,7 @@ namespace LoRaWan.IntegrationTest
             // Check the messages are now sent on DR5
             for (var i = 0; i < 2; ++i)
             {
-                var message = PayloadGenerator.Next().ToString();
+                var message = GeneratePayloadMessage();
                 await this.ArduinoDevice.transferPacketAsync(message, 10);
                 await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
                 await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
@@ -204,14 +205,14 @@ namespace LoRaWan.IntegrationTest
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
-            await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketAsync(GeneratePayloadMessage(), 10);
 
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
             // After transferPacket: Expectation from serial
             // +MSG: Done
             await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
-            if (devAddrToUse.StartsWith("02"))
+            if (devAddrToUse.StartsWith("02", StringComparison.Ordinal))
             {
                 // 02060708: device is not our device, ignore message
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync(
@@ -230,7 +231,7 @@ namespace LoRaWan.IntegrationTest
             this.TestFixtureCi.ClearLogs();
 
             // Try with confirmed message
-            await this.ArduinoDevice.transferPacketWithConfirmedAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketWithConfirmedAsync(GeneratePayloadMessage(), 10);
 
             // wait for serial logs to be ready
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -239,7 +240,7 @@ namespace LoRaWan.IntegrationTest
             // +CMSG: ACK Received -- should not be there!
             Assert.DoesNotContain("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
-            if (devAddrToUse.StartsWith("02"))
+            if (devAddrToUse.StartsWith("02", StringComparison.Ordinal))
             {
                 // 02060708: device is not our device, ignore message
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync(
@@ -275,7 +276,7 @@ namespace LoRaWan.IntegrationTest
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
-            await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketAsync(GeneratePayloadMessage(), 10);
 
             // wait for serial logs to be ready
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -292,7 +293,7 @@ namespace LoRaWan.IntegrationTest
             this.TestFixtureCi.ClearLogs();
 
             // Try with confirmed message
-            await this.ArduinoDevice.transferPacketWithConfirmedAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketWithConfirmedAsync(GeneratePayloadMessage(), 10);
 
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
@@ -319,7 +320,7 @@ namespace LoRaWan.IntegrationTest
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
 
-            await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketAsync(GeneratePayloadMessage(), 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -333,7 +334,7 @@ namespace LoRaWan.IntegrationTest
             this.TestFixtureCi.ClearLogs();
 
             // Try with confirmed message
-            await this.ArduinoDevice.transferPacketWithConfirmedAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketWithConfirmedAsync(GeneratePayloadMessage(), 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
@@ -367,7 +368,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 10x unconfirmed messages
             for (var i = 0; i < messages_count; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = GeneratePayloadMessage();
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i + 1}/{messages_count}");
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
@@ -392,7 +393,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 10x confirmed messages
             for (var i = 0; i < messages_count; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = GeneratePayloadMessage();
                 this.Log($"{device.DeviceID}: Sending confirmed '{msg}' {i + 1}/{messages_count}");
                 await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
@@ -429,9 +430,9 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.setKeyAsync(device25.NwkSKey, device25.AppSKey, null);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
-            await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketAsync(GeneratePayloadMessage(), 10);
 
-            await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith($"{device25.DeviceID}: processing time"));
+            await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith($"{device25.DeviceID}: processing time", StringComparison.Ordinal));
 
             // wait 61 seconds
             await Task.Delay(TimeSpan.FromSeconds(120));
@@ -443,12 +444,12 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.setKeyAsync(device26.NwkSKey, device26.AppSKey, null);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
-            await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(), 10);
+            await this.ArduinoDevice.transferPacketAsync(GeneratePayloadMessage(), 10);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             var result = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
-                        msg => msg.StartsWith($"{device25.DeviceID}: device client disconnected"),
+                        msg => msg.StartsWith($"{device25.DeviceID}: device client disconnected", StringComparison.Ordinal),
                         new SearchLogOptions
                         {
                             MaxAttempts = 10,
@@ -465,7 +466,7 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.setKeyAsync(device25.NwkSKey, device25.AppSKey, null);
 
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
-            var expectedMessage = PayloadGenerator.Next().ToString();
+            var expectedMessage = GeneratePayloadMessage();
             await this.ArduinoDevice.transferPacketAsync(expectedMessage, 10);
 
             // After transferPacket: Expectation from serial
@@ -478,5 +479,7 @@ namespace LoRaWan.IntegrationTest
             // "device client reconnected"
             await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device25.DeviceID}: device client reconnected");
         }
+
+        private static string GeneratePayloadMessage() => PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
     }
 }

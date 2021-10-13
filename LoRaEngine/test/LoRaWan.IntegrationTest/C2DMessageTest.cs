@@ -4,6 +4,7 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
@@ -81,7 +82,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 2x confirmed messages
             for (var i = 1; i <= warmUpMessageCount; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending confirmed '{msg}' {i}/{messagesToSend}");
 
                 await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
@@ -95,7 +96,7 @@ namespace LoRaWan.IntegrationTest
             }
 
             // sends C2D - between 10 and 99
-            var c2dMessageBody = (100 + random.Next(90)).ToString();
+            var c2dMessageBody = (100 + random.Next(90)).ToString(CultureInfo.InvariantCulture);
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
@@ -117,7 +118,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 8x confirmed messages, stopping if C2D message is found
             for (var i = warmUpMessageCount + 1; i <= messagesToSend; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending confirmed '{msg}' {i}/{messagesToSend}");
                 await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
@@ -215,7 +216,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 2x confirmed messages
             for (var i = 1; i <= warmUpMessageCount; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending confirmed '{msg}' {i}/{messagesToSend}");
 
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
@@ -228,7 +229,7 @@ namespace LoRaWan.IntegrationTest
             }
 
             // sends C2D - between 10 and 99
-            var c2dMessageBody = (100 + random.Next(90)).ToString();
+            var c2dMessageBody = (100 + random.Next(90)).ToString(CultureInfo.InvariantCulture);
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
@@ -250,7 +251,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 8x confirmed messages
             for (var i = warmUpMessageCount + 1; i <= messagesToSend; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{messagesToSend}");
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
@@ -351,7 +352,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 2x unconfirmed messages
             for (var i = 1; i <= warmUpMessageCount; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{messagesToSend}");
 
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
@@ -364,7 +365,7 @@ namespace LoRaWan.IntegrationTest
             }
 
             // sends C2D - between 10 and 99
-            var c2dMessageBody = (100 + random.Next(90)).ToString();
+            var c2dMessageBody = (100 + random.Next(90)).ToString(CultureInfo.InvariantCulture);
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
                 Payload = c2dMessageBody,
@@ -386,7 +387,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 8x unconfirmed messages, stopping if C2D message is found
             for (var i = warmUpMessageCount + 1; i <= messagesToSend; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{messagesToSend}");
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
@@ -485,7 +486,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 2x unconfirmed messages
             for (var i = 1; i <= warmUpMessageCount; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{messagesToSend}");
 
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
@@ -498,7 +499,7 @@ namespace LoRaWan.IntegrationTest
             }
 
             // sends C2D - between 10 and 99
-            var c2dMessageBody = (100 + random.Next(90)).ToString();
+            var c2dMessageBody = (100 + random.Next(90)).ToString(CultureInfo.InvariantCulture);
             var msgId = Guid.NewGuid().ToString();
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
@@ -522,7 +523,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 8x unconfirmed messages, stopping if C2D message is found
             for (var i = warmUpMessageCount + 1; i <= messagesToSend; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{messagesToSend}");
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
@@ -599,7 +600,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 2x unconfirmed messages
             for (var i = 1; i <= warmUpMessageCount; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{messagesToSend}");
 
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
@@ -612,7 +613,7 @@ namespace LoRaWan.IntegrationTest
             }
 
             // sends C2D - between 10 and 99
-            var c2dMessageBody = (100 + random.Next(90)).ToString();
+            var c2dMessageBody = (100 + random.Next(90)).ToString(CultureInfo.InvariantCulture);
             var msgId = Guid.NewGuid().ToString();
             var c2dMessage = new LoRaCloudToDeviceMessage()
             {
@@ -639,7 +640,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 8x confirmed messages, stopping if C2D message is found
             for (var i = warmUpMessageCount + 1; i <= messagesToSend; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{messagesToSend}");
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 

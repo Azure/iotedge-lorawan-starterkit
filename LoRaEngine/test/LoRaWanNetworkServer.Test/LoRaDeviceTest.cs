@@ -641,9 +641,9 @@ namespace LoRaWan.NetworkServer.Test
             await loRaDevice.InitializeAsync();
             Assert.Equal("gateway1", loRaDevice.PreferredGatewayID);
 
-            if (string.Equals(LoRaRegionType.EU868.ToString(), regionValue, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(LoRaRegionType.EU868.ToString(), regionValue, StringComparison.OrdinalIgnoreCase))
                 Assert.Equal(LoRaRegionType.EU868, loRaDevice.LoRaRegion);
-            else if (string.Equals(LoRaRegionType.US915.ToString(), regionValue, StringComparison.InvariantCultureIgnoreCase))
+            else if (string.Equals(LoRaRegionType.US915.ToString(), regionValue, StringComparison.OrdinalIgnoreCase))
                 Assert.Equal(LoRaRegionType.US915, loRaDevice.LoRaRegion);
             else
                 Assert.Equal(LoRaRegionType.NotSet, loRaDevice.LoRaRegion);

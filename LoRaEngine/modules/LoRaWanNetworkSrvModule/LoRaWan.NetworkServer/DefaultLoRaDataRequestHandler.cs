@@ -216,7 +216,7 @@ namespace LoRaWan.NetworkServer
 
                                 if (decodePayloadResult.CloudToDeviceMessage != null)
                                 {
-                                    if (string.IsNullOrEmpty(decodePayloadResult.CloudToDeviceMessage.DevEUI) || string.Equals(loRaDevice.DevEUI, decodePayloadResult.CloudToDeviceMessage.DevEUI, StringComparison.InvariantCultureIgnoreCase))
+                                    if (string.IsNullOrEmpty(decodePayloadResult.CloudToDeviceMessage.DevEUI) || string.Equals(loRaDevice.DevEUI, decodePayloadResult.CloudToDeviceMessage.DevEUI, StringComparison.OrdinalIgnoreCase))
                                     {
                                         // sending c2d to same device
                                         cloudToDeviceMessage = decodePayloadResult.CloudToDeviceMessage;
