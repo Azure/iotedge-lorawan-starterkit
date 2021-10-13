@@ -139,7 +139,7 @@ namespace LoRaWan.Shared
         /// <returns>The <see cref="ApiVersion"/> from <paramref name="version"/>.</returns>
         public static ApiVersion Parse(string version, bool returnAsKnown = false)
         {
-            return GetApiVersions().FirstOrDefault(v => string.Equals(version, v.Version, StringComparison.InvariantCultureIgnoreCase))
+            return GetApiVersions().FirstOrDefault(v => string.Equals(version, v.Version, StringComparison.OrdinalIgnoreCase))
                 ?? new ApiVersion(version, name: null, isKnown: returnAsKnown);
         }
 

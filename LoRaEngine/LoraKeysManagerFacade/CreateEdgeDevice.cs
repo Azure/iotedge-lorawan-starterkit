@@ -153,7 +153,7 @@ namespace LoraKeysManagerFacade
             json = json.Replace("[$region]", region);
             json = json.Replace("[$reset_pin]", resetPin);
 
-            if (string.Equals(spiSpeed, "8", StringComparison.CurrentCultureIgnoreCase) ||
+            if (string.Equals(spiSpeed, "8", StringComparison.OrdinalIgnoreCase) ||
                 string.IsNullOrEmpty(spiSpeed))
             {
                 // default case
@@ -166,7 +166,7 @@ namespace LoraKeysManagerFacade
                     ",'SPI_SPEED':{'value':'2'}");
             }
 
-            if (string.Equals(spiDev, "2", StringComparison.CurrentCultureIgnoreCase) ||
+            if (string.Equals(spiDev, "2", StringComparison.OrdinalIgnoreCase) ||
                 string.IsNullOrEmpty(spiDev))
             {
                 // default case

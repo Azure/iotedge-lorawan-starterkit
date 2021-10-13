@@ -44,12 +44,12 @@ namespace LoRaWan
         {
             LogLevel logLevelOut;
 
-            if (logLevelIn == "1" || string.Equals(logLevelIn, "debug", StringComparison.InvariantCultureIgnoreCase))
+            if (logLevelIn == "1" || string.Equals(logLevelIn, "debug", StringComparison.OrdinalIgnoreCase))
             {
                 logLevelOut = LogLevel.Debug;
             }
-            else if (logLevelIn == "2" || string.Equals(logLevelIn, "information", StringComparison.InvariantCultureIgnoreCase)
-                || string.Equals(logLevelIn, "info", StringComparison.InvariantCultureIgnoreCase))
+            else if (logLevelIn == "2" || string.Equals(logLevelIn, "information", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(logLevelIn, "info", StringComparison.OrdinalIgnoreCase))
             {
                 logLevelOut = LogLevel.Information;
             }

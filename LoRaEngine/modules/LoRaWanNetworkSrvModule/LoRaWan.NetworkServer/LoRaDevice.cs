@@ -328,7 +328,7 @@ namespace LoRaWan.NetworkServer
 
                     if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
                     {
-                        if (string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.InvariantCultureIgnoreCase))
+                        if (string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.OrdinalIgnoreCase))
                         {
                             this.ClassType = LoRaDeviceClassType.C;
                         }
@@ -520,8 +520,8 @@ namespace LoRaWan.NetworkServer
                 valueString = valueString.Trim();
 
                 return
-                    string.Equals("true", valueString, StringComparison.InvariantCultureIgnoreCase) ||
-                    string.Equals("1", valueString, StringComparison.InvariantCultureIgnoreCase);
+                    string.Equals("true", valueString, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals("1", valueString, StringComparison.OrdinalIgnoreCase);
             }
 
             if (value is bool valueBool)
