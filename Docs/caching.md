@@ -79,7 +79,7 @@ When we receive OTAA requests, we manage the potential of conflicting with multi
 
    [iotedge-lorawan-starterkit/JoinInfo.cs at dev · Azure/iotedge-lorawan-starterkit (github.com)](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/JoinInfo.cs)
 
-   The DesiredGateway is used to determine, if the gateway making the request, is the desired gateway. If the value is not set, the first one to win the race, will handle the join.
+   he DesiredGateway is used to set if a specific gateway needs to process requests coming from a device. If the value is not set, the first one to win the race, will handle the join.
    
    The PrimaryKey is used to create the device connection from the edge gateway to IoT Hub.
 
