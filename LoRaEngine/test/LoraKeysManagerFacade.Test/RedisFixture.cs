@@ -37,7 +37,7 @@ namespace LoraKeysManagerFacade.Test
         {
             try
             {
-                var dockerConnection = System.Environment.OSVersion.Platform.ToString().Contains("Win") ?
+                var dockerConnection = System.Environment.OSVersion.Platform.ToString().Contains("Win", StringComparison.Ordinal) ?
                     "npipe://./pipe/docker_engine" :
                     "unix:///var/run/docker.sock";
                 System.Console.WriteLine("Starting container");
@@ -125,7 +125,7 @@ namespace LoraKeysManagerFacade.Test
                 if (!string.IsNullOrEmpty(this.containerId))
                 {
                     // we are running locally
-                    var dockerConnection = System.Environment.OSVersion.Platform.ToString().Contains("Win") ?
+                    var dockerConnection = System.Environment.OSVersion.Platform.ToString().Contains("Win", StringComparison.Ordinal) ?
                     "npipe://./pipe/docker_engine" :
                     "unix:///var/run/docker.sock";
                     using (var conf = new DockerClientConfiguration(new Uri(dockerConnection))) // localhost

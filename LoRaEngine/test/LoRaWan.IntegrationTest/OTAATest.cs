@@ -130,7 +130,7 @@ namespace LoRaWan.IntegrationTest
                 if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN1", StringComparison.Ordinal)).Count() > 0)
                 {
                     // Expect that the response is done on DR4 as the RX1 offset is 1 on this device.
-                    await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains("\"datr\":\"SF8BW125\""), null);
+                    await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains("\"datr\":\"SF8BW125\"", StringComparison.Ordinal), null);
                 }
 
                 // Ensure device payload is available

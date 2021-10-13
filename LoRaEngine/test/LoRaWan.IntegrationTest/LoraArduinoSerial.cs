@@ -162,7 +162,7 @@ namespace LoRaWan.IntegrationTest
         {
             try
             {
-                var data = rawData.Replace("\r", string.Empty);
+                var data = rawData.Replace("\r", string.Empty, StringComparison.Ordinal);
 
                 var lines = string.Concat(this.buff, data).Split('\n');
                 this.buff = string.Empty;

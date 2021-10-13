@@ -231,7 +231,7 @@ namespace LoRaWan.IntegrationTest
 
             // Checking than the communication occurs on DR 4 and RX2 as part of preferred windows RX2 and custom RX2 DR
             await AssertUtils.ContainsWithRetriesAsync(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.Ordinal), this.ArduinoDevice.SerialLogs);
-            await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"datr\":\"SF9BW125\""), null);
+            await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"datr\":\"SF9BW125\"", StringComparison.Ordinal), null);
 
             // 0000000000000004: decoding with: DecoderValueSensor port: 8
             await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");

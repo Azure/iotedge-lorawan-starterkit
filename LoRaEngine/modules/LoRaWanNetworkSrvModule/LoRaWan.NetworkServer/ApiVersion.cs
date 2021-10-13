@@ -226,7 +226,7 @@ namespace LoRaWan.Shared
                 (this.MinCompatibleVersion == null || this.MinCompatibleVersion <= other);
         }
 
-        public override int GetHashCode() => this.Version.GetHashCode();
+        public override int GetHashCode() => this.Version.GetHashCode(StringComparison.Ordinal);
 
         public int CompareTo(ApiVersion other)
         {

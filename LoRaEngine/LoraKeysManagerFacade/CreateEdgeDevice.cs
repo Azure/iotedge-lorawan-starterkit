@@ -150,33 +150,35 @@ namespace LoraKeysManagerFacade
 
         private static string ReplaceJsonWithCorrectValues(string region, string resetPin, string json, string spiSpeed, string spiDev)
         {
-            json = json.Replace("[$region]", region);
-            json = json.Replace("[$reset_pin]", resetPin);
+            json = json.Replace("[$region]", region, StringComparison.Ordinal);
+            json = json.Replace("[$reset_pin]", resetPin, StringComparison.Ordinal);
 
             if (string.Equals(spiSpeed, "8", StringComparison.OrdinalIgnoreCase) ||
                 string.IsNullOrEmpty(spiSpeed))
             {
                 // default case
-                json = json.Replace("[$spi_speed]", string.Empty);
+                json = json.Replace("[$spi_speed]", string.Empty, StringComparison.Ordinal);
             }
             else
             {
                 json = json.Replace(
                     "[$spi_speed]",
-                    ",'SPI_SPEED':{'value':'2'}");
+                    ",'SPI_SPEED':{'value':'2'}",
+                    StringComparison.Ordinal);
             }
 
             if (string.Equals(spiDev, "2", StringComparison.OrdinalIgnoreCase) ||
                 string.IsNullOrEmpty(spiDev))
             {
                 // default case
-                json = json.Replace("[$spi_dev]", string.Empty);
+                json = json.Replace("[$spi_dev]", string.Empty, StringComparison.Ordinal);
             }
             else
             {
                 json = json.Replace(
                     "[$spi_dev]",
-                    ",'SPI_DEV':{'value':'1'}");
+                    ",'SPI_DEV':{'value':'1'}",
+                    StringComparison.Ordinal);
             }
 
             return json;
