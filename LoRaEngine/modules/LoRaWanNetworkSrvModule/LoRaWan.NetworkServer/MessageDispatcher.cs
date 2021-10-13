@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Message dispatcher.
     /// </summary>
-    public class MessageDispatcher
+    public sealed class MessageDispatcher : IDisposable
     {
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry deviceRegistry;
@@ -116,5 +116,7 @@ namespace LoRaWan.NetworkServer
 
             return false;
         }
+
+        public void Dispose() => this.deviceRegistry.Dispose();
     }
 }

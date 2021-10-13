@@ -22,7 +22,7 @@ namespace LoRaWan.NetworkServer.Test
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Class CCloud to device message processing max payload size tests (Join tests are handled in other class)
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
-    public class MessageProcessor_End2End_NoDep_ClassC_CloudToDeviceMessage_SizeLimit_Tests
+    public sealed class MessageProcessor_End2End_NoDep_ClassC_CloudToDeviceMessage_SizeLimit_Tests : IDisposable
     {
         const string ServerGatewayID = "test-gateway";
 
@@ -33,6 +33,7 @@ namespace LoRaWan.NetworkServer.Test
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceApi;
         private readonly Mock<ILoRaDeviceClient> deviceClient;
         private readonly TestLoRaDeviceFactory loRaDeviceFactory;
+        private readonly MemoryCache cache;
         private readonly LoRaDeviceRegistry loRaDeviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterStrategyProvider;
 
@@ -48,7 +49,8 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object);
-            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, new MemoryCache(new MemoryCacheOptions()), this.deviceApi.Object, this.loRaDeviceFactory);
+            this.cache = new MemoryCache(new MemoryCacheOptions());
+            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory);
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
@@ -111,7 +113,7 @@ namespace LoRaWan.NetworkServer.Test
                 c2d.MacCommands = new[] { c2dMessageMacCommand };
             }
 
-            var cloudToDeviceMessage = c2d.CreateMessage();
+            using var cloudToDeviceMessage = c2d.CreateMessage();
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
@@ -196,7 +198,7 @@ namespace LoRaWan.NetworkServer.Test
                 c2d.MacCommands = new[] { c2dMessageMacCommand };
             }
 
-            var cloudToDeviceMessage = c2d.CreateMessage();
+            using var cloudToDeviceMessage = c2d.CreateMessage();
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
@@ -228,6 +230,13 @@ namespace LoRaWan.NetworkServer.Test
             }
 
             return new string(chars, 0, length);
+        }
+
+        public void Dispose()
+        {
+            this.loRaDeviceRegistry.Dispose();
+            this.cache.Dispose();
+            this.loRaDeviceFactory.Dispose();
         }
     }
 }

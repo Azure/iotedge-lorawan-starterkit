@@ -31,5 +31,7 @@ namespace LoRaWan.NetworkServer.Test
         public void TryScanExpiredItems()
         {
         }
+
+        public void Dispose() => this.singleDeviceClient.Dispose();
     }
 }

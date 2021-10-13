@@ -110,16 +110,16 @@ namespace LoRaWan.NetworkServer.Test
             }
 
             // using factory to create mock of
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var joinRequest = this.CreateWaitableRequest(joinRxpk, constantElapsedTime: TimeSpan.FromMilliseconds(300));
+            using var joinRequest = this.CreateWaitableRequest(joinRxpk, constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
@@ -156,7 +156,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("100", fcnt: startingPayloadFcnt);
-            var unconfirmedRequest = this.CreateWaitableRequest(unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0], constantElapsedTime: TimeSpan.FromMilliseconds(300));
+            using var unconfirmedRequest = this.CreateWaitableRequest(unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0], constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(unconfirmedRequest);
             Assert.True(await unconfirmedRequest.WaitCompleteAsync());
             Assert.Null(unconfirmedRequest.ResponseDownlink);
@@ -177,7 +177,7 @@ namespace LoRaWan.NetworkServer.Test
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
             var confirmedMessageRxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var confirmedRequest = this.CreateWaitableRequest(confirmedMessageRxpk, constantElapsedTime: TimeSpan.FromMilliseconds(300));
+            using var confirmedRequest = this.CreateWaitableRequest(confirmedMessageRxpk, constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(confirmedRequest);
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
@@ -257,16 +257,17 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
             // using factory to create mock of
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewMemoryCache(), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = this.NewMemoryCache();
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             // 1st join request
             // Should fail
-            var joinRequest1 = this.CreateWaitableRequest(joinRequestRxpk1);
+            using var joinRequest1 = this.CreateWaitableRequest(joinRequestRxpk1);
             messageProcessor.DispatchRequest(joinRequest1);
             Assert.True(await joinRequest1.WaitCompleteAsync());
             Assert.True(joinRequest1.ProcessingFailed);
@@ -281,7 +282,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var joinRequestRxpk2 = joinRequestPayload2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
             var joinRequestDevNonce2 = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequestPayload2.DevNonce);
-            var joinRequest2 = this.CreateWaitableRequest(joinRequestRxpk2);
+            using var joinRequest2 = this.CreateWaitableRequest(joinRequestRxpk2);
             messageProcessor.DispatchRequest(joinRequest2);
             Assert.True(await joinRequest2.WaitCompleteAsync());
             Assert.NotNull(joinRequest2.ResponseDownlink);
@@ -350,16 +351,16 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
             // using factory to create mock of
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             // join request should fail
-            var joinRequest = this.CreateWaitableRequest(joinRequestRxpk);
+            using var joinRequest = this.CreateWaitableRequest(joinRequestRxpk);
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.Null(joinRequest.ResponseDownlink);
@@ -400,16 +401,16 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
             // using factory to create mock of
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             // join request should fail
-            var joinRequest = this.CreateWaitableRequest(joinRequestRxpk);
+            using var joinRequest = this.CreateWaitableRequest(joinRequestRxpk);
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingFailed);
@@ -461,16 +462,16 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
             // using factory to create mock of
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
-            var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            var joinRequest = this.CreateWaitableRequest(joinRxpk);
+            using var joinRequest = this.CreateWaitableRequest(joinRxpk);
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
@@ -520,22 +521,22 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
             // using factory to create mock of
-            var memoryCache = new MemoryCache(new MemoryCacheOptions());
-            var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var memoryCache = new MemoryCache(new MemoryCacheOptions());
+            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, memoryCache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
-            var messageProcessor = new MessageDispatcher(
+            using var messageProcessor = new MessageDispatcher(
                 this.ServerConfiguration,
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
             // 1st join request
-            var joinRequest1 = this.CreateWaitableRequest(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
+            using var joinRequest1 = this.CreateWaitableRequest(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
             messageProcessor.DispatchRequest(joinRequest1);
 
             await Task.Delay(100);
 
             // 2nd join request
-            var joinRequest2 = this.CreateWaitableRequest(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
+            using var joinRequest2 = this.CreateWaitableRequest(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
             messageProcessor.DispatchRequest(joinRequest2);
 
             await Task.WhenAll(joinRequest1.WaitCompleteAsync(), joinRequest2.WaitCompleteAsync());

@@ -7,7 +7,7 @@ namespace XunitRetryHelper
     using Xunit.Abstractions;
     using Xunit.Sdk;
 
-    public class DelayedMessageBus : IMessageBus
+    public sealed class DelayedMessageBus : IMessageBus
     {
         private readonly IMessageBus innerBus;
         private readonly IList<IMessageSinkMessage> delayedMessages = new List<IMessageSinkMessage>();

@@ -123,7 +123,7 @@ namespace LoRaWan.NetworkServer
                     this.SetRetry(true);
 
                     var messageJson = JsonConvert.SerializeObject(telemetry, Formatting.None);
-                    var message = new Message(Encoding.UTF8.GetBytes(messageJson));
+                    using var message = new Message(Encoding.UTF8.GetBytes(messageJson));
 
                     Logger.Log(this.devEUI, $"sending message {messageJson} to hub", LogLevel.Debug);
 

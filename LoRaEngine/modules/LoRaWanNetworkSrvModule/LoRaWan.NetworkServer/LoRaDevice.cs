@@ -1072,6 +1072,7 @@ namespace LoRaWan.NetworkServer
         public void Dispose()
         {
             this.connectionManager.Release(this);
+            this.syncSave.Dispose();
             GC.SuppressFinalize(this);
         }
 
