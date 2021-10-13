@@ -57,7 +57,9 @@ namespace LoRaTools.LoRaPhysical
 
         public double RequiredSnr => this.SpreadFactorToSNR[this.SpreadingFactor];
 
-        public int SpreadingFactor => int.Parse(this.Datr.Substring(this.Datr.IndexOf("SF") + 2, this.Datr.IndexOf("BW") - this.Datr.IndexOf("SF") - 2), CultureInfo.InvariantCulture);
+        public int SpreadingFactor => int.Parse(this.Datr.Substring(this.Datr.IndexOf("SF", StringComparison.Ordinal) + 2,
+                                                                    this.Datr.IndexOf("BW", StringComparison.Ordinal) - this.Datr.IndexOf("SF", StringComparison.Ordinal) - 2),
+                                                CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Gets required Signal-to-noise ratio to demodulate a LoRa signal given a spread Factor
@@ -90,7 +92,7 @@ namespace LoRaTools.LoRaPhysical
             if (physicalPayload.Message != null)
             {
                 var payload = Encoding.UTF8.GetString(physicalPayload.Message);
-                if (!payload.StartsWith("{\"stat"))
+                if (!payload.StartsWith("{\"stat", StringComparison.Ordinal))
                 {
                     Logger.Log($"Physical dataUp {payload}", LogLevel.Debug);
                     var payloadObject = JsonConvert.DeserializeObject<UplinkPktFwdMessage>(payload);

@@ -160,7 +160,7 @@ namespace LoRaWan.IntegrationTest
                     var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                         (messageBody) =>
                         {
-                            return messageBody.StartsWith(macCommandReceivedMsg);
+                            return messageBody.StartsWith(macCommandReceivedMsg, StringComparison.Ordinal);
                         },
                         new SearchLogOptions
                         {

@@ -77,7 +77,7 @@ namespace LoRaWan.NetworkServer
                 // Format: http://containername/api/decodername
                 var toCall = sensorDecoder;
 
-                if (sensorDecoder.EndsWith("/"))
+                if (sensorDecoder.EndsWith("/", StringComparison.Ordinal))
                 {
                     toCall = sensorDecoder[0..^1];
                 }

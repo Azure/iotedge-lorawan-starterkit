@@ -39,7 +39,7 @@ namespace LoRaWan.IntegrationTest
 
             // validate that one GW refused the join
             const string joinRefusedMsg = "join refused";
-            var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg) != -1, new SearchLogOptions(joinRefusedMsg));
+            var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg, StringComparison.Ordinal) != -1, new SearchLogOptions(joinRefusedMsg));
             Assert.True(joinRefused.Found);
 
             await this.TestFixtureCi.WaitForTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
@@ -110,8 +110,8 @@ namespace LoRaWan.IntegrationTest
                     var notDuplicate = "\"IsDuplicate\":false";
                     var isDuplicate = "\"IsDuplicate\":true";
 
-                    var notDuplicateResult = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(notDuplicate) != -1);
-                    var duplicateResult = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(isDuplicate) != -1);
+                    var notDuplicateResult = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(notDuplicate, StringComparison.Ordinal) != -1);
+                    var duplicateResult = await this.TestFixtureCi.SearchNetworkServerModuleAsync((s) => s.IndexOf(isDuplicate, StringComparison.Ordinal) != -1);
 
                     Assert.NotNull(notDuplicateResult.MatchedEvent);
                     Assert.NotNull(duplicateResult.MatchedEvent);
@@ -125,7 +125,7 @@ namespace LoRaWan.IntegrationTest
                             break;
                         case "Drop":
                             var logMsg = $"{device.DeviceID}: duplication strategy indicated to not process message";
-                            var droppedLog = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(logMsg), new SearchLogOptions { Description = logMsg, SourceIdFilter = duplicateResult.MatchedEvent.SourceId });
+                            var droppedLog = await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith(logMsg, StringComparison.Ordinal), new SearchLogOptions { Description = logMsg, SourceIdFilter = duplicateResult.MatchedEvent.SourceId });
                             Assert.NotNull(droppedLog.MatchedEvent);
 
                             var expectedPayload = $"{{\"value\":{msg}}}";

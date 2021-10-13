@@ -212,7 +212,7 @@ namespace LoRaWan.IntegrationTest
             // After transferPacket: Expectation from serial
             // +MSG: Done
             await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
-            if (devAddrToUse.StartsWith("02"))
+            if (devAddrToUse.StartsWith("02", StringComparison.Ordinal))
             {
                 // 02060708: device is not our device, ignore message
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync(
@@ -240,7 +240,7 @@ namespace LoRaWan.IntegrationTest
             // +CMSG: ACK Received -- should not be there!
             Assert.DoesNotContain("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
-            if (devAddrToUse.StartsWith("02"))
+            if (devAddrToUse.StartsWith("02", StringComparison.Ordinal))
             {
                 // 02060708: device is not our device, ignore message
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync(
@@ -432,7 +432,7 @@ namespace LoRaWan.IntegrationTest
             await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
             await this.ArduinoDevice.transferPacketAsync(PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture), 10);
 
-            await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith($"{device25.DeviceID}: processing time"));
+            await this.TestFixtureCi.SearchNetworkServerModuleAsync((log) => log.StartsWith($"{device25.DeviceID}: processing time", StringComparison.Ordinal));
 
             // wait 61 seconds
             await Task.Delay(TimeSpan.FromSeconds(120));
@@ -449,7 +449,7 @@ namespace LoRaWan.IntegrationTest
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             var result = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
-                        msg => msg.StartsWith($"{device25.DeviceID}: device client disconnected"),
+                        msg => msg.StartsWith($"{device25.DeviceID}: device client disconnected", StringComparison.Ordinal),
                         new SearchLogOptions
                         {
                             MaxAttempts = 10,

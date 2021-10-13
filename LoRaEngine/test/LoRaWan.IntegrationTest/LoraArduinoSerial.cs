@@ -537,7 +537,7 @@ namespace LoRaWan.IntegrationTest
 
                 while (true)
                 {
-                    if (this.ReceivedSerial(x => x.StartsWith("+MSG: Done")))
+                    if (this.ReceivedSerial(x => x.StartsWith("+MSG: Done", StringComparison.Ordinal)))
                         return true;
                     else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                         return false;
@@ -566,7 +566,7 @@ namespace LoRaWan.IntegrationTest
 
                 while (true)
                 {
-                    if (this.ReceivedSerial(x => x.StartsWith("+MSGHEX: Done")))
+                    if (this.ReceivedSerial(x => x.StartsWith("+MSGHEX: Done", StringComparison.Ordinal)))
                         return true;
                     else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                         return false;
@@ -593,7 +593,7 @@ namespace LoRaWan.IntegrationTest
 
             while (true)
             {
-                if (this.ReceivedSerial(x => x.StartsWith("+MSG: Done")))
+                if (this.ReceivedSerial(x => x.StartsWith("+MSG: Done", StringComparison.Ordinal)))
                     return true;
                 else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                     return false;
@@ -621,7 +621,7 @@ namespace LoRaWan.IntegrationTest
 
             while (true)
             {
-                if (this.ReceivedSerial(x => x.StartsWith("+CMSG: ACK Received")))
+                if (this.ReceivedSerial(x => x.StartsWith("+CMSG: ACK Received", StringComparison.Ordinal)))
                     return true;
                 else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                     return false;
@@ -642,7 +642,7 @@ namespace LoRaWan.IntegrationTest
 
                 while (true)
                 {
-                    if (this.ReceivedSerial(x => x.StartsWith("+CMSG: ACK Received")))
+                    if (this.ReceivedSerial(x => x.StartsWith("+CMSG: ACK Received", StringComparison.Ordinal)))
                         return true;
                     else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                         return false;
@@ -884,11 +884,11 @@ namespace LoRaWan.IntegrationTest
             var start = DateTime.UtcNow;
             while (true)
             {
-                if (this.ReceivedSerial(x => x.StartsWith("+JOIN: Done")))
+                if (this.ReceivedSerial(x => x.StartsWith("+JOIN: Done", StringComparison.Ordinal)))
                     return true;
-                else if (this.ReceivedSerial(x => x.StartsWith("+JOIN: LoRaWAN modem is busy")))
+                else if (this.ReceivedSerial(x => x.StartsWith("+JOIN: LoRaWAN modem is busy", StringComparison.Ordinal)))
                     return false;
-                else if (this.ReceivedSerial(x => x.StartsWith("+JOIN: Join failed")))
+                else if (this.ReceivedSerial(x => x.StartsWith("+JOIN: Join failed", StringComparison.Ordinal)))
                     return false;
                 else if (start.AddMilliseconds(timeout) < DateTime.UtcNow)
                     return false;
