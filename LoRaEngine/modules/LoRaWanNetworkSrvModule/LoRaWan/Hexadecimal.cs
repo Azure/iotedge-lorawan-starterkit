@@ -12,32 +12,29 @@ namespace LoRaWan
         const string UpperCaseDigits = "0123456789ABCDEF";
         const string LowerCaseDigits = "0123456789abcdef";
 
-        public static void Write(byte value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
+        public static Span<char> Write(byte value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
         {
             var digits = letterCase == LetterCase.Lower ? LowerCaseDigits : UpperCaseDigits;
             buffer[0] = digits[value >> 4];
             buffer[1] = digits[value & 0x0f];
+            return buffer[2..];
         }
 
-        public static void Write(ushort value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
+        public static Span<char> Write(ushort value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
         {
-            var digits = letterCase == LetterCase.Lower ? LowerCaseDigits : UpperCaseDigits;
-            var ci = buffer.Length;
-            for (var i = 0; i < 4; i++)
+            unchecked
             {
-                buffer[--ci] = digits[value & 0x000f];
-                value >>= 4;
+                buffer = Write((byte)(value >> 8), buffer, letterCase);
+                buffer = Write((byte)(value >> 0), buffer, letterCase);
             }
+            return buffer;
         }
 
-        public static void Write(ulong value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
+        public static Span<char> Write(ulong value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
         {
-            var digits = letterCase == LetterCase.Lower ? LowerCaseDigits : UpperCaseDigits;
-            for (var i = 15; i >= 0; i--)
-            {
-                buffer[i] = digits[unchecked((int)(value & 0xfUL))];
-                value >>= 4;
-            }
+            for (var i = sizeof(ulong) - 1; i >= 0; i--)
+                buffer = Write(unchecked((byte)(value >> (i << 3))), buffer, letterCase);
+            return buffer;
         }
 
         public static bool TryParse(ReadOnlySpan<char> chars, out ulong value, char? separator = null)
