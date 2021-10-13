@@ -78,7 +78,7 @@ namespace LoraKeysManagerFacade
         {
             if (info == null)
             {
-                throw new ArgumentNullException("Required DevAddrCacheInfo argument was null");
+                throw new ArgumentNullException(nameof(info));
             }
 
             var success = false;
