@@ -3,7 +3,7 @@
 
 namespace LoraKeysManagerFacade
 {
-    using LoRaWan.Shared;
+    using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
 
     public static class VersionValidator

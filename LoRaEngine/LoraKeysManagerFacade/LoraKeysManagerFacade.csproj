@@ -16,9 +16,6 @@
 
   <!-- Add shared files -->
   <ItemGroup>
-    <Compile Include="../modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/ApiVersion.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
   <ItemGroup>

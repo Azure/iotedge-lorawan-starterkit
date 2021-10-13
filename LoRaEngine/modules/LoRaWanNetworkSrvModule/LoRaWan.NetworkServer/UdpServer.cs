@@ -13,10 +13,10 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
+    using LoRaTools.CommonAPI;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer.ADR;
-    using LoRaWan.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;

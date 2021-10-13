@@ -4,7 +4,7 @@
 namespace LoraKeysManagerFacade.Test
 {
     using System.Collections.Generic;
-    using LoRaWan.Shared;
+    using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Internal;
     using Microsoft.Extensions.Primitives;

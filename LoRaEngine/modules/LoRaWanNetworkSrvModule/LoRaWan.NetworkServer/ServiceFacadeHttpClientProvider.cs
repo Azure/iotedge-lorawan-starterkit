@@ -3,10 +3,11 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using LoRaTools.CommonAPI;
+    using LoRaWan.Shared;
     using System;
     using System.Net;
     using System.Net.Http;
-    using LoRaWan.Shared;
 
     /// <summary>
     /// Default implementation for <see cref="IServiceFacadeHttpClientProvider"/>.

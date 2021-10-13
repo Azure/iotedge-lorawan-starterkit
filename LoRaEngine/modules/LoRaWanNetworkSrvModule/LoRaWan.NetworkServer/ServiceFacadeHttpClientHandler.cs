@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Shared
 {
+    using LoRaTools.CommonAPI;
     using System;
     using System.Linq;
     using System.Net;

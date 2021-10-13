@@ -7,7 +7,7 @@ namespace LoraKeysManagerFacade.Test
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.FunctionBundler;
-    using LoRaWan.Shared;
+    using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Internal;
     using Microsoft.AspNetCore.Mvc;
