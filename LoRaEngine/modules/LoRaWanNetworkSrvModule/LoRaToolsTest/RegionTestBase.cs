@@ -23,7 +23,7 @@ namespace LoRaWanTest
         {
             var rxpk = GenerateRxpk(datarate, freq);
             Assert.False(_region.TryGetDownstreamChannelFrequency(rxpk[0], out _) &&
-                _region.GetDownstreamDR(rxpk[0]) != null);
+                         _region.GetDownstreamDR(rxpk[0]) != null);
         }
 
         protected static List<Rxpk> GenerateRxpk(string dr, double freq)
