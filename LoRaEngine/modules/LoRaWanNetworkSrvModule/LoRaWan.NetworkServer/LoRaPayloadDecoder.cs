@@ -91,14 +91,14 @@ namespace LoRaWan.NetworkServer
                 var devEUIEncoded = HttpUtility.UrlEncode(devEUI);
 
                 // Add Fport and Payload to URL
-                toCall = $"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport}&payload={payloadEncoded}";
+                var url = new Uri($"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport}&payload={payloadEncoded}");
 
                 // Call SensorDecoderModule
-                return await this.CallSensorDecoderModule(devEUI, toCall);
+                return await this.CallSensorDecoderModule(devEUI, url);
             }
         }
 
-        async Task<DecodePayloadResult> CallSensorDecoderModule(string devEUI, string sensorDecoderModuleUrl)
+        async Task<DecodePayloadResult> CallSensorDecoderModule(string devEUI, Uri sensorDecoderModuleUrl)
         {
             try
             {
