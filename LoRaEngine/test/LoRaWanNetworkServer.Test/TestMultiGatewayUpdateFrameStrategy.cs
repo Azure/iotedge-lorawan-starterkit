@@ -3,13 +3,16 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
 
-    class TestMultiGatewayUpdateFrameStrategy : ILoRaDeviceFrameCounterUpdateStrategy
+    sealed class TestMultiGatewayUpdateFrameStrategy : ILoRaDeviceFrameCounterUpdateStrategy, IDisposable
     {
         SemaphoreSlim nextFcntDownLock = new SemaphoreSlim(1);
+
+        public void Dispose() => this.nextFcntDownLock.Dispose();
 
         public async ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt)
         {

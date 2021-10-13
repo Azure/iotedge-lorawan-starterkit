@@ -30,7 +30,7 @@ namespace LoraKeysManagerFacade
         /// </summary>
         [FunctionName(nameof(GetDevice))]
         public async Task<IActionResult> GetDevice(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             try
