@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.E2E
 
     // Tests OTAA requests
     [Collection(Constants.TestCollectionName)] // run in serial
+    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class MultiGatewayTests : IntegrationTestBaseCi
     {
         public MultiGatewayTests(IntegrationTestFixtureCi testFixture)

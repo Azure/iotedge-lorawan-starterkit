@@ -12,6 +12,7 @@ namespace LoRaWan.Tests.E2E
 
     // Tests Cloud to Device messages
     [Collection(Constants.TestCollectionName)] // run in serial
+    [Trait("Category", "SkipWhenLiveUnitTesting")]
     public sealed class ClassCTest : IntegrationTestBaseCi
     {
         public ClassCTest(IntegrationTestFixtureCi testFixture)
