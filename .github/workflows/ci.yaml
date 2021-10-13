@@ -275,6 +275,8 @@ jobs:
     - name: Setup .NET
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       uses: actions/setup-dotnet@v1.8.2
+      with:
+        dotnet-version: '3.1.x' # SDK Version to use.
 
     - name: 'Configure test in **/test/LoRaWan.IntegrationTest/appsettings.json'
       uses: cschleiden/replace-tokens@v1
