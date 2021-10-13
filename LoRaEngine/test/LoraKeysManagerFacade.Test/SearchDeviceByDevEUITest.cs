@@ -29,7 +29,7 @@ namespace LoraKeysManagerFacade.Test
             ctx.Request.QueryString = new QueryString($"?{ApiVersion.QueryStringParamName}={ApiVersion.Version_2019_02_12_Preview.Version}");
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance, new ExecutionContext());
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
@@ -40,7 +40,7 @@ namespace LoraKeysManagerFacade.Test
             ctx.Request.QueryString = new QueryString($"?devEUI=193123");
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance, new ExecutionContext());
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
@@ -53,7 +53,7 @@ namespace LoraKeysManagerFacade.Test
             ctx.Request.QueryString = new QueryString($"?devEUI=193123&{ApiVersion.QueryStringParamName}={version}");
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance, new ExecutionContext());
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
@@ -70,7 +70,7 @@ namespace LoraKeysManagerFacade.Test
 
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
 
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance, new ExecutionContext());
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<NotFoundObjectResult>(result);
 
             registryManager.VerifyAll();
@@ -95,7 +95,7 @@ namespace LoraKeysManagerFacade.Test
 
             var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
 
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance, new ExecutionContext());
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<OkObjectResult>(result);
             Assert.IsType<List<IoTHubDeviceInfo>>(((OkObjectResult)result).Value);
             var devices = (List<IoTHubDeviceInfo>)((OkObjectResult)result).Value;

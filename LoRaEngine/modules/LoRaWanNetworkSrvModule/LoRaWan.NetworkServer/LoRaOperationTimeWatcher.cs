@@ -158,14 +158,14 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets the join accept window to be used.
         /// </summary>
-        public int ResolveJoinAcceptWindowToUse(LoRaDevice loRaDevice)
+        public int ResolveJoinAcceptWindowToUse()
         {
             var elapsed = this.GetElapsedTime();
-            if (this.InTimeForJoinAcceptFirstWindow(loRaDevice, elapsed))
+            if (this.InTimeForJoinAcceptFirstWindow(elapsed))
             {
                 return Constants.RECEIVE_WINDOW_1;
             }
-            else if (this.InTimeForJoinAcceptSecondWindow(loRaDevice, elapsed))
+            else if (this.InTimeForJoinAcceptSecondWindow(elapsed))
             {
                 return Constants.RECEIVE_WINDOW_2;
             }
@@ -173,12 +173,12 @@ namespace LoRaWan.NetworkServer
             return Constants.INVALID_RECEIVE_WINDOW;
         }
 
-        bool InTimeForJoinAcceptFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed)
+        bool InTimeForJoinAcceptFirstWindow(TimeSpan elapsed)
         {
             return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= (double)this.loraRegion.Join_accept_delay1;
         }
 
-        bool InTimeForJoinAcceptSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed)
+        bool InTimeForJoinAcceptSecondWindow(TimeSpan elapsed)
         {
             return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= (double)this.loraRegion.Join_accept_delay2;
         }
