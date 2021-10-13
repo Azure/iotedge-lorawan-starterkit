@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer
 
     public interface ILoRaDeviceMessageDeduplicationStrategy
     {
-        Task<DeduplicationResult> ResolveDeduplication(uint fct, uint fcntDown, string gatewayId);
+        Task<DeduplicationResult> ResolveDeduplication(uint fctUp, uint fcntDown, string gatewayId);
 
         DeduplicationResult Process(DeduplicationResult result, uint fCntUp);
     }
