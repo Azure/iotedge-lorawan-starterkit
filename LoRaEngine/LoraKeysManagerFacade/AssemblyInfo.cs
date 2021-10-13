@@ -2,5 +2,5 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System.Runtime.CompilerServices;
 
-// Lets test assembly access internal methods
 [assembly: InternalsVisibleTo("LoraKeysManagerFacade.Test")]
+[assembly: InternalsVisibleTo("LoRaWan.Tests.Integration")]
