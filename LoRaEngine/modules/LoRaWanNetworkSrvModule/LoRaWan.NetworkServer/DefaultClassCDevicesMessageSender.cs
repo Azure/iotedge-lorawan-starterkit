@@ -30,6 +30,8 @@ namespace LoRaWan.NetworkServer
 
         public async Task<bool> SendAsync(IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage, CancellationToken cts = default(CancellationToken))
         {
+            if (cloudToDeviceMessage is null) throw new ArgumentNullException(nameof(cloudToDeviceMessage));
+
             try
             {
                 if (string.IsNullOrEmpty(cloudToDeviceMessage.DevEUI))

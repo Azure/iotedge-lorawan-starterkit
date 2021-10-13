@@ -33,6 +33,8 @@ namespace LoraKeysManagerFacade
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
+            if (req is null) throw new ArgumentNullException(nameof(req));
+
             try
             {
                 VersionValidator.Validate(req);

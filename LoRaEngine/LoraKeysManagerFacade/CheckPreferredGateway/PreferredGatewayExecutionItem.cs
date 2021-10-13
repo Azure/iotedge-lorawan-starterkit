@@ -55,6 +55,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
+            if (context is null) throw new ArgumentNullException(nameof(context));
+
             await this.ComputeAndSetPreferredGateway(context);
 
             return FunctionBundlerExecutionState.Continue;
@@ -67,6 +69,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public async Task OnAbortExecutionAsync(IPipelineExecutionContext context)
         {
+            if (context is null) throw new ArgumentNullException(nameof(context));
+
             await this.ComputeAndSetPreferredGateway(context);
         }
 

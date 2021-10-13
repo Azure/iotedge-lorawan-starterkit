@@ -31,6 +31,8 @@ namespace LoRaTools
         // case of inbound messages
         public PhysicalPayload(byte[] input, bool server = false)
         {
+            if (input is null) throw new ArgumentNullException(nameof(input));
+
             this.protocolVersion = input[0];
             this.Token = new byte[2];
             Array.Copy(input, 1, this.Token, 0, 2);
@@ -138,6 +140,8 @@ namespace LoRaTools
         // Method used by Simulator
         public byte[] GetSyncHeader(byte[] mac)
         {
+            if (mac is null) throw new ArgumentNullException(nameof(mac));
+
             var buff = new byte[12];
             // first is the protocole version
             buff[0] = 2;

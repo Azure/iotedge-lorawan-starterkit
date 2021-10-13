@@ -190,6 +190,8 @@ namespace LoRaTools.Regions
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         public string GetDownstreamDR(Rxpk upstreamChannel, uint rx1DrOffset = 0)
         {
+            if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
+
             if (this.IsValidUpstreamRxpk(upstreamChannel))
             {
                 // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
@@ -223,6 +225,8 @@ namespace LoRaTools.Regions
         /// </summary>
         protected bool IsValidUpstreamRxpk(Rxpk rxpk)
         {
+            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
+
             if (rxpk.Freq < this.RegionLimits.FrequencyRange.min ||
                 rxpk.Freq > this.RegionLimits.FrequencyRange.max ||
                 !this.RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(rxpk.Datr))

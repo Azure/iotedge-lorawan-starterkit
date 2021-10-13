@@ -47,6 +47,8 @@ namespace LoRaWan.NetworkServer
 
         public bool EnsureConnected(LoRaDevice loRaDevice)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             if (this.managedConnections.TryGetValue(this.GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))
             {
                 if (loRaDevice.KeepAliveTimeout > 0)
@@ -101,6 +103,7 @@ namespace LoRaWan.NetworkServer
 
         public ILoRaDeviceClient Get(LoRaDevice loRaDevice)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
             if (this.managedConnections.TryGetValue(this.GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))
                 return managedConnection.DeviceClient;
 
@@ -109,6 +112,8 @@ namespace LoRaWan.NetworkServer
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             this.managedConnections.AddOrUpdate(
                 this.GetConnectionCacheKey(loRaDevice.DevEUI),
                 new ManagedConnection(loRaDevice, loraDeviceClient),
@@ -121,6 +126,8 @@ namespace LoRaWan.NetworkServer
 
         public void Release(LoRaDevice loRaDevice)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             if (this.managedConnections.TryRemove(this.GetConnectionCacheKey(loRaDevice.DevEUI), out var removedItem))
             {
                 removedItem.Dispose();

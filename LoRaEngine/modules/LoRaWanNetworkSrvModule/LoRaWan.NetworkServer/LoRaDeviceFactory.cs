@@ -22,6 +22,8 @@ namespace LoRaWan.NetworkServer
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
         {
+            if (deviceInfo is null) throw new ArgumentNullException(nameof(deviceInfo));
+
             var loRaDevice = new LoRaDevice(
                 deviceInfo.DevAddr,
                 deviceInfo.DevEUI,

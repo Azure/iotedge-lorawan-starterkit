@@ -230,6 +230,8 @@ namespace LoRaWan.Shared
 
         public int CompareTo(ApiVersion other)
         {
+            if (other is null) throw new ArgumentNullException(nameof(other));
+
             return string.Compare(this.Version, other.Version, StringComparison.Ordinal);
         }
 
@@ -237,21 +239,29 @@ namespace LoRaWan.Shared
 
         public static bool operator <(ApiVersion value1, ApiVersion value2)
         {
+            if (value1 is null) throw new ArgumentNullException(nameof(value1));
+
             return value1.CompareTo(value2) < 0;
         }
 
         public static bool operator <=(ApiVersion value1, ApiVersion value2)
         {
+            if (value1 is null) throw new ArgumentNullException(nameof(value1));
+
             return value1.CompareTo(value2) <= 0;
         }
 
         public static bool operator >=(ApiVersion value1, ApiVersion value2)
         {
+            if (value1 is null) throw new ArgumentNullException(nameof(value1));
+
             return value1.CompareTo(value2) >= 0;
         }
 
         public static bool operator >(ApiVersion value1, ApiVersion value2)
         {
+            if (value1 is null) throw new ArgumentNullException(nameof(value1));
+
             return value1.CompareTo(value2) > 0;
         }
     }

@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer.ADR
 {
     using LoRaTools.ADR;
+    using System;
 
     public class LoRAADRManagerFactory : ILoRAADRManagerFactory
     {
@@ -18,6 +19,8 @@ namespace LoRaWan.NetworkServer.ADR
 
         public ILoRaADRManager Create(ILoRaADRStrategyProvider strategyProvider, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy, LoRaDevice loRaDevice)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             return !string.IsNullOrEmpty(loRaDevice.GatewayID)
                     ? new LoRaADRDefaultManager(CurrentInMemoryStore, strategyProvider, frameCounterStrategy, loRaDevice)
                     : new LoRaADRMultiGatewayManager(loRaDevice, this.loRaDeviceAPIService);

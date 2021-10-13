@@ -4,6 +4,7 @@
 namespace LoraKeysManagerFacade
 {
     using Newtonsoft.Json;
+    using System;
 
     /// <summary>
     /// Defines a preferred gateway result.
@@ -38,6 +39,8 @@ namespace LoraKeysManagerFacade
 
         public PreferredGatewayResult(string devEUI, uint fcntUp, LoRaDevicePreferredGateway preferredGateway)
         {
+            if (preferredGateway is null) throw new ArgumentNullException(nameof(preferredGateway));
+
             this.DevEUI = devEUI;
             this.RequestFcntUp = fcntUp;
             this.CurrentFcntUp = preferredGateway.FcntUp;

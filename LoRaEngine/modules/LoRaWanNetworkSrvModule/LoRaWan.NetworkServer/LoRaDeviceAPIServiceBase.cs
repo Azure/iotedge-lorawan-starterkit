@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
@@ -79,6 +80,7 @@ namespace LoRaWan.NetworkServer
 
         protected LoRaDeviceAPIServiceBase(NetworkServerConfiguration configuration)
         {
+            if (configuration is null) throw new ArgumentNullException(nameof(configuration));
             this.AuthCode = configuration.FacadeAuthCode;
             this.URL = this.SanitizeApiURL(configuration.FacadeServerUrl);
         }

@@ -28,7 +28,7 @@ namespace LoRaWan
 
         public static void Init(LoggerConfiguration loggerConfiguration)
         {
-            configuration = loggerConfiguration;
+            configuration = loggerConfiguration ?? throw new ArgumentNullException(nameof(loggerConfiguration));
 
             if (configuration.LogToUdp)
             {

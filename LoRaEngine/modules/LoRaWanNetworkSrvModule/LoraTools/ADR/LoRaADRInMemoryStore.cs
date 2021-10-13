@@ -37,6 +37,8 @@ namespace LoRaTools.ADR
 
         public Task<LoRaADRTable> AddTableEntry(LoRaADRTableEntry entry)
         {
+            if (entry is null) throw new ArgumentNullException(nameof(entry));
+
             lock (this.cache)
             {
                 var table = this.cache.GetOrCreate<LoRaADRTable>(entry.DevEUI, (cacheEntry) => new LoRaADRTable());

@@ -18,6 +18,8 @@ namespace LoraKeysManagerFacade
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            if (builder is null) throw new ArgumentNullException(nameof(builder));
+
             var configHandler = ConfigHandler.Create(builder);
 
             var iotHubConnectionString = configHandler.IoTHubConnectionString;

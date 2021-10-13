@@ -192,6 +192,8 @@ namespace LoRaWan.NetworkServer
 
         public async Task<bool> CompleteAsync(Message message)
         {
+            if (message is null) throw new ArgumentNullException(nameof(message));
+
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
@@ -220,6 +222,8 @@ namespace LoRaWan.NetworkServer
 
         public async Task<bool> AbandonAsync(Message message)
         {
+            if (message is null) throw new ArgumentNullException(nameof(message));
+
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
@@ -248,6 +252,8 @@ namespace LoRaWan.NetworkServer
 
         public async Task<bool> RejectAsync(Message message)
         {
+            if (message is null) throw new ArgumentNullException(nameof(message));
+
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;

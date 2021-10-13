@@ -52,7 +52,7 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public LoRaPayload(byte[] inputMessage)
         {
-            this.RawMessage = inputMessage;
+            this.RawMessage = inputMessage ?? throw new ArgumentNullException(nameof(inputMessage));
             this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
             // MIC 4 last bytes
             this.Mic = new Memory<byte>(this.RawMessage, inputMessage.Length - 4, 4);
@@ -92,6 +92,8 @@ namespace LoRaTools.LoRaMessage
         /// <returns> the Mic bytes.</returns>
         public byte[] CalculateMic(string appKey, byte[] algoinput)
         {
+            if (algoinput is null) throw new ArgumentNullException(nameof(algoinput));
+
             var mac = MacUtilities.GetMac("AESCMAC");
             var key = new KeyParameter(ConversionHelper.StringToByteArray(appKey));
             mac.Init(key);
@@ -130,6 +132,8 @@ namespace LoRaTools.LoRaMessage
 
         public static bool TryCreateLoRaPayload(Rxpk rxpk, out LoRaPayload loRaPayloadMessage)
         {
+            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
+
             var convertedInputMessage = Convert.FromBase64String(rxpk.Data);
             var messageType = convertedInputMessage[0];
 
@@ -159,6 +163,8 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public static bool TryCreateLoRaPayloadForSimulator(Txpk txpk, string appKey, out LoRaPayload loRaPayload)
         {
+            if (txpk is null) throw new ArgumentNullException(nameof(txpk));
+
             if (txpk.Data != null)
             {
                 var convertedInputMessage = Convert.FromBase64String(txpk.Data);

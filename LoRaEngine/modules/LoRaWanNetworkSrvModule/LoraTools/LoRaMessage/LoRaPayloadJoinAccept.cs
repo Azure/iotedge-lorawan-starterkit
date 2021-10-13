@@ -100,6 +100,8 @@ namespace LoRaTools.LoRaMessage
 
         public LoRaPayloadJoinAccept(byte[] inputMessage, string appKey)
         {
+            if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
+
             // Only MHDR is not encrypted with the key
             // ( PHYPayload = MHDR[1] | MACPayload[..] | MIC[4] )
             this.Mhdr = new Memory<byte>(inputMessage, 0, 1);

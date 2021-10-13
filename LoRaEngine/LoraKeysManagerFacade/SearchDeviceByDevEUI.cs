@@ -3,6 +3,7 @@
 
 namespace LoraKeysManagerFacade
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using LoRaWan.Shared;
@@ -25,6 +26,8 @@ namespace LoraKeysManagerFacade
         [FunctionName(nameof(GetDeviceByDevEUI))]
         public async Task<IActionResult> GetDeviceByDevEUI([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log, ExecutionContext context)
         {
+            if (req is null) throw new ArgumentNullException(nameof(req));
+
             try
             {
                 VersionValidator.Validate(req);

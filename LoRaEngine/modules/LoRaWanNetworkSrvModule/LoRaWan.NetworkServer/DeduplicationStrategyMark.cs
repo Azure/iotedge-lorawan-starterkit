@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
@@ -20,6 +21,8 @@ namespace LoRaWan.NetworkServer
 
         public DeduplicationResult Process(DeduplicationResult result, uint fCntUp)
         {
+            if (result is null) throw new ArgumentNullException(nameof(result));
+
             result.CanProcess = true; // can always process. Message is marked if it is a duplicate
             return result;
         }

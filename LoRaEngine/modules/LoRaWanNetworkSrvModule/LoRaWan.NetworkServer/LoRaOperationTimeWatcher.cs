@@ -93,7 +93,11 @@ namespace LoRaWan.NetworkServer
         /// It takes into consideration region and device settings.
         /// </summary>
         /// <returns>Integer containing the delay in seconds.</returns>
-        public int GetReceiveWindow1Delay(LoRaDevice loRaDevice) => loRaDevice.ReceiveDelay1 ?? (int)this.loraRegion.Receive_delay1;
+        public int GetReceiveWindow1Delay(LoRaDevice loRaDevice)
+        {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+            return loRaDevice.ReceiveDelay1 ?? (int)this.loraRegion.Receive_delay1;
+        }
 
         bool InTimeForReceiveFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.GetReceiveWindow1Delay(loRaDevice);
 
@@ -102,7 +106,11 @@ namespace LoRaWan.NetworkServer
         /// It takes into consideration region and device settings.
         /// </summary>
         /// <returns>Integer containing the delay in seconds.</returns>
-        public int GetReceiveWindow2Delay(LoRaDevice loRaDevice) => loRaDevice.ReceiveDelay2 ?? (int)this.loraRegion.Receive_delay2;
+        public int GetReceiveWindow2Delay(LoRaDevice loRaDevice)
+        {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+            return loRaDevice.ReceiveDelay2 ?? (int)this.loraRegion.Receive_delay2;
+        }
 
         bool InTimeForReceiveSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.GetReceiveWindow2Delay(loRaDevice);
 
@@ -132,6 +140,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public int ResolveReceiveWindowToUse(LoRaDevice loRaDevice)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             var elapsed = this.GetElapsedTime();
             if (loRaDevice.PreferredWindow == Constants.RECEIVE_WINDOW_1 && this.InTimeForReceiveFirstWindow(loRaDevice, elapsed))
             {
@@ -180,6 +190,8 @@ namespace LoRaWan.NetworkServer
         /// <returns><see cref="TimeSpan.Zero"/> if there is no enough time or a positive <see cref="TimeSpan"/> value.</returns>
         public TimeSpan GetAvailableTimeToCheckCloudToDeviceMessage(LoRaDevice loRaDevice)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             var elapsed = this.GetElapsedTime();
             if (loRaDevice.PreferredWindow == Constants.RECEIVE_WINDOW_1)
             {

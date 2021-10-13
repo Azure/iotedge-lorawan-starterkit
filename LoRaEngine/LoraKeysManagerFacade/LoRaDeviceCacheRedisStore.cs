@@ -122,6 +122,8 @@ namespace LoraKeysManagerFacade
         public void ReplaceHashObjects<T>(string cacheKey, IDictionary<string, T> input, TimeSpan? timeToExpire = null, bool removeOldOccurence = false)
             where T : class
         {
+            if (input is null) throw new ArgumentNullException(nameof(input));
+
             if (removeOldOccurence)
             {
                 this.redisCache.KeyDelete(cacheKey);
