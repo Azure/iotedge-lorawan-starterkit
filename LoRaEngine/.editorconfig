@@ -10,3 +10,21 @@ dotnet_analyzer_diagnostic.category-Style.severity = warning
 # IDE0065: Misplaced using directive
 # Prefer using directives to be placed inside the namespace
 csharp_using_directive_placement = inside_namespace
+
+# Use new(...)
+dotnet_diagnostic.IDE0090.severity=silent
+
+# Expression value is never used
+dotnet_diagnostic.IDE0058.severity=suggestion
+
+# Namespace does not match folder structure
+dotnet_diagnostic.IDE0130.severity=suggestion
+
+# Use block statement for method body
+dotnet_diagnostic.IDE0022.severity=suggestion
+
+# Simplify if statement
+dotnet_diagnostic.IDE0046.severity=suggestion
+
+# Add accessibility modifiers
+dotnet_diagnostic.IDE0040.severity=suggestion
