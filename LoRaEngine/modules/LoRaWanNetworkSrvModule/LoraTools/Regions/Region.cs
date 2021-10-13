@@ -98,22 +98,22 @@ namespace LoRaTools.Regions
         /// </summary>
         public int MaxADRDataRate { get; set; }
 
-        public Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
+        public Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows, uint receiveDelay1, uint receiveDelay2, uint joinAcceptDelay1, uint joinAcceptDelay2, int maxFcntGap, uint adrAckLimit, uint adrAdrDelay, (uint min, uint max) ackTimeout)
         {
             this.LoRaRegion = regionEnum;
-            this.Ack_timeout = ack_timeout;
+            this.Ack_timeout = ackTimeout;
 
             this.LoRaSyncWord = loRaSyncWord;
             this.GFSKSyncWord = gFSKSyncWord;
 
             this.RX2DefaultReceiveWindows = rx2DefaultReceiveWindows;
-            this.Receive_delay1 = receive_delay1;
-            this.Receive_delay2 = receive_delay2;
-            this.Join_accept_delay1 = join_accept_delay1;
-            this.Join_accept_delay2 = join_accept_delay2;
-            this.Max_fcnt_gap = max_fcnt_gap;
-            this.Adr_ack_limit = adr_ack_limit;
-            this.Adr_adr_delay = adr_adr_delay;
+            this.Receive_delay1 = receiveDelay1;
+            this.Receive_delay2 = receiveDelay2;
+            this.Join_accept_delay1 = joinAcceptDelay1;
+            this.Join_accept_delay2 = joinAcceptDelay2;
+            this.Max_fcnt_gap = maxFcntGap;
+            this.Adr_ack_limit = adrAckLimit;
+            this.Adr_adr_delay = adrAdrDelay;
         }
 
         /// <summary>
