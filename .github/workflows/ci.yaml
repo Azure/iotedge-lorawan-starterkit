@@ -107,8 +107,8 @@ jobs:
       run: |
         dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r Tests/TestResults/Integration \
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
-          tests/Integration/LoRaWan.Test.Integration.csproj
-          
+          tests/Integration/LoRaWan.Tests.Integration.csproj
+
   check_if_deploy:
     needs:
       - env_var
