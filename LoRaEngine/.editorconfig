@@ -10,3 +10,6 @@ dotnet_analyzer_diagnostic.category-Style.severity = warning
 # IDE0065: Misplaced using directive
 # Prefer using directives to be placed inside the namespace
 csharp_using_directive_placement = inside_namespace
+
+# IDE0011: Add braces
+csharp_prefer_braces = when_multiline
