@@ -49,7 +49,7 @@ namespace LoRaWan.NetworkServer
             if (upstreamPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
             {
                 // Confirm receiving message to device
-                fctrl = (byte)FctrlEnum.Ack;
+                fctrl = (byte)Fctrl.Ack;
             }
 
             // Calculate receive window
@@ -108,7 +108,7 @@ namespace LoRaWan.NetworkServer
 
             byte? fport = null;
             var requiresDeviceAcknowlegement = false;
-            var macCommandType = CidEnum.Zero;
+            var macCommandType = Cid.Zero;
 
             byte[] frmPayload = null;
 
@@ -181,12 +181,12 @@ namespace LoRaWan.NetworkServer
 
             if (fpending || isMessageTooLong)
             {
-                fctrl |= (int)FctrlEnum.FpendingOrClassB;
+                fctrl |= (int)Fctrl.FpendingOrClassB;
             }
 
             if (upstreamPayload.IsAdrEnabled)
             {
-                fctrl |= (byte)FctrlEnum.ADR;
+                fctrl |= (byte)Fctrl.ADR;
             }
 
             var srcDevAddr = upstreamPayload.DevAddr.Span;
@@ -236,7 +236,7 @@ namespace LoRaWan.NetworkServer
 
             // default fport
             byte fctrl = 0;
-            var macCommandType = CidEnum.Zero;
+            var macCommandType = Cid.Zero;
 
             var rndToken = new byte[2];
 
@@ -339,12 +339,12 @@ namespace LoRaWan.NetworkServer
                 {
                     switch (requestedMacCommand.Cid)
                     {
-                        case CidEnum.LinkCheckCmd:
+                        case Cid.LinkCheckCmd:
                         {
                             if (rxpk != null)
                             {
                                 var linkCheckAnswer = new LinkCheckAnswer(rxpk.GetModulationMargin(), 1);
-                                if (macCommands.TryAdd((int)CidEnum.LinkCheckCmd, linkCheckAnswer))
+                                if (macCommands.TryAdd((int)Cid.LinkCheckCmd, linkCheckAnswer))
                                 {
                                     Logger.Log(devEUI, $"answering to a MAC command request {linkCheckAnswer.ToString()}", LogLevel.Information);
                                 }
@@ -385,7 +385,7 @@ namespace LoRaWan.NetworkServer
             {
                 const int placeholderChannel = 25;
                 var linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, placeholderChannel, 0, (byte)loRaADRResult.NbRepetition);
-                macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
+                macCommands.Add((int)Cid.LinkADRCmd, linkADR);
                 Logger.Log(devEUI, $"performing a rate adaptation: DR {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetition {loRaADRResult.NbRepetition}", LogLevel.Information);
             }
 

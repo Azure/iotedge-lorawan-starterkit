@@ -14,7 +14,10 @@ namespace LoRaWan.SimulatedTest
 
     // Tests ABP requests
     [Trait("Category", "SkipWhenLiveUnitTesting")]
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+    // False positive, the name is accurate in the context of xUnit collections.
     public sealed class SimulatorTestCollection : IntegrationTestBaseSim
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     {
         private readonly TimeSpan intervalBetweenMessages;
         private readonly TimeSpan intervalAfterJoin;

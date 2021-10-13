@@ -115,7 +115,7 @@ namespace LoRaWan.NetworkServer.Test
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
 
             // 3. Fpending flag is set
-            Assert.Equal((byte)FctrlEnum.FpendingOrClassB, payloadDataDown.Fctrl.Span[0] & (byte)FctrlEnum.FpendingOrClassB);
+            Assert.Equal((byte)Fctrl.FpendingOrClassB, payloadDataDown.Fctrl.Span[0] & (byte)Fctrl.FpendingOrClassB);
 
             Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
             Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);

@@ -18,7 +18,7 @@ namespace LoRaTools
         /// </summary>
         public LinkCheckRequest()
         {
-            this.Cid = CidEnum.LinkCheckCmd;
+            this.Cid = Cid.LinkCheckCmd;
         }
 
         public override IEnumerable<byte> ToBytes()

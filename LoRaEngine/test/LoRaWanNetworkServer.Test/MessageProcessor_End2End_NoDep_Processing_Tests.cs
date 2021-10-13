@@ -559,7 +559,7 @@ namespace LoRaWan.NetworkServer.Test
                deviceRegistry,
                this.FrameCounterUpdateStrategyProvider);
 
-            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrl: (byte)FctrlEnum.Ack);
+            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrl: (byte)Fctrl.Ack);
             var ackRxpk = ackMessage.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             using var ackRequest = new WaitableLoRaRequest(ackRxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(ackRequest);

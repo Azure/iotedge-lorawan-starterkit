@@ -789,13 +789,13 @@ namespace LoRaWan.NetworkServer.Test
                 Assert.Equal(0, payloadDataDown.Fport.Span[0]);
                 Assert.NotNull(payloadDataDown.Frmpayload.Span.ToArray());
                 Assert.Single(payloadDataDown.Frmpayload.Span.ToArray());
-                Assert.Equal((byte)LoRaTools.CidEnum.DevStatusCmd, payloadDataDown.Frmpayload.Span[0]);
+                Assert.Equal((byte)LoRaTools.Cid.DevStatusCmd, payloadDataDown.Frmpayload.Span[0]);
             }
             else
             {
                 Assert.NotNull(payloadDataDown.Fopts.Span.ToArray());
                 Assert.Single(payloadDataDown.Fopts.Span.ToArray());
-                Assert.Equal((byte)LoRaTools.CidEnum.DevStatusCmd, payloadDataDown.Fopts.Span[0]);
+                Assert.Equal((byte)LoRaTools.Cid.DevStatusCmd, payloadDataDown.Fopts.Span[0]);
             }
 
             this.LoRaDeviceClient.VerifyAll();
