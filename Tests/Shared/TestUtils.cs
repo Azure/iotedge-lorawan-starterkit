@@ -1,22 +1,21 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.Test
+namespace LoRaWan.Tests.Shared
 {
     using System;
     using System.Collections.Generic;
     using System.Text;
     using LoRaTools.CommonAPI;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Newtonsoft.Json;
 
-    internal static class TestUtils
+    public static class TestUtils
     {
-        internal static LoRaDevice CreateFromSimulatedDevice(
+        public static LoRaDevice CreateFromSimulatedDevice(
             SimulatedDevice simulatedDevice,
             ILoRaDeviceClient loRaDeviceClient,
             DefaultLoRaDataRequestHandler requestHandler = null,
@@ -44,7 +43,7 @@ namespace LoRaWan.NetworkServer.Test
             return result;
         }
 
-        internal static Twin CreateTwin(Dictionary<string, object> desired = null, Dictionary<string, object> reported = null)
+        public static Twin CreateTwin(Dictionary<string, object> desired = null, Dictionary<string, object> reported = null)
         {
             var twin = new Twin();
             if (desired != null)
@@ -106,7 +105,7 @@ namespace LoRaWan.NetworkServer.Test
             return CreateTwin(desired: finalDesiredProperties, reported: finalReportedProperties);
         }
 
-        internal static Twin CreateOTAATwin(
+        public static Twin CreateOTAATwin(
             this SimulatedDevice simulatedDevice,
             Dictionary<string, object> desiredProperties = null,
             Dictionary<string, object> reportedProperties = null)

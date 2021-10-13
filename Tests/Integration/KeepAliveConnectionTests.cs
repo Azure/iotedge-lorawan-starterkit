@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.Test
+namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Collections.Generic;
@@ -19,7 +19,7 @@ namespace LoRaWan.NetworkServer.Test
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Devices that have keep alive set
-    public class E2E_KeepAliveConnection_Tests : MessageProcessorTestBase
+    public class KeepAliveConnectionTests : MessageProcessorTestBase
     {
         public int MaxWaitForDeviceConnectionInMs
         {

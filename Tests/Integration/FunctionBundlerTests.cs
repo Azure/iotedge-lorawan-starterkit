@@ -1,24 +1,25 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.Test
+namespace LoRaWan.Tests.Integration
 {
     using System;
     using System.Threading.Tasks;
+    using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
 
-    public class FunctionBundler_End2End_Tests : MessageProcessorTestBase
+    public class FunctionBundlerTests : MessageProcessorTestBase
     {
         private readonly DeduplicationStrategyFactory factory;
         private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
 
-        public FunctionBundler_End2End_Tests()
+        public FunctionBundlerTests()
         {
-            this.factory = new DeduplicationStrategyFactory(this.LoRaDeviceApi.Object);
-            this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            factory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object);
+            loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
         }
 
         [Fact]
@@ -27,10 +28,10 @@ namespace LoRaWan.NetworkServer.Test
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
-            var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
+            var loRaDevice = CreateLoRaDevice(simulatedDevice);
             loRaDevice.Deduplication = DeduplicationMode.Drop;
 
-            this.LoRaDeviceApi
+            LoRaDeviceApi
                     .Setup(x => x.ExecuteFunctionBundlerAsync(devEUI, It.IsAny<FunctionBundlerRequest>()))
                     .ReturnsAsync(() => new FunctionBundlerResult
                     {
@@ -43,36 +44,36 @@ namespace LoRaWan.NetworkServer.Test
                         NextFCntDown = simulatedDevice.FrmCntDown + 1
                     });
 
-            this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                 .ReturnsAsync(true);
 
-            this.LoRaDeviceClient
+            LoRaDeviceClient
                 .Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            this.LoRaDeviceClient
+            LoRaDeviceClient
                 .Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, NewNonEmptyCache(loRaDevice), LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             var messageProcessor1 = new MessageDispatcher(
-                this.ServerConfiguration,
+                ServerConfiguration,
                 loRaDeviceRegistry1,
-                this.FrameCounterUpdateStrategyProvider);
+                FrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: 1);
 
             // Create Rxpk
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
 
-            var request = this.CreateWaitableRequest(rxpk);
+            var request = CreateWaitableRequest(rxpk);
 
             messageProcessor1.DispatchRequest(request);
 
             Assert.True(await request.WaitCompleteAsync());
 
-            this.LoRaDeviceApi.VerifyAll();
+            LoRaDeviceApi.VerifyAll();
         }
     }
 }

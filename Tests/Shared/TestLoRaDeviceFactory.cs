@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.Test
+namespace LoRaWan.Tests.Shared
 {
     using System;
     using System.Collections.Generic;
@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Caching.Memory;
 
-    internal class TestLoRaDeviceFactory : ILoRaDeviceFactory
+    public class TestLoRaDeviceFactory : ILoRaDeviceFactory
     {
         private readonly ILoRaDeviceClient loRaDeviceClient;
         private readonly ILoRaDataRequestHandler requestHandler;
@@ -86,8 +86,8 @@ namespace LoRaWan.NetworkServer.Test
             return loRaDevice;
         }
 
-        internal bool TryGetLoRaDevice(string devEUI, out LoRaDevice device) => this.deviceMap.TryGetValue(devEUI, out device);
+        public bool TryGetLoRaDevice(string devEUI, out LoRaDevice device) => this.deviceMap.TryGetValue(devEUI, out device);
 
-        internal void SetClient(string devEUI, ILoRaDeviceClient deviceClient) => this.deviceClientMap[devEUI] = deviceClient;
+        public void SetClient(string devEUI, ILoRaDeviceClient deviceClient) => this.deviceClientMap[devEUI] = deviceClient;
     }
 }

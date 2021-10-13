@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.Test
+using LoRaWan.NetworkServer;
+
+namespace LoRaWan.Tests.Shared
 {
     /// <summary>
     /// Helper <see cref="ILoRaDeviceClientConnectionManager"/> implementation for unit tests.
     /// </summary>
-    internal class SingleDeviceConnectionManager : ILoRaDeviceClientConnectionManager
+    public class SingleDeviceConnectionManager : ILoRaDeviceClientConnectionManager
     {
         private ILoRaDeviceClient singleDeviceClient;
 
