@@ -5,3 +5,7 @@ dotnet_diagnostic.CA2007.severity = none
 
 # Default severity for analyzer diagnostics with category 'Style' (escalated to build warnings)
 dotnet_analyzer_diagnostic.category-Style.severity = warning
+
+# IDE0065: Misplaced using directive
+# Prefer using directives to be placed inside the namespace
+csharp_using_directive_placement = inside_namespace
