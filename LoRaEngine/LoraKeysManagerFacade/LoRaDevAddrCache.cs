@@ -27,7 +27,7 @@ namespace LoraKeysManagerFacade
         private static readonly TimeSpan FullUpdateKeyTimeSpan = TimeSpan.FromHours(24);
 
         /// <summary>
-        /// Individual entries / hashes per dev address are made valide at least 1h longer than
+        /// Individual entries / hashes per dev address are made valid at least 1h longer than
         /// the full update scheduled trigger. This avoids, invalidating the cache before we
         /// re-populate it.
         /// </summary>
