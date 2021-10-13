@@ -29,8 +29,7 @@ namespace LoraKeysManagerFacade
 
         [FunctionName(nameof(CreateEdgeDevice))]
         public async Task<HttpResponseMessage> CreateEdgeDeviceImp(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            ExecutionContext context)
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
         {
             // parse query parameter
             var queryStrings = req.GetQueryParameterDictionary();

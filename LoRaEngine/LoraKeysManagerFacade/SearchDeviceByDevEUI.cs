@@ -24,7 +24,7 @@ namespace LoraKeysManagerFacade
         }
 
         [FunctionName(nameof(GetDeviceByDevEUI))]
-        public async Task<IActionResult> GetDeviceByDevEUI([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log, ExecutionContext context)
+        public async Task<IActionResult> GetDeviceByDevEUI([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
         {
             if (req is null) throw new ArgumentNullException(nameof(req));
 
@@ -38,10 +38,10 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            return await this.RunGetDeviceByDevEUI(req, log, context, ApiVersion.LatestVersion);
+            return await this.RunGetDeviceByDevEUI(req, log);
         }
 
-        private async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log, ExecutionContext context, ApiVersion currentApiVersion)
+        private async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log)
         {
             string devEUI = req.Query["DevEUI"];
             if (string.IsNullOrEmpty(devEUI))

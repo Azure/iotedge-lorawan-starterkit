@@ -74,7 +74,7 @@ namespace LoraKeysManagerFacade
             return info?.Count > 0;
         }
 
-        public bool StoreInfo(DevAddrCacheInfo info, bool initialize = false)
+        public bool StoreInfo(DevAddrCacheInfo info)
         {
             if (info == null)
             {
