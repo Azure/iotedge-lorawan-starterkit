@@ -5,8 +5,6 @@ namespace LoRaTools
 {
     using System;
     using System.Collections.Generic;
-    using LoRaTools.Mac;
-    using LoRaTools.Utils;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -59,40 +57,6 @@ namespace LoRaTools
             this.DataRateTXPower = input[1];
             this.ChMask = BitConverter.ToUInt16(input, 2);
             this.Redundancy = input[4];
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LinkADRRequest"/> class.
-        /// </summary>
-        public LinkADRRequest(IDictionary<string, string> dictionary)
-        {
-            if (dictionary.TryGetValueCaseInsensitive("datarate", out var dataratestr) &&
-                dictionary.TryGetValueCaseInsensitive("txpower", out var txpowerstr) &&
-                dictionary.TryGetValueCaseInsensitive("chMask", out var chMaskstr) &&
-                dictionary.TryGetValueCaseInsensitive("chMaskCntl", out var chMaskCntlstr) &&
-                dictionary.TryGetValueCaseInsensitive("nbTrans", out var nbTransstr))
-            {
-                if (byte.TryParse(dataratestr, out var datarate) &&
-                    byte.TryParse(txpowerstr, out var txPower) &&
-                    ushort.TryParse(chMaskstr, out var chMask) &&
-                    byte.TryParse(chMaskCntlstr, out var chMaskCntl) &&
-                    byte.TryParse(nbTransstr, out var nbTrans))
-                {
-                    this.Cid = CidEnum.LinkADRCmd;
-                    this.DataRateTXPower = (byte)((datarate << 4) | txPower);
-                    this.ChMask = chMask;
-                    // bit 7 is RFU
-                    this.Redundancy = (byte)((byte)((chMaskCntl << 4) | nbTrans) & 0b01111111);
-                }
-                else
-                {
-                    throw new MacCommandException("LinkADRRequest C2D properties must be in String Integer style");
-                }
-            }
-            else
-            {
-                throw new MacCommandException("LinkADRRequest C2D must have have the following message properties set : datarate, txpower, chMask, chMaskCntl, nbTrans");
-            }
         }
 
         public override IEnumerable<byte> ToBytes()
