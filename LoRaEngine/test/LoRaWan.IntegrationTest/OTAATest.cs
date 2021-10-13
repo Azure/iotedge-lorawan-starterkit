@@ -4,6 +4,7 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
     using Xunit;
@@ -65,7 +66,7 @@ namespace LoRaWan.IntegrationTest
                 Console.WriteLine($"Starting sending OTAA unconfirmed message {i + 1}/{MESSAGES_COUNT}");
                 this.TestFixtureCi.ClearLogs();
 
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -97,7 +98,7 @@ namespace LoRaWan.IntegrationTest
                 Console.WriteLine($"Starting sending OTAA confirmed message {i + 1}/{MESSAGES_COUNT}");
                 this.TestFixtureCi.ClearLogs();
 
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -126,10 +127,10 @@ namespace LoRaWan.IntegrationTest
                 // 0000000000000004: message '{"value": 51}' sent to hub
                 await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
-                if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN1")).Count() > 0)
+                if (this.ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN1", StringComparison.Ordinal)).Count() > 0)
                 {
                     // Expect that the response is done on DR4 as the RX1 offset is 1 on this device.
-                    await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains("\"datr\":\"SF8BW125\""), null);
+                    await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(log => log.Contains("\"datr\":\"SF8BW125\"", StringComparison.Ordinal), null);
                 }
 
                 // Ensure device payload is available

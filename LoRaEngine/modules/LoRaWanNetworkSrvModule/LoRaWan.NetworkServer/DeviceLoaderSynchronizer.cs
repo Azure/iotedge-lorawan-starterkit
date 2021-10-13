@@ -332,7 +332,7 @@ namespace LoRaWan.NetworkServer
             try
             {
                 // Our device if it does not have a gateway assigned or is assigned to our
-                var isOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
+                var isOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
                 // Only create client if the device is our
                 if (!isOurDevice)
                 {
@@ -345,7 +345,7 @@ namespace LoRaWan.NetworkServer
                 if (await loRaDevice.InitializeAsync())
                 {
                     // revalidate based on device twin property
-                    loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase);
+                    loRaDevice.IsOurDevice = string.IsNullOrEmpty(loRaDevice.GatewayID) || string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
                     if (loRaDevice.IsOurDevice)
                     {
                         // once added, call initializers

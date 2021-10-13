@@ -4,6 +4,7 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaWan.Tests.Shared;
     using Xunit;
@@ -192,7 +193,7 @@ namespace LoRaWan.IntegrationTest
             // Sends 1x unconfirmed messages
             this.TestFixtureCi.ClearLogs();
 
-            var msg = PayloadGenerator.Next().ToString();
+            var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
             await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -219,7 +220,7 @@ namespace LoRaWan.IntegrationTest
 
             this.TestFixtureCi.ClearLogs();
 
-            msg = PayloadGenerator.Next().ToString();
+            msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
             await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -229,8 +230,8 @@ namespace LoRaWan.IntegrationTest
             await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
 
             // Checking than the communication occurs on DR 4 and RX2 as part of preferred windows RX2 and custom RX2 DR
-            await AssertUtils.ContainsWithRetriesAsync(x => x.StartsWith("+CMSG: RXWIN2"), this.ArduinoDevice.SerialLogs);
-            await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"datr\":\"SF9BW125\""), null);
+            await AssertUtils.ContainsWithRetriesAsync(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.Ordinal), this.ArduinoDevice.SerialLogs);
+            await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"datr\":\"SF9BW125\"", StringComparison.Ordinal), null);
 
             // 0000000000000004: decoding with: DecoderValueSensor port: 8
             await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
@@ -256,7 +257,7 @@ namespace LoRaWan.IntegrationTest
             if (device.IsMultiGw)
             {
                 const string joinRefusedMsg = "join refused";
-                var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg) != -1, new SearchLogOptions(joinRefusedMsg));
+                var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg, StringComparison.Ordinal) != -1, new SearchLogOptions(joinRefusedMsg));
                 Assert.True(joinRefused.Found);
             }
         }

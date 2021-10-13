@@ -32,7 +32,7 @@ namespace LoRaWan.NetworkServer.Test
             };
 
             using var httpClient = new HttpClient(target);
-            using var response = await httpClient.GetAsync("https://mytest.test.com/api/Function1?code=aaabbbb");
+            using var response = await httpClient.GetAsync(new Uri("https://mytest.test.com/api/Function1?code=aaabbbb"));
             Assert.False(response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal("Version mismatch (expected: 2018-12-16-preview, function version: 0.2 or earlier), ensure you have the latest version deployed", response.ReasonPhrase);
@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer.Test
             this.fakeHttpResponseMessage.Headers.Add(ApiVersion.HttpHeaderName, ApiVersion.Version_2018_12_16_Preview.Version);
 
             using var httpClient = new HttpClient(target);
-            using var response = await httpClient.GetAsync("https://mytest.test.com/api/Function1?code=aaabbbb");
+            using var response = await httpClient.GetAsync(new Uri("https://mytest.test.com/api/Function1?code=aaabbbb"));
             Assert.True(response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("https://mytest.test.com/api/Function1?code=aaabbbb&api-version=2018-12-16-preview", this.fakeRequestedUri.ToString());
@@ -68,7 +68,7 @@ namespace LoRaWan.NetworkServer.Test
             this.fakeHttpResponseMessage.Headers.Add(ApiVersion.HttpHeaderName, ApiVersion.Version_2018_12_16_Preview.Version);
 
             using var httpClient = new HttpClient(target);
-            using var response = await httpClient.GetAsync("https://mytest.test.com/api/Function1");
+            using var response = await httpClient.GetAsync(new Uri("https://mytest.test.com/api/Function1"));
             Assert.True(response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("https://mytest.test.com/api/Function1?api-version=2018-12-16-preview", this.fakeRequestedUri.ToString());
@@ -86,7 +86,7 @@ namespace LoRaWan.NetworkServer.Test
             this.fakeHttpResponseMessage.Headers.Add(ApiVersion.HttpHeaderName, "2018-12-30-preview");
 
             using var httpClient = new HttpClient(target);
-            using var response = await httpClient.GetAsync("https://mytest.test.com/api/Function1?code=aaabbbb");
+            using var response = await httpClient.GetAsync(new Uri("https://mytest.test.com/api/Function1?code=aaabbbb"));
             Assert.True(response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("https://mytest.test.com/api/Function1?code=aaabbbb&api-version=2018-12-16-preview", this.fakeRequestedUri.ToString());
@@ -104,7 +104,7 @@ namespace LoRaWan.NetworkServer.Test
             this.fakeHttpResponseMessage.Headers.Add(ApiVersion.HttpHeaderName, ApiVersion.Version_2018_12_16_Preview.Version);
 
             using var httpClient = new HttpClient(target);
-            using var response = await httpClient.GetAsync("https://mytest.test.com/api/Function1?code=aaabbbb");
+            using var response = await httpClient.GetAsync(new Uri("https://mytest.test.com/api/Function1?code=aaabbbb"));
             Assert.False(response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal("Version mismatch (expected: 2019-02-12-preview, function version: 2018-12-16-preview), ensure you have the latest version deployed", response.ReasonPhrase);
@@ -122,7 +122,7 @@ namespace LoRaWan.NetworkServer.Test
             this.fakeHttpResponseMessage.Headers.Add(ApiVersion.HttpHeaderName, "2018-01-01-preview");
 
             using var httpClient = new HttpClient(target);
-            using var response = await httpClient.GetAsync("https://mytest.test.com/api/Function1?code=aaabbbb");
+            using var response = await httpClient.GetAsync(new Uri("https://mytest.test.com/api/Function1?code=aaabbbb"));
             Assert.False(response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal("Version mismatch (expected: 2019-02-12-preview, function version: 2018-01-01-preview), ensure you have the latest version deployed", response.ReasonPhrase);
@@ -141,7 +141,7 @@ namespace LoRaWan.NetworkServer.Test
             this.fakeHttpResponseMessage.Headers.Add(ApiVersion.HttpHeaderName, "2018-01-01-preview");
 
             using var httpClient = new HttpClient(target);
-            using var response = await httpClient.GetAsync("https://mytest.test.com/api/Function1?code=aaabbbb");
+            using var response = await httpClient.GetAsync(new Uri("https://mytest.test.com/api/Function1?code=aaabbbb"));
             Assert.False(response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Equal("Internal Server Error", response.ReasonPhrase);
@@ -159,7 +159,7 @@ namespace LoRaWan.NetworkServer.Test
             this.fakeHttpResponseMessage.Headers.Add(ApiVersion.HttpHeaderName, ApiVersion.Version_2019_02_12_Preview.Version);
 
             using var httpClient = new HttpClient(target);
-            using var response = await httpClient.GetAsync("https://mytest.test.com/api/Function1?code=aaabbbb");
+            using var response = await httpClient.GetAsync(new Uri("https://mytest.test.com/api/Function1?code=aaabbbb"));
             Assert.False(response.IsSuccessStatusCode);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal("Version mismatch (expected: 2018-12-16-preview, function version: 2019-02-12-preview), ensure you have the latest version deployed", response.ReasonPhrase);

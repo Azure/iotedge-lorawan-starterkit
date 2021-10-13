@@ -722,7 +722,7 @@ namespace LoRaWan.NetworkServer.Test
                 },
             };
 
-            if (msg != string.Empty)
+            if (!string.IsNullOrEmpty(msg))
             {
                 c2d.Fport = 1;
             }
@@ -764,7 +764,7 @@ namespace LoRaWan.NetworkServer.Test
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
 
             // in case no payload the mac is in the FRMPayload and is decrypted with NwkSKey
-            payloadDataDown.PerformEncryption(msg == string.Empty ?
+            payloadDataDown.PerformEncryption(string.IsNullOrEmpty(msg) ?
                     loraDevice.NwkSKey :
                     loraDevice.AppSKey);
 
@@ -784,7 +784,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // 7. Mac commands should be present in reply
             // mac command is in fopts if there is a c2d message
-            if (msg == string.Empty)
+            if (string.IsNullOrEmpty(msg))
             {
                 Assert.Equal(0, payloadDataDown.Fport.Span[0]);
                 Assert.NotNull(payloadDataDown.Frmpayload.Span.ToArray());

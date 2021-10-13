@@ -294,11 +294,11 @@ namespace LoRaWan.NetworkServer
 
         async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
         {
-            if (string.Equals("clearcache", methodRequest.Name, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals("clearcache", methodRequest.Name, StringComparison.OrdinalIgnoreCase))
             {
                 return await this.ClearCache(methodRequest, userContext);
             }
-            else if (string.Equals(Constants.CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME, methodRequest.Name, StringComparison.InvariantCultureIgnoreCase))
+            else if (string.Equals(Constants.CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
             {
                 return await this.SendCloudToDeviceMessageAsync(methodRequest);
             }

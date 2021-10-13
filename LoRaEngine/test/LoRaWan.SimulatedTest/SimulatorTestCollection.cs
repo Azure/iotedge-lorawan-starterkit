@@ -108,7 +108,7 @@ namespace LoRaWan.SimulatedTest
 
                 for (var i = 1; i <= MessageCount; i++)
                 {
-                    await simulatedDevice.SendUnconfirmedMessageAsync(simulatedPacketForwarder, i.ToString());
+                    await simulatedDevice.SendUnconfirmedMessageAsync(simulatedPacketForwarder, i.ToString(CultureInfo.InvariantCulture));
                     await Task.Delay(this.intervalBetweenMessages);
                 }
 
@@ -259,7 +259,7 @@ namespace LoRaWan.SimulatedTest
                     for (var i = 0; i < totalDevices;)
                     {
                         tasks.Clear();
-                        var payload = seed + messageId.ToString().PadLeft(3, '0');
+                        var payload = seed + messageId.ToString(CultureInfo.InvariantCulture).PadLeft(3, '0');
 
                         foreach (var device in listSimulatedDevices.Skip(i).Take(scenarioDeviceStepSize))
                         {
@@ -321,7 +321,7 @@ namespace LoRaWan.SimulatedTest
                 for (var messageId = 0; messageId <= scenarioMessagesPerDevice; ++messageId)
                 {
                     // Find "<all Device ID>: message '{"value":<seed+0 to number of msg/device>}' sent to hub" in network server logs
-                    expectedPayload = $"{device.LoRaDevice.DeviceID}: message '{{\"value\":{seed + messageId.ToString().PadLeft(3, '0')}}}' sent to hub";
+                    expectedPayload = $"{device.LoRaDevice.DeviceID}: message '{{\"value\":{seed + messageId.ToString(CultureInfo.InvariantCulture).PadLeft(3, '0')}}}' sent to hub";
                     await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(expectedPayload);
                 }
             }
@@ -380,7 +380,7 @@ namespace LoRaWan.SimulatedTest
                 for (var messageId = 0; messageId <= scenarioMessagesPerDevice; ++messageId)
                 {
                     // Find message containing '{"value":<seed>.<0 to number of msg/device>}' for all leaf devices in IoT Hub
-                    expectedPayload = $"{{\"value\":{seed + messageId.ToString().PadLeft(3, '0')}}}";
+                    expectedPayload = $"{{\"value\":{seed + messageId.ToString(CultureInfo.InvariantCulture).PadLeft(3, '0')}}}";
                     await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.LoRaDevice.DeviceID, expectedPayload);
                 }
             }

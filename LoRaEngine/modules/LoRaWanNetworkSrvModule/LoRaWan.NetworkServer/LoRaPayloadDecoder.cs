@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer
             var base64Payload = ((payload?.Length ?? 0) == 0) ? string.Empty : Convert.ToBase64String(payload);
 
             // Call local decoder (no "http://" in SensorDecoder)
-            if (!sensorDecoder.Contains("http://"))
+            if (!sensorDecoder.Contains("http://", StringComparison.Ordinal))
             {
                 var decoderType = typeof(LoRaPayloadDecoder);
                 var toInvoke = decoderType.GetMethod(sensorDecoder, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
@@ -77,28 +77,28 @@ namespace LoRaWan.NetworkServer
                 // Format: http://containername/api/decodername
                 var toCall = sensorDecoder;
 
-                if (sensorDecoder.EndsWith("/"))
+                if (sensorDecoder.EndsWith("/", StringComparison.Ordinal))
                 {
-                    toCall = sensorDecoder.Substring(0, sensorDecoder.Length - 1);
+                    toCall = sensorDecoder[..^1];
                 }
 
                 // Support decoders that have a parameter in the URL
                 // http://decoder/api/sampleDecoder?x=1 -> should become http://decoder/api/sampleDecoder?x=1&devEUI=11&fport=1&payload=12345
-                var queryStringParamSeparator = toCall.Contains('?') ? "&" : "?";
+                var queryStringParamSeparator = toCall.Contains('?', StringComparison.Ordinal) ? "&" : "?";
 
                 // use HttpUtility to UrlEncode Fport and payload
                 var payloadEncoded = HttpUtility.UrlEncode(base64Payload);
                 var devEUIEncoded = HttpUtility.UrlEncode(devEUI);
 
                 // Add Fport and Payload to URL
-                toCall = $"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport.ToString()}&payload={payloadEncoded}";
+                var url = new Uri($"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport}&payload={payloadEncoded}");
 
                 // Call SensorDecoderModule
-                return await this.CallSensorDecoderModule(devEUI, toCall);
+                return await this.CallSensorDecoderModule(devEUI, url);
             }
         }
 
-        async Task<DecodePayloadResult> CallSensorDecoderModule(string devEUI, string sensorDecoderModuleUrl)
+        async Task<DecodePayloadResult> CallSensorDecoderModule(string devEUI, Uri sensorDecoderModuleUrl)
         {
             try
             {
