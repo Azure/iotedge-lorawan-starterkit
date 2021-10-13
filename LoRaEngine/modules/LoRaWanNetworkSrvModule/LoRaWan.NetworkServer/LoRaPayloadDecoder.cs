@@ -91,7 +91,7 @@ namespace LoRaWan.NetworkServer
                 var devEUIEncoded = HttpUtility.UrlEncode(devEUI);
 
                 // Add Fport and Payload to URL
-                toCall = $"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport.ToString()}&payload={payloadEncoded}";
+                toCall = $"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport}&payload={payloadEncoded}";
 
                 // Call SensorDecoderModule
                 return await this.CallSensorDecoderModule(devEUI, toCall);

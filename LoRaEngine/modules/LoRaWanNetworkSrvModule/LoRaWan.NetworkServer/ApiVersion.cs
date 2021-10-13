@@ -230,7 +230,7 @@ namespace LoRaWan.Shared
 
         public int CompareTo(ApiVersion other)
         {
-            return string.Compare(this.Version, other.Version, StringComparison.OrdinalIgnoreCase);
+            return string.Compare(this.Version, other.Version, StringComparison.Ordinal);
         }
 
         public override string ToString() => this.Version.ToString();

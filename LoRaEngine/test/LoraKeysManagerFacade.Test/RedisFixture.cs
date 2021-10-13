@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade.Test
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -66,7 +67,7 @@ namespace LoraKeysManagerFacade.Test
                         PortBindings = new Dictionary<string, IList<PortBinding>>
                         {
                             {
-                                $"6379/tcp", new List<PortBinding> { new PortBinding { HostIP = "127.0.0.1", HostPort = this.redisPort.ToString() } }
+                                $"6379/tcp", new List<PortBinding> { new PortBinding { HostIP = "127.0.0.1", HostPort = this.redisPort.ToString(CultureInfo.InvariantCulture) } }
                             }
                         }
                     };

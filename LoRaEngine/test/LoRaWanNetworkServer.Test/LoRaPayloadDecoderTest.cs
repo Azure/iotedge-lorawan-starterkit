@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System.Globalization;
     using System.Net.Http;
     using System.Text;
     using System.Threading.Tasks;
@@ -112,7 +113,7 @@ namespace LoRaWan.NetworkServer.Test
             {
                 var queryDictionary = System.Web.HttpUtility.ParseQueryString(r.RequestUri.Query);
                 Assert.Equal(devEUI, queryDictionary.Get("devEUI"));
-                Assert.Equal(fport.ToString(), queryDictionary.Get("fport"));
+                Assert.Equal(fport.ToString(CultureInfo.InvariantCulture), queryDictionary.Get("fport"));
                 Assert.Empty(queryDictionary.Get("payload"));
 
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -139,7 +140,7 @@ namespace LoRaWan.NetworkServer.Test
             {
                 var queryDictionary = System.Web.HttpUtility.ParseQueryString(r.RequestUri.Query);
                 Assert.Equal(devEUI, queryDictionary.Get("devEUI"));
-                Assert.Equal(fport.ToString(), queryDictionary.Get("fport"));
+                Assert.Equal(fport.ToString(CultureInfo.InvariantCulture), queryDictionary.Get("fport"));
                 Assert.Empty(queryDictionary.Get("payload"));
 
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK)

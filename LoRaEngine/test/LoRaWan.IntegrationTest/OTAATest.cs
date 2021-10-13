@@ -4,6 +4,7 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
     using Xunit;
@@ -65,7 +66,7 @@ namespace LoRaWan.IntegrationTest
                 Console.WriteLine($"Starting sending OTAA unconfirmed message {i + 1}/{MESSAGES_COUNT}");
                 this.TestFixtureCi.ClearLogs();
 
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -97,7 +98,7 @@ namespace LoRaWan.IntegrationTest
                 Console.WriteLine($"Starting sending OTAA confirmed message {i + 1}/{MESSAGES_COUNT}");
                 this.TestFixtureCi.ClearLogs();
 
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);

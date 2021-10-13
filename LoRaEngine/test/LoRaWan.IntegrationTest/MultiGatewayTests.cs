@@ -4,6 +4,7 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaWan.Tests.Shared;
     using Xunit;
@@ -48,7 +49,7 @@ namespace LoRaWan.IntegrationTest
             var bothReported = false;
             for (var i = 0; i < 5; i++)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
@@ -95,7 +96,7 @@ namespace LoRaWan.IntegrationTest
 
             for (var i = 0; i < 10; i++)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
                 await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 

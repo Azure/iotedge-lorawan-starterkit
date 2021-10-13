@@ -4,6 +4,7 @@
 namespace LoRaWan
 {
     using System;
+    using System.Globalization;
     using System.Net;
     using System.Net.Sockets;
     using System.Text;
@@ -130,11 +131,11 @@ namespace LoRaWan
         {
             if (logLevel == LogLevel.Error)
             {
-                Console.Error.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+                Console.Error.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture), " ", message));
             }
             else
             {
-                Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+                Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture), " ", message));
             }
         }
 
