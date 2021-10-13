@@ -27,7 +27,7 @@ public class DeviceCacheInfo
 
 The `LoRaDevAddrCache` contains important information from the IoT Hub we require for different scenarios. Most of the information is stored in device twins that are loaded and synchronized on a predefined schedule. Twins queries have strict limits in terms of reads/device and module [Understand Azure IoT Hub quotas and throttling | Microsoft Docs](https://docs.microsoft.com/en-us/azure/iot-hub/iot-hub-devguide-quotas-throttling#operation-throttles). Therefore this cache was put in the middle to handle the higher load we would generate to read out the information stored in IoT Hub.
 
-The cache is organized as a HSET - [HSET – Redis](https://redis.io/commands/hset) - The key being the DevAddr and individual DevEUI as the field. The values are `DevAddrCacheInfo`.
+The cache is organized as a HSET - [HSET – Redis](https://redis.io/commands/hset) - The key being the DevAddr and individual DevEUI as the field as multiple devices can have the same DevAddr. The values are `DevAddrCacheInfo`.
 
 ```c#
 public class DevAddrCacheInfo : IoTHubDeviceInfo
