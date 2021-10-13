@@ -6,7 +6,7 @@ The function is utilizing a [Redis](https://redis.io/) cache to store device rel
 
 ### LoRaDeviceCache
 
-Stores an instance of type `DeviceCacheInfo` by DevEUI to keep track of FCntUp, FCntDown, GatewayId per LoRaWAN Network Server (LNS). The cache is used to have a distributed lock in a multi gateway scenario. The info per gateway is stored using the DevEUI to determine what GW is allowed to process a particular message and respond to the sending device.
+Stores an instance of type [`DeviceCacheInfo`](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/DeviceCacheInfo.cs) by DevEUI to keep track of FCntUp, FCntDown, GatewayId per LoRaWAN Network Server (LNS). The cache is used to have a distributed lock in a multi gateway scenario. The info per gateway is stored using the DevEUI to determine what GW is allowed to process a particular message and respond to the sending device.
 
 All the values in this cache are LoRaWAN related and don't require any other information than what we get from the device and the gateway handling a particular message.
 
