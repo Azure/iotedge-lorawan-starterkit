@@ -16,7 +16,7 @@ namespace LoRaWan
     /// previously used DevNonce, the network server rejects the Join-request and does not allow the
     /// end device to register with the network.
     /// </remarks>
-    public readonly struct DevNonce : IEquatable<DevNonce>
+    public readonly struct DevNonce : IEquatable<DevNonce>, IComparable<DevNonce>
     {
         public const int Size = sizeof(ushort);
 
@@ -34,6 +34,13 @@ namespace LoRaWan
 
         public static bool operator ==(DevNonce left, DevNonce right) => left.Equals(right);
         public static bool operator !=(DevNonce left, DevNonce right) => !left.Equals(right);
+
+        public int CompareTo(DevNonce other) => value.CompareTo(other.value);
+
+        public static bool operator >(DevNonce left, DevNonce right) => left.CompareTo(right) > 0;
+        public static bool operator <(DevNonce left, DevNonce right) => left.CompareTo(right) < 0;
+        public static bool operator >=(DevNonce left, DevNonce right) => left.CompareTo(right) >= 0;
+        public static bool operator <=(DevNonce left, DevNonce right) => left.CompareTo(right) <= 0;
 
         public static DevNonce Read(ref ReadOnlySpan<byte> buffer)
         {

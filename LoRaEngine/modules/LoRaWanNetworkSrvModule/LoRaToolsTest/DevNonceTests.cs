@@ -3,6 +3,7 @@
 
 namespace LoRaWanTest
 {
+    using System;
     using LoRaWan;
     using Xunit;
 
@@ -73,6 +74,45 @@ namespace LoRaWanTest
         public void ToString_Returns_Hexadecimal_String()
         {
             Assert.Equal("4660", this.subject.ToString());
+        }
+
+        [Fact]
+        public void CompareTo_Returns_Zero_For_Equal_Inputs()
+        {
+            Assert.Equal(0, this.subject.CompareTo(this.subject));
+        }
+
+        [Fact]
+        public void CompareTo_Returns_Negative_Integer_When_Left_Is_Lesser()
+        {
+            Assert.Equal(-1, Math.Sign(this.subject.CompareTo(this.other)));
+        }
+
+        [Fact]
+        public void CompareTo_Returns_Positive_Integer_When_Left_Is_Greater()
+        {
+            Assert.Equal(1, Math.Sign(this.other.CompareTo(this.subject)));
+        }
+
+        [Fact]
+        public void Relational_Operators_Compare_Operands()
+        {
+            var lesser = this.subject;
+            var greater = this.other;
+
+            Assert.True(lesser < greater);
+            Assert.False(greater < lesser);
+
+            Assert.False(lesser > greater);
+            Assert.True(greater > lesser);
+
+            Assert.True(lesser <= lesser);
+            Assert.True(lesser <= greater);
+            Assert.False(greater <= lesser);
+
+            Assert.True(greater >= greater);
+            Assert.True(greater >= lesser);
+            Assert.False(lesser >= greater);
         }
     }
 }
