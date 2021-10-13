@@ -79,7 +79,7 @@ namespace LoRaWan.NetworkServer
 
                 if (sensorDecoder.EndsWith("/"))
                 {
-                    toCall = sensorDecoder.Substring(0, sensorDecoder.Length - 1);
+                    toCall = sensorDecoder[0..^1];
                 }
 
                 // Support decoders that have a parameter in the URL
