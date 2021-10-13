@@ -22,7 +22,7 @@ namespace LoraKeysManagerFacade
 
         [FunctionName("NextFCntDown")]
         public async Task<IActionResult> NextFCntDownInvoke(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             try

@@ -153,7 +153,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(2, 1U, 1U, 0U, 0U, 0, 0, 1U, 1U, true)]
         // save reporting do not match
         [InlineData(11, 10U, 20U, 0U, 0U, 0, 0, 10U, 20U, true)]
-        public async Task ValidateFcnt_Start_Values_And_ResetCounter (
+        public async Task ValidateFcnt_Start_Values_And_ResetCounter(
             short fcntUp,
             uint startFcntUpDesired,
             uint startFcntDownDesired,
