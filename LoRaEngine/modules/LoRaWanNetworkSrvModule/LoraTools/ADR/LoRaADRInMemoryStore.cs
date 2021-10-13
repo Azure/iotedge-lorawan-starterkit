@@ -3,6 +3,7 @@
 
 namespace LoRaTools.ADR
 {
+    using System;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Caching.Memory;
 
@@ -10,7 +11,7 @@ namespace LoRaTools.ADR
     /// Stores ADR tables in memory on the gateway.
     /// This is the default implementation if we have a single gateway environment.
     /// </summary>
-    public class LoRaADRInMemoryStore : LoRaADRStoreBase, ILoRaADRStore
+    public sealed class LoRaADRInMemoryStore : LoRaADRStoreBase, ILoRaADRStore, IDisposable
     {
         private readonly MemoryCache cache;
 
@@ -53,5 +54,7 @@ namespace LoRaTools.ADR
 
             return Task.FromResult<bool>(true);
         }
+
+        public void Dispose() => this.cache.Dispose();
     }
 }

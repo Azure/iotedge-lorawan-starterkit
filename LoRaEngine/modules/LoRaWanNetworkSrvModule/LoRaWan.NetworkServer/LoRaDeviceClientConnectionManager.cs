@@ -11,9 +11,9 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Manages <see cref="ILoRaDeviceClient"/> connections for <see cref="LoRaDevice"/>.
     /// </summary>
-    public class LoRaDeviceClientConnectionManager : ILoRaDeviceClientConnectionManager
+    public sealed class LoRaDeviceClientConnectionManager : ILoRaDeviceClientConnectionManager
     {
-        public class ManagedConnection
+        public sealed class ManagedConnection : IDisposable
         {
             public ManagedConnection(LoRaDevice loRaDevice, ILoRaDeviceClient deviceClient)
             {
@@ -24,6 +24,17 @@ namespace LoRaWan.NetworkServer
             public LoRaDevice LoRaDevice { get; }
 
             public ILoRaDeviceClient DeviceClient { get; }
+
+            public void Dispose()
+            {
+                this.DeviceClient.Dispose();
+
+                // Disposing the Connection Manager should only happen on application shutdown
+                // (which in turn triggers the disposal of all managed connections).
+                // In that specific case disposing the LoRaDevice will cause the LoRa device to unregister itself again,
+                // which causes DeviceClient.Dispose() to be called twice. We do not optimize this case, since the Dispose logic is idempotent.
+                this.LoRaDevice.Dispose();
+            }
         }
 
         IMemoryCache cache;
@@ -112,7 +123,7 @@ namespace LoRaWan.NetworkServer
         {
             if (this.managedConnections.TryRemove(this.GetConnectionCacheKey(loRaDevice.DevEUI), out var removedItem))
             {
-                removedItem.DeviceClient.Dispose();
+                removedItem.Dispose();
             }
         }
 
@@ -123,6 +134,16 @@ namespace LoRaWan.NetworkServer
         public void TryScanExpiredItems()
         {
             this.cache.TryGetValue(string.Empty, out _);
+        }
+
+        public void Dispose()
+        {
+            // The LoRaDeviceClientConnectionManager does not own the cache, but it owns all the managed connections.
+
+            foreach (var it in this.managedConnections)
+            {
+                it.Value.Dispose();
+            }
         }
     }
 }

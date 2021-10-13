@@ -68,7 +68,8 @@ namespace LoRaWan.NetworkServer
 
             var requestBody = JsonConvert.SerializeObject(request);
 
-            var response = await client.PostAsync(url, PreparePostContent(requestBody));
+            using var content = PreparePostContent(requestBody);
+            using var response = await client.PostAsync(url, content);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.Log(devEUI, $"error calling the bundling function, check the function log. {response.ReasonPhrase}", LogLevel.Error);

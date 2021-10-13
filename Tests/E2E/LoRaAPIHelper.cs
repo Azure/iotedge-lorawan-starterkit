@@ -38,7 +38,8 @@ namespace LoRaWan.Tests.E2E
             // releasing the cache. Hence we do not need a real GW id
             var payload = "{\"AdrRequest\":{\"ClearCache\": true},\"GatewayId\":\"integrationTesting\", \"FunctionItems\": " + (int)FunctionBundlerItemType.ADR + "}";
 
-            var response = await httpClient.Value.PostAsync(url, PreparePostContent(payload));
+            using var content = PreparePostContent(payload);
+            using var response = await httpClient.Value.PostAsync(url, content);
             return response.IsSuccessStatusCode;
         }
 

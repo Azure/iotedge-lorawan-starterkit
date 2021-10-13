@@ -33,7 +33,10 @@ namespace LoRaWan.NetworkServer
             var isOurDevice = string.IsNullOrEmpty(deviceInfo.GatewayId) || string.Equals(deviceInfo.GatewayId, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
             if (isOurDevice)
             {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                // Ownership is transferred to connection manager.
                 this.connectionManager.Register(loRaDevice, this.CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey));
+#pragma warning restore CA2000 // Dispose objects before losing scope
             }
 
             loRaDevice.SetRequestHandler(this.dataRequestHandler);
