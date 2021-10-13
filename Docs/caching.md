@@ -10,7 +10,7 @@ Stores an instance of type `DeviceCacheInfo` by DevEUI to keep track of FCntUp, 
 
 All the values in this cache are LoRaWAN related and don't require any other information than what we get from the device and the gateway handling a particular message.
 
-This cache needs to be reset, when a device re-joins.
+This cache needs to be reset, when a device re-joins. 
 
 ```c#
 public class DeviceCacheInfo
@@ -20,6 +20,8 @@ public class DeviceCacheInfo
   public string GatewayId { get; set; }
 }
 ```
+
+[iotedge-lorawan-starterkit/DeviceCacheInfo.cs at dev · Azure/iotedge-lorawan-starterkit (github.com)](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/DeviceCacheInfo.cs)
 
 ### LoRaDevAddrCache
 
@@ -42,6 +44,8 @@ public class IoTHubDeviceInfo
   public string PrimaryKey { get; set; }
 }
 ```
+
+[iotedge-lorawan-starterkit/DevAddrCacheInfo.cs at dev · Azure/iotedge-lorawan-starterkit (github.com)](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/DevAddrCacheInfo.cs)
 
 This cache is automatically being populated on a schedule. We have a function trigger `SyncDevAddrCache` that is triggered on a regular basis (currently every 5min) to validate what synchronization is required.
 
@@ -73,6 +77,33 @@ When we receive OTAA requests, we manage the potential of conflicting with multi
    }
    ```
 
-   The DesiredGateway is used to determine, if the gateway making the request, is the desired gateway. If the value is not set, the first one to win the race, will handle the join.
+   [iotedge-lorawan-starterkit/JoinInfo.cs at dev · Azure/iotedge-lorawan-starterkit (github.com)](https://github.com/Azure/iotedge-lorawan-starterkit/blob/dev/LoRaEngine/LoraKeysManagerFacade/JoinInfo.cs)
 
+   The DesiredGateway is used to determine, if the gateway making the request, is the desired gateway. If the value is not set, the first one to win the race, will handle the join.
+   
    The PrimaryKey is used to create the device connection from the edge gateway to IoT Hub.
+
+## Edge Gateway
+
+### Device Cache
+
+Every device sending messages to the edge, is validated if it belongs to our network and our gateway. If it is our gateway, we build up a local representation of the device in memory including a connection to IoT Hub. The devices are cached for a specific amount of time in the `LoRaDeviceRegistry` . 
+
+The `LoRaDeviceRegistry` stores the `LoRaDevice` with 3 entries:
+
+1. We maintain a dictionary by DevAddr that contains an entry per DevEUI for a particular device - valid for 2 days
+2. The device is stored directly using the DevEUI for fast lookup using deveui:[DevEUI] - no expiration
+3. When a DevAddr entry (1) is not ready, we initialize a `DeviceLoaderSynchronizer` to fetch matching devices from the function API. The loader itself is put in cache, to be able to handle requests, while we are in the process of loading them. - valid for 30s.
+
+Class C device cases use the DevEUI directly for downstream message sending (2). All other cases make use of the first cache by DevAddr.
+
+The Device Cache can be forcefully invalidated - [Quickstart - Cache Clearing](./quickstart.md#cache-clearing).
+
+### Connections
+
+We maintain connections to the IoT hub for all devices that belong to us for which we received messages. The connection is cached per device in the `ConnectionManager`. We do establish the connection to IoT hub with the PrimaryKey of the device using the standard [DeviceClient Class (Microsoft.Azure.Devices.Client) - Azure for .NET Developers | Microsoft Docs](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.devices.client.deviceclient?view=azure-dotnet).
+
+Connections are closed when the `LoRaDevice` is disposed. 
+
+
+
