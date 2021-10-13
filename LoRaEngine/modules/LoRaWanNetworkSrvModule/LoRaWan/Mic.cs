@@ -54,11 +54,11 @@ namespace LoRaWan
             mac.Init(key);
 
             var input = new byte[MacHeader.Size + JoinEui.Size + DevEui.Size + DevNonce.Size];
-            var b = input.AsSpan();
-            b = mhdr.Write(b);
-            b = joinEui.Write(b);
-            b = devEui.Write(b);
-            devNonce.Write(b);
+            var buffer = input.AsSpan();
+            buffer = mhdr.Write(buffer);
+            buffer = joinEui.Write(buffer);
+            buffer = devEui.Write(buffer);
+            devNonce.Write(buffer);
 
             mac.BlockUpdate(input, 0, input.Length);
             var cmac = MacUtilities.DoFinal(mac);
