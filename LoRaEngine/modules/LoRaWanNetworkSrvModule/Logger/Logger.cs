@@ -8,6 +8,7 @@ namespace LoRaWan
     using System.Net.Sockets;
     using System.Text;
     using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
 
@@ -93,8 +94,28 @@ namespace LoRaWan
 
                 if (configuration.LogToHub && configuration.ModuleClient != null)
                 {
-                    using var m = new Message(UTF8Encoding.ASCII.GetBytes(msg));
-                    configuration.ModuleClient.SendEventAsync(m);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                    // Message is always disposed when the SendEventAsync completes.
+                    var m = new Message(UTF8Encoding.ASCII.GetBytes(msg));
+
+                    Task operation = null;
+
+                    try
+                    {
+                        operation = configuration.ModuleClient.SendEventAsync(m);
+                    }
+                    finally
+                    {
+                        if (operation is null)
+                        {
+                            m.Dispose();
+                        }
+                        else
+                        {
+                            operation.ContinueWith(_ => m.Dispose(), TaskScheduler.Default);
+                        }
+                    }
+#pragma warning restore CA2000 // Dispose objects before losing scope
                 }
 
                 if (configuration.LogToConsole)
