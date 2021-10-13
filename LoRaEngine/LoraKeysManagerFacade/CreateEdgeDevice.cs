@@ -94,8 +94,7 @@ namespace LoraKeysManagerFacade
                 await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, spec);
 
                 var twin = new Twin();
-                twin.Properties.Desired = new TwinCollection(@"{FacadeServerUrl:'" + string.Format(CultureInfo.InvariantCulture, "https://{0}.azurewebsites.net/api/", GetEnvironmentVariable("FACADE_HOST_NAME")) + "',FacadeAuthCode: " +
-                    "'" + facadeKey + "'}");
+                twin.Properties.Desired = new TwinCollection($"{{FacadeServerUrl:'https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.azurewebsites.net/api/',FacadeAuthCode: '{facadeKey}'}}");
                 var remoteTwin = await this.registryManager.GetTwinAsync(deviceName);
 
                 await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
