@@ -97,7 +97,7 @@ The [`LoRaDeviceRegistry`](https://github.com/Azure/iotedge-lorawan-starterkit/b
 
 Class C device cases use the DevEUI directly for downstream message sending (2). All other cases make use of the first cache by DevAddr.
 
-The Device Cache can be forcefully invalidated - [Quickstart - Cache Clearing](./quickstart.md).
+The Device Cache can be forcefully invalidated - [Quickstart - Cache Clearing](quickstart.md#cache-clearing).
 
 ### Connections
 
