@@ -3,11 +3,11 @@
 
 namespace LoRaTools.Regions
 {
-    public enum LoRaRegionType
+    public enum RegionCN470PlanType
     {
-        NotSet,
-        EU868,
-        US915,
-        CN470
+        PlanA20MHz,
+        PlanB20MHz,
+        PlanA26MHz,
+        PlanB26MHz,
     }
 }

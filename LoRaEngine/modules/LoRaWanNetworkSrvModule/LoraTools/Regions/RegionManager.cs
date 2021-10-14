@@ -202,5 +202,31 @@ namespace LoRaTools.Regions
             us915.MaxADRDataRate = 3;
             us915.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), upstreamValidDataranges, downstreamValidDataranges, 0, 8);
         }
+
+        private static Region cn470;
+
+        public static Region CN470
+        {
+            get
+            {
+                if (cn470 == null)
+                {
+                    lock (RegionLock)
+                    {
+                        if (cn470 == null)
+                        {
+                            CreateCN470Region();
+                        }
+                    }
+                }
+
+                return cn470;
+            }
+        }
+
+        private static void CreateCN470Region()
+        {
+            cn470 = new RegionCN470();
+        }
     }
 }
