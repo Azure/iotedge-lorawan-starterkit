@@ -21,7 +21,7 @@ namespace LoRaTools
 
         public abstract int Length { get; }
 
-        public override abstract string ToString();
+        public abstract override string ToString();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MacCommand"/> class.
