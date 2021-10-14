@@ -158,7 +158,10 @@ namespace LoRaWan.NetworkServer.Test
             }
         }
 
+#pragma warning disable xUnit1013 // Public method should be marked as test
+        // https://github.com/xunit/xunit/issues/1323
         public void Dispose()
+#pragma warning restore xUnit1013 // Public method should be marked as test
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
