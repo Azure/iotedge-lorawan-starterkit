@@ -120,7 +120,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                             var winner = items?.OrderByDescending(x => x.Rssi).FirstOrDefault();
                             if (winner == null)
                             {
-                                log.LogError("Could not resolve closest gateway in {devEUI} and {fcntUp}", devEUI, fcntUp);
+                                this.log.LogError("Could not resolve closest gateway in {devEUI} and {fcntUp}", devEUI, fcntUp);
 
                                 return new PreferredGatewayResult(devEUI, fcntUp, "Could not resolve closest gateway");
                             }
