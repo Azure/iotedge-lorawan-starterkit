@@ -33,7 +33,7 @@ namespace LoRaWan
 
         public FrameControl(byte value) => this.value = value;
 
-        public FrameControl(FCtrlFlags flags, int optionsLength) :
+        public FrameControl(FCtrlFlags flags, int optionsLength = 0) :
             this(unchecked((byte)((byte)((flags & FCtrlFlags.FOptsLenMask) == 0 ? flags : throw new ArgumentException(null, nameof(flags)))
                                          | (optionsLength is >= 0 and <= 15 ? optionsLength : throw new ArgumentOutOfRangeException(nameof(optionsLength), optionsLength, null))))) { }
 
