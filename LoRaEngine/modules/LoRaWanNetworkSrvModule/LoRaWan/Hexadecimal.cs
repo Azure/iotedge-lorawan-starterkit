@@ -12,28 +12,45 @@ namespace LoRaWan
         const string UpperCaseDigits = "0123456789ABCDEF";
         const string LowerCaseDigits = "0123456789abcdef";
 
+        const string InsufficientBufferSizeErrorMessage = "Insufficient buffer size to encode hexadecimal.";
+
+        static void ValidateSufficientlySizedBuffer(int targetCharsLength, int expectedByteSize, string paramName)
+        {
+            if (targetCharsLength < expectedByteSize * 2)
+                throw new ArgumentException(InsufficientBufferSizeErrorMessage, paramName);
+        }
+
         public static Span<char> Write(byte value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
         {
+            ValidateSufficientlySizedBuffer(buffer.Length, sizeof(byte), nameof(buffer));
+
             var digits = letterCase == LetterCase.Lower ? LowerCaseDigits : UpperCaseDigits;
             buffer[0] = digits[value >> 4];
             buffer[1] = digits[value & 0x0f];
+
             return buffer[2..];
         }
 
         public static Span<char> Write(ushort value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
         {
+            ValidateSufficientlySizedBuffer(buffer.Length, sizeof(ushort), nameof(buffer));
+
             unchecked
             {
                 buffer = Write((byte)(value >> 8), buffer, letterCase);
                 buffer = Write((byte)(value >> 0), buffer, letterCase);
             }
+
             return buffer;
         }
 
         public static Span<char> Write(ulong value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
         {
+            ValidateSufficientlySizedBuffer(buffer.Length, sizeof(ulong), nameof(buffer));
+
             for (var i = sizeof(ulong) - 1; i >= 0; i--)
                 buffer = Write(unchecked((byte)(value >> (i << 3))), buffer, letterCase);
+
             return buffer;
         }
 
@@ -91,7 +108,7 @@ namespace LoRaWan
             }
 
             if (output.Length < i)
-                throw new ArgumentException(null, nameof(output));
+                throw new ArgumentException(InsufficientBufferSizeErrorMessage, nameof(output));
 
             temp[..i].CopyTo(output);
             return true;
