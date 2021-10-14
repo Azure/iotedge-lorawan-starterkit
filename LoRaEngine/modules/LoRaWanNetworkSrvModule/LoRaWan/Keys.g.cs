@@ -19,7 +19,7 @@ namespace LoRaWan
         AppKey(Buffer16 value) => this.value = value;
 
         public bool Equals(AppKey other) => this.value == other.value;
-        public override bool Equals(object obj) => obj is AppKey other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is AppKey other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
         public override string ToString() => this.value.ToString();
@@ -62,7 +62,7 @@ namespace LoRaWan
         AppSessionKey(Buffer16 value) => this.value = value;
 
         public bool Equals(AppSessionKey other) => this.value == other.value;
-        public override bool Equals(object obj) => obj is AppSessionKey other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is AppSessionKey other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
         public override string ToString() => this.value.ToString();
@@ -105,7 +105,7 @@ namespace LoRaWan
         NetworkSessionKey(Buffer16 value) => this.value = value;
 
         public bool Equals(NetworkSessionKey other) => this.value == other.value;
-        public override bool Equals(object obj) => obj is NetworkSessionKey other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is NetworkSessionKey other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
         public override string ToString() => this.value.ToString();

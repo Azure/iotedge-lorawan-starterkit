@@ -19,7 +19,7 @@ namespace LoRaWan
         public Buffer16(ulong hi, ulong lo) => (this.hi, this.lo) = (hi, lo);
 
         public bool Equals(Buffer16 other) => this.lo == other.lo && this.hi == other.hi;
-        public override bool Equals(object obj) => obj is Buffer16 other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is Buffer16 other && this.Equals(other);
         public override int GetHashCode() => HashCode.Combine(this.lo, this.hi);
 
         public static bool operator ==(Buffer16 left, Buffer16 right) => left.Equals(right);

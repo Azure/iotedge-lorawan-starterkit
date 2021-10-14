@@ -20,7 +20,7 @@ namespace LoRaWan
         public double Giga => this.value / 1e9;
 
         public bool Equals(Hertz other) => this.value == other.value;
-        public override bool Equals(object obj) => obj is Hertz other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is Hertz other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
         public override string ToString() => value.ToString(CultureInfo.InvariantCulture);

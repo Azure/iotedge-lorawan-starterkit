@@ -40,7 +40,7 @@ namespace LoRaWan
         public int NetworkAddress => unchecked((int)(this.value & NetworkAddressMask));
 
         public bool Equals(DevAddr other) => this.value == other.value;
-        public override bool Equals(object obj) => obj is DevAddr other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is DevAddr other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
         public override string ToString() => this.value.ToString("X8", CultureInfo.InvariantCulture);
