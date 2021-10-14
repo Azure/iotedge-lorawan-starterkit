@@ -37,3 +37,6 @@ dotnet_diagnostic.IDE0045.severity=suggestion
 
 # IDE0024: Use expression body for operators
 csharp_style_expression_bodied_operators = true
+
+# CA2225: Operator overloads have named alternates
+dotnet_diagnostic.CA2225.severity=suggestion
