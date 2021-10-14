@@ -187,7 +187,7 @@ namespace LoRaTools.LoRaMessage
             var fPortLen = fPort == null ? 0 : fPort.Length;
 
             // TODO If there are mac commands to send and no payload, we need to put the mac commands in the frmpayload.
-            if (macBytes.Count > 0 && (frmPayload == null || frmPayload?.Length == 0))
+            if (macBytes.Count > 0 && (frmPayload == null || frmPayload.Length == 0))
             {
                 frmPayload = fOpts;
                 fOpts = null;

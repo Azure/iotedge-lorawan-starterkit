@@ -115,7 +115,7 @@ namespace LoRaWan.NetworkServer
             if (cloudToDeviceMessage != null)
             {
                 // Get C2D Mac coomands
-                var macCommandsC2d = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage?.MacCommands, rxpk, null);
+                var macCommandsC2d = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage.MacCommands, rxpk, null);
 
                 // Calculate total C2D payload size
                 var totalC2dSize = cloudToDeviceMessage.GetPayload()?.Length ?? 0;
@@ -156,7 +156,7 @@ namespace LoRaWan.NetworkServer
                 else
                 {
                     // Flag message to be abandoned and log
-                    Logger.Log(loRaDevice.DevEUI, $"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement} too long for current receive window. Abandoning.", LogLevel.Debug);
+                    Logger.Log(loRaDevice.DevEUI, $"cloud to device message: empty, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: 0, confirmed: {requiresDeviceAcknowlegement} too long for current receive window. Abandoning.", LogLevel.Debug);
                     isMessageTooLong = true;
                 }
             }

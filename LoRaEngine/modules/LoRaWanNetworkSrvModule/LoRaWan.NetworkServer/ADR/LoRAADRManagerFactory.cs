@@ -34,7 +34,10 @@ namespace LoRaWan.NetworkServer.ADR
 
                 lock (InMemoryStoreLock)
                 {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                    // False positive.
                     if (inMemoryStore == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
                     {
                         inMemoryStore = new LoRaADRInMemoryStore();
                     }

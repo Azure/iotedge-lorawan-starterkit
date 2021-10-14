@@ -71,7 +71,10 @@ namespace LoRaTools.Regions
                 {
                     lock (RegionLock)
                     {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                        // False positive
                         if (eu868 == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
                         {
                             CreateEU868Region();
                         }
@@ -140,7 +143,10 @@ namespace LoRaTools.Regions
                 {
                     lock (RegionLock)
                     {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                        // False positive
                         if (us915 == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
                         {
                             CreateUS915Region();
                         }
