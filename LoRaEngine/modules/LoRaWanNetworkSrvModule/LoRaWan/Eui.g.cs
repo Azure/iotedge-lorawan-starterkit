@@ -10,7 +10,6 @@ namespace LoRaWan
 {
     using System;
     using System.Buffers.Binary;
-    using System.Globalization;
 
     readonly partial struct DevEui : IEquatable<DevEui>
     {
