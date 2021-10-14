@@ -985,7 +985,7 @@ namespace LoRaWan.NetworkServer.Test
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
 
-            var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
+            using var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
             loRaDevice.SensorDecoder = "DecoderValueSensor";
 
             // message will be sent
