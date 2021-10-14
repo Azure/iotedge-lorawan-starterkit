@@ -291,7 +291,7 @@ jobs:
         echo ${{ matrix.testsToRun }}
         dotnet test --logger trx --no-build --configuration ${{ env.buildConfiguration }} \
         -p:ParallelizeTestCollections=false -r ${{ env.TESTS_RESULTS_FOLDER }}/E2E/ --filter "${{ matrix.testsToRun }}" \
-        **/Tests/E2E/LoRaWan.Tests.E2E.csproj
+        **/${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
