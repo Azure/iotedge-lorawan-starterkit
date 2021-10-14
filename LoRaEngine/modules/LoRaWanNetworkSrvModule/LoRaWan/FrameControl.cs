@@ -21,17 +21,18 @@ namespace LoRaWan
     }
 
     /// <summary>
-    /// Frame control octet (FCtrl) found in a frame header (FHDR) for either uplink or downlink frames.
+    /// Frame control octet (FCtrl) found in a frame header (FHDR) for either uplink or downlink
+    /// frames.
     /// </summary>
-    public readonly struct FCtrl : IEquatable<FCtrl>
+    public readonly struct FrameControl : IEquatable<FrameControl>
     {
         public const int Size = sizeof(byte);
 
         readonly byte value;
 
-        public FCtrl(byte value) => this.value = value;
+        public FrameControl(byte value) => this.value = value;
 
-        public FCtrl(FCtrlFlags flags, int fOptsLen) :
+        public FrameControl(FCtrlFlags flags, int fOptsLen) :
             this(unchecked((byte)((byte)((flags & FCtrlFlags.FOptsLenMask) == 0 ? flags : throw new ArgumentException(null, nameof(flags)))
                                          | (fOptsLen is >= 0 and <= 15 ? fOptsLen : throw new ArgumentOutOfRangeException(nameof(fOptsLen), fOptsLen, null))))) { }
 
@@ -39,42 +40,42 @@ namespace LoRaWan
 
         /// <summary>
         /// Indicates whether the network will control the data rate of the end-device.
+        /// Represents the ADR bit in the frame control octet (FCtrl).
         /// </summary>
         /// <remarks>
-        /// Represents the ADR bit in the frame control octet (FCtrl). If the ADR bit is set, the
-        /// network will control the data rate of the end-device through the 20 appropriate MAC
-        /// commands. If the ADR bit is not set, the network will not attempt to control the data
-        /// rate of the end-device regardless of the received signal quality.
+        /// If the ADR bit is set, the network will control the data rate of the end-device through
+        /// the 20 appropriate MAC commands. If the ADR bit is not set, the network will not attempt
+        /// to control the data rate of the end-device regardless of the received signal quality.
         /// </remarks>
         public bool Adr => HasFlags(FCtrlFlags.Adr);
 
         /// <summary>
-        /// Indicates whether ADR acknowledgement is requested.
+        /// Indicates whether ADR acknowledgement is requested (ADRACKReq).
         /// </summary>
-        public bool AdrAckReq => HasFlags(FCtrlFlags.AdrAckReq);
+        public bool AdrAckRequested => HasFlags(FCtrlFlags.AdrAckReq);
 
         /// <summary>
-        /// Indicates whether the receiver acknowledges receiving a confirmed data message.
+        /// Indicates whether the receiver acknowledges (ACK) receiving a confirmed data message.
         /// </summary>
         public bool Ack => HasFlags(FCtrlFlags.Ack);
 
         /// <summary>
-        /// Indicates (downlink only) whether a gateway has more data pending to be sent.
+        /// Indicates (downlink only) whether a gateway has more data pending (FPending) to be sent.
         /// </summary>
-        public bool FPending => HasFlags(FCtrlFlags.FPending);
+        public bool DownlinkFramePending => HasFlags(FCtrlFlags.FPending);
 
         /// <summary>
         /// Gets the length of the frame options (FOpts).
         /// </summary>
-        public int FOptsLen => this.value & 0x0f;
+        public int OptionsLength => this.value & 0x0f;
 
-        public bool Equals(FCtrl other) => this.value == other.value;
-        public override bool Equals(object obj) => obj is FCtrl other && this.Equals(other);
+        public bool Equals(FrameControl other) => this.value == other.value;
+        public override bool Equals(object obj) => obj is FrameControl other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
         public override string ToString() => value.ToString("X2", CultureInfo.InvariantCulture);
 
-        public static bool operator ==(FCtrl left, FCtrl right) => left.Equals(right);
-        public static bool operator !=(FCtrl left, FCtrl right) => !left.Equals(right);
+        public static bool operator ==(FrameControl left, FrameControl right) => left.Equals(right);
+        public static bool operator !=(FrameControl left, FrameControl right) => !left.Equals(right);
     }
 }
