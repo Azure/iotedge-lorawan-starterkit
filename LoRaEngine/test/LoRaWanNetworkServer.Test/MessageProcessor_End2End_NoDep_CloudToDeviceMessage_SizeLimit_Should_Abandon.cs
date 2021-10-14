@@ -61,7 +61,7 @@ namespace LoRaWan.NetworkServer.Test
             var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
-                - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+                - Constants.LoraProtocolOverheadSize;
 
             var c2dMessagePayload = TestUtils.GeneratePayload("123457890", (int)c2dPayloadSize);
 

@@ -23,11 +23,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
     /// </remarks>
     public class PreferredGatewayExecutionItem : IFunctionBundlerExecutionItem
     {
+#pragma warning disable CA1707 // Identifiers should not contain underscores
         public const int MAX_ATTEMPTS_TO_RESOLVE_PREFERRED_GATEWAY = 10;
         public const int REQUEST_LIST_CACHE_DURATION_IN_MINUTES = 3;
         public const int DEFAULT_RECEIVE_REQUESTS_PERIOD_IN_MS = 200;
-
         public const string PREFERREDGATEWAY_RECEIVE_REQUESTS_CONFIGURATIONNAME = "PREFERRED_GATEWAY_REQUESTS_INTERVAL";
+#pragma warning restore CA1707 // Identifiers should not contain underscores
 
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly ILogger<PreferredGatewayExecutionItem> log;

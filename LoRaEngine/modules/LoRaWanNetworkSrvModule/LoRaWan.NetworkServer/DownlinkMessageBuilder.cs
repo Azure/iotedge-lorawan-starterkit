@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer
 
             // Calculate receive window
             var receiveWindow = timeWatcher.ResolveReceiveWindowToUse(loRaDevice);
-            if (receiveWindow == Constants.INVALID_RECEIVE_WINDOW)
+            if (receiveWindow == Constants.InvalidReceiveWindow)
             {
                 // No valid receive window. Abandon the message
                 isMessageTooLong = true;
@@ -72,7 +72,7 @@ namespace LoRaWan.NetworkServer
             double freq;
             long tmst;
 
-            if (receiveWindow == Constants.RECEIVE_WINDOW_2)
+            if (receiveWindow == Constants.ReceiveWindow2)
             {
                 tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow2Delay(loRaDevice), loRaDevice.ReportedRXDelay);
                 freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency);
@@ -100,7 +100,7 @@ namespace LoRaWan.NetworkServer
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
 
             // Deduct 8 bytes from max payload size.
-            maxPayloadSize -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+            maxPayloadSize -= Constants.LoraProtocolOverheadSize;
 
             var availablePayloadSize = maxPayloadSize;
 
@@ -260,7 +260,7 @@ namespace LoRaWan.NetworkServer
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
 
             // Deduct 8 bytes from max payload size.
-            maxPayloadSize -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+            maxPayloadSize -= Constants.LoraProtocolOverheadSize;
 
             var availablePayloadSize = maxPayloadSize;
 
@@ -396,11 +396,11 @@ namespace LoRaWan.NetworkServer
         {
             if (rXDelay > 1 && rXDelay < 16)
             {
-                return (windowTime + rXDelay - 1) * Constants.CONVERT_TO_PKT_FWD_TIME;
+                return (windowTime + rXDelay - 1) * Constants.ConvertToPktFwdTime;
             }
             else
             {
-                return windowTime * Constants.CONVERT_TO_PKT_FWD_TIME;
+                return windowTime * Constants.ConvertToPktFwdTime;
             }
         }
     }

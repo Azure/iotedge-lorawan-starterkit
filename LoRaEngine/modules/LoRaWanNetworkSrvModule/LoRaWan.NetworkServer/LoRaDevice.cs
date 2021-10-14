@@ -103,7 +103,7 @@ namespace LoRaWan.NetworkServer
 
             set
             {
-                if (value != Constants.RECEIVE_WINDOW_1 && value != Constants.RECEIVE_WINDOW_2)
+                if (value != Constants.ReceiveWindow1 && value != Constants.ReceiveWindow2)
                     throw new ArgumentOutOfRangeException(nameof(this.PreferredWindow), value, $"{nameof(this.PreferredWindow)} must bet 1 or 2");
 
                 this.preferredWindow = value;
@@ -315,7 +315,7 @@ namespace LoRaWan.NetworkServer
                     if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
                     {
                         var preferredWindowTwinValue = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
-                        if (preferredWindowTwinValue == Constants.RECEIVE_WINDOW_2)
+                        if (preferredWindowTwinValue == Constants.ReceiveWindow2)
                             this.PreferredWindow = preferredWindowTwinValue;
                     }
 
@@ -366,7 +366,7 @@ namespace LoRaWan.NetworkServer
                         var value = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.KeepAliveTimeout].Value);
                         if (value > 0)
                         {
-                            this.KeepAliveTimeout = Math.Max(value, Constants.MIN_KEEP_ALIVE_TIMEOUT);
+                            this.KeepAliveTimeout = Math.Max(value, Constants.MinKeepAliveTimeout);
                         }
                     }
 
@@ -539,10 +539,10 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Saves device changes in reported twin properties
-        /// It will only save if required. Frame counters are only saved if the difference since last value is equal or greater than <see cref="Constants.MAX_FCNT_UNSAVED_DELTA"/>.
+        /// It will only save if required. Frame counters are only saved if the difference since last value is equal or greater than <see cref="Constants.MaxFcntUnsavedDelta"/>.
         /// </summary>
         /// <param name="reportedProperties">Pre populate reported properties.</param>
-        /// <param name="force">Indicates if changes should be saved even if the difference between last saved and current frame counter are less than <see cref="Constants.MAX_FCNT_UNSAVED_DELTA"/>.</param>
+        /// <param name="force">Indicates if changes should be saved even if the difference between last saved and current frame counter are less than <see cref="Constants.MaxFcntUnsavedDelta"/>.</param>
         public async Task<bool> SaveChangesAsync(TwinCollection reportedProperties = null, bool force = false)
         {
             try
@@ -572,8 +572,8 @@ namespace LoRaWan.NetworkServer
                 var fcntDownDelta = this.FCntDown >= this.LastSavedFCntDown ? this.FCntDown - this.LastSavedFCntDown : this.LastSavedFCntDown - this.FCntDown;
 
                 if (reportedProperties.Count > 0 ||
-                            fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
-                            fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
+                            fcntDownDelta >= Constants.MaxFcntUnsavedDelta ||
+                            fcntUpDelta >= Constants.MaxFcntUnsavedDelta ||
                             (this.hasFrameCountChanges && force))
                 {
                     var savedFcntDown = this.FCntDown;
@@ -1022,7 +1022,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var delta = payloadFcntUp + (ushort.MaxValue - (ushort)this.fcntUp);
-            return delta <= Constants.MAX_FCNT_GAP;
+            return delta <= Constants.MaxFcntGap;
         }
 
         internal void Rollover32BitFCnt()

@@ -152,7 +152,7 @@ namespace LoRaWan.NetworkServer.Test
         public async Task OTAA_Unconfirmed_With_Cloud_To_Device_Message_Returns_Downstream_Message(uint initialDeviceFcntUp, uint payloadFcnt)
         {
             const uint InitialDeviceFcntDown = 20;
-            var needsToSaveFcnt = payloadFcnt - initialDeviceFcntUp >= Constants.MAX_FCNT_UNSAVED_DELTA;
+            var needsToSaveFcnt = payloadFcnt - initialDeviceFcntUp >= Constants.MaxFcntUnsavedDelta;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
@@ -235,7 +235,7 @@ namespace LoRaWan.NetworkServer.Test
         public async Task OTAA_Confirmed_With_Cloud_To_Device_Message_Returns_Downstream_Message(uint initialDeviceFcntUp, uint payloadFcnt)
         {
             const uint InitialDeviceFcntDown = 20;
-            var needsToSaveFcnt = payloadFcnt - initialDeviceFcntUp >= Constants.MAX_FCNT_UNSAVED_DELTA;
+            var needsToSaveFcnt = payloadFcnt - initialDeviceFcntUp >= Constants.MaxFcntUnsavedDelta;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
@@ -396,7 +396,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(PayloadFcnt, loRaDevice.FCntUp);
 
             // 5. Frame counter down is updated
-            var expectedFcntDown = InitialDeviceFcntDown + Constants.MAX_FCNT_UNSAVED_DELTA; // adding 10 as buffer when creating a new device instance
+            var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta; // adding 10 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
             Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
 
@@ -492,7 +492,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(PayloadFcnt, loRaDevice.FCntUp);
 
             // 5. Frame counter down is updated
-            var expectedFcntDown = InitialDeviceFcntDown + Constants.MAX_FCNT_UNSAVED_DELTA; // adding 10 as buffer when creating a new device instance
+            var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta; // adding 10 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
             Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
 
@@ -594,7 +594,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(PayloadFcnt, loRaDevice.FCntUp);
 
             // 5. Frame counter down is updated
-            var expectedFcntDown = InitialDeviceFcntDown + Constants.MAX_FCNT_UNSAVED_DELTA - 1 + 1; // adding 9 as buffer when creating a new device instance
+            var expectedFcntDown = InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta - 1 + 1; // adding 9 as buffer when creating a new device instance
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
             Assert.Equal(expectedFcntDown, payloadDataDown.GetFcnt());
             Assert.Equal(0U, loRaDevice.FCntDown - loRaDevice.LastSavedFCntDown);
@@ -679,7 +679,7 @@ namespace LoRaWan.NetworkServer.Test
             var actualDownlink = this.PacketForwarder.DownlinkMessages.First();
 
             var euRegion = RegionManager.EU868;
-            if (expectedRX == Constants.RECEIVE_WINDOW_1)
+            if (expectedRX == Constants.ReceiveWindow1)
             {
                 // ensure response is for RX1
                 Assert.Equal(rxpk.Tmst + 1000000, actualDownlink.Txpk.Tmst);
@@ -1004,7 +1004,7 @@ namespace LoRaWan.NetworkServer.Test
             // 3. Device FcntDown did change
             var devices = loRaDeviceRegistry.InternalGetCachedDevicesForDevAddr(simulatedDevice.DevAddr);
             Assert.True(devices.TryGetValue(simulatedDevice.DevEUI, out var loRaDevice));
-            Assert.Equal(InitialDeviceFcntDown + Constants.MAX_FCNT_UNSAVED_DELTA, loRaDevice.FCntDown);
+            Assert.Equal(InitialDeviceFcntDown + Constants.MaxFcntUnsavedDelta, loRaDevice.FCntDown);
         }
 
         [Fact]
