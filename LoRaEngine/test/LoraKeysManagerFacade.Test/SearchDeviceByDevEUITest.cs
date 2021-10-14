@@ -7,7 +7,7 @@ namespace LoraKeysManagerFacade.Test
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
-    using LoRaWan.Shared;
+    using LoRaWan.Core;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;

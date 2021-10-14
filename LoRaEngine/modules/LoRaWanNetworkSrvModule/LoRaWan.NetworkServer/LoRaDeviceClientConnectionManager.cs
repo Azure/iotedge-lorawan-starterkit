@@ -99,7 +99,7 @@ namespace LoRaWan.NetworkServer
 
         private string GetScheduleCacheKey(string devEUI) => string.Concat("connection:schedule:", devEUI);
 
-        public ILoRaDeviceClient Get(LoRaDevice loRaDevice)
+        public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice)
         {
             if (this.managedConnections.TryGetValue(this.GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))
                 return managedConnection.DeviceClient;

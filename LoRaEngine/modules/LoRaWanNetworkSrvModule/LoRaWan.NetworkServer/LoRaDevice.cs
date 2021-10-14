@@ -198,7 +198,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public async Task<bool> InitializeAsync()
         {
-            var twin = await this.connectionManager.Get(this)?.GetTwinAsync();
+            var twin = await this.connectionManager.GetClient(this)?.GetTwinAsync();
 
             if (twin != null)
             {
@@ -592,7 +592,7 @@ namespace LoRaWan.NetworkServer
                             return false;
                         }
 
-                        var result = await this.connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
+                        var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
                         if (result)
                         {
                             this.InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
@@ -787,15 +787,15 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => this.connectionManager.Get(this).SendEventAsync(telemetry, properties);
+        public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => this.connectionManager.GetClient(this).SendEventAsync(telemetry, properties);
 
-        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => this.connectionManager.Get(this).ReceiveAsync(timeout);
+        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => this.connectionManager.GetClient(this).ReceiveAsync(timeout);
 
-        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).CompleteAsync(cloudToDeviceMessage);
+        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.GetClient(this).CompleteAsync(cloudToDeviceMessage);
 
-        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).AbandonAsync(cloudToDeviceMessage);
+        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.GetClient(this).AbandonAsync(cloudToDeviceMessage);
 
-        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).RejectAsync(cloudToDeviceMessage);
+        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.GetClient(this).RejectAsync(cloudToDeviceMessage);
 
         /// <summary>
         /// Updates device on the server after a join succeeded.
@@ -883,7 +883,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var devAddrBeforeSave = this.DevAddr;
-                var succeeded = await this.connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
+                var succeeded = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
 
                 // Only save if the devAddr remains the same, otherwise ignore the save
                 if (succeeded && devAddrBeforeSave == this.DevAddr)
@@ -1149,7 +1149,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (this.deviceClientConnectionActivityCounter == 0)
                 {
-                    this.connectionManager.Get(this).Disconnect();
+                    this.connectionManager.GetClient(this).Disconnect();
                     return true;
                 }
 

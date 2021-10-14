@@ -3,7 +3,7 @@
 
 #pragma warning disable CA1707 // Identifiers should not contain underscores
 
-namespace LoRaWan.Shared
+namespace LoRaWan.Core
 {
     using System;
     using System.Collections.Generic;

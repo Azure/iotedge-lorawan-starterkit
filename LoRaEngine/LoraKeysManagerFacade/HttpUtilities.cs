@@ -4,7 +4,7 @@
 namespace LoraKeysManagerFacade
 {
     using System.Linq;
-    using LoRaWan.Shared;
+    using LoRaWan.Core;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Primitives;
 

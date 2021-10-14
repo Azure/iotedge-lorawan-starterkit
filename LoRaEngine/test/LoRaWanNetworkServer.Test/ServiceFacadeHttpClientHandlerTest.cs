@@ -8,7 +8,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.Shared;
+    using LoRaWan.Core;
     using Xunit;
 
     public sealed class ServiceFacadeHttpClientHandlerTest : IDisposable
