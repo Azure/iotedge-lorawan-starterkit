@@ -12,7 +12,6 @@ RUN curl -sSL https://aka.ms/getvsdbgsh | bash /dev/stdin -v latest -l ~/vsdbg
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
 
 WORKDIR /build
-COPY ./stylecop.* ./
 COPY ./LoRaEngine/Directory.Build.props ./
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/
