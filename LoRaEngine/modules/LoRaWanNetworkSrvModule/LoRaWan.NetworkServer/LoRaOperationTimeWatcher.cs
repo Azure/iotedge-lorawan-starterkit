@@ -20,36 +20,29 @@ namespace LoRaWan.NetworkServer
         /// Gets the expected time required to package and send message back to package forwarder
         /// 300ms.
         /// </summary>
-        public static TimeSpan ExpectedTimeToPackageAndSendMessage => expectedTimeToPackageAndSendMessage;
+        public static TimeSpan ExpectedTimeToPackageAndSendMessage { get; } = TimeSpan.FromMilliseconds(300);
 
         /// <summary>
         /// Gets the minimum available time to check for cloud to device messages
         /// If we have less than this amount of time available no check is done
         /// 20ms.
         /// </summary>
-        public static TimeSpan MinimumAvailableTimeToCheckForCloudMessage => minimumAvailableTimeToCheckForCloudMessage;
+        public static TimeSpan MinimumAvailableTimeToCheckForCloudMessage { get; } = TimeSpan.FromMilliseconds(20);
 
         /// <summary>
         /// Gets the estimated overhead of calling receive message async (context switch, etc)
         /// 100ms.
         /// </summary>
-        public static TimeSpan CheckForCloudMessageCallEstimatedOverhead => checkForCloudMessageCallEstimatedOverhead;
+        public static TimeSpan CheckForCloudMessageCallEstimatedOverhead { get; } = TimeSpan.FromMilliseconds(100);
 
         /// <summary>
         /// Gets the expected time required to package and send message back to package forwarder plus the checking for cloud to device message overhead
         /// 400ms.
         /// </summary>
-        public static TimeSpan ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead => expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead;
-
-        static readonly TimeSpan minimumAvailableTimeToCheckForCloudMessage = TimeSpan.FromMilliseconds(20);
-        static readonly TimeSpan expectedTimeToPackageAndSendMessage = TimeSpan.FromMilliseconds(300);
-        static readonly TimeSpan checkForCloudMessageCallEstimatedOverhead = TimeSpan.FromMilliseconds(100);
-        static readonly TimeSpan expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead = expectedTimeToPackageAndSendMessage + checkForCloudMessageCallEstimatedOverhead;
-
-        readonly DateTimeOffset startTime;
+        public static TimeSpan ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead { get; } = ExpectedTimeToPackageAndSendMessage + CheckForCloudMessageCallEstimatedOverhead;
 
         // Gets start time
-        public DateTimeOffset Start => this.startTime;
+        public DateTimeOffset Start { get; }
 
         readonly Region loraRegion;
 
@@ -60,7 +53,7 @@ namespace LoRaWan.NetworkServer
 
         public LoRaOperationTimeWatcher(Region loraRegion, DateTimeOffset startTime)
         {
-            this.startTime = startTime;
+            this.Start = startTime;
             this.loraRegion = loraRegion;
         }
 
@@ -117,7 +110,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets time passed since start.
         /// </summary>
-        protected internal virtual TimeSpan GetElapsedTime() => DateTimeOffset.UtcNow - this.startTime;
+        protected internal virtual TimeSpan GetElapsedTime() => DateTimeOffset.UtcNow - this.Start;
 
         /// <summary>
         /// Resolves the receive window to use.

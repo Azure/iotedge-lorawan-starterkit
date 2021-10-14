@@ -21,9 +21,8 @@ namespace LoRaWan.SimulatedTest
     {
         private readonly TimeSpan intervalBetweenMessages;
         private readonly TimeSpan intervalAfterJoin;
-        private TestConfiguration configuration = TestConfiguration.GetConfiguration();
 
-        public TestConfiguration Configuration { get => this.configuration; set => this.configuration = value; }
+        public TestConfiguration Configuration { get; set; } = TestConfiguration.GetConfiguration();
 
         public SimulatorTestCollection(IntegrationTestFixtureSim testFixture)
             : base(testFixture)
