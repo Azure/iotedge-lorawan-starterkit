@@ -13,6 +13,7 @@ namespace LoRaWan
     public enum FCtrlFlags : byte
 #pragma warning restore CA2217, CA1711, CA1028
     {
+        None         = 0,
         Adr          = 0x80,
         AdrAckReq    = 0x40,
         Ack          = 0x20,
