@@ -5,6 +5,7 @@ namespace LoRaTools.LoRaMessage
 {
     public enum LoRaPayloadKeyType
     {
+        None = 0,
         NwkSkey = 1,
         AppSKey = 2
     }
