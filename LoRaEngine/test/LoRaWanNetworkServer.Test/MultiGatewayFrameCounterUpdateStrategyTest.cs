@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer.Test
     {
         private readonly Mock<ILoRaDeviceClient> deviceClient;
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceApi;
-        private string gatewayID;
+        private readonly string gatewayID;
 
         public MultiGatewayFrameCounterUpdateStrategyTest()
         {

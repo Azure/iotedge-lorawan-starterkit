@@ -23,7 +23,7 @@ namespace LoRaWan.Tests.Shared
 
         private readonly MemoryCache cache;
         private readonly byte[] macAddress;
-        private long startTime;
+        private readonly long startTime;
         private bool disposedValue;
 
         public TestPacketForwarder PacketForwarder { get; }

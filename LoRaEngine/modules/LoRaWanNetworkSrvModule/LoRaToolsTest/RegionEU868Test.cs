@@ -7,7 +7,7 @@ namespace LoRaWanTest
     {
         public RegionEU868Test()
         {
-            _region = RegionManager.EU868;
+            Region = RegionManager.EU868;
         }
 
         [Theory]

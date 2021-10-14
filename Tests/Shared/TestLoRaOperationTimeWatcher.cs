@@ -12,7 +12,7 @@ namespace LoRaWan.Tests.Shared
     /// </summary>
     internal class TestLoRaOperationTimeWatcher : LoRaOperationTimeWatcher
     {
-        private TimeSpan constantElapsedTime;
+        private readonly TimeSpan constantElapsedTime;
 
         public TestLoRaOperationTimeWatcher(Region loraRegion, TimeSpan constantElapsedTime)
             : base(loraRegion)

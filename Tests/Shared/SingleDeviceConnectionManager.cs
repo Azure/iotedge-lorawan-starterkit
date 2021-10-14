@@ -10,7 +10,7 @@ namespace LoRaWan.Tests.Shared
     /// </summary>
     public class SingleDeviceConnectionManager : ILoRaDeviceClientConnectionManager
     {
-        private ILoRaDeviceClient singleDeviceClient;
+        private readonly ILoRaDeviceClient singleDeviceClient;
 
         public SingleDeviceConnectionManager(ILoRaDeviceClient deviceClient)
         {

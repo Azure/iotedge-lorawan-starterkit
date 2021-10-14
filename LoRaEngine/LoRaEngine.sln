@@ -14,20 +14,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanTest", "modules\LoRa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "modules\LoRaWanNetworkSrvModule\Logger\Logger.csproj", "{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.IntegrationTest", "test\LoRaWan.IntegrationTest\LoRaWan.IntegrationTest.csproj", "{26DF2637-43E0-4FFF-92BD-F4395C88DD50}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A3AF6806-947C-426F-8063-7229B71A4472}"
-	ProjectSection(SolutionItems) = preProject
-		..\Tests\.editorconfig = ..\Tests\.editorconfig
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkServer.Test", "test\LoRaWanNetworkServer.Test\LoRaWanNetworkServer.Test.csproj", "{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoraKeysManagerFacade.Test", "test\LoraKeysManagerFacade.Test\LoraKeysManagerFacade.Test.csproj", "{BDC96E16-510C-41DA-A075-4336CB5D58A1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.SimulatedTest", "test\LoRaWan.SimulatedTest\LoRaWan.SimulatedTest.csproj", "{4FA0718D-15A2-4D4E-9310-7FB17B285757}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XunitRetryHelper", "test\XunitRetryHelper\XunitRetryHelper.csproj", "{25916C24-E17B-4FB3-8E18-A386A18FC9D0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{67C7C34B-B11C-4E10-9D97-728FB122683F}"
 	ProjectSection(SolutionItems) = preProject
@@ -39,6 +30,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRaWan.Tests.Shared", "..\Tests\Shared\LoRaWan.Tests.Shared.csproj", "{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRaWan.Tests.Integration", "..\Tests\Integration\LoRaWan.Tests.Integration.csproj", "{8F615E91-40E2-4BF4-8573-577CEC7701FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoRaWan.Tests.E2E", "..\Tests\E2E\LoRaWan.Tests.E2E.csproj", "{A871D30D-2634-4321-A0EB-B116A1BA1CD3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A3AF6806-947C-426F-8063-7229B71A4472}"
+	ProjectSection(SolutionItems) = preProject
+		..\Tests\.editorconfig = ..\Tests\.editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -96,14 +94,6 @@ Global
 		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|x86.ActiveCfg = Release|Any CPU
 		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|x86.Build.0 = Release|Any CPU
-		{26DF2637-43E0-4FFF-92BD-F4395C88DD50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{26DF2637-43E0-4FFF-92BD-F4395C88DD50}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{26DF2637-43E0-4FFF-92BD-F4395C88DD50}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{26DF2637-43E0-4FFF-92BD-F4395C88DD50}.Debug|x86.Build.0 = Debug|Any CPU
-		{26DF2637-43E0-4FFF-92BD-F4395C88DD50}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{26DF2637-43E0-4FFF-92BD-F4395C88DD50}.Release|Any CPU.Build.0 = Release|Any CPU
-		{26DF2637-43E0-4FFF-92BD-F4395C88DD50}.Release|x86.ActiveCfg = Release|Any CPU
-		{26DF2637-43E0-4FFF-92BD-F4395C88DD50}.Release|x86.Build.0 = Release|Any CPU
 		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -128,14 +118,6 @@ Global
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|x86.ActiveCfg = Release|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Release|x86.Build.0 = Release|Any CPU
-		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Debug|x86.Build.0 = Debug|Any CPU
-		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Release|x86.ActiveCfg = Release|Any CPU
-		{25916C24-E17B-4FB3-8E18-A386A18FC9D0}.Release|x86.Build.0 = Release|Any CPU
 		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -152,18 +134,25 @@ Global
 		{8F615E91-40E2-4BF4-8573-577CEC7701FF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8F615E91-40E2-4BF4-8573-577CEC7701FF}.Release|x86.ActiveCfg = Release|Any CPU
 		{8F615E91-40E2-4BF4-8573-577CEC7701FF}.Release|x86.Build.0 = Release|Any CPU
+		{A871D30D-2634-4321-A0EB-B116A1BA1CD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A871D30D-2634-4321-A0EB-B116A1BA1CD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A871D30D-2634-4321-A0EB-B116A1BA1CD3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A871D30D-2634-4321-A0EB-B116A1BA1CD3}.Debug|x86.Build.0 = Debug|Any CPU
+		{A871D30D-2634-4321-A0EB-B116A1BA1CD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A871D30D-2634-4321-A0EB-B116A1BA1CD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A871D30D-2634-4321-A0EB-B116A1BA1CD3}.Release|x86.ActiveCfg = Release|Any CPU
+		{A871D30D-2634-4321-A0EB-B116A1BA1CD3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E96EDB52-7BCD-4418-BE7D-0C914EAA874D} = {A3AF6806-947C-426F-8063-7229B71A4472}
-		{26DF2637-43E0-4FFF-92BD-F4395C88DD50} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{BDC96E16-510C-41DA-A075-4336CB5D58A1} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B} = {A3AF6806-947C-426F-8063-7229B71A4472}
+		{A871D30D-2634-4321-A0EB-B116A1BA1CD3} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757} = {A3AF6806-947C-426F-8063-7229B71A4472}
-		{25916C24-E17B-4FB3-8E18-A386A18FC9D0} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{8F615E91-40E2-4BF4-8573-577CEC7701FF} = {A3AF6806-947C-426F-8063-7229B71A4472}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

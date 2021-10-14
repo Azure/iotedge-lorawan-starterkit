@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.Integration
 
             var t1 = Task.Run(() => this.preferredGatewayExecutionItem.ExecuteAsync(pipeline1));
 
-            await Task.Delay(PreferredGatewayExecutionItem.DEFAULT_RECEIVE_REQUESTS_PERIOD_IN_MS + 50);
+            await Task.Delay(PreferredGatewayExecutionItem.DefaultReceiveRequestsPeriodInMs + 50);
 
             var t2 = Task.Run(() => this.preferredGatewayExecutionItem.ExecuteAsync(pipeline2));
 

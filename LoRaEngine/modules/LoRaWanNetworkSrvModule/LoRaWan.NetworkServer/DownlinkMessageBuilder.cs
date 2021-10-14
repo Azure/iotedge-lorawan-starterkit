@@ -49,12 +49,12 @@ namespace LoRaWan.NetworkServer
             if (upstreamPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
             {
                 // Confirm receiving message to device
-                fctrl = (byte)FctrlEnum.Ack;
+                fctrl = (byte)Fctrl.Ack;
             }
 
             // Calculate receive window
             var receiveWindow = timeWatcher.ResolveReceiveWindowToUse(loRaDevice);
-            if (receiveWindow == Constants.INVALID_RECEIVE_WINDOW)
+            if (receiveWindow == Constants.InvalidReceiveWindow)
             {
                 // No valid receive window. Abandon the message
                 isMessageTooLong = true;
@@ -72,7 +72,7 @@ namespace LoRaWan.NetworkServer
             double freq;
             long tmst;
 
-            if (receiveWindow == Constants.RECEIVE_WINDOW_2)
+            if (receiveWindow == Constants.ReceiveWindow2)
             {
                 tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow2Delay(loRaDevice), loRaDevice.ReportedRXDelay);
                 freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency);
@@ -100,7 +100,7 @@ namespace LoRaWan.NetworkServer
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
 
             // Deduct 8 bytes from max payload size.
-            maxPayloadSize -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+            maxPayloadSize -= Constants.LoraProtocolOverheadSize;
 
             var availablePayloadSize = maxPayloadSize;
 
@@ -108,7 +108,7 @@ namespace LoRaWan.NetworkServer
 
             byte? fport = null;
             var requiresDeviceAcknowlegement = false;
-            var macCommandType = CidEnum.Zero;
+            var macCommandType = Cid.Zero;
 
             byte[] frmPayload = null;
 
@@ -181,12 +181,12 @@ namespace LoRaWan.NetworkServer
 
             if (fpending || isMessageTooLong)
             {
-                fctrl |= (int)FctrlEnum.FpendingOrClassB;
+                fctrl |= (int)Fctrl.FpendingOrClassB;
             }
 
             if (upstreamPayload.IsAdrEnabled)
             {
-                fctrl |= (byte)FctrlEnum.ADR;
+                fctrl |= (byte)Fctrl.ADR;
             }
 
             var srcDevAddr = upstreamPayload.DevAddr.Span;
@@ -236,7 +236,7 @@ namespace LoRaWan.NetworkServer
 
             // default fport
             byte fctrl = 0;
-            var macCommandType = CidEnum.Zero;
+            var macCommandType = Cid.Zero;
 
             var rndToken = new byte[2];
 
@@ -260,7 +260,7 @@ namespace LoRaWan.NetworkServer
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
 
             // Deduct 8 bytes from max payload size.
-            maxPayloadSize -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+            maxPayloadSize -= Constants.LoraProtocolOverheadSize;
 
             var availablePayloadSize = maxPayloadSize;
 
@@ -339,12 +339,12 @@ namespace LoRaWan.NetworkServer
                 {
                     switch (requestedMacCommand.Cid)
                     {
-                        case CidEnum.LinkCheckCmd:
+                        case Cid.LinkCheckCmd:
                         {
                             if (rxpk != null)
                             {
                                 var linkCheckAnswer = new LinkCheckAnswer(rxpk.GetModulationMargin(), 1);
-                                if (macCommands.TryAdd((int)CidEnum.LinkCheckCmd, linkCheckAnswer))
+                                if (macCommands.TryAdd((int)Cid.LinkCheckCmd, linkCheckAnswer))
                                 {
                                     Logger.Log(devEUI, $"answering to a MAC command request {linkCheckAnswer.ToString()}", LogLevel.Information);
                                 }
@@ -385,7 +385,7 @@ namespace LoRaWan.NetworkServer
             {
                 const int placeholderChannel = 25;
                 var linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, placeholderChannel, 0, (byte)loRaADRResult.NbRepetition);
-                macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
+                macCommands.Add((int)Cid.LinkADRCmd, linkADR);
                 Logger.Log(devEUI, $"performing a rate adaptation: DR {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetition {loRaADRResult.NbRepetition}", LogLevel.Information);
             }
 
@@ -396,11 +396,11 @@ namespace LoRaWan.NetworkServer
         {
             if (rXDelay > 1 && rXDelay < 16)
             {
-                return (windowTime + rXDelay - 1) * Constants.CONVERT_TO_PKT_FWD_TIME;
+                return (windowTime + rXDelay - 1) * Constants.ConvertToPktFwdTime;
             }
             else
             {
-                return windowTime * Constants.CONVERT_TO_PKT_FWD_TIME;
+                return windowTime * Constants.ConvertToPktFwdTime;
             }
         }
     }

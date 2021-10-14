@@ -9,21 +9,21 @@ namespace LoRaWanTest
 
     public abstract class RegionTestBase
     {
-        protected Region _region;
+        protected Region Region { get; set; }
 
         protected void TestRegionFrequencyAndDataRate(string inputDr, double inputFreq, string outputDr, double outputFreq)
         {
             var rxpk = GenerateRxpk(inputDr, inputFreq);
-            Assert.True(_region.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency));
+            Assert.True(Region.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency));
             Assert.Equal(frequency, outputFreq);
-            Assert.Equal(_region.GetDownstreamDR(rxpk[0]), outputDr);
+            Assert.Equal(Region.GetDownstreamDR(rxpk[0]), outputDr);
         }
 
         protected void TestRegionLimit(double freq, string datarate)
         {
             var rxpk = GenerateRxpk(datarate, freq);
-            Assert.False(_region.TryGetDownstreamChannelFrequency(rxpk[0], out _) &&
-                         _region.GetDownstreamDR(rxpk[0]) != null);
+            Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _));
+            Assert.Null(Region.GetDownstreamDR(rxpk[0]));
         }
 
         protected static List<Rxpk> GenerateRxpk(string dr, double freq)
@@ -54,14 +54,14 @@ namespace LoRaWanTest
 
         protected void TestRegionMaxPayloadLength(string datr, uint maxPyldSize)
         {
-            Assert.Equal(_region.GetMaxPayloadSize(datr), maxPyldSize);
+            Assert.Equal(Region.GetMaxPayloadSize(datr), maxPyldSize);
         }
 
         protected void TestDownstreamRX2FrequencyAndDataRate(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
         {
             var devEui = "testDevice";
-            var datr = _region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins);
-            var freq = _region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq);
+            var datr = Region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins);
+            var freq = Region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq);
             Assert.Equal(expectedFreq, freq);
             Assert.Equal(expectedDr, datr);
         }

@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.Integration
             var datr = this.loRaRegion.DRtoConfiguration[this.loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
             var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(datr)
                 - c2dMessageMacCommandSize
-                - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+                - Constants.LoraProtocolOverheadSize;
 
             var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
@@ -183,7 +183,7 @@ namespace LoRaWan.Tests.Integration
             var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(datr)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
-                - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+                - Constants.LoraProtocolOverheadSize;
 
             var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
             var c2d = new ReceivedLoRaCloudToDeviceMessage()

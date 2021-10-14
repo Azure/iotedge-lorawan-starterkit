@@ -14,7 +14,7 @@ namespace LoRaTools
 
         public DutyCycleAnswer()
         {
-            this.Cid = CidEnum.DutyCycleCmd;
+            this.Cid = Cid.DutyCycleCmd;
         }
 
         public override IEnumerable<byte> ToBytes()

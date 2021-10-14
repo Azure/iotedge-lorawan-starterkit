@@ -559,7 +559,7 @@ namespace LoRaWan.Tests.Integration
                deviceRegistry,
                this.FrameCounterUpdateStrategyProvider);
 
-            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrl: (byte)FctrlEnum.Ack);
+            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrl: (byte)Fctrl.Ack);
             var ackRxpk = ackMessage.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             using var ackRequest = new WaitableLoRaRequest(ackRxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(ackRequest);
@@ -1437,14 +1437,14 @@ namespace LoRaWan.Tests.Integration
             }
             else
             {
-                Assert.Equal(simulatedDevice1.FrmCntDown + Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice1.FCntDown);
+                Assert.Equal(simulatedDevice1.FrmCntDown + Constants.MaxFcntUnsavedDelta - 1U, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);
 
             Assert.True(cachedDevices.TryGetValue(simulatedDevice2.DevEUI, out var loRaDevice2));
             Assert.Equal(simulatedDevice2.FrmCntUp, loRaDevice2.FCntUp);
-            Assert.Equal(simulatedDevice2.FrmCntDown + Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice2.FCntDown);
+            Assert.Equal(simulatedDevice2.FrmCntDown + Constants.MaxFcntUnsavedDelta - 1U, loRaDevice2.FCntDown);
 
             deviceClient1.VerifyAll();
             deviceClient2.VerifyAll();
@@ -1548,7 +1548,7 @@ namespace LoRaWan.Tests.Integration
             }
             else
             {
-                Assert.Equal(Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice1.FCntDown);
+                Assert.Equal(Constants.MaxFcntUnsavedDelta - 1U, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);
