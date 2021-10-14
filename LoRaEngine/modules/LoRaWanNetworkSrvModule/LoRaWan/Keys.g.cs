@@ -6,6 +6,8 @@
 // Changes to this file will be lost if the code is re-generated.
 //------------------------------------------------------------------------------
 
+#nullable enable
+
 namespace LoRaWan
 {
     using System;
