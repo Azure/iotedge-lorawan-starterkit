@@ -34,7 +34,6 @@ namespace LoRaWan.NetworkServer.Test
         public LoRaDeviceFrameCounterUpdateStrategyProvider SecondFrameCounterUpdateStrategyProvider { get; }
 
         private readonly DefaultLoRaDataRequestHandler secondRequestHandlerImplementation;
-        private bool disposedValue;
 
         public Mock<ILoRaDeviceClient> SecondLoRaDeviceClient { get; }
 
@@ -145,27 +144,26 @@ namespace LoRaWan.NetworkServer.Test
             this.SecondLoRaDeviceClient.Setup(ldc => ldc.Dispose());
         }
 
-        protected virtual void Dispose(bool disposing)
+        // To detect redundant calls
+        private bool _disposedValue;
+
+        ~MessageProcessorMultipleGatewayTest() => this.Dispose(false);
+
+        // Protected implementation of Dispose pattern.
+        protected override void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
                     this.cache.Dispose();
                 }
 
-                disposedValue = true;
+                _disposedValue = true;
             }
-        }
 
-#pragma warning disable xUnit1013 // Public method should be marked as test
-        // https://github.com/xunit/xunit/issues/1323
-        public void Dispose()
-#pragma warning restore xUnit1013 // Public method should be marked as test
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            // Call the base class implementation.
+            base.Dispose(disposing);
         }
     }
 }
