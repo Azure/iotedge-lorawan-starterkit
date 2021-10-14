@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.Test
@@ -32,7 +32,7 @@ namespace LoraKeysManagerFacade.Test
 
         [Fact]
         // This test ensure that IoT Central implementation of DeviceRegistry calls the IoT Hub with correct parameters and returns the correspondig answer
-        public async Task Get_Device_Call_IoTHub()
+        public async Task Get_Device_Call_IoTCentral()
         {
             var provisioningHelperMock = new Mock<IDeviceProvisioningHelper>(MockBehavior.Strict);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
@@ -537,6 +537,52 @@ namespace LoraKeysManagerFacade.Test
             handlerMock.Protected().Verify("SendAsync", Times.Never(), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/simulated/properties"), ItExpr.IsAny<CancellationToken>());
             handlerMock.Protected().Verify("SendAsync", Times.Once(), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/not-lora/properties"), ItExpr.IsAny<CancellationToken>());
             handlerMock.Protected().Verify("SendAsync", Times.Exactly(5), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath.StartsWith($"/api/devices") && c.RequestUri.LocalPath.EndsWith("/properties")), ItExpr.IsAny<CancellationToken>());
+        }
+
+
+        [Fact]
+        public async Task When_Getting_A_Device_That_Not_Exists_Not_Provisioned()
+        {
+            var provisioningHelperMock = new Mock<IDeviceProvisioningHelper>(MockBehavior.Strict);
+            var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+            var expectedPrimaryKey = string.Empty;
+
+            var deviceResponseMock = new HttpResponseMessage();
+            var device = new Device
+            {
+                Id = NewUniqueEUI32(),
+                Provisioned = false
+            };
+
+            deviceResponseMock.Content = new StringContent(JsonSerializer.Serialize(device), Encoding.UTF8, "application/json");
+
+            var notFoundResponseMock = new HttpResponseMessage(HttpStatusCode.NotFound);
+
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync((HttpRequestMessage req, CancellationToken token) =>
+                {
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{device.Id}"))
+                    {
+                        return notFoundResponseMock;
+                    }
+
+                    return null;
+                })
+                .Verifiable();
+
+            var mockHttpClient = this.InitHttpClient(handlerMock);
+
+            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
+
+            var response = await instance.GetDeviceAsync(device.Id);
+
+            Assert.Null(response);
+
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(1), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/{device.Id}"), ItExpr.IsAny<CancellationToken>());
+
+            provisioningHelperMock.Verify(c => c.ProvisionDevice(It.Is<string>(id => device.Id == id), out It.Ref<string>.IsAny), Times.Never());
         }
     }
 }
