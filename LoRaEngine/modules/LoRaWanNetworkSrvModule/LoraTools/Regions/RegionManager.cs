@@ -3,6 +3,7 @@
 
 namespace LoRaTools.Regions
 {
+    using System;
     using System.Collections.Generic;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
@@ -31,9 +32,10 @@ namespace LoRaTools.Regions
                 case LoRaRegionType.US915:
                     region = US915;
                     return true;
+                case LoRaRegionType.NotSet:
+                default:
+                    return false;
             }
-
-            return false;
         }
 
         /// <summary>

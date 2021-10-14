@@ -324,6 +324,23 @@ namespace LoRaWan.NetworkServer
                 case LoRaDeviceRequestFailedReason.BelongsToAnotherGateway:
                     Logger.Log(deviceId, "device is not our device, ignore message", LogLevel.Debug);
                     break;
+                case LoRaDeviceRequestFailedReason.InvalidNetId:
+                case LoRaDeviceRequestFailedReason.InvalidRxpk:
+                case LoRaDeviceRequestFailedReason.InvalidRegion:
+                case LoRaDeviceRequestFailedReason.UnknownDevice:
+                case LoRaDeviceRequestFailedReason.InvalidJoinRequest:
+                case LoRaDeviceRequestFailedReason.HandledByAnotherGateway:
+                case LoRaDeviceRequestFailedReason.JoinDevNonceAlreadyUsed:
+                case LoRaDeviceRequestFailedReason.JoinMicCheckFailed:
+                case LoRaDeviceRequestFailedReason.ReceiveWindowMissed:
+                case LoRaDeviceRequestFailedReason.ConfirmationResubmitThresholdExceeded:
+                case LoRaDeviceRequestFailedReason.InvalidFrameCounter:
+                case LoRaDeviceRequestFailedReason.IoTHubProblem:
+                case LoRaDeviceRequestFailedReason.DeduplicationDrop:
+                case LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed:
+                default:
+                    Logger.Log(deviceId, "device request failed", LogLevel.Debug);
+                    break;
             }
         }
 

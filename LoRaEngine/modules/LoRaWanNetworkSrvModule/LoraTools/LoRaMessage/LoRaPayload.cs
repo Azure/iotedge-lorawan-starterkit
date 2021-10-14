@@ -176,6 +176,9 @@ namespace LoRaTools.LoRaMessage
                     case LoRaMessageType.ConfirmedDataDown:
                         loRaPayload = new LoRaPayloadData();
                         return true;
+                    default:
+                        loRaPayload = null;
+                        return false;
                 }
             }
 

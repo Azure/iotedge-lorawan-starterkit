@@ -352,6 +352,16 @@ namespace LoRaWan.NetworkServer
 
                             break;
                         }
+                        case Cid.Zero:
+                        case Cid.One:
+                        case Cid.LinkADRCmd:
+                        case Cid.DutyCycleCmd:
+                        case Cid.RXParamCmd:
+                        case Cid.DevStatusCmd:
+                        case Cid.NewChannelCmd:
+                        case Cid.RXTimingCmd:
+                        default:
+                            break;
                     }
                 }
             }

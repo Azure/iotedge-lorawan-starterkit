@@ -166,7 +166,10 @@ namespace LoRaWan.NetworkServer
                         }
 
                         break;
-
+                    case PhysicalIdentifier.PushAck:
+                    case PhysicalIdentifier.PullResp:
+                    case PhysicalIdentifier.PullAck:
+                    case PhysicalIdentifier.Unknown:
                     default:
                         Logger.Log("UDP", "unknown packet type or length being received", LogLevel.Error);
                         break;

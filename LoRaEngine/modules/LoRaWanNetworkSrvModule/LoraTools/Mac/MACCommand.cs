@@ -102,6 +102,8 @@ namespace LoRaTools
                             pointer += rxTimingSetup.Length;
                             macCommands.Add(rxTimingSetup);
                             break;
+                        case Cid.Zero:
+                        case Cid.One:
                         default:
                             Logger.Log(deviceId, $"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
                             return null;
@@ -144,6 +146,13 @@ namespace LoRaTools
                             pointer += devStatusRequest.Length;
                             macCommands.Add(devStatusRequest);
                             break;
+                        case Cid.Zero:
+                        case Cid.One:
+                        case Cid.LinkADRCmd:
+                        case Cid.DutyCycleCmd:
+                        case Cid.RXParamCmd:
+                        case Cid.NewChannelCmd:
+                        case Cid.RXTimingCmd:
                         default:
                             Logger.Log(deviceId, $"a Mac command transmitted from the server, value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
                             return null;

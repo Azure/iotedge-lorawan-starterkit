@@ -137,6 +137,7 @@ namespace LoRaWan.NetworkServer.Test
                     Assert.True(request2.ProcessingSucceeded);
                     break;
                 case DeduplicationMode.None:
+                default:
                     break;
             }
         }
