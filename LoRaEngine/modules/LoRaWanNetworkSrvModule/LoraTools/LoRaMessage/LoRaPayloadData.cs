@@ -477,7 +477,7 @@ namespace LoRaTools.LoRaMessage
 
         private byte[] GetFcntBlockInfo()
         {
-            return (this.Server32BitFcnt != null) ? this.Server32BitFcnt : new byte[] { this.Fcnt.Span[0], this.Fcnt.Span[1], 0x00, 0x00 };
+            return this.Server32BitFcnt ?? (new byte[] { this.Fcnt.Span[0], this.Fcnt.Span[1], 0x00, 0x00 });
         }
     }
 }
