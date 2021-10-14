@@ -8,6 +8,6 @@ namespace LoRaWan.NetworkServer
 
     public interface IClassCDeviceMessageSender
     {
-        Task<bool> SendAsync(IReceivedLoRaCloudToDeviceMessage message, CancellationToken cts = default(CancellationToken));
+        Task<bool> SendAsync(IReceivedLoRaCloudToDeviceMessage message, CancellationToken cts = default);
     }
 }

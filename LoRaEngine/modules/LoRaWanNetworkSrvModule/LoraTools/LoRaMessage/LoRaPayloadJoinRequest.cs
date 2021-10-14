@@ -77,7 +77,7 @@ namespace LoRaTools.LoRaMessage
             this.AppEUI = new Memory<byte>(appEUIBytes);
             this.DevEUI = new Memory<byte>(devEUIBytes);
             this.DevNonce = new Memory<byte>(devNonce);
-            this.Mic = default(Memory<byte>);
+            this.Mic = default;
         }
 
         public override bool CheckMic(string appKey, uint? server32BitFcnt = null)

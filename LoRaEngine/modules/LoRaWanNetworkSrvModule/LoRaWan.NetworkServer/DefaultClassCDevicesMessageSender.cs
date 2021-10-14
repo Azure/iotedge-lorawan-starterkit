@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
         }
 
-        public async Task<bool> SendAsync(IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage, CancellationToken cts = default(CancellationToken))
+        public async Task<bool> SendAsync(IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage, CancellationToken cts = default)
         {
             try
             {

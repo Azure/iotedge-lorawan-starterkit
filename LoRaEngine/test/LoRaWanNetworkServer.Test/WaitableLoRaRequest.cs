@@ -57,9 +57,9 @@ namespace LoRaWan.NetworkServer.Test
             this.complete.Release();
         }
 
-        internal Task<bool> WaitCompleteAsync(int timeout = default(int))
+        internal Task<bool> WaitCompleteAsync(int timeout = default)
         {
-            if (timeout == default(int))
+            if (timeout == default)
             {
                 if (System.Diagnostics.Debugger.IsAttached)
                 {
