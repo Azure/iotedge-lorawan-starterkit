@@ -31,3 +31,6 @@ dotnet_diagnostic.IDE0040.severity=suggestion
 
 # CA1721: Property names should not match get methods
 dotnet_diagnostic.CA1721.severity = suggestion
+
+# IDE0045: Use conditional if statements
+dotnet_diagnostic.IDE0045.severity=suggestion
