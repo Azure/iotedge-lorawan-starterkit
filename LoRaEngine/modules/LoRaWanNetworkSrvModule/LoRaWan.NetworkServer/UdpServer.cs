@@ -248,20 +248,20 @@ namespace LoRaWan.NetworkServer
                         this.loRaDeviceAPIService.SetURL(moduleTwinCollection["FacadeServerUrl"].Value as string);
                         Logger.LogAlways($"Facade function url: {this.loRaDeviceAPIService.URL}");
                     }
-                    catch (ArgumentOutOfRangeException e)
+                    catch (ArgumentOutOfRangeException)
                     {
                         Logger.Log("Module twin FacadeServerUrl property does not exist", LogLevel.Error);
-                        throw e;
+                        throw;
                     }
 
                     try
                     {
                         this.loRaDeviceAPIService.SetAuthCode(moduleTwinCollection["FacadeAuthCode"].Value as string);
                     }
-                    catch (ArgumentOutOfRangeException e)
+                    catch (ArgumentOutOfRangeException)
                     {
                         Logger.Log("Module twin FacadeAuthCode does not exist", LogLevel.Error);
-                        throw e;
+                        throw;
                     }
 
                     await this.ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(this.OnDesiredPropertiesUpdate, null);
@@ -288,7 +288,7 @@ namespace LoRaWan.NetworkServer
             catch (Exception ex)
             {
                 Logger.Log($"Initialization failed with error: {ex.Message}", LogLevel.Error);
-                throw ex;
+                throw;
             }
 
             // Report Log level
