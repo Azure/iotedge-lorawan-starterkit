@@ -24,8 +24,6 @@ namespace LoRaWan.IntegrationTest
         /// </summary>
         private const int CloudToDeviceMessageReceiveCountThreshold = 2;
 
-        private const string FportPropertyName = "fport";
-        private const string ConfirmedPropertyName = "Confirmed";
         private static readonly Random random = new Random();
 
         public C2DMessageTest(IntegrationTestFixtureCi testFixture)
