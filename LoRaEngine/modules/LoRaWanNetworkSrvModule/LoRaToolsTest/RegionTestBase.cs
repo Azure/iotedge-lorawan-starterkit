@@ -22,8 +22,8 @@ namespace LoRaWanTest
         protected void TestRegionLimit(double freq, string datarate)
         {
             var rxpk = GenerateRxpk(datarate, freq);
-            Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _) &&
-                         Region.GetDownstreamDR(rxpk[0]) != null);
+            Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _));
+            Assert.Null(Region.GetDownstreamDR(rxpk[0]));
         }
 
         protected static List<Rxpk> GenerateRxpk(string dr, double freq)
