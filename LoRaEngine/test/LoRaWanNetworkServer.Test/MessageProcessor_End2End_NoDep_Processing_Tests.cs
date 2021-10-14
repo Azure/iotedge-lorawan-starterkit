@@ -1056,6 +1056,8 @@ namespace LoRaWan.NetworkServer.Test
 
             this.LoRaDeviceApi.VerifyAll();
             this.LoRaDeviceClient.VerifyAll();
+
+            this.LoRaDeviceClient.Setup(ldc => ldc.Dispose());
         }
 
         /// <summary>
