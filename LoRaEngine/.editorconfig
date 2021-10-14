@@ -17,9 +17,6 @@ csharp_prefer_braces = when_multiline
 # Use new(...)
 dotnet_diagnostic.IDE0090.severity=silent
 
-# Expression value is never used
-dotnet_diagnostic.IDE0058.severity=suggestion
-
 # Namespace does not match folder structure
 dotnet_diagnostic.IDE0130.severity=suggestion
 
