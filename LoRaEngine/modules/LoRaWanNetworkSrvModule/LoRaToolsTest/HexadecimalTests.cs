@@ -32,7 +32,7 @@ namespace LoRaWanTest
         {
             var chars = new char[1];
             var ex = Assert.Throws<ArgumentException>(() => Hexadecimal.Write(0xff, chars));
-            Assert.Equal("buffer", ex.ParamName);
+            Assert.Equal("output", ex.ParamName);
         }
 
         [Theory]
@@ -62,7 +62,7 @@ namespace LoRaWanTest
         {
             var chars = new char[1];
             var ex = Assert.Throws<ArgumentException>(() => Hexadecimal.Write(0xffff, chars));
-            Assert.Equal("buffer", ex.ParamName);
+            Assert.Equal("output", ex.ParamName);
         }
 
         [Theory]
@@ -82,7 +82,7 @@ namespace LoRaWanTest
         {
             var chars = new char[1];
             var ex = Assert.Throws<ArgumentException>(() => Hexadecimal.Write(0UL, chars));
-            Assert.Equal("buffer", ex.ParamName);
+            Assert.Equal("output", ex.ParamName);
         }
 
         [Theory]

@@ -20,38 +20,64 @@ namespace LoRaWan
                 throw new ArgumentException(InsufficientBufferSizeErrorMessage, paramName);
         }
 
-        public static Span<char> Write(byte value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
+        public static Span<char> Write(byte value, Span<char> output, LetterCase letterCase = LetterCase.Upper)
         {
-            ValidateSufficientlySizedBuffer(buffer.Length, sizeof(byte), nameof(buffer));
+            ValidateSufficientlySizedBuffer(output.Length, sizeof(byte), nameof(output));
 
             var digits = letterCase == LetterCase.Lower ? LowerCaseDigits : UpperCaseDigits;
-            buffer[0] = digits[value >> 4];
-            buffer[1] = digits[value & 0x0f];
+            output[0] = digits[value >> 4];
+            output[1] = digits[value & 0x0f];
 
-            return buffer[2..];
+            return output[2..];
         }
 
-        public static Span<char> Write(ushort value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
+        public static Span<char> Write(ushort value, Span<char> output, LetterCase letterCase = LetterCase.Upper)
         {
-            ValidateSufficientlySizedBuffer(buffer.Length, sizeof(ushort), nameof(buffer));
+            ValidateSufficientlySizedBuffer(output.Length, sizeof(ushort), nameof(output));
 
             unchecked
             {
-                buffer = Write((byte)(value >> 8), buffer, letterCase);
-                buffer = Write((byte)(value >> 0), buffer, letterCase);
+                output = Write((byte)(value >> 8), output, letterCase);
+                output = Write((byte)(value >> 0), output, letterCase);
             }
 
-            return buffer;
+            return output;
         }
 
-        public static Span<char> Write(ulong value, Span<char> buffer, LetterCase letterCase = LetterCase.Upper)
+        public static Span<char> Write(ulong value, Span<char> output, LetterCase letterCase = LetterCase.Upper)
         {
-            ValidateSufficientlySizedBuffer(buffer.Length, sizeof(ulong), nameof(buffer));
+            ValidateSufficientlySizedBuffer(output.Length, sizeof(ulong), nameof(output));
 
             for (var i = sizeof(ulong) - 1; i >= 0; i--)
-                buffer = Write(unchecked((byte)(value >> (i << 3))), buffer, letterCase);
+                output = Write(unchecked((byte)(value >> (i << 3))), output, letterCase);
 
-            return buffer;
+            return output;
+        }
+
+        public static void Write(ReadOnlySpan<byte> buffer, Span<char> output) => Write(buffer, output, null);
+
+        public static void Write(ReadOnlySpan<byte> buffer, Span<char> output, LetterCase letterCase) =>
+            Write(buffer, output, null, letterCase);
+
+        public static void Write(ReadOnlySpan<byte> buffer, Span<char> output, char? separator) =>
+            Write(buffer, output, separator, LetterCase.Upper);
+
+        public static void Write(ReadOnlySpan<byte> buffer, Span<char> output, char? separator, LetterCase letterCase)
+        {
+            var length = separator is null ? buffer.Length * 2 : buffer.Length * 3 - 1;
+
+            if (output.Length < length)
+                throw new ArgumentException(InsufficientBufferSizeErrorMessage, nameof(output));
+
+            for (var i = 0; i < buffer.Length; i++)
+            {
+                if (i > 0 && separator is { } someSeparator)
+                {
+                    output[0] = someSeparator;
+                    output = output[1..];
+                }
+                output = Write(buffer[i], output, letterCase);
+            }
         }
 
         public static bool TryParse(ReadOnlySpan<char> chars, out ulong value, char? separator = null)

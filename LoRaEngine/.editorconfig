@@ -17,6 +17,9 @@ csharp_prefer_braces = when_multiline
 # IDE0061: Use expression body for local functions
 csharp_style_expression_bodied_local_functions = when_on_single_line
 
+# Prefer to not have parentheses when arithmetic operator (*, /, %, +, -, <<, >>, &, ^, |) precedence is obvious
+dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary
+
 # Prefer to not have parentheses when other binary operator (&&, ||, ??) precedence is obvious
 dotnet_style_parentheses_in_other_binary_operators = never_if_unnecessary
 
