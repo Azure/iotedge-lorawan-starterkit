@@ -12,11 +12,11 @@ namespace LoRaWan
 
     readonly partial struct AppKey : IEquatable<AppKey>
     {
-        public const int Size = UInt128.Size;
+        public const int Size = Buffer16.Size;
 
-        readonly UInt128 value;
+        readonly Buffer16 value;
 
-        AppKey(UInt128 value) => this.value = value;
+        AppKey(Buffer16 value) => this.value = value;
 
         public bool Equals(AppKey other) => this.value == other.value;
         public override bool Equals(object obj) => obj is AppKey other && this.Equals(other);
@@ -32,7 +32,7 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, out AppKey result)
         {
-            if (UInt128.TryParse(input) is (true, var raw))
+            if (Buffer16.TryParse(input) is (true, var raw))
             {
                 result = new AppKey(raw);
                 return true;
@@ -45,21 +45,21 @@ namespace LoRaWan
         }
 
         public static AppKey Read(ReadOnlySpan<byte> buffer) =>
-            new(UInt128.ReadBigEndian(buffer));
+            new(Buffer16.Read(buffer));
 
         public static AppKey Read(ref ReadOnlySpan<byte> buffer) =>
-            new(UInt128.ReadBigEndian(ref buffer));
+            new(Buffer16.Read(ref buffer));
 
-        public Span<byte> Write(Span<byte> buffer) => this.value.WriteBigEndian(buffer);
+        public Span<byte> Write(Span<byte> buffer) => this.value.Write(buffer);
     }
 
     readonly partial struct AppSessionKey : IEquatable<AppSessionKey>
     {
-        public const int Size = UInt128.Size;
+        public const int Size = Buffer16.Size;
 
-        readonly UInt128 value;
+        readonly Buffer16 value;
 
-        AppSessionKey(UInt128 value) => this.value = value;
+        AppSessionKey(Buffer16 value) => this.value = value;
 
         public bool Equals(AppSessionKey other) => this.value == other.value;
         public override bool Equals(object obj) => obj is AppSessionKey other && this.Equals(other);
@@ -75,7 +75,7 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, out AppSessionKey result)
         {
-            if (UInt128.TryParse(input) is (true, var raw))
+            if (Buffer16.TryParse(input) is (true, var raw))
             {
                 result = new AppSessionKey(raw);
                 return true;
@@ -88,21 +88,21 @@ namespace LoRaWan
         }
 
         public static AppSessionKey Read(ReadOnlySpan<byte> buffer) =>
-            new(UInt128.ReadBigEndian(buffer));
+            new(Buffer16.Read(buffer));
 
         public static AppSessionKey Read(ref ReadOnlySpan<byte> buffer) =>
-            new(UInt128.ReadBigEndian(ref buffer));
+            new(Buffer16.Read(ref buffer));
 
-        public Span<byte> Write(Span<byte> buffer) => this.value.WriteBigEndian(buffer);
+        public Span<byte> Write(Span<byte> buffer) => this.value.Write(buffer);
     }
 
     readonly partial struct NetworkSessionKey : IEquatable<NetworkSessionKey>
     {
-        public const int Size = UInt128.Size;
+        public const int Size = Buffer16.Size;
 
-        readonly UInt128 value;
+        readonly Buffer16 value;
 
-        NetworkSessionKey(UInt128 value) => this.value = value;
+        NetworkSessionKey(Buffer16 value) => this.value = value;
 
         public bool Equals(NetworkSessionKey other) => this.value == other.value;
         public override bool Equals(object obj) => obj is NetworkSessionKey other && this.Equals(other);
@@ -118,7 +118,7 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, out NetworkSessionKey result)
         {
-            if (UInt128.TryParse(input) is (true, var raw))
+            if (Buffer16.TryParse(input) is (true, var raw))
             {
                 result = new NetworkSessionKey(raw);
                 return true;
@@ -131,11 +131,11 @@ namespace LoRaWan
         }
 
         public static NetworkSessionKey Read(ReadOnlySpan<byte> buffer) =>
-            new(UInt128.ReadBigEndian(buffer));
+            new(Buffer16.Read(buffer));
 
         public static NetworkSessionKey Read(ref ReadOnlySpan<byte> buffer) =>
-            new(UInt128.ReadBigEndian(ref buffer));
+            new(Buffer16.Read(ref buffer));
 
-        public Span<byte> Write(Span<byte> buffer) => this.value.WriteBigEndian(buffer);
+        public Span<byte> Write(Span<byte> buffer) => this.value.Write(buffer);
     }
 }
