@@ -299,7 +299,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
 
-            await this.EnsureDisconnectedAsync(disconnectedEvent, (int)TimeSpan.FromSeconds(Constants.MIN_KEEP_ALIVE_TIMEOUT * 2).TotalMilliseconds);
+            await this.EnsureDisconnectedAsync(disconnectedEvent, (int)TimeSpan.FromSeconds(Constants.MinKeepAliveTimeout * 2).TotalMilliseconds);
 
             this.LoRaDeviceClient.VerifyAll();
             this.LoRaDeviceApi.VerifyAll();
@@ -340,7 +340,7 @@ namespace LoRaWan.NetworkServer.Test
             cachedDevice.KeepAliveTimeout = 3;
             cachedDevice.LoRaRegion = LoRaRegionType.EU868;
             cachedDevice.InternalAcceptChanges();
-            cachedDevice.SetFcntDown(cachedDevice.FCntDown + Constants.MAX_FCNT_UNSAVED_DELTA - 1);
+            cachedDevice.SetFcntDown(cachedDevice.FCntDown + Constants.MaxFcntUnsavedDelta - 1);
 
             using var cache = this.NewNonEmptyCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);

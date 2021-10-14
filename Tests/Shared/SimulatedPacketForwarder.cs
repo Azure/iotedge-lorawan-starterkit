@@ -113,7 +113,7 @@ namespace LoRaWan.Tests.Shared
                         currentToken[1] = receivedResults.Buffer[2];
                         TestLogger.Log($"[PKTFORWARDER] Received {identifier.ToString()}");
 
-                        if (identifier == PhysicalIdentifier.PULL_RESP)
+                        if (identifier == PhysicalIdentifier.PullResp)
                         {
                             if (this.subscribers.Count > 0)
                             {
@@ -155,7 +155,7 @@ namespace LoRaWan.Tests.Shared
             {
                 while (!cts.IsCancellationRequested)
                 {
-                    var sync = new PhysicalPayload(this.GetRandomToken(), PhysicalIdentifier.PULL_DATA, null);
+                    var sync = new PhysicalPayload(this.GetRandomToken(), PhysicalIdentifier.PullData, null);
                     var data = sync.GetSyncHeader(this.MacAddress);
                     await this.udpClient.SendAsync(data, data.Length, this.networkServerIPEndpoint);
                     await Task.Delay(30000, cts);
@@ -176,7 +176,7 @@ namespace LoRaWan.Tests.Shared
             {
                 while (!cts.IsCancellationRequested)
                 {
-                    var sync = new PhysicalPayload(this.GetRandomToken(), PhysicalIdentifier.PUSH_DATA, null);
+                    var sync = new PhysicalPayload(this.GetRandomToken(), PhysicalIdentifier.PushData, null);
                     var data = sync.GetSyncHeader(this.MacAddress);
                     await this.udpClient.SendAsync(data, data.Length, this.networkServerIPEndpoint);
                     await Task.Delay(10000, cts);

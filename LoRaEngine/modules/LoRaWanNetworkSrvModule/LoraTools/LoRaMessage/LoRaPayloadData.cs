@@ -59,12 +59,12 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets a value indicating whether does a Mac command require an answer?.
         /// </summary>
-        public bool IsMacAnswerRequired => this.MacCommands?.FirstOrDefault(x => x.Cid == CidEnum.LinkCheckCmd) != null;
+        public bool IsMacAnswerRequired => this.MacCommands?.FirstOrDefault(x => x.Cid == Cid.LinkCheckCmd) != null;
 
         /// <summary>
         /// Indicates if the payload is an confirmation message acknowledgement.
         /// </summary>
-        public bool IsUpwardAck() => (this.Fctrl.Span[0] & (byte)FctrlEnum.Ack) == 32;
+        public bool IsUpwardAck() => (this.Fctrl.Span[0] & (byte)LoRaMessage.Fctrl.Ack) == 32;
 
         /// <summary>
         /// Gets a value indicating whether indicates if the payload is an confirmation message acknowledgement.

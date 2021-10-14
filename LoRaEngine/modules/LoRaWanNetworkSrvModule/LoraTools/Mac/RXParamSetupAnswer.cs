@@ -26,7 +26,7 @@ namespace LoRaTools
 
         public RXParamSetupAnswer(bool rx1DROffsetAck, bool rx2DataRateOffsetAck, bool channelAck)
         {
-            this.Cid = CidEnum.RXParamCmd;
+            this.Cid = Cid.RXParamCmd;
             this.Status |= (byte)((rx1DROffsetAck ? 1 : 0) << 2);
             this.Status |= (byte)((rx2DataRateOffsetAck ? 1 : 0) << 1);
             this.Status |= (byte)(channelAck ? 1 : 0);
@@ -41,7 +41,7 @@ namespace LoRaTools
             }
             else
             {
-                this.Cid = (CidEnum)readOnlySpan[0];
+                this.Cid = (Cid)readOnlySpan[0];
                 this.Status = readOnlySpan[1];
             }
         }

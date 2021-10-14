@@ -28,39 +28,39 @@ namespace LoRaTools
                 throw new JsonReaderException("Undefined mac command identifier");
             }
 
-            if (Enum.TryParse<CidEnum>(cidPropertyValue, true, out var macCommandType))
+            if (Enum.TryParse<Cid>(cidPropertyValue, true, out var macCommandType))
             {
                 switch (macCommandType)
                 {
-                    case CidEnum.DevStatusCmd:
+                    case Cid.DevStatusCmd:
                     {
                         var cmd = new DevStatusRequest();
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
 
-                    case CidEnum.DutyCycleCmd:
+                    case Cid.DutyCycleCmd:
                     {
                         var cmd = new DutyCycleRequest();
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
 
-                    case CidEnum.NewChannelCmd:
+                    case Cid.NewChannelCmd:
                     {
                         var cmd = new NewChannelRequest();
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
 
-                    case CidEnum.RXParamCmd:
+                    case Cid.RXParamCmd:
                     {
                         var cmd = new RXParamSetupRequest();
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
 
-                    case CidEnum.RXTimingCmd:
+                    case Cid.RXTimingCmd:
                     {
                         var cmd = new RXTimingSetupRequest();
                         serializer.Populate(item.CreateReader(), cmd);

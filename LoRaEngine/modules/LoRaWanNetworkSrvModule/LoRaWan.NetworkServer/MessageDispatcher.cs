@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private volatile Region loraRegion;
-        private JoinRequestMessageHandler joinRequestHandler;
+        private readonly JoinRequestMessageHandler joinRequestHandler;
 
         public MessageDispatcher(
             NetworkServerConfiguration configuration,

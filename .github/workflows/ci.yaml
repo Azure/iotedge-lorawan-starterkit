@@ -273,7 +273,16 @@ jobs:
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       name: Checkout current branch
 
-    - name: 'Configuration for E2E tests'
+    - name: Setup .NET
+      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
+      uses: actions/setup-dotnet@v1.8.2
+      with:
+        dotnet-version: '3.1.x' # SDK Version to use.
+
+    - name: .NET SDK Information
+      run: dotnet --info
+
+    - name: Configuration for E2E tests
       uses: cschleiden/replace-tokens@v1
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       with:

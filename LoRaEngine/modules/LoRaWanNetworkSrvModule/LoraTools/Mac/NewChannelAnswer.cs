@@ -18,14 +18,14 @@ namespace LoRaTools
         {
             this.Status |= (byte)((drRangeOk ? 1 : 0) << 2);
             this.Status |= (byte)(chanFreqOk ? 1 : 0);
-            this.Cid = CidEnum.NewChannelCmd;
+            this.Cid = Cid.NewChannelCmd;
         }
 
         public NewChannelAnswer(ReadOnlySpan<byte> input)
             : base(input)
         {
             this.Status = input[1];
-            this.Cid = (CidEnum)input[0];
+            this.Cid = (Cid)input[0];
         }
 
         public override int Length => 2;

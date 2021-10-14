@@ -37,8 +37,8 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        IMemoryCache cache;
-        ConcurrentDictionary<string, ManagedConnection> managedConnections = new ConcurrentDictionary<string, ManagedConnection>();
+        readonly IMemoryCache cache;
+        readonly ConcurrentDictionary<string, ManagedConnection> managedConnections = new ConcurrentDictionary<string, ManagedConnection>();
 
         public LoRaDeviceClientConnectionManager(IMemoryCache cache)
         {

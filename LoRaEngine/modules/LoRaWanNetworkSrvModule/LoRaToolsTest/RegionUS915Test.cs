@@ -8,7 +8,7 @@ namespace LoRaWanTest
     {
         public RegionUS915Test()
         {
-            _region = RegionManager.US915;
+            Region = RegionManager.US915;
         }
 
         [Theory]
