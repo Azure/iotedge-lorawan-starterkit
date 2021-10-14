@@ -3,7 +3,10 @@
 
 namespace LoRaTools.LoRaMessage
 {
+#pragma warning disable CA1028 // Enum Storage should be Int32
+    // Not applicable in this case.
     public enum FctrlEnum : short
+#pragma warning restore CA1028 // Enum Storage should be Int32
     {
         FOptLen1 = 0,
         FOptLen2 = 1,
