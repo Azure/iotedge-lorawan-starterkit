@@ -7,7 +7,7 @@ namespace LoRaTools.ADR
     using System.Runtime.Serialization;
 
     [Serializable]
-    internal class ADRException : Exception
+    public class ADRException : Exception
     {
         public ADRException()
         {
