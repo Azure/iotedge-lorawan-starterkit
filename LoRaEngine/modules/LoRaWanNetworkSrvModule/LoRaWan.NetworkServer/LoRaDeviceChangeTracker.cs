@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     internal sealed class LoRaDeviceChangeTracker : IDisposable
     {
-        private LoRaDevice loRaDevice;
+        private readonly LoRaDevice loRaDevice;
 
         public LoRaDeviceChangeTracker(LoRaDevice loRaDevice)
         {

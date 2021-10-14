@@ -482,7 +482,7 @@ namespace LoRaWan.NetworkServer
             uint maxPayload;
 
             // If preferred Window is RX2, this is the max. payload
-            if (loRaDevice.PreferredWindow == Constants.RECEIVE_WINDOW_2)
+            if (loRaDevice.PreferredWindow == Constants.ReceiveWindow2)
             {
                 // Get max. payload size for RX2, considering possilbe user provided Rx2DataRate
                 if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
@@ -498,7 +498,7 @@ namespace LoRaWan.NetworkServer
             }
 
             // Deduct 8 bytes from max payload size.
-            maxPayload -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+            maxPayload -= Constants.LoraProtocolOverheadSize;
 
             // Calculate total C2D message size based on optional C2D Mac commands.
             var totalPayload = cloudToDeviceMsg.GetPayload()?.Length ?? 0;
@@ -702,7 +702,7 @@ namespace LoRaWan.NetworkServer
             // ensuring the framecount difference between the node and the server
             // is <= MAX_FCNT_GAP
             var diff = payloadFcnt > loRaDevice.FCntUp ? payloadFcnt - loRaDevice.FCntUp : loRaDevice.FCntUp - payloadFcnt;
-            var valid = diff <= Constants.MAX_FCNT_GAP;
+            var valid = diff <= Constants.MaxFcntGap;
 
             if (!valid)
             {

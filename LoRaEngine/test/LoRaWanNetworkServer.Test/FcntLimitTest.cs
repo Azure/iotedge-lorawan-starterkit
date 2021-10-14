@@ -27,7 +27,7 @@ namespace LoRaWan.NetworkServer.Test
         [Theory]
         // rolling test: if the client reaches 0xFFFF on the lower 16 bits, it will roll over and the upper
         // 16 bits are changed. In this case, the counter drifted too far for us to recover, and hence the MIC check will fail
-        [InlineData(0xF000FFFF + Constants.MAX_FCNT_GAP + 2, 0xF000FFFF, 0U, null, null, 0xF000FFFF + 20U, 0, false, false, true, LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck)]
+        [InlineData(0xF000FFFF + Constants.MaxFcntGap + 2, 0xF000FFFF, 0U, null, null, 0xF000FFFF + 20U, 0, false, false, true, LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck)]
         // rolling test: if the client reaches 0xFFFF on the lower 16 bits, it will roll over and the upper
         // 16 bits are changed. Validate, that we can recover from that.
         [InlineData(0xF000FFFF + 20U, 0xF000FFFF, 0U, null, null, 0xF000FFFF + 20U, 0, false, false, true)]

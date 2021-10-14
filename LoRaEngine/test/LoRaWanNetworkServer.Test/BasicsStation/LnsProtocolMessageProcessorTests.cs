@@ -16,9 +16,9 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
 
     public class LnsProtocolMessageProcessorTests
     {
-        private Mock<LnsProtocolMessageProcessor> lnsMessageProcessorMock;
-        private Mock<WebSocket> socketMock;
-        private Mock<HttpContext> httpContextMock;
+        private readonly Mock<LnsProtocolMessageProcessor> lnsMessageProcessorMock;
+        private readonly Mock<WebSocket> socketMock;
+        private readonly Mock<HttpContext> httpContextMock;
 
         public LnsProtocolMessageProcessorTests()
         {

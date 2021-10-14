@@ -1,5 +1,4 @@
 name: LoRa CI
-# the lora ci
 on: # rebuild any PRs and main branch changes
   pull_request:
     branches:
@@ -24,20 +23,22 @@ on: # rebuild any PRs and main branch changes
 env:
   buildConfiguration: 'Release'
   AZURE_FUNCTIONAPP_NAME: loramoduleintegrationtest
+  TESTS_FOLDER: Tests
+  TESTS_RESULTS_FOLDER: Tests/TestResults
 
 jobs:
   env_var:
     name: Set environment variables
     runs-on: ubuntu-latest
     steps:
-    - id: set-integration-matrix
-      name: Set integration Matrix
+    - id: e2e_list_step
+      name: Set E2E tests to run
       run: |
         if [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
           echo "Set up for workflow dispatch"
-          echo "::set-output name=IntegrationTestsToRun::${{ github.event.inputs.TestsToRun }}"
+          echo "::set-output name=E2ETestsToRun::${{ github.event.inputs.TestsToRun }}"
         else
-          echo "::set-output name=IntegrationTestsToRun::[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]"
+          echo "::set-output name=E2ETestsToRun::[\"SensorDecodingTest\",\"OTAAJoinTest\",\"ABPTest\",\"OTAATest\",\"MacTest\",\"ClassCTest\",\"C2DMessageTest\",\"MultiGatewayTest\"]"
         fi
 
     - id: check-if-run
@@ -56,7 +57,7 @@ jobs:
     outputs:
       AZURE_FUNCTIONAPP_NAME: ${{ env.AZURE_FUNCTIONAPP_NAME }}
       RunTestsOnly: ${{ github.event.inputs.RunTestsOnly == 'true' || contains(github.event.client_payload.labels.*.name, 'RunTestsOnly') == true}}
-      IntegrationTestsToRun: ${{ steps.set-integration-matrix.outputs.IntegrationTestsToRun }}
+      E2ETestsToRun: ${{ steps.e2e_list_step.outputs.E2ETestsToRun }}
       StopFullCi: ${{ steps.check-if-run.outputs.StopFullCi }}
 
   build_and_test:
@@ -87,7 +88,7 @@ jobs:
     # Run unit tests
     - name: Run unit tests
       run: |
-        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r Tests/TestResults \
+        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Unit \
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
           --filter 'FullyQualifiedName~LoRaWanTest|FullyQualifiedName~LoRaWan.NetworkServer.Test|FullyQualifiedName~LoraKeysManagerFacade.Test' \
           LoRaEngine
@@ -97,7 +98,7 @@ jobs:
       if: success() || failure()
       with:
         name: unit-test-results
-        path: Tests/TestResults
+        path: ${{ env.TESTS_RESULTS_FOLDER }}/Unit
 
     - name: Upload to Codecov
       uses: codecov/codecov-action@v2
@@ -239,14 +240,14 @@ jobs:
           # TODO We might want to revisit this once there are some options to check that the network server started.
           sleep 3m
 
-# Runs integration tests in dedicated agent, while having modules deployed into PI (arm32v7)
-  integration_test_ :
-    name: Run Test
+# Runs E2E tests in dedicated agent, while having modules deployed into PI (arm32v7)
+  e2e_tests_job :
+    name: Run E2E Tests
     strategy:
       fail-fast: false
       max-parallel: 1
       matrix:
-        testsToRun: ${{ fromjson(needs.env_var.outputs.IntegrationTestsToRun) }}
+        testsToRun: ${{ fromjson(needs.env_var.outputs.E2ETestsToRun) }}
     if: always() && (needs.env_var.outputs.RunTestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success' && needs.build_and_test.result == 'success'))
     needs:
       - deploy_arm_gw_iot_edge
@@ -256,50 +257,61 @@ jobs:
     runs-on: [ self-hosted, x64 ]
     timeout-minutes: 60
     env:
-      INTEGRATIONTEST_LeafDeviceSerialPort: '/dev/ttyACM0'
-      INTEGRATIONTEST_IoTHubEventHubConsumerGroup: 'reserved_integrationtest_amd'
-      INTEGRATIONTEST_LeafDeviceGatewayID: primary
-      INTEGRATIONTEST_DevicePrefix: '01'
-      INTEGRATIONTEST_EnsureHasEventDelayBetweenReadsInSeconds: 15
-      INTEGRATIONTEST_EnsureHasEventMaximumTries: 5
-      INTEGRATIONTEST_IoTHubConnectionString: ${{ secrets.IOTHUB_CONNECTION_STRING }}
-      INTEGRATIONTEST_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
-      INTEGRATIONTEST_FunctionAppCode: ${{ secrets.FUNCTION_AUTH_CODE }}
-      INTEGRATIONTEST_FunctionAppBaseUrl: "https://${{ needs.env_var.outputs.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net/api/"
+      E2ETESTS_LeafDeviceSerialPort: '/dev/ttyACM0'
+      E2ETESTS_IoTHubEventHubConsumerGroup: 'reserved_integrationtest_amd'
+      E2ETESTS_LeafDeviceGatewayID: primary
+      E2ETESTS_DevicePrefix: '01'
+      E2ETESTS_EnsureHasEventDelayBetweenReadsInSeconds: 15
+      E2ETESTS_EnsureHasEventMaximumTries: 5
+      E2ETESTS_IoTHubConnectionString: ${{ secrets.IOTHUB_CONNECTION_STRING }}
+      E2ETESTS_IoTHubEventHubConnectionString: ${{ secrets.IOTHUB_EVENT_HUB_CONNECTION_STRING }}
+      E2ETESTS_FunctionAppCode: ${{ secrets.FUNCTION_AUTH_CODE }}
+      E2ETESTS_FunctionAppBaseUrl: "https://${{ needs.env_var.outputs.AZURE_FUNCTIONAPP_NAME }}.azurewebsites.net/api/"
 
     steps:
     - uses: actions/checkout@v2
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       name: Checkout current branch
 
-    - name: 'Configure test in **/test/LoRaWan.IntegrationTest/appsettings.json'
+    - name: Setup .NET
+      if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
+      uses: actions/setup-dotnet@v1.8.2
+      with:
+        dotnet-version: '3.1.x' # SDK Version to use.
+
+    - name: .NET SDK Information
+      run: dotnet --info
+
+    - name: Configuration for E2E tests
       uses: cschleiden/replace-tokens@v1
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       with:
-        files: '**/test/LoRaWan.IntegrationTest/appsettings.json'
+        files: '**/${{ env.TESTS_FOLDER }}/E2E/appsettings.json'
 
-    # Runs Integration tests
-    - name: Build IntegrationTest
+    # Builds and runs E2E tests
+    - name: Build E2E tests
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
-      run: dotnet build --configuration ${{ env.buildConfiguration }} **/test/LoRaWan.IntegrationTest/LoRaWan.IntegrationTest.csproj
+      run: dotnet build --configuration ${{ env.buildConfiguration }} **/${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
-    - name: Integration test ${{ matrix.testsToRun }}
+    - name: Runs E2E tests ${{ matrix.testsToRun }}
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
-      id: integration_test
+      id: e2e_tests_step
       run: |
         echo ${{ matrix.testsToRun }}
-        dotnet test --logger trx --no-build --configuration ${{ env.buildConfiguration }} -p:ParallelizeTestCollections=false --filter "${{ matrix.testsToRun }}" **/test/LoRaWan.IntegrationTest/LoRaWan.IntegrationTest.csproj
+        dotnet test --logger trx --no-build --configuration ${{ env.buildConfiguration }} \
+        -p:ParallelizeTestCollections=false -r ${{ env.TESTS_RESULTS_FOLDER }}/E2E/ --filter "${{ matrix.testsToRun }}" \
+        **/${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
       if: (success() || failure()) && contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       with:
-        name: ${{ matrix.testsToRun }}-results
-        path: LoRaEngine/test/LoRaWan.IntegrationTest/TestResults
+        name: e2e-test-results
+        path: ${{ env.TESTS_RESULTS_FOLDER }}/E2E/
 
     - name: Add ${{ matrix.testsToRun }} Test Label
       uses: buildsville/add-remove-label@v1
-      if: github.event_name == 'pull_request' && steps.integration_test.conclusion == 'Success' && contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
+      if: github.event_name == 'pull_request' && steps.e2e_tests_step.conclusion == 'Success' && contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       with:
         token: ${{secrets.GITHUB_TOKEN}}
         label: '${{ matrix.testsToRun }}'

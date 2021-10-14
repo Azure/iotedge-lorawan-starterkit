@@ -17,7 +17,7 @@ namespace LoRaTools
         /// Gets or sets cid number of.
         /// </summary>
         [JsonProperty("cid")]
-        public CidEnum Cid { get; set; }
+        public Cid Cid { get; set; }
 
         public abstract int Length { get; }
 
@@ -53,30 +53,30 @@ namespace LoRaTools
             {
                 while (pointer < input.Length)
                 {
-                    var cid = (CidEnum)input.Span[pointer];
+                    var cid = (Cid)input.Span[pointer];
                     switch (cid)
                     {
-                        case CidEnum.LinkCheckCmd:
+                        case Cid.LinkCheckCmd:
                             var linkCheck = new LinkCheckRequest();
                             pointer += linkCheck.Length;
                             macCommands.Add(linkCheck);
                             break;
-                        case CidEnum.LinkADRCmd:
+                        case Cid.LinkADRCmd:
                             var linkAdrAnswer = new LinkADRAnswer(input.Span.Slice(pointer));
                             pointer += linkAdrAnswer.Length;
                             macCommands.Add(linkAdrAnswer);
                             break;
-                        case CidEnum.DutyCycleCmd:
+                        case Cid.DutyCycleCmd:
                             var dutyCycle = new DutyCycleAnswer();
                             pointer += dutyCycle.Length;
                             macCommands.Add(dutyCycle);
                             break;
-                        case CidEnum.RXParamCmd:
+                        case Cid.RXParamCmd:
                             var rxParamSetup = new RXParamSetupAnswer(input.Span.Slice(pointer));
                             pointer += rxParamSetup.Length;
                             macCommands.Add(rxParamSetup);
                             break;
-                        case CidEnum.DevStatusCmd:
+                        case Cid.DevStatusCmd:
                             // Added this case to enable unit testing
                             if (input.Length == 1)
                             {
@@ -92,12 +92,12 @@ namespace LoRaTools
                             }
 
                             break;
-                        case CidEnum.NewChannelCmd:
+                        case Cid.NewChannelCmd:
                             var newChannel = new NewChannelAnswer(input.Span.Slice(pointer));
                             pointer += newChannel.Length;
                             macCommands.Add(newChannel);
                             break;
-                        case CidEnum.RXTimingCmd:
+                        case Cid.RXTimingCmd:
                             var rxTimingSetup = new RXTimingSetupAnswer();
                             pointer += rxTimingSetup.Length;
                             macCommands.Add(rxTimingSetup);
@@ -131,15 +131,15 @@ namespace LoRaTools
             {
                 try
                 {
-                    var cid = (CidEnum)input.Span[pointer];
+                    var cid = (Cid)input.Span[pointer];
                     switch (cid)
                     {
-                        case CidEnum.LinkCheckCmd:
+                        case Cid.LinkCheckCmd:
                             var linkCheck = new LinkCheckAnswer(input.Span.Slice(pointer));
                             pointer += linkCheck.Length;
                             macCommands.Add(linkCheck);
                             break;
-                        case CidEnum.DevStatusCmd:
+                        case Cid.DevStatusCmd:
                             var devStatusRequest = new DevStatusRequest();
                             pointer += devStatusRequest.Length;
                             macCommands.Add(devStatusRequest);

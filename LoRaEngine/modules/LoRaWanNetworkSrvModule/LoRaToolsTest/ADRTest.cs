@@ -13,7 +13,7 @@ namespace LoRaWanTest
 
     public class ADRTest
     {
-        ITestOutputHelper output;
+        readonly ITestOutputHelper output;
 
         public ADRTest(ITestOutputHelper output)
         {
