@@ -127,6 +127,12 @@ namespace LoRaWan.NetworkServer
             set { this.region.Set(value); }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="RegionCN470PlanType"/> of the device
+        /// Relevant only for region <see cref="LoRaRegionType.CN470"/>.
+        /// </summary>
+        public RegionCN470PlanType? RegionCN470PlanType { get; set; }
+
         ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
 
         /// <summary>
@@ -353,6 +359,15 @@ namespace LoRaWan.NetworkServer
                         if (this.LoRaRegion == LoRaRegionType.NotSet)
                         {
                             Logger.Log(this.DevEUI, $"invalid region value: {regionValue}", LogLevel.Error);
+                        }
+                    }
+
+                    if (twin.Properties.Reported.Contains(TwinProperty.RegionCN470PlanType))
+                    {
+                        var planType = twin.Properties.Reported[TwinProperty.RegionCN470PlanType].Value as string;
+                        if (Enum.TryParse<RegionCN470PlanType>(planType, true, out var regionCN470PlanType))
+                        {
+                            this.RegionCN470PlanType = regionCN470PlanType;
                         }
                     }
 
@@ -849,6 +864,15 @@ namespace LoRaWan.NetworkServer
                 else
                 {
                     reportedProperties[TwinProperty.RXDelay] = null;
+                }
+                if (updateProperties.Region == LoRaRegionType.CN470)
+                {
+                    // TODO: update with correct plan type
+                    reportedProperties[TwinProperty.RegionCN470PlanType] = RegionCN470PlanType.PlanA20MHz;
+                }
+                else
+                {
+                    reportedProperties[TwinProperty.RegionCN470PlanType] = null;
                 }
             }
             else

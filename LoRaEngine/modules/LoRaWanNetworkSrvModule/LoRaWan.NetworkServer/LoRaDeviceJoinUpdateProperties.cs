@@ -35,5 +35,10 @@ namespace LoRaWan.NetworkServer
         /// Gets or sets value indicating if preferred gateway should be saved in reported properties.
         /// </summary>
         public bool SavePreferredGateway { get; set; }
+
+        /// <summary>
+        /// Gets or sets value indicating the active channel plan for region CN470.
+        /// </summary>
+        public RegionCN470PlanType RegionCN470PlanType { get; set; }
     }
 }
