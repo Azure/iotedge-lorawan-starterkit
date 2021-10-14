@@ -227,7 +227,7 @@ namespace LoraKeysManagerFacade.Test
             var query = new Mock<IQuery>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
             query.Setup(x => x.GetNextAsTwinAsync())
-                .ReturnsAsync(new Twin[0]);
+                .ReturnsAsync(Array.Empty<Twin>());
 
             this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
                 .Returns(query.Object);

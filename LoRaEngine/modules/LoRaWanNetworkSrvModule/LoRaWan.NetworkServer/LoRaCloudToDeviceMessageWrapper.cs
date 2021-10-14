@@ -79,7 +79,7 @@ namespace LoRaWan.NetworkServer
             if (this.parseCloudToDeviceMessage != null)
                 return this.parseCloudToDeviceMessage.GetPayload();
 
-            return new byte[0];
+            return Array.Empty<byte>();
         }
 
         public IList<MacCommand> MacCommands
