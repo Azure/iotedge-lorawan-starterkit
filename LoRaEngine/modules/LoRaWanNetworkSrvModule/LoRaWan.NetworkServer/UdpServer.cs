@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Defines udp Server communicating with packet forwarder.
     /// </summary>
-    public class UdpServer : IPacketForwarder, IDisposable
+    public sealed class UdpServer : IPacketForwarder, IDisposable
     {
         const int PORT = 1680;
         private readonly NetworkServerConfiguration configuration;
@@ -401,28 +401,12 @@ namespace LoRaWan.NetworkServer
 
         private void SetClassCMessageSender(DefaultClassCDevicesMessageSender classCMessageSender) => this.classCMessageSender = classCMessageSender;
 
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!this.disposedValue)
-            {
-                if (disposing)
-                {
-                    this.udpClient?.Dispose();
-                    this.udpClient = null;
-                    this.randomLock?.Dispose();
-                    this.messageDispatcher?.Dispose();
-                }
-
-                this.disposedValue = true;
-            }
-        }
-
         public void Dispose()
         {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
+            this.udpClient?.Dispose();
+            this.udpClient = null;
+            this.randomLock?.Dispose();
+            this.messageDispatcher?.Dispose();
         }
     }
 }

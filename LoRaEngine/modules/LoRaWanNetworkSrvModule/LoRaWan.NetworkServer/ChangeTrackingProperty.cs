@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer
     /// Primitive that keep tracks of changes.
     /// </summary>
     /// <typeparam name="T">The underlying type that we keep track of. Must implement <see cref="IEqualityComparer{T}"/>.</typeparam>
-    public class ChangeTrackingProperty<T> : IChangeTrackingProperty
+    public sealed class ChangeTrackingProperty<T> : IChangeTrackingProperty
     {
         T current;
         T original;

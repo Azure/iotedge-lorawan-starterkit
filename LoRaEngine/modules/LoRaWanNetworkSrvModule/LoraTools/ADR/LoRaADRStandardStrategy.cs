@@ -9,7 +9,7 @@ namespace LoRaTools.ADR
     /// <summary>
     /// A strategy based on the standard ADR strategy.
     /// </summary>
-    public class LoRaADRStandardStrategy : ILoRaADRStrategy
+    public sealed class LoRaADRStandardStrategy : ILoRaADRStrategy
     {
         private const int MarginDb = 5;
         private const int MaxTxPowerIndex = 0;
