@@ -121,7 +121,7 @@ namespace LoRaWan.SimulatedTest
             await Task.Delay(TimeSpan.FromSeconds(10));
 
             var msgsFromDevice = this.TestFixture.IoTHubMessages.GetEvents().Where(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID);
-            var actualAmountOfMsgs = msgsFromDevice.Where(x => !x.Properties.ContainsKey("iothub-message-schema")).Count();
+            var actualAmountOfMsgs = msgsFromDevice.Count(x => !x.Properties.ContainsKey("iothub-message-schema"));
             Assert.Equal(MessageCount, actualAmountOfMsgs);
         }
 
