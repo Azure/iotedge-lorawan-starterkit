@@ -77,6 +77,9 @@ namespace LoRaWan
                                                   or >= 'A' and <= 'F'
                                                   or >= 'a' and <= 'f';
 
+            if (chars.IsEmpty) // nothing to do
+                return true;
+
             // Fail early for the following cases:
             // - not enough source characters
             // - first or last character is not a hexadecimal digit
