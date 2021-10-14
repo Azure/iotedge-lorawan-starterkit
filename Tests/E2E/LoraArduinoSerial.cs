@@ -36,7 +36,7 @@
 #pragma warning disable IDE1006 // Naming Styles
 
 
-namespace LoRaWan.IntegrationTest
+namespace LoRaWan.Tests.E2E
 {
     using System;
     using System.Collections.Concurrent;
