@@ -101,7 +101,7 @@ namespace LoRaWan.NetworkServer.Test
                 deviceRegistry,
                 this.FrameCounterUpdateStrategyProvider);
 
-            using WaitableLoRaRequest req = confirmed
+            using var req = confirmed
                 ? this.CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: payloadFcntUp)
                                                             .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0])
                 : new WaitableLoRaRequest(simulatedDevice.CreateUnconfirmedMessageUplink("1234", fcnt: payloadFcntUp).Rxpk[0],
