@@ -290,11 +290,11 @@ namespace LoRaTools.LoRaMessage
 
                 if (devEUI.Length != 0)
                 {
-                    Logger.Log(devEUI, $"{((LoRaMessageType)this.Mhdr.Span[0]).ToString()} {jsonMsg}", LogLevel.Debug);
+                    Logger.Log(devEUI, $"{(LoRaMessageType)this.Mhdr.Span[0]} {jsonMsg}", LogLevel.Debug);
                 }
                 else
                 {
-                    Logger.Log(ConversionHelper.ByteArrayToString(this.DevAddr.Span.ToArray()), $"{((LoRaMessageType)this.Mhdr.Span[0]).ToString()} {jsonMsg}", LogLevel.Debug);
+                    Logger.Log(ConversionHelper.ByteArrayToString(this.DevAddr.Span.ToArray()), $"{(LoRaMessageType)this.Mhdr.Span[0]} {jsonMsg}", LogLevel.Debug);
                 }
             }
 

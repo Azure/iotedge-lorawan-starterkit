@@ -346,7 +346,7 @@ namespace LoRaWan.NetworkServer
                                 var linkCheckAnswer = new LinkCheckAnswer(rxpk.GetModulationMargin(), 1);
                                 if (macCommands.TryAdd((int)Cid.LinkCheckCmd, linkCheckAnswer))
                                 {
-                                    Logger.Log(devEUI, $"answering to a MAC command request {linkCheckAnswer.ToString()}", LogLevel.Information);
+                                    Logger.Log(devEUI, $"answering to a MAC command request {linkCheckAnswer}", LogLevel.Information);
                                 }
                             }
 

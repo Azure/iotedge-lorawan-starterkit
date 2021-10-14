@@ -249,7 +249,7 @@ namespace LoRaWan.NetworkServer
                     if (Logger.LoggerLevel <= LogLevel.Debug)
                     {
                         var jsonMsg = JsonConvert.SerializeObject(joinAccept);
-                        Logger.Log(devEUI, $"{LoRaMessageType.JoinAccept.ToString()} {jsonMsg}", LogLevel.Debug);
+                        Logger.Log(devEUI, $"{LoRaMessageType.JoinAccept} {jsonMsg}", LogLevel.Debug);
                     }
                     else if (Logger.LoggerLevel == LogLevel.Information)
                     {

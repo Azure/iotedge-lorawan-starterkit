@@ -140,7 +140,7 @@ namespace LoraKeysManagerFacade
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogError($"Exception occured during dev addresses full reload {ex.ToString()}");
+                    this.logger.LogError($"Exception occured during dev addresses full reload {ex}");
                 }
                 finally
                 {
@@ -172,7 +172,7 @@ namespace LoraKeysManagerFacade
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogError($"Exception occured during dev addresses delta reload {ex.ToString()}");
+                    this.logger.LogError($"Exception occured during dev addresses delta reload {ex}");
                 }
                 finally
                 {

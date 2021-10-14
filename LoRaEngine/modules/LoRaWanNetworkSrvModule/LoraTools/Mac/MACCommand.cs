@@ -108,7 +108,7 @@ namespace LoRaTools
                     }
 
                     var addedMacCommand = macCommands[macCommands.Count - 1];
-                    Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand.ToString()}", LogLevel.Debug);
+                    Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}", LogLevel.Debug);
                 }
             }
             catch (MacCommandException ex)
@@ -150,7 +150,7 @@ namespace LoRaTools
                     }
 
                     var addedMacCommand = macCommands[macCommands.Count - 1];
-                    Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand.ToString()}", LogLevel.Debug);
+                    Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}", LogLevel.Debug);
                 }
                 catch (MacCommandException ex)
                 {
