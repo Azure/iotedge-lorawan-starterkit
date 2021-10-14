@@ -78,12 +78,11 @@ namespace LoraKeysManagerFacade
                 {
                     throw new ArgumentException($"Bad ConnectionString format for {ConfigHandler.IoTHubConnectionStringKey} in settings");
                 }
-
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 // Object is handled by DI container.
-                _ = builder.Services.AddSingleton<IDeviceRegistryManager>(sp => new IoTHubDeviceRegistryManager(RegistryManager.CreateFromConnectionString(iotHubConnectionString), match.Groups[0].Value));
+                builder.Services.AddSingleton<IDeviceRegistryManager>(sp => new IoTHubDeviceRegistryManager(RegistryManager.CreateFromConnectionString(iotHubConnectionString), match.Groups[0].Value));
 #pragma warning restore CA2000 // Dispose objects before losing scope
-                _ = builder.Services.AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)));
+                builder.Services.AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)));
             }
             else if (configHandler.DeviceRegistryMode == DeviceRegistryMode.IoTCentral)
             {
