@@ -21,9 +21,9 @@ namespace LoRaTools
         [JsonProperty("drRange")]
         public byte DrRange { get; set; }
 
-        public int GetMaxDR() => (this.DrRange >> 4) & 0b00001111;
+        public int MaxDR => (this.DrRange >> 4) & 0b00001111;
 
-        public int GetMinDR() => this.DrRange & 0b00001111;
+        public int MinDR => this.DrRange & 0b00001111;
 
         public override int Length => 6;
 
@@ -51,7 +51,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, channel index: {this.ChIndex}, frequency: {ConversionHelper.ByteArrayToString(this.Freq)}, min DR: {this.GetMinDR()}, max DR: {this.GetMaxDR()}";
+            return $"Type: {this.Cid} Answer, channel index: {this.ChIndex}, frequency: {ConversionHelper.ByteArrayToString(this.Freq)}, min DR: {this.MinDR}, max DR: {this.MaxDR}";
         }
     }
 }

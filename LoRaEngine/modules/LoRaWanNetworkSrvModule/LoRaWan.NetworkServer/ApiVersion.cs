@@ -117,20 +117,23 @@ namespace LoRaWan.Shared
         /// <summary>
         /// Returns all known versions.
         /// </summary>
-        public static IEnumerable<ApiVersion> GetApiVersions()
+        public static IEnumerable<ApiVersion> ApiVersions
         {
-            yield return Version_0_2_Or_Earlier;
-            yield return Version_2018_12_16_Preview;
-            yield return Version_2019_02_12_Preview;
-            yield return Version_2019_02_20_Preview;
-            yield return Version_2019_03_08_Preview;
-            yield return Version_2019_03_26;
-            yield return Version_2019_04_02;
-            yield return Version_2019_04_15_Preview;
-            yield return Version_2019_07_05;
-            yield return Version_2019_07_16;
-            yield return Version_2020_08_11;
-            yield return Version_2020_10_09;
+            get
+            {
+                yield return Version_0_2_Or_Earlier;
+                yield return Version_2018_12_16_Preview;
+                yield return Version_2019_02_12_Preview;
+                yield return Version_2019_02_20_Preview;
+                yield return Version_2019_03_08_Preview;
+                yield return Version_2019_03_26;
+                yield return Version_2019_04_02;
+                yield return Version_2019_04_15_Preview;
+                yield return Version_2019_07_05;
+                yield return Version_2019_07_16;
+                yield return Version_2020_08_11;
+                yield return Version_2020_10_09;
+            }
         }
 
         /// <summary>
@@ -142,7 +145,7 @@ namespace LoRaWan.Shared
         /// <returns>The <see cref="ApiVersion"/> from <paramref name="version"/>.</returns>
         public static ApiVersion Parse(string version, bool returnAsKnown = false)
         {
-            return GetApiVersions().FirstOrDefault(v => string.Equals(version, v.Version, StringComparison.OrdinalIgnoreCase))
+            return ApiVersions.FirstOrDefault(v => string.Equals(version, v.Version, StringComparison.OrdinalIgnoreCase))
                 ?? new ApiVersion(version, name: null, isKnown: returnAsKnown);
         }
 

@@ -16,7 +16,7 @@ namespace LoRaTools
 
         public override int Length => 2;
 
-        public int GetDelay() => this.Settings & 0b00001111;
+        public int Delay => this.Settings & 0b00001111;
 
         public RXTimingSetupRequest()
         {
@@ -36,7 +36,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, delay: {this.GetDelay()}";
+            return $"Type: {this.Cid} Answer, delay: {this.Delay}";
         }
     }
 }

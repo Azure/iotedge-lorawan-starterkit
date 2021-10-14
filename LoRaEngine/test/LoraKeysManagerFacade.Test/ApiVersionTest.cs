@@ -150,7 +150,7 @@ namespace LoraKeysManagerFacade.Test
         public void LatestVersion_Should_Be_Newer_As_All()
         {
             var latest = ApiVersion.LatestVersion;
-            Assert.All(ApiVersion.GetApiVersions(), v =>
+            Assert.All(ApiVersion.ApiVersions, v =>
             {
                 if (v != latest)
                 {

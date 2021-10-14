@@ -54,13 +54,16 @@ namespace LoRaTools.LoRaPhysical
         }
 
         [Obsolete("to remove")]
-        public override PktFwdMessageAdapter GetPktFwdMessage()
+        public override PktFwdMessageAdapter PktFwdMessageAdapter
         {
-            var pktFwdMessageAdapter = new PktFwdMessageAdapter
+            get
             {
-                Rxpks = this.Rxpk
-            };
-            return pktFwdMessageAdapter;
+                var pktFwdMessageAdapter = new PktFwdMessageAdapter
+                {
+                    Rxpks = this.Rxpk
+                };
+                return pktFwdMessageAdapter;
+            }
         }
     }
 }

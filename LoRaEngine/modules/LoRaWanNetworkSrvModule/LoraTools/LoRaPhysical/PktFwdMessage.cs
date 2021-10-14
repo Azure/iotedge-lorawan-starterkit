@@ -11,7 +11,7 @@ namespace LoRaTools.LoRaPhysical
     public abstract class PktFwdMessage
     {
         [Obsolete("toremove")]
-        public abstract PktFwdMessageAdapter GetPktFwdMessage();
+        public abstract PktFwdMessageAdapter PktFwdMessageAdapter { get; }
 
         enum PktFwdType
         {
