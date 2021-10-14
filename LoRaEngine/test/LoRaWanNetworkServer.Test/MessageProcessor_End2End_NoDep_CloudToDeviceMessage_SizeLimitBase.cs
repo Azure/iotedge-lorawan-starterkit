@@ -10,8 +10,8 @@ namespace LoRaWan.NetworkServer.Test
     {
         public static Rxpk CreateUpstreamRxpk(bool isConfirmed, bool hasMacInUpstream, string datr, SimulatedDevice simulatedDevice)
         {
-            Rxpk rxpk = null;
-            string msgPayload = null;
+            Rxpk rxpk;
+            string msgPayload;
 
             if (isConfirmed)
             {

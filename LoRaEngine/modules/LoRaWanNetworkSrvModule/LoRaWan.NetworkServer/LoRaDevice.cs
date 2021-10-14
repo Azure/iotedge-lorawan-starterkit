@@ -430,7 +430,7 @@ namespace LoRaWan.NetworkServer
         {
             var desired = twin.Properties.Desired;
             var reported = twin.Properties.Reported;
-            uint? newfCnt = null;
+            uint? newfCnt;
 
             var frameCounterStartDesired = GetUintFromTwin(desired, propertyNameStart);
             var frameCounterStartReported = GetUintFromTwin(reported, propertyNameStart);
@@ -497,7 +497,7 @@ namespace LoRaWan.NetworkServer
                 return 0;
             }
 
-            if (value is uint valueUint)
+            if (value is uint)
             {
                 return value;
             }
@@ -529,7 +529,7 @@ namespace LoRaWan.NetworkServer
                 return valueBool;
             }
 
-            if (value is int valueInt)
+            if (value is int)
             {
                 return value == 1;
             }

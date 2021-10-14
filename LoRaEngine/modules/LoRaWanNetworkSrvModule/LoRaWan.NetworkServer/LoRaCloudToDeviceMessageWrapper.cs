@@ -32,11 +32,10 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         private void ParseMessage()
         {
-            var json = string.Empty;
             var bytes = this.message.GetBytes();
             if (bytes?.Length > 0)
             {
-                json = Encoding.UTF8.GetString(bytes);
+                var json = Encoding.UTF8.GetString(bytes);
                 try
                 {
                     this.parseCloudToDeviceMessage = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(json);

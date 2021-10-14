@@ -42,7 +42,6 @@ namespace LoraKeysManagerFacade
             var fCntUp = req.Query["FCntUp"];
             var gatewayId = req.Query["GatewayId"];
             var abpFcntCacheReset = req.Query["ABPFcntCacheReset"];
-            uint newFCntDown = 0;
 
             EUIValidator.ValidateDevEUI(devEUI);
 
@@ -82,7 +81,7 @@ namespace LoraKeysManagerFacade
                 throw new ArgumentException(errorMsg);
             }
 
-            newFCntDown = await this.GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);
+            var newFCntDown = await this.GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);
 
             return new OkObjectResult(newFCntDown);
         }

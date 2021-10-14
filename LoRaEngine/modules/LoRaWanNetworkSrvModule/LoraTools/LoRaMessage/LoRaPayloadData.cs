@@ -240,10 +240,6 @@ namespace LoRaTools.LoRaMessage
                 this.Frmpayload = new Memory<byte>(this.RawMessage, 8 + fOptsLen + fPortLen, frmPayloadLen);
                 Array.Copy(frmPayload, 0, this.RawMessage, 8 + fOptsLen + fPortLen, frmPayloadLen);
             }
-            else
-            {
-                frmPayload = null;
-            }
 
             if (!this.Frmpayload.Span.IsEmpty)
                 this.Frmpayload.Span.Reverse();
@@ -324,9 +320,8 @@ namespace LoRaTools.LoRaMessage
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
 
-            var result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            result = MacUtilities.DoFinal(mac);
+            var result = MacUtilities.DoFinal(mac);
             return this.Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
         }
 

@@ -97,10 +97,8 @@ namespace LoRaTools.LoRaMessage
             mac.Init(key);
             var rfu = new byte[1];
             rfu[0] = 0x0;
-            var msgLength = BitConverter.GetBytes(algoinput.Length);
-            var result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            result = MacUtilities.DoFinal(mac);
+            var result = MacUtilities.DoFinal(mac);
             this.Mic = result.Take(4).ToArray();
             return this.Mic.ToArray();
         }

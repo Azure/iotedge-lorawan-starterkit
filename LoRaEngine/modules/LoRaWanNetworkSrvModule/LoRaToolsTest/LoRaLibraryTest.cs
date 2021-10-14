@@ -61,10 +61,7 @@ namespace LoRaWanTest
         public void JoinRequest_Should_Succeed_Mic_Check()
         {
             var appEUIText = "0005100000000004";
-            var appEUIBytes = ConversionHelper.StringToByteArray(appEUIText);
-
             var devEUIText = "0005100000000004";
-            var devEUIBytes = ConversionHelper.StringToByteArray(devEUIText);
 
             var devNonceText = "ABCD";
             var devNonceBytes = ConversionHelper.StringToByteArray(devNonceText);

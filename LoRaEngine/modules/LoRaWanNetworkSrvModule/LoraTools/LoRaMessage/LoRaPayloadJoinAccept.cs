@@ -92,10 +92,6 @@ namespace LoRaTools.LoRaMessage
                 this.DlSettings.Span.Reverse();
                 this.RxDelay.Span.Reverse();
             }
-
-            var algoinput = this.Mhdr.ToArray().Concat(this.AppNonce.ToArray()).Concat(this.NetID.ToArray()).Concat(this.DevAddr.ToArray()).Concat(this.DlSettings.ToArray()).Concat(this.RxDelay.ToArray()).ToArray();
-            if (!this.CfList.Span.IsEmpty)
-                algoinput = algoinput.Concat(this.CfList.ToArray()).ToArray();
         }
 
         public LoRaPayloadJoinAccept(byte[] inputMessage, string appKey)
