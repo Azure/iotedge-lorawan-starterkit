@@ -62,7 +62,7 @@ namespace LoRaTools
                             macCommands.Add(linkCheck);
                             break;
                         case Cid.LinkADRCmd:
-                            var linkAdrAnswer = new LinkADRAnswer(input.Span.Slice(pointer));
+                            var linkAdrAnswer = new LinkADRAnswer(input.Span[pointer..]);
                             pointer += linkAdrAnswer.Length;
                             macCommands.Add(linkAdrAnswer);
                             break;
@@ -72,7 +72,7 @@ namespace LoRaTools
                             macCommands.Add(dutyCycle);
                             break;
                         case Cid.RXParamCmd:
-                            var rxParamSetup = new RXParamSetupAnswer(input.Span.Slice(pointer));
+                            var rxParamSetup = new RXParamSetupAnswer(input.Span[pointer..]);
                             pointer += rxParamSetup.Length;
                             macCommands.Add(rxParamSetup);
                             break;
@@ -86,14 +86,14 @@ namespace LoRaTools
                             }
                             else
                             {
-                                var devStatus = new DevStatusAnswer(input.Span.Slice(pointer));
+                                var devStatus = new DevStatusAnswer(input.Span[pointer..]);
                                 pointer += devStatus.Length;
                                 macCommands.Add(devStatus);
                             }
 
                             break;
                         case Cid.NewChannelCmd:
-                            var newChannel = new NewChannelAnswer(input.Span.Slice(pointer));
+                            var newChannel = new NewChannelAnswer(input.Span[pointer..]);
                             pointer += newChannel.Length;
                             macCommands.Add(newChannel);
                             break;
@@ -135,7 +135,7 @@ namespace LoRaTools
                     switch (cid)
                     {
                         case Cid.LinkCheckCmd:
-                            var linkCheck = new LinkCheckAnswer(input.Span.Slice(pointer));
+                            var linkCheck = new LinkCheckAnswer(input.Span[pointer..]);
                             pointer += linkCheck.Length;
                             macCommands.Add(linkCheck);
                             break;

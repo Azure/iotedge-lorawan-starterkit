@@ -102,11 +102,11 @@ namespace LoRaTools.LoRaMessage
             var offset = 0;
             this.Mhdr.CopyTo(algoInput);
             offset += this.Mhdr.Length;
-            this.AppEUI.CopyTo(algoInput.Slice(offset));
+            this.AppEUI.CopyTo(algoInput[offset..]);
             offset += this.AppEUI.Length;
-            this.DevEUI.CopyTo(algoInput.Slice(offset));
+            this.DevEUI.CopyTo(algoInput[offset..]);
             offset += this.DevEUI.Length;
-            this.DevNonce.CopyTo(algoInput.Slice(offset));
+            this.DevNonce.CopyTo(algoInput[offset..]);
 
             mac.BlockUpdate(algoInputBytes, 0, algoInputBytes.Length);
 
