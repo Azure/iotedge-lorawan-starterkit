@@ -128,10 +128,10 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="RegionCN470PlanType"/> of the device
-        /// Relevant only for region <see cref="LoRaRegionType.CN470"/>.
+        /// Gets or sets the active channel plan type for the device.
+        /// Relevant only for selected regions.
         /// </summary>
-        public RegionCN470PlanType? RegionCN470PlanType { get; set; }
+        public string? RegionChannelPlan { get; set; }
 
         ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
 
@@ -362,13 +362,10 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    if (twin.Properties.Reported.Contains(TwinProperty.RegionCN470PlanType))
+                    if (twin.Properties.Reported.Contains(TwinProperty.RegionChannelPlan))
                     {
-                        var planType = twin.Properties.Reported[TwinProperty.RegionCN470PlanType].Value as string;
-                        if (Enum.TryParse<RegionCN470PlanType>(planType, true, out var regionCN470PlanType))
-                        {
-                            this.RegionCN470PlanType = regionCN470PlanType;
-                        }
+                        var regionChannelPlan = twin.Properties.Reported[TwinProperty.RegionChannelPlan].Value as string;
+                        this.RegionChannelPlan = regionChannelPlan;
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt))
@@ -865,14 +862,15 @@ namespace LoRaWan.NetworkServer
                 {
                     reportedProperties[TwinProperty.RXDelay] = null;
                 }
+
                 if (updateProperties.Region == LoRaRegionType.CN470)
                 {
                     // TODO: update with correct plan type
-                    reportedProperties[TwinProperty.RegionCN470PlanType] = RegionCN470PlanType.PlanA20MHz;
+                    reportedProperties[TwinProperty.RegionChannelPlan] = RegionCN470PlanType.PlanA20MHz.ToString();
                 }
                 else
                 {
-                    reportedProperties[TwinProperty.RegionCN470PlanType] = null;
+                    reportedProperties[TwinProperty.RegionChannelPlan] = null;
                 }
             }
             else

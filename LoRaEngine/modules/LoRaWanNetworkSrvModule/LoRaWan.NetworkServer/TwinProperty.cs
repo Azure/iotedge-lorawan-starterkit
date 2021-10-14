@@ -47,8 +47,8 @@ namespace LoRaWan.NetworkServer
         public const string KeepAliveTimeout = "KeepAliveTimeout";
 
         /// <summary>
-        /// Defines the active channel plan type for region CN470.
+        /// Defines the active channel plan type.
         /// </summary>
-        public const string RegionCN470PlanType = "RegionCN470PlanType";
+        public const string RegionChannelPlan = "RegionChannelPlan";
     }
 }

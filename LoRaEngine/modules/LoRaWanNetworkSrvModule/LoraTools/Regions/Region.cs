@@ -120,7 +120,8 @@ namespace LoRaTools.Regions
         /// Implements logic to get the correct downstream transmission frequency for the given region based on the upstream channel frequency.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the upstream message was transmitted.</param>
-        public abstract bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency);
+        /// <param name="channelPlan">optional active channel plan type to be used for the given region, if applicable.</param>
+        public abstract bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, string channelPlan = null);
 
         /// <summary>
         /// Get the downstream RX2 frequency.
