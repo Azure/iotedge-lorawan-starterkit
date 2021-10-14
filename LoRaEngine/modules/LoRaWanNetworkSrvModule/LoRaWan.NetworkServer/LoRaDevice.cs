@@ -583,31 +583,29 @@ namespace LoRaWan.NetworkServer
                     reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
 
                     // For class C devices this might be the only moment the connection is established
-                    using (var deviceClientActivityScope = this.BeginDeviceClientConnectionActivity())
+                    using var deviceClientActivityScope = this.BeginDeviceClientConnectionActivity();
+                    if (deviceClientActivityScope == null)
                     {
-                        if (deviceClientActivityScope == null)
-                        {
-                            // Logging as information because the real error was logged as error
-                            Logger.Log(this.DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
-                            return false;
-                        }
-
-                        var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
-                        if (result)
-                        {
-                            this.InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
-
-                            for (var i = 0; i < savedProperties.Count; i++)
-                                savedProperties[i].AcceptChanges();
-                        }
-                        else
-                        {
-                            for (var i = 0; i < savedProperties.Count; i++)
-                                savedProperties[i].Rollback();
-                        }
-
-                        return result;
+                        // Logging as information because the real error was logged as error
+                        Logger.Log(this.DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
+                        return false;
                     }
+
+                    var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
+                    if (result)
+                    {
+                        this.InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
+
+                        for (var i = 0; i < savedProperties.Count; i++)
+                            savedProperties[i].AcceptChanges();
+                    }
+                    else
+                    {
+                        for (var i = 0; i < savedProperties.Count; i++)
+                            savedProperties[i].Rollback();
+                    }
+
+                    return result;
                 }
 
                 return true;
@@ -873,69 +871,67 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            using (var activityScope = this.BeginDeviceClientConnectionActivity())
+            using var activityScope = this.BeginDeviceClientConnectionActivity();
+            if (activityScope == null)
             {
-                if (activityScope == null)
+                // Logging as information because the real error was logged as error
+                Logger.Log(this.DevEUI, "failed to update twin after join, could not reconnect", LogLevel.Debug);
+                return false;
+            }
+
+            var devAddrBeforeSave = this.DevAddr;
+            var succeeded = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
+
+            // Only save if the devAddr remains the same, otherwise ignore the save
+            if (succeeded && devAddrBeforeSave == this.DevAddr)
+            {
+                this.DevAddr = updateProperties.DevAddr;
+                this.NwkSKey = updateProperties.NwkSKey;
+                this.AppSKey = updateProperties.AppSKey;
+                this.AppNonce = updateProperties.AppNonce;
+                this.DevNonce = updateProperties.DevNonce;
+                this.NetID = updateProperties.NetID;
+
+                if (currentRegion.IsValidRX1DROffset(this.DesiredRX1DROffset))
                 {
-                    // Logging as information because the real error was logged as error
-                    Logger.Log(this.DevEUI, "failed to update twin after join, could not reconnect", LogLevel.Debug);
-                    return false;
-                }
-
-                var devAddrBeforeSave = this.DevAddr;
-                var succeeded = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
-
-                // Only save if the devAddr remains the same, otherwise ignore the save
-                if (succeeded && devAddrBeforeSave == this.DevAddr)
-                {
-                    this.DevAddr = updateProperties.DevAddr;
-                    this.NwkSKey = updateProperties.NwkSKey;
-                    this.AppSKey = updateProperties.AppSKey;
-                    this.AppNonce = updateProperties.AppNonce;
-                    this.DevNonce = updateProperties.DevNonce;
-                    this.NetID = updateProperties.NetID;
-
-                    if (currentRegion.IsValidRX1DROffset(this.DesiredRX1DROffset))
-                    {
-                        this.ReportedRX1DROffset = this.DesiredRX1DROffset;
-                    }
-                    else
-                    {
-                        Logger.Log(this.DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
-                    }
-
-                    if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
-                    {
-                        this.ReportedRX2DataRate = this.DesiredRX2DataRate;
-                    }
-                    else
-                    {
-                        Logger.Log(this.DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
-                    }
-
-                    if (Region.IsValidRXDelay(this.DesiredRXDelay))
-                    {
-                        this.ReportedRXDelay = this.DesiredRXDelay;
-                    }
-                    else
-                    {
-                        Logger.Log(this.DevEUI, "the provided RXDelay is not valid", LogLevel.Error);
-                    }
-
-                    this.region.AcceptChanges();
-                    this.preferredGatewayID.AcceptChanges();
-
-                    this.ResetFcnt();
-                    this.InternalAcceptFrameCountChanges(this.fcntUp, this.fcntDown);
+                    this.ReportedRX1DROffset = this.DesiredRX1DROffset;
                 }
                 else
                 {
-                    this.region.Rollback();
-                    this.preferredGatewayID.Rollback();
+                    Logger.Log(this.DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
                 }
 
-                return succeeded;
+                if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
+                {
+                    this.ReportedRX2DataRate = this.DesiredRX2DataRate;
+                }
+                else
+                {
+                    Logger.Log(this.DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
+                }
+
+                if (Region.IsValidRXDelay(this.DesiredRXDelay))
+                {
+                    this.ReportedRXDelay = this.DesiredRXDelay;
+                }
+                else
+                {
+                    Logger.Log(this.DevEUI, "the provided RXDelay is not valid", LogLevel.Error);
+                }
+
+                this.region.AcceptChanges();
+                this.preferredGatewayID.AcceptChanges();
+
+                this.ResetFcnt();
+                this.InternalAcceptFrameCountChanges(this.fcntUp, this.fcntDown);
             }
+            else
+            {
+                this.region.Rollback();
+                this.preferredGatewayID.Rollback();
+            }
+
+            return succeeded;
         }
 
         internal void SetRequestHandler(ILoRaDataRequestHandler dataRequestHandler) => this.dataRequestHandler = dataRequestHandler;

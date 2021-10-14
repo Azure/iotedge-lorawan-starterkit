@@ -75,19 +75,17 @@ namespace LoRaWan.SimulatedTest
             var simulatedDevice = new SimulatedDevice(device);
             var networkServerIPEndpoint = this.CreateNetworkServerEndpoint();
 
-            using (var simulatedPacketForwarder = new SimulatedPacketForwarder(networkServerIPEndpoint))
+            using var simulatedPacketForwarder = new SimulatedPacketForwarder(networkServerIPEndpoint);
+            simulatedPacketForwarder.Start();
+
+            for (var i = 1; i <= MessageCount; i++)
             {
-                simulatedPacketForwarder.Start();
-
-                for (var i = 1; i <= MessageCount; i++)
-                {
-                    await simulatedDevice.SendUnconfirmedMessageAsync(simulatedPacketForwarder, i.ToString(CultureInfo.InvariantCulture));
-                    // await simulatedDevice.SendConfirmedMessageAsync(simulatedPacketForwarder, i.ToString());
-                    await Task.Delay(this.intervalBetweenMessages);
-                }
-
-                await simulatedPacketForwarder.StopAsync();
+                await simulatedDevice.SendUnconfirmedMessageAsync(simulatedPacketForwarder, i.ToString(CultureInfo.InvariantCulture));
+                // await simulatedDevice.SendConfirmedMessageAsync(simulatedPacketForwarder, i.ToString());
+                await Task.Delay(this.intervalBetweenMessages);
             }
+
+            await simulatedPacketForwarder.StopAsync();
         }
 
         [Fact]

@@ -41,58 +41,56 @@ namespace LoraKeysManagerFacade.Test
                     "npipe://./pipe/docker_engine" :
                     "unix:///var/run/docker.sock";
                 System.Console.WriteLine("Starting container");
-                using (var conf = new DockerClientConfiguration(new Uri(dockerConnection))) // localhost
-                using (var client = conf.CreateClient())
+                using var conf = new DockerClientConfiguration(new Uri(dockerConnection)); // localhost
+                using var client = conf.CreateClient();
+                System.Console.WriteLine("On Premise execution detected");
+                System.Console.WriteLine("Starting container...");
+                var containers = await client.Containers.ListContainersAsync(new ContainersListParameters() { All = true });
+                System.Console.WriteLine("listing container...");
+                var container = containers.FirstOrDefault(c => c.Names.Contains("/" + ContainerName));
+
+                // Download image
+                await client.Images.CreateImageAsync(new ImagesCreateParameters() { FromImage = ImageName, Tag = ImageTag }, new AuthConfig(), new Progress<JSONMessage>());
+
+                // Create the container
+                var config = new Config()
                 {
-                    System.Console.WriteLine("On Premise execution detected");
-                    System.Console.WriteLine("Starting container...");
-                    var containers = await client.Containers.ListContainersAsync(new ContainersListParameters() { All = true });
-                    System.Console.WriteLine("listing container...");
-                    var container = containers.FirstOrDefault(c => c.Names.Contains("/" + ContainerName));
+                    Hostname = "localhost"
+                };
+                this.redisPort = Interlocked.Increment(ref uniqueRedisPort);
+                System.Console.WriteLine(this.redisPort);
 
-                    // Download image
-                    await client.Images.CreateImageAsync(new ImagesCreateParameters() { FromImage = ImageName, Tag = ImageTag }, new AuthConfig(), new Progress<JSONMessage>());
-
-                    // Create the container
-                    var config = new Config()
-                    {
-                        Hostname = "localhost"
-                    };
-                    this.redisPort = Interlocked.Increment(ref uniqueRedisPort);
-                    System.Console.WriteLine(this.redisPort);
-
-                    // Configure the ports to expose
-                    var hostConfig = new HostConfig()
-                    {
-                        PortBindings = new Dictionary<string, IList<PortBinding>>
+                // Configure the ports to expose
+                var hostConfig = new HostConfig()
+                {
+                    PortBindings = new Dictionary<string, IList<PortBinding>>
                         {
                             {
                                 $"6379/tcp", new List<PortBinding> { new PortBinding { HostIP = "127.0.0.1", HostPort = this.redisPort.ToString(CultureInfo.InvariantCulture) } }
                             }
                         }
-                    };
+                };
 
-                    System.Console.WriteLine("Creating container...");
-                    // Create the container
-                    var response = await client.Containers.CreateContainerAsync(new CreateContainerParameters(config)
-                    {
-                        Image = ImageName + ":" + ImageTag,
-                        Name = ContainerName + this.redisPort,
-                        Tty = false,
-                        HostConfig = hostConfig
-                    });
-                    this.containerId = response.ID;
+                System.Console.WriteLine("Creating container...");
+                // Create the container
+                var response = await client.Containers.CreateContainerAsync(new CreateContainerParameters(config)
+                {
+                    Image = ImageName + ":" + ImageTag,
+                    Name = ContainerName + this.redisPort,
+                    Tty = false,
+                    HostConfig = hostConfig
+                });
+                this.containerId = response.ID;
 
-                    System.Console.WriteLine("Starting container...");
+                System.Console.WriteLine("Starting container...");
 
-                    var started = await client.Containers.StartContainerAsync(this.containerId, new ContainerStartParameters());
-                    if (!started)
-                    {
-                        Assert.False(true, "Cannot start the docker container");
-                    }
-
-                    System.Console.WriteLine("Finish booting sequence container...");
+                var started = await client.Containers.StartContainerAsync(this.containerId, new ContainerStartParameters());
+                if (!started)
+                {
+                    Assert.False(true, "Cannot start the docker container");
                 }
+
+                System.Console.WriteLine("Finish booting sequence container...");
             }
             catch (Exception ex)
             {
@@ -128,14 +126,12 @@ namespace LoraKeysManagerFacade.Test
                     var dockerConnection = System.Environment.OSVersion.Platform.ToString().Contains("Win", StringComparison.Ordinal) ?
                     "npipe://./pipe/docker_engine" :
                     "unix:///var/run/docker.sock";
-                    using (var conf = new DockerClientConfiguration(new Uri(dockerConnection))) // localhost
-                    using (var client = conf.CreateClient())
+                    using var conf = new DockerClientConfiguration(new Uri(dockerConnection)); // localhost
+                    using var client = conf.CreateClient();
+                    await client.Containers.RemoveContainerAsync(this.containerId, new ContainerRemoveParameters()
                     {
-                        await client.Containers.RemoveContainerAsync(this.containerId, new ContainerRemoveParameters()
-                        {
-                            Force = true
-                        });
-                    }
+                        Force = true
+                    });
                 }
             }
 
