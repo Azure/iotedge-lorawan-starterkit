@@ -28,8 +28,10 @@ namespace LoRaWan
         public override string ToString()
         {
             Span<char> digits = stackalloc char[32];
+#pragma warning disable IDE0058 // Expression value is never used
             Hexadecimal.Write(this.hi, digits);
             Hexadecimal.Write(this.lo, digits[16..]);
+#pragma warning restore IDE0058 // Expression value is never used
             return new string(digits);
         }
 

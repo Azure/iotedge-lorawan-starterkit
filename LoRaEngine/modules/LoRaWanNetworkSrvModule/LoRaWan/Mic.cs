@@ -49,7 +49,9 @@ namespace LoRaWan
             var mac = MacUtilities.GetMac("AESCMAC");
 
             var keyBytes = new byte[AppKey.Size];
+#pragma warning disable IDE0058 // Expression value is never used
             appKey.Write(keyBytes);
+#pragma warning restore IDE0058 // Expression value is never used
             var key = new KeyParameter(keyBytes);
             mac.Init(key);
 
@@ -58,7 +60,9 @@ namespace LoRaWan
             buffer = mhdr.Write(buffer);
             buffer = joinEui.Write(buffer);
             buffer = devEui.Write(buffer);
+#pragma warning disable IDE0058 // Expression value is never used
             devNonce.Write(buffer);
+#pragma warning restore IDE0058 // Expression value is never used
 
             mac.BlockUpdate(input, 0, input.Length);
             var cmac = MacUtilities.DoFinal(mac);

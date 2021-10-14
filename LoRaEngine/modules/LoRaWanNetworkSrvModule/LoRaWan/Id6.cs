@@ -80,7 +80,9 @@ namespace LoRaWan
                 if (colon)
                     chars[i++] = ':';
                 var @short = BinaryPrimitives.ReadUInt16BigEndian(bytes);
+#pragma warning disable IDE0058 // Expression value is never used
                 Hexadecimal.Write(@short, word, casing);
+#pragma warning restore IDE0058 // Expression value is never used
                 var tw = fixedWidth ? word : word.TrimStart('0');
                 if (tw.Length != 0)
                 {
