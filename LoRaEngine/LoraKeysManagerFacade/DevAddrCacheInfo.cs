@@ -13,22 +13,36 @@ namespace LoraKeysManagerFacade
 
         public string NwkSKey { get; set; }
 
-        public int CompareTo(object obj)
-        {
-            if (obj is DevAddrCacheInfo)
-            {
-                var oldElement = (DevAddrCacheInfo)obj;
-                if (this.GatewayId == oldElement.GatewayId
-                    && this.NwkSKey == oldElement.NwkSKey
-                    && this.DevAddr == oldElement.DevAddr
-                    && this.DevEUI == oldElement.DevEUI
-                    && this.LastUpdatedTwins == oldElement.LastUpdatedTwins)
-                {
-                    return 0;
-                }
-            }
+        public int CompareTo(object obj) => this.Equals(obj) ? 0 : 1;
 
-            return 1;
-        }
+        public override bool Equals(object obj) =>
+            obj is DevAddrCacheInfo info &&
+            this.DevAddr == info.DevAddr &&
+            this.DevEUI == info.DevEUI &&
+            this.PrimaryKey == info.PrimaryKey &&
+            this.GatewayId == info.GatewayId &&
+            this.LastUpdatedTwins == info.LastUpdatedTwins &&
+            this.NwkSKey == info.NwkSKey;
+
+        public override int GetHashCode() =>
+            HashCode.Combine(this.DevAddr, this.DevEUI, this.PrimaryKey, this.GatewayId, this.LastUpdatedTwins, this.NwkSKey);
+
+        public static bool operator ==(DevAddrCacheInfo left, DevAddrCacheInfo right) =>
+            left is null ? right is null : left.Equals(right);
+
+        public static bool operator !=(DevAddrCacheInfo left, DevAddrCacheInfo right) =>
+            !(left == right);
+
+        public static bool operator <(DevAddrCacheInfo left, DevAddrCacheInfo right) =>
+            ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
+
+        public static bool operator <=(DevAddrCacheInfo left, DevAddrCacheInfo right) =>
+            ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
+
+        public static bool operator >(DevAddrCacheInfo left, DevAddrCacheInfo right) =>
+            !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
+
+        public static bool operator >=(DevAddrCacheInfo left, DevAddrCacheInfo right) =>
+            ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
     }
 }

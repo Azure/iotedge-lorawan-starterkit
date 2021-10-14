@@ -236,10 +236,18 @@ namespace LoRaWan.Shared
 
         public int CompareTo(ApiVersion other)
         {
+            if (this.Equals(other)) return 0;
             return string.Compare(this.Version, other.Version, StringComparison.Ordinal);
         }
 
         public override string ToString() => this.Version.ToString();
+
+        public override bool Equals(object obj) =>
+            obj is ApiVersion version &&
+            this.Version == version.Version &&
+            this.Name == version.Name &&
+            this.IsKnown == version.IsKnown &&
+            EqualityComparer<ApiVersion>.Default.Equals(this.MinCompatibleVersion, version.MinCompatibleVersion);
 
         public static bool operator <(ApiVersion value1, ApiVersion value2)
         {
