@@ -92,7 +92,7 @@ namespace LoraKeysManagerFacade
         {
             var itemCount = this.redisCache.ListRightPush(key, value);
             if (expiry.HasValue)
-                this.redisCache.KeyExpire(key, expiry);
+                _ = this.redisCache.KeyExpire(key, expiry);
 
             return itemCount;
         }
@@ -108,7 +108,7 @@ namespace LoraKeysManagerFacade
             var returnValue = this.redisCache.HashSet(cacheKey, subkey, value);
             if (timeToExpire.HasValue)
             {
-                this.redisCache.KeyExpire(cacheKey, DateTime.UtcNow.Add(timeToExpire.Value));
+                _ = this.redisCache.KeyExpire(cacheKey, DateTime.UtcNow.Add(timeToExpire.Value));
             }
 
             return returnValue;
@@ -124,7 +124,7 @@ namespace LoraKeysManagerFacade
         {
             if (removeOldOccurence)
             {
-                this.redisCache.KeyDelete(cacheKey);
+                _ = this.redisCache.KeyDelete(cacheKey);
             }
 
             var hashEntries = new HashEntry[input.Count];
@@ -138,7 +138,7 @@ namespace LoraKeysManagerFacade
             this.redisCache.HashSet(cacheKey, hashEntries, CommandFlags.DemandMaster);
             if (timeToExpire.HasValue)
             {
-                this.redisCache.KeyExpire(cacheKey, DateTime.UtcNow.Add(timeToExpire.Value));
+                _ = this.redisCache.KeyExpire(cacheKey, DateTime.UtcNow.Add(timeToExpire.Value));
             }
         }
 

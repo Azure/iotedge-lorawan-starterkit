@@ -71,12 +71,12 @@ namespace LoRaWan.NetworkServer
             var key = this.GetScheduleCacheKey(managedConnection.LoRaDevice.DevEUI);
             // Touching an existing item will update the last access item
             // Creating will start the expiration count
-            this.cache.GetOrCreate(
+            _ = cache.GetOrCreate(
                 key,
                 (ce) =>
                 {
                     ce.SlidingExpiration = TimeSpan.FromSeconds(managedConnection.LoRaDevice.KeepAliveTimeout);
-                    ce.RegisterPostEvictionCallback(this.OnScheduledDisconnect);
+                    _ = ce.RegisterPostEvictionCallback(OnScheduledDisconnect);
 
                     Logger.Log(managedConnection.LoRaDevice.DevEUI, $"client connection timeout set to {managedConnection.LoRaDevice.KeepAliveTimeout} seconds (sliding expiration)", LogLevel.Debug);
 
@@ -109,14 +109,7 @@ namespace LoRaWan.NetworkServer
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
         {
-            this.managedConnections.AddOrUpdate(
-                this.GetConnectionCacheKey(loRaDevice.DevEUI),
-                new ManagedConnection(loRaDevice, loraDeviceClient),
-                (k, existing) =>
-                {
-                    // Update existing
-                    return new ManagedConnection(loRaDevice, loraDeviceClient);
-                });
+            managedConnections[GetConnectionCacheKey(loRaDevice.DevEUI)] = new ManagedConnection(loRaDevice, loraDeviceClient);
         }
 
         public void Release(LoRaDevice loRaDevice)
@@ -133,7 +126,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void TryScanExpiredItems()
         {
-            this.cache.TryGetValue(string.Empty, out _);
+            _ = cache.TryGetValue(string.Empty, out _);
         }
 
         public void Dispose()

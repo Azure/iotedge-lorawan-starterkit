@@ -78,18 +78,18 @@ namespace LoRaWan.NetworkServer
             {
                 // Need to get and ensure it has started since the GetOrAdd can create multiple objects
                 // https://github.com/aspnet/Extensions/issues/708
-                lock (this.devEUIToLoRaDeviceDictionaryLock)
+                lock (devEUIToLoRaDeviceDictionaryLock)
                 {
-                    return this.cache.GetOrCreate<DevEUIToLoRaDeviceDictionary>(devAddr, (cacheEntry) =>
+                    return cache.GetOrCreate(devAddr, (cacheEntry) =>
                     {
-                        cacheEntry.SetAbsoluteExpiration(TimeSpan.FromDays(2));
-                        cacheEntry.ExpirationTokens.Add(this.resetCacheChangeToken);
+                        cacheEntry.SetAbsoluteExpiration(TimeSpan.FromDays(2))
+                                  .ExpirationTokens.Add(resetCacheChangeToken);
                         return new DevEUIToLoRaDeviceDictionary();
                     });
                 }
             }
 
-            this.cache.TryGetValue<DevEUIToLoRaDeviceDictionary>(devAddr, out var cachedValue);
+            _ = cache.TryGetValue<DevEUIToLoRaDeviceDictionary>(devAddr, out var cachedValue);
             return cachedValue;
         }
 
@@ -167,18 +167,15 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         void UpdateDeviceRegistration(LoRaDevice loRaDevice, string oldDevAddr = null)
         {
-            var dictionary = this.InternalGetCachedDevicesForDevAddr(loRaDevice.DevAddr);
-            dictionary.AddOrUpdate(loRaDevice.DevEUI, loRaDevice, (k, old) =>
-            {
-                return loRaDevice;
-            });
+            var dictionary = InternalGetCachedDevicesForDevAddr(loRaDevice.DevAddr);
+            dictionary[loRaDevice.DevEUI] = loRaDevice;
 
-            this.cache.Set(CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice, this.resetCacheChangeToken);
+            _ = cache.Set(CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice, resetCacheChangeToken);
             Logger.Log(loRaDevice.DevEUI, "device added to cache", LogLevel.Debug);
 
             if (!string.IsNullOrEmpty(oldDevAddr))
             {
-                var oldDevAddrDictionary = this.InternalGetCachedDevicesForDevAddr(oldDevAddr, createIfNotExists: false);
+                var oldDevAddrDictionary = InternalGetCachedDevicesForDevAddr(oldDevAddr, createIfNotExists: false);
                 if (oldDevAddrDictionary != null && oldDevAddrDictionary.TryRemove(loRaDevice.DevEUI, out var _))
                 {
                     Logger.Log(loRaDevice.DevEUI, $"previous device devAddr ({oldDevAddr}) removed from cache.", LogLevel.Debug);
@@ -201,7 +198,7 @@ namespace LoRaWan.NetworkServer
                 return null;
 
             var loRaDevice = this.deviceFactory.Create(deviceInfo.Devices[0]);
-            await loRaDevice.InitializeAsync();
+            _ = await loRaDevice.InitializeAsync();
             if (this.initializers != null)
             {
                 foreach (var initializers in this.initializers)

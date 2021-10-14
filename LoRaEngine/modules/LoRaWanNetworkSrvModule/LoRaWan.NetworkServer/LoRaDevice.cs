@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
         public string DevAddr { get; set; }
 
         // Gets if a device is activated by personalization
-        public bool IsABP => string.IsNullOrEmpty(this.AppKey);
+        public bool IsABP => string.IsNullOrEmpty(AppKey);
 
         public string DevEUI { get; set; }
 
@@ -50,19 +50,19 @@ namespace LoRaWan.NetworkServer
 
         public string LastConfirmedC2DMessageID { get; set; }
 
-        public uint FCntUp => this.fcntUp;
+        public uint FCntUp => fcntUp;
 
         /// <summary>
         /// Gets the last saved value for <see cref="FCntUp"/>.
         /// </summary>
-        public uint LastSavedFCntUp => this.lastSavedFcntUp;
+        public uint LastSavedFCntUp => lastSavedFcntUp;
 
-        public uint FCntDown => this.fcntDown;
+        public uint FCntDown => fcntDown;
 
         /// <summary>
         /// Gets the last saved value for <see cref="FCntDown"/>.
         /// </summary>
-        public uint LastSavedFCntDown => this.lastSavedFcntDown;
+        public uint LastSavedFCntDown => lastSavedFcntDown;
 
         public string GatewayID { get; set; }
 
@@ -78,17 +78,17 @@ namespace LoRaWan.NetworkServer
 
         readonly ChangeTrackingProperty<int> dataRate = new ChangeTrackingProperty<int>(TwinProperty.DataRate);
 
-        public int DataRate => this.dataRate.Get();
+        public int DataRate => dataRate.Get();
 
         readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
 
         readonly ILoRaDeviceClientConnectionManager connectionManager;
 
-        public int TxPower => this.txPower.Get();
+        public int TxPower => txPower.Get();
 
         readonly ChangeTrackingProperty<int> nbRep = new ChangeTrackingProperty<int>(TwinProperty.NbRep);
 
-        public int NbRep => this.nbRep.Get();
+        public int NbRep => nbRep.Get();
 
         public DeduplicationMode Deduplication { get; set; }
 
@@ -99,14 +99,14 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public int PreferredWindow
         {
-            get => this.preferredWindow;
+            get => preferredWindow;
 
             set
             {
                 if (value != Constants.ReceiveWindow1 && value != Constants.ReceiveWindow2)
-                    throw new ArgumentOutOfRangeException(nameof(this.PreferredWindow), value, $"{nameof(this.PreferredWindow)} must bet 1 or 2");
+                    throw new ArgumentOutOfRangeException(nameof(PreferredWindow), value, $"{nameof(PreferredWindow)} must bet 1 or 2");
 
-                this.preferredWindow = value;
+                preferredWindow = value;
             }
         }
 
@@ -123,8 +123,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public LoRaRegionType LoRaRegion
         {
-            get { return this.region.Get(); }
-            set { this.region.Set(value); }
+            get { return region.Get(); }
+            set { region.Set(value); }
         }
 
         ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
@@ -133,7 +133,7 @@ namespace LoRaWan.NetworkServer
         /// Gets the device preferred gateway identifier
         /// Relevant only for <see cref="LoRaDeviceClassType.C"/>.
         /// </summary>
-        public string PreferredGatewayID => this.preferredGatewayID.Get();
+        public string PreferredGatewayID => preferredGatewayID.Get();
 
         /// <summary>
         /// Used to synchronize the async save operation to the twins for this particular device.
@@ -180,16 +180,16 @@ namespace LoRaWan.NetworkServer
 
         public LoRaDevice(string devAddr, string devEUI, ILoRaDeviceClientConnectionManager connectionManager)
         {
-            this.DevAddr = devAddr;
-            this.DevEUI = devEUI;
+            DevAddr = devAddr;
+            DevEUI = devEUI;
             this.connectionManager = connectionManager;
-            this.DownlinkEnabled = true;
-            this.IsABPRelaxedFrameCounter = true;
-            this.PreferredWindow = 1;
-            this.hasFrameCountChanges = false;
-            this.confirmationResubmitCount = 0;
-            this.queuedRequests = new Queue<LoRaRequest>();
-            this.ClassType = LoRaDeviceClassType.A;
+            DownlinkEnabled = true;
+            IsABPRelaxedFrameCounter = true;
+            PreferredWindow = 1;
+            hasFrameCountChanges = false;
+            confirmationResubmitCount = 0;
+            queuedRequests = new Queue<LoRaRequest>();
+            ClassType = LoRaDeviceClassType.A;
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public async Task<bool> InitializeAsync()
         {
-            var twin = await this.connectionManager.Get(this)?.GetTwinAsync();
+            var twin = await connectionManager.Get(this)?.GetTwinAsync();
 
             if (twin != null)
             {
@@ -208,7 +208,7 @@ namespace LoRaWan.NetworkServer
                     if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
                     {
                         // ABP Case
-                        this.AppSKey = twin.Properties.Desired[TwinProperty.AppSKey].Value as string;
+                        AppSKey = twin.Properties.Desired[TwinProperty.AppSKey].Value as string;
 
                         if (!twin.Properties.Desired.Contains(TwinProperty.NwkSKey))
                             throw new InvalidLoRaDeviceException("Missing NwkSKey for ABP device");
@@ -216,24 +216,24 @@ namespace LoRaWan.NetworkServer
                         if (!twin.Properties.Desired.Contains(TwinProperty.DevAddr))
                             throw new InvalidLoRaDeviceException("Missing DevAddr for ABP device");
 
-                        this.NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value as string;
-                        this.DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value as string;
+                        NwkSKey = twin.Properties.Desired[TwinProperty.NwkSKey].Value as string;
+                        DevAddr = twin.Properties.Desired[TwinProperty.DevAddr].Value as string;
 
-                        if (string.IsNullOrEmpty(this.NwkSKey))
+                        if (string.IsNullOrEmpty(NwkSKey))
                             throw new InvalidLoRaDeviceException("NwkSKey is empty");
 
-                        if (string.IsNullOrEmpty(this.AppSKey))
+                        if (string.IsNullOrEmpty(AppSKey))
                             throw new InvalidLoRaDeviceException("AppSKey is empty");
 
-                        if (string.IsNullOrEmpty(this.DevAddr))
+                        if (string.IsNullOrEmpty(DevAddr))
                             throw new InvalidLoRaDeviceException("DevAddr is empty");
 
                         if (twin.Properties.Desired.Contains(TwinProperty.ABPRelaxMode))
                         {
-                            this.IsABPRelaxedFrameCounter = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.ABPRelaxMode].Value);
+                            IsABPRelaxedFrameCounter = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.ABPRelaxMode].Value);
                         }
 
-                        this.IsOurDevice = true;
+                        IsOurDevice = true;
                     }
                     else
                     {
@@ -243,100 +243,103 @@ namespace LoRaWan.NetworkServer
                             throw new InvalidLoRaDeviceException("Missing AppKey for OTAA device");
                         }
 
-                        this.AppKey = twin.Properties.Desired[TwinProperty.AppKey].Value as string;
+                        AppKey = twin.Properties.Desired[TwinProperty.AppKey].Value as string;
 
                         if (!twin.Properties.Desired.Contains(TwinProperty.AppEUI))
                         {
                             throw new InvalidLoRaDeviceException("Missing AppEUI for OTAA device");
                         }
 
-                        this.AppEUI = twin.Properties.Desired[TwinProperty.AppEUI].Value as string;
+                        AppEUI = twin.Properties.Desired[TwinProperty.AppEUI].Value as string;
 
                         // Check for already joined OTAA device properties
                         if (twin.Properties.Reported.Contains(TwinProperty.DevAddr))
-                            this.DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value as string;
+                            DevAddr = twin.Properties.Reported[TwinProperty.DevAddr].Value as string;
 
                         if (twin.Properties.Reported.Contains(TwinProperty.AppSKey))
-                            this.AppSKey = twin.Properties.Reported[TwinProperty.AppSKey].Value as string;
+                            AppSKey = twin.Properties.Reported[TwinProperty.AppSKey].Value as string;
 
                         if (twin.Properties.Reported.Contains(TwinProperty.NwkSKey))
-                            this.NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey].Value as string;
+                            NwkSKey = twin.Properties.Reported[TwinProperty.NwkSKey].Value as string;
 
                         if (twin.Properties.Reported.Contains(TwinProperty.NetID))
-                            this.NetID = twin.Properties.Reported[TwinProperty.NetID].Value as string;
+                            NetID = twin.Properties.Reported[TwinProperty.NetID].Value as string;
 
                         if (twin.Properties.Reported.Contains(TwinProperty.DevNonce))
-                            this.DevNonce = twin.Properties.Reported[TwinProperty.DevNonce].Value as string;
+                            DevNonce = twin.Properties.Reported[TwinProperty.DevNonce].Value as string;
 
                         // Currently the RX2DR, RX1DROffset and RXDelay are only implemented as part of OTAA
                         if (twin.Properties.Desired.Contains(TwinProperty.RX2DataRate))
                         {
-                            this.DesiredRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
+                            DesiredRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX2DataRate].Value);
                         }
 
                         if (twin.Properties.Desired.Contains(TwinProperty.RX1DROffset))
                         {
-                            this.DesiredRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value);
+                            DesiredRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RX1DROffset].Value);
                         }
 
                         if (twin.Properties.Desired.Contains(TwinProperty.RXDelay))
                         {
-                            this.DesiredRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RXDelay].Value);
+                            DesiredRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.RXDelay].Value);
                         }
 
                         if (twin.Properties.Reported.Contains(TwinProperty.RX2DataRate))
                         {
-                            this.ReportedRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX2DataRate].Value);
+                            ReportedRX2DataRate = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX2DataRate].Value);
                         }
 
                         if (twin.Properties.Reported.Contains(TwinProperty.RX1DROffset))
                         {
-                            this.ReportedRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX1DROffset].Value);
+                            ReportedRX1DROffset = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RX1DROffset].Value);
                         }
 
                         if (twin.Properties.Reported.Contains(TwinProperty.RXDelay))
                         {
-                            this.ReportedRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RXDelay].Value);
+                            ReportedRXDelay = (ushort)GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.RXDelay].Value);
                         }
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
-                        this.GatewayID = twin.Properties.Desired[TwinProperty.GatewayID].Value as string;
+                        GatewayID = twin.Properties.Desired[TwinProperty.GatewayID].Value as string;
                     if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
-                        this.SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder].Value as string;
+                        SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder].Value as string;
 
-                    this.InitializeFrameCounters(twin);
+                    InitializeFrameCounters(twin);
 
                     if (twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled))
                     {
-                        this.DownlinkEnabled = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value);
+                        DownlinkEnabled = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value);
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
                     {
                         var preferredWindowTwinValue = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
                         if (preferredWindowTwinValue == Constants.ReceiveWindow2)
-                            this.PreferredWindow = preferredWindowTwinValue;
+                            PreferredWindow = preferredWindowTwinValue;
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.Deduplication))
                     {
                         var val = twin.Properties.Desired[TwinProperty.Deduplication].Value as string;
-                        Enum.TryParse<DeduplicationMode>(val, true, out var mode);
-                        this.Deduplication = mode;
+                        if (!Enum.TryParse<DeduplicationMode>(val, true, out var mode))
+                        {
+                            Logger.Log(DevEUI, $"Failed to parse {TwinProperty.Deduplication} from twin.", LogLevel.Warning);
+                        }
+                        Deduplication = mode;
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
                     {
                         if (string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.OrdinalIgnoreCase))
                         {
-                            this.ClassType = LoRaDeviceClassType.C;
+                            ClassType = LoRaDeviceClassType.C;
                         }
                     }
 
                     if (twin.Properties.Reported.Contains(TwinProperty.PreferredGatewayID))
                     {
-                        this.preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, twin.Properties.Reported[TwinProperty.PreferredGatewayID].Value as string);
+                        preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, twin.Properties.Reported[TwinProperty.PreferredGatewayID].Value as string);
                     }
 
                     if (twin.Properties.Reported.Contains(TwinProperty.Region))
@@ -346,19 +349,19 @@ namespace LoRaWan.NetworkServer
                         {
                             if (Enum.IsDefined(typeof(LoRaRegionType), loRaRegion))
                             {
-                                this.region = new ChangeTrackingProperty<LoRaRegionType>(TwinProperty.Region, loRaRegion);
+                                region = new ChangeTrackingProperty<LoRaRegionType>(TwinProperty.Region, loRaRegion);
                             }
                         }
 
-                        if (this.LoRaRegion == LoRaRegionType.NotSet)
+                        if (LoRaRegion == LoRaRegionType.NotSet)
                         {
-                            Logger.Log(this.DevEUI, $"invalid region value: {regionValue}", LogLevel.Error);
+                            Logger.Log(DevEUI, $"invalid region value: {regionValue}", LogLevel.Error);
                         }
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt))
                     {
-                        this.Supports32BitFCnt = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.Supports32BitFCnt].Value);
+                        Supports32BitFCnt = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.Supports32BitFCnt].Value);
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.KeepAliveTimeout))
@@ -366,7 +369,7 @@ namespace LoRaWan.NetworkServer
                         var value = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.KeepAliveTimeout].Value);
                         if (value > 0)
                         {
-                            this.KeepAliveTimeout = Math.Max(value, Constants.MinKeepAliveTimeout);
+                            KeepAliveTimeout = Math.Max(value, Constants.MinKeepAliveTimeout);
                         }
                     }
 
@@ -374,7 +377,7 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(this.DevEUI, $"failed to initialize device from twin: {ex.Message}", LogLevel.Debug);
+                    Logger.Log(DevEUI, $"failed to initialize device from twin: {ex.Message}", LogLevel.Debug);
                     throw;
                 }
             }
@@ -405,24 +408,24 @@ namespace LoRaWan.NetworkServer
             }
 
             // up
-            var fcnt = this.InitializeFcnt(twin, reset, TwinProperty.FCntUpStart, TwinProperty.FCntUp, toReport);
+            var fcnt = InitializeFcnt(twin, reset, TwinProperty.FCntUpStart, TwinProperty.FCntUp, toReport);
             if (fcnt.HasValue)
             {
-                this.fcntUp = fcnt.Value;
-                this.lastSavedFcntUp = this.fcntUp;
+                fcntUp = fcnt.Value;
+                lastSavedFcntUp = fcntUp;
             }
 
             // down
-            fcnt = this.InitializeFcnt(twin, reset, TwinProperty.FCntDownStart, TwinProperty.FCntDown, toReport);
+            fcnt = InitializeFcnt(twin, reset, TwinProperty.FCntDownStart, TwinProperty.FCntDown, toReport);
             if (fcnt.HasValue)
             {
-                this.fcntDown = fcnt.Value;
-                this.lastSavedFcntDown = this.fcntDown;
+                fcntDown = fcnt.Value;
+                lastSavedFcntDown = fcntDown;
             }
 
             if (toReport.Count > 0)
             {
-                _ = this.SaveChangesAsync(toReport, true);
+                _ = SaveChangesAsync(toReport, true);
             }
         }
 
@@ -440,8 +443,8 @@ namespace LoRaWan.NetworkServer
                 newfCnt = frameCounterStartDesired;
                 toReport = toReport ?? new TwinCollection();
                 toReport[propertyNameStart] = newfCnt.Value;
-                this.hasFrameCountChanges = true;
-                Logger.Log(this.DevEUI, $"set {fcntPropertyName} from {propertyNameStart} with {newfCnt.Value}, reset: {reset}", LogLevel.Debug);
+                hasFrameCountChanges = true;
+                Logger.Log(DevEUI, $"set {fcntPropertyName} from {propertyNameStart} with {newfCnt.Value}, reset: {reset}", LogLevel.Debug);
             }
             else
             {
@@ -551,7 +554,7 @@ namespace LoRaWan.NetworkServer
                 // to happen. The save to the twins can be delayed for multiple
                 // seconds, subsequent updates should be waiting for this to complete
                 // before checking the current state and update again.
-                await this.syncSave.WaitAsync();
+                await syncSave.WaitAsync();
 
                 if (reportedProperties == null)
                 {
@@ -559,7 +562,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var savedProperties = new List<IChangeTrackingProperty>();
-                foreach (var prop in this.GetTrackableProperties())
+                foreach (var prop in GetTrackableProperties())
                 {
                     if (prop.IsDirty())
                     {
@@ -568,34 +571,34 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                var fcntUpDelta = this.FCntUp >= this.LastSavedFCntUp ? this.FCntUp - this.LastSavedFCntUp : this.LastSavedFCntUp - this.FCntUp;
-                var fcntDownDelta = this.FCntDown >= this.LastSavedFCntDown ? this.FCntDown - this.LastSavedFCntDown : this.LastSavedFCntDown - this.FCntDown;
+                var fcntUpDelta = FCntUp >= LastSavedFCntUp ? FCntUp - LastSavedFCntUp : LastSavedFCntUp - FCntUp;
+                var fcntDownDelta = FCntDown >= LastSavedFCntDown ? FCntDown - LastSavedFCntDown : LastSavedFCntDown - FCntDown;
 
                 if (reportedProperties.Count > 0 ||
                             fcntDownDelta >= Constants.MaxFcntUnsavedDelta ||
                             fcntUpDelta >= Constants.MaxFcntUnsavedDelta ||
-                            (this.hasFrameCountChanges && force))
+                            (hasFrameCountChanges && force))
                 {
-                    var savedFcntDown = this.FCntDown;
-                    var savedFcntUp = this.FCntUp;
+                    var savedFcntDown = FCntDown;
+                    var savedFcntUp = FCntUp;
 
                     reportedProperties[TwinProperty.FCntDown] = savedFcntDown;
                     reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
 
                     // For class C devices this might be the only moment the connection is established
-                    using (var deviceClientActivityScope = this.BeginDeviceClientConnectionActivity())
+                    using (var deviceClientActivityScope = BeginDeviceClientConnectionActivity())
                     {
                         if (deviceClientActivityScope == null)
                         {
                             // Logging as information because the real error was logged as error
-                            Logger.Log(this.DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
+                            Logger.Log(DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
                             return false;
                         }
 
-                        var result = await this.connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
+                        var result = await connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
                         if (result)
                         {
-                            this.InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
+                            InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
 
                             for (var i = 0; i < savedProperties.Count; i++)
                                 savedProperties[i].AcceptChanges();
@@ -614,28 +617,28 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = syncSave.Release();
             }
         }
 
         /// <summary>
         /// Gets a value indicating whether there are pending frame count changes.
         /// </summary>
-        public bool HasFrameCountChanges => this.hasFrameCountChanges;
+        public bool HasFrameCountChanges => hasFrameCountChanges;
 
         /// <summary>
         /// Accept changes to the frame count.
         /// </summary>
         public void AcceptFrameCountChanges()
         {
-            this.syncSave.Wait();
+            syncSave.Wait();
             try
             {
-                this.InternalAcceptFrameCountChanges(this.fcntUp, this.fcntDown);
+                InternalAcceptFrameCountChanges(fcntUp, fcntDown);
             }
             finally
             {
-                this.syncSave.Release();
+                _ = syncSave.Release();
             }
         }
 
@@ -645,10 +648,10 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         void InternalAcceptFrameCountChanges(uint savedFcntUp, uint savedFcntDown)
         {
-            this.lastSavedFcntUp = savedFcntUp;
-            this.lastSavedFcntDown = savedFcntDown;
+            lastSavedFcntUp = savedFcntUp;
+            lastSavedFcntDown = savedFcntDown;
 
-            this.hasFrameCountChanges = this.fcntDown != this.lastSavedFcntDown || this.fcntUp != this.lastSavedFcntUp;
+            hasFrameCountChanges = fcntDown != lastSavedFcntDown || fcntUp != lastSavedFcntUp;
         }
 
         /// <summary>
@@ -656,16 +659,16 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public uint IncrementFcntDown(uint value)
         {
-            this.syncSave.Wait();
+            syncSave.Wait();
             try
             {
-                this.fcntDown += value;
-                this.hasFrameCountChanges = true;
-                return this.fcntDown;
+                fcntDown += value;
+                hasFrameCountChanges = true;
+                return fcntDown;
             }
             finally
             {
-                this.syncSave.Release();
+                _ = syncSave.Release();
             }
         }
 
@@ -674,36 +677,36 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void SetFcntDown(uint newValue)
         {
-            this.syncSave.Wait();
+            syncSave.Wait();
             try
             {
-                if (newValue != this.fcntDown)
+                if (newValue != fcntDown)
                 {
-                    this.fcntDown = newValue;
-                    this.hasFrameCountChanges = true;
+                    fcntDown = newValue;
+                    hasFrameCountChanges = true;
                 }
             }
             finally
             {
-                this.syncSave.Release();
+                _ = syncSave.Release();
             }
         }
 
         public void SetFcntUp(uint newValue)
         {
-            this.syncSave.Wait();
+            syncSave.Wait();
             try
             {
-                if (this.fcntUp != newValue)
+                if (fcntUp != newValue)
                 {
-                    this.fcntUp = newValue;
-                    this.confirmationResubmitCount = 0;
-                    this.hasFrameCountChanges = true;
+                    fcntUp = newValue;
+                    confirmationResubmitCount = 0;
+                    hasFrameCountChanges = true;
                 }
             }
             finally
             {
-                this.syncSave.Release();
+                _ = syncSave.Release();
             }
         }
 
@@ -712,27 +715,27 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal void ResetFcnt()
         {
-            this.syncSave.Wait();
+            syncSave.Wait();
             try
             {
-                if (this.hasFrameCountChanges)
+                if (hasFrameCountChanges)
                 {
                     // if there are changes, reset them if the last saved was 0, 0
-                    this.hasFrameCountChanges = this.lastSavedFcntDown != 0 || this.lastSavedFcntUp != 0;
+                    hasFrameCountChanges = lastSavedFcntDown != 0 || lastSavedFcntUp != 0;
                 }
                 else
                 {
                     // if there aren't changes, reset if fcnt was not 0, 0
-                    this.hasFrameCountChanges = this.fcntDown != 0 || this.fcntUp != 0;
+                    hasFrameCountChanges = fcntDown != 0 || fcntUp != 0;
                 }
 
-                this.fcntDown = 0;
-                this.fcntUp = 0;
-                this.confirmationResubmitCount = 0;
+                fcntDown = 0;
+                fcntUp = 0;
+                confirmationResubmitCount = 0;
             }
             finally
             {
-                this.syncSave.Release();
+                _ = syncSave.Release();
             }
         }
 
@@ -743,16 +746,16 @@ namespace LoRaWan.NetworkServer
         {
             // Most devices won't have a connection timeout
             // In that case check without lock and return a cached disposable
-            if (this.KeepAliveTimeout == 0)
+            if (KeepAliveTimeout == 0)
             {
                 return NullDisposable.Instance;
             }
 
-            lock (this.processingSyncLock)
+            lock (processingSyncLock)
             {
-                if (this.connectionManager.EnsureConnected(this))
+                if (connectionManager.EnsureConnected(this))
                 {
-                    this.deviceClientConnectionActivityCounter++;
+                    deviceClientConnectionActivityCounter++;
                     return new ScopedDeviceClientConnection(this);
                 }
             }
@@ -767,14 +770,14 @@ namespace LoRaWan.NetworkServer
         /// <param name="payloadFcnt">Payload frame count.</param>
         public bool ValidateConfirmResubmit(uint payloadFcnt)
         {
-            this.syncSave.Wait();
+            syncSave.Wait();
             try
             {
-                if (this.FCntUp == payloadFcnt)
+                if (FCntUp == payloadFcnt)
                 {
-                    if (this.confirmationResubmitCount < MaxConfirmationResubmitCount)
+                    if (confirmationResubmitCount < MaxConfirmationResubmitCount)
                     {
-                        this.confirmationResubmitCount++;
+                        confirmationResubmitCount++;
                         return true;
                     }
                 }
@@ -783,19 +786,19 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = syncSave.Release();
             }
         }
 
-        public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => this.connectionManager.Get(this).SendEventAsync(telemetry, properties);
+        public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => connectionManager.Get(this).SendEventAsync(telemetry, properties);
 
-        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => this.connectionManager.Get(this).ReceiveAsync(timeout);
+        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => connectionManager.Get(this).ReceiveAsync(timeout);
 
-        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).CompleteAsync(cloudToDeviceMessage);
+        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => connectionManager.Get(this).CompleteAsync(cloudToDeviceMessage);
 
-        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).AbandonAsync(cloudToDeviceMessage);
+        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => connectionManager.Get(this).AbandonAsync(cloudToDeviceMessage);
 
-        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).RejectAsync(cloudToDeviceMessage);
+        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => connectionManager.Get(this).RejectAsync(cloudToDeviceMessage);
 
         /// <summary>
         /// Updates device on the server after a join succeeded.
@@ -808,43 +811,43 @@ namespace LoRaWan.NetworkServer
             reportedProperties[TwinProperty.DevAddr] = updateProperties.DevAddr;
             reportedProperties[TwinProperty.FCntDown] = 0;
             reportedProperties[TwinProperty.FCntUp] = 0;
-            reportedProperties[TwinProperty.DevEUI] = this.DevEUI;
+            reportedProperties[TwinProperty.DevEUI] = DevEUI;
             reportedProperties[TwinProperty.NetID] = updateProperties.NetID;
             reportedProperties[TwinProperty.DevNonce] = updateProperties.DevNonce;
 
             if (updateProperties.SaveRegion)
             {
-                this.region.Set(updateProperties.Region);
-                if (this.region.IsDirty())
+                region.Set(updateProperties.Region);
+                if (region.IsDirty())
                 {
-                    reportedProperties[this.region.PropertyName] = updateProperties.Region.ToString();
+                    reportedProperties[region.PropertyName] = updateProperties.Region.ToString();
                 }
             }
 
             if (RegionManager.TryTranslateToRegion(updateProperties.Region, out var currentRegion))
             {
                 // Additional Join Property Saved
-                if (this.DesiredRX1DROffset != DefaultJoinValues && currentRegion.IsValidRX1DROffset(this.DesiredRX1DROffset))
+                if (DesiredRX1DROffset != DefaultJoinValues && currentRegion.IsValidRX1DROffset(DesiredRX1DROffset))
                 {
-                    reportedProperties[TwinProperty.RX1DROffset] = this.DesiredRX1DROffset;
+                    reportedProperties[TwinProperty.RX1DROffset] = DesiredRX1DROffset;
                 }
                 else
                 {
                     reportedProperties[TwinProperty.RX1DROffset] = null;
                 }
 
-                if (this.DesiredRX2DataRate != DefaultJoinValues && currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
+                if (DesiredRX2DataRate != DefaultJoinValues && currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(DesiredRX2DataRate))
                 {
-                    reportedProperties[TwinProperty.RX2DataRate] = this.DesiredRX2DataRate;
+                    reportedProperties[TwinProperty.RX2DataRate] = DesiredRX2DataRate;
                 }
                 else
                 {
                     reportedProperties[TwinProperty.RX2DataRate] = null;
                 }
 
-                if (this.DesiredRXDelay != DefaultJoinValues && currentRegion.IsValidRXDelay(this.DesiredRXDelay))
+                if (DesiredRXDelay != DefaultJoinValues && currentRegion.IsValidRXDelay(DesiredRXDelay))
                 {
-                    reportedProperties[TwinProperty.RXDelay] = this.DesiredRXDelay;
+                    reportedProperties[TwinProperty.RXDelay] = DesiredRXDelay;
                 }
                 else
                 {
@@ -853,109 +856,109 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                Logger.Log(this.DevEUI, "the region provided in the device twin is not a valid value", LogLevel.Error);
+                Logger.Log(DevEUI, "the region provided in the device twin is not a valid value", LogLevel.Error);
             }
 
             if (updateProperties.SavePreferredGateway)
             {
-                if (string.IsNullOrEmpty(this.GatewayID))
+                if (string.IsNullOrEmpty(GatewayID))
                 {
-                    this.preferredGatewayID.Set(updateProperties.PreferredGatewayID);
+                    preferredGatewayID.Set(updateProperties.PreferredGatewayID);
                 }
-                else if (!string.IsNullOrEmpty(this.preferredGatewayID.Get()))
+                else if (!string.IsNullOrEmpty(preferredGatewayID.Get()))
                 {
-                    this.preferredGatewayID.Set(null);
+                    preferredGatewayID.Set(null);
                 }
 
-                if (this.preferredGatewayID.IsDirty())
+                if (preferredGatewayID.IsDirty())
                 {
-                    reportedProperties[this.preferredGatewayID.PropertyName] = updateProperties.PreferredGatewayID;
+                    reportedProperties[preferredGatewayID.PropertyName] = updateProperties.PreferredGatewayID;
                 }
             }
 
-            using (var activityScope = this.BeginDeviceClientConnectionActivity())
+            using (var activityScope = BeginDeviceClientConnectionActivity())
             {
                 if (activityScope == null)
                 {
                     // Logging as information because the real error was logged as error
-                    Logger.Log(this.DevEUI, "failed to update twin after join, could not reconnect", LogLevel.Debug);
+                    Logger.Log(DevEUI, "failed to update twin after join, could not reconnect", LogLevel.Debug);
                     return false;
                 }
 
-                var devAddrBeforeSave = this.DevAddr;
-                var succeeded = await this.connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
+                var devAddrBeforeSave = DevAddr;
+                var succeeded = await connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
 
                 // Only save if the devAddr remains the same, otherwise ignore the save
-                if (succeeded && devAddrBeforeSave == this.DevAddr)
+                if (succeeded && devAddrBeforeSave == DevAddr)
                 {
-                    this.DevAddr = updateProperties.DevAddr;
-                    this.NwkSKey = updateProperties.NwkSKey;
-                    this.AppSKey = updateProperties.AppSKey;
-                    this.AppNonce = updateProperties.AppNonce;
-                    this.DevNonce = updateProperties.DevNonce;
-                    this.NetID = updateProperties.NetID;
+                    DevAddr = updateProperties.DevAddr;
+                    NwkSKey = updateProperties.NwkSKey;
+                    AppSKey = updateProperties.AppSKey;
+                    AppNonce = updateProperties.AppNonce;
+                    DevNonce = updateProperties.DevNonce;
+                    NetID = updateProperties.NetID;
 
-                    if (currentRegion.IsValidRX1DROffset(this.DesiredRX1DROffset))
+                    if (currentRegion.IsValidRX1DROffset(DesiredRX1DROffset))
                     {
-                        this.ReportedRX1DROffset = this.DesiredRX1DROffset;
+                        ReportedRX1DROffset = DesiredRX1DROffset;
                     }
                     else
                     {
-                        Logger.Log(this.DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
+                        Logger.Log(DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
                     }
 
-                    if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(this.DesiredRX2DataRate))
+                    if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(DesiredRX2DataRate))
                     {
-                        this.ReportedRX2DataRate = this.DesiredRX2DataRate;
+                        ReportedRX2DataRate = DesiredRX2DataRate;
                     }
                     else
                     {
-                        Logger.Log(this.DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
+                        Logger.Log(DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
                     }
 
-                    if (currentRegion.IsValidRXDelay(this.DesiredRXDelay))
+                    if (currentRegion.IsValidRXDelay(DesiredRXDelay))
                     {
-                        this.ReportedRXDelay = this.DesiredRXDelay;
+                        ReportedRXDelay = DesiredRXDelay;
                     }
                     else
                     {
-                        Logger.Log(this.DevEUI, "the provided RXDelay is not valid", LogLevel.Error);
+                        Logger.Log(DevEUI, "the provided RXDelay is not valid", LogLevel.Error);
                     }
 
-                    this.region.AcceptChanges();
-                    this.preferredGatewayID.AcceptChanges();
+                    region.AcceptChanges();
+                    preferredGatewayID.AcceptChanges();
 
-                    this.ResetFcnt();
-                    this.InternalAcceptFrameCountChanges(this.fcntUp, this.fcntDown);
+                    ResetFcnt();
+                    InternalAcceptFrameCountChanges(fcntUp, fcntDown);
                 }
                 else
                 {
-                    this.region.Rollback();
-                    this.preferredGatewayID.Rollback();
+                    region.Rollback();
+                    preferredGatewayID.Rollback();
                 }
 
                 return succeeded;
             }
         }
 
-        internal void SetRequestHandler(ILoRaDataRequestHandler dataRequestHandler) => this.dataRequestHandler = dataRequestHandler;
+        internal void SetRequestHandler(ILoRaDataRequestHandler dataRequestHandler) => dataRequestHandler = dataRequestHandler;
 
         public void Queue(LoRaRequest request)
         {
             // Access to runningRequest and queuedRequests must be
             // thread safe
-            lock (this.processingSyncLock)
+            lock (processingSyncLock)
             {
-                if (this.runningRequest == null)
+                if (runningRequest == null)
                 {
-                    this.runningRequest = request;
+                    runningRequest = request;
 
                     // Ensure that this is schedule in a new thread, releasing the lock asap
-                    Task.Run(() => { _ = this.RunAndQueueNext(request); });
+                    _ = Task.Run(() => { _ = RunAndQueueNext(request); });
                 }
                 else
                 {
-                    this.queuedRequests.Enqueue(request);
+                    queuedRequests.Enqueue(request);
                 }
             }
         }
@@ -964,14 +967,14 @@ namespace LoRaWan.NetworkServer
         {
             // Access to runningRequest and queuedRequests must be
             // thread safe
-            lock (this.processingSyncLock)
+            lock (processingSyncLock)
             {
-                this.runningRequest = null;
-                if (this.queuedRequests.TryDequeue(out var nextRequest))
+                runningRequest = null;
+                if (queuedRequests.TryDequeue(out var nextRequest))
                 {
-                    this.runningRequest = nextRequest;
+                    runningRequest = nextRequest;
                     // Ensure that this is schedule in a new thread, releasing the lock asap
-                    Task.Run(() => { _ = this.RunAndQueueNext(nextRequest); });
+                    _ = Task.Run(() => { _ = RunAndQueueNext(nextRequest); });
                 }
             }
         }
@@ -980,18 +983,18 @@ namespace LoRaWan.NetworkServer
         {
             var payloadData = payload as LoRaPayloadData;
 
-            var adjusted32bit = payloadData != null ? this.Get32BitAjustedFcntIfSupported(payloadData) : null;
-            var ret = payload.CheckMic(this.NwkSKey, adjusted32bit);
-            if (!ret && payloadData != null && this.CanRolloverToNext16Bits(payloadData.GetFcnt()))
+            var adjusted32bit = payloadData != null ? Get32BitAjustedFcntIfSupported(payloadData) : null;
+            var ret = payload.CheckMic(NwkSKey, adjusted32bit);
+            if (!ret && payloadData != null && CanRolloverToNext16Bits(payloadData.GetFcnt()))
             {
                 payloadData.Reset32BitBlockInfo();
                 // if the upper 16bits changed on the client, it can be that we can't decrypt
-                ret = payloadData.CheckMic(this.NwkSKey, this.Get32BitAjustedFcntIfSupported(payloadData, true));
+                ret = payloadData.CheckMic(NwkSKey, Get32BitAjustedFcntIfSupported(payloadData, true));
                 if (ret)
                 {
                     // this is an indication that the lower 16 bits rolled over on the client
                     // we adjust the server to the new higher 16bits and keep the lower 16bits
-                    this.Rollover32BitFCnt();
+                    Rollover32BitFCnt();
                 }
             }
 
@@ -1000,10 +1003,10 @@ namespace LoRaWan.NetworkServer
 
         internal uint? Get32BitAjustedFcntIfSupported(LoRaPayloadData payload, bool rollHi = false)
         {
-            if (!this.Supports32BitFCnt || payload == null)
+            if (!Supports32BitFCnt || payload == null)
                 return null;
 
-            var serverValue = this.FCntUp;
+            var serverValue = FCntUp;
 
             if (rollHi)
             {
@@ -1015,19 +1018,19 @@ namespace LoRaWan.NetworkServer
 
         internal bool CanRolloverToNext16Bits(ushort payloadFcntUp)
         {
-            if (!this.Supports32BitFCnt)
+            if (!Supports32BitFCnt)
             {
                 // rollovers are only supported on 32bit devices
                 return false;
             }
 
-            var delta = payloadFcntUp + (ushort.MaxValue - (ushort)this.fcntUp);
+            var delta = payloadFcntUp + (ushort.MaxValue - (ushort)fcntUp);
             return delta <= Constants.MaxFcntGap;
         }
 
         internal void Rollover32BitFCnt()
         {
-            this.SetFcntUp(IncrementUpper16bit(this.fcntUp));
+            SetFcntUp(IncrementUpper16bit(fcntUp));
         }
 
         private static uint IncrementUpper16bit(uint val)
@@ -1043,16 +1046,16 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                result = await this.dataRequestHandler.ProcessRequestAsync(request, this);
+                result = await dataRequestHandler.ProcessRequestAsync(request, this);
             }
             catch (Exception ex)
             {
-                Logger.Log(this.DevEUI, $"error processing request: {ex.Message}", LogLevel.Error);
+                Logger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error);
                 processingError = ex;
             }
             finally
             {
-                this.ProcessNext();
+                ProcessNext();
             }
 
             if (processingError != null)
@@ -1071,8 +1074,8 @@ namespace LoRaWan.NetworkServer
 
         public void Dispose()
         {
-            this.connectionManager.Release(this);
-            this.syncSave.Dispose();
+            connectionManager.Release(this);
+            syncSave.Dispose();
             GC.SuppressFinalize(this);
         }
 
@@ -1091,25 +1094,25 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         IEnumerable<IChangeTrackingProperty> GetTrackableProperties()
         {
-            yield return this.preferredGatewayID;
-            yield return this.region;
-            yield return this.dataRate;
-            yield return this.txPower;
-            yield return this.nbRep;
+            yield return preferredGatewayID;
+            yield return region;
+            yield return dataRate;
+            yield return txPower;
+            yield return nbRep;
         }
 
         internal void UpdatePreferredGatewayID(string value, bool acceptChanges)
         {
-            this.preferredGatewayID.Set(value);
+            preferredGatewayID.Set(value);
             if (acceptChanges)
-                this.preferredGatewayID.AcceptChanges();
+                preferredGatewayID.AcceptChanges();
         }
 
         internal void UpdateRegion(LoRaRegionType value, bool acceptChanges)
         {
-            this.region.Set(value);
+            region.Set(value);
             if (acceptChanges)
-                this.region.AcceptChanges();
+                region.AcceptChanges();
         }
 
         /// <summary>
@@ -1117,7 +1120,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal void InternalAcceptChanges()
         {
-            foreach (var prop in this.GetTrackableProperties())
+            foreach (var prop in GetTrackableProperties())
             {
                 prop.AcceptChanges();
             }
@@ -1129,14 +1132,14 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         private void EndDeviceClientConnectionActivity()
         {
-            lock (this.processingSyncLock)
+            lock (processingSyncLock)
             {
-                if (this.deviceClientConnectionActivityCounter == 0)
+                if (deviceClientConnectionActivityCounter == 0)
                 {
                     throw new InvalidOperationException("Cannot decrement count, already at zero");
                 }
 
-                this.deviceClientConnectionActivityCounter--;
+                deviceClientConnectionActivityCounter--;
             }
         }
 
@@ -1145,12 +1148,11 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal bool TryDisconnect()
         {
-            lock (this.processingSyncLock)
+            lock (processingSyncLock)
             {
-                if (this.deviceClientConnectionActivityCounter == 0)
+                if (deviceClientConnectionActivityCounter == 0)
                 {
-                    this.connectionManager.Get(this).Disconnect();
-                    return true;
+                    return connectionManager.Get(this).Disconnect();
                 }
 
                 return false;
@@ -1172,12 +1174,12 @@ namespace LoRaWan.NetworkServer
                     throw new InvalidOperationException("Scoped device client connection can be created only for devices with a connection timeout");
                 }
 
-                this.loRaDevice = loRaDevice;
+                loRaDevice = loRaDevice;
             }
 
             public void Dispose()
             {
-                this.loRaDevice.EndDeviceClientConnectionActivity();
+                loRaDevice.EndDeviceClientConnectionActivity();
             }
         }
     }

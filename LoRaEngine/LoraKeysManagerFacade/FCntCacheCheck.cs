@@ -126,7 +126,7 @@ namespace LoraKeysManagerFacade
                     cachedDeviceState.FCntDown = newFCntDown;
                     cachedDeviceState.GatewayId = gatewayId;
 
-                    deviceCache.StoreInfo(cachedDeviceState);
+                    _ = deviceCache.StoreInfo(cachedDeviceState);
                 }
                 else if (clientFCntUp == cachedDeviceState.FCntUp && gatewayId == cachedDeviceState.GatewayId)
                 {
@@ -134,7 +134,7 @@ namespace LoraKeysManagerFacade
                     newFCntDown = cachedDeviceState.FCntDown + 1;
                     cachedDeviceState.FCntDown = newFCntDown;
 
-                    deviceCache.StoreInfo(cachedDeviceState);
+                    _ = deviceCache.StoreInfo(cachedDeviceState);
                 }
             }
 

@@ -121,8 +121,8 @@ namespace LoraKeysManagerFacade
                         await this.PerformFullReload(registryManager);
                         this.logger.LogDebug("A full reload was completed");
                         // if successfull i set the delta lock to 5 minutes and release the global lock
-                        this.cacheStore.StringSet(FullUpdateKey, this.lockOwner, FullUpdateKeyTimeSpan);
-                        this.cacheStore.StringSet(DeltaUpdateKey, this.lockOwner, DeltaUpdateKeyTimeSpan);
+                        _ = this.cacheStore.StringSet(FullUpdateKey, this.lockOwner, FullUpdateKeyTimeSpan);
+                        _ = this.cacheStore.StringSet(DeltaUpdateKey, this.lockOwner, DeltaUpdateKeyTimeSpan);
                         fullUpdatePerformed = true;
                     }
                 }
@@ -134,7 +134,7 @@ namespace LoraKeysManagerFacade
                 {
                     if (ownGlobalLock)
                     {
-                        this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
+                        _ = this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
                     }
 
                     if (!fullUpdatePerformed)
@@ -163,7 +163,7 @@ namespace LoraKeysManagerFacade
                 }
                 finally
                 {
-                    this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
+                    _ = this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
                 }
             }
         }
@@ -195,7 +195,7 @@ namespace LoraKeysManagerFacade
         private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(RegistryManager registryManager, string inputQuery)
         {
             var query = registryManager.CreateQuery(inputQuery);
-            this.cacheStore.StringSet(LastDeltaUpdateKeyValue, DateTime.UtcNow.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
+            _ = this.cacheStore.StringSet(LastDeltaUpdateKeyValue, DateTime.UtcNow.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
             var devAddrCacheInfos = new List<DevAddrCacheInfo>();
             while (query.HasMoreResults)
             {
@@ -318,7 +318,7 @@ namespace LoraKeysManagerFacade
                     }
 
                     // I remove the key from the import to be able to import any delta element later.
-                    valueArrayimport.Remove(baseValue.Key);
+                    _ = valueArrayimport.Remove(baseValue.Key);
                 }
                 else
                 {

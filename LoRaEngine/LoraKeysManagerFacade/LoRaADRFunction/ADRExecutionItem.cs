@@ -47,7 +47,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
             if (request.ClearCache)
             {
-                await this.adrManager.ResetAsync(devEUI);
+                _ = await this.adrManager.ResetAsync(devEUI);
                 return new LoRaADRResult();
             }
 

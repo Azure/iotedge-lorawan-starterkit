@@ -262,9 +262,9 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public UplinkPktFwdMessage SerializeUplink(string appSKey, string nwkSKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0, float lsnr = 0)
         {
-            this.PerformEncryption(appSKey);
-            this.SetMic(nwkSKey);
-            return new UplinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst, lsnr);
+            _ = PerformEncryption(appSKey);
+            SetMic(nwkSKey);
+            return new UplinkPktFwdMessage(GetByteMessage(), datr, freq, tmst, lsnr);
         }
 
         /// <summary>
@@ -280,16 +280,16 @@ namespace LoRaTools.LoRaMessage
         public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI)
         {
             // It is a Mac Command payload, needs to encrypt with nwkskey
-            if (this.GetFPort() == 0)
+            if (GetFPort() == 0)
             {
-                this.PerformEncryption(nwkSKey);
+                _ = PerformEncryption(nwkSKey);
             }
             else
             {
-                this.PerformEncryption(appSKey);
+                _ = PerformEncryption(appSKey);
             }
 
-            this.SetMic(nwkSKey);
+            SetMic(nwkSKey);
             var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
             if (Logger.LoggerLevel < LogLevel.Information)
             {
@@ -396,7 +396,9 @@ namespace LoRaTools.LoRaMessage
                 {
                     aBlock[15] = (byte)(ctr & 0xFF);
                     ctr++;
-                    aesEngine.ProcessBlock(aBlock, 0, sBlock, 0);
+                    var processed = aesEngine.ProcessBlock(aBlock, 0, sBlock, 0);
+                    if (processed != aBlock.Length) throw new InvalidOperationException($"Failed to process block. Processed length was {processed}");
+
                     for (i = 0; i < 16; i++)
                     {
                         decrypted[bufferIndex + i] = (byte)(this.Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
@@ -409,7 +411,9 @@ namespace LoRaTools.LoRaMessage
                 if (size > 0)
                 {
                     aBlock[15] = (byte)(ctr & 0xFF);
-                    aesEngine.ProcessBlock(aBlock, 0, sBlock, 0);
+                    var processed = aesEngine.ProcessBlock(aBlock, 0, sBlock, 0);
+                    if (processed != aBlock.Length) throw new InvalidOperationException($"Failed to process block. Processed length was {processed}");
+
                     for (i = 0; i < size; i++)
                     {
                         decrypted[bufferIndex + i] = (byte)(this.Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
@@ -429,10 +433,10 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public override byte[] PerformEncryption(string appSkey)
         {
-            if (!this.Frmpayload.Span.IsEmpty)
+            if (!Frmpayload.Span.IsEmpty)
             {
-                var decrypted = this.GetDecryptedPayload(appSkey);
-                Array.Copy(decrypted, 0, this.RawMessage, this.RawMessage.Length - 4 - decrypted.Length, decrypted.Length);
+                var decrypted = GetDecryptedPayload(appSkey);
+                Array.Copy(decrypted, 0, RawMessage, RawMessage.Length - 4 - decrypted.Length, decrypted.Length);
                 return decrypted;
             }
             else

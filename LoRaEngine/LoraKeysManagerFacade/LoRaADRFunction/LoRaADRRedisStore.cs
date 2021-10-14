@@ -50,7 +50,7 @@ namespace LoraKeysManagerFacade
             {
                 if (this.ownsLock)
                 {
-                    this.redisCache.LockRelease(this.lockKey, this.owner);
+                    _ = this.redisCache.LockRelease(this.lockKey, this.owner);
                     this.ownsLock = false;
                 }
             }
@@ -67,7 +67,7 @@ namespace LoraKeysManagerFacade
             {
                 if (await redisLock.TakeLockAsync())
                 {
-                    await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
+                    _ = await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
                 }
             }
         }
@@ -85,7 +85,7 @@ namespace LoraKeysManagerFacade
                     AddEntryToTable(table, entry);
 
                     // update redis store
-                    this.redisCache.StringSet(entryKey, JsonConvert.SerializeObject(table));
+                    _ = this.redisCache.StringSet(entryKey, JsonConvert.SerializeObject(table));
                 }
             }
 
