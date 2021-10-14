@@ -19,7 +19,7 @@ namespace LoRaWan.NetworkServer
             if (loRaDevice.IsOurDevice)
             {
                 var strategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
-                if (strategy != null && strategy is ILoRaDeviceInitializer initializer)
+                if (strategy is not null and ILoRaDeviceInitializer initializer)
                 {
                     initializer.Initialize(loRaDevice);
                 }

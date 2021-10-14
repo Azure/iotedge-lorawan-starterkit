@@ -26,7 +26,7 @@ namespace LoraKeysManagerFacade
                     for (var i = 0; i < devEUI.Length; i++)
                     {
                         var c = devEUI[i];
-                        var isHex = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+                        var isHex = c is (>= '0' and <= '9') or (>= 'a' and <= 'f') or (>= 'A' and <= 'F');
                         if (!isHex)
                         {
                             throw new ArgumentException($"Invalid DevEUI '{devEUI}'");

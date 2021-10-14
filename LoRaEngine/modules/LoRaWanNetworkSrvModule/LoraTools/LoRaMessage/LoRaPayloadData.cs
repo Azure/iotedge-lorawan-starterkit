@@ -47,7 +47,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets a value indicating whether the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp).
         /// </summary>
-        public bool IsConfirmed => this.LoRaMessageType == LoRaMessageType.ConfirmedDataDown || this.LoRaMessageType == LoRaMessageType.ConfirmedDataUp;
+        public bool IsConfirmed => this.LoRaMessageType is LoRaMessageType.ConfirmedDataDown or LoRaMessageType.ConfirmedDataUp;
 
         /// <summary>
         /// Gets a value indicating whether does a Mac command require an answer?.
@@ -124,9 +124,9 @@ namespace LoRaTools.LoRaMessage
             this.LoRaMessageType = (LoRaMessageType)this.RawMessage[0];
 
             // in this case the payload is not downlink of our type
-            if (this.LoRaMessageType == LoRaMessageType.ConfirmedDataDown ||
-                this.LoRaMessageType == LoRaMessageType.JoinAccept ||
-                this.LoRaMessageType == LoRaMessageType.UnconfirmedDataDown)
+            if (this.LoRaMessageType is LoRaMessageType.ConfirmedDataDown or
+                LoRaMessageType.JoinAccept or
+                LoRaMessageType.UnconfirmedDataDown)
             {
                 this.Direction = 1;
             }

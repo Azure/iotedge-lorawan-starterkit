@@ -394,7 +394,7 @@ namespace LoRaWan.NetworkServer
 
         private static long CalculateTime(int windowTime, ushort rXDelay)
         {
-            if (rXDelay > 1 && rXDelay < 16)
+            if (rXDelay is > 1 and < 16)
             {
                 return (windowTime + rXDelay - 1) * Constants.ConvertToPktFwdTime;
             }

@@ -56,7 +56,7 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
         {
             var rxDelay = new byte[1];
-            if (rxDelayValue >= 0 && rxDelayValue < MaxRxDelayValue)
+            if (rxDelayValue is >= 0 and < MaxRxDelayValue)
             {
                 rxDelay[0] = (byte)rxDelayValue;
             }

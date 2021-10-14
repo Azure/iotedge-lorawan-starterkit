@@ -71,7 +71,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.DispatchLoRaJoinRequest(loggingRequest);
             }
-            else if (loRaPayload.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loRaPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
+            else if (loRaPayload.LoRaMessageType is LoRaMessageType.UnconfirmedDataUp or LoRaMessageType.ConfirmedDataUp)
             {
                 this.DispatchLoRaDataMessage(loggingRequest);
             }

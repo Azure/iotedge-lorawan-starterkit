@@ -81,7 +81,7 @@ namespace LoRaTools
         {
             // 0x01 PUSH_ACK That packet type is used by the server to acknowledge immediately all the PUSH_DATA packets received.
             // 0x04 PULL_ACK That packet type is used by the server to confirm that the network route is open and that the server can send PULL_RESP packets at any time.
-            if (type == PhysicalIdentifier.PushAck || type == PhysicalIdentifier.PullAck)
+            if (type is PhysicalIdentifier.PushAck or PhysicalIdentifier.PullAck)
             {
                 this.Token = token;
                 this.Identifier = type;
@@ -126,9 +126,9 @@ namespace LoRaTools
             };
             returnList.AddRange(this.Token);
             returnList.Add((byte)this.Identifier);
-            if (this.Identifier == PhysicalIdentifier.PullData ||
-                this.Identifier == PhysicalIdentifier.TxAck ||
-                this.Identifier == PhysicalIdentifier.PushData)
+            if (this.Identifier is PhysicalIdentifier.PullData or
+                PhysicalIdentifier.TxAck or
+                PhysicalIdentifier.PushData)
             {
                 returnList.AddRange(this.gatewayIdentifier);
             }

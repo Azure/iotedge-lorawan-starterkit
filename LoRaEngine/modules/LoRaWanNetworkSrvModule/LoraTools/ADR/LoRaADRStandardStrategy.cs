@@ -118,12 +118,12 @@ namespace LoRaTools.ADR
                 return this.pktLossToNbRep[0, currentNbRep - 1];
             }
 
-            if (pktLossRate >= 0.05 && pktLossRate < 0.10)
+            if (pktLossRate is >= 0.05 and < 0.10)
             {
                 return this.pktLossToNbRep[1, currentNbRep - 1];
             }
 
-            if (pktLossRate >= 0.10 && pktLossRate < 0.30)
+            if (pktLossRate is >= 0.10 and < 0.30)
             {
                 return this.pktLossToNbRep[2, currentNbRep - 1];
             }

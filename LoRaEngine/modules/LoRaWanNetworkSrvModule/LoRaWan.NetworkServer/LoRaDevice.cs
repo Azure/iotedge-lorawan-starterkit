@@ -103,7 +103,7 @@ namespace LoRaWan.NetworkServer
 
             set
             {
-                if (value != Constants.ReceiveWindow1 && value != Constants.ReceiveWindow2)
+                if (value is not Constants.ReceiveWindow1 and not Constants.ReceiveWindow2)
                     throw new ArgumentOutOfRangeException(nameof(this.PreferredWindow), value, $"{nameof(this.PreferredWindow)} must bet 1 or 2");
 
                 this.preferredWindow = value;

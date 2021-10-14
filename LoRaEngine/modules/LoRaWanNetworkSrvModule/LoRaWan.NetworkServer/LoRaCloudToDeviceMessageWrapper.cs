@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
                 {
                     this.parseCloudToDeviceMessage = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(json);
                 }
-                catch (Exception ex) when (ex is JsonReaderException || ex is JsonSerializationException)
+                catch (Exception ex) when (ex is JsonReaderException or JsonSerializationException)
                 {
                     this.invalidErrorMessage = $"could not parse cloud to device message: {json}";
                 }
