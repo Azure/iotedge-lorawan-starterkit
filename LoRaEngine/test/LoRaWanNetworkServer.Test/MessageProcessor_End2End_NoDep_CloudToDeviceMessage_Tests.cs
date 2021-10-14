@@ -716,10 +716,7 @@ namespace LoRaWan.NetworkServer.Test
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 Payload = msg,
-                MacCommands = new[]
-                {
-                    new DevStatusRequest(),
-                },
+                MacCommands = { new DevStatusRequest() },
             };
 
             if (!string.IsNullOrEmpty(msg))

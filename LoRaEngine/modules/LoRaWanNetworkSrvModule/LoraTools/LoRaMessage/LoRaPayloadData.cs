@@ -25,7 +25,10 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets list of Mac Commands in the LoRaPayload.
         /// </summary>
+#pragma warning disable CA2227 // Collection properties should be read only
+        // Class is a DTO
         public IList<MacCommand> MacCommands { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Gets the LoRa payload fport as value.

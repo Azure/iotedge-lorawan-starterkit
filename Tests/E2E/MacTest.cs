@@ -128,10 +128,7 @@ namespace LoRaWan.Tests.E2E
             {
                 Fport = 1,
                 Payload = c2dMessageBody,
-                MacCommands = new MacCommand[]
-                {
-                    new DevStatusRequest(),
-                }
+                MacCommands = { new DevStatusRequest() }
             };
 
             await this.TestFixtureCi.SendCloudToDeviceMessageAsync(device.DeviceID, c2dMessage);

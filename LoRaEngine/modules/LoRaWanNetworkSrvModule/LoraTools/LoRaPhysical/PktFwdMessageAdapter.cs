@@ -9,7 +9,15 @@ namespace LoRaTools.LoRaPhysical
     [Obsolete("This class will be faded out in the next versions, please use DownlinkPktFwdMessage or UplinkPktFwdMessage instead.")]
     public class PktFwdMessageAdapter
     {
-        public IList<Rxpk> Rxpks { get; set; }
+        public PktFwdMessageAdapter() { }
+
+        public PktFwdMessageAdapter(IList<Rxpk> rxpks, Txpk txpk)
+        {
+            this.Rxpks = rxpks;
+            this.Txpk = txpk;
+        }
+
+        public IList<Rxpk> Rxpks { get; } = new List<Rxpk>();
 
         public Txpk Txpk { get; set; }
     }

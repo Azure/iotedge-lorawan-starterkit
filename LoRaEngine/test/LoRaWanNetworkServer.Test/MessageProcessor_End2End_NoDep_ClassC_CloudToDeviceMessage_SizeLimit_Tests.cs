@@ -110,7 +110,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands = new[] { c2dMessageMacCommand };
+                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -195,7 +195,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands = new[] { c2dMessageMacCommand };
+                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();

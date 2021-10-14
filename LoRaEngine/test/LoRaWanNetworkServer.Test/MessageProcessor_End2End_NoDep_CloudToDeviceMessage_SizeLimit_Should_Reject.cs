@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
+    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Shared;
     using Moq;
@@ -71,7 +72,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (hasMacInC2D)
             {
-                c2dMessage.MacCommands = new[] { c2dMessageMacCommand };
+                c2dMessage.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
             }
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
