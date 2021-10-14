@@ -7,5 +7,13 @@ namespace LoraKeysManagerFacade
 
     public class DeviceNonceUsedException : Exception
     {
+        public DeviceNonceUsedException(string message) : base(message)
+        {
+        }
+
+        public DeviceNonceUsedException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
 }
