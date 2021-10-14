@@ -23,11 +23,11 @@ namespace LoRaWan
 
     readonly partial struct <#= t #> : IEquatable<<#= t #>>
     {
-        public const int Size = Buffer16.Size;
+        public const int Size = Data128.Size;
 
-        readonly Buffer16 value;
+        readonly Data128 value;
 
-        <#= t #>(Buffer16 value) => this.value = value;
+        <#= t #>(Data128 value) => this.value = value;
 
         public bool Equals(<#= t #> other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is <#= t #> other && this.Equals(other);
@@ -43,7 +43,7 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, out <#= t #> result)
         {
-            if (Buffer16.TryParse(input) is (true, var raw))
+            if (Data128.TryParse(input) is (true, var raw))
             {
                 result = new <#= t #>(raw);
                 return true;
@@ -56,10 +56,10 @@ namespace LoRaWan
         }
 
         public static <#= t #> Read(ReadOnlySpan<byte> buffer) =>
-            new(Buffer16.Read(buffer));
+            new(Data128.Read(buffer));
 
         public static <#= t #> Read(ref ReadOnlySpan<byte> buffer) =>
-            new(Buffer16.Read(ref buffer));
+            new(Data128.Read(ref buffer));
 
         public Span<byte> Write(Span<byte> buffer) => this.value.Write(buffer);
     }

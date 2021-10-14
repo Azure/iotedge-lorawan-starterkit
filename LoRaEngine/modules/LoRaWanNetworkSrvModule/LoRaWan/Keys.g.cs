@@ -14,11 +14,11 @@ namespace LoRaWan
 
     readonly partial struct AppKey : IEquatable<AppKey>
     {
-        public const int Size = Buffer16.Size;
+        public const int Size = Data128.Size;
 
-        readonly Buffer16 value;
+        readonly Data128 value;
 
-        AppKey(Buffer16 value) => this.value = value;
+        AppKey(Data128 value) => this.value = value;
 
         public bool Equals(AppKey other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is AppKey other && this.Equals(other);
@@ -34,7 +34,7 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, out AppKey result)
         {
-            if (Buffer16.TryParse(input) is (true, var raw))
+            if (Data128.TryParse(input) is (true, var raw))
             {
                 result = new AppKey(raw);
                 return true;
@@ -47,21 +47,21 @@ namespace LoRaWan
         }
 
         public static AppKey Read(ReadOnlySpan<byte> buffer) =>
-            new(Buffer16.Read(buffer));
+            new(Data128.Read(buffer));
 
         public static AppKey Read(ref ReadOnlySpan<byte> buffer) =>
-            new(Buffer16.Read(ref buffer));
+            new(Data128.Read(ref buffer));
 
         public Span<byte> Write(Span<byte> buffer) => this.value.Write(buffer);
     }
 
     readonly partial struct AppSessionKey : IEquatable<AppSessionKey>
     {
-        public const int Size = Buffer16.Size;
+        public const int Size = Data128.Size;
 
-        readonly Buffer16 value;
+        readonly Data128 value;
 
-        AppSessionKey(Buffer16 value) => this.value = value;
+        AppSessionKey(Data128 value) => this.value = value;
 
         public bool Equals(AppSessionKey other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is AppSessionKey other && this.Equals(other);
@@ -77,7 +77,7 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, out AppSessionKey result)
         {
-            if (Buffer16.TryParse(input) is (true, var raw))
+            if (Data128.TryParse(input) is (true, var raw))
             {
                 result = new AppSessionKey(raw);
                 return true;
@@ -90,21 +90,21 @@ namespace LoRaWan
         }
 
         public static AppSessionKey Read(ReadOnlySpan<byte> buffer) =>
-            new(Buffer16.Read(buffer));
+            new(Data128.Read(buffer));
 
         public static AppSessionKey Read(ref ReadOnlySpan<byte> buffer) =>
-            new(Buffer16.Read(ref buffer));
+            new(Data128.Read(ref buffer));
 
         public Span<byte> Write(Span<byte> buffer) => this.value.Write(buffer);
     }
 
     readonly partial struct NetworkSessionKey : IEquatable<NetworkSessionKey>
     {
-        public const int Size = Buffer16.Size;
+        public const int Size = Data128.Size;
 
-        readonly Buffer16 value;
+        readonly Data128 value;
 
-        NetworkSessionKey(Buffer16 value) => this.value = value;
+        NetworkSessionKey(Data128 value) => this.value = value;
 
         public bool Equals(NetworkSessionKey other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is NetworkSessionKey other && this.Equals(other);
@@ -120,7 +120,7 @@ namespace LoRaWan
 
         public static bool TryParse(ReadOnlySpan<char> input, out NetworkSessionKey result)
         {
-            if (Buffer16.TryParse(input) is (true, var raw))
+            if (Data128.TryParse(input) is (true, var raw))
             {
                 result = new NetworkSessionKey(raw);
                 return true;
@@ -133,10 +133,10 @@ namespace LoRaWan
         }
 
         public static NetworkSessionKey Read(ReadOnlySpan<byte> buffer) =>
-            new(Buffer16.Read(buffer));
+            new(Data128.Read(buffer));
 
         public static NetworkSessionKey Read(ref ReadOnlySpan<byte> buffer) =>
-            new(Buffer16.Read(ref buffer));
+            new(Data128.Read(ref buffer));
 
         public Span<byte> Write(Span<byte> buffer) => this.value.Write(buffer);
     }

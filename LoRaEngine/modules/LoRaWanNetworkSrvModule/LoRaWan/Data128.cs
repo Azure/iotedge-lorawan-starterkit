@@ -7,23 +7,23 @@ namespace LoRaWan
     using System.Buffers.Binary;
 
     /// <summary>
-    /// Represents a buffer of 16 bytes (128 bits) as a single unit.
+    /// Represents byte data of 128 bits as a single unit.
     /// </summary>
-    readonly struct Buffer16 : IEquatable<Buffer16>
+    readonly struct Data128 : IEquatable<Data128>
     {
         public const int Size = sizeof(ulong) * 2;
 
         readonly ulong lo;
         readonly ulong hi;
 
-        public Buffer16(ulong hi, ulong lo) => (this.hi, this.lo) = (hi, lo);
+        public Data128(ulong hi, ulong lo) => (this.hi, this.lo) = (hi, lo);
 
-        public bool Equals(Buffer16 other) => this.lo == other.lo && this.hi == other.hi;
-        public override bool Equals(object? obj) => obj is Buffer16 other && this.Equals(other);
+        public bool Equals(Data128 other) => this.lo == other.lo && this.hi == other.hi;
+        public override bool Equals(object? obj) => obj is Data128 other && this.Equals(other);
         public override int GetHashCode() => HashCode.Combine(this.lo, this.hi);
 
-        public static bool operator ==(Buffer16 left, Buffer16 right) => left.Equals(right);
-        public static bool operator !=(Buffer16 left, Buffer16 right) => !left.Equals(right);
+        public static bool operator ==(Data128 left, Data128 right) => left.Equals(right);
+        public static bool operator !=(Data128 left, Data128 right) => !left.Equals(right);
 
         public override string ToString()
         {
@@ -33,23 +33,23 @@ namespace LoRaWan
             return new string(digits);
         }
 
-        internal static Buffer16 Parse(ReadOnlySpan<char> input) =>
+        internal static Data128 Parse(ReadOnlySpan<char> input) =>
             TryParse(input) is (true, var result) ? result : throw new FormatException();
 
-        internal static (bool, Buffer16) TryParse(ReadOnlySpan<char> input) =>
+        internal static (bool, Data128) TryParse(ReadOnlySpan<char> input) =>
             input.Length == Size * 2 && Hexadecimal.TryParse(input[..16], out var hi)
                                      && Hexadecimal.TryParse(input[16..], out var lo)
-                ? (true, new Buffer16(hi, lo))
+                ? (true, new Data128(hi, lo))
                 : default;
 
-        public static Buffer16 Read(ReadOnlySpan<byte> buffer)
+        public static Data128 Read(ReadOnlySpan<byte> buffer)
         {
             var lo = BinaryPrimitives.ReadUInt64BigEndian(buffer);
             var hi = BinaryPrimitives.ReadUInt64BigEndian(buffer[8..]);
-            return new Buffer16(hi, lo);
+            return new Data128(hi, lo);
         }
 
-        public static Buffer16 Read(ref ReadOnlySpan<byte> buffer)
+        public static Data128 Read(ref ReadOnlySpan<byte> buffer)
         {
             var result = Read(buffer);
             buffer = buffer[Size..];
