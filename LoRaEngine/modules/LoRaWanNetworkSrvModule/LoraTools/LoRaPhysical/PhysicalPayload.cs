@@ -131,7 +131,9 @@ namespace LoRaTools
             if (this.Identifier == PhysicalIdentifier.PULL_DATA ||
                 this.Identifier == PhysicalIdentifier.TX_ACK ||
                 this.Identifier == PhysicalIdentifier.PUSH_DATA)
+            {
                 returnList.AddRange(this.gatewayIdentifier);
+            }
             if (this.Message != null)
                 returnList.AddRange(this.Message);
             return returnList.ToArray();
