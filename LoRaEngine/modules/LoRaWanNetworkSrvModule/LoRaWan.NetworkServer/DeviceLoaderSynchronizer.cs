@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
@@ -71,7 +72,10 @@ namespace LoRaWan.NetworkServer
             this.loadingDevicesFailed = false;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
-            this.loading = Task.Run(() => this.Load().ContinueWith((t) => continuationAction(t, this), TaskContinuationOptions.ExecuteSynchronously));
+            this.loading = Task.Run(() => this.Load().ContinueWith((t) => continuationAction(t, this),
+                                                                   CancellationToken.None,
+                                                                   TaskContinuationOptions.ExecuteSynchronously,
+                                                                   TaskScheduler.Default));
         }
 
         async Task Load()

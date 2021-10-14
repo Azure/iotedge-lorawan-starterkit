@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer.Test
 
         protected DefaultLoRaDataRequestHandler RequestHandlerImplementation { get; }
 
-        protected static Task<Message> EmptyAdditionalMessageReceiveAsync => Task.Delay(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage).ContinueWith((_) => (Message)null);
+        protected static Task<Message> EmptyAdditionalMessageReceiveAsync => Task.Delay(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage).ContinueWith((_) => (Message)null, TaskScheduler.Default);
 
         protected LoRaDeviceClientConnectionManager ConnectionManager { get; }
 

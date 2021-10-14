@@ -37,7 +37,7 @@ namespace LoRaWan.NetworkServer.Test
             if (searchDevicesDelayMs > 0)
             {
                 this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simulatedDevice.DevAddr))
-                    .Returns(Task.Delay(searchDevicesDelayMs).ContinueWith((_) => new SearchDevicesResult()));
+                    .Returns(Task.Delay(searchDevicesDelayMs).ContinueWith((_) => new SearchDevicesResult(), TaskScheduler.Default));
             }
             else
             {

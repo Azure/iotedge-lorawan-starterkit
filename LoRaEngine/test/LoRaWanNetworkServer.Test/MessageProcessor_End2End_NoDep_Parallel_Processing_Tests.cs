@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Shared;
@@ -121,7 +122,7 @@ namespace LoRaWan.NetworkServer.Test
                     var duration = parallelTestConfiguration.SendEventDuration.Next();
                     Console.WriteLine($"{nameof(looseDeviceClient.Object.SendEventAsync)} sleeping for {duration}");
                     return Task.Delay(duration)
-                        .ContinueWith((a) => true, TaskContinuationOptions.ExecuteSynchronously);
+                        .ContinueWith((a) => true, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 });
 
             // twin will be loaded
@@ -146,7 +147,7 @@ namespace LoRaWan.NetworkServer.Test
                     var duration = parallelTestConfiguration.LoadTwinDuration.Next();
                     Console.WriteLine($"{nameof(looseDeviceClient.Object.GetTwinAsync)} sleeping for {duration}");
                     return Task.Delay(duration)
-                        .ContinueWith(_ => initialTwin, TaskContinuationOptions.ExecuteSynchronously);
+                        .ContinueWith(_ => initialTwin, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 });
 
             // twin will be updated with new fcnt
@@ -164,7 +165,7 @@ namespace LoRaWan.NetworkServer.Test
                         var duration = parallelTestConfiguration.UpdateTwinDuration.Next();
                         Console.WriteLine($"{nameof(looseDeviceClient.Object.UpdateReportedPropertiesAsync)} sleeping for {duration}");
                         return Task.Delay(duration)
-                            .ContinueWith((a) => true, TaskContinuationOptions.ExecuteSynchronously);
+                            .ContinueWith((a) => true, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                     });
             }
 
@@ -176,7 +177,7 @@ namespace LoRaWan.NetworkServer.Test
                         var duration = parallelTestConfiguration.DeviceApiResetFcntDuration.Next();
                         Console.WriteLine($"{nameof(this.LoRaDeviceApi.Object.ABPFcntCacheResetAsync)} sleeping for {duration}");
                         return Task.Delay(duration)
-                            .ContinueWith((a) => true, TaskContinuationOptions.ExecuteSynchronously);
+                            .ContinueWith((a) => true, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                     });
             }
 
@@ -187,7 +188,10 @@ namespace LoRaWan.NetworkServer.Test
                     var duration = parallelTestConfiguration.SearchByDevAddrDuration.Next();
                     Console.WriteLine($"{nameof(this.LoRaDeviceApi.Object.SearchByDevAddrAsync)} sleeping for {duration}");
                     return Task.Delay(duration)
-                        .ContinueWith((a) => new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()), TaskContinuationOptions.ExecuteSynchronously);
+                        .ContinueWith((a) => new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()),
+                                      CancellationToken.None,
+                                      TaskContinuationOptions.ExecuteSynchronously,
+                                      TaskScheduler.Default);
                 });
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
