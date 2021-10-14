@@ -73,9 +73,7 @@ namespace LoRaWan
         /// </remarks>
         public static bool TryParse(ReadOnlySpan<char> chars, Span<byte> output, char? separator = null)
         {
-            static bool IsHexDigit(char ch) => ch is >= '0' and <= '9'
-                                                  or >= 'A' and <= 'F'
-                                                  or >= 'a' and <= 'f';
+            static bool IsHexDigit(char ch) => ch is >= '0' and <= '9' or >= 'A' and <= 'F' or >= 'a' and <= 'f';
 
             if (chars.IsEmpty) // nothing to do
                 return true;
