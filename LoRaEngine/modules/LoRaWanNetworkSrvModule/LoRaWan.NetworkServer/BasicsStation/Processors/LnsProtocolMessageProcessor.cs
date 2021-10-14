@@ -40,17 +40,17 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         }
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal async Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
+        internal Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
         {
             this.logger.LogInformation($"Received message: {json}");
-            return false;
+            return Task.FromResult(false);
         }
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal async Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
+        internal Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
         {
             this.logger.LogInformation($"Received message: {json}");
-            return false;
+            return Task.FromResult(false);
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
