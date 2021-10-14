@@ -123,8 +123,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public LoRaRegionType LoRaRegion
         {
-            get { return this.region.Get(); }
-            set { this.region.Set(value); }
+            get => this.region.Get();
+            set => this.region.Set(value);
         }
 
         ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
