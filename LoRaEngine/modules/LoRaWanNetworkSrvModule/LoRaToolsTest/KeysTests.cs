@@ -15,8 +15,9 @@ namespace LoRaWanTest
         protected abstract int Size { get; }
         protected abstract T Parse(string input);
         protected abstract bool TryParse(string input, out T result);
-        protected abstract bool OpEquals(T a, T b);
-        protected abstract bool OpNotEquals(T a, T b);
+
+        static readonly Func<T, T, bool> Equal = Operators<T>.Equality;
+        static readonly Func<T, T, bool> NotEqual = Operators<T>.Inequality;
 
         [Fact]
         public void Size_Returns_Width_In_Bytes()
@@ -54,26 +55,26 @@ namespace LoRaWanTest
         public void Op_Equality_Returns_True_When_Values_Equal()
         {
             var other = this.Subject; // assignment = value copy semantics
-            Assert.True(OpEquals(this.Subject, other));
+            Assert.True(Equal(this.Subject, other));
         }
 
         [Fact]
         public void Op_Equality_Returns_False_When_Values_Differ()
         {
-            Assert.False(OpEquals(this.Subject, this.Other));
+            Assert.False(Equal(this.Subject, this.Other));
         }
 
         [Fact]
         public void Op_Inequality_Returns_False_When_Values_Equal()
         {
             var other = this.Subject; // assignment = value copy semantics
-            Assert.False(OpNotEquals(this.Subject, other));
+            Assert.False(NotEqual(this.Subject, other));
         }
 
         [Fact]
         public void Op_Inequality_Returns_True_When_Values_Differ()
         {
-            Assert.True(OpNotEquals(this.Subject, this.Other));
+            Assert.True(NotEqual(this.Subject, this.Other));
         }
 
         [Fact]
@@ -123,7 +124,7 @@ namespace LoRaWanTest
         {
             var succeeded = TryParse("foobar", out var result);
             Assert.False(succeeded);
-            Assert.True(OpEquals(result, default));
+            Assert.True(Equal(result, default));
         }
     }
 
@@ -132,8 +133,6 @@ namespace LoRaWanTest
         protected override int Size => AppKey.Size;
         protected override AppKey Parse(string input) => AppKey.Parse(input);
         protected override bool TryParse(string input, out AppKey result) => AppKey.TryParse(input, out result);
-        protected override bool OpEquals(AppKey a, AppKey b) => a == b;
-        protected override bool OpNotEquals(AppKey a, AppKey b) => a != b;
     }
 
     public class AppSessionKeyTests : KeyTests<AppSessionKey>
@@ -141,8 +140,6 @@ namespace LoRaWanTest
         protected override int Size => AppSessionKey.Size;
         protected override AppSessionKey Parse(string input) => AppSessionKey.Parse(input);
         protected override bool TryParse(string input, out AppSessionKey result) => AppSessionKey.TryParse(input, out result);
-        protected override bool OpEquals(AppSessionKey a, AppSessionKey b) => a == b;
-        protected override bool OpNotEquals(AppSessionKey a, AppSessionKey b) => a != b;
     }
 
     public class NetworkSessionKeyTests : KeyTests<NetworkSessionKey>
@@ -150,7 +147,5 @@ namespace LoRaWanTest
         protected override int Size => NetworkSessionKey.Size;
         protected override NetworkSessionKey Parse(string input) => NetworkSessionKey.Parse(input);
         protected override bool TryParse(string input, out NetworkSessionKey result) => NetworkSessionKey.TryParse(input, out result);
-        protected override bool OpEquals(NetworkSessionKey a, NetworkSessionKey b) => a == b;
-        protected override bool OpNotEquals(NetworkSessionKey a, NetworkSessionKey b) => a != b;
     }
 }

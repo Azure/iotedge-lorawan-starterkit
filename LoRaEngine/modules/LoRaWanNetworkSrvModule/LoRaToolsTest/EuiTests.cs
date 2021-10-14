@@ -4,7 +4,6 @@
 namespace LoRaWanTest
 {
     using System;
-    using System.Linq.Expressions;
     using LoRaWan;
     using Xunit;
 
@@ -17,8 +16,8 @@ namespace LoRaWanTest
         protected abstract T Parse(string input);
         protected abstract bool TryParse(string input, out T result);
 
-        static readonly Func<T, T, bool> Equal = LambdaCompiler<T>.Binary(Expression.Equal);
-        static readonly Func<T, T, bool> NotEqual = LambdaCompiler<T>.Binary(Expression.NotEqual);
+        static readonly Func<T, T, bool> Equal = Operators<T>.Equality;
+        static readonly Func<T, T, bool> NotEqual = Operators<T>.Inequality;
 
         [Fact]
         public void Size_Returns_Width_In_Bytes()
