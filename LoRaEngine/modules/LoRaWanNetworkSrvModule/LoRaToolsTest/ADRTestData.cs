@@ -141,6 +141,6 @@ namespace LoRaWanTest
                 FCntDown = 1
             };
             this.AddRow("ADR decrease NbRep", decreaseNbRepDeviceName, decreaseNbReptableentries, decreaseNbReprxpk, false, decreaseNbReploRaADRResult);
-    }
+        }
     }
 }

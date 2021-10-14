@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System.Globalization;
     using System.Net.Http;
     using System.Text;
     using System.Threading.Tasks;
@@ -107,12 +108,12 @@ namespace LoRaWan.NetworkServer.Test
             var devEUI = "12";
             byte fport = 8;
             var decodedValue = "{\"from\":\"http\"}";
-            var httpMessageHandler = new HttpMessageHandlerMock();
+            using var httpMessageHandler = new HttpMessageHandlerMock();
             httpMessageHandler.SetupHandler((r) =>
             {
                 var queryDictionary = System.Web.HttpUtility.ParseQueryString(r.RequestUri.Query);
                 Assert.Equal(devEUI, queryDictionary.Get("devEUI"));
-                Assert.Equal(fport.ToString(), queryDictionary.Get("fport"));
+                Assert.Equal(fport.ToString(CultureInfo.InvariantCulture), queryDictionary.Get("fport"));
                 Assert.Empty(queryDictionary.Get("payload"));
 
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -121,7 +122,8 @@ namespace LoRaWan.NetworkServer.Test
                 };
             });
 
-            var target = new LoRaPayloadDecoder(new HttpClient(httpMessageHandler));
+            using var httpClient = new HttpClient(httpMessageHandler);
+            var target = new LoRaPayloadDecoder(httpClient);
             var result = await target.DecodeMessageAsync(devEUI, null, fport, "http://test/decoder");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal(decodedValue, json);
@@ -133,12 +135,12 @@ namespace LoRaWan.NetworkServer.Test
             var devEUI = "12";
             byte fport = 8;
             var decodedValue = "{\"from\":\"http\"}";
-            var httpMessageHandler = new HttpMessageHandlerMock();
+            using var httpMessageHandler = new HttpMessageHandlerMock();
             httpMessageHandler.SetupHandler((r) =>
             {
                 var queryDictionary = System.Web.HttpUtility.ParseQueryString(r.RequestUri.Query);
                 Assert.Equal(devEUI, queryDictionary.Get("devEUI"));
-                Assert.Equal(fport.ToString(), queryDictionary.Get("fport"));
+                Assert.Equal(fport.ToString(CultureInfo.InvariantCulture), queryDictionary.Get("fport"));
                 Assert.Empty(queryDictionary.Get("payload"));
 
                 return new HttpResponseMessage(System.Net.HttpStatusCode.OK)
@@ -147,7 +149,8 @@ namespace LoRaWan.NetworkServer.Test
                 };
             });
 
-            var target = new LoRaPayloadDecoder(new HttpClient(httpMessageHandler));
+            using var httpClient = new HttpClient(httpMessageHandler);
+            var target = new LoRaPayloadDecoder(httpClient);
             var result = await target.DecodeMessageAsync(devEUI, new byte[0], fport, "http://test/decoder");
             var json = JsonConvert.SerializeObject(result.GetDecodedPayload());
             Assert.Equal(decodedValue, json);

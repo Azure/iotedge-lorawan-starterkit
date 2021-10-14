@@ -14,8 +14,9 @@ namespace LoraKeysManagerFacade.Test
     using Moq;
     using Xunit;
 
-    public class FunctionBundlerTest : FunctionTestBase
+    public sealed class FunctionBundlerTest : FunctionTestBase, IDisposable
     {
+        private readonly LoRaADRInMemoryStore adrStore;
         private readonly ILoRaADRManager adrManager;
         private readonly FunctionBundlerFunction functionBundler;
         private readonly ADRExecutionItem adrExecutionItem;
@@ -46,7 +47,8 @@ namespace LoraKeysManagerFacade.Test
 
             // .Returns(new LoRaADRStandardStrategy());
             var cacheStore = new LoRaInMemoryDeviceStore();
-            this.adrManager = new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, cacheStore);
+            this.adrStore = new LoRaADRInMemoryStore();
+            this.adrManager = new LoRaADRServerManager(this.adrStore, strategyProvider.Object, cacheStore);
             this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
 
             var items = new IFunctionBundlerExecutionItem[]
@@ -357,5 +359,7 @@ namespace LoraKeysManagerFacade.Test
             // Ensure no item has the same priority
             Assert.Empty(items.GroupBy(x => x.Priority).Where(x => x.Count() > 1));
         }
+
+        public void Dispose() => this.adrStore.Dispose();
     }
 }

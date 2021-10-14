@@ -33,12 +33,13 @@ namespace LoRaWan.IntegrationTest
 
         public static async Task<bool> ResetADRCache(string devEUI)
         {
-            var url = $"{baseUrl}FunctionBundler/{devEUI}?code={authCode}";
+            var url = new Uri($"{baseUrl}FunctionBundler/{devEUI}?code={authCode}");
             // the gateway id is only used to identify who is taking the lock when
             // releasing the cache. Hence we do not need a real GW id
             var payload = "{\"AdrRequest\":{\"ClearCache\": true},\"GatewayId\":\"integrationTesting\", \"FunctionItems\": " + (int)FunctionBundlerItemType.ADR + "}";
 
-            var response = await httpClient.Value.PostAsync(url, PreparePostContent(payload));
+            using var content = PreparePostContent(payload);
+            using var response = await httpClient.Value.PostAsync(url, content);
             return response.IsSuccessStatusCode;
         }
 

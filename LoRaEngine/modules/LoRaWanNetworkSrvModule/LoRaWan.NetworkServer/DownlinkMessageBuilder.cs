@@ -219,7 +219,7 @@ namespace LoRaWan.NetworkServer
         {
             if (fcntDown == 0)
             {
-                throw new ArgumentOutOfRangeException("fcntDown");
+                throw new ArgumentOutOfRangeException(nameof(fcntDown));
             }
 
             return (ushort)fcntDown;

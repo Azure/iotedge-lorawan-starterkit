@@ -328,7 +328,7 @@ namespace LoRaWan.NetworkServer
 
                     if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
                     {
-                        if (string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.InvariantCultureIgnoreCase))
+                        if (string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.OrdinalIgnoreCase))
                         {
                             this.ClassType = LoRaDeviceClassType.C;
                         }
@@ -520,8 +520,8 @@ namespace LoRaWan.NetworkServer
                 valueString = valueString.Trim();
 
                 return
-                    string.Equals("true", valueString, StringComparison.InvariantCultureIgnoreCase) ||
-                    string.Equals("1", valueString, StringComparison.InvariantCultureIgnoreCase);
+                    string.Equals("true", valueString, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals("1", valueString, StringComparison.OrdinalIgnoreCase);
             }
 
             if (value is bool valueBool)
@@ -553,13 +553,13 @@ namespace LoRaWan.NetworkServer
                 // before checking the current state and update again.
                 await this.syncSave.WaitAsync();
 
-                if (reportedProperties == null)
+                if (reportedProperties == null)
                 {
                     reportedProperties = new TwinCollection();
                 }
 
-                var savedProperties = new List<IChangeTrackingProperty>();
-                foreach (var prop in this.GetTrackableProperties())
+                var savedProperties = new List<IChangeTrackingProperty>();
+                foreach (var prop in this.GetTrackableProperties())
                 {
                     if (prop.IsDirty())
                     {
@@ -568,10 +568,10 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                var fcntUpDelta = this.FCntUp >= this.LastSavedFCntUp ? this.FCntUp - this.LastSavedFCntUp : this.LastSavedFCntUp - this.FCntUp;
-                var fcntDownDelta = this.FCntDown >= this.LastSavedFCntDown ? this.FCntDown - this.LastSavedFCntDown : this.LastSavedFCntDown - this.FCntDown;
+                var fcntUpDelta = this.FCntUp >= this.LastSavedFCntUp ? this.FCntUp - this.LastSavedFCntUp : this.LastSavedFCntUp - this.FCntUp;
+                var fcntDownDelta = this.FCntDown >= this.LastSavedFCntDown ? this.FCntDown - this.LastSavedFCntDown : this.LastSavedFCntDown - this.FCntDown;
 
-                if (reportedProperties.Count > 0 ||
+                if (reportedProperties.Count > 0 ||
                             fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
                             fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
                             (this.hasFrameCountChanges && force))
@@ -610,7 +610,7 @@ namespace LoRaWan.NetworkServer
                     }
                 }
 
-                return true;
+                return true;
             }
             finally
             {
@@ -1072,6 +1072,7 @@ namespace LoRaWan.NetworkServer
         public void Dispose()
         {
             this.connectionManager.Release(this);
+            this.syncSave.Dispose();
             GC.SuppressFinalize(this);
         }
 

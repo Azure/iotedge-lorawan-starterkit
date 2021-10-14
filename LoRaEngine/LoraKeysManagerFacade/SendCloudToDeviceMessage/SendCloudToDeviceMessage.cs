@@ -106,7 +106,7 @@ namespace LoraKeysManagerFacade
                         return new BadRequestObjectResult("Device DevAddr is unknown. Ensure the device has been correctly setup as a LoRa device and that it has connected to network at least once.");
                     }
 
-                    if (string.Equals("c", twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_ClassType), StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals("c", twin.Properties?.Desired?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_ClassType), StringComparison.OrdinalIgnoreCase))
                     {
                         var gatewayID = twin.Properties?.Reported?.GetTwinPropertyStringSafe(LoraKeysManagerFacadeConstants.TwinProperty_PreferredGatewayID);
                         if (string.IsNullOrEmpty(gatewayID))
@@ -139,7 +139,7 @@ namespace LoraKeysManagerFacade
         {
             try
             {
-                var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(c2dMessage)));
+                using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(c2dMessage)));
                 message.MessageId = string.IsNullOrEmpty(c2dMessage.MessageId) ? Guid.NewGuid().ToString() : c2dMessage.MessageId;
                 await this.serviceClient.SendAsync(devEUI, message);
 
@@ -151,7 +151,7 @@ namespace LoraKeysManagerFacade
                     MessageID = message.MessageId,
                     ClassType = "A",
                 });
-             }
+            }
             catch (Exception ex)
             {
                 this.log.LogError(ex, "Failed to send message to {devEUI}", devEUI);

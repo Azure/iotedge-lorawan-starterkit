@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
             Logger.Log(devEUI, $"syncing FCntDown for multigateway", LogLevel.Debug);
 
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = $"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}";
+            var url = new Uri($"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}");
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
         public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = $"{this.URL}DuplicateMsgCheck/{devEUI}?code={this.AuthCode}&FCntUp={fcntUp}&GatewayId={gatewayId}&FCntDown={fcntDown}";
+            var url = new Uri($"{this.URL}DuplicateMsgCheck/{devEUI}?code={this.AuthCode}&FCntUp={fcntUp}&GatewayId={gatewayId}&FCntDown={fcntDown}");
 
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -64,11 +64,12 @@ namespace LoRaWan.NetworkServer
         public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = $"{this.URL}FunctionBundler/{devEUI}?code={this.AuthCode}";
+            var url = new Uri($"{this.URL}FunctionBundler/{devEUI}?code={this.AuthCode}");
 
             var requestBody = JsonConvert.SerializeObject(request);
 
-            var response = await client.PostAsync(url, PreparePostContent(requestBody));
+            using var content = PreparePostContent(requestBody);
+            using var response = await client.PostAsync(url, content);
             if (!response.IsSuccessStatusCode)
             {
                 Logger.Log(devEUI, $"error calling the bundling function, check the function log. {response.ReasonPhrase}", LogLevel.Error);
@@ -82,7 +83,7 @@ namespace LoRaWan.NetworkServer
         public override async Task<bool> ABPFcntCacheResetAsync(string devEUI, uint fcntUp, string gatewayId)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = $"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true&GatewayId={gatewayId}&FCntUp={fcntUp}";
+            var url = new Uri($"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true&GatewayId={gatewayId}&FCntUp={fcntUp}");
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
@@ -142,7 +143,7 @@ namespace LoRaWan.NetworkServer
                     .Append(devNonce);
             }
 
-            var response = await client.GetAsync(url.ToString());
+            var response = await client.GetAsync(new Uri(url.ToString()));
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
@@ -192,7 +193,7 @@ namespace LoRaWan.NetworkServer
                     .Append(devEUI);
             }
 
-            var response = await client.GetAsync(url.ToString());
+            var response = await client.GetAsync(new Uri(url.ToString()));
             if (!response.IsSuccessStatusCode)
             {
                 if (response.StatusCode == System.Net.HttpStatusCode.NotFound)

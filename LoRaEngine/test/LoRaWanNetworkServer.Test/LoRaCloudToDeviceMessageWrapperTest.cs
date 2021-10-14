@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.Test
 {
+    using System;
     using System.Linq;
     using System.Text;
     using LoRaTools;
@@ -11,22 +12,23 @@ namespace LoRaWan.NetworkServer.Test
     using Moq;
     using Xunit;
 
-    public class LoRaCloudToDeviceMessageWrapperTest
+    public sealed class LoRaCloudToDeviceMessageWrapperTest : IDisposable
     {
+        private readonly TestUtils.LoraDeviceClientConnectionManagerWrapper connectionManagerWrapper;
         private readonly LoRaDevice sampleDevice;
+        private LoRaDeviceClientConnectionManager connectionManager => connectionManagerWrapper.Value;
 
         public LoRaCloudToDeviceMessageWrapperTest()
         {
-            var connectionManager = TestUtils.CreateConnectionManager();
-            this.sampleDevice = new LoRaDevice("123131", "1231231232132", connectionManager);
-
+            this.connectionManagerWrapper = TestUtils.CreateConnectionManager();
+            this.sampleDevice = new LoRaDevice("123131", "1231231232132", this.connectionManager);
             connectionManager.Register(this.sampleDevice, new Mock<ILoRaDeviceClient>().Object);
         }
 
         [Fact]
         public void When_Body_Is_Empty_Should_Not_Be_Valid()
         {
-            var message = new Message();
+            using var message = new Message();
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.False(target.IsValid(out var errorMessage));
             Assert.Equal("cloud message does not have a body", errorMessage);
@@ -35,7 +37,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public void When_Body_Is_Empty_Text_Should_Not_Be_Valid()
         {
-            var message = new Message(Encoding.UTF8.GetBytes(string.Empty));
+            using var message = new Message(Encoding.UTF8.GetBytes(string.Empty));
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.False(target.IsValid(out var errorMessage));
             Assert.Equal("cloud message does not have a body", errorMessage);
@@ -45,7 +47,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData("{")]
         public void When_Body_Is_Not_Valid_Json_Should_Not_Be_Valid(string json)
         {
-            var message = new Message(Encoding.UTF8.GetBytes(json));
+            using var message = new Message(Encoding.UTF8.GetBytes(json));
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.False(target.IsValid(out var errorMessage));
             Assert.Equal($"could not parse cloud to device message: {json}", errorMessage);
@@ -56,7 +58,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData("{\"fport\":1, \"payload\":\"asd\", \"macCommands\": [ { \"cid\": \"DevStatusCmd2\" }] }")]
         public void When_Body_Has_Invalid_MacCommand_Should_Not_Be_Valid(string json)
         {
-            var message = new Message(Encoding.UTF8.GetBytes(json));
+            using var message = new Message(Encoding.UTF8.GetBytes(json));
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.False(target.IsValid(out var errorMessage));
             Assert.Equal($"could not parse cloud to device message: {json}", errorMessage);
@@ -66,7 +68,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData("{\"fport\":1, \"payload\": \"Hello\"}", "Hello")]
         public void When_Body_With_Text_Payload_Is_Valid_Json_Should_Be_Valid(string json, string expectedPayload)
         {
-            var message = new Message(Encoding.UTF8.GetBytes(json));
+            using var message = new Message(Encoding.UTF8.GetBytes(json));
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.True(target.IsValid(out _));
             Assert.Equal(expectedPayload, Encoding.UTF8.GetString(target.GetPayload()));
@@ -76,7 +78,7 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData("{\"fport\":1, \"payload\":\"asd\", \"macCommands\": [ { \"cid\": \"DevStatusCmd\" }] }")]
         public void When_Body_Has_MacCommand_Should_Contain_It_List(string json)
         {
-            var message = new Message(Encoding.UTF8.GetBytes(json));
+            using var message = new Message(Encoding.UTF8.GetBytes(json));
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.True(target.IsValid(out _));
             Assert.Single(target.MacCommands);
@@ -87,13 +89,19 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData("{\"fport\":1, \"payload\":\"asd\", \"macCommands\": [ { \"cid\": \"DutyCycleCmd\", \"dutyCyclePL\": 2 }] }")]
         public void When_Body_Has_MacCommand_With_Parameters_Should_Contain_It_List(string json)
         {
-            var message = new Message(Encoding.UTF8.GetBytes(json));
+            using var message = new Message(Encoding.UTF8.GetBytes(json));
             var target = new LoRaCloudToDeviceMessageWrapper(this.sampleDevice, message);
             Assert.True(target.IsValid(out _));
             Assert.Single(target.MacCommands);
             Assert.IsType<DutyCycleRequest>(target.MacCommands.First());
             var dutyCycleCmd = (DutyCycleRequest)target.MacCommands.First();
             Assert.Equal(2, dutyCycleCmd.DutyCyclePL);
+        }
+
+        public void Dispose()
+        {
+            this.sampleDevice.Dispose();
+            this.connectionManagerWrapper.Dispose();
         }
     }
 }

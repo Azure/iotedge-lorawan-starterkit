@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+
 namespace LoRaWanTest
 {
     using System;

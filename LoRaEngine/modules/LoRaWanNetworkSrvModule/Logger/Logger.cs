@@ -4,10 +4,12 @@
 namespace LoRaWan
 {
     using System;
+    using System.Globalization;
     using System.Net;
     using System.Net.Sockets;
     using System.Text;
     using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
 
@@ -93,7 +95,28 @@ namespace LoRaWan
 
                 if (configuration.LogToHub && configuration.ModuleClient != null)
                 {
-                    configuration.ModuleClient.SendEventAsync(new Message(UTF8Encoding.ASCII.GetBytes(msg)));
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                    // Message is always disposed when the SendEventAsync completes.
+                    var m = new Message(UTF8Encoding.ASCII.GetBytes(msg));
+
+                    Task operation = null;
+
+                    try
+                    {
+                        operation = configuration.ModuleClient.SendEventAsync(m);
+                    }
+                    finally
+                    {
+                        if (operation is null)
+                        {
+                            m.Dispose();
+                        }
+                        else
+                        {
+                            operation.ContinueWith(_ => m.Dispose(), TaskScheduler.Default);
+                        }
+                    }
+#pragma warning restore CA2000 // Dispose objects before losing scope
                 }
 
                 if (configuration.LogToConsole)
@@ -106,13 +129,15 @@ namespace LoRaWan
 
         static void LogToConsole(string message, LogLevel logLevel = LogLevel.Information)
         {
+            var loggedMessage = FormattableString.Invariant($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}");
+
             if (logLevel == LogLevel.Error)
             {
-                Console.Error.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+                Console.Error.WriteLine(loggedMessage);
             }
             else
             {
-                Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+                Console.WriteLine(loggedMessage);
             }
         }
 

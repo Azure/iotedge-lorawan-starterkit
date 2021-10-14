@@ -112,7 +112,7 @@ namespace LoRaTools.LoRaMessage
         {
             var type = new byte[1];
             type[0] = (byte)keyType;
-            Aes aes = new AesManaged
+            using Aes aes = new AesManaged
             {
                 Key = appKey,
                 Mode = CipherMode.ECB,

@@ -4,10 +4,11 @@
 namespace LoRaWan.IntegrationTest
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaWan.Tests.Shared;
 
-    public class IntegrationTestFixtureCi : IntegrationTestFixtureBase, IDisposable
+    public class IntegrationTestFixtureCi : IntegrationTestFixtureBase
     {
         // Device1_OTAA: used for join test only
         public TestDeviceInfo Device1_OTAA { get; private set; }
@@ -172,7 +173,7 @@ namespace LoRaWan.IntegrationTest
                 format = format.PadLeft(16, '0');
             }
 
-            return deviceId.ToString(format);
+            return deviceId.ToString(format, CultureInfo.InvariantCulture);
         }
 
         public string GetKey32(int deviceId, bool multiGw = false)
@@ -184,7 +185,7 @@ namespace LoRaWan.IntegrationTest
                 format = format.PadLeft(32, '0');
             }
 
-            return deviceId.ToString(format);
+            return deviceId.ToString(format, CultureInfo.InvariantCulture);
         }
 
         public override void SetupTestDevices()
