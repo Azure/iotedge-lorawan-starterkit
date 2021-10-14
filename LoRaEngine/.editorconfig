@@ -34,3 +34,6 @@ dotnet_diagnostic.CA1721.severity = suggestion
 
 # IDE0045: Use conditional if statements
 dotnet_diagnostic.IDE0045.severity=suggestion
+
+# IDE0024: Use expression body for operators
+csharp_style_expression_bodied_operators = true

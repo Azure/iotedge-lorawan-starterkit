@@ -252,24 +252,16 @@ namespace LoRaWan.Core
             this.Name == version.Name &&
             this.IsKnown == version.IsKnown;
 
-        public static bool operator <(ApiVersion value1, ApiVersion value2)
-        {
-            return value1.CompareTo(value2) < 0;
-        }
+        public static bool operator <(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) < 0;
 
-        public static bool operator <=(ApiVersion value1, ApiVersion value2)
-        {
-            return value1.CompareTo(value2) <= 0;
-        }
+        public static bool operator <=(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) <= 0;
 
-        public static bool operator >=(ApiVersion value1, ApiVersion value2)
-        {
-            return value1.CompareTo(value2) >= 0;
-        }
+        public static bool operator >=(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) >= 0;
 
-        public static bool operator >(ApiVersion value1, ApiVersion value2)
-        {
-            return value1.CompareTo(value2) > 0;
-        }
+        public static bool operator >(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) > 0;
     }
 }
