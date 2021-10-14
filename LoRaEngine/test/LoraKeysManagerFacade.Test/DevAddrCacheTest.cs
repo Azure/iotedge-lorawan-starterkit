@@ -588,7 +588,7 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddrJoining = managerInput[0].DevAddr;
             // The cache start as empty
-            var registryManagerMock = this.InitRegistryManager(managerInput, managerInput.Count());
+            var registryManagerMock = this.InitRegistryManager(managerInput, managerInput.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -641,7 +641,7 @@ namespace LoraKeysManagerFacade.Test
 
             // let's check the devices with a double EUI
             var query2Result = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, adressForDuplicateDevAddr));
-            Assert.Equal(2, query2Result.Count());
+            Assert.Equal(2, query2Result.Length);
             for (var i = 0; i < 2; i++)
             {
                 var resultObject = JsonConvert.DeserializeObject<DevAddrCacheInfo>(query2Result[0].Value);
@@ -693,7 +693,7 @@ namespace LoraKeysManagerFacade.Test
                 });
             }
 
-            var registryManagerMock = this.InitRegistryManager(managerInput, managerInput.Count());
+            var registryManagerMock = this.InitRegistryManager(managerInput, managerInput.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -774,7 +774,7 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddrJoining = newValues[0].DevAddr;
             // The cache start as empty
-            var registryManagerMock = this.InitRegistryManager(newValues, newValues.Count());
+            var registryManagerMock = this.InitRegistryManager(newValues, newValues.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -864,7 +864,7 @@ namespace LoraKeysManagerFacade.Test
             }
 
             // The cache start as empty
-            var registryManagerMock = this.InitRegistryManager(newValues, newValues.Count());
+            var registryManagerMock = this.InitRegistryManager(newValues, newValues.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
