@@ -27,7 +27,7 @@ namespace LoRaTools
         /// Initializes a new instance of the <see cref="MacCommand"/> class.
         /// create.
         /// </summary>
-        public MacCommand(ReadOnlySpan<byte> input)
+        protected MacCommand(ReadOnlySpan<byte> input)
         {
             if (input.Length < this.Length)
             {
@@ -35,7 +35,7 @@ namespace LoRaTools
             }
         }
 
-        public MacCommand()
+        protected MacCommand()
         {
         }
 

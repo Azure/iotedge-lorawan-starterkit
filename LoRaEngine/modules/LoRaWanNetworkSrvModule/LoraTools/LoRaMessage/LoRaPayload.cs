@@ -50,7 +50,7 @@ namespace LoRaTools.LoRaMessage
         /// Wrapper of a LoRa message, consisting of the MIC and MHDR, common to all LoRa messages
         /// This is used for uplink / decoding.
         /// </summary>
-        public LoRaPayload(byte[] inputMessage)
+        protected LoRaPayload(byte[] inputMessage)
         {
             this.RawMessage = inputMessage;
             this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
@@ -62,7 +62,7 @@ namespace LoRaTools.LoRaMessage
         /// Initializes a new instance of the <see cref="LoRaPayload"/> class.
         /// This is used for downlink, The field will be computed at message creation.
         /// </summary>
-        public LoRaPayload()
+        protected LoRaPayload()
         {
         }
 
