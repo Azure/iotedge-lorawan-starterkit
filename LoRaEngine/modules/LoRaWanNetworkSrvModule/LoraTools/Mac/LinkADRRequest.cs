@@ -50,7 +50,7 @@ namespace LoRaTools
         {
             if (input.Length < this.Length || input[0] != (byte)Cid.LinkADRCmd)
             {
-                throw new Exception("the input was not in the expected form");
+                throw new ArgumentException("the input was not in the expected form");
             }
 
             this.Cid = Cid.LinkADRCmd;

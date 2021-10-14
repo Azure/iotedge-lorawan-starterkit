@@ -214,7 +214,7 @@ namespace LoraKeysManagerFacade
             }
             else
             {
-                throw new Exception("Missing devEUI or devAddr");
+                throw new ArgumentException("Missing devEUI or devAddr");
             }
 
             return results;

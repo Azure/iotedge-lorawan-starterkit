@@ -41,7 +41,7 @@ namespace LoRaTools
         {
             if (readOnlySpan.Length < this.Length)
             {
-                throw new Exception("DevStatusAnswer detected but the byte format is not correct");
+                throw new InvalidOperationException("DevStatusAnswer detected but the byte format is not correct");
             }
             else
             {

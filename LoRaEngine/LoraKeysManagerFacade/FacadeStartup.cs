@@ -23,13 +23,13 @@ namespace LoraKeysManagerFacade
             var iotHubConnectionString = configHandler.IoTHubConnectionString;
             if (iotHubConnectionString == null)
             {
-                throw new Exception($"Missing {ConfigHandler.IoTHubConnectionStringKey} in settings");
+                throw new InvalidOperationException($"Missing {ConfigHandler.IoTHubConnectionStringKey} in settings");
             }
 
             var redisConnectionString = configHandler.RedisConnectionString;
             if (redisConnectionString == null)
             {
-                throw new Exception($"Missing {ConfigHandler.RedisConnectionStringKey} in settings");
+                throw new InvalidOperationException($"Missing {ConfigHandler.RedisConnectionStringKey} in settings");
             }
 
             var redis = ConnectionMultiplexer.Connect(redisConnectionString);
