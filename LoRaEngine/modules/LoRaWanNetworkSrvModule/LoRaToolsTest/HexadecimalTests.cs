@@ -86,6 +86,37 @@ namespace LoRaWanTest
         }
 
         [Theory]
+        [InlineData(new byte[0], LetterCase.Upper, null, "")]
+        [InlineData(new byte[0], LetterCase.Upper, '-', "")]
+        [InlineData(new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef }, LetterCase.Lower, null, "0123456789abcdef")]
+        [InlineData(new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef }, LetterCase.Upper, null, "0123456789ABCDEF")]
+        [InlineData(new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef }, LetterCase.Lower, '-', "01-23-45-67-89-ab-cd-ef")]
+        [InlineData(new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef }, LetterCase.Upper, '-', "01-23-45-67-89-AB-CD-EF")]
+        [InlineData(new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef }, LetterCase.Upper, ':', "01:23:45:67:89:AB:CD:EF")]
+        [InlineData(new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef }, LetterCase.Upper, ',', "01,23,45,67,89,AB,CD,EF")]
+        public void Write(byte[] input, LetterCase @case, char? separator, string expected)
+        {
+            var chars = new char[expected.Length];
+            Hexadecimal.Write(input, chars, separator, @case);
+            var actual = new string(chars);
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData(1, 0, null)]
+        [InlineData(1, 1, null)]
+        [InlineData(2, 0, '-')]
+        [InlineData(2, 1, '-')]
+        [InlineData(2, 2, '-')]
+        [InlineData(2, 3, '-')]
+        public void Write_Throws_When_Buffer_Is_Too_Small(int byteCount, int charCount, char? separator)
+        {
+            var chars = new char[charCount];
+            var ex = Assert.Throws<ArgumentException>(() => Hexadecimal.Write(new byte[byteCount], chars, separator));
+            Assert.Equal("output", ex.ParamName);
+        }
+
+        [Theory]
         [InlineData("", null, new byte[0])]
         [InlineData("", '-', new byte[0])]
         [InlineData("0123456789abcdef", null, new byte[] { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef })]
