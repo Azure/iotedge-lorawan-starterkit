@@ -80,7 +80,7 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                datr = loRaRegion.GetDownstreamDR(rxpk, (uint)loRaDevice.ReportedRX1DROffset);
+                datr = loRaRegion.GetDownstreamDR(rxpk, loRaDevice.ReportedRX1DROffset);
                 if (datr == null)
                 {
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the data rate in the downstream message packet forwarder settings", LogLevel.Error);
@@ -206,7 +206,7 @@ namespace LoRaWan.NetworkServer
                 fport.HasValue ? new byte[] { fport.Value } : null,
                 frmPayload,
                 1,
-                loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
+                loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
             Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Information);
@@ -314,7 +314,7 @@ namespace LoRaWan.NetworkServer
                 new byte[] { cloudToDeviceMessage.Fport },
                 frmPayload,
                 1,
-                loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
+                loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
             return new DownlinkMessageBuilderResponse(
                 ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI),

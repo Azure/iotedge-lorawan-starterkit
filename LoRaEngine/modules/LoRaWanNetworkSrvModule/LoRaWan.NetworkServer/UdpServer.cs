@@ -289,7 +289,7 @@ namespace LoRaWan.NetworkServer
             }
 
             // Report Log level
-            Logger.LogAlways($"Log Level: {(LogLevel)Logger.LoggerLevel}");
+            Logger.LogAlways($"Log Level: {Logger.LoggerLevel}");
         }
 
         async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)

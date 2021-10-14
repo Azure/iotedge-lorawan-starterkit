@@ -182,7 +182,7 @@ namespace LoraKeysManagerFacade
                                                     LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
                                                 };
                                                 results.Add(iotHubDeviceInfo);
-                                                devAddrCache.StoreInfo((DevAddrCacheInfo)iotHubDeviceInfo);
+                                                devAddrCache.StoreInfo(iotHubDeviceInfo);
                                             }
 
                                             resultCount++;

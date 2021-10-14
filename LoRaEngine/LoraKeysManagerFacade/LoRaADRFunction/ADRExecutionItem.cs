@@ -19,7 +19,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
             context.Result.AdrResult = await this.HandleADRRequest(context.DevEUI, context.Request.AdrRequest);
-            context.Result.NextFCntDown = context.Result.AdrResult != null && context.Result.AdrResult.FCntDown > 0 ? context.Result.AdrResult.FCntDown : (uint?)null;
+            context.Result.NextFCntDown = context.Result.AdrResult != null && context.Result.AdrResult.FCntDown > 0 ? context.Result.AdrResult.FCntDown : null;
             return FunctionBundlerExecutionState.Continue;
         }
 

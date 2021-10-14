@@ -713,7 +713,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(afterJoinValues, joinAccept.Rx1DrOffset);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx1DROffsetValue);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx2DRValue);
-            Assert.Equal(afterJoinValues, (int)joinAccept.RxDelay.Span[0]);
+            Assert.Equal(afterJoinValues, joinAccept.RxDelay.Span[0]);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRxDelayValue);
         }
 
@@ -929,11 +929,11 @@ namespace LoRaWan.NetworkServer.Test
             joinAccept.RxDelay.Span.Reverse();
             if (rxDelay is > 0 and < 16)
             {
-                Assert.Equal((int)expectedDelay, (int)joinAccept.RxDelay.Span[0]);
+                Assert.Equal((int)expectedDelay, joinAccept.RxDelay.Span[0]);
             }
             else
             {
-                Assert.Equal(0, (int)joinAccept.RxDelay.Span[0]);
+                Assert.Equal(0, joinAccept.RxDelay.Span[0]);
             }
 
             // Send a message

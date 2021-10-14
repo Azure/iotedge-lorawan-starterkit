@@ -241,7 +241,7 @@ namespace LoRaTools.Regions
         /// </summary>
         public int GetDRFromFreqAndChan(string datr)
         {
-            return (int)this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Key;
+            return this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Key;
         }
 
         public bool IsValidRX1DROffset(uint rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1);

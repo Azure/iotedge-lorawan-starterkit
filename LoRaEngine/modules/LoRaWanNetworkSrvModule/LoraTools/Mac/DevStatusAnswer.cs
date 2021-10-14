@@ -53,8 +53,8 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.Margin;
-            yield return (byte)this.Battery;
+            yield return this.Margin;
+            yield return this.Battery;
             yield return (byte)this.Cid;
         }
     }
