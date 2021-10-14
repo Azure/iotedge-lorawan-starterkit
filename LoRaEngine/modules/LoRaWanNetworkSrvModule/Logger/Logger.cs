@@ -13,7 +13,7 @@ namespace LoRaWan
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
 
-    public class Logger
+    public static class Logger
     {
         // Interval where we try to estabilish connection to udp logger
         const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
