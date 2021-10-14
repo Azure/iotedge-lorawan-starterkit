@@ -72,11 +72,13 @@ namespace LoraKeysManagerFacade.Test
                     var twins = new List<Twin>();
                     foreach (var devaddrItem in devAddressesToConsider)
                     {
-                        var deviceTwin = new Twin();
-                        deviceTwin.DeviceId = devaddrItem.DevEUI;
-                        deviceTwin.Properties = new TwinProperties()
+                        var deviceTwin = new Twin
                         {
-                            Desired = new TwinCollection($"{{\"{LoraKeysManagerFacadeConstants.TwinProperty_DevAddr}\": \"{devaddrItem.DevAddr}\", \"{LoraKeysManagerFacadeConstants.TwinProperty_GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
+                            DeviceId = devaddrItem.DevEUI,
+                            Properties = new TwinProperties()
+                            {
+                                Desired = new TwinCollection($"{{\"{LoraKeysManagerFacadeConstants.TwinProperty_DevAddr}\": \"{devaddrItem.DevAddr}\", \"{LoraKeysManagerFacadeConstants.TwinProperty_GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
+                            }
                         };
 
                         twins.Add(deviceTwin);

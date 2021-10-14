@@ -22,9 +22,11 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(0, 0, 1)]
         public async Task When_Fcnt_Down_Fails_Should_Stop_And_Not_Update_Device_Twin(uint initialFcntDown, uint initialFcntUp, uint payloadFcnt)
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: null));
-            simulatedDevice.FrmCntDown = initialFcntDown;
-            simulatedDevice.FrmCntUp = initialFcntUp;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: null))
+            {
+                FrmCntDown = initialFcntDown,
+                FrmCntUp = initialFcntUp
+            };
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
             var devAddr = simulatedDevice.LoRaDevice.DevAddr;
@@ -204,9 +206,11 @@ namespace LoRaWan.NetworkServer.Test
             const uint initialFcntUp = 21;
             const uint payloadFcnt = 23;
 
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: null));
-            simulatedDevice.FrmCntUp = initialFcntUp;
-            simulatedDevice.FrmCntDown = initialFcntDown;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: null))
+            {
+                FrmCntUp = initialFcntUp,
+                FrmCntDown = initialFcntDown
+            };
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
             var devAddr = simulatedDevice.LoRaDevice.DevAddr;

@@ -67,10 +67,12 @@ namespace LoraKeysManagerFacade
                 facadeKey = resObject.keys[0].value;
             }
 
-            var edgeGatewayDevice = new Device(deviceName);
-            edgeGatewayDevice.Capabilities = new DeviceCapabilities()
+            var edgeGatewayDevice = new Device(deviceName)
             {
-                IotEdge = true
+                Capabilities = new DeviceCapabilities()
+                {
+                    IotEdge = true
+                }
             };
 
             try

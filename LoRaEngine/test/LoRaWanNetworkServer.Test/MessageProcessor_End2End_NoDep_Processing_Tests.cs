@@ -41,9 +41,11 @@ namespace LoRaWan.NetworkServer.Test
             uint deviceInitialFcntUp,
             uint deviceInitialFcntDown)
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
-            simulatedDevice.FrmCntDown = deviceInitialFcntDown;
-            simulatedDevice.FrmCntUp = deviceInitialFcntUp;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID))
+            {
+                FrmCntDown = deviceInitialFcntDown,
+                FrmCntUp = deviceInitialFcntUp
+            };
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
             var devAddr = simulatedDevice.LoRaDevice.DevAddr;
@@ -524,8 +526,10 @@ namespace LoRaWan.NetworkServer.Test
         {
             const uint initialFcntUp = 100;
             const uint payloadFcnt = 102;
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
-            simulatedDevice.FrmCntUp = initialFcntUp;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID))
+            {
+                FrmCntUp = initialFcntUp
+            };
 
             var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
             if (msgId != null)
@@ -579,9 +583,11 @@ namespace LoRaWan.NetworkServer.Test
             const uint initialFcntUp = 100;
             const uint initialFcntDown = 20;
 
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
-            simulatedDevice.FrmCntUp = initialFcntUp;
-            simulatedDevice.FrmCntDown = initialFcntDown;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID))
+            {
+                FrmCntUp = initialFcntUp,
+                FrmCntDown = initialFcntDown
+            };
 
             var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
 
@@ -770,9 +776,11 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(ServerGatewayID, 0)]
         public async Task ABP_Confirmed_Message_Should_Use_Rchf_0(string deviceGatewayID, uint rfch)
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
-            simulatedDevice.FrmCntDown = 20;
-            simulatedDevice.FrmCntUp = 100;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID))
+            {
+                FrmCntDown = 20,
+                FrmCntUp = 100
+            };
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
             var devAddr = simulatedDevice.LoRaDevice.DevAddr;
@@ -1106,9 +1114,11 @@ namespace LoRaWan.NetworkServer.Test
             const uint deviceInitialFcntUp = 100;
             const uint deviceInitialFcntDown = 20;
 
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
-            simulatedDevice.FrmCntUp = deviceInitialFcntUp;
-            simulatedDevice.FrmCntDown = deviceInitialFcntDown;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID))
+            {
+                FrmCntUp = deviceInitialFcntUp,
+                FrmCntDown = deviceInitialFcntDown
+            };
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
 
@@ -1350,8 +1360,10 @@ namespace LoRaWan.NetworkServer.Test
 
             var devAddr = simulatedDevice1.LoRaDevice.DevAddr;
 
-            var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2, gatewayID: ServerGatewayID), frmCntDown: 6, frmCntUp: 10);
-            simulatedDevice2.DevAddr = devAddr;
+            var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2, gatewayID: ServerGatewayID), frmCntDown: 6, frmCntUp: 10)
+            {
+                DevAddr = devAddr
+            };
 
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
@@ -1467,8 +1479,10 @@ namespace LoRaWan.NetworkServer.Test
             var devEUI = simulatedDevice1.LoRaDevice.DeviceID;
             var devAddr = simulatedDevice1.LoRaDevice.DevAddr;
 
-            var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2, gatewayID: ServerGatewayID));
-            simulatedDevice2.DevAddr = devAddr;
+            var simulatedDevice2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2, gatewayID: ServerGatewayID))
+            {
+                DevAddr = devAddr
+            };
 
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
@@ -1626,8 +1640,10 @@ namespace LoRaWan.NetworkServer.Test
         [InlineData(10, 10)]
         public async Task When_Upstream_Fcnt_Is_Lower_Or_Equal_To_Device_Should_Discard_Message(uint devFcntUp, uint payloadFcnt)
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
-            simulatedDevice.FrmCntUp = devFcntUp;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID))
+            {
+                FrmCntUp = devFcntUp
+            };
 
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
             var devAddr = simulatedDevice.LoRaDevice.DevAddr;
@@ -1669,9 +1685,11 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Receiving_Device_Message_And_Loading_Device_Fails_Second_Message_Should_Be_Processed()
         {
-            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
-            simDevice.FrmCntDown = 10;
-            simDevice.FrmCntUp = 50;
+            var simDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID))
+            {
+                FrmCntDown = 10,
+                FrmCntUp = 50
+            };
 
             this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simDevice.DevAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));

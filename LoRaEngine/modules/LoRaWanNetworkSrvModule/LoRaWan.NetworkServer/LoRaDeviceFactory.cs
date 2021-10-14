@@ -25,10 +25,11 @@ namespace LoRaWan.NetworkServer
             var loRaDevice = new LoRaDevice(
                 deviceInfo.DevAddr,
                 deviceInfo.DevEUI,
-                this.connectionManager);
-
-            loRaDevice.GatewayID = deviceInfo.GatewayId;
-            loRaDevice.NwkSKey = deviceInfo.NwkSKey;
+                this.connectionManager)
+            {
+                GatewayID = deviceInfo.GatewayId,
+                NwkSKey = deviceInfo.NwkSKey
+            };
 
             var isOurDevice = string.IsNullOrEmpty(deviceInfo.GatewayId) || string.Equals(deviceInfo.GatewayId, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
             if (isOurDevice)

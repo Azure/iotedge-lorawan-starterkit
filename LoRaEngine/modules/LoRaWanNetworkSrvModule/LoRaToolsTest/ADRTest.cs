@@ -27,8 +27,10 @@ namespace LoRaWanTest
             this.output.WriteLine($"Starting test {testName}");
             var region = RegionManager.EU868;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
-            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider);
-            loRaADRManager.CallBase = true;
+            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider)
+            {
+                CallBase = true
+            };
             loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // If the test does not expect a default answer we trigger default reset before
@@ -66,10 +68,14 @@ namespace LoRaWanTest
             var devEUI = "myloratest";
             var region = RegionManager.EU868;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
-            var rxpk = new Rxpk();
-            rxpk.Datr = "SF7BW125";
-            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider);
-            loRaADRManager.CallBase = true;
+            var rxpk = new Rxpk
+            {
+                Datr = "SF7BW125"
+            };
+            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider)
+            {
+                CallBase = true
+            };
             loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // setup table with default value

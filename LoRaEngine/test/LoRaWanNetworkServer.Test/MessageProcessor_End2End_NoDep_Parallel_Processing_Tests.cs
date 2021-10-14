@@ -296,8 +296,10 @@ namespace LoRaWan.NetworkServer.Test
 
             var device1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var device1Twin = TestUtils.CreateABPTwin(device1);
-            var device2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2));
-            device2.DevAddr = device1.DevAddr;
+            var device2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2))
+            {
+                DevAddr = device1.DevAddr
+            };
             var device2Twin = TestUtils.CreateABPTwin(device2);
             var device3 = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(3));
             device3.SetupJoin("00000000000000000000000000000088", "00000000000000000000000000000088", "02000088");
