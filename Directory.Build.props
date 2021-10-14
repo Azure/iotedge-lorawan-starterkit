@@ -8,7 +8,7 @@
       <!-- <TreatWarningsAsErrors>true</TreatWarningsAsErrors> -->
     </PropertyGroup>
     <PropertyGroup>
-      <DockerDotnetVersion>3.125.2</DockerDotnetVersion>
+      <DockerDotNetX509Version>3.125.2</DockerDotNetX509Version>
       <MicrosoftAzureDevicesVersion>1.33.0</MicrosoftAzureDevicesVersion>
       <MicrosoftAzureDevicesClientVersion>1.37.1</MicrosoftAzureDevicesClientVersion>
       <MicrosoftExtensionsCachingMemoryVersion>3.1.5</MicrosoftExtensionsCachingMemoryVersion>
@@ -21,5 +21,20 @@
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
       <StackExchangeRedisVersion>2.1.58</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
+    </PropertyGroup>
+    <PropertyGroup>
+      <DockerDotnetVersion>3.125.5</DockerDotnetVersion>
+      <MicrosoftNETTestSdkVersion>16.6.1</MicrosoftNETTestSdkVersion>
+      <MoqVersion>4.14.4</MoqVersion>
+      <XUnitVersion>2.4.1</XUnitVersion>
+      <XunitCombinatorialVersion>1.3.2</XunitCombinatorialVersion>
+      <MicrosoftExtensionsConfigurationVersion>3.1.5</MicrosoftExtensionsConfigurationVersion>
+      <MicrosoftExtensionsConfigurationBinderVersion>5.0.0</MicrosoftExtensionsConfigurationBinderVersion>
+      <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>3.1.5</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
+      <MicrosoftExtensionsConfigurationJsonVersion>3.1.5</MicrosoftExtensionsConfigurationJsonVersion>
+      <SystemIOPortsVersion>4.7.0</SystemIOPortsVersion>
+      <XUnitRunnerVisualStudio>2.4.2</XUnitRunnerVisualStudio>
+      <MicrosoftAzureEventHubsVersion>4.2.0</MicrosoftAzureEventHubsVersion>
+      <MicrosoftAzureEventHubsProcessorVersion>4.2.0</MicrosoftAzureEventHubsProcessorVersion>
     </PropertyGroup>
 </Project>
