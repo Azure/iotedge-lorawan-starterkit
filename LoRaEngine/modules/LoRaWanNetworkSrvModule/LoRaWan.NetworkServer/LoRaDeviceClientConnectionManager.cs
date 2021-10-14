@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class LoRaDeviceClientConnectionManager : ILoRaDeviceClientConnectionManager
     {
-        public sealed class ManagedConnection : IDisposable
+        internal sealed class ManagedConnection : IDisposable
         {
             public ManagedConnection(LoRaDevice loRaDevice, ILoRaDeviceClient deviceClient)
             {
