@@ -365,7 +365,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceFactory.SetClient(device3.DevEUI, deviceClient3.Object);
             this.LoRaDeviceFactory.SetClient(device4.DevEUI, deviceClient4.Object);
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(

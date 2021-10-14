@@ -79,7 +79,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(simulatedDevice.CreateOTAATwin());
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -102,10 +102,10 @@ namespace LoRaWan.NetworkServer.Test
             var cachedDevices = deviceRegistry.InternalGetCachedDevicesForDevAddr(joinedDeviceDevAddr);
             Assert.Single(cachedDevices);
             Assert.True(cachedDevices.TryGetValue(devEUI, out var loRaDevice));
-            Assert.Equal(joinAccept.DevAddr.ToArray(), this.ByteArray(loRaDevice.DevAddr).ToArray());
+            Assert.Equal(joinAccept.DevAddr.ToArray(), ByteArray(loRaDevice.DevAddr).ToArray());
 
             // Device properties were set with the computes values of the join operation
-            Assert.Equal(joinAccept.AppNonce.ToArray(), this.ReversedByteArray(loRaDevice.AppNonce).ToArray());
+            Assert.Equal(joinAccept.AppNonce.ToArray(), ReversedByteArray(loRaDevice.AppNonce).ToArray());
             Assert.NotEmpty(loRaDevice.NwkSKey);
             Assert.NotEmpty(loRaDevice.AppSKey);
             Assert.True(loRaDevice.IsOurDevice);
@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.VerifyAll();
         }
 
-        private Memory<byte> ReversedByteArray(string value)
+        private static Memory<byte> ReversedByteArray(string value)
         {
             var array = ConversionHelper.StringToByteArray(value);
 
@@ -128,7 +128,7 @@ namespace LoRaWan.NetworkServer.Test
             return array;
         }
 
-        Memory<byte> ByteArray(string value) => ConversionHelper.StringToByteArray(value);
+        static Memory<byte> ByteArray(string value) => ConversionHelper.StringToByteArray(value);
 
         [Fact]
         public async Task When_Api_Takes_Too_Long_Should_Return_Null()

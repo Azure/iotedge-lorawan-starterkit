@@ -150,7 +150,7 @@ namespace LoRaWan.NetworkServer
                     // Multiple gateways: in redis, otherwise in device twin
                     if (requiresConfirmation)
                     {
-                        fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+                        fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
                         // Failed to update the fcnt down
                         // In multi gateway scenarios it means the another gateway was faster than using, can stop now
@@ -192,7 +192,7 @@ namespace LoRaWan.NetworkServer
 
                             if (loraPayload.IsMacAnswerRequired)
                             {
-                                fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+                                fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
                                 if (!fcntDown.HasValue || fcntDown <= 0)
                                 {
                                     return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
@@ -220,7 +220,7 @@ namespace LoRaWan.NetworkServer
                                     {
                                         // sending c2d to same device
                                         cloudToDeviceMessage = decodePayloadResult.CloudToDeviceMessage;
-                                        fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+                                        fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
                                         if (!fcntDown.HasValue || fcntDown <= 0)
                                         {
@@ -319,7 +319,7 @@ namespace LoRaWan.NetworkServer
                         var timeAvailableToCheckCloudToDeviceMessages = timeWatcher.GetAvailableTimeToCheckCloudToDeviceMessage(loRaDevice);
                         if (timeAvailableToCheckCloudToDeviceMessages >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
                         {
-                            cloudToDeviceMessage = await this.ReceiveCloudToDeviceAsync(loRaDevice, timeAvailableToCheckCloudToDeviceMessages);
+                            cloudToDeviceMessage = await ReceiveCloudToDeviceAsync(loRaDevice, timeAvailableToCheckCloudToDeviceMessages);
                             if (cloudToDeviceMessage != null && !this.ValidateCloudToDeviceMessage(loRaDevice, request, cloudToDeviceMessage))
                             {
                                 // Reject cloud to device message based on result from ValidateCloudToDeviceMessage
@@ -333,7 +333,7 @@ namespace LoRaWan.NetworkServer
                                 {
                                     // The message coming from the device was not confirmed, therefore we did not computed the frame count down
                                     // Now we need to increment because there is a C2D message to be sent
-                                    fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+                                    fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
                                     if (!fcntDown.HasValue || fcntDown <= 0)
                                     {
@@ -354,7 +354,7 @@ namespace LoRaWan.NetworkServer
                                     var remainingTimeForFPendingCheck = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice) - (LoRaOperationTimeWatcher.CheckForCloudMessageCallEstimatedOverhead + LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage);
                                     if (remainingTimeForFPendingCheck >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
                                     {
-                                        var additionalMsg = await this.ReceiveCloudToDeviceAsync(loRaDevice, LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage);
+                                        var additionalMsg = await ReceiveCloudToDeviceAsync(loRaDevice, LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage);
                                         if (additionalMsg != null)
                                         {
                                             fpending = true;
@@ -463,7 +463,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private async Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
+        private static async Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
         {
             var actualMessage = await loRaDevice.ReceiveCloudToDeviceAsync(timeAvailableToCheckCloudToDeviceMessages);
             return (actualMessage != null) ? new LoRaCloudToDeviceMessageWrapper(loRaDevice, actualMessage) : null;
@@ -546,7 +546,7 @@ namespace LoRaWan.NetworkServer
                 loRaDevice.LastConfirmedC2DMessageID = null;
             }
 
-            this.ProcessAndSendMacCommands(loRaPayloadData, ref eventProperties);
+            ProcessAndSendMacCommands(loRaPayloadData, ref eventProperties);
 
             if (await loRaDevice.SendEventAsync(deviceTelemetry, eventProperties))
             {
@@ -566,7 +566,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Send detected MAC commands as message properties.
         /// </summary>
-        void ProcessAndSendMacCommands(LoRaPayloadData payloadData, ref Dictionary<string, string> eventProperties)
+        static void ProcessAndSendMacCommands(LoRaPayloadData payloadData, ref Dictionary<string, string> eventProperties)
         {
             if (payloadData.MacCommands?.Count > 0)
             {
@@ -583,7 +583,7 @@ namespace LoRaWan.NetworkServer
         /// Helper method to resolve FcntDown in case one was not yet acquired.
         /// </summary>
         /// <returns>0 if the resolution failed or > 0 if a valid frame count was acquired.</returns>
-        async ValueTask<uint> EnsureHasFcntDownAsync(
+        static async ValueTask<uint> EnsureHasFcntDownAsync(
             LoRaDevice loRaDevice,
             uint? fcntDown,
             uint payloadFcnt,

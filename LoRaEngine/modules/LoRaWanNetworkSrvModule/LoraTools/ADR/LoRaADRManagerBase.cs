@@ -57,7 +57,7 @@ namespace LoRaTools.ADR
                     || !table.CurrentTxPower.HasValue
                     || fCntUp > currentStrategy.MinimumNumberOfResult)
                 {
-                    result = this.ReturnDefaultValues(upstreamDataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
+                    result = ReturnDefaultValues(upstreamDataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
                 }
                 else
                 {
@@ -121,7 +121,7 @@ namespace LoRaTools.ADR
             return await this.store.Reset(devEUI);
         }
 
-        private LoRaADRResult ReturnDefaultValues(int upstreamDataRate, int defaultNbRep, int maxTxPowerIndex)
+        private static LoRaADRResult ReturnDefaultValues(int upstreamDataRate, int defaultNbRep, int maxTxPowerIndex)
         {
             return new LoRaADRResult
             {

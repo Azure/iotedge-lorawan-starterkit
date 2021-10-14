@@ -22,7 +22,7 @@ namespace LoRaWan.NetworkServer.Test
     // Devices that have keep alive set
     public class E2E_KeepAliveConnection_Tests : MessageProcessorTestBase
     {
-        public int MaxWaitForDeviceConnectionInMs
+        public static int MaxWaitForDeviceConnectionInMs
         {
             get
             {
@@ -35,7 +35,7 @@ namespace LoRaWan.NetworkServer.Test
 
         private async Task EnsureDisconnectedAsync(SemaphoreSlim disconnectedEvent, int? timeout = null)
         {
-            var actualTimeout = timeout ?? this.MaxWaitForDeviceConnectionInMs;
+            var actualTimeout = timeout ?? MaxWaitForDeviceConnectionInMs;
             var totalWaitTime = 0;
             while (totalWaitTime < actualTimeout)
             {
@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer.Test
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
 
-            using var cache = this.NewNonEmptyCache(cachedDevice);
+            using var cache = NewNonEmptyCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(
@@ -143,7 +143,7 @@ namespace LoRaWan.NetworkServer.Test
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
 
-            using var cache = this.NewNonEmptyCache(cachedDevice);
+            using var cache = NewNonEmptyCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(
@@ -214,7 +214,7 @@ namespace LoRaWan.NetworkServer.Test
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
 
-            using var cache = this.NewNonEmptyCache(cachedDevice);
+            using var cache = NewNonEmptyCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(
@@ -283,7 +283,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Callback(() => disconnectedEvent.Release())
                 .Returns(true);
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(
@@ -342,7 +342,7 @@ namespace LoRaWan.NetworkServer.Test
             cachedDevice.InternalAcceptChanges();
             cachedDevice.SetFcntDown(cachedDevice.FCntDown + Constants.MaxFcntUnsavedDelta - 1);
 
-            using var cache = this.NewNonEmptyCache(cachedDevice);
+            using var cache = NewNonEmptyCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             var target = new DefaultClassCDevicesMessageSender(

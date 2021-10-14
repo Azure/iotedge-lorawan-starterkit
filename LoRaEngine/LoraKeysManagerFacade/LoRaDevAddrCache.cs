@@ -260,7 +260,7 @@ namespace LoraKeysManagerFacade
             {
                 var cacheKey = GenerateKey(elementPerDevAddr.Key);
                 var currentDevAddrEntry = this.cacheStore.GetHashObject(cacheKey);
-                var devicesByDevEui = this.KeepExistingCacheInformation(currentDevAddrEntry, elementPerDevAddr, canDeleteDeviceWithDevAddr);
+                var devicesByDevEui = KeepExistingCacheInformation(currentDevAddrEntry, elementPerDevAddr, canDeleteDeviceWithDevAddr);
                 if (devicesByDevEui != null)
                 {
                     this.cacheStore.ReplaceHashObjects(cacheKey, devicesByDevEui, DevAddrObjectsTTL, canDeleteDeviceWithDevAddr);
@@ -271,7 +271,7 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// Method to make sure we keep information currently available in the cache and we don't perform unnessecary updates.
         /// </summary>
-        private IDictionary<string, DevAddrCacheInfo> KeepExistingCacheInformation(HashEntry[] cacheDevEUIEntry, IGrouping<string, DevAddrCacheInfo> newDevEUIList, bool canDeleteExistingDevice)
+        private static IDictionary<string, DevAddrCacheInfo> KeepExistingCacheInformation(HashEntry[] cacheDevEUIEntry, IGrouping<string, DevAddrCacheInfo> newDevEUIList, bool canDeleteExistingDevice)
         {
             // if the new value are not different we want to ensure we don't save, to not update the TTL of the item.
             var toSyncValues = newDevEUIList.ToDictionary(x => x.DevEUI);
@@ -292,18 +292,18 @@ namespace LoraKeysManagerFacade
             // if we can delete existing devices in the devadr cache, we take the new list as base, otherwise we take the old one.
             if (canDeleteExistingDevice)
             {
-                return this.MergeOldAndNewChanges(toSyncValues, cacheValues, canDeleteExistingDevice);
+                return MergeOldAndNewChanges(toSyncValues, cacheValues, canDeleteExistingDevice);
             }
             else
             {
-                return this.MergeOldAndNewChanges(cacheValues, toSyncValues, canDeleteExistingDevice);
+                return MergeOldAndNewChanges(cacheValues, toSyncValues, canDeleteExistingDevice);
             }
         }
 
         /// <summary>
         /// In the end we simply need to update the gateway and the Primary key. The DEVEUI and DevAddr can't be updated.
         /// </summary>
-        private IDictionary<string, DevAddrCacheInfo> MergeOldAndNewChanges(IDictionary<string, DevAddrCacheInfo> valueArrayBase, IDictionary<string, DevAddrCacheInfo> valueArrayimport, bool shouldImportFromNewValues)
+        private static IDictionary<string, DevAddrCacheInfo> MergeOldAndNewChanges(IDictionary<string, DevAddrCacheInfo> valueArrayBase, IDictionary<string, DevAddrCacheInfo> valueArrayimport, bool shouldImportFromNewValues)
         {
             var isSaveRequired = false;
             foreach (var baseValue in valueArrayBase)

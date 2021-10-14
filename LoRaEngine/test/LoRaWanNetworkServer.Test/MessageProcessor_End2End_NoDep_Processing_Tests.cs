@@ -217,7 +217,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var cache = NewNonEmptyCache(loRaDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -363,7 +363,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
 
-            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var cache = NewNonEmptyCache(loRaDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -919,7 +919,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Setting the interval in which we search for devices with same devAddr on server
@@ -1230,7 +1230,7 @@ namespace LoRaWan.NetworkServer.Test
             var msgPayload = "1234";
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, netId: 0));
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -1280,7 +1280,7 @@ namespace LoRaWan.NetworkServer.Test
                 simulatedDevice.DevAddr
             };
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -1396,7 +1396,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceFactory.SetClient(simulatedDevice1.DevEUI, deviceClient1.Object);
             this.LoRaDeviceFactory.SetClient(simulatedDevice2.DevEUI, deviceClient2.Object);
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -1507,7 +1507,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceFactory.SetClient(simulatedDevice1.DevEUI, deviceClient1.Object);
             this.LoRaDeviceFactory.SetClient(simulatedDevice2.DevEUI, deviceClient2.Object);
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -1598,7 +1598,7 @@ namespace LoRaWan.NetworkServer.Test
                 });
             this.PayloadDecoder.SetDecoder(payloadDecoder.Object);
 
-            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var cache = NewNonEmptyCache(loRaDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -1633,7 +1633,7 @@ namespace LoRaWan.NetworkServer.Test
             var devAddr = simulatedDevice.LoRaDevice.DevAddr;
 
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
-            using var cache = this.NewNonEmptyCache(cachedDevice);
+            using var cache = NewNonEmptyCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(
@@ -1686,7 +1686,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(
@@ -1739,7 +1739,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(

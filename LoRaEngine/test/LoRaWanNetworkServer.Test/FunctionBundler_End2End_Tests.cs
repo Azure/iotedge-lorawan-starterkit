@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var cache = NewNonEmptyCache(loRaDevice);
             using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             using var messageProcessor1 = new MessageDispatcher(

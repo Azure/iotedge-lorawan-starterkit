@@ -842,7 +842,7 @@ namespace LoRaWan.NetworkServer
                     reportedProperties[TwinProperty.RX2DataRate] = null;
                 }
 
-                if (this.DesiredRXDelay != DefaultJoinValues && currentRegion.IsValidRXDelay(this.DesiredRXDelay))
+                if (this.DesiredRXDelay != DefaultJoinValues && Region.IsValidRXDelay(this.DesiredRXDelay))
                 {
                     reportedProperties[TwinProperty.RXDelay] = this.DesiredRXDelay;
                 }
@@ -913,7 +913,7 @@ namespace LoRaWan.NetworkServer
                         Logger.Log(this.DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
                     }
 
-                    if (currentRegion.IsValidRXDelay(this.DesiredRXDelay))
+                    if (Region.IsValidRXDelay(this.DesiredRXDelay))
                     {
                         this.ReportedRXDelay = this.DesiredRXDelay;
                     }

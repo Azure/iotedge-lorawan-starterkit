@@ -44,7 +44,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .ReturnsAsync(true);
 
-            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var cache = NewNonEmptyCache(loraDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -176,7 +176,7 @@ namespace LoRaWan.NetworkServer.Test
                 })
                 .ReturnsAsync(true);
 
-            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var cache = NewNonEmptyCache(loraDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -275,7 +275,7 @@ namespace LoRaWan.NetworkServer.Test
             })
         .ReturnsAsync(true);
 
-            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var cache = NewNonEmptyCache(loraDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -414,7 +414,7 @@ namespace LoRaWan.NetworkServer.Test
             })
         .ReturnsAsync(true);
 
-            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var cache = NewNonEmptyCache(loraDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor

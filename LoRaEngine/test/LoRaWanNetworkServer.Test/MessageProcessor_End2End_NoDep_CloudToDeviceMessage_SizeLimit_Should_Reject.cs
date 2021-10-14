@@ -35,7 +35,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var loraDevice = this.CreateLoRaDevice(simulatedDevice);
 
-            var rxpk = this.CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, datr, simulatedDevice);
+            var rxpk = CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, datr, simulatedDevice);
 
             if (!hasMacInUpstream)
             {
@@ -82,7 +82,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.RejectAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
 
-            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var cache = NewNonEmptyCache(loraDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor

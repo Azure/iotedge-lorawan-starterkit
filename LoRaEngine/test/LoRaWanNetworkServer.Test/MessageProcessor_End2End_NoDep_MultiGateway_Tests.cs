@@ -228,7 +228,7 @@ namespace LoRaWan.NetworkServer.Test
                  .ReturnsAsync((ushort)0);
 
             var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
-            using var cache = this.NewNonEmptyCache(cachedDevice);
+            using var cache = NewNonEmptyCache(cachedDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor

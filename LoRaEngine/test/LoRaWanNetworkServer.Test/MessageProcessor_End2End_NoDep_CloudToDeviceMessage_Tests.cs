@@ -184,7 +184,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
 
-            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var cache = NewNonEmptyCache(loraDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -263,7 +263,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
 
-            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var cache = NewNonEmptyCache(loraDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -346,7 +346,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "adad").AsList()));
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var loRaDeviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -434,7 +434,7 @@ namespace LoRaWan.NetworkServer.Test
 
             this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync(cloudToDeviceMessage)
-                .Returns(this.EmptyAdditionalMessageReceiveAsync);
+                .Returns(EmptyAdditionalMessageReceiveAsync);
 
             this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
@@ -442,7 +442,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "adad").AsList()));
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var loRaDeviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -536,7 +536,7 @@ namespace LoRaWan.NetworkServer.Test
 
             this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync(cloudToDeviceMessage)
-                .Returns(this.EmptyAdditionalMessageReceiveAsync); // 2nd cloud to device message does not return anything
+                .Returns(EmptyAdditionalMessageReceiveAsync); // 2nd cloud to device message does not return anything
 
             this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
@@ -544,7 +544,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "adad").AsList()));
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var loRaDeviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -646,7 +646,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(cloudToDeviceMessage);
 
             this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage))
-                .Returns(this.EmptyAdditionalMessageReceiveAsync); // 2nd cloud to device message does not return anything
+                .Returns(EmptyAdditionalMessageReceiveAsync); // 2nd cloud to device message does not return anything
 
             this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
@@ -654,7 +654,7 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
             loRaDevice.PreferredWindow = preferredWindow;
 
-            using var cache = this.NewNonEmptyCache(loRaDevice);
+            using var cache = NewNonEmptyCache(loRaDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -736,7 +736,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
 
-            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var cache = NewNonEmptyCache(loraDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -836,7 +836,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceClient.Setup(x => x.RejectAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
 
-            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var cache = NewNonEmptyCache(loraDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -895,7 +895,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(decoderResult);
             this.PayloadDecoder.SetDecoder(payloadDecoder.Object);
 
-            using var cache = this.NewNonEmptyCache(loraDevice);
+            using var cache = NewNonEmptyCache(loraDevice);
             using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -976,7 +976,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "adad").AsList()));
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var loRaDeviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor
@@ -1044,7 +1044,7 @@ namespace LoRaWan.NetworkServer.Test
             this.LoRaDeviceApi.Setup(x => x.NextFCntDownAsync(devEUI, InitialDeviceFcntDown, PayloadFcnt, this.ServerConfiguration.GatewayID))
                 .ReturnsAsync((ushort)(InitialDeviceFcntDown + 1), TimeSpan.FromMilliseconds(2001));
 
-            using var cache = this.NewMemoryCache();
+            using var cache = NewMemoryCache();
             using var loRaDeviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
 
             // Send to message processor

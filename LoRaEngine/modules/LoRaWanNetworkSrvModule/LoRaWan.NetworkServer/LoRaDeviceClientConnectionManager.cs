@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
 
         public bool EnsureConnected(LoRaDevice loRaDevice)
         {
-            if (this.managedConnections.TryGetValue(this.GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))
+            if (this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))
             {
                 if (loRaDevice.KeepAliveTimeout > 0)
                 {
@@ -68,7 +68,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         private void SetupSchedule(ManagedConnection managedConnection)
         {
-            var key = this.GetScheduleCacheKey(managedConnection.LoRaDevice.DevEUI);
+            var key = GetScheduleCacheKey(managedConnection.LoRaDevice.DevEUI);
             // Touching an existing item will update the last access item
             // Creating will start the expiration count
             this.cache.GetOrCreate(
@@ -95,13 +95,13 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private string GetConnectionCacheKey(string devEUI) => string.Concat("connection:", devEUI);
+        private static string GetConnectionCacheKey(string devEUI) => string.Concat("connection:", devEUI);
 
-        private string GetScheduleCacheKey(string devEUI) => string.Concat("connection:schedule:", devEUI);
+        private static string GetScheduleCacheKey(string devEUI) => string.Concat("connection:schedule:", devEUI);
 
         public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice)
         {
-            if (this.managedConnections.TryGetValue(this.GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))
+            if (this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))
                 return managedConnection.DeviceClient;
 
             throw new ManagedConnectionException($"Connection for device {loRaDevice.DevEUI} was not found");
@@ -110,7 +110,7 @@ namespace LoRaWan.NetworkServer
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
         {
             this.managedConnections.AddOrUpdate(
-                this.GetConnectionCacheKey(loRaDevice.DevEUI),
+                GetConnectionCacheKey(loRaDevice.DevEUI),
                 new ManagedConnection(loRaDevice, loraDeviceClient),
                 (k, existing) =>
                 {
@@ -121,7 +121,7 @@ namespace LoRaWan.NetworkServer
 
         public void Release(LoRaDevice loRaDevice)
         {
-            if (this.managedConnections.TryRemove(this.GetConnectionCacheKey(loRaDevice.DevEUI), out var removedItem))
+            if (this.managedConnections.TryRemove(GetConnectionCacheKey(loRaDevice.DevEUI), out var removedItem))
             {
                 removedItem.Dispose();
             }

@@ -42,9 +42,9 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Sets the new URL value.
         /// </summary>
-        public void SetURL(string value) => this.URL = this.SanitizeApiURL(value);
+        public void SetURL(string value) => this.URL = SanitizeApiURL(value);
 
-        private string SanitizeApiURL(string value)
+        private static string SanitizeApiURL(string value)
         {
             if (string.IsNullOrEmpty(value))
                 return string.Empty;
@@ -80,7 +80,7 @@ namespace LoRaWan.NetworkServer
         protected LoRaDeviceAPIServiceBase(NetworkServerConfiguration configuration)
         {
             this.AuthCode = configuration.FacadeAuthCode;
-            this.URL = this.SanitizeApiURL(configuration.FacadeServerUrl);
+            this.URL = SanitizeApiURL(configuration.FacadeServerUrl);
         }
 
         protected static ByteArrayContent PreparePostContent(string requestBody)

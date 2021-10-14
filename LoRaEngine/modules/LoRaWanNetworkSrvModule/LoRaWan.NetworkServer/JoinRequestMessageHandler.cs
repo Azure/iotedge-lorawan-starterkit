@@ -223,7 +223,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 ushort rxDelay = 0;
-                if (request.Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                if (LoRaTools.Regions.Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
                 {
                     rxDelay = loRaDevice.DesiredRXDelay;
                 }

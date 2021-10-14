@@ -94,9 +94,9 @@ namespace LoRaWan.NetworkServer.Test
             using var connectionManager2 = new SingleDeviceConnectionManager(this.SecondLoRaDeviceClient.Object);
             var loRaDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, connectionManager2, this.secondRequestHandlerImplementation);
 
-            using var cache1 = this.NewNonEmptyCache(loRaDevice1);
+            using var cache1 = NewNonEmptyCache(loRaDevice1);
             using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, cache1, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
-            using var cache2 = this.NewNonEmptyCache(loRaDevice2);
+            using var cache2 = NewNonEmptyCache(loRaDevice2);
             using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(this.ServerConfiguration, cache2, this.SecondLoRaDeviceApi.Object, this.SecondLoRaDeviceFactory);
 
             // Send to message processor

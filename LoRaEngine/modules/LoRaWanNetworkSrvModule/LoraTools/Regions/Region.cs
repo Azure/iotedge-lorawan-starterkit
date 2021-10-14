@@ -246,7 +246,7 @@ namespace LoRaTools.Regions
 
         public bool IsValidRX1DROffset(uint rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1);
 
-        public bool IsValidRXDelay(ushort desiredRXDelay)
+        public static bool IsValidRXDelay(ushort desiredRXDelay)
         {
             return desiredRXDelay >= 0 && desiredRXDelay <= MAX_RX_DELAY;
         }

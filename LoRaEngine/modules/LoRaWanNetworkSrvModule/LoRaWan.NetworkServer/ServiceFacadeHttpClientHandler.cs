@@ -59,7 +59,7 @@ namespace LoRaWan.Core
             var response = (this.next != null) ? await this.next(request, cancellationToken) : await base.SendAsync(request, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
-                var functionVersion = this.GetFunctionVersion(response);
+                var functionVersion = GetFunctionVersion(response);
                 if (!functionVersion.SupportsVersion(this.MinFunctionVersion))
                 {
                     var msg = $"Version mismatch (expected: {this.MinFunctionVersion.Name}, function version: {functionVersion.Name}), ensure you have the latest version deployed";
@@ -80,7 +80,7 @@ namespace LoRaWan.Core
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        private ApiVersion GetFunctionVersion(HttpResponseMessage response)
+        private static ApiVersion GetFunctionVersion(HttpResponseMessage response)
         {
             // if no version information is available in response header, log error. Validation failed!
             if (!response.Headers.TryGetValues(ApiVersion.HttpHeaderName, out var versionValues) || !versionValues.Any())

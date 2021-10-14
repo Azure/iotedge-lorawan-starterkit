@@ -145,7 +145,7 @@ namespace LoRaWan.NetworkServer
             // If already in cache, return quickly
             if (devicesMatchingDevAddr.Count > 0)
             {
-                var cachedMatchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => this.IsValidDeviceForPayload(x, (LoRaPayloadData)request.Payload, logError: false));
+                var cachedMatchingDevice = devicesMatchingDevAddr.Values.FirstOrDefault(x => IsValidDeviceForPayload(x, (LoRaPayloadData)request.Payload, logError: false));
                 if (cachedMatchingDevice != null)
                 {
                     Logger.Log(cachedMatchingDevice.DevEUI, "device in cache", LogLevel.Debug);
@@ -220,7 +220,7 @@ namespace LoRaWan.NetworkServer
         /// It validates that the device has a <see cref="LoRaDevice.NwkSKey"/> and mic check.
         /// </summary>
         /// <param name="logError">Indicates if error should be log if mic check fails.</param>
-        private bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool logError)
+        private static bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool logError)
         {
             if (string.IsNullOrEmpty(loRaDevice.NwkSKey))
                 return false;
@@ -235,10 +235,10 @@ namespace LoRaWan.NetworkServer
         }
 
         // Creates cache key for join device loader: "joinloader:{devEUI}"
-        string GetJoinDeviceLoaderCacheKey(string devEUI) => string.Concat("joinloader:", devEUI);
+        static string GetJoinDeviceLoaderCacheKey(string devEUI) => string.Concat("joinloader:", devEUI);
 
         // Removes join device loader from cache
-        void RemoveJoinDeviceLoader(string devEUI) => this.cache.Remove(this.GetJoinDeviceLoaderCacheKey(devEUI));
+        void RemoveJoinDeviceLoader(string devEUI) => this.cache.Remove(GetJoinDeviceLoaderCacheKey(devEUI));
 
         // Gets or adds a join device loader to the memory cache
         JoinDeviceLoader GetOrCreateJoinDeviceLoader(IoTHubDeviceInfo ioTHubDeviceInfo)
@@ -247,7 +247,7 @@ namespace LoRaWan.NetworkServer
             // https://github.com/aspnet/Extensions/issues/708
             lock (this.getOrCreateJoinDeviceLoaderLock)
             {
-                return this.cache.GetOrCreate(this.GetJoinDeviceLoaderCacheKey(ioTHubDeviceInfo.DevEUI), (entry) =>
+                return this.cache.GetOrCreate(GetJoinDeviceLoaderCacheKey(ioTHubDeviceInfo.DevEUI), (entry) =>
                 {
                     entry.SlidingExpiration = TimeSpan.FromMinutes(INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES);
                     return new JoinDeviceLoader(ioTHubDeviceInfo, this.deviceFactory);

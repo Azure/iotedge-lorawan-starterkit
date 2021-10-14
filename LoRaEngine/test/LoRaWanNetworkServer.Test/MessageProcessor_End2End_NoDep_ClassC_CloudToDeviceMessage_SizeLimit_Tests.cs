@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer.Test
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
-        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
+        private static void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
             Assert.NotNull(downlink.Txpk);
@@ -100,7 +100,7 @@ namespace LoRaWan.NetworkServer.Test
                 - c2dMessageMacCommandSize
                 - Constants.LoraProtocolOverheadSize;
 
-            var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
+            var c2dMsgPayload = GeneratePayload("123457890", (int)c2dPayloadSize);
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 DevEUI = devEUI,
@@ -129,7 +129,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Single(this.PacketForwarder.DownlinkMessages);
 
             // Verify donwlink message is correct
-            this.EnsureDownlinkIsCorrect(
+            EnsureDownlinkIsCorrect(
                 this.PacketForwarder.DownlinkMessages.First(), simulatedDevice, c2d);
 
             // Get C2D message payload
@@ -185,7 +185,7 @@ namespace LoRaWan.NetworkServer.Test
                 + 1 // make message too long on purpose
                 - Constants.LoraProtocolOverheadSize;
 
-            var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
+            var c2dMsgPayload = GeneratePayload("123457890", (int)c2dPayloadSize);
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 DevEUI = devEUI,
@@ -217,7 +217,7 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceClient.VerifyAll();
         }
 
-        private string GeneratePayload(string allowedChars, int length)
+        private static string GeneratePayload(string allowedChars, int length)
         {
             var random = new Random();
 

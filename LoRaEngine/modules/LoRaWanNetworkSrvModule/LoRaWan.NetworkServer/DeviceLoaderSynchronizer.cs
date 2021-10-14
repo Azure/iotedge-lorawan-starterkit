@@ -211,7 +211,7 @@ namespace LoRaWan.NetworkServer
                         {
                             if (device.ValidateMic(request.Payload))
                             {
-                                this.AddToDeviceQueue(device, request);
+                                AddToDeviceQueue(device, request);
                                 requestHandled = true;
                                 break;
                             }
@@ -227,7 +227,7 @@ namespace LoRaWan.NetworkServer
                 {
                     var failedReason = hasDeviceFromAnotherGateway ? LoRaDeviceRequestFailedReason.BelongsToAnotherGateway :
                         (hasDevicesMatchingDevAddr ? LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck : LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr);
-                    this.LogRequestFailed(request, failedReason);
+                    LogRequestFailed(request, failedReason);
                     request.NotifyFailed(failedReason);
                 }
             }
@@ -260,7 +260,7 @@ namespace LoRaWan.NetworkServer
                     {
                         if (device.ValidateMic(request.Payload))
                         {
-                            this.AddToDeviceQueue(device, request);
+                            AddToDeviceQueue(device, request);
                             return;
                         }
                     }
@@ -276,13 +276,13 @@ namespace LoRaWan.NetworkServer
                     this.loadingDevicesFailed ? LoRaDeviceRequestFailedReason.ApplicationError :
                     this.existingDevices.Count > 0 ? LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck : LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr;
 
-                this.LogRequestFailed(request, failedReason);
+                LogRequestFailed(request, failedReason);
 
                 request.NotifyFailed(failedReason);
             }
         }
 
-        private void AddToDeviceQueue(LoRaDevice device, LoRaRequest request)
+        private static void AddToDeviceQueue(LoRaDevice device, LoRaRequest request)
         {
             if (device.IsOurDevice)
             {
@@ -303,7 +303,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private void LogRequestFailed(LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
+        private static void LogRequestFailed(LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
         {
             var deviceId = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
 
