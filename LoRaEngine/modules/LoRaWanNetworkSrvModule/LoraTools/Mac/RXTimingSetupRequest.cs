@@ -16,6 +16,7 @@ namespace LoRaTools
 
         public override int Length => 2;
 
+        [JsonIgnore]
         public int Delay => this.Settings & 0b00001111;
 
         public RXTimingSetupRequest()

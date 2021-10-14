@@ -3,6 +3,7 @@
 
 namespace LoRaTools
 {
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
 
@@ -10,8 +11,10 @@ namespace LoRaTools
     {
         public byte Status { get; set; }
 
+        [JsonIgnore]
         public bool DataRangeOk => ((this.Status >> 1) & 0b00000001) == 1;
 
+        [JsonIgnore]
         public bool ChannelFreqOk => (this.Status & 0b00000001) == 1;
 
         public NewChannelAnswer(bool drRangeOk, bool chanFreqOk)

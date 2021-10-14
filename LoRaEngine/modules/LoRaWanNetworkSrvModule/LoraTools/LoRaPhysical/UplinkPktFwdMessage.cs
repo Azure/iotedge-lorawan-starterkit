@@ -3,6 +3,7 @@
 
 namespace LoRaTools.LoRaPhysical
 {
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
 
@@ -54,6 +55,7 @@ namespace LoRaTools.LoRaPhysical
         }
 
         [Obsolete("to remove")]
+        [JsonIgnore]
         public override PktFwdMessageAdapter PktFwdMessageAdapter
         {
             get

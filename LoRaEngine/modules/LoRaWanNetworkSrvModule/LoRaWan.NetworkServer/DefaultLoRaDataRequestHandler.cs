@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer
                 var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
                 Logger.Log(loRaDevice.DevEUI, $"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}", LogLevel.Debug);
 
-                var payloadPort = loraPayload.FPort;
+                var payloadPort = loraPayload.FPortValue;
                 var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
 
                 LoRaADRResult loRaADRResult = null;

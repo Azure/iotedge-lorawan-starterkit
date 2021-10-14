@@ -30,7 +30,8 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets the LoRa payload fport as value.
         /// </summary>
-        public byte FPort
+        [JsonIgnore]
+        public byte FPortValue
         {
             get
             {
@@ -52,6 +53,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets the DevAdd netID.
         /// </summary>
+        [JsonIgnore]
         public byte DevAddrNetID => (byte)(this.DevAddr.Span[0] & 0b11111110);
 
         /// <summary>
@@ -283,7 +285,7 @@ namespace LoRaTools.LoRaMessage
         public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI)
         {
             // It is a Mac Command payload, needs to encrypt with nwkskey
-            if (this.FPort == 0)
+            if (this.FPortValue == 0)
             {
                 this.PerformEncryption(nwkSKey);
             }

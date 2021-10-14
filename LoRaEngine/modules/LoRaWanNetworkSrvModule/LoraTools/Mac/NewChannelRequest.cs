@@ -21,8 +21,10 @@ namespace LoRaTools
         [JsonProperty("drRange")]
         public byte DrRange { get; set; }
 
+        [JsonIgnore]
         public int MaxDR => (this.DrRange >> 4) & 0b00001111;
 
+        [JsonIgnore]
         public int MinDR => this.DrRange & 0b00001111;
 
         public override int Length => 6;

@@ -17,10 +17,13 @@ namespace LoRaTools
 
         public override int Length => 2;
 
+        [JsonIgnore]
         public bool PowerAck => ((this.Status >> 2) & 0b00000001) == 1;
 
+        [JsonIgnore]
         public bool DRAck => ((this.Status >> 1) & 0b00000001) == 1;
 
+        [JsonIgnore]
         public bool CHMaskAck => ((this.Status >> 0) & 0b00000001) == 1;
 
         /// <summary>

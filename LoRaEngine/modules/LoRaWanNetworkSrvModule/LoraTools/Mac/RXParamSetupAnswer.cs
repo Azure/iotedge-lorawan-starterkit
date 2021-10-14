@@ -18,10 +18,13 @@ namespace LoRaTools
 
         public override int Length => 2;
 
+        [JsonIgnore]
         public bool Rx1DROffsetAck => ((this.Status >> 2) & 0b00000001) == 1;
 
+        [JsonIgnore]
         public bool Rx2DROffsetAck => ((this.Status >> 1) & 0b00000001) == 1;
 
+        [JsonIgnore]
         public bool ChannelAck => (this.Status & 0b00000001) == 1;
 
         public RXParamSetupAnswer(bool rx1DROffsetAck, bool rx2DataRateOffsetAck, bool channelAck)

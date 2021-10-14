@@ -20,8 +20,10 @@ namespace LoRaTools
 
         public override int Length => 5;
 
+        [JsonIgnore]
         public byte RX1DROffset => (byte)((this.DlSettings >> 4) & 0b00001111);
 
+        [JsonIgnore]
         public byte RX2DataRate => (byte)(this.DlSettings & 0b00001111);
 
         public RXParamSetupRequest()

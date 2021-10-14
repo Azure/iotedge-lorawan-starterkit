@@ -64,6 +64,7 @@ namespace LoRaTools.LoRaPhysical
         }
 
         [Obsolete("ad")]
+        [JsonIgnore]
         public override PktFwdMessageAdapter PktFwdMessageAdapter
         {
             get

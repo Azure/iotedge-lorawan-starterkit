@@ -118,7 +118,7 @@ namespace LoRaWan.NetworkServer.Test
                 if (hasMacInUpstream)
                 {
                     Assert.Equal(new LinkCheckAnswer(1, 1).Length, payloadDataDown.Frmpayload.Length);
-                    Assert.Equal(0, payloadDataDown.FPort);
+                    Assert.Equal(0, payloadDataDown.FPortValue);
                 }
             }
             else
