@@ -46,14 +46,14 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                await randomLock.WaitAsync();
+                await this.randomLock.WaitAsync();
                 var token = new byte[2];
-                random.NextBytes(token);
+                this.random.NextBytes(token);
                 return token;
             }
             finally
             {
-                _ = randomLock.Release();
+                _ = this.randomLock.Release();
             }
         }
 

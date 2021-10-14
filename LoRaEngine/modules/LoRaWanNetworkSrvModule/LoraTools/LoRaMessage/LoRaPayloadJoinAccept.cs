@@ -204,14 +204,14 @@ namespace LoRaTools.LoRaMessage
 
         public DownlinkPktFwdMessage Serialize(string appKey, string datr, double freq, long tmst, string devEUI)
         {
-            var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
-            if (!CfList.Span.IsEmpty)
-                algoinput = algoinput.Concat(CfList.ToArray()).ToArray();
+            var algoinput = this.Mhdr.ToArray().Concat(this.AppNonce.ToArray()).Concat(this.NetID.ToArray()).Concat(this.DevAddr.ToArray()).Concat(this.DlSettings.ToArray()).Concat(this.RxDelay.ToArray()).ToArray();
+            if (!this.CfList.Span.IsEmpty)
+                algoinput = algoinput.Concat(this.CfList.ToArray()).ToArray();
 
-            _ = CalculateMic(appKey, algoinput);
-            _ = PerformEncryption(appKey);
+            _ = this.CalculateMic(appKey, algoinput);
+            _ = this.PerformEncryption(appKey);
 
-            return new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, tmst);
+            return new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
         }
     }
 }

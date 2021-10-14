@@ -85,14 +85,14 @@ namespace LoraKeysManagerFacade.FunctionBundler
             //    List item: gatewayid, rssi, insertTime
             var item = new PreferredGatewayTableItem(context.Request.GatewayId, rssi);
             var listCacheKey = LoRaDevicePreferredGateway.PreferredGatewayFcntUpItemListCacheKey(devEUI, fcntUp);
-            _ = cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(RequestListCacheDurationInMinutes));
-            log.LogInformation("Preferred gateway {devEUI}/{fcnt}: added {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
+            _ = this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(RequestListCacheDurationInMinutes));
+            this.log.LogInformation("Preferred gateway {devEUI}/{fcnt}: added {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
 
             // 2. Wait for the time specified in receiveInterval (default 200ms). Optional: wait less if another requests already started
-            await Task.Delay(receiveInterval);
+            await Task.Delay(this.receiveInterval);
 
             // 3. Check if value was already calculated
-            var preferredGateway = LoRaDevicePreferredGateway.LoadFromCache(cacheStore, devEUI);
+            var preferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEUI);
             if (preferredGateway != null)
             {
                 if (preferredGateway.FcntUp >= fcntUp)
@@ -106,14 +106,14 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
             for (var i = 0; i < MaxAttemptsToResolvePreferredGateway; i++)
             {
-                if (await cacheStore.LockTakeAsync(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200), block: false))
+                if (await this.cacheStore.LockTakeAsync(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200), block: false))
                 {
                     try
                     {
-                        preferredGateway = LoRaDevicePreferredGateway.LoadFromCache(cacheStore, devEUI);
+                        preferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEUI);
                         if (preferredGateway == null || preferredGateway.FcntUp < fcntUp)
                         {
-                            var items = cacheStore.ListGet(listCacheKey).Select(x => PreferredGatewayTableItem.CreateFromCachedString(x));
+                            var items = this.cacheStore.ListGet(listCacheKey).Select(x => PreferredGatewayTableItem.CreateFromCachedString(x));
 
                             // if no table item was found (redis restarted, or delayed processing)?
                             // Return error, we don't want to save a value for each gateway or overwrite with a delayed request
@@ -126,25 +126,25 @@ namespace LoraKeysManagerFacade.FunctionBundler
                             }
 
                             preferredGateway = new LoRaDevicePreferredGateway(winner.GatewayID, fcntUp);
-                            if (!LoRaDevicePreferredGateway.SaveToCache(cacheStore, context.DevEUI, preferredGateway))
+                            if (!LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, context.DevEUI, preferredGateway))
                             {
-                                log.LogWarning("Failed to store preferred gateway for {devEUI}. Gateway: {gateway}", devEUI, context.Request.GatewayId);
+                                this.log.LogWarning("Failed to store preferred gateway for {devEUI}. Gateway: {gateway}", devEUI, context.Request.GatewayId);
                             }
 
-                            log.LogInformation("Resolved preferred gateway {devEUI}/{fcnt}: {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
+                            this.log.LogInformation("Resolved preferred gateway {devEUI}/{fcnt}: {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
                         }
                     }
                     finally
                     {
-                        _ = cacheStore.LockRelease(preferredGatewayLockKey, computationId);
+                        _ = this.cacheStore.LockRelease(preferredGatewayLockKey, computationId);
                     }
                 }
                 else
                 {
                     // We couldn't get lock
                     // wait a bit and try to get result
-                    await Task.Delay(Math.Max(50, receiveInterval / 4));
-                    preferredGateway = LoRaDevicePreferredGateway.LoadFromCache(cacheStore, context.DevEUI);
+                    await Task.Delay(Math.Max(50, this.receiveInterval / 4));
+                    preferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, context.DevEUI);
                 }
 
                 if (preferredGateway != null)

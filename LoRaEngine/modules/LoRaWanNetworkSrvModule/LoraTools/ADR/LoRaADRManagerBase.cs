@@ -36,7 +36,7 @@ namespace LoRaTools.ADR
                 throw new ArgumentException("Missing DevEUI or GatewayId");
             }
 
-            _ = await store.AddTableEntry(newEntry);
+            _ = await this.store.AddTableEntry(newEntry);
         }
 
         public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr, LoRaADRTableEntry newEntry = null)

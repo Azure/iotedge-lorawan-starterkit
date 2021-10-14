@@ -457,7 +457,7 @@ namespace LoRaWan.NetworkServer
 
         void SendClassCDeviceMessage(IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage)
         {
-            if (classCDeviceMessageSender != null)
+            if (this.classCDeviceMessageSender != null)
             {
                 _ = Task.Run(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage));
             }

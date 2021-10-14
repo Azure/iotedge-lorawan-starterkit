@@ -181,11 +181,11 @@ namespace LoRaWan.NetworkServer
         /// <inheritdoc />
         public override async Task<SearchDevicesResult> SearchByDevEUIAsync(string devEUI)
         {
-            var client = serviceFacadeHttpClientProvider.GetHttpClient();
+            var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = new StringBuilder();
-            _ = url.Append(URL)
+            _ = url.Append(this.URL)
                    .Append("GetDeviceByDevEUI?code=")
-                   .Append(AuthCode);
+                   .Append(this.AuthCode);
 
             if (!string.IsNullOrEmpty(devEUI))
             {

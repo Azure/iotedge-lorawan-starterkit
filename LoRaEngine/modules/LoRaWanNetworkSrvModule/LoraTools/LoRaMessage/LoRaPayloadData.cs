@@ -262,9 +262,9 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public UplinkPktFwdMessage SerializeUplink(string appSKey, string nwkSKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0, float lsnr = 0)
         {
-            _ = PerformEncryption(appSKey);
-            SetMic(nwkSKey);
-            return new UplinkPktFwdMessage(GetByteMessage(), datr, freq, tmst, lsnr);
+            _ = this.PerformEncryption(appSKey);
+            this.SetMic(nwkSKey);
+            return new UplinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst, lsnr);
         }
 
         /// <summary>
@@ -280,16 +280,16 @@ namespace LoRaTools.LoRaMessage
         public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI)
         {
             // It is a Mac Command payload, needs to encrypt with nwkskey
-            if (GetFPort() == 0)
+            if (this.GetFPort() == 0)
             {
-                _ = PerformEncryption(nwkSKey);
+                _ = this.PerformEncryption(nwkSKey);
             }
             else
             {
-                _ = PerformEncryption(appSKey);
+                _ = this.PerformEncryption(appSKey);
             }
 
-            SetMic(nwkSKey);
+            this.SetMic(nwkSKey);
             var downlinkPktFwdMessage = new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
             if (Logger.LoggerLevel < LogLevel.Information)
             {
@@ -433,10 +433,10 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public override byte[] PerformEncryption(string appSkey)
         {
-            if (!Frmpayload.Span.IsEmpty)
+            if (!this.Frmpayload.Span.IsEmpty)
             {
-                var decrypted = GetDecryptedPayload(appSkey);
-                Array.Copy(decrypted, 0, RawMessage, RawMessage.Length - 4 - decrypted.Length, decrypted.Length);
+                var decrypted = this.GetDecryptedPayload(appSkey);
+                Array.Copy(decrypted, 0, this.RawMessage, this.RawMessage.Length - 4 - decrypted.Length, decrypted.Length);
                 return decrypted;
             }
             else

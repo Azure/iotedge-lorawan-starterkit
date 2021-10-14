@@ -88,15 +88,15 @@ namespace LoraKeysManagerFacade
                 json = ReplaceJsonWithCorrectValues(region, resetPin, json, spiSpeed, spiDev);
 
                 var spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
-                _ = await registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
+                _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
 
-                await registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, spec);
+                await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, spec);
 
                 var twin = new Twin();
                 twin.Properties.Desired = new TwinCollection($"{{FacadeServerUrl:'https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.azurewebsites.net/api/',FacadeAuthCode: '{facadeKey}'}}");
-                var remoteTwin = await registryManager.GetTwinAsync(deviceName);
+                var remoteTwin = await this.registryManager.GetTwinAsync(deviceName);
 
-                _ = await registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
+                _ = await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
 
                 // This section will get deployed ONLY if the user selected the "deploy end device" options.
                 // Information in this if clause, is for demo purpose only and should not be used for productive workloads.
@@ -104,25 +104,25 @@ namespace LoraKeysManagerFacade
                 {
                     var otaaDevice = new Device(OtaaDeviceId);
 
-                    _ = await registryManager.AddDeviceAsync(otaaDevice);
+                    _ = await this.registryManager.AddDeviceAsync(otaaDevice);
 
                     var otaaEndTwin = new Twin();
                     otaaEndTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:'',SensorDecoder:'DecoderValueSensor'}");
-                    var otaaRemoteTwin = _ = await registryManager.GetTwinAsync(OtaaDeviceId);
-                    _ = await registryManager.UpdateTwinAsync(OtaaDeviceId, otaaEndTwin, otaaRemoteTwin.ETag);
+                    var otaaRemoteTwin = _ = await this.registryManager.GetTwinAsync(OtaaDeviceId);
+                    _ = await this.registryManager.UpdateTwinAsync(OtaaDeviceId, otaaEndTwin, otaaRemoteTwin.ETag);
 
                     var abpDevice = new Device(AbpDeviceId);
-                    _ = await registryManager.AddDeviceAsync(abpDevice);
+                    _ = await this.registryManager.AddDeviceAsync(abpDevice);
                     var abpTwin = new Twin();
                     abpTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:'',DevAddr:'0228B1B1',SensorDecoder:'DecoderValueSensor'}");
-                    var abpRemoteTwin = await registryManager.GetTwinAsync(AbpDeviceId);
-                    _ = await registryManager.UpdateTwinAsync(AbpDeviceId, abpTwin, abpRemoteTwin.ETag);
+                    var abpRemoteTwin = await this.registryManager.GetTwinAsync(AbpDeviceId);
+                    _ = await this.registryManager.UpdateTwinAsync(AbpDeviceId, abpTwin, abpRemoteTwin.ETag);
                 }
             }
             catch (Exception)
             {
                 // In case of an exception in device provisioning we want to make sure that we return a proper template if our devices are successfullycreated
-                var edgeGateway = await registryManager.GetDeviceAsync(deviceName);
+                var edgeGateway = await this.registryManager.GetDeviceAsync(deviceName);
 
                 if (edgeGateway == null)
                 {
@@ -131,8 +131,8 @@ namespace LoraKeysManagerFacade
 
                 if (deployEndDevice)
                 {
-                    var abpDevice = await registryManager.GetDeviceAsync(AbpDeviceId);
-                    var otaaDevice = await registryManager.GetDeviceAsync(OtaaDeviceId);
+                    var abpDevice = await this.registryManager.GetDeviceAsync(AbpDeviceId);
+                    var otaaDevice = await this.registryManager.GetDeviceAsync(OtaaDeviceId);
 
                     if (abpDevice == null || otaaDevice == null)
                     {

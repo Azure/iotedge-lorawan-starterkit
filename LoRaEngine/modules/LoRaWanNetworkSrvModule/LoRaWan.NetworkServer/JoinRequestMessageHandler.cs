@@ -24,7 +24,7 @@ namespace LoRaWan.NetworkServer
 
         public void DispatchRequest(LoRaRequest request)
         {
-            _ = Task.Run(async () => await ProcessJoinRequestAsync(request));
+            _ = Task.Run(async () => await this.ProcessJoinRequestAsync(request));
         }
 
         /// <summary>
