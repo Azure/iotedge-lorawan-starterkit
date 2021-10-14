@@ -41,18 +41,10 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public static TimeSpan ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead => expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead;
 
-        static readonly TimeSpan minimumAvailableTimeToCheckForCloudMessage;
-        static readonly TimeSpan expectedTimeToPackageAndSendMessage;
-        static readonly TimeSpan checkForCloudMessageCallEstimatedOverhead;
-        static readonly TimeSpan expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead;
-
-        static LoRaOperationTimeWatcher()
-        {
-            expectedTimeToPackageAndSendMessage = TimeSpan.FromMilliseconds(300);
-            minimumAvailableTimeToCheckForCloudMessage = TimeSpan.FromMilliseconds(20);
-            checkForCloudMessageCallEstimatedOverhead = TimeSpan.FromMilliseconds(100);
-            expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead = expectedTimeToPackageAndSendMessage + checkForCloudMessageCallEstimatedOverhead;
-        }
+        static readonly TimeSpan minimumAvailableTimeToCheckForCloudMessage = TimeSpan.FromMilliseconds(20);
+        static readonly TimeSpan expectedTimeToPackageAndSendMessage = TimeSpan.FromMilliseconds(300);
+        static readonly TimeSpan checkForCloudMessageCallEstimatedOverhead = TimeSpan.FromMilliseconds(100);
+        static readonly TimeSpan expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead = expectedTimeToPackageAndSendMessage + checkForCloudMessageCallEstimatedOverhead;
 
         readonly DateTimeOffset startTime;
 
