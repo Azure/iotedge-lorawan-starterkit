@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.E2E
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.CommonAPI;
@@ -111,7 +112,7 @@ namespace LoRaWan.Tests.E2E
             // Sends 2x unconfirmed messages
             for (var i = 1; i <= UnconfirmedMsgCount; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{UnconfirmedMsgCount}");
 
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
@@ -145,7 +146,7 @@ namespace LoRaWan.Tests.E2E
             // Sends 5x unconfirmed messages, stopping if assertions succeeded
             for (var i = 1; i <= MaxAttempts; ++i)
             {
-                var msg = PayloadGenerator.Next().ToString();
+                var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
                 this.Log($"{device.DeviceID}: Sending unconfirmed '{msg}' {i}/{MaxAttempts}");
                 await this.ArduinoDevice.transferPacketAsync(msg, 10);
 
@@ -159,7 +160,7 @@ namespace LoRaWan.Tests.E2E
                     var searchResults = await this.TestFixtureCi.SearchNetworkServerModuleAsync(
                         (messageBody) =>
                         {
-                            return messageBody.StartsWith(macCommandReceivedMsg);
+                            return messageBody.StartsWith(macCommandReceivedMsg, StringComparison.Ordinal);
                         },
                         new SearchLogOptions
                         {

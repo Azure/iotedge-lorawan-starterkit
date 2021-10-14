@@ -4,6 +4,7 @@
 namespace LoraKeysManagerFacade
 {
     using System;
+    using System.Globalization;
     using System.Net;
     using System.Net.Http;
     using System.Text;
@@ -52,7 +53,7 @@ namespace LoraKeysManagerFacade
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Add("Authorization", $"Basic {base64Auth}");
-                var result = client.GetAsync($"{apiUrl}/functions/admin/token").Result;
+                var result = client.GetAsync(new Uri($"{apiUrl}/functions/admin/token")).Result;
                 jwt = result.Content.ReadAsStringAsync().Result.Trim('"'); // get  JWT for call funtion key
             }
 
@@ -61,7 +62,7 @@ namespace LoraKeysManagerFacade
             {
                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + jwt);
 
-                var jsonResult = client.GetAsync($"{siteUrl}/admin/host/keys").Result.Content.ReadAsStringAsync().Result;
+                var jsonResult = client.GetAsync(new Uri($"{siteUrl}/admin/host/keys")).Result.Content.ReadAsStringAsync().Result;
                 dynamic resObject = JsonConvert.DeserializeObject(jsonResult);
                 facadeKey = resObject.keys[0].value;
             }
@@ -93,8 +94,7 @@ namespace LoraKeysManagerFacade
                 await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, spec);
 
                 var twin = new Twin();
-                twin.Properties.Desired = new TwinCollection(@"{FacadeServerUrl:'" + string.Format("https://{0}.azurewebsites.net/api/", GetEnvironmentVariable("FACADE_HOST_NAME")) + "',FacadeAuthCode: " +
-                    "'" + facadeKey + "'}");
+                twin.Properties.Desired = new TwinCollection($"{{FacadeServerUrl:'https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.azurewebsites.net/api/',FacadeAuthCode: '{facadeKey}'}}");
                 var remoteTwin = await this.registryManager.GetTwinAsync(deviceName);
 
                 await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
@@ -149,33 +149,35 @@ namespace LoraKeysManagerFacade
 
         private static string ReplaceJsonWithCorrectValues(string region, string resetPin, string json, string spiSpeed, string spiDev)
         {
-            json = json.Replace("[$region]", region);
-            json = json.Replace("[$reset_pin]", resetPin);
+            json = json.Replace("[$region]", region, StringComparison.Ordinal);
+            json = json.Replace("[$reset_pin]", resetPin, StringComparison.Ordinal);
 
-            if (string.Equals(spiSpeed, "8", StringComparison.CurrentCultureIgnoreCase) ||
+            if (string.Equals(spiSpeed, "8", StringComparison.OrdinalIgnoreCase) ||
                 string.IsNullOrEmpty(spiSpeed))
             {
                 // default case
-                json = json.Replace("[$spi_speed]", string.Empty);
+                json = json.Replace("[$spi_speed]", string.Empty, StringComparison.Ordinal);
             }
             else
             {
                 json = json.Replace(
                     "[$spi_speed]",
-                    ",'SPI_SPEED':{'value':'2'}");
+                    ",'SPI_SPEED':{'value':'2'}",
+                    StringComparison.Ordinal);
             }
 
-            if (string.Equals(spiDev, "2", StringComparison.CurrentCultureIgnoreCase) ||
+            if (string.Equals(spiDev, "2", StringComparison.OrdinalIgnoreCase) ||
                 string.IsNullOrEmpty(spiDev))
             {
                 // default case
-                json = json.Replace("[$spi_dev]", string.Empty);
+                json = json.Replace("[$spi_dev]", string.Empty, StringComparison.Ordinal);
             }
             else
             {
                 json = json.Replace(
                     "[$spi_dev]",
-                    ",'SPI_DEV':{'value':'1'}");
+                    ",'SPI_DEV':{'value':'1'}",
+                    StringComparison.Ordinal);
             }
 
             return json;

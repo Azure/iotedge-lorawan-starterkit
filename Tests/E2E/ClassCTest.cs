@@ -67,8 +67,8 @@ namespace LoRaWan.Tests.E2E
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-            Assert.Contains(this.ArduinoDevice.SerialLogs, (l) => l.StartsWith("+MSG: PORT: 23; RX: \"FF00\""));
-            Assert.Contains(this.ArduinoDevice.SerialLogs, (l) => l.StartsWith("+MSG: RXWIN0, RSSI"));
+            Assert.Contains(this.ArduinoDevice.SerialLogs, (l) => l.StartsWith("+MSG: PORT: 23; RX: \"FF00\"", StringComparison.Ordinal));
+            Assert.Contains(this.ArduinoDevice.SerialLogs, (l) => l.StartsWith("+MSG: RXWIN0, RSSI", StringComparison.Ordinal));
             await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
         }
     }

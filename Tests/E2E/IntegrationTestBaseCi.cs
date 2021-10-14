@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.E2E
 {
     using System;
+    using System.Globalization;
     using System.Text;
     using LoRaWan.Tests.Shared;
     using Xunit;
@@ -37,7 +38,7 @@ namespace LoRaWan.Tests.E2E
             var bytes = Encoding.UTF8.GetBytes(str);
             foreach (var t in bytes)
             {
-                sb.Append(t.ToString("X2"));
+                sb.Append(t.ToString("X2", CultureInfo.InvariantCulture));
             }
 
             return sb.ToString(); // returns: "48656C6C6F20776F726C64" for "Hello world"

@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.E2E
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaWan.Tests.Shared;
 
@@ -172,7 +173,7 @@ namespace LoRaWan.Tests.E2E
                 format = format.PadLeft(16, '0');
             }
 
-            return deviceId.ToString(format);
+            return deviceId.ToString(format, CultureInfo.InvariantCulture);
         }
 
         public string GetKey32(int deviceId, bool multiGw = false)
@@ -184,7 +185,7 @@ namespace LoRaWan.Tests.E2E
                 format = format.PadLeft(32, '0');
             }
 
-            return deviceId.ToString(format);
+            return deviceId.ToString(format, CultureInfo.InvariantCulture);
         }
 
         public override void SetupTestDevices()

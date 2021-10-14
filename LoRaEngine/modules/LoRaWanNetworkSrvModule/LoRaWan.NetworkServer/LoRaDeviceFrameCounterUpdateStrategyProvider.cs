@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
             if (string.IsNullOrEmpty(deviceGatewayID))
                 return this.multiGateway;
 
-            if (string.Equals(this.gatewayID, deviceGatewayID, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(this.gatewayID, deviceGatewayID, StringComparison.OrdinalIgnoreCase))
                 return this.singleGateway;
 
             return null;

@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer.Test
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaTools.LoRaPhysical;
@@ -55,7 +56,7 @@ namespace LoRaWan.NetworkServer.Test
             {
                 GatewayID = ServerGatewayID,
                 LogToConsole = true,
-                LogLevel = ((int)LogLevel.Debug).ToString(),
+                LogLevel = ((int)LogLevel.Debug).ToString(CultureInfo.InvariantCulture),
             };
 
             Logger.Init(new LoggerConfiguration()
