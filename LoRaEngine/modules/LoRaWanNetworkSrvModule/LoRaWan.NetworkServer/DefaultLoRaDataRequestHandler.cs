@@ -568,7 +568,7 @@ namespace LoRaWan.NetworkServer
         {
             if (payloadData.MacCommands?.Count > 0)
             {
-                eventProperties = eventProperties ?? new Dictionary<string, string>(payloadData.MacCommands.Count);
+                eventProperties ??= new Dictionary<string, string>(payloadData.MacCommands.Count);
 
                 for (var i = 0; i < payloadData.MacCommands.Count; i++)
                 {

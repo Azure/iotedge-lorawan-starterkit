@@ -438,7 +438,7 @@ namespace LoRaWan.NetworkServer
             {
                 // force this counter in the start desired
                 newfCnt = frameCounterStartDesired;
-                toReport = toReport ?? new TwinCollection();
+                toReport ??= new TwinCollection();
                 toReport[propertyNameStart] = newfCnt.Value;
                 this.hasFrameCountChanges = true;
                 Logger.Log(this.DevEUI, $"set {fcntPropertyName} from {propertyNameStart} with {newfCnt.Value}, reset: {reset}", LogLevel.Debug);
