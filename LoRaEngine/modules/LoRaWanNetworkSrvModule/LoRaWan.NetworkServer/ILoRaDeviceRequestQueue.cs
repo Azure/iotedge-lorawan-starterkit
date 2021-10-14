@@ -6,7 +6,10 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Defines a loRa device request queue.
     /// </summary>
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+    // False positive, suffix is accurate.
     public interface ILoRaDeviceRequestQueue
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     {
         /// <summary>
         /// Queues a request.

@@ -33,7 +33,7 @@ namespace LoRaTools
         {
             this.Battery = battery;
             this.Margin = margin;
-            this.Cid = CidEnum.DevStatusCmd;
+            this.Cid = Cid.DevStatusCmd;
         }
 
         public DevStatusAnswer(ReadOnlySpan<byte> readOnlySpan)
@@ -47,7 +47,7 @@ namespace LoRaTools
             {
                 this.Battery = readOnlySpan[1];
                 this.Margin = readOnlySpan[2];
-                this.Cid = (CidEnum)readOnlySpan[0];
+                this.Cid = (Cid)readOnlySpan[0];
             }
         }
 

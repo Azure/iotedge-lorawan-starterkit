@@ -70,7 +70,7 @@ namespace LoRaWan.NetworkServer.Test
 
             for (var i = 0; i < count; i++)
             {
-                var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+                var payloadInt = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADR));
                 var rxpkInt = payloadInt.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
                 using var requestInt = this.CreateWaitableRequest(rxpkInt);
                 messageProcessor.DispatchRequest(requestInt);
@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer.Test
                 payloadFcnt++;
             }
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADRAckReq + (int)LoRaTools.LoRaMessage.Fctrl.ADR));
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             using var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -106,7 +106,7 @@ namespace LoRaWan.NetworkServer.Test
                 Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
                 var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
                 Assert.Equal(0, payloadDataDown.Fport.Span[0]);
-                Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
+                Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
                 var linkAdr = new LinkADRRequest(decryptedPayload);
                 Assert.Equal(expectedDR, linkAdr.DataRate);
                 Assert.Equal(expectedDR, loraDevice.DataRate);
@@ -189,10 +189,10 @@ namespace LoRaWan.NetworkServer.Test
 
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADR));
             }
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADRAckReq + (int)LoRaTools.LoRaMessage.Fctrl.ADR));
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -219,7 +219,7 @@ namespace LoRaWan.NetworkServer.Test
                 Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
                 var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
                 Assert.Equal(0, payloadDataDown.Fport.Span[0]);
-                Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
+                Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
                 var linkAdr = new LinkADRRequest(decryptedPayload);
                 Assert.Equal(expectedDR, linkAdr.DataRate);
                 Assert.Equal(expectedDR, loraDevice.DataRate);
@@ -294,10 +294,10 @@ namespace LoRaWan.NetworkServer.Test
             // todo add case without buffer
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADR));
             }
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADRAckReq + (int)LoRaTools.LoRaMessage.Fctrl.ADR));
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -311,7 +311,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
             Assert.Equal(0, payloadDataDown.Fport.Span[0]);
-            Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
+            Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             var linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(5, linkAdr.DataRate);
             Assert.Equal(5, loraDevice.DataRate);
@@ -340,10 +340,10 @@ namespace LoRaWan.NetworkServer.Test
             // todo add case without buffer
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADR));
             }
 
-            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADRAckReq + (int)LoRaTools.LoRaMessage.Fctrl.ADR));
             rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var secondRequest = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(secondRequest);
@@ -357,7 +357,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
             Assert.Equal(0, payloadDataDown.Fport.Span[0]);
-            Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
+            Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(5, linkAdr.DataRate);
             Assert.Equal(5, loraDevice.DataRate);
@@ -431,10 +431,10 @@ namespace LoRaWan.NetworkServer.Test
             // send a message with a fcnt every 4.
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt + 3, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt + 3, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADR));
             }
 
-            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADRAckReq + (int)LoRaTools.LoRaMessage.Fctrl.ADR));
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var request = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
@@ -455,7 +455,7 @@ namespace LoRaWan.NetworkServer.Test
             var decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
             Array.Reverse(decryptedPayload);
             Assert.Equal(0, payloadDataDown.Fport.Span[0]);
-            Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
+            Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             var linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(3, reportedNbRep);
             Assert.Equal(3, linkAdr.NbRep);
@@ -466,10 +466,10 @@ namespace LoRaWan.NetworkServer.Test
             // send a message with a fcnt every 1
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADR));
             }
 
-            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADRAckReq + (int)LoRaTools.LoRaMessage.Fctrl.ADR));
             rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var secondRequest = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(secondRequest);
@@ -489,7 +489,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
             Assert.Equal(0, payloadDataDown.Fport.Span[0]);
-            Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
+            Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(2, reportedNbRep);
             Assert.Equal(2, linkAdr.NbRep);
@@ -508,10 +508,10 @@ namespace LoRaWan.NetworkServer.Test
             // send a message with a fcnt every 1
             for (var i = 0; i < messageCount; i++)
             {
-                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+                payloadFcnt = await this.SendMessage(currentLsnr, currentDR, payloadFcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADR));
             }
 
-            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq + (int)LoRaTools.LoRaMessage.FctrlEnum.ADR));
+            payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: payloadFcnt, fctrl: (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADRAckReq + (int)LoRaTools.LoRaMessage.Fctrl.ADR));
             rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, lsnr: currentLsnr, datr: currentDR).Rxpk[0];
             using var thirdRequest = this.CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(thirdRequest);
@@ -531,7 +531,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(5, payloadDataDown.Frmpayload.Span.Length);
             decryptedPayload = payloadDataDown.PerformEncryption(simulatedDevice.NwkSKey);
             Assert.Equal(0, payloadDataDown.Fport.Span[0]);
-            Assert.Equal((byte)CidEnum.LinkADRCmd, decryptedPayload[0]);
+            Assert.Equal((byte)Cid.LinkADRCmd, decryptedPayload[0]);
             linkAdr = new LinkADRRequest(decryptedPayload);
             Assert.Equal(1, reportedNbRep);
             Assert.Equal(1, linkAdr.NbRep);
@@ -555,7 +555,7 @@ namespace LoRaWan.NetworkServer.Test
 
         private async Task<uint> InitializeCacheToDefaultValuesAsync(uint payloadfcnt, SimulatedDevice simulatedDevice, MessageDispatcher messageProcessor)
         {
-            return await this.SendMessage(0, "SF7BW125", payloadfcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.FctrlEnum.ADR + (int)LoRaTools.LoRaMessage.FctrlEnum.ADRAckReq));
+            return await this.SendMessage(0, "SF7BW125", payloadfcnt, simulatedDevice, messageProcessor, (byte)((int)LoRaTools.LoRaMessage.Fctrl.ADR + (int)LoRaTools.LoRaMessage.Fctrl.ADRAckReq));
         }
     }
 }

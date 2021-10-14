@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer.Test
 
     public sealed class WaitableLoRaRequest : LoRaRequest, IDisposable
     {
-        SemaphoreSlim complete;
+        readonly SemaphoreSlim complete;
 
         public bool ProcessingFailed { get; private set; }
 

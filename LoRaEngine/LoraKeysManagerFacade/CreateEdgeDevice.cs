@@ -20,7 +20,7 @@ namespace LoraKeysManagerFacade
     {
         private const string AbpDeviceId = "46AAC86800430028";
         private const string OtaaDeviceId = "47AAC86800430028";
-        private RegistryManager registryManager;
+        private readonly RegistryManager registryManager;
 
         public CreateEdgeDevice(RegistryManager registryManager)
         {

@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
         private readonly Task loading;
         private volatile LoaderState state;
         private volatile bool loadingDevicesFailed;
-        private object queueLock;
+        private readonly object queueLock;
         private volatile List<LoRaRequest> queuedRequests;
 
         internal DeviceLoaderSynchronizer(
