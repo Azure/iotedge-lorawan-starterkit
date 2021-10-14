@@ -31,19 +31,7 @@ namespace LoRaTools.LoRaMessage
         /// Gets the LoRa payload fport as value.
         /// </summary>
         [JsonIgnore]
-        public byte FPortValue
-        {
-            get
-            {
-                byte fportUp = 0;
-                if (this.Fport.Span.Length > 0)
-                {
-                    fportUp = this.Fport.Span[0];
-                }
-
-                return fportUp;
-            }
-        }
+        public byte FPortValue => this.Fport.Span.Length > 0 ? this.Fport.Span[0] : (byte)0;
 
         /// <summary>
         /// Gets the LoRa payload frame counter.
