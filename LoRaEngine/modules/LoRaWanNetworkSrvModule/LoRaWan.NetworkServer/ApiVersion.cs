@@ -246,8 +246,7 @@ namespace LoRaWan.Shared
             obj is ApiVersion version &&
             this.Version == version.Version &&
             this.Name == version.Name &&
-            this.IsKnown == version.IsKnown &&
-            EqualityComparer<ApiVersion>.Default.Equals(this.MinCompatibleVersion, version.MinCompatibleVersion);
+            this.IsKnown == version.IsKnown;
 
         public static bool operator <(ApiVersion value1, ApiVersion value2)
         {
