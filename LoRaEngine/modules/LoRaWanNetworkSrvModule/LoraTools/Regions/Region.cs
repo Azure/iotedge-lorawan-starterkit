@@ -48,45 +48,45 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Gets or sets default first receive windows. [sec].
         /// </summary>
-        public uint Receive_delay1 { get; set; }
+        public uint ReceiveDelay1 { get; set; }
 
         /// <summary>
         /// Gets or sets default second receive Windows. Should be receive_delay1+1 [sec].
         /// </summary>
-        public uint Receive_delay2 { get; set; }
+        public uint ReceiveDelay2 { get; set; }
 
         /// <summary>
         /// Gets or sets default Join Accept Delay for first Join Accept Windows.[sec].
         /// </summary>
-        public uint Join_accept_delay1 { get; set; }
+        public uint JoinAcceptDelay1 { get; set; }
 
         /// <summary>
         /// Gets or sets default Join Accept Delay for second Join Accept Windows. [sec].
         /// </summary>
-        public uint Join_accept_delay2 { get; set; }
+        public uint JoinAcceptDelay2 { get; set; }
 
         /// <summary>
         /// Gets or sets max fcnt gap between expected and received. [#frame]
         /// If this difference is greater than the value of MAX_FCNT_GAP then too many data frames have been lost then subsequent will be discarded.
         /// </summary>
-        public int Max_fcnt_gap { get; set; }
+        public int MaxFcntGap { get; set; }
 
         /// <summary>
         /// Gets or sets number of uplink an end device can send without asking for an ADR acknowledgement request (set ADRACKReq bit to 1). [#frame].
         /// </summary>
-        public uint Adr_ack_limit { get; set; }
+        public uint AdrAckLimit { get; set; }
 
         /// <summary>
         /// Gets or sets number of frames in which the network is required to respond to a ADRACKReq request. [#frame]
         /// If no response, during time select a lower data rate.
         /// </summary>
-        public uint Adr_adr_delay { get; set; }
+        public uint AdrAdrDelay { get; set; }
 
         /// <summary>
         /// Gets or sets timeout for ack transmissiont, tuple with (min,max). Value should be a delay between min and max. [sec, sec].
         /// If  an  end-­device  does  not  receive  a  frame  with  the  ACK  bit  set  in  one  of  the  two  receive  19   windows  immediately  following  the  uplink  transmission  it  may  resend  the  same  frame  with  20   the  same  payload  and  frame  counter  again  at  least  ACK_TIMEOUT  seconds  after  the  21   second  reception  window.
         /// </summary>
-        public (uint min, uint max) Ack_timeout { get; set; }
+        public (uint min, uint max) AckTimeout { get; set; }
 
         /// <summary>
         /// Gets or sets the limits on the region to ensure valid properties.
@@ -98,22 +98,24 @@ namespace LoRaTools.Regions
         /// </summary>
         public int MaxADRDataRate { get; set; }
 
-        public Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
+        public Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows,
+                      uint receiveDelay1, uint receiveDelay2, uint joinAcceptDelay1, uint joinAcceptDelay2, int maxFcntGap, uint adrAckLimit,
+                      uint adrAdrDelay, (uint min, uint max) ackTimeout)
         {
             this.LoRaRegion = regionEnum;
-            this.Ack_timeout = ack_timeout;
+            this.AckTimeout = ackTimeout;
 
             this.LoRaSyncWord = loRaSyncWord;
             this.GFSKSyncWord = gFSKSyncWord;
 
             this.RX2DefaultReceiveWindows = rx2DefaultReceiveWindows;
-            this.Receive_delay1 = receive_delay1;
-            this.Receive_delay2 = receive_delay2;
-            this.Join_accept_delay1 = join_accept_delay1;
-            this.Join_accept_delay2 = join_accept_delay2;
-            this.Max_fcnt_gap = max_fcnt_gap;
-            this.Adr_ack_limit = adr_ack_limit;
-            this.Adr_adr_delay = adr_adr_delay;
+            this.ReceiveDelay1 = receiveDelay1;
+            this.ReceiveDelay2 = receiveDelay2;
+            this.JoinAcceptDelay1 = joinAcceptDelay1;
+            this.JoinAcceptDelay2 = joinAcceptDelay2;
+            this.MaxFcntGap = maxFcntGap;
+            this.AdrAckLimit = adrAckLimit;
+            this.AdrAdrDelay = adrAdrDelay;
         }
 
         /// <summary>

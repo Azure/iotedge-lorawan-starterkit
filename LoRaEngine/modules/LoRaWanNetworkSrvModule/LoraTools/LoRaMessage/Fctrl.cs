@@ -3,7 +3,7 @@
 
 namespace LoRaTools.LoRaMessage
 {
-    public enum FctrlEnum : short
+    public enum Fctrl : short
     {
         FOptLen1 = 0,
         FOptLen2 = 1,

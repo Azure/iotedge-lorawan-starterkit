@@ -28,7 +28,7 @@ namespace LoRaTools
         /// </summary>
         public LinkADRAnswer(byte powerAck, bool dataRateAck, bool channelMaskAck)
         {
-            this.Cid = CidEnum.LinkADRCmd;
+            this.Cid = Cid.LinkADRCmd;
             this.Status |= (byte)((byte)(powerAck & 0b00000011) << 2);
             this.Status |= (byte)((byte)(dataRateAck ? 1 << 1 : 0 << 1) | (byte)(channelMaskAck ? 1 : 0));
         }
@@ -39,7 +39,7 @@ namespace LoRaTools
         public LinkADRAnswer(ReadOnlySpan<byte> readOnlySpan)
             : base(readOnlySpan)
         {
-            this.Cid = (CidEnum)readOnlySpan[0];
+            this.Cid = (Cid)readOnlySpan[0];
             this.Status = readOnlySpan[1];
         }
 

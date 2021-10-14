@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer.Test
 
     sealed class TestMultiGatewayUpdateFrameStrategy : ILoRaDeviceFrameCounterUpdateStrategy, IDisposable
     {
-        SemaphoreSlim nextFcntDownLock = new SemaphoreSlim(1);
+        readonly SemaphoreSlim nextFcntDownLock = new SemaphoreSlim(1);
 
         public void Dispose() => this.nextFcntDownLock.Dispose();
 

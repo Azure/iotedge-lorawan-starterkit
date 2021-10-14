@@ -28,7 +28,7 @@ namespace LoRaTools
         {
             this.Margin = margin;
             this.GwCnt = gwCnt;
-            this.Cid = CidEnum.LinkCheckCmd;
+            this.Cid = Cid.LinkCheckCmd;
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace LoRaTools
         /// </summary>
         public LinkCheckAnswer(ReadOnlySpan<byte> input)
         {
-            this.Cid = (CidEnum)input[2];
+            this.Cid = (Cid)input[2];
             this.Margin = (uint)input[1];
             this.GwCnt = (uint)input[0];
         }

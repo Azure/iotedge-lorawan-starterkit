@@ -98,7 +98,7 @@ namespace LoRaWan.NetworkServer.Test
                 Fport = 18,
             };
 
-            var expectedFcntDown = fcntDownFromTwin + Constants.MAX_FCNT_UNSAVED_DELTA + fcntDelta;
+            var expectedFcntDown = fcntDownFromTwin + Constants.MaxFcntUnsavedDelta + fcntDelta;
 
             if (string.IsNullOrEmpty(deviceGatewayID))
             {

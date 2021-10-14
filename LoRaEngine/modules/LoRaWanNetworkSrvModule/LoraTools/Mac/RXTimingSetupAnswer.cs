@@ -14,7 +14,7 @@ namespace LoRaTools
 
         public RXTimingSetupAnswer()
         {
-            this.Cid = CidEnum.RXTimingCmd;
+            this.Cid = Cid.RXTimingCmd;
         }
 
         public override IEnumerable<byte> ToBytes()

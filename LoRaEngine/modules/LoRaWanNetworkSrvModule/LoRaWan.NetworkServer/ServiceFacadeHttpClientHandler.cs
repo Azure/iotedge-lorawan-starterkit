@@ -17,12 +17,10 @@ namespace LoRaWan.Shared
     /// </summary>
     public class ServiceFacadeHttpClientHandler : HttpClientHandler
     {
-        private readonly ApiVersion minFunctionVersion;
-
         /// <summary>
         /// Expected Function version.
         /// </summary>
-        public ApiVersion MinFunctionVersion => this.minFunctionVersion;
+        public ApiVersion MinFunctionVersion { get; private set; }
 
         private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> next;
 
@@ -32,7 +30,7 @@ namespace LoRaWan.Shared
         /// <param name="minFunctionVersion"></param>
         public ServiceFacadeHttpClientHandler(ApiVersion minFunctionVersion)
         {
-            this.minFunctionVersion = minFunctionVersion;
+            this.MinFunctionVersion = minFunctionVersion;
         }
 
         /// <summary>
@@ -42,7 +40,7 @@ namespace LoRaWan.Shared
         /// <param name="next"></param>
         public ServiceFacadeHttpClientHandler(ApiVersion minFunctionVersion, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> next)
         {
-            this.minFunctionVersion = minFunctionVersion;
+            this.MinFunctionVersion = minFunctionVersion;
             this.next = next;
         }
 
@@ -55,16 +53,16 @@ namespace LoRaWan.Shared
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // adds the version to the request
-            request.RequestUri = new Uri(string.Concat(request.RequestUri.ToString(), string.IsNullOrEmpty(request.RequestUri.Query) ? "?" : "&", ApiVersion.QueryStringParamName, "=", this.minFunctionVersion.Version));
+            request.RequestUri = new Uri(string.Concat(request.RequestUri.ToString(), string.IsNullOrEmpty(request.RequestUri.Query) ? "?" : "&", ApiVersion.QueryStringParamName, "=", this.MinFunctionVersion.Version));
 
             // use next if one was provided (for unit testing)
             var response = (this.next != null) ? await this.next(request, cancellationToken) : await base.SendAsync(request, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
                 var functionVersion = this.GetFunctionVersion(response);
-                if (!functionVersion.SupportsVersion(this.minFunctionVersion))
+                if (!functionVersion.SupportsVersion(this.MinFunctionVersion))
                 {
-                    var msg = $"Version mismatch (expected: {this.minFunctionVersion.Name}, function version: {functionVersion.Name}), ensure you have the latest version deployed";
+                    var msg = $"Version mismatch (expected: {this.MinFunctionVersion.Name}, function version: {functionVersion.Name}), ensure you have the latest version deployed";
 
                     return new HttpResponseMessage(HttpStatusCode.BadRequest)
                     {

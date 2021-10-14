@@ -15,7 +15,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IoTHubDeviceInfo ioTHubDevice;
         private readonly ILoRaDeviceFactory deviceFactory;
-        Task<LoRaDevice> loading;
+        readonly Task<LoRaDevice> loading;
         volatile bool canCache;
 
         internal bool CanCache => this.canCache;

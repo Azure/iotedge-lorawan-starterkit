@@ -13,7 +13,6 @@ namespace LoRaTools.ADR
     {
         private const int MarginDb = 5;
         private const int MaxTxPowerIndex = 0;
-        private const int DefaultNbRep = 1;
 
         /// <summary>
         /// Array to calculate nb Repetion given packet loss

@@ -121,12 +121,7 @@ namespace LoRaWan.IntegrationTest
         public TestDeviceInfo Device30_OTAA { get; private set; }
 
         // Arduino device used for testing
-        public LoRaArduinoSerial ArduinoDevice
-        {
-            get { return this.arduinoDevice; }
-        }
-
-        private LoRaArduinoSerial arduinoDevice;
+        public LoRaArduinoSerial ArduinoDevice { get; private set; }
 
         public override async Task InitializeAsync()
         {
@@ -136,7 +131,7 @@ namespace LoRaWan.IntegrationTest
 
             if (!string.IsNullOrEmpty(this.Configuration.LeafDeviceSerialPort))
             {
-                this.arduinoDevice = LoRaArduinoSerial.CreateFromPort(this.Configuration.LeafDeviceSerialPort);
+                this.ArduinoDevice = LoRaArduinoSerial.CreateFromPort(this.Configuration.LeafDeviceSerialPort);
             }
             else
             {
@@ -158,8 +153,8 @@ namespace LoRaWan.IntegrationTest
 
             if (disposing)
             {
-                this.arduinoDevice?.Dispose();
-                this.arduinoDevice = null;
+                this.ArduinoDevice?.Dispose();
+                this.ArduinoDevice = null;
             }
         }
 

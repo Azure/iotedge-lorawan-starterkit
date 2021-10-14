@@ -157,7 +157,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse(loRaDevice);
-                if (windowToUse == Constants.INVALID_RECEIVE_WINDOW)
+                if (windowToUse == Constants.InvalidReceiveWindow)
                 {
                     Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", LogLevel.Information);
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ReceiveWindowMissed);
@@ -167,7 +167,7 @@ namespace LoRaWan.NetworkServer
                 double freq = 0;
                 string datr = null;
                 uint tmst = 0;
-                if (windowToUse == Constants.RECEIVE_WINDOW_1)
+                if (windowToUse == Constants.ReceiveWindow1)
                 {
                     datr = loraRegion.GetDownstreamDR(request.Rxpk);
                     if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
@@ -178,12 +178,12 @@ namespace LoRaWan.NetworkServer
                     }
 
                     // set tmst for the normal case
-                    tmst = request.Rxpk.Tmst + loraRegion.Join_accept_delay1 * 1000000;
+                    tmst = request.Rxpk.Tmst + loraRegion.JoinAcceptDelay1 * 1000000;
                 }
                 else
                 {
                     Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Debug);
-                    tmst = request.Rxpk.Tmst + loraRegion.Join_accept_delay2 * 1000000;
+                    tmst = request.Rxpk.Tmst + loraRegion.JoinAcceptDelay2 * 1000000;
 
                     freq = loraRegion.GetDownstreamRX2Freq(devEUI, this.configuration.Rx2Frequency);
                     datr = loraRegion.GetDownstreamRX2Datarate(devEUI, this.configuration.Rx2DataRate, null);

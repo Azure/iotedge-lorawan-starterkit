@@ -18,6 +18,6 @@ namespace XunitRetryHelper
             this.MaxRetries = maxRetries;
         }
 
-        public int MaxRetries { get; set; } = Constants.DefaultMaxRetries;
+        public int MaxRetries { get; } = Constants.DefaultMaxRetries;
     }
 }
