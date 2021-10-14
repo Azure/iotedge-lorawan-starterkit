@@ -23,6 +23,8 @@ on: # rebuild any PRs and main branch changes
 env:
   buildConfiguration: 'Release'
   AZURE_FUNCTIONAPP_NAME: loramoduleintegrationtest
+  TESTS_FOLDER: Tests
+  TESTS_RESULTS_FOLDER: Tests/TestResults
 
 jobs:
   env_var:
@@ -86,7 +88,7 @@ jobs:
     # Run unit tests
     - name: Run unit tests
       run: |
-        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r Tests/TestResults/Unit \
+        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Unit \
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
           --filter 'FullyQualifiedName~LoRaWanTest|FullyQualifiedName~LoRaWan.NetworkServer.Test|FullyQualifiedName~LoraKeysManagerFacade.Test' \
           LoRaEngine
@@ -96,7 +98,7 @@ jobs:
       if: success() || failure()
       with:
         name: unit-test-results
-        path: Tests/TestResults/Unit
+        path: ${{ env.TESTS_RESULTS_FOLDER }}/Unit
 
     - name: Upload to Codecov
       uses: codecov/codecov-action@v2
@@ -275,12 +277,12 @@ jobs:
       uses: cschleiden/replace-tokens@v1
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       with:
-        files: '**/Tests/E2E/appsettings.json'
+        files: '**/${{ env.TESTS_FOLDER }}/E2E/appsettings.json'
 
     # Builds and runs E2E tests
     - name: Build E2E tests
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
-      run: dotnet build --configuration ${{ env.buildConfiguration }} **/Tests/E2E/LoRaWan.Tests.E2E.csproj
+      run: dotnet build --configuration ${{ env.buildConfiguration }} **/${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
     - name: Runs E2E tests ${{ matrix.testsToRun }}
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
@@ -288,7 +290,7 @@ jobs:
       run: |
         echo ${{ matrix.testsToRun }}
         dotnet test --logger trx --no-build --configuration ${{ env.buildConfiguration }} \
-        -p:ParallelizeTestCollections=false -r Tests/TestResults/E2E/ --filter "${{ matrix.testsToRun }}" \
+        -p:ParallelizeTestCollections=false -r ${{ env.TESTS_RESULTS_FOLDER }}/E2E/ --filter "${{ matrix.testsToRun }}" \
         **/Tests/E2E/LoRaWan.Tests.E2E.csproj
 
     # Upload test results as artifact
@@ -296,7 +298,7 @@ jobs:
       if: (success() || failure()) && contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       with:
         name: e2e-test-results
-        path: Tests/TestResults/E2E/
+        path: ${{ env.TESTS_RESULTS_FOLDER }}/E2E/
 
     - name: Add ${{ matrix.testsToRun }} Test Label
       uses: buildsville/add-remove-label@v1
