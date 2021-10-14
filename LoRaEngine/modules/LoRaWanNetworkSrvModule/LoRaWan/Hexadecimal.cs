@@ -7,7 +7,7 @@ namespace LoRaWan
     using System.Buffers.Binary;
     using System.Globalization;
 
-    static class Hexadecimal
+    public static class Hexadecimal
     {
         const string UpperCaseDigits = "0123456789ABCDEF";
         const string LowerCaseDigits = "0123456789abcdef";
