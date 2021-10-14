@@ -193,7 +193,7 @@ namespace LoRaWan.NetworkServer
             var reversedDevAddr = new byte[srcDevAddr.Length];
             for (var i = reversedDevAddr.Length - 1; i >= 0; --i)
             {
-                reversedDevAddr[i] = srcDevAddr[srcDevAddr.Length - (1 + i)];
+                reversedDevAddr[i] = srcDevAddr[^(1 + i)];
             }
 
             var msgType = requiresDeviceAcknowlegement ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
@@ -301,7 +301,7 @@ namespace LoRaWan.NetworkServer
             var reversedDevAddr = new byte[payloadDevAddr.Length];
             for (var i = reversedDevAddr.Length - 1; i >= 0; --i)
             {
-                reversedDevAddr[i] = payloadDevAddr[payloadDevAddr.Length - (1 + i)];
+                reversedDevAddr[i] = payloadDevAddr[^(1 + i)];
             }
 
             var msgType = cloudToDeviceMessage.Confirmed ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
