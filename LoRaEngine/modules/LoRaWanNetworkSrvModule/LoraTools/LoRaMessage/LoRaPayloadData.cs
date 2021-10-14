@@ -25,7 +25,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets list of Mac Commands in the LoRaPayload.
         /// </summary>
-        public List<MacCommand> MacCommands { get; set; }
+        public IList<MacCommand> MacCommands { get; set; }
 
         /// <summary>
         /// Gets the LoRa payload fport as value.

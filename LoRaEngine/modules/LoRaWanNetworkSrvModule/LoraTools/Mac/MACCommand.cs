@@ -44,7 +44,7 @@ namespace LoRaTools
         /// <summary>
         /// Create a List of Mac commands from client based on a sequence of bytes.
         /// </summary>
-        public static List<MacCommand> CreateMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input)
+        public static IList<MacCommand> CreateMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input)
         {
             var pointer = 0;
             var macCommands = new List<MacCommand>(3);
@@ -122,7 +122,7 @@ namespace LoRaTools
         /// <summary>
         /// Create a List of Mac commands from server based on a sequence of bytes.
         /// </summary>
-        public static List<MacCommand> CreateServerMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input)
+        public static IList<MacCommand> CreateServerMacCommandFromBytes(string deviceId, ReadOnlyMemory<byte> input)
         {
             var pointer = 0;
             var macCommands = new List<MacCommand>(3);

@@ -151,7 +151,7 @@ namespace LoRaWanTest
             Assert.Equal(RegionManager.US915.GetDownstreamDR(rxpk[0]), expDatr);
         }
 
-        private static List<Rxpk> GenerateRxpk(string datr, double freq)
+        private static IList<Rxpk> GenerateRxpk(string datr, double freq)
         {
             var jsonUplink =
                 @"{ ""rxpk"":[

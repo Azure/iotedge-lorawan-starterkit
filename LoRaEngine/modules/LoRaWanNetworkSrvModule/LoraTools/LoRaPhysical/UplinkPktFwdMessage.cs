@@ -11,7 +11,7 @@ namespace LoRaTools.LoRaPhysical
     /// </summary>
     public class UplinkPktFwdMessage : PktFwdMessage
     {
-        public List<Rxpk> Rxpk { get; set; }
+        public IList<Rxpk> Rxpk { get; set; }
 
         public UplinkPktFwdMessage()
         {
