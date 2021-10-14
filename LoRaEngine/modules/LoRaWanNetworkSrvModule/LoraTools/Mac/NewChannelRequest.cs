@@ -36,7 +36,7 @@ namespace LoRaTools
             this.ChIndex = chIndex;
             this.Freq = freq;
             this.DrRange = (byte)((byte)(maxDr << 4) | (minDr & 0b00001111));
-            this.Cid = CidEnum.NewChannelCmd;
+            this.Cid = Cid.NewChannelCmd;
         }
 
         public override IEnumerable<byte> ToBytes()

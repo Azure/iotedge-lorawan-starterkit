@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer
             if (loRaDevice.IsABP)
             {
                 // Increment so that the next frame count down causes the count to be saved
-                loRaDevice.IncrementFcntDown(Constants.MAX_FCNT_UNSAVED_DELTA - 1);
+                loRaDevice.IncrementFcntDown(Constants.MaxFcntUnsavedDelta - 1);
             }
         }
     }

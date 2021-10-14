@@ -6,18 +6,18 @@ namespace XunitRetryHelper
     using Xunit;
     using Xunit.Sdk;
 
-    [XunitTestCaseDiscoverer("XunitRetryHelper.RetryTheoryTestDiscoverer", "XunitRetryHelper")]
-    public class RetryTheoryAttribute : TheoryAttribute
+    [XunitTestCaseDiscoverer("XunitRetryHelper.RetryFactTestDiscoverer", "XunitRetryHelper")]
+    public class RetryFactAttribute : FactAttribute
     {
-        public RetryTheoryAttribute()
+        public RetryFactAttribute()
         {
         }
 
-        public RetryTheoryAttribute(int maxRetries)
+        public RetryFactAttribute(int maxRetries)
         {
             this.MaxRetries = maxRetries;
         }
 
-        public int MaxRetries { get; set; } = Constants.DefaultMaxRetries;
+        public int MaxRetries { get; } = Constants.DefaultMaxRetries;
     }
 }

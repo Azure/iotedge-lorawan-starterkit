@@ -3,7 +3,7 @@
 
 namespace LoRaTools
 {
-    public enum CidEnum
+    public enum Cid
     {
         Zero,
         One,

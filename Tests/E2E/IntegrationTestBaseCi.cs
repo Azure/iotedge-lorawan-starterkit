@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.IntegrationTest
+namespace LoRaWan.Tests.E2E
 {
     using System;
     using System.Globalization;
@@ -18,17 +18,12 @@ namespace LoRaWan.IntegrationTest
             get { return (IntegrationTestFixtureCi)this.TestFixture; }
         }
 
-        private LoRaArduinoSerial arduinoDevice;
-
-        protected LoRaArduinoSerial ArduinoDevice
-        {
-            get { return this.arduinoDevice; }
-        }
+        protected LoRaArduinoSerial ArduinoDevice { get; }
 
         public IntegrationTestBaseCi(IntegrationTestFixtureCi testFixture)
             : base(testFixture)
         {
-            this.arduinoDevice = testFixture.ArduinoDevice;
+            this.ArduinoDevice = testFixture.ArduinoDevice;
         }
 
         protected string ToHexString(string str)
@@ -51,8 +46,8 @@ namespace LoRaWan.IntegrationTest
                 if (disposing)
                 {
                     // Before starting a new test, wait 5 seconds to ensure serial port is not receiving dirty data
-                    if (this.arduinoDevice != null)
-                        this.arduinoDevice.WaitForIdleAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+                    if (this.ArduinoDevice != null)
+                        this.ArduinoDevice.WaitForIdleAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
                 }
 
                 this.isDisposed = true;

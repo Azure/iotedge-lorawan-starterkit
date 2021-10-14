@@ -23,11 +23,10 @@ namespace LoraKeysManagerFacade.FunctionBundler
     /// </remarks>
     public class PreferredGatewayExecutionItem : IFunctionBundlerExecutionItem
     {
-        public const int MAX_ATTEMPTS_TO_RESOLVE_PREFERRED_GATEWAY = 10;
-        public const int REQUEST_LIST_CACHE_DURATION_IN_MINUTES = 3;
-        public const int DEFAULT_RECEIVE_REQUESTS_PERIOD_IN_MS = 200;
-
-        public const string PREFERREDGATEWAY_RECEIVE_REQUESTS_CONFIGURATIONNAME = "PREFERRED_GATEWAY_REQUESTS_INTERVAL";
+        public const int MaxAttemptsToResolvePreferredGateway = 10;
+        public const int RequestListCacheDurationInMinutes = 3;
+        public const int DefaultReceiveRequestsPeriodInMs = 200;
+        public const string PreferredGatewayReceiveRequestsConfigurationname = "PREFERRED_GATEWAY_REQUESTS_INTERVAL";
 
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly ILogger<PreferredGatewayExecutionItem> log;
@@ -38,14 +37,14 @@ namespace LoraKeysManagerFacade.FunctionBundler
             this.log = log;
             this.cacheStore = cacheStore ?? throw new ArgumentNullException(nameof(cacheStore));
 
-            var receiveIntervalSetting = configuration?.GetValue<string>(PREFERREDGATEWAY_RECEIVE_REQUESTS_CONFIGURATIONNAME);
+            var receiveIntervalSetting = configuration?.GetValue<string>(PreferredGatewayReceiveRequestsConfigurationname);
             if (!string.IsNullOrEmpty(receiveIntervalSetting) && int.TryParse(receiveIntervalSetting, out var receiveIntervalSettingInt) && receiveIntervalSettingInt > 0)
             {
                 this.receiveInterval = receiveIntervalSettingInt;
             }
             else
             {
-                this.receiveInterval = DEFAULT_RECEIVE_REQUESTS_PERIOD_IN_MS;
+                this.receiveInterval = DefaultReceiveRequestsPeriodInMs;
             }
 
             this.log.LogInformation("Using receive interval for in preferred gateway of {interval}ms", this.receiveInterval);
@@ -86,7 +85,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             //    List item: gatewayid, rssi, insertTime
             var item = new PreferredGatewayTableItem(context.Request.GatewayId, rssi);
             var listCacheKey = LoRaDevicePreferredGateway.PreferredGatewayFcntUpItemListCacheKey(devEUI, fcntUp);
-            this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(REQUEST_LIST_CACHE_DURATION_IN_MINUTES));
+            this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(RequestListCacheDurationInMinutes));
             this.log.LogInformation("Preferred gateway {devEUI}/{fcnt}: added {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
 
             // 2. Wait for the time specified in receiveInterval (default 200ms). Optional: wait less if another requests already started
@@ -105,7 +104,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             // 4. To calculated need to adquire a lock
             var preferredGatewayLockKey = $"preferredGateway:{devEUI}:lock";
 
-            for (var i = 0; i < MAX_ATTEMPTS_TO_RESOLVE_PREFERRED_GATEWAY; i++)
+            for (var i = 0; i < MaxAttemptsToResolvePreferredGateway; i++)
             {
                 if (await this.cacheStore.LockTakeAsync(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200), block: false))
                 {

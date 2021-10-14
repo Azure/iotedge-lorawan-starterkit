@@ -23,7 +23,7 @@ namespace LoRaTools
         // Downstream message˙
         public DutyCycleRequest(byte dutyCyclePL)
         {
-            this.Cid = CidEnum.DutyCycleCmd;
+            this.Cid = Cid.DutyCycleCmd;
             this.DutyCyclePL = (byte)(dutyCyclePL & 0b00001111);
         }
 

@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer.Test
 
         public LoRaDeviceFrameCounterUpdateStrategyProvider SecondFrameCounterUpdateStrategyProvider { get; }
 
-        private DefaultLoRaDataRequestHandler secondRequestHandlerImplementation;
+        private readonly DefaultLoRaDataRequestHandler secondRequestHandlerImplementation;
         private bool disposedValue;
 
         public Mock<ILoRaDeviceClient> SecondLoRaDeviceClient { get; }

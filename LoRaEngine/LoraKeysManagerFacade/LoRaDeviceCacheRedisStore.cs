@@ -13,7 +13,7 @@ namespace LoraKeysManagerFacade
 
     public class LoRaDeviceCacheRedisStore : ILoRaDeviceCacheStore
     {
-        private IDatabase redisCache;
+        private readonly IDatabase redisCache;
         private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(10);
 
         public LoRaDeviceCacheRedisStore(IDatabase redisCache)

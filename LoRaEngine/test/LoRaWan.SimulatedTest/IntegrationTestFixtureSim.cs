@@ -19,21 +19,21 @@ namespace LoRaWan.SimulatedTest
         // Device1003_Simulated_HttpBasedDecoder: used for simulator http based decoding test
         public TestDeviceInfo Device1003_Simulated_HttpBasedDecoder { get; private set; }
 
-        List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
+        readonly List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP
         {
             get { return this.deviceRange1000_ABP; }
         }
 
-        List<TestDeviceInfo> deviceRange2000_1000_ABP = new List<TestDeviceInfo>();
+        readonly List<TestDeviceInfo> deviceRange2000_1000_ABP = new List<TestDeviceInfo>();
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange2000_1000_ABP
         {
             get { return this.deviceRange2000_1000_ABP; }
         }
 
-        List<TestDeviceInfo> deviceRange3000_10_OTAA = new List<TestDeviceInfo>();
+        readonly List<TestDeviceInfo> deviceRange3000_10_OTAA = new List<TestDeviceInfo>();
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange3000_10_OTAA
         {
