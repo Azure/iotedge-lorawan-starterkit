@@ -18,7 +18,7 @@ namespace LoRaWan.IntegrationTest
             get { return (IntegrationTestFixtureCi)this.TestFixture; }
         }
 
-        private LoRaArduinoSerial arduinoDevice;
+        private readonly LoRaArduinoSerial arduinoDevice;
 
         protected LoRaArduinoSerial ArduinoDevice
         {

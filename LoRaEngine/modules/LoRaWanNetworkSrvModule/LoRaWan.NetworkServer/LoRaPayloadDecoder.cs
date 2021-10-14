@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer
 
         // Http client used by decoders
         // Decoder calls don't need proxy since they will never leave the IoT Edge device
-        Lazy<HttpClient> decodersHttpClient;
+        readonly Lazy<HttpClient> decodersHttpClient;
 
         public LoRaPayloadDecoder()
         {

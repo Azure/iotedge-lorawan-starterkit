@@ -15,15 +15,15 @@ namespace LoraKeysManagerFacade
     {
         const string CacheToken = ":ADR";
         const string LockToken = ":lock";
-        IDatabase redisCache;
+        readonly IDatabase redisCache;
 
         sealed class RedisLockWrapper : IDisposable
         {
             private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(10);
             private static readonly TimeSpan LockDuration = TimeSpan.FromSeconds(15);
-            private string lockKey;
-            private string owner;
-            private IDatabase redisCache;
+            private readonly string lockKey;
+            private readonly string owner;
+            private readonly IDatabase redisCache;
             private bool ownsLock;
 
             internal RedisLockWrapper(string devEUI, IDatabase redisCache, string owner = ":LoRaRedisStore")

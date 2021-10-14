@@ -135,7 +135,7 @@ namespace LoRaWan.IntegrationTest
             DR15
         }
 
-        byte[] serialPortBuffer = null;
+        readonly byte[] serialPortBuffer = null;
 
         LoRaArduinoSerial(SerialPort sp)
         {
@@ -194,7 +194,7 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        ConcurrentQueue<string> serialLogs = new ConcurrentQueue<string>();
+        readonly ConcurrentQueue<string> serialLogs = new ConcurrentQueue<string>();
         string buff = string.Empty;
 
         void AppendSerialLog(string message)

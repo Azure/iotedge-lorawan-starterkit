@@ -26,7 +26,7 @@ namespace LoRaWan.IntegrationTest
 
         private const string FportPropertyName = "fport";
         private const string ConfirmedPropertyName = "Confirmed";
-        private static Random random = new Random();
+        private static readonly Random random = new Random();
 
         public C2DMessageTest(IntegrationTestFixtureCi testFixture)
             : base(testFixture)

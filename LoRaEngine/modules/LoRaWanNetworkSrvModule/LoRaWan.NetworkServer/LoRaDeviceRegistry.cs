@@ -31,7 +31,7 @@ namespace LoRaWan.NetworkServer
 
         readonly object devEUIToLoRaDeviceDictionaryLock;
 
-        private volatile IMemoryCache cache;
+        private readonly IMemoryCache cache;
 
         private CancellationChangeToken resetCacheChangeToken;
         private CancellationTokenSource resetCacheToken;

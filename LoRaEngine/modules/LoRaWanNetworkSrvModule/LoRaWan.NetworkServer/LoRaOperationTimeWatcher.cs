@@ -41,10 +41,10 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public static TimeSpan ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead => expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead;
 
-        static TimeSpan minimumAvailableTimeToCheckForCloudMessage;
-        static TimeSpan expectedTimeToPackageAndSendMessage;
-        static TimeSpan checkForCloudMessageCallEstimatedOverhead;
-        static TimeSpan expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead;
+        static readonly TimeSpan minimumAvailableTimeToCheckForCloudMessage;
+        static readonly TimeSpan expectedTimeToPackageAndSendMessage;
+        static readonly TimeSpan checkForCloudMessageCallEstimatedOverhead;
+        static readonly TimeSpan expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead;
 
         static LoRaOperationTimeWatcher()
         {
@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer
             expectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead = expectedTimeToPackageAndSendMessage + checkForCloudMessageCallEstimatedOverhead;
         }
 
-        DateTimeOffset startTime;
+        readonly DateTimeOffset startTime;
 
         // Gets start time
         public DateTimeOffset Start => this.startTime;
