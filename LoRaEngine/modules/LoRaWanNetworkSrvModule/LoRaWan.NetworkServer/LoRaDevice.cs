@@ -152,7 +152,7 @@ namespace LoRaWan.NetworkServer
 
         private volatile bool hasFrameCountChanges;
 
-        private byte confirmationResubmitCount = 0;
+        private byte confirmationResubmitCount;
         private volatile uint fcntUp;
         private volatile uint fcntDown;
         private volatile uint lastSavedFcntUp;

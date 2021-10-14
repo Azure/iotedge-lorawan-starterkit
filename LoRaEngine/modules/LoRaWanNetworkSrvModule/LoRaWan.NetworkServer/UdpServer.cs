@@ -38,8 +38,8 @@ namespace LoRaWan.NetworkServer
 
         private IClassCDeviceMessageSender classCMessageSender;
         private ModuleClient ioTHubModuleClient;
-        private volatile int pullAckRemoteLoRaAggregatorPort = 0;
-        private volatile string pullAckRemoteLoRaAddress = null;
+        private volatile int pullAckRemoteLoRaAggregatorPort;
+        private volatile string pullAckRemoteLoRaAddress;
         UdpClient udpClient;
 
         private async Task<byte[]> GetTokenAsync()

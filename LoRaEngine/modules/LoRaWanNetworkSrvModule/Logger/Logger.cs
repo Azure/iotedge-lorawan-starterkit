@@ -23,7 +23,7 @@ namespace LoRaWan
         static LoggerConfiguration configuration = new LoggerConfiguration();
         static volatile UdpClient udpClient;
         static IPEndPoint udpEndpoint;
-        static volatile bool isInitializeUdpLoggerRunning = false;
+        static volatile bool isInitializeUdpLoggerRunning;
         private static Timer retryUdpLogInitializationTimer;
 
         public static void Init(LoggerConfiguration loggerConfiguration)
