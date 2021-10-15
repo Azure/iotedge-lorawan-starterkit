@@ -79,7 +79,7 @@ namespace LoRaWanTest
         public void Compute()
         {
             var joinEui = JoinEui.Parse("00-05-10-00-00-00-00-04");
-            var devEui   = DevEui.Parse("00-05-10-00-00-00-00-04");
+            var devEui = DevEui.Parse("00-05-10-00-00-00-00-04");
             var devNonce = DevNonce.Read(new byte[] { 0xab, 0xcd });
             var appKey = AppKey.Parse("00000000000000000005100000000004");
             var mhdr = new MacHeader(0);
