@@ -96,7 +96,7 @@ namespace LoraKeysManagerFacade
 
         public bool StoreInfo(DevAddrCacheInfo info)
         {
-            _ = info ?? throw new ArgumentNullException(nameof(info));
+            if (info is null) throw new ArgumentNullException(nameof(info));
 
             var serializedObjectValue = JsonConvert.SerializeObject(info);
 

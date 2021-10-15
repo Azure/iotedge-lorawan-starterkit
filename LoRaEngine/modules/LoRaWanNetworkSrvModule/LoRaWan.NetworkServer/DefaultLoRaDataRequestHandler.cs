@@ -47,6 +47,9 @@ namespace LoRaWan.NetworkServer
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
         {
+            if (request is null) throw new ArgumentNullException(nameof(request));
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             var timeWatcher = request.GetTimeWatcher();
             using (var deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity())
             {

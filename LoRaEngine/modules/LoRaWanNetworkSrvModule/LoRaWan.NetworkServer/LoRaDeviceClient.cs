@@ -190,25 +190,27 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public async Task<bool> CompleteAsync(Message message)
+        public async Task<bool> CompleteAsync(Message cloudToDeviceMessage)
         {
+            if (cloudToDeviceMessage is null) throw new ArgumentNullException(nameof(cloudToDeviceMessage));
+
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
                 this.SetRetry(true);
 
-                Logger.Log(this.devEUI, $"completing cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
-                await this.deviceClient.CompleteAsync(message);
+                await this.deviceClient.CompleteAsync(cloudToDeviceMessage);
 
-                Logger.Log(this.devEUI, $"done completing cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"done completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.Log(this.devEUI, $"could not complete cloud to device message (id: {message.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
+                Logger.Log(this.devEUI, $"could not complete cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
                 return false;
             }
             finally
@@ -218,25 +220,27 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public async Task<bool> AbandonAsync(Message message)
+        public async Task<bool> AbandonAsync(Message cloudToDeviceMessage)
         {
+            if (cloudToDeviceMessage is null) throw new ArgumentNullException(nameof(cloudToDeviceMessage));
+
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
                 this.SetRetry(true);
 
-                Logger.Log(this.devEUI, $"abandoning cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
-                await this.deviceClient.AbandonAsync(message);
+                await this.deviceClient.AbandonAsync(cloudToDeviceMessage);
 
-                Logger.Log(this.devEUI, $"done abandoning cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"done abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.Log(this.devEUI, $"could not abandon cloud to device message (id: {message.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
+                Logger.Log(this.devEUI, $"could not abandon cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
                 return false;
             }
             finally
@@ -246,25 +250,27 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public async Task<bool> RejectAsync(Message message)
+        public async Task<bool> RejectAsync(Message cloudToDeviceMessage)
         {
+            if (cloudToDeviceMessage is null) throw new ArgumentNullException(nameof(cloudToDeviceMessage));
+
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
                 this.SetRetry(true);
 
-                Logger.Log(this.devEUI, $"rejecting cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
-                await this.deviceClient.RejectAsync(message);
+                await this.deviceClient.RejectAsync(cloudToDeviceMessage);
 
-                Logger.Log(this.devEUI, $"done rejecting cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"done rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.Log(this.devEUI, $"could not reject cloud to device message (id: {message.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
+                Logger.Log(this.devEUI, $"could not reject cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
                 return false;
             }
             finally

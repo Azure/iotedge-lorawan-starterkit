@@ -115,6 +115,8 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadData(byte[] inputMessage)
             : base(inputMessage)
         {
+            if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
+
             // get the address
             var addrbytes = new byte[4];
             Array.Copy(inputMessage, 1, addrbytes, 0, 4);
@@ -170,6 +172,10 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public LoRaPayloadData(LoRaMessageType mhdr, byte[] devAddr, byte[] fctrl, byte[] fcnt, IEnumerable<MacCommand> macCommands, byte[] fPort, byte[] frmPayload, int direction, uint? server32bitFcnt = null)
         {
+            if (devAddr is null) throw new ArgumentNullException(nameof(devAddr));
+            if (fctrl is null) throw new ArgumentNullException(nameof(fctrl));
+            if (fcnt is null) throw new ArgumentNullException(nameof(fcnt));
+
             var macBytes = new List<byte>(3);
             if (macCommands != null)
             {
@@ -272,6 +278,8 @@ namespace LoRaTools.LoRaMessage
         /// <returns>the Downlink message.</returns>
         public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI)
         {
+            if (devEUI is null) throw new ArgumentNullException(nameof(devEUI));
+
             // It is a Mac Command payload, needs to encrypt with nwkskey
             if (this.FPortValue == 0)
             {

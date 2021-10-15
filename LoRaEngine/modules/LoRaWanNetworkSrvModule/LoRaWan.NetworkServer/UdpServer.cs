@@ -300,7 +300,7 @@ namespace LoRaWan.NetworkServer
         {
             if (string.Equals("clearcache", methodRequest.Name, StringComparison.OrdinalIgnoreCase))
             {
-                return await this.ClearCache(methodRequest, userContext);
+                return await this.ClearCache();
             }
             else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
             {
@@ -334,7 +334,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private Task<MethodResponse> ClearCache(MethodRequest methodRequest, object userContext)
+        private Task<MethodResponse> ClearCache()
         {
             this.loRaDeviceRegistry.ResetDeviceCache();
 

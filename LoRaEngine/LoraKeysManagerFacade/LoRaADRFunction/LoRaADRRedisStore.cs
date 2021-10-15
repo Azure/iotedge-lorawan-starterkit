@@ -74,6 +74,8 @@ namespace LoraKeysManagerFacade
 
         public async Task<LoRaADRTable> AddTableEntry(LoRaADRTableEntry entry)
         {
+            if (entry is null) throw new ArgumentNullException(nameof(entry));
+
             LoRaADRTable table = null;
             using (var redisLock = new RedisLockWrapper(entry.DevEUI, this.redisCache))
             {

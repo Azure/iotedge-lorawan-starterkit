@@ -139,6 +139,8 @@ namespace LoRaWan.NetworkServer
 
         public ILoRaDeviceRequestQueue GetLoRaRequestQueue(LoRaRequest request)
         {
+            if (request is null) throw new ArgumentNullException(nameof(request));
+
             var devAddr = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
             var devicesMatchingDevAddr = this.InternalGetCachedDevicesForDevAddr(devAddr);
 
@@ -306,6 +308,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void UpdateDeviceAfterJoin(LoRaDevice loRaDevice, string oldDevAddr)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             // once added, call initializers
             foreach (var initializer in this.initializers)
                 initializer.Initialize(loRaDevice);

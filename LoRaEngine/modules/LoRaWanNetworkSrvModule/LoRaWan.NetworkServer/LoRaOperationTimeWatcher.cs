@@ -78,7 +78,11 @@ namespace LoRaWan.NetworkServer
         /// It takes into consideration region and device settings.
         /// </summary>
         /// <returns>Integer containing the delay in seconds.</returns>
-        public int GetReceiveWindow1Delay(LoRaDevice loRaDevice) => loRaDevice.ReceiveDelay1 ?? (int)this.loraRegion.ReceiveDelay1;
+        public int GetReceiveWindow1Delay(LoRaDevice loRaDevice)
+        {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+            return loRaDevice.ReceiveDelay1 ?? (int)this.loraRegion.ReceiveDelay1;
+        }
 
         bool InTimeForReceiveFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.GetReceiveWindow1Delay(loRaDevice);
 
@@ -87,7 +91,11 @@ namespace LoRaWan.NetworkServer
         /// It takes into consideration region and device settings.
         /// </summary>
         /// <returns>Integer containing the delay in seconds.</returns>
-        public int GetReceiveWindow2Delay(LoRaDevice loRaDevice) => loRaDevice.ReceiveDelay2 ?? (int)this.loraRegion.ReceiveDelay2;
+        public int GetReceiveWindow2Delay(LoRaDevice loRaDevice)
+        {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+            return loRaDevice.ReceiveDelay2 ?? (int)this.loraRegion.ReceiveDelay2;
+        }
 
         bool InTimeForReceiveSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.GetReceiveWindow2Delay(loRaDevice);
 
@@ -117,6 +125,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public int ResolveReceiveWindowToUse(LoRaDevice loRaDevice)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             var elapsed = this.GetElapsedTime();
             if (loRaDevice.PreferredWindow == Constants.ReceiveWindow1 && this.InTimeForReceiveFirstWindow(loRaDevice, elapsed))
             {
@@ -133,14 +143,14 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets the join accept window to be used.
         /// </summary>
-        public int ResolveJoinAcceptWindowToUse(LoRaDevice loRaDevice)
+        public int ResolveJoinAcceptWindowToUse()
         {
             var elapsed = this.GetElapsedTime();
-            if (this.InTimeForJoinAcceptFirstWindow(loRaDevice, elapsed))
+            if (this.InTimeForJoinAcceptFirstWindow(elapsed))
             {
                 return Constants.ReceiveWindow1;
             }
-            else if (this.InTimeForJoinAcceptSecondWindow(loRaDevice, elapsed))
+            else if (this.InTimeForJoinAcceptSecondWindow(elapsed))
             {
                 return Constants.ReceiveWindow2;
             }
@@ -148,12 +158,12 @@ namespace LoRaWan.NetworkServer
             return Constants.InvalidReceiveWindow;
         }
 
-        bool InTimeForJoinAcceptFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed)
+        bool InTimeForJoinAcceptFirstWindow(TimeSpan elapsed)
         {
             return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= (double)this.loraRegion.JoinAcceptDelay1;
         }
 
-        bool InTimeForJoinAcceptSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed)
+        bool InTimeForJoinAcceptSecondWindow(TimeSpan elapsed)
         {
             return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= (double)this.loraRegion.JoinAcceptDelay2;
         }
@@ -165,6 +175,8 @@ namespace LoRaWan.NetworkServer
         /// <returns><see cref="TimeSpan.Zero"/> if there is no enough time or a positive <see cref="TimeSpan"/> value.</returns>
         public TimeSpan GetAvailableTimeToCheckCloudToDeviceMessage(LoRaDevice loRaDevice)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             var elapsed = this.GetElapsedTime();
             if (loRaDevice.PreferredWindow == Constants.ReceiveWindow1)
             {
