@@ -19,7 +19,7 @@ namespace LoraKeysManagerFacade
         public static ApiVersion GetRequestedVersion(this HttpRequest req)
         {
             var versionText = req.Query[ApiVersion.QueryStringParamName];
-            if (StringValues.IsNullOrEmpty(versionText))
+            if (!StringValues.IsNullOrEmpty(versionText))
             {
                 if (req.Headers.TryGetValue(ApiVersion.HttpHeaderName, out var headerValues))
                 {
