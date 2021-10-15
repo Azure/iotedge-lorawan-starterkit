@@ -93,7 +93,7 @@ namespace LoRaWan.Tests.Shared
 
             desiredProperties[nameof(PreferredWindow)] = PreferredWindow;
 
-            if (char.ToLower(ClassType) != 'a')
+            if (char.ToLower(ClassType, CultureInfo.InvariantCulture) != 'a')
                 desiredProperties[nameof(ClassType)] = ClassType.ToString();
 
             desiredProperties[nameof(RX1DROffset)] = RX1DROffset;
