@@ -7,7 +7,7 @@ namespace LoRaWan.Tests.E2E
     using System.Runtime.Serialization;
 
     [Serializable]
-    internal class ArduinoDeviceFailedException : Exception
+    public class ArduinoDeviceFailedException : Exception
     {
         public ArduinoDeviceFailedException()
         {
