@@ -58,19 +58,13 @@ namespace LoRaWan.Tests.Shared
             set => LoRaDevice.Supports32BitFCnt = value;
         }
 
-        readonly SemaphoreSlim joinFinished;
-
         private bool isFirstJoinRequest = true;
 
         public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0)
         {
             LoRaDevice = testDeviceInfo;
-
             FrmCntDown = frmCntDown;
             FrmCntUp = frmCntUp;
-
-            if (!IsJoined)
-                this.joinFinished = new SemaphoreSlim(0);
         }
 
         public LoRaPayloadJoinRequest CreateJoinRequest()
