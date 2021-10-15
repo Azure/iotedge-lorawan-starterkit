@@ -18,13 +18,13 @@ namespace LoRaWan.Tests.Shared
     /// </summary>
     public abstract partial class IntegrationTestFixtureBase : IDisposable, IAsyncLifetime
     {
-        internal string GetMessageIdentifier(EventData eventData)
+        internal static string GetMessageIdentifier(EventData eventData)
         {
             eventData.Properties.TryGetValue("messageIdentifier", out var actualMessageIdentifier);
             return actualMessageIdentifier?.ToString();
         }
 
-        bool IsDeviceMessage(string expectedDeviceID, string jsonPropertyToValidate, string expectedValue, string eventDeviceID, string eventDataMessageBody)
+        static bool IsDeviceMessage(string expectedDeviceID, string jsonPropertyToValidate, string expectedValue, string eventDeviceID, string eventDataMessageBody)
         {
             if (eventDeviceID != null && eventDeviceID == expectedDeviceID)
             {

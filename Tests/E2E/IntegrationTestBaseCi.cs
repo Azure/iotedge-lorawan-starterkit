@@ -23,7 +23,7 @@ namespace LoRaWan.Tests.E2E
             ArduinoDevice = testFixture.ArduinoDevice;
         }
 
-        protected string ToHexString(string str)
+        protected static string ToHexString(string str)
         {
             var sb = new StringBuilder();
 

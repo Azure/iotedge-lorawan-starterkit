@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.E2E
         /// Ensures that a cloud to device message has not been seen more than expected.
         /// </summary>
         /// <param name="foundCount">number of times found.</param>
-        private void EnsureNotSeenTooManyTimes(int foundCount)
+        private static void EnsureNotSeenTooManyTimes(int foundCount)
         {
             Assert.True(foundCount <= CloudToDeviceMessageReceiveCountThreshold, $"Cloud to device message was processed {foundCount} times");
             if (foundCount > 1)
