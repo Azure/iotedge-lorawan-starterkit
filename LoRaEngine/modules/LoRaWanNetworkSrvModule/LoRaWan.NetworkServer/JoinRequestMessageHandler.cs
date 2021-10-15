@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
                 var timeWatcher = new LoRaOperationTimeWatcher(loraRegion, request.StartTime);
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
-                var udpMsgForPktForwarder = new byte[0];
+                var udpMsgForPktForwarder = Array.Empty<byte>();
 
                 devEUI = joinReq.GetDevEUIAsString();
                 var appEUI = joinReq.GetAppEUIAsString();
@@ -223,7 +223,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 ushort rxDelay = 0;
-                if (request.Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                if (LoRaTools.Regions.Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
                 {
                     rxDelay = loRaDevice.DesiredRXDelay;
                 }
@@ -249,7 +249,7 @@ namespace LoRaWan.NetworkServer
                     if (Logger.LoggerLevel <= LogLevel.Debug)
                     {
                         var jsonMsg = JsonConvert.SerializeObject(joinAccept);
-                        Logger.Log(devEUI, $"{LoRaMessageType.JoinAccept.ToString()} {jsonMsg}", LogLevel.Debug);
+                        Logger.Log(devEUI, $"{LoRaMessageType.JoinAccept} {jsonMsg}", LogLevel.Debug);
                     }
                     else if (Logger.LoggerLevel == LogLevel.Information)
                     {

@@ -72,7 +72,6 @@ namespace LoraKeysManagerFacade
 
         public bool TryGetValue(out string value)
         {
-            value = null;
             EnsureLockOwner();
             value = this.cacheStore.StringGet(this.cacheKey);
             return value != null;
@@ -90,7 +89,6 @@ namespace LoraKeysManagerFacade
 
         public bool TryGetInfo(out DeviceCacheInfo info)
         {
-            info = null;
             EnsureLockOwner();
 
             info = this.cacheStore.GetObject<DeviceCacheInfo>(this.cacheKey);

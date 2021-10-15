@@ -45,7 +45,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void SetURL(string value) => URL = SanitizeApiURL(value);
 
-        private string SanitizeApiURL(string value)
+        private static string SanitizeApiURL(string value)
         {
             if (string.IsNullOrEmpty(value))
                 return string.Empty;

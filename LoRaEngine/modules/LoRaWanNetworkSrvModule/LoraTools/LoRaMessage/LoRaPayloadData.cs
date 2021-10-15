@@ -25,7 +25,10 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets list of Mac Commands in the LoRaPayload.
         /// </summary>
+#pragma warning disable CA2227 // Collection properties should be read only
+        // Class is a DTO
         public IList<MacCommand> MacCommands { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
         /// <summary>
         /// Gets the LoRa payload fport as value.
@@ -47,7 +50,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets a value indicating whether the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp).
         /// </summary>
-        public bool IsConfirmed => LoRaMessageType == LoRaMessageType.ConfirmedDataDown || LoRaMessageType == LoRaMessageType.ConfirmedDataUp;
+        public bool IsConfirmed => LoRaMessageType is LoRaMessageType.ConfirmedDataDown or LoRaMessageType.ConfirmedDataUp;
 
         /// <summary>
         /// Gets a value indicating whether does a Mac command require an answer?.
@@ -193,7 +196,7 @@ namespace LoRaTools.LoRaMessage
             var fPortLen = fPort == null ? 0 : fPort.Length;
 
             // TODO If there are mac commands to send and no payload, we need to put the mac commands in the frmpayload.
-            if (macBytes.Count > 0 && (frmPayload == null || frmPayload?.Length == 0))
+            if (macBytes.Count > 0 && (frmPayload == null || frmPayload.Length == 0))
             {
                 frmPayload = fOpts;
                 fOpts = null;
@@ -246,10 +249,6 @@ namespace LoRaTools.LoRaMessage
                 Frmpayload = new Memory<byte>(RawMessage, 8 + fOptsLen + fPortLen, frmPayloadLen);
                 Array.Copy(frmPayload, 0, RawMessage, 8 + fOptsLen + fPortLen, frmPayloadLen);
             }
-            else
-            {
-                frmPayload = null;
-            }
 
             if (!Frmpayload.Span.IsEmpty)
                 Frmpayload.Span.Reverse();
@@ -298,11 +297,11 @@ namespace LoRaTools.LoRaMessage
 
                 if (devEUI.Length != 0)
                 {
-                    Logger.Log(devEUI, $"{((LoRaMessageType)Mhdr.Span[0]).ToString()} {jsonMsg}", LogLevel.Debug);
+                    Logger.Log(devEUI, $"{(LoRaMessageType)Mhdr.Span[0]} {jsonMsg}", LogLevel.Debug);
                 }
                 else
                 {
-                    Logger.Log(ConversionHelper.ByteArrayToString(DevAddr.Span.ToArray()), $"{((LoRaMessageType)Mhdr.Span[0]).ToString()} {jsonMsg}", LogLevel.Debug);
+                    Logger.Log(ConversionHelper.ByteArrayToString(DevAddr.Span.ToArray()), $"{(LoRaMessageType)Mhdr.Span[0]} {jsonMsg}", LogLevel.Debug);
                 }
             }
 
@@ -332,9 +331,8 @@ namespace LoRaTools.LoRaMessage
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
 
-            var result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            result = MacUtilities.DoFinal(mac);
+            var result = MacUtilities.DoFinal(mac);
             return Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
         }
 
@@ -494,7 +492,7 @@ namespace LoRaTools.LoRaMessage
 
         private byte[] GetFcntBlockInfo()
         {
-            return (Server32BitFcnt != null) ? Server32BitFcnt : new byte[] { Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00 };
+            return Server32BitFcnt ?? (new byte[] { Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00 });
         }
     }
 }

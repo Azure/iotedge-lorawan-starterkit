@@ -29,7 +29,7 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)DutyCyclePL;
+            yield return DutyCyclePL;
             yield return (byte)Cid;
         }
 

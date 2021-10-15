@@ -12,7 +12,10 @@ namespace LoRaTools.LoRaPhysical
     /// </summary>
     public class UplinkPktFwdMessage : PktFwdMessage
     {
+#pragma warning disable CA2227 // Collection properties should be read only
+        // Class is a DTO.
         public IList<Rxpk> Rxpk { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
         public UplinkPktFwdMessage()
         {
@@ -58,16 +61,6 @@ namespace LoRaTools.LoRaPhysical
 
         [Obsolete("to remove")]
         [JsonIgnore]
-        public override PktFwdMessageAdapter PktFwdMessageAdapter
-        {
-            get
-            {
-                var pktFwdMessageAdapter = new PktFwdMessageAdapter
-                {
-                    Rxpks = Rxpk
-                };
-                return pktFwdMessageAdapter;
-            }
-        }
+        public override PktFwdMessageAdapter PktFwdMessageAdapter => new PktFwdMessageAdapter(Rxpk, null);
     }
 }

@@ -34,7 +34,6 @@ namespace LoRaWan.NetworkServer.Test
         public LoRaDeviceFrameCounterUpdateStrategyProvider SecondFrameCounterUpdateStrategyProvider { get; }
 
         private readonly DefaultLoRaDataRequestHandler secondRequestHandlerImplementation;
-        private bool disposedValue;
 
         public Mock<ILoRaDeviceClient> SecondLoRaDeviceClient { get; }
 
@@ -145,24 +144,14 @@ namespace LoRaWan.NetworkServer.Test
             SecondLoRaDeviceClient.Setup(ldc => ldc.Dispose());
         }
 
-        protected virtual void Dispose(bool disposing)
+        // Protected implementation of Dispose pattern.
+        protected override void Dispose(bool disposing)
         {
-            if (!this.disposedValue)
+            base.Dispose(disposing);
+            if (disposing)
             {
-                if (disposing)
-                {
-                    this.cache.Dispose();
-                }
-
-                this.disposedValue = true;
+                this.cache.Dispose();
             }
-        }
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer.Test
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
-        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
+        private static void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
             Assert.NotNull(downlink.Txpk);

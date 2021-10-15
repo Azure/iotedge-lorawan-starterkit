@@ -278,8 +278,8 @@ namespace LoRaWan.Tests.Shared
                 var devNonce = ConversionHelper.StringToByteArray(DevNonce);
                 Array.Reverse(devNonce);
                 var deviceAppKey = ConversionHelper.StringToByteArray(LoRaDevice.AppKey);
-                var appSKey = payload.CalculateKey(LoRaPayloadKeyType.AppSKey, appNonce, netid, devNonce, deviceAppKey);
-                var nwkSKey = payload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netid, devNonce, deviceAppKey);
+                var appSKey = LoRaPayload.CalculateKey(LoRaPayloadKeyType.AppSKey, appNonce, netid, devNonce, deviceAppKey);
+                var nwkSKey = LoRaPayload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netid, devNonce, deviceAppKey);
                 var devAddr = payload.DevAddr;
 
                 // if mic check failed, return false

@@ -57,6 +57,9 @@ namespace LoraKeysManagerFacade.FunctionBundler
                     case FunctionBundlerExecutionState.Abort:
                         await handler.OnAbortExecutionAsync(this);
                         break;
+                    case FunctionBundlerExecutionState.None:
+                    default:
+                        break;
                 }
             }
 

@@ -16,8 +16,8 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.ADR;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
+    using LoRaWan.Core;
     using LoRaWan.NetworkServer.ADR;
-    using LoRaWan.Shared;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
@@ -27,7 +27,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Defines udp Server communicating with packet forwarder.
     /// </summary>
-    public class UdpServer : IPacketForwarder, IDisposable
+    public sealed class UdpServer : IPacketForwarder, IDisposable
     {
         const int PORT = 1680;
         private readonly NetworkServerConfiguration configuration;
@@ -38,8 +38,8 @@ namespace LoRaWan.NetworkServer
 
         private IClassCDeviceMessageSender classCMessageSender;
         private ModuleClient ioTHubModuleClient;
-        private volatile int pullAckRemoteLoRaAggregatorPort = 0;
-        private volatile string pullAckRemoteLoRaAddress = null;
+        private volatile int pullAckRemoteLoRaAggregatorPort;
+        private volatile string pullAckRemoteLoRaAddress;
         UdpClient udpClient;
 
         private async Task<byte[]> GetTokenAsync()
@@ -162,7 +162,10 @@ namespace LoRaWan.NetworkServer
                         }
 
                         break;
-
+                    case PhysicalIdentifier.PushAck:
+                    case PhysicalIdentifier.PullResp:
+                    case PhysicalIdentifier.PullAck:
+                    case PhysicalIdentifier.Unknown:
                     default:
                         Logger.Log("UDP", "unknown packet type or length being received", LogLevel.Error);
                         break;
@@ -241,20 +244,20 @@ namespace LoRaWan.NetworkServer
                         this.loRaDeviceAPIService.SetURL(moduleTwinCollection["FacadeServerUrl"].Value as string);
                         Logger.LogAlways($"Facade function url: {this.loRaDeviceAPIService.URL}");
                     }
-                    catch (ArgumentOutOfRangeException e)
+                    catch (ArgumentOutOfRangeException)
                     {
                         Logger.Log("Module twin FacadeServerUrl property does not exist", LogLevel.Error);
-                        throw e;
+                        throw;
                     }
 
                     try
                     {
                         this.loRaDeviceAPIService.SetAuthCode(moduleTwinCollection["FacadeAuthCode"].Value as string);
                     }
-                    catch (ArgumentOutOfRangeException e)
+                    catch (ArgumentOutOfRangeException)
                     {
                         Logger.Log("Module twin FacadeAuthCode does not exist", LogLevel.Error);
-                        throw e;
+                        throw;
                     }
 
                     await this.ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
@@ -281,11 +284,11 @@ namespace LoRaWan.NetworkServer
             catch (Exception ex)
             {
                 Logger.Log($"Initialization failed with error: {ex.Message}", LogLevel.Error);
-                throw ex;
+                throw;
             }
 
             // Report Log level
-            Logger.LogAlways($"Log Level: {(LogLevel)Logger.LoggerLevel}");
+            Logger.LogAlways($"Log Level: {Logger.LoggerLevel}");
         }
 
         async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
@@ -397,27 +400,11 @@ namespace LoRaWan.NetworkServer
 
         private void SetClassCMessageSender(DefaultClassCDevicesMessageSender classCMessageSender) => this.classCMessageSender = classCMessageSender;
 
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!this.disposedValue)
-            {
-                if (disposing)
-                {
-                    this.udpClient?.Dispose();
-                    this.udpClient = null;
-                    this.messageDispatcher?.Dispose();
-                }
-
-                this.disposedValue = true;
-            }
-        }
-
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            this.udpClient?.Dispose();
+            this.udpClient = null;
+            this.messageDispatcher?.Dispose();
         }
     }
 }

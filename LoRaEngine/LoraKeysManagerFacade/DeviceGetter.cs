@@ -87,36 +87,34 @@ namespace LoraKeysManagerFacade
                 var joinInfo = await TryGetJoinInfoAndValidateAsync(devEUI, gatewayId, log);
 
                 // OTAA join
-                using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId))
+                using var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId);
+                var cacheKeyDevNonce = string.Concat(devEUI, ":", devNonce);
+                var lockKeyDevNonce = string.Concat(cacheKeyDevNonce, ":joinlockdevnonce");
+
+                if (this.cacheStore.StringSet(cacheKeyDevNonce, devNonce, TimeSpan.FromMinutes(5), onlyIfNotExists: true))
                 {
-                    var cacheKeyDevNonce = string.Concat(devEUI, ":", devNonce);
-                    var lockKeyDevNonce = string.Concat(cacheKeyDevNonce, ":joinlockdevnonce");
-
-                    if (this.cacheStore.StringSet(cacheKeyDevNonce, devNonce, TimeSpan.FromMinutes(5), onlyIfNotExists: true))
+                    var iotHubDeviceInfo = new IoTHubDeviceInfo
                     {
-                        var iotHubDeviceInfo = new IoTHubDeviceInfo
-                        {
-                            DevEUI = devEUI,
-                            PrimaryKey = joinInfo.PrimaryKey
-                        };
+                        DevEUI = devEUI,
+                        PrimaryKey = joinInfo.PrimaryKey
+                    };
 
-                        results.Add(iotHubDeviceInfo);
+                    results.Add(iotHubDeviceInfo);
 
-                        if (await deviceCache.TryToLockAsync())
-                        {
-                            deviceCache.ClearCache(); // clear the fcnt up/down after the join
-                            log?.LogDebug("Removed key '{key}':{gwid}", devEUI, gatewayId);
-                        }
-                        else
-                        {
-                            log?.LogWarning("Failed to acquire lock for '{key}'", devEUI);
-                        }
+                    if (await deviceCache.TryToLockAsync())
+                    {
+                        deviceCache.ClearCache(); // clear the fcnt up/down after the join
+                        log?.LogDebug("Removed key '{key}':{gwid}", devEUI, gatewayId);
                     }
                     else
                     {
-                        log?.LogDebug("dev nonce already used. Ignore request '{key}':{gwid}", devEUI, gatewayId);
-                        throw new DeviceNonceUsedException();
+                        log?.LogWarning("Failed to acquire lock for '{key}'", devEUI);
                     }
+                }
+                else
+                {
+                    log?.LogDebug("dev nonce already used. Ignore request '{key}':{gwid}", devEUI, gatewayId);
+                    throw new DeviceNonceUsedException();
                 }
             }
             else if (devAddr != null)
@@ -184,7 +182,7 @@ namespace LoraKeysManagerFacade
                                                     LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
                                                 };
                                                 results.Add(iotHubDeviceInfo);
-                                                _ = devAddrCache.StoreInfo((DevAddrCacheInfo)iotHubDeviceInfo);
+                                                _ = devAddrCache.StoreInfo(iotHubDeviceInfo);
                                             }
 
                                             resultCount++;
@@ -216,7 +214,7 @@ namespace LoraKeysManagerFacade
             }
             else
             {
-                throw new Exception("Missing devEUI or devAddr");
+                throw new ArgumentException("Missing devEUI or devAddr");
             }
 
             return results;

@@ -41,7 +41,7 @@ namespace LoRaTools
         {
             if (readOnlySpan.Length < Length)
             {
-                throw new Exception("DevStatusAnswer detected but the byte format is not correct");
+                throw new InvalidOperationException("DevStatusAnswer detected but the byte format is not correct");
             }
             else
             {
@@ -53,8 +53,8 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)Margin;
-            yield return (byte)Battery;
+            yield return Margin;
+            yield return Battery;
             yield return (byte)Cid;
         }
     }

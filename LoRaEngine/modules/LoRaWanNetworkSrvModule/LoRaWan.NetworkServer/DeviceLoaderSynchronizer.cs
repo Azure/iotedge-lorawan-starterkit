@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
@@ -71,7 +72,10 @@ namespace LoRaWan.NetworkServer
             this.loadingDevicesFailed = false;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
-            this.loading = Task.Run(() => Load().ContinueWith((t) => continuationAction(t, this), TaskContinuationOptions.ExecuteSynchronously));
+            this.loading = Task.Run(() => Load().ContinueWith((t) => continuationAction(t, this),
+                                                                   CancellationToken.None,
+                                                                   TaskContinuationOptions.ExecuteSynchronously,
+                                                                   TaskScheduler.Default));
         }
 
         async Task Load()
@@ -282,7 +286,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private void AddToDeviceQueue(LoRaDevice device, LoRaRequest request)
+        private static void AddToDeviceQueue(LoRaDevice device, LoRaRequest request)
         {
             if (device.IsOurDevice)
             {
@@ -303,7 +307,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private void LogRequestFailed(LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
+        private static void LogRequestFailed(LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
         {
             var deviceId = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
 
@@ -323,6 +327,23 @@ namespace LoRaWan.NetworkServer
 
                 case LoRaDeviceRequestFailedReason.BelongsToAnotherGateway:
                     Logger.Log(deviceId, "device is not our device, ignore message", LogLevel.Debug);
+                    break;
+                case LoRaDeviceRequestFailedReason.InvalidNetId:
+                case LoRaDeviceRequestFailedReason.InvalidRxpk:
+                case LoRaDeviceRequestFailedReason.InvalidRegion:
+                case LoRaDeviceRequestFailedReason.UnknownDevice:
+                case LoRaDeviceRequestFailedReason.InvalidJoinRequest:
+                case LoRaDeviceRequestFailedReason.HandledByAnotherGateway:
+                case LoRaDeviceRequestFailedReason.JoinDevNonceAlreadyUsed:
+                case LoRaDeviceRequestFailedReason.JoinMicCheckFailed:
+                case LoRaDeviceRequestFailedReason.ReceiveWindowMissed:
+                case LoRaDeviceRequestFailedReason.ConfirmationResubmitThresholdExceeded:
+                case LoRaDeviceRequestFailedReason.InvalidFrameCounter:
+                case LoRaDeviceRequestFailedReason.IoTHubProblem:
+                case LoRaDeviceRequestFailedReason.DeduplicationDrop:
+                case LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed:
+                default:
+                    Logger.Log(deviceId, "device request failed", LogLevel.Debug);
                     break;
             }
         }

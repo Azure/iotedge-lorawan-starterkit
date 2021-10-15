@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Shared;
@@ -121,7 +122,7 @@ namespace LoRaWan.NetworkServer.Test
                     var duration = parallelTestConfiguration.SendEventDuration.Next();
                     Console.WriteLine($"{nameof(looseDeviceClient.Object.SendEventAsync)} sleeping for {duration}");
                     return Task.Delay(duration)
-                        .ContinueWith((a) => true, TaskContinuationOptions.ExecuteSynchronously);
+                        .ContinueWith((a) => true, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 });
 
             // twin will be loaded
@@ -146,7 +147,7 @@ namespace LoRaWan.NetworkServer.Test
                     var duration = parallelTestConfiguration.LoadTwinDuration.Next();
                     Console.WriteLine($"{nameof(looseDeviceClient.Object.GetTwinAsync)} sleeping for {duration}");
                     return Task.Delay(duration)
-                        .ContinueWith(_ => initialTwin, TaskContinuationOptions.ExecuteSynchronously);
+                        .ContinueWith(_ => initialTwin, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 });
 
             // twin will be updated with new fcnt
@@ -164,7 +165,7 @@ namespace LoRaWan.NetworkServer.Test
                         var duration = parallelTestConfiguration.UpdateTwinDuration.Next();
                         Console.WriteLine($"{nameof(looseDeviceClient.Object.UpdateReportedPropertiesAsync)} sleeping for {duration}");
                         return Task.Delay(duration)
-                            .ContinueWith((a) => true, TaskContinuationOptions.ExecuteSynchronously);
+                            .ContinueWith((a) => true, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                     });
             }
 
@@ -176,7 +177,7 @@ namespace LoRaWan.NetworkServer.Test
                         var duration = parallelTestConfiguration.DeviceApiResetFcntDuration.Next();
                         Console.WriteLine($"{nameof(LoRaDeviceApi.Object.ABPFcntCacheResetAsync)} sleeping for {duration}");
                         return Task.Delay(duration)
-                            .ContinueWith((a) => true, TaskContinuationOptions.ExecuteSynchronously);
+                            .ContinueWith((a) => true, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                     });
             }
 
@@ -187,7 +188,10 @@ namespace LoRaWan.NetworkServer.Test
                     var duration = parallelTestConfiguration.SearchByDevAddrDuration.Next();
                     Console.WriteLine($"{nameof(LoRaDeviceApi.Object.SearchByDevAddrAsync)} sleeping for {duration}");
                     return Task.Delay(duration)
-                        .ContinueWith((a) => new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()), TaskContinuationOptions.ExecuteSynchronously);
+                        .ContinueWith((a) => new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "abc").AsList()),
+                                      CancellationToken.None,
+                                      TaskContinuationOptions.ExecuteSynchronously,
+                                      TaskScheduler.Default);
                 });
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -296,8 +300,10 @@ namespace LoRaWan.NetworkServer.Test
 
             var device1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
             var device1Twin = TestUtils.CreateABPTwin(device1);
-            var device2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2));
-            device2.DevAddr = device1.DevAddr;
+            var device2 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(2))
+            {
+                DevAddr = device1.DevAddr
+            };
             var device2Twin = TestUtils.CreateABPTwin(device2);
             var device3 = new SimulatedDevice(TestDeviceInfo.CreateOTAADevice(3));
             device3.SetupJoin("00000000000000000000000000000088", "00000000000000000000000000000088", "02000088");
@@ -328,7 +334,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) => deviceClient1Telemetry.Add(t))
                 .ReturnsAsync(true, TimeSpan.FromMilliseconds(sendMessageDelay));
             deviceClient1.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
-                .ReturnsAsync((Message)null, TimeSpan.FromMilliseconds(receiveDelay));
+                .ReturnsAsync(null, TimeSpan.FromMilliseconds(receiveDelay));
 
             var deviceClient2 = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             var deviceClient2Telemetry = new List<LoRaDeviceTelemetry>();
@@ -338,7 +344,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) => deviceClient2Telemetry.Add(t))
                 .ReturnsAsync(true, TimeSpan.FromMilliseconds(sendMessageDelay));
             deviceClient2.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
-                .ReturnsAsync((Message)null, TimeSpan.FromMilliseconds(receiveDelay));
+                .ReturnsAsync(null, TimeSpan.FromMilliseconds(receiveDelay));
 
             var deviceClient3 = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             var deviceClient3Telemetry = new List<LoRaDeviceTelemetry>();
@@ -348,7 +354,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) => deviceClient3Telemetry.Add(t))
                 .ReturnsAsync(true, TimeSpan.FromMilliseconds(sendMessageDelay));
             deviceClient3.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
-                .ReturnsAsync((Message)null, TimeSpan.FromMilliseconds(receiveDelay));
+                .ReturnsAsync(null, TimeSpan.FromMilliseconds(receiveDelay));
 
             var deviceClient4 = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             var deviceClient4Telemetry = new List<LoRaDeviceTelemetry>();
@@ -358,7 +364,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, d) => deviceClient4Telemetry.Add(t))
                 .ReturnsAsync(true, TimeSpan.FromMilliseconds(sendMessageDelay));
             deviceClient4.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
-                .ReturnsAsync((Message)null, TimeSpan.FromMilliseconds(receiveDelay));
+                .ReturnsAsync(null, TimeSpan.FromMilliseconds(receiveDelay));
 
             LoRaDeviceFactory.SetClient(device1.DevEUI, deviceClient1.Object);
             LoRaDeviceFactory.SetClient(device2.DevEUI, deviceClient2.Object);

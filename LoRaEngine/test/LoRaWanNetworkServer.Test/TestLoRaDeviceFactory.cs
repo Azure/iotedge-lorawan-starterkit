@@ -76,9 +76,10 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice = new LoRaDevice(
                 deviceInfo.DevAddr,
                 deviceInfo.DevEUI,
-                this.connectionManager);
-
-            loRaDevice.GatewayID = deviceInfo.GatewayId;
+                this.connectionManager)
+            {
+                GatewayID = deviceInfo.GatewayId
+            };
 
             this.connectionManager.Register(loRaDevice, deviceClientToAssign);
 

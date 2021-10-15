@@ -18,12 +18,12 @@ namespace LoRaWan
         // Interval where we try to estabilish connection to udp logger
         const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
 
-        public static LogLevel LoggerLevel => (LogLevel)configuration.LogLevel;
+        public static LogLevel LoggerLevel => configuration.LogLevel;
 
         static LoggerConfiguration configuration = new LoggerConfiguration();
         static volatile UdpClient udpClient;
         static IPEndPoint udpEndpoint;
-        static volatile bool isInitializeUdpLoggerRunning = false;
+        static volatile bool isInitializeUdpLoggerRunning;
         private static Timer retryUdpLogInitializationTimer;
 
         public static void Init(LoggerConfiguration loggerConfiguration)

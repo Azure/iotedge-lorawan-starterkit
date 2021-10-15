@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer.Test
 
         protected DefaultLoRaDataRequestHandler RequestHandlerImplementation { get; }
 
-        protected Task<Message> EmptyAdditionalMessageReceiveAsync => Task.Delay(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage).ContinueWith((_) => (Message)null);
+        protected static Task<Message> EmptyAdditionalMessageReceiveAsync => Task.Delay(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage).ContinueWith((_) => (Message)null, TaskScheduler.Default);
 
         protected LoRaDeviceClientConnectionManager ConnectionManager { get; }
 
@@ -80,12 +80,12 @@ namespace LoRaWan.NetworkServer.Test
             LoRaDeviceFactory = new TestLoRaDeviceFactory(ServerConfiguration, FrameCounterUpdateStrategyProvider, LoRaDeviceClient.Object, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, ConnectionManager);
         }
 
-        public MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());
+        public static MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());
 
         /// <summary>
         /// Creates a <see cref="IMemoryCache"/> containing the <paramref name="loRaDevice"/> already available.
         /// </summary>
-        public IMemoryCache NewNonEmptyCache(LoRaDevice loRaDevice)
+        public static IMemoryCache NewNonEmptyCache(LoRaDevice loRaDevice)
         {
             var cache = new MemoryCache(new MemoryCacheOptions());
 

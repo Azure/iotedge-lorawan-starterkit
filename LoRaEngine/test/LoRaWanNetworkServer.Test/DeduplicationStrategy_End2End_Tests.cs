@@ -49,7 +49,7 @@ namespace LoRaWan.NetworkServer.Test
 
             LoRaDeviceApi
                 .Setup(x => x.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
-                .ReturnsAsync((uint)(simulatedDevice.FrmCntDown + 1))
+                .ReturnsAsync(simulatedDevice.FrmCntDown + 1)
                 .Callback(() =>
                 {
                     // this call should only be made, if we do not have a deduplication strategy
@@ -137,6 +137,7 @@ namespace LoRaWan.NetworkServer.Test
                     Assert.True(request2.ProcessingSucceeded);
                     break;
                 case DeduplicationMode.None:
+                default:
                     break;
             }
         }

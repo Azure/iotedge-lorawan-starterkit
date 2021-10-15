@@ -22,7 +22,7 @@ namespace LoRaWan.NetworkServer.Test
     // Devices that have keep alive set
     public class E2E_KeepAliveConnection_Tests : MessageProcessorTestBase
     {
-        public int MaxWaitForDeviceConnectionInMs
+        public static int MaxWaitForDeviceConnectionInMs
         {
             get
             {
@@ -52,8 +52,10 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task After_ClassA_Sends_Data_Should_Disconnect()
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
-            simulatedDevice.FrmCntUp = 10;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1))
+            {
+                FrmCntUp = 10
+            };
 
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
@@ -103,8 +105,10 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task After_ClassA_Sends_Multiple_Data_Should_Disconnect()
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
-            simulatedDevice.FrmCntUp = 10;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1))
+            {
+                FrmCntUp = 10
+            };
 
             var isDisconnected = false;
 
@@ -173,8 +177,10 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task After_Disconnecting_Should_Reconnect()
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
-            simulatedDevice.FrmCntUp = 10;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1))
+            {
+                FrmCntUp = 10
+            };
 
             var isDisconnected = false;
 

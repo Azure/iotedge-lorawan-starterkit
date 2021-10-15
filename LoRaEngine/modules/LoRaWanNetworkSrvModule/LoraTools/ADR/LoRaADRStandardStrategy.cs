@@ -9,7 +9,7 @@ namespace LoRaTools.ADR
     /// <summary>
     /// A strategy based on the standard ADR strategy.
     /// </summary>
-    public class LoRaADRStandardStrategy : ILoRaADRStrategy
+    public sealed class LoRaADRStandardStrategy : ILoRaADRStrategy
     {
         private const int MarginDb = 5;
         private const int MaxTxPowerIndex = 0;
@@ -66,7 +66,7 @@ namespace LoRaTools.ADR
             return null;
         }
 
-        private (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex, int maxDr)
+        private static (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex, int maxDr)
         {
             var snrMargin = maxSnr - requiredSnr - MarginDb;
 
@@ -118,12 +118,12 @@ namespace LoRaTools.ADR
                 return this.pktLossToNbRep[0, currentNbRep - 1];
             }
 
-            if (pktLossRate >= 0.05 && pktLossRate < 0.10)
+            if (pktLossRate is >= 0.05 and < 0.10)
             {
                 return this.pktLossToNbRep[1, currentNbRep - 1];
             }
 
-            if (pktLossRate >= 0.10 && pktLossRate < 0.30)
+            if (pktLossRate is >= 0.10 and < 0.30)
             {
                 return this.pktLossToNbRep[2, currentNbRep - 1];
             }

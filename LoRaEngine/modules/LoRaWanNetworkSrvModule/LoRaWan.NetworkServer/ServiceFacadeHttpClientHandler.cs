@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Shared
+namespace LoRaWan.Core
 {
     using System;
     using System.Linq;
@@ -82,7 +82,7 @@ namespace LoRaWan.Shared
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        private ApiVersion GetFunctionVersion(HttpResponseMessage response)
+        private static ApiVersion GetFunctionVersion(HttpResponseMessage response)
         {
             // if no version information is available in response header, log error. Validation failed!
             if (!response.Headers.TryGetValues(ApiVersion.HttpHeaderName, out var versionValues) || !versionValues.Any())

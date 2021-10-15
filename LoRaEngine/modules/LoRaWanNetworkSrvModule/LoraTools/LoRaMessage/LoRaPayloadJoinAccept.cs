@@ -56,7 +56,7 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinAccept(string netId, byte[] devAddr, byte[] appNonce, byte[] dlSettings, uint rxDelayValue, byte[] cfList)
         {
             var rxDelay = new byte[1];
-            if (rxDelayValue >= 0 && rxDelayValue < MaxRxDelayValue)
+            if (rxDelayValue is >= 0 and < MaxRxDelayValue)
             {
                 rxDelay[0] = (byte)rxDelayValue;
             }
@@ -92,10 +92,6 @@ namespace LoRaTools.LoRaMessage
                 DlSettings.Span.Reverse();
                 RxDelay.Span.Reverse();
             }
-
-            var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
-            if (!CfList.Span.IsEmpty)
-                algoinput = algoinput.Concat(CfList.ToArray()).ToArray();
         }
 
         public LoRaPayloadJoinAccept(byte[] inputMessage, string appKey)

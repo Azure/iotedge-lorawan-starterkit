@@ -21,7 +21,7 @@ namespace LoRaTools
 
         public abstract int Length { get; }
 
-        public override abstract string ToString();
+        public abstract override string ToString();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MacCommand"/> class.
@@ -62,7 +62,7 @@ namespace LoRaTools
                             macCommands.Add(linkCheck);
                             break;
                         case Cid.LinkADRCmd:
-                            var linkAdrAnswer = new LinkADRAnswer(input.Span.Slice(pointer));
+                            var linkAdrAnswer = new LinkADRAnswer(input.Span[pointer..]);
                             pointer += linkAdrAnswer.Length;
                             macCommands.Add(linkAdrAnswer);
                             break;
@@ -72,7 +72,7 @@ namespace LoRaTools
                             macCommands.Add(dutyCycle);
                             break;
                         case Cid.RXParamCmd:
-                            var rxParamSetup = new RXParamSetupAnswer(input.Span.Slice(pointer));
+                            var rxParamSetup = new RXParamSetupAnswer(input.Span[pointer..]);
                             pointer += rxParamSetup.Length;
                             macCommands.Add(rxParamSetup);
                             break;
@@ -86,14 +86,14 @@ namespace LoRaTools
                             }
                             else
                             {
-                                var devStatus = new DevStatusAnswer(input.Span.Slice(pointer));
+                                var devStatus = new DevStatusAnswer(input.Span[pointer..]);
                                 pointer += devStatus.Length;
                                 macCommands.Add(devStatus);
                             }
 
                             break;
                         case Cid.NewChannelCmd:
-                            var newChannel = new NewChannelAnswer(input.Span.Slice(pointer));
+                            var newChannel = new NewChannelAnswer(input.Span[pointer..]);
                             pointer += newChannel.Length;
                             macCommands.Add(newChannel);
                             break;
@@ -102,13 +102,15 @@ namespace LoRaTools
                             pointer += rxTimingSetup.Length;
                             macCommands.Add(rxTimingSetup);
                             break;
+                        case Cid.Zero:
+                        case Cid.One:
                         default:
                             Logger.Log(deviceId, $"a transmitted Mac Command value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
                             return null;
                     }
 
-                    var addedMacCommand = macCommands[macCommands.Count - 1];
-                    Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand.ToString()}", LogLevel.Debug);
+                    var addedMacCommand = macCommands[^1];
+                    Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}", LogLevel.Debug);
                 }
             }
             catch (MacCommandException ex)
@@ -135,7 +137,7 @@ namespace LoRaTools
                     switch (cid)
                     {
                         case Cid.LinkCheckCmd:
-                            var linkCheck = new LinkCheckAnswer(input.Span.Slice(pointer));
+                            var linkCheck = new LinkCheckAnswer(input.Span[pointer..]);
                             pointer += linkCheck.Length;
                             macCommands.Add(linkCheck);
                             break;
@@ -144,13 +146,20 @@ namespace LoRaTools
                             pointer += devStatusRequest.Length;
                             macCommands.Add(devStatusRequest);
                             break;
+                        case Cid.Zero:
+                        case Cid.One:
+                        case Cid.LinkADRCmd:
+                        case Cid.DutyCycleCmd:
+                        case Cid.RXParamCmd:
+                        case Cid.NewChannelCmd:
+                        case Cid.RXTimingCmd:
                         default:
                             Logger.Log(deviceId, $"a Mac command transmitted from the server, value ${input.Span[pointer]} was not from a supported type. Aborting Mac Command processing", LogLevel.Error);
                             return null;
                     }
 
-                    var addedMacCommand = macCommands[macCommands.Count - 1];
-                    Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand.ToString()}", LogLevel.Debug);
+                    var addedMacCommand = macCommands[^1];
+                    Logger.Log(deviceId, $"{addedMacCommand.Cid} mac command detected in upstream payload: {addedMacCommand}", LogLevel.Debug);
                 }
                 catch (MacCommandException ex)
                 {

@@ -24,7 +24,7 @@ namespace LoRaTools.LoRaPhysical
             var byteData = Convert.FromBase64String(data);
             Txpk = new Txpk()
             {
-                Imme = tmst == 0 ? true : false,
+                Imme = tmst == 0,
                 Tmst = tmst,
                 Data = data,
                 Size = (uint)byteData.Length,
@@ -50,7 +50,7 @@ namespace LoRaTools.LoRaPhysical
 
             Txpk = new Txpk()
             {
-                Imme = tmst == 0 ? true : false,
+                Imme = tmst == 0,
                 Tmst = tmst,
                 Data = Convert.ToBase64String(loRaData),
                 Size = (uint)loRaData.Length,

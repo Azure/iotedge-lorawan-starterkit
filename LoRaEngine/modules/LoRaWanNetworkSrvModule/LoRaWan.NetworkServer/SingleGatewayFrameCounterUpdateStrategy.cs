@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Threading.Tasks;
 
-    public class SingleGatewayFrameCounterUpdateStrategy : ILoRaDeviceFrameCounterUpdateStrategy, ILoRaDeviceInitializer
+    public sealed class SingleGatewayFrameCounterUpdateStrategy : ILoRaDeviceFrameCounterUpdateStrategy, ILoRaDeviceInitializer
     {
         public async Task<bool> ResetAsync(LoRaDevice loRaDevice, uint fcntUp, string gatewayId)
         {
@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
             return InternalSaveChangesAsync(loRaDevice, force: false);
         }
 
-        private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
+        private static async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {
             return await loRaDevice.SaveChangesAsync(force: force);
         }

@@ -23,7 +23,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
             context.Result.AdrResult = await HandleADRRequest(context.DevEUI, context.Request.AdrRequest);
 
-            context.Result.NextFCntDown = context.Result.AdrResult != null && context.Result.AdrResult.FCntDown > 0 ? context.Result.AdrResult.FCntDown : (uint?)null;
+            context.Result.NextFCntDown = context.Result.AdrResult != null && context.Result.AdrResult.FCntDown > 0 ? context.Result.AdrResult.FCntDown : null;
             return FunctionBundlerExecutionState.Continue;
         }
 
