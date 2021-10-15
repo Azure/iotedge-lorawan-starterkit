@@ -16,6 +16,8 @@ namespace LoRaTools.Utils
         /// <param name="hex">Input hex string.</param>
         public static byte[] StringToByteArray(string hex)
         {
+            if (hex is null) throw new ArgumentNullException(nameof(hex));
+
             var numberChars = hex.Length;
             var bytes = new byte[numberChars / 2];
             for (var i = 0; i < numberChars; i += 2)

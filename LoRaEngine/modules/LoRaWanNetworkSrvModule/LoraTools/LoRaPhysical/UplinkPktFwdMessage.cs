@@ -35,6 +35,8 @@ namespace LoRaTools.LoRaPhysical
         /// <returns>UplinkPktFwdMessage object ready to be sent.</returns>
         public UplinkPktFwdMessage(byte[] loRaData, string datr, double freq, uint tmst = 0, float lsnr = 0)
         {
+            if (loRaData is null) throw new ArgumentNullException(nameof(loRaData));
+
             // This is a new ctor, must be validated by MIK
             Rxpk = new List<Rxpk>()
             {

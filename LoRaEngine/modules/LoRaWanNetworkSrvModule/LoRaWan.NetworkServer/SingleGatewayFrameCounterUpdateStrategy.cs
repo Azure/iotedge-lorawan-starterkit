@@ -3,22 +3,30 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Threading.Tasks;
 
     public class SingleGatewayFrameCounterUpdateStrategy : ILoRaDeviceFrameCounterUpdateStrategy, ILoRaDeviceInitializer
     {
         public async Task<bool> ResetAsync(LoRaDevice loRaDevice, uint fcntUp, string gatewayId)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             loRaDevice.ResetFcnt();
             return await InternalSaveChangesAsync(loRaDevice, force: true);
         }
 
         public ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
             return new ValueTask<uint>(loRaDevice.IncrementFcntDown(1));
         }
 
-        public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => InternalSaveChangesAsync(loRaDevice, force: false);
+        public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice)
+        {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+            return InternalSaveChangesAsync(loRaDevice, force: false);
+        }
 
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {

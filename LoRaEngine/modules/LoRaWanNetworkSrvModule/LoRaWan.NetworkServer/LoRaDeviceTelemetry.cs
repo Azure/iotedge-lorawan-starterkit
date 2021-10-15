@@ -84,9 +84,10 @@ namespace LoRaWan.NetworkServer
 
         public LoRaDeviceTelemetry(Rxpk rxpk, LoRaPayloadData upstreamPayload, object payloadData, byte[] decryptedPayloadData)
         {
+            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
+            if (upstreamPayload is null) throw new ArgumentNullException(nameof(upstreamPayload));
             if (rxpk.ExtraData != null)
                 ExtraData = new Dictionary<string, object>(rxpk.ExtraData);
-
             Chan = rxpk.Chan;
             Codr = rxpk.Codr;
             Data = payloadData;

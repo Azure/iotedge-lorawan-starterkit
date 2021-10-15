@@ -46,6 +46,8 @@ namespace LoRaTools.LoRaPhysical
         /// <returns>DownlinkPktFwdMessage object ready to be sent.</returns>
         public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, long tmst = 0)
         {
+            if (loRaData is null) throw new ArgumentNullException(nameof(loRaData));
+
             Txpk = new Txpk()
             {
                 Imme = tmst == 0 ? true : false,

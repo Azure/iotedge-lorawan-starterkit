@@ -28,7 +28,7 @@ namespace LoRaWan
 
         public static void Init(LoggerConfiguration loggerConfiguration)
         {
-            configuration = loggerConfiguration;
+            configuration = loggerConfiguration ?? throw new ArgumentNullException(nameof(loggerConfiguration));
 
             if (configuration.LogToUdp)
             {
@@ -52,11 +52,6 @@ namespace LoRaWan
         }
 
         public static void LogAlways(string message)
-        {
-            LogAlways(null, message);
-        }
-
-        public static void LogAlways(string deviceId, string message)
         {
             Log(null, message, LogLevel.Critical);
         }

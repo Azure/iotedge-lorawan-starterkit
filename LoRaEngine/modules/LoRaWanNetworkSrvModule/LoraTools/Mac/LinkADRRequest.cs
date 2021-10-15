@@ -48,6 +48,8 @@ namespace LoRaTools
         /// </summary>
         public LinkADRRequest(byte[] input)
         {
+            if (input is null) throw new ArgumentNullException(nameof(input));
+
             if (input.Length < Length || input[0] != (byte)Cid.LinkADRCmd)
             {
                 throw new Exception("the input was not in the expected form");

@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             JoinRequestMessageHandler joinRequestHandler = null)
         {
-            this.configuration = configuration;
+            this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.deviceRegistry = deviceRegistry;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
 
@@ -42,6 +42,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void DispatchRequest(LoRaRequest request)
         {
+            if (request is null) throw new ArgumentNullException(nameof(request));
+
             if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out var loRaPayload))
             {
                 Logger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);

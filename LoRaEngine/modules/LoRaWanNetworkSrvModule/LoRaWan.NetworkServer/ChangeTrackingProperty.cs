@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Collections.Generic;
 
     /// <summary>
@@ -72,6 +73,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Implicit operator for {T}.
         /// </summary>
-        public static implicit operator T(ChangeTrackingProperty<T> t) => t.current;
+        public static implicit operator T(ChangeTrackingProperty<T> t) =>
+            t is null ? default : t.current;
     }
 }

@@ -100,6 +100,8 @@ namespace LoRaTools.LoRaMessage
 
         public LoRaPayloadJoinAccept(byte[] inputMessage, string appKey)
         {
+            if (inputMessage is null) throw new ArgumentNullException(nameof(inputMessage));
+
             // Only MHDR is not encrypted with the key
             // ( PHYPayload = MHDR[1] | MACPayload[..] | MIC[4] )
             Mhdr = new Memory<byte>(inputMessage, 0, 1);
@@ -202,7 +204,7 @@ namespace LoRaTools.LoRaMessage
             throw new NotImplementedException();
         }
 
-        public DownlinkPktFwdMessage Serialize(string appKey, string datr, double freq, long tmst, string devEUI)
+        public DownlinkPktFwdMessage Serialize(string appKey, string datr, double freq, long tmst)
         {
             var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
             if (!CfList.Span.IsEmpty)

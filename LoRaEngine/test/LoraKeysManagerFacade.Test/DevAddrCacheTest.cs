@@ -26,6 +26,7 @@ namespace LoraKeysManagerFacade.Test
 
         public DevAddrCacheTest(RedisFixture redis)
         {
+            if (redis is null) throw new ArgumentNullException(nameof(redis));
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
         }
 
