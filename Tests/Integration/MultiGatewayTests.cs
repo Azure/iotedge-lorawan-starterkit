@@ -16,7 +16,7 @@ namespace LoRaWan.Tests.Integration
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Multi gateway specifc scenarios
-    public class MessageProcessor_End2End_NoDep_MultiGateway_Tests : MessageProcessorTestBase
+    public class MultiGatewayTests : MessageProcessorTestBase
     {
         [Theory]
         [InlineData(0, 0, 1)]

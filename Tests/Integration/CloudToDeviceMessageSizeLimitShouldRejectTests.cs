@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Integration
 {
     using System;
-    using System.Linq;
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
@@ -13,31 +12,22 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Shared;
-    using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
 
-    // End to end tests without external dependencies (IoT Hub, Service Facade Function)
-    // Cloud to device message processing max payload size tests (Join tests are handled in other class)
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
-    public class MessageProcessor_End2End_NoDep_CloudToDeviceMessage_SizeLimit_Should_Accept : MessageProcessor_End2End_NoDep_CloudToDeviceMessage_SizeLimitBase
+    public class CloudToDeviceMessageSizeLimitShouldRejectTests : CloudToDeviceMessageSizeLimitBaseTests
     {
         [Theory]
         [CombinatorialData]
-        public async Task Should_Accept(
+        public async Task Should_Reject(
             bool isConfirmed,
             bool hasMacInUpstream,
             bool hasMacInC2D,
-            bool isTooLongForUpstreamMacCommandInAnswer,
-            bool isSendingInRx2,
             [CombinatorialValues("SF10BW125", "SF9BW125", "SF8BW125", "SF7BW125")] string datr)
         {
             const int InitialDeviceFcntUp = 9;
             const int InitialDeviceFcntDown = 20;
-
-            // This scenario makes no sense
-            if (hasMacInUpstream && isTooLongForUpstreamMacCommandInAnswer)
-                return;
 
             var simulatedDevice = new SimulatedDevice(
                 TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID),
@@ -60,19 +50,16 @@ namespace LoRaWan.Tests.Integration
             var upstreamMessageMacCommandSize = 0;
             string expectedDownlinkDatr;
 
-            if (hasMacInUpstream && !isTooLongForUpstreamMacCommandInAnswer)
+            if (hasMacInUpstream)
             {
                 upstreamMessageMacCommandSize = new LinkCheckAnswer(1, 1).Length;
             }
 
-            if (isSendingInRx2)
-                expectedDownlinkDatr = euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].configuration;
-            else
-                expectedDownlinkDatr = datr;
+            expectedDownlinkDatr = datr;
 
             var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
                 - c2dMessageMacCommandSize
-                - upstreamMessageMacCommandSize
+                + 1 // make message too long on purpose
                 - Constants.LoraProtocolOverheadSize;
 
             var c2dMessagePayload = TestUtils.GeneratePayload("123457890", (int)c2dPayloadSize);
@@ -90,11 +77,10 @@ namespace LoRaWan.Tests.Integration
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
 
-            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
-                .ReturnsAsync(cloudToDeviceMessage)
-                .ReturnsAsync((Message)null);
+            LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                .ReturnsAsync(cloudToDeviceMessage);
 
-            LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+            LoRaDeviceClient.Setup(x => x.RejectAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
 
             using var cache = NewNonEmptyCache(loraDevice);
@@ -106,9 +92,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            var startTimeOffset = isSendingInRx2 ? TestUtils.GetStartTimeOffsetForSecondWindow() : TimeSpan.Zero;
-
-            using var request = CreateWaitableRequest(rxpk, startTimeOffset: startTimeOffset);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
 
             // Expectations
@@ -116,36 +100,31 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
 
-            // 2. Return is downstream message
-            Assert.NotNull(request.ResponseDownlink);
-            Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Txpk.Datr);
+            var shouldHaveADownlink = isConfirmed || hasMacInUpstream;
 
-            // Get downlink message
-            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
-            var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
-            payloadDataDown.PerformEncryption(loraDevice.AppSKey);
-
-            // 3. downlink message payload contains expected message type and DevAddr
-            Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
-            Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
-
-            // 4. Expected Mac commands are present
-            var expectedMacCommandsCount = 0;
-
-            if (hasMacInC2D)
-                expectedMacCommandsCount++;
-            if (hasMacInUpstream && !isTooLongForUpstreamMacCommandInAnswer)
-                expectedMacCommandsCount++;
-
-            if (expectedMacCommandsCount > 0)
+            // 2. Return is downstream message ONLY
+            // if is confirmed or had Mac commands in upstream message
+            if (shouldHaveADownlink)
             {
-                // Possible problem: Manually casting payloadDataDown.Fopts to array and reversing it
-                var macCommands = MacCommand.CreateServerMacCommandFromBytes(simulatedDevice.DevEUI, payloadDataDown.Fopts.ToArray().Reverse().ToArray());
-                Assert.Equal(expectedMacCommandsCount, macCommands.Count);
+                Assert.NotNull(request.ResponseDownlink);
+                Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Txpk.Datr);
+
+                var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+                var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
+                payloadDataDown.PerformEncryption(loraDevice.AppSKey);
+
+                Assert.Equal(payloadDataDown.DevAddr.ToArray(), LoRaTools.Utils.ConversionHelper.StringToByteArray(loraDevice.DevAddr));
+                Assert.Equal(LoRaMessageType.UnconfirmedDataDown, payloadDataDown.LoRaMessageType);
+
+                if (hasMacInUpstream)
+                {
+                    Assert.Equal(new LinkCheckAnswer(1, 1).Length, payloadDataDown.Frmpayload.Length);
+                    Assert.Equal(0, payloadDataDown.FPortValue);
+                }
             }
             else
             {
-                Assert.Null(payloadDataDown.MacCommands);
+                Assert.Null(request.ResponseDownlink);
             }
 
             LoRaDeviceClient.VerifyAll();

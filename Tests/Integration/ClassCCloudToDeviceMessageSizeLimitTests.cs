@@ -22,7 +22,7 @@ namespace LoRaWan.Tests.Integration
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Class CCloud to device message processing max payload size tests (Join tests are handled in other class)
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
-    public sealed class MessageProcessor_End2End_NoDep_ClassC_CloudToDeviceMessage_SizeLimit_Tests : IDisposable
+    public sealed class ClassCCloudToDeviceMessageSizeLimitTests : IDisposable
     {
         const string ServerGatewayID = "test-gateway";
 
@@ -37,7 +37,7 @@ namespace LoRaWan.Tests.Integration
         private readonly LoRaDeviceRegistry loRaDeviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterStrategyProvider;
 
-        public MessageProcessor_End2End_NoDep_ClassC_CloudToDeviceMessage_SizeLimit_Tests()
+        public ClassCCloudToDeviceMessageSizeLimitTests()
         {
             this.serverConfiguration = new NetworkServerConfiguration()
             {

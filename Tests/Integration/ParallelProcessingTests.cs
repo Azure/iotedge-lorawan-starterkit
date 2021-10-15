@@ -19,11 +19,11 @@ namespace LoRaWan.Tests.Integration
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Parallel message processing
-    public class MessageProcessor_End2End_NoDep_Parallel_Processing_Tests : MessageProcessorTestBase
+    public class ParallelProcessingTests : MessageProcessorTestBase
     {
         private readonly TestPacketForwarder packetForwarder;
 
-        public MessageProcessor_End2End_NoDep_Parallel_Processing_Tests()
+        public ParallelProcessingTests()
         {
             this.packetForwarder = new TestPacketForwarder();
         }

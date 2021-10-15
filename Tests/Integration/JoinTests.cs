@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Integration
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Only join tests
-    public class MessageProcessor_End2End_NoDep_Join_Tests : MessageProcessorTestBase
+    public class JoinTests : MessageProcessorTestBase
     {
         [Theory]
         [InlineData(ServerGatewayID, 200, 50, 0, 0)]

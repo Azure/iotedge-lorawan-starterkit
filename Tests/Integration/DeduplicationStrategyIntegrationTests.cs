@@ -13,12 +13,12 @@ namespace LoRaWan.Tests.Integration
     using Moq;
     using Xunit;
 
-    public class DeduplicationStrategyTests : MessageProcessorMultipleGatewayTest
+    public class DeduplicationStrategyIntegrationTests : MessageProcessorMultipleGatewayTest
     {
         private readonly DeduplicationStrategyFactory factory;
         private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
 
-        public DeduplicationStrategyTests()
+        public DeduplicationStrategyIntegrationTests()
         {
             this.factory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object);
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);

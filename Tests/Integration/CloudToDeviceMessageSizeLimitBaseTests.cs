@@ -6,7 +6,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.LoRaPhysical;
     using LoRaWan.Tests.Shared;
 
-    public class MessageProcessor_End2End_NoDep_CloudToDeviceMessage_SizeLimitBase : MessageProcessorTestBase
+    public class CloudToDeviceMessageSizeLimitBaseTests : MessageProcessorTestBase
     {
         public static Rxpk CreateUpstreamRxpk(bool isConfirmed, bool hasMacInUpstream, string datr, SimulatedDevice simulatedDevice)
         {

@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Integration
 
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Class C device tests
-    public class MessageProcessor_End2End_NoDep_ClassC_Tests : MessageProcessorTestBase
+    public class ClassCIntegrationTests : MessageProcessorTestBase
     {
         [Theory]
         [InlineData(null, 0U, 0U)]
