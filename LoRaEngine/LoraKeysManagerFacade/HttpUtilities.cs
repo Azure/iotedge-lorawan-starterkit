@@ -32,7 +32,8 @@ namespace LoraKeysManagerFacade
                     }
                 }
             }
-            else
+
+            if (StringValues.IsNullOrEmpty(versionText))
             {
                 return ApiVersion.DefaultVersion;
             }
