@@ -49,6 +49,10 @@ namespace LoRaTools.Regions
             };
         }
 
+        /// <summary>
+        /// Returns channel plan type for region CN470 matching the frequency of the join request.
+        /// </summary>
+        /// <param name="joinChannel">Channel on which the join request was received.</param>
         public override bool TryGetRegionPlanType(Rxpk joinChannel, out string channelPlan)
         {
             if (joinChannel is null) throw new ArgumentNullException(nameof(joinChannel));
