@@ -131,7 +131,7 @@ namespace LoRaWan.NetworkServer
                                     loRaCloudToDeviceMessage = jsonObject.ToObject<ReceivedLoRaCloudToDeviceMessage>();
                                 }
 
-                                externalDecoderResponse.Remove(Constants.CloudToDeviceDecoderElementName);
+                                _ = externalDecoderResponse.Remove(Constants.CloudToDeviceDecoderElementName);
                             }
 
                             return new DecodePayloadResult(externalDecoderResponse)

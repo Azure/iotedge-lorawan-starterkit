@@ -147,7 +147,7 @@ namespace LoraKeysManagerFacade
                                         // Add a lock loadPrimaryKey get lock get
                                         devAddressesInfo[i].PrimaryKey = await this.LoadPrimaryKeyAsync(devAddressesInfo[i].DevEUI);
                                         results.Add(devAddressesInfo[i]);
-                                        devAddrCache.StoreInfo(devAddressesInfo[i]);
+                                        _ = devAddrCache.StoreInfo(devAddressesInfo[i]);
                                     }
 
                                     // even if we fail to acquire the lock we wont enter in the next condition as devaddressinfo is not null
@@ -184,7 +184,7 @@ namespace LoraKeysManagerFacade
                                                     LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
                                                 };
                                                 results.Add(iotHubDeviceInfo);
-                                                devAddrCache.StoreInfo((DevAddrCacheInfo)iotHubDeviceInfo);
+                                                _ = devAddrCache.StoreInfo((DevAddrCacheInfo)iotHubDeviceInfo);
                                             }
 
                                             resultCount++;
@@ -194,7 +194,7 @@ namespace LoraKeysManagerFacade
                                     // todo save when not our devaddr
                                     if (resultCount == 0)
                                     {
-                                        devAddrCache.StoreInfo(new DevAddrCacheInfo()
+                                        _ = devAddrCache.StoreInfo(new DevAddrCacheInfo()
                                         {
                                             DevAddr = devAddr,
                                             DevEUI = string.Empty
@@ -203,14 +203,14 @@ namespace LoraKeysManagerFacade
                                 }
                                 finally
                                 {
-                                    devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
+                                    _ = devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
                                 }
                             }
                         }
                     }
                     finally
                     {
-                        devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
+                        _ = devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
                     }
                 }
             }
@@ -260,13 +260,13 @@ namespace LoraKeysManagerFacade
                             }
                         }
 
-                        this.cacheStore.ObjectSet(cacheKeyJoinInfo, joinInfo, TimeSpan.FromMinutes(60));
+                        _ = this.cacheStore.ObjectSet(cacheKeyJoinInfo, joinInfo, TimeSpan.FromMinutes(60));
                         log?.LogDebug("updated cache with join info '{key}':{gwid}", devEUI, gatewayId);
                     }
                 }
                 finally
                 {
-                    this.cacheStore.LockRelease(lockKeyJoinInfo, gatewayId);
+                    _ = this.cacheStore.LockRelease(lockKeyJoinInfo, gatewayId);
                 }
 
                 if (string.IsNullOrEmpty(joinInfo.PrimaryKey))

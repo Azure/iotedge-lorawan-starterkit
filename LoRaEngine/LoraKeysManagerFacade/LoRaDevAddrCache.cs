@@ -150,7 +150,7 @@ namespace LoraKeysManagerFacade
                         // we would be doing an incremental update to soon. We could delay that
                         // for the time we run the incremental updates, but that could delay it
                         // longer than what we may want.
-                        this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
+                        _ = this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
                     }
 
                     if (!fullUpdatePerformed)
@@ -176,7 +176,7 @@ namespace LoraKeysManagerFacade
                 }
                 finally
                 {
-                    this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
+                    _ = this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
                 }
             }
         }
@@ -209,7 +209,7 @@ namespace LoraKeysManagerFacade
         {
             var query = registryManager.CreateQuery(inputQuery);
             var lastQueryTs = DateTime.UtcNow.AddSeconds(-10); // account for some clock drift
-            this.cacheStore.StringSet(LastDeltaUpdateKeyValue, lastQueryTs.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
+            _ = this.cacheStore.StringSet(LastDeltaUpdateKeyValue, lastQueryTs.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
             var devAddrCacheInfos = new List<DevAddrCacheInfo>();
             while (query.HasMoreResults)
             {
@@ -333,7 +333,7 @@ namespace LoraKeysManagerFacade
                     }
 
                     // I remove the key from the import to be able to import any delta element later.
-                    valueArrayimport.Remove(baseValue.Key);
+                    _ = valueArrayimport.Remove(baseValue.Key);
                 }
                 else
                 {

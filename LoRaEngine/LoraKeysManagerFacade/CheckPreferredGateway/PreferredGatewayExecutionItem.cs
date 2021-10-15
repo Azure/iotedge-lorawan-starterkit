@@ -85,7 +85,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             //    List item: gatewayid, rssi, insertTime
             var item = new PreferredGatewayTableItem(context.Request.GatewayId, rssi);
             var listCacheKey = LoRaDevicePreferredGateway.PreferredGatewayFcntUpItemListCacheKey(devEUI, fcntUp);
-            this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(RequestListCacheDurationInMinutes));
+            _ = this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(RequestListCacheDurationInMinutes));
             this.log.LogInformation("Preferred gateway {devEUI}/{fcnt}: added {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
 
             // 2. Wait for the time specified in receiveInterval (default 200ms). Optional: wait less if another requests already started
@@ -126,13 +126,17 @@ namespace LoraKeysManagerFacade.FunctionBundler
                             }
 
                             preferredGateway = new LoRaDevicePreferredGateway(winner.GatewayID, fcntUp);
-                            LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, context.DevEUI, preferredGateway);
+                            if (!LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, context.DevEUI, preferredGateway))
+                            {
+                                this.log.LogWarning("Failed to store preferred gateway for {devEUI}. Gateway: {gateway}", devEUI, context.Request.GatewayId);
+                            }
+
                             this.log.LogInformation("Resolved preferred gateway {devEUI}/{fcnt}: {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
                         }
                     }
                     finally
                     {
-                        this.cacheStore.LockRelease(preferredGatewayLockKey, computationId);
+                        _ = this.cacheStore.LockRelease(preferredGatewayLockKey, computationId);
                     }
                 }
                 else
