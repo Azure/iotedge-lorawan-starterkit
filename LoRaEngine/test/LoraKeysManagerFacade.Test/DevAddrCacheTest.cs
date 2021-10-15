@@ -465,7 +465,7 @@ namespace LoraKeysManagerFacade.Test
 
             // initialize locks for test to run correctly
             await LockDevAddrHelper.PrepareLocksForTests(this.cache);
-            
+
             var items = new List<IoTHubDeviceInfo>();
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
@@ -879,7 +879,7 @@ namespace LoraKeysManagerFacade.Test
 
             // initialize locks for test to run correctly
             await LockDevAddrHelper.PrepareLocksForTests(this.cache);
-            
+
             var devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
             await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
 

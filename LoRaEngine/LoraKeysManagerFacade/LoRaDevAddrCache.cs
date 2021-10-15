@@ -102,7 +102,7 @@ namespace LoraKeysManagerFacade
 
             var cacheKeyToUse = GenerateKey(info.DevAddr);
 
-            if(this.cacheStore.TrySetHashObject(cacheKeyToUse, info.DevEUI, serializedObjectValue))
+            if (this.cacheStore.TrySetHashObject(cacheKeyToUse, info.DevEUI, serializedObjectValue))
             {
                 this.logger.LogInformation($"Successfully saved dev address info on dictionary key: {cacheKeyToUse}, hashkey: {info.DevEUI}, object: {serializedObjectValue}");
 
