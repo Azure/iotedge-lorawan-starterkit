@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Shared
             this.complete.Release();
         }
 
-        internal Task<bool> WaitCompleteAsync(int timeout = default)
+        public Task<bool> WaitCompleteAsync(int timeout = default)
         {
             if (timeout == default)
             {
