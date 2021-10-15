@@ -26,7 +26,7 @@ namespace LoraKeysManagerFacade
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            _ = req ?? throw new ArgumentNullException(nameof(req));
+            if (req is null) throw new ArgumentNullException(nameof(req));
 
             try
             {
@@ -82,7 +82,7 @@ namespace LoraKeysManagerFacade
                 throw new ArgumentException(errorMsg);
             }
 
-            newFCntDown = await this.GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);
+            newFCntDown = await GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);
 
             return new OkObjectResult(newFCntDown);
         }

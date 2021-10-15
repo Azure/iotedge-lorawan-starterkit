@@ -31,3 +31,9 @@ dotnet_diagnostic.IDE0040.severity=suggestion
 
 # CA1721: Property names should not match get methods
 dotnet_diagnostic.CA1721.severity = suggestion
+
+[*.cs]
+dotnet_style_qualification_for_field=true:error
+dotnet_style_qualification_for_property=false:error
+dotnet_style_qualification_for_method=false:error
+dotnet_style_qualification_for_event=false:error

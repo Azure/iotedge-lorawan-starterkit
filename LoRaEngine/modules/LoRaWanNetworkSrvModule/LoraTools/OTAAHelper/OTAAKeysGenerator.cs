@@ -14,6 +14,8 @@ namespace LoRaTools
 
         public static string GetNwkId(byte[] netId)
         {
+            if (netId is null) throw new ArgumentNullException(nameof(netId));
+
             var nwkPart = netId[0] << 1;
             var devAddr = new byte[4];
 
@@ -53,6 +55,10 @@ namespace LoRaTools
         // don't work with CFLIST atm
         public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, ReadOnlyMemory<byte> devnonce, byte[] appKey)
         {
+            if (type is null) throw new ArgumentNullException(nameof(type));
+            if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
+            if (netid is null) throw new ArgumentNullException(nameof(netid));
+
             using Aes aes = new AesManaged
             {
                 Key = appKey,

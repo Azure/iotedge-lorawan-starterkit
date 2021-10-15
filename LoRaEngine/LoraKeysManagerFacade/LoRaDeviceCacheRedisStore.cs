@@ -25,6 +25,7 @@ namespace LoraKeysManagerFacade
         {
             var sw = Stopwatch.StartNew();
             bool taken;
+
             while (!(taken = this.redisCache.LockTake(key, owner, expiration, CommandFlags.DemandMaster)) && block)
             {
                 if (sw.Elapsed > LockTimeout)
@@ -43,7 +44,7 @@ namespace LoraKeysManagerFacade
         public T GetObject<T>(string key)
             where T : class
         {
-            var str = this.StringGet(key);
+            var str = StringGet(key);
             if (string.IsNullOrEmpty(str))
             {
                 return null;
@@ -71,7 +72,7 @@ namespace LoraKeysManagerFacade
             where T : class
         {
             var str = value != null ? JsonConvert.SerializeObject(value) : null;
-            return this.StringSet(key, str, expiration, onlyIfNotExists);
+            return StringSet(key, str, expiration, onlyIfNotExists);
         }
 
         public bool KeyExists(string key)
@@ -123,6 +124,8 @@ namespace LoraKeysManagerFacade
         public void ReplaceHashObjects<T>(string cacheKey, IDictionary<string, T> input, TimeSpan? timeToExpire = null, bool removeOldOccurence = false)
             where T : class
         {
+            if (input is null) throw new ArgumentNullException(nameof(input));
+
             if (removeOldOccurence)
             {
                 _ = this.redisCache.KeyDelete(cacheKey);

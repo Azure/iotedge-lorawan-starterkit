@@ -13,19 +13,19 @@ namespace LoraKeysManagerFacade
 
         public string NwkSKey { get; set; }
 
-        public int CompareTo(object obj) => this.Equals(obj) ? 0 : 1;
+        public int CompareTo(object obj) => Equals(obj) ? 0 : 1;
 
         public override bool Equals(object obj) =>
             obj is DevAddrCacheInfo info &&
-            this.DevAddr == info.DevAddr &&
-            this.DevEUI == info.DevEUI &&
-            this.PrimaryKey == info.PrimaryKey &&
-            this.GatewayId == info.GatewayId &&
-            this.LastUpdatedTwins == info.LastUpdatedTwins &&
-            this.NwkSKey == info.NwkSKey;
+            DevAddr == info.DevAddr &&
+            DevEUI == info.DevEUI &&
+            PrimaryKey == info.PrimaryKey &&
+            GatewayId == info.GatewayId &&
+            LastUpdatedTwins == info.LastUpdatedTwins &&
+            NwkSKey == info.NwkSKey;
 
         public override int GetHashCode() =>
-            HashCode.Combine(this.DevAddr, this.DevEUI, this.PrimaryKey, this.GatewayId, this.LastUpdatedTwins, this.NwkSKey);
+            HashCode.Combine(DevAddr, DevEUI, PrimaryKey, GatewayId, LastUpdatedTwins, NwkSKey);
 
         public static bool operator ==(DevAddrCacheInfo left, DevAddrCacheInfo right) =>
             left is null ? right is null : left.Equals(right);

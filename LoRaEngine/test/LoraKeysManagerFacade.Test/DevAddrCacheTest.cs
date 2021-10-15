@@ -26,6 +26,7 @@ namespace LoraKeysManagerFacade.Test
 
         public DevAddrCacheTest(RedisFixture redis)
         {
+            if (redis is null) throw new ArgumentNullException(nameof(redis));
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
         }
 
@@ -135,7 +136,7 @@ namespace LoraKeysManagerFacade.Test
             var devAddrcache = new LoRaDevAddrCache(this.cache, null, null);
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake == null ? null : new[] { lockToTake });
             var managerInput = new List<DevAddrCacheInfo> { new DevAddrCacheInfo() { DevEUI = NewUniqueEUI64(), DevAddr = NewUniqueEUI32() } };
-            var registryManagerMock = this.InitRegistryManager(managerInput);
+            var registryManagerMock = InitRegistryManager(managerInput);
             registryManagerMock.Setup(x => x.CreateQuery(It.IsAny<string>())).Throws<Exception>();
             await devAddrcache.PerformNeededSyncs(registryManagerMock.Object);
 
@@ -175,7 +176,7 @@ namespace LoraKeysManagerFacade.Test
             }
 
             var devAddrJoining = managerInput[0].DevAddr;
-            var registryManagerMock = this.InitRegistryManager(managerInput);
+            var registryManagerMock = InitRegistryManager(managerInput);
 
             var items = new List<IoTHubDeviceInfo>();
 
@@ -220,7 +221,7 @@ namespace LoraKeysManagerFacade.Test
             }
 
             var devAddrJoining = managerInput[0].DevAddr;
-            var registryManagerMock = this.InitRegistryManager(managerInput);
+            var registryManagerMock = InitRegistryManager(managerInput);
 
             // In this test we want no updates running
             // initialize locks for test to run correctly
@@ -271,8 +272,8 @@ namespace LoraKeysManagerFacade.Test
             }
 
             var devAddrJoining = managerInput[0].DevAddr;
-            this.InitCache(this.cache, managerInput);
-            var registryManagerMock = this.InitRegistryManager(managerInput);
+            InitCache(this.cache, managerInput);
+            var registryManagerMock = InitRegistryManager(managerInput);
             var items = new List<IoTHubDeviceInfo>();
 
             // In this test we want no updates running
@@ -317,8 +318,8 @@ namespace LoraKeysManagerFacade.Test
             }
 
             var devAddrJoining = managerInput[0].DevAddr;
-            this.InitCache(this.cache, managerInput);
-            var registryManagerMock = this.InitRegistryManager(managerInput);
+            InitCache(this.cache, managerInput);
+            var registryManagerMock = InitRegistryManager(managerInput);
 
             // In this test we want no updates running
             // initialize locks for test to run correctly
@@ -368,8 +369,8 @@ namespace LoraKeysManagerFacade.Test
             }
 
             var devAddrJoining = managerInput[0].DevAddr;
-            this.InitCache(this.cache, managerInput);
-            var registryManagerMock = this.InitRegistryManager(managerInput);
+            InitCache(this.cache, managerInput);
+            var registryManagerMock = InitRegistryManager(managerInput);
 
             var items = new List<IoTHubDeviceInfo>();
             // In this test we want no updates running
@@ -415,8 +416,8 @@ namespace LoraKeysManagerFacade.Test
             }
 
             var devAddrJoining = NewUniqueEUI32();
-            this.InitCache(this.cache, managerInput);
-            var registryManagerMock = this.InitRegistryManager(managerInput);
+            InitCache(this.cache, managerInput);
+            var registryManagerMock = InitRegistryManager(managerInput);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
             items = await deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining);
@@ -458,7 +459,7 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddrJoining = managerInput[0].DevAddr;
             // The cache start as empty
-            var registryManagerMock = this.InitRegistryManager(managerInput);
+            var registryManagerMock = InitRegistryManager(managerInput);
 
             // initialize locks for test to run correctly
             await LockDevAddrHelper.PrepareLocksForTests(this.cache);
@@ -507,7 +508,7 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddrJoining = managerInput[0].DevAddr;
             // The cache start as empty
-            var registryManagerMock = this.InitRegistryManager(managerInput);
+            var registryManagerMock = InitRegistryManager(managerInput);
 
             // initialize locks for test to run correctly
             var locksToTake = new string[1] { FullUpdateKey };
@@ -583,7 +584,7 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddrJoining = managerInput[0].DevAddr;
             // The cache start as empty
-            var registryManagerMock = this.InitRegistryManager(managerInput, managerInput.Count);
+            var registryManagerMock = InitRegistryManager(managerInput, managerInput.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -610,7 +611,7 @@ namespace LoraKeysManagerFacade.Test
                 PrimaryKey = primaryKey,
                 LastUpdatedTwins = dateTime
             });
-            this.InitCache(this.cache, cacheInput);
+            InitCache(this.cache, cacheInput);
 
             // initialize locks for test to run correctly
             var locksToTake = new string[1] { FullUpdateKey };
@@ -687,7 +688,7 @@ namespace LoraKeysManagerFacade.Test
                 });
             }
 
-            var registryManagerMock = this.InitRegistryManager(managerInput, managerInput.Count);
+            var registryManagerMock = InitRegistryManager(managerInput, managerInput.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -702,7 +703,7 @@ namespace LoraKeysManagerFacade.Test
                 });
             }
 
-            this.InitCache(this.cache, cacheInput);
+            InitCache(this.cache, cacheInput);
             // initialize locks for test to run correctly
             var locksToTake = new string[1] { FullUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, locksToTake);
@@ -767,7 +768,7 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddrJoining = newValues[0].DevAddr;
             // The cache start as empty
-            var registryManagerMock = this.InitRegistryManager(newValues, newValues.Count);
+            var registryManagerMock = InitRegistryManager(newValues, newValues.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -797,7 +798,7 @@ namespace LoraKeysManagerFacade.Test
                 LastUpdatedTwins = dateTime
             });
 
-            this.InitCache(this.cache, cacheInput);
+            InitCache(this.cache, cacheInput);
 
             // initialize locks for test to run correctly
             await LockDevAddrHelper.PrepareLocksForTests(this.cache);
@@ -856,7 +857,7 @@ namespace LoraKeysManagerFacade.Test
             }
 
             // The cache start as empty
-            var registryManagerMock = this.InitRegistryManager(newValues, newValues.Count);
+            var registryManagerMock = InitRegistryManager(newValues, newValues.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -872,7 +873,7 @@ namespace LoraKeysManagerFacade.Test
                 });
             }
 
-            this.InitCache(this.cache, cacheInput);
+            InitCache(this.cache, cacheInput);
 
             // initialize locks for test to run correctly
             await LockDevAddrHelper.PrepareLocksForTests(this.cache);

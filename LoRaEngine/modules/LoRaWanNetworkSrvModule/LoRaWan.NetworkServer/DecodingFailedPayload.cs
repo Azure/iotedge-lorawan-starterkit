@@ -18,8 +18,8 @@ namespace LoRaWan.NetworkServer
 
         public DecodingFailedPayload(string error, string errorDetail)
         {
-            this.Error = error;
-            this.ErrorDetail = errorDetail;
+            Error = error;
+            ErrorDetail = errorDetail;
         }
     }
 }

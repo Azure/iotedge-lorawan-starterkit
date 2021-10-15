@@ -61,7 +61,7 @@ namespace LoraKeysManagerFacade
             this.lockOwner = gatewayId ?? Guid.NewGuid().ToString();
 
             // perform the necessary syncs
-            _ = this.PerformNeededSyncs(registryManager);
+            _ = PerformNeededSyncs(registryManager);
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace LoraKeysManagerFacade
 
         public bool StoreInfo(DevAddrCacheInfo info)
         {
-            _ = info ?? throw new ArgumentNullException(nameof(info));
+            if (info is null) throw new ArgumentNullException(nameof(info));
 
             var serializedObjectValue = JsonConvert.SerializeObject(info);
 
@@ -126,7 +126,7 @@ namespace LoraKeysManagerFacade
                     if (ownsUpdateLock = await this.cacheStore.LockTakeAsync(UpdatingDevAddrCacheLock, this.lockOwner, UpdatingDevAddrCacheLockTimeSpan, block: true))
                     {
                         this.logger.LogDebug("A full reload was started");
-                        await this.PerformFullReload(registryManager);
+                        await PerformFullReload(registryManager);
                         this.logger.LogDebug("A full reload was completed");
                         // we updated the full cache, we want to delay the next update to the time FullUpdateKeyTimeSpan
                         // and only process incremental updates for that time.
@@ -167,7 +167,7 @@ namespace LoraKeysManagerFacade
                 try
                 {
                     this.logger.LogDebug("A delta reload was started");
-                    await this.PerformDeltaReload(registryManager);
+                    await PerformDeltaReload(registryManager);
                     this.logger.LogDebug("A delta reload was completed");
                 }
                 catch (Exception ex)
@@ -189,8 +189,8 @@ namespace LoraKeysManagerFacade
         private async Task PerformFullReload(RegistryManager registryManager)
         {
             var query = $"SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) OR is_defined(properties.desired.AppSKey) OR is_defined(properties.desired.NwkSKey)";
-            var devAddrCacheInfos = await this.GetDeviceTwinsFromIotHub(registryManager, query);
-            this.BulkSaveDevAddrCache(devAddrCacheInfos, true);
+            var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(registryManager, query);
+            BulkSaveDevAddrCache(devAddrCacheInfos, true);
         }
 
         /// <summary>
@@ -201,8 +201,8 @@ namespace LoraKeysManagerFacade
             // if the value is null (first call), we take five minutes before this call
             var lastUpdate = this.cacheStore.StringGet(LastDeltaUpdateKeyValue) ?? DateTime.UtcNow.AddMinutes(-5).ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
             var query = $"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{lastUpdate}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{lastUpdate}'";
-            var devAddrCacheInfos = await this.GetDeviceTwinsFromIotHub(registryManager, query);
-            this.BulkSaveDevAddrCache(devAddrCacheInfos, false);
+            var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(registryManager, query);
+            BulkSaveDevAddrCache(devAddrCacheInfos, false);
         }
 
         private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(RegistryManager registryManager, string inputQuery)
@@ -260,7 +260,7 @@ namespace LoraKeysManagerFacade
             {
                 var cacheKey = GenerateKey(elementPerDevAddr.Key);
                 var currentDevAddrEntry = this.cacheStore.GetHashObject(cacheKey);
-                var devicesByDevEui = this.KeepExistingCacheInformation(currentDevAddrEntry, elementPerDevAddr, canDeleteDeviceWithDevAddr);
+                var devicesByDevEui = KeepExistingCacheInformation(currentDevAddrEntry, elementPerDevAddr, canDeleteDeviceWithDevAddr);
                 if (devicesByDevEui != null)
                 {
                     this.cacheStore.ReplaceHashObjects(cacheKey, devicesByDevEui, DevAddrObjectsTTL, canDeleteDeviceWithDevAddr);
@@ -292,11 +292,11 @@ namespace LoraKeysManagerFacade
             // if we can delete existing devices in the devadr cache, we take the new list as base, otherwise we take the old one.
             if (canDeleteExistingDevice)
             {
-                return this.MergeOldAndNewChanges(toSyncValues, cacheValues, canDeleteExistingDevice);
+                return MergeOldAndNewChanges(toSyncValues, cacheValues, canDeleteExistingDevice);
             }
             else
             {
-                return this.MergeOldAndNewChanges(cacheValues, toSyncValues, canDeleteExistingDevice);
+                return MergeOldAndNewChanges(cacheValues, toSyncValues, canDeleteExistingDevice);
             }
         }
 

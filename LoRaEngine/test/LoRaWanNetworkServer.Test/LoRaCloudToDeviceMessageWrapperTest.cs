@@ -16,12 +16,12 @@ namespace LoRaWan.NetworkServer.Test
     {
         private readonly TestUtils.LoraDeviceClientConnectionManagerWrapper connectionManagerWrapper;
         private readonly LoRaDevice sampleDevice;
-        private LoRaDeviceClientConnectionManager ConnectionManager => connectionManagerWrapper.Value;
+        private LoRaDeviceClientConnectionManager ConnectionManager => this.connectionManagerWrapper.Value;
 
         public LoRaCloudToDeviceMessageWrapperTest()
         {
             this.connectionManagerWrapper = TestUtils.CreateConnectionManager();
-            this.sampleDevice = new LoRaDevice("123131", "1231231232132", this.ConnectionManager);
+            this.sampleDevice = new LoRaDevice("123131", "1231231232132", ConnectionManager);
             ConnectionManager.Register(this.sampleDevice, new Mock<ILoRaDeviceClient>().Object);
         }
 

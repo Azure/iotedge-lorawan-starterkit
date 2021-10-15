@@ -93,7 +93,7 @@ To create a new device modify the IntegrationTestFixture class by:
 
     ```c#
     // Device13_OTAA: used for Join with wrong AppEUI
-    this.Device13_OTAA = new TestDeviceInfo()
+    Device13_OTAA = new TestDeviceInfo()
     {
         DeviceID = "0000000000000013",
         AppEUI = "BE7A00000000FEE3",
@@ -117,18 +117,18 @@ To create a new device modify the IntegrationTestFixture class by:
 [Fact]
 public async Task Test_ABP_Invalid_NwkSKey_Fails_With_Mic_Error()
 {
-    var device = this.TestFixture.Device8_ABP;
+    var device = TestFixture.Device8_ABP;
     LogTestStart(device);
 
     var nwkSKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
     Assert.NotEqual(nwkSKeyToUse, device.NwkSKey);
-    await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
-    await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
-    await this.ArduinoDevice.setKeyAsync(nwkSKeyToUse, device.AppSKey, null);
+    await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+    await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+    await ArduinoDevice.setKeyAsync(nwkSKeyToUse, device.AppSKey, null);
 
-    await this.ArduinoDevice.SetupLora(this.TestFixture.Configuration.LoraRegion);
+    await ArduinoDevice.SetupLora(TestFixture.Configuration.LoraRegion);
 
-    await this.ArduinoDevice.transferPacketAsync("100", 10);
+    await ArduinoDevice.transferPacketAsync("100", 10);
 
     // THIS DELAY IS IMPORTANT!
     // Don't pollute radio transmission channel
@@ -174,7 +174,7 @@ Checks can be done the following way:
 ```c#
 // After transferPacketWithConfirmed: Expectation from serial "+CMSG: ACK Received"
 // It has retries to account for i/o delays
-await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
+await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 ```
 
 ### LoRaWan Network Server Module logs
@@ -190,7 +190,7 @@ Validating against the module logs.
 ```c#
 // Ensures that the message 0000000000000004: message '{"value": 51}' sent to hub is logged
 // It contains retries to account for i/o delays
-await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+await TestFixture.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
 ```
 
@@ -202,5 +202,5 @@ For end to end validation we listen for device messages arriving in IoT Hub. Exa
 // Ensure device payload is available. It contains retries to account for i/o delays
 // Data: {"value": 51}
 var expectedPayload = $"{{\"value\":{msg}}}";
-await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+await TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 ```

@@ -19,9 +19,9 @@ namespace LoRaWan.Tests.Shared
 
         public SearchLogResult(bool found, HashSet<SearchLogEvent> logs, string foundElement = null)
         {
-            this.Found = found;
-            this.Logs = logs;
-            this.FoundLogResult = foundElement;
+            Found = found;
+            Logs = logs;
+            FoundLogResult = foundElement;
         }
     }
 }

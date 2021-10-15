@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Collections.Generic;
 
     /// <summary>
@@ -16,12 +17,12 @@ namespace LoRaWan.NetworkServer
 
         public ChangeTrackingProperty(string propertyName)
         {
-            this.PropertyName = propertyName;
+            PropertyName = propertyName;
         }
 
         public ChangeTrackingProperty(string propertyName, T value)
         {
-            this.PropertyName = propertyName;
+            PropertyName = propertyName;
             this.current = this.original = value;
         }
 
@@ -72,6 +73,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Implicit operator for {T}.
         /// </summary>
-        public static implicit operator T(ChangeTrackingProperty<T> t) => t.current;
+        public static implicit operator T(ChangeTrackingProperty<T> t) =>
+            t is null ? default : t.current;
     }
 }

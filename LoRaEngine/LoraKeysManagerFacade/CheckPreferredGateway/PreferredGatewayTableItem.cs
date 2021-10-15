@@ -11,15 +11,15 @@ namespace LoraKeysManagerFacade
 
         public PreferredGatewayTableItem(string gatewayID, int rssi)
         {
-            this.GatewayID = gatewayID;
-            this.Rssi = rssi;
+            GatewayID = gatewayID;
+            Rssi = rssi;
         }
 
         /// <summary>
         /// Creates a string representation of the object for caching.
         /// </summary>
         /// <returns>A string containing {GatewayID};{Rssi}.</returns>
-        public string ToCachedString() => string.Concat(this.GatewayID, ";", this.Rssi);
+        public string ToCachedString() => string.Concat(GatewayID, ";", Rssi);
 
         /// <summary>
         /// Creates a <see cref="PreferredGatewayTableItem"/> from a string

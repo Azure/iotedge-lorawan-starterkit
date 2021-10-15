@@ -23,19 +23,19 @@ namespace LoRaTools
         // Downstream message˙
         public DutyCycleRequest(byte dutyCyclePL)
         {
-            this.Cid = Cid.DutyCycleCmd;
-            this.DutyCyclePL = (byte)(dutyCyclePL & 0b00001111);
+            Cid = Cid.DutyCycleCmd;
+            DutyCyclePL = (byte)(dutyCyclePL & 0b00001111);
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.DutyCyclePL;
-            yield return (byte)this.Cid;
+            yield return (byte)DutyCyclePL;
+            yield return (byte)Cid;
         }
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Request, dutyCyclePL: {this.DutyCyclePL}";
+            return $"Type: {Cid} Request, dutyCyclePL: {DutyCyclePL}";
         }
     }
 }

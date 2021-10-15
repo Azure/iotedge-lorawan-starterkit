@@ -74,13 +74,15 @@ namespace LoraKeysManagerFacade
 
         public async Task<LoRaADRTable> AddTableEntry(LoRaADRTableEntry entry)
         {
+            if (entry is null) throw new ArgumentNullException(nameof(entry));
+
             LoRaADRTable table = null;
             using (var redisLock = new RedisLockWrapper(entry.DevEUI, this.redisCache))
             {
                 if (await redisLock.TakeLockAsync())
                 {
                     var entryKey = GetEntryKey(entry.DevEUI);
-                    table = await this.GetADRTableCore(entryKey) ?? new LoRaADRTable();
+                    table = await GetADRTableCore(entryKey) ?? new LoRaADRTable();
 
                     AddEntryToTable(table, entry);
 
@@ -98,7 +100,7 @@ namespace LoraKeysManagerFacade
             {
                 if (await redisLock.TakeLockAsync())
                 {
-                    return await this.GetADRTableCore(GetEntryKey(devEUI));
+                    return await GetADRTableCore(GetEntryKey(devEUI));
                 }
             }
 
