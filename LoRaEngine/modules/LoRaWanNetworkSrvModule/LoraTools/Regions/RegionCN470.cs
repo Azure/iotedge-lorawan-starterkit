@@ -75,20 +75,12 @@ namespace LoRaTools.Regions
             switch (channelPlanType)
             {
                 case RegionCN470PlanType.PlanA20MHz:
-                    if (upstreamChannel.Freq < 500)
-                        channelNumber = GetChannelNumber(upstreamChannel, 470.3);
-                    else
-                        channelNumber = GetChannelNumber(upstreamChannel, 503.5, 32);
-
+                    channelNumber = upstreamChannel.Freq < 500 ? GetChannelNumber(upstreamChannel, 470.3) : GetChannelNumber(upstreamChannel, 503.5, 32);
                     frequency = DownstreamFrequenciesPerPlan[channelPlanType][channelNumber];
                     return true;
 
                 case RegionCN470PlanType.PlanB20MHz:
-                    if (upstreamChannel.Freq < 490)
-                        channelNumber = GetChannelNumber(upstreamChannel, 476.9);
-                    else
-                        channelNumber = GetChannelNumber(upstreamChannel, 496.9, 32);
-
+                    channelNumber = upstreamChannel.Freq < 490 ? GetChannelNumber(upstreamChannel, 476.9) : GetChannelNumber(upstreamChannel, 496.9, 32);
                     frequency = DownstreamFrequenciesPerPlan[channelPlanType][channelNumber];
                     return true;
 

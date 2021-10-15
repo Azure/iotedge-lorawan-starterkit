@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
+    using LoRaTools.Regions;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -145,6 +146,12 @@ namespace LoRaWan.NetworkServer
                 {
                     updatedProperties.SavePreferredGateway = true;
                     updatedProperties.SaveRegion = true;
+                }
+
+                if (request.Region.LoRaRegion == LoRaRegionType.CN470)
+                {
+                    // TODO: update with correct plan type
+                    updatedProperties.RegionChannelPlan = RegionCN470PlanType.PlanA20MHz.ToString();
                 }
 
                 var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties);

@@ -87,7 +87,7 @@ namespace LoRaWan.NetworkServer
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
 
-                if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq))
+                if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq, loRaDevice.RegionChannelPlan))
                 {
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the frequency in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);

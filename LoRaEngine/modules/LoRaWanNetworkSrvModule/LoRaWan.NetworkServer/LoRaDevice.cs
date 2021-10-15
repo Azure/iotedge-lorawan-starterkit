@@ -833,6 +833,15 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
+            if (updateProperties.RegionChannelPlan != null)
+            {
+                reportedProperties[TwinProperty.RegionChannelPlan] = updateProperties.RegionChannelPlan;
+            }
+            else
+            {
+                reportedProperties[TwinProperty.RegionChannelPlan] = null;
+            }
+
             if (RegionManager.TryTranslateToRegion(updateProperties.Region, out var currentRegion))
             {
                 // Additional Join Property Saved
@@ -861,16 +870,6 @@ namespace LoRaWan.NetworkServer
                 else
                 {
                     reportedProperties[TwinProperty.RXDelay] = null;
-                }
-
-                if (updateProperties.Region == LoRaRegionType.CN470)
-                {
-                    // TODO: update with correct plan type
-                    reportedProperties[TwinProperty.RegionChannelPlan] = RegionCN470PlanType.PlanA20MHz.ToString();
-                }
-                else
-                {
-                    reportedProperties[TwinProperty.RegionChannelPlan] = null;
                 }
             }
             else
