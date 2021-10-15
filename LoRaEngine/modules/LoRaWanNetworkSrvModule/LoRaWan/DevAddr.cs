@@ -27,8 +27,6 @@ namespace LoRaWan
 
         public DevAddr(uint value) => this.value = value;
 
-        public uint AsUInt32 => this.value;
-
         /// <summary>
         /// The <c>NwkID</c> (bits 25..31).
         /// </summary>
