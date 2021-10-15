@@ -11,3 +11,6 @@ dotnet_diagnostic.IDE0058.severity=suggestion
 
 # CA5394: Do not use insecure randomness
 dotnet_diagnostic.CA5394.severity = none
+
+# CA5399: Definitely disable HttpClient certificate revocation list check
+dotnet_diagnostic.CA5399.severity = none
