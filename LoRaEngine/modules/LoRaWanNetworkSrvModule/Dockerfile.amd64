@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
 
 WORKDIR /build
-COPY ./LoRaEngine/Directory.Build.props ./
+COPY Directory.Build.props ./
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger ./Logger
@@ -14,7 +14,7 @@ RUN dotnet restore
 
 RUN dotnet publish -c Release -o out
 
-FROM mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim
+FROM mcr.microsoft.com/dotnet/aspnet:3.1-buster-slim
 WORKDIR /app
 COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
 

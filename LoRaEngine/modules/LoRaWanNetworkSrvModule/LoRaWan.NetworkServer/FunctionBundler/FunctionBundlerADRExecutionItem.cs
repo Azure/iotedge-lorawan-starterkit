@@ -5,11 +5,15 @@ namespace LoRaWan.NetworkServer
 {
     using LoRaTools.CommonAPI;
     using LoRaWan.NetworkServer.ADR;
+    using System;
 
     public class FunctionBundlerADRExecutionItem : IFunctionBundlerExecutionItem
     {
         public void Prepare(FunctionBundlerExecutionContext context, FunctionBundlerRequest request)
         {
+            if (context is null) throw new ArgumentNullException(nameof(context));
+            if (request is null) throw new ArgumentNullException(nameof(request));
+
             request.AdrRequest = new LoRaADRRequest
             {
                 DataRate = context.Request.Region.GetDRFromFreqAndChan(context.Request.Rxpk.Datr),
@@ -26,6 +30,9 @@ namespace LoRaWan.NetworkServer
 
         public void ProcessResult(FunctionBundlerExecutionContext context, FunctionBundlerResult result)
         {
+            if (context is null) throw new ArgumentNullException(nameof(context));
+            if (result is null) throw new ArgumentNullException(nameof(result));
+
             if (result.AdrResult != null)
             {
                 if (result.AdrResult.CanConfirmToDevice && result.AdrResult.FCntDown > 0)
@@ -37,6 +44,7 @@ namespace LoRaWan.NetworkServer
 
         public bool RequiresExecution(FunctionBundlerExecutionContext context)
         {
+            if (context is null) throw new ArgumentNullException(nameof(context));
             return context.LoRaPayload.IsAdrEnabled;
         }
     }

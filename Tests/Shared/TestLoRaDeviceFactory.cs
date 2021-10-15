@@ -43,7 +43,7 @@ namespace LoRaWan.Tests.Shared
             {
                 ExpirationScanFrequency = TimeSpan.FromSeconds(5),
             });
-            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(memoryCache);
+            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(this.memoryCache);
         }
 
         public TestLoRaDeviceFactory(
@@ -76,9 +76,10 @@ namespace LoRaWan.Tests.Shared
             var loRaDevice = new LoRaDevice(
                 deviceInfo.DevAddr,
                 deviceInfo.DevEUI,
-                this.connectionManager);
-
-            loRaDevice.GatewayID = deviceInfo.GatewayId;
+                this.connectionManager)
+            {
+                GatewayID = deviceInfo.GatewayId
+            };
 
             this.connectionManager.Register(loRaDevice, deviceClientToAssign);
 

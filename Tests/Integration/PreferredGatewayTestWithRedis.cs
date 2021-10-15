@@ -20,6 +20,8 @@ namespace LoRaWan.Tests.Integration
 
         public PreferredGatewayTestWithRedis(RedisFixture redis)
         {
+            if (redis is null) throw new ArgumentNullException(nameof(redis));
+
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
             this.preferredGatewayExecutionItem = new PreferredGatewayExecutionItem(this.cache, new NullLogger<PreferredGatewayExecutionItem>(), null);
         }

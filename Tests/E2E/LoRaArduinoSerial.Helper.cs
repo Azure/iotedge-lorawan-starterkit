@@ -82,7 +82,7 @@ namespace LoRaWan.Tests.E2E
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(this.SetupLora)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(SetupLora)}. {ex.ToString()}");
             }
         }
     }

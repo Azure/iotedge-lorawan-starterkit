@@ -43,8 +43,8 @@ namespace LoRaWan.Tests.Shared
         {
             base.NotifyFailed(deviceId, reason, exception);
 
-            this.ProcessingFailed = true;
-            this.ProcessingFailedReason = reason;
+            ProcessingFailed = true;
+            ProcessingFailedReason = reason;
             this.complete.Release();
         }
 
@@ -52,14 +52,14 @@ namespace LoRaWan.Tests.Shared
         {
             base.NotifySucceeded(loRaDevice, downlink);
 
-            this.ResponseDownlink = downlink;
-            this.ProcessingSucceeded = true;
+            ResponseDownlink = downlink;
+            ProcessingSucceeded = true;
             this.complete.Release();
         }
 
-        public Task<bool> WaitCompleteAsync(int timeout = default(int))
+        internal Task<bool> WaitCompleteAsync(int timeout = default)
         {
-            if (timeout == default(int))
+            if (timeout == default)
             {
                 if (System.Diagnostics.Debugger.IsAttached)
                 {

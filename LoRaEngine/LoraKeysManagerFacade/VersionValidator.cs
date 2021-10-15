@@ -5,11 +5,14 @@ namespace LoraKeysManagerFacade
 {
     using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
+    using System;
 
     public static class VersionValidator
     {
         public static void Validate(HttpRequest req)
         {
+            if (req is null) throw new ArgumentNullException(nameof(req));
+
             var currentApiVersion = ApiVersion.LatestVersion;
             req.HttpContext.Response.Headers.Add(ApiVersion.HttpHeaderName, currentApiVersion.Version);
 

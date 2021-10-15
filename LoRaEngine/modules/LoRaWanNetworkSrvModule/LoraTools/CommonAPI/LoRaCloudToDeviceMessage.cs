@@ -38,12 +38,12 @@ namespace LoRaTools.CommonAPI
         public string MessageId { get; set; }
 
         [JsonProperty("macCommands", NullValueHandling = NullValueHandling.Ignore)]
-        public IList<MacCommand> MacCommands { get; set; }
+        public IList<MacCommand> MacCommands { get; } = new List<MacCommand>();
 
         /// <summary>
         /// Gets if the cloud to device message has any payload data (mac commands don't count).
         /// </summary>
-        protected bool HasPayload() => !string.IsNullOrEmpty(this.Payload) || !string.IsNullOrEmpty(this.RawPayload);
+        protected bool HasPayload() => !string.IsNullOrEmpty(Payload) || !string.IsNullOrEmpty(RawPayload);
 
         /// <summary>
         /// Identifies if the message is a valid LoRa downstream message.
@@ -55,19 +55,19 @@ namespace LoRaTools.CommonAPI
             // ensure fport follows LoRa specification
             // 0    => reserved for mac commands
             // 224+ => reserved for future applications
-            if (this.Fport >= LoRaFPort.ReservedForFutureAplications)
+            if (Fport >= LoRaFPort.ReservedForFutureAplications)
             {
-                errorMessage = $"invalid fport '{this.Fport}' in cloud to device message '{this.MessageId}'";
+                errorMessage = $"invalid fport '{Fport}' in cloud to device message '{MessageId}'";
                 return false;
             }
 
             // fport 0 is reserved for mac commands
-            if (this.Fport == LoRaFPort.MacCommand)
+            if (Fport == LoRaFPort.MacCommand)
             {
                 // Not valid if there is no mac command or there is a payload
-                if ((this.MacCommands?.Count ?? 0) == 0 || this.HasPayload())
+                if ((MacCommands?.Count ?? 0) == 0 || HasPayload())
                 {
-                    errorMessage = $"invalid MAC command fport usage in cloud to device message '{this.MessageId}'";
+                    errorMessage = $"invalid MAC command fport usage in cloud to device message '{MessageId}'";
                     return false;
                 }
             }

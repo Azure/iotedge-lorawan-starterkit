@@ -293,12 +293,12 @@ jobs:
       uses: cschleiden/replace-tokens@v1
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
       with:
-        files: '**/${{ env.TESTS_FOLDER }}/E2E/appsettings.json'
+        files: '${{ env.TESTS_FOLDER }}/E2E/appsettings.json'
 
     # Builds and runs E2E tests
     - name: Build E2E tests
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
-      run: dotnet build --configuration ${{ env.buildConfiguration }} **/${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
+      run: dotnet build --configuration ${{ env.buildConfiguration }} ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
     - name: Runs E2E tests ${{ matrix.testsToRun }}
       if: contains(github.event.pull_request.labels.*.name, matrix.testsToRun ) != true
@@ -307,7 +307,7 @@ jobs:
         echo ${{ matrix.testsToRun }}
         dotnet test --logger trx --no-build --configuration ${{ env.buildConfiguration }} \
         -p:ParallelizeTestCollections=false -r ${{ env.TESTS_RESULTS_FOLDER }}/E2E/ --filter "${{ matrix.testsToRun }}" \
-        **/${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
+        ${{ env.TESTS_FOLDER }}/E2E/LoRaWan.Tests.E2E.csproj
 
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1

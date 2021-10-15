@@ -143,7 +143,7 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceApi.Setup(x => x.NextFCntDownAsync(device.DevEUI, It.IsAny<uint>(), It.IsAny<uint>(), this.gatewayID))
                 .Returns<string, uint, uint, string>((devEUI, fcntDown, payloadFcnt, gatewayID) =>
                 {
-                    return Task.FromResult((uint)(fcntDown + 1));
+                    return Task.FromResult(fcntDown + 1);
                 });
 
             for (var i = 1; i <= 15; i++)

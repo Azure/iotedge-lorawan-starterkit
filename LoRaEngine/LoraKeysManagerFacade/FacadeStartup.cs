@@ -18,18 +18,20 @@ namespace LoraKeysManagerFacade
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            if (builder is null) throw new ArgumentNullException(nameof(builder));
+
             var configHandler = ConfigHandler.Create(builder);
 
             var iotHubConnectionString = configHandler.IoTHubConnectionString;
             if (iotHubConnectionString == null)
             {
-                throw new Exception($"Missing {ConfigHandler.IoTHubConnectionStringKey} in settings");
+                throw new InvalidOperationException($"Missing {ConfigHandler.IoTHubConnectionStringKey} in settings");
             }
 
             var redisConnectionString = configHandler.RedisConnectionString;
             if (redisConnectionString == null)
             {
-                throw new Exception($"Missing {ConfigHandler.RedisConnectionStringKey} in settings");
+                throw new InvalidOperationException($"Missing {ConfigHandler.RedisConnectionStringKey} in settings");
             }
 
             var redis = ConnectionMultiplexer.Connect(redisConnectionString);
@@ -38,20 +40,21 @@ namespace LoraKeysManagerFacade
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
             // Object is handled by DI container.
-            builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(iotHubConnectionString));
+            _ = builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(iotHubConnectionString));
 #pragma warning restore CA2000 // Dispose objects before losing scope
-            builder.Services.AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)));
-            builder.Services.AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore);
-            builder.Services.AddSingleton<ILoRaADRManager>(new LoRaADRServerManager(new LoRaADRRedisStore(redisCache), new LoRaADRStrategyProvider(), deviceCacheStore));
-            builder.Services.AddSingleton<CreateEdgeDevice>();
-            builder.Services.AddSingleton<DeviceGetter>();
-            builder.Services.AddSingleton<FCntCacheCheck>();
-            builder.Services.AddSingleton<FunctionBundlerFunction>();
-            builder.Services.AddSingleton<IFunctionBundlerExecutionItem, NextFCntDownExecutionItem>();
-            builder.Services.AddSingleton<IFunctionBundlerExecutionItem, DeduplicationExecutionItem>();
-            builder.Services.AddSingleton<IFunctionBundlerExecutionItem, ADRExecutionItem>();
-            builder.Services.AddSingleton<IFunctionBundlerExecutionItem, PreferredGatewayExecutionItem>();
-            builder.Services.AddSingleton<LoRaDevAddrCache>();
+            _ = builder.Services
+                    .AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)))
+                    .AddSingleton<ILoRaDeviceCacheStore>(deviceCacheStore)
+                    .AddSingleton<ILoRaADRManager>(new LoRaADRServerManager(new LoRaADRRedisStore(redisCache), new LoRaADRStrategyProvider(), deviceCacheStore))
+                    .AddSingleton<CreateEdgeDevice>()
+                    .AddSingleton<DeviceGetter>()
+                    .AddSingleton<FCntCacheCheck>()
+                    .AddSingleton<FunctionBundlerFunction>()
+                    .AddSingleton<IFunctionBundlerExecutionItem, NextFCntDownExecutionItem>()
+                    .AddSingleton<IFunctionBundlerExecutionItem, DeduplicationExecutionItem>()
+                    .AddSingleton<IFunctionBundlerExecutionItem, ADRExecutionItem>()
+                    .AddSingleton<IFunctionBundlerExecutionItem, PreferredGatewayExecutionItem>()
+                    .AddSingleton<LoRaDevAddrCache>();
         }
 
         abstract class ConfigHandler

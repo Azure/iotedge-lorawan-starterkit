@@ -11,5 +11,13 @@ namespace LoraKeysManagerFacade
             : base(message)
         {
         }
+
+        public IncompatibleVersionException()
+        {
+        }
+
+        public IncompatibleVersionException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }

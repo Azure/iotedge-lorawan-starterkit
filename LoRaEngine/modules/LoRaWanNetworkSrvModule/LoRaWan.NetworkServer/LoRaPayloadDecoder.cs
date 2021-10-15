@@ -49,7 +49,7 @@ namespace LoRaWan.NetworkServer
 
         public async ValueTask<DecodePayloadResult> DecodeMessageAsync(string devEUI, byte[] payload, byte fport, string sensorDecoder)
         {
-            sensorDecoder = sensorDecoder ?? string.Empty;
+            sensorDecoder ??= string.Empty;
 
             var base64Payload = ((payload?.Length ?? 0) == 0) ? string.Empty : Convert.ToBase64String(payload);
 
@@ -94,7 +94,7 @@ namespace LoRaWan.NetworkServer
                 var url = new Uri($"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport}&payload={payloadEncoded}");
 
                 // Call SensorDecoderModule
-                return await this.CallSensorDecoderModule(devEUI, url);
+                return await CallSensorDecoderModule(devEUI, url);
             }
         }
 
@@ -131,7 +131,7 @@ namespace LoRaWan.NetworkServer
                                     loRaCloudToDeviceMessage = jsonObject.ToObject<ReceivedLoRaCloudToDeviceMessage>();
                                 }
 
-                                externalDecoderResponse.Remove(Constants.CloudToDeviceDecoderElementName);
+                                _ = externalDecoderResponse.Remove(Constants.CloudToDeviceDecoderElementName);
                             }
 
                             return new DecodePayloadResult(externalDecoderResponse)
@@ -171,7 +171,12 @@ namespace LoRaWan.NetworkServer
         /// <param name="payload">The payload to decode.</param>
         /// <param name="fport">The received frame port.</param>
         /// <returns>The decoded value as a JSON string.</returns>
+#pragma warning disable CA1801 // Review unused parameters
+#pragma warning disable IDE0060 // Remove unused parameter
+        // Method is invoked via reflection.
         public static object DecoderValueSensor(string devEUI, byte[] payload, uint fport)
+#pragma warning restore IDE0060 // Remove unused parameter
+#pragma warning restore CA1801 // Review unused parameters
         {
             var payloadText = ((payload?.Length ?? 0) == 0) ? string.Empty : Encoding.UTF8.GetString(payload);
 
@@ -195,7 +200,12 @@ namespace LoRaWan.NetworkServer
         /// <param name="payload">The payload to decode.</param>
         /// <param name="fport">The received frame port.</param>
         /// <returns>The decoded value as a JSON string.</returns>
+#pragma warning disable CA1801 // Review unused parameters
+#pragma warning disable IDE0060 // Remove unused parameter
+        // Method is invoked via reflection and part of a public API.
         public static object DecoderHexSensor(string devEUI, byte[] payload, uint fport)
+#pragma warning restore IDE0060 // Remove unused parameter
+#pragma warning restore CA1801 // Review unused parameters
         {
             var payloadHex = ((payload?.Length ?? 0) == 0) ? string.Empty : ConversionHelper.ByteArrayToString(payload);
             return new DecodedPayloadValue(payloadHex);

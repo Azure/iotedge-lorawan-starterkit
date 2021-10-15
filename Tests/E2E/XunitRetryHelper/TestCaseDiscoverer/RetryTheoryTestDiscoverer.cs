@@ -17,9 +17,9 @@ namespace XunitRetryHelper
             this.diagnosticMessageSink = diagnosticMessageSink;
         }
 
-        public IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo theoryAttribute)
+        public IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo factAttribute)
         {
-            var maxRetries = Math.Max(1, theoryAttribute.GetNamedArgument<int>("MaxRetries"));
+            var maxRetries = Math.Max(1, factAttribute.GetNamedArgument<int>("MaxRetries"));
             yield return new RetryTheoryTestCase(this.diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), discoveryOptions.MethodDisplayOptionsOrDefault(), testMethod, maxRetries);
         }
     }

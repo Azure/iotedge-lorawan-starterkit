@@ -20,8 +20,8 @@ namespace LoRaTools.ADR
         /// </summary>
         public int? CurrentNbRep { get; set; }
 
-        public List<LoRaADRTableEntry> Entries { get; set; } = new List<LoRaADRTableEntry>();
+        public IList<LoRaADRTableEntry> Entries { get; } = new List<LoRaADRTableEntry>();
 
-        public bool IsComplete => this.Entries.Count >= FrameCountCaptureCount;
+        public bool IsComplete => Entries.Count >= FrameCountCaptureCount;
     }
 }

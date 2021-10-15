@@ -13,22 +13,22 @@ namespace LoRaWan
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
 
-    public class Logger
+    public static class Logger
     {
         // Interval where we try to estabilish connection to udp logger
         const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
 
-        public static LogLevel LoggerLevel => (LogLevel)configuration.LogLevel;
+        public static LogLevel LoggerLevel => configuration.LogLevel;
 
         static LoggerConfiguration configuration = new LoggerConfiguration();
         static volatile UdpClient udpClient;
         static IPEndPoint udpEndpoint;
-        static volatile bool isInitializeUdpLoggerRunning = false;
+        static volatile bool isInitializeUdpLoggerRunning;
         private static Timer retryUdpLogInitializationTimer;
 
         public static void Init(LoggerConfiguration loggerConfiguration)
         {
-            configuration = loggerConfiguration;
+            configuration = loggerConfiguration ?? throw new ArgumentNullException(nameof(loggerConfiguration));
 
             if (configuration.LogToUdp)
             {
@@ -52,11 +52,6 @@ namespace LoRaWan
         }
 
         public static void LogAlways(string message)
-        {
-            LogAlways(null, message);
-        }
-
-        public static void LogAlways(string deviceId, string message)
         {
             Log(null, message, LogLevel.Critical);
         }
@@ -113,7 +108,7 @@ namespace LoRaWan
                         }
                         else
                         {
-                            operation.ContinueWith(_ => m.Dispose(), TaskScheduler.Default);
+                            _ = operation.ContinueWith(_ => m.Dispose(), TaskScheduler.Default);
                         }
                     }
 #pragma warning restore CA2000 // Dispose objects before losing scope
@@ -151,7 +146,7 @@ namespace LoRaWan
                 }
 
                 var messageInBytes = Encoding.UTF8.GetBytes(message);
-                udpClient.Send(messageInBytes, messageInBytes.Length, udpEndpoint);
+                _ = udpClient.Send(messageInBytes, messageInBytes.Length, udpEndpoint);
             }
             catch (Exception ex)
             {

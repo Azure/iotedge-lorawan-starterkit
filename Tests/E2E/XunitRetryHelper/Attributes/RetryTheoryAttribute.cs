@@ -6,7 +6,7 @@ namespace XunitRetryHelper
     using Xunit;
     using Xunit.Sdk;
 
-    [XunitTestCaseDiscoverer("XunitRetryHelper.RetryTheoryTestDiscoverer", "XunitRetryHelper")]
+    [XunitTestCaseDiscoverer("XunitRetryHelper.RetryTheoryTestDiscoverer", "LoRaWan.Tests.E2E")]
     public class RetryTheoryAttribute : TheoryAttribute
     {
         public RetryTheoryAttribute()
@@ -15,7 +15,7 @@ namespace XunitRetryHelper
 
         public RetryTheoryAttribute(int maxRetries)
         {
-            this.MaxRetries = maxRetries;
+            MaxRetries = maxRetries;
         }
 
         public int MaxRetries { get; } = Constants.DefaultMaxRetries;

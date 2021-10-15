@@ -22,9 +22,9 @@ namespace LoRaTools.LoRaPhysical
         public DownlinkPktFwdMessage(string data, string datr = "SF12BW125", uint rfch = 0, double freq = 869.525000, long tmst = 0)
         {
             var byteData = Convert.FromBase64String(data);
-            this.Txpk = new Txpk()
+            Txpk = new Txpk()
             {
-                Imme = tmst == 0 ? true : false,
+                Imme = tmst == 0,
                 Tmst = tmst,
                 Data = data,
                 Size = (uint)byteData.Length,
@@ -46,9 +46,11 @@ namespace LoRaTools.LoRaPhysical
         /// <returns>DownlinkPktFwdMessage object ready to be sent.</returns>
         public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, long tmst = 0)
         {
-            this.Txpk = new Txpk()
+            if (loRaData is null) throw new ArgumentNullException(nameof(loRaData));
+
+            Txpk = new Txpk()
             {
-                Imme = tmst == 0 ? true : false,
+                Imme = tmst == 0,
                 Tmst = tmst,
                 Data = Convert.ToBase64String(loRaData),
                 Size = (uint)loRaData.Length,
@@ -64,13 +66,17 @@ namespace LoRaTools.LoRaPhysical
         }
 
         [Obsolete("ad")]
-        public override PktFwdMessageAdapter GetPktFwdMessage()
+        [JsonIgnore]
+        public override PktFwdMessageAdapter PktFwdMessageAdapter
         {
-            var pktFwdMessageAdapter = new PktFwdMessageAdapter
+            get
             {
-                Txpk = this.Txpk
-            };
-            return pktFwdMessageAdapter;
+                var pktFwdMessageAdapter = new PktFwdMessageAdapter
+                {
+                    Txpk = Txpk
+                };
+                return pktFwdMessageAdapter;
+            }
         }
     }
 }

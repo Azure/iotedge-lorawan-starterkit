@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Shared
 
         public bool EnsureConnected(LoRaDevice loRaDevice) => true;
 
-        public ILoRaDeviceClient Get(LoRaDevice loRaDevice) => this.singleDeviceClient;
+        public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice) => this.singleDeviceClient;
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
         {

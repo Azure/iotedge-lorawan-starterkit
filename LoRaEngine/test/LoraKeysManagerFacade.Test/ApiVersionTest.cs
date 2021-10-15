@@ -30,7 +30,7 @@ namespace LoraKeysManagerFacade.Test
             {
                 (req) => new DeviceGetter(null, null).GetDevice(req, NullLogger.Instance),
                 (req) => Task.Run(() => new FCntCacheCheck(null).NextFCntDownInvoke(req, NullLogger.Instance)),
-                (req) => Task.Run(() => new FunctionBundlerFunction(new IFunctionBundlerExecutionItem[0]).FunctionBundler(req, NullLogger.Instance, string.Empty))
+                (req) => Task.Run(() => new FunctionBundlerFunction(Array.Empty<IFunctionBundlerExecutionItem>()).FunctionBundler(req, NullLogger.Instance, string.Empty))
             };
 
             foreach (var apiCall in apiCalls)
@@ -149,7 +149,7 @@ namespace LoraKeysManagerFacade.Test
         public void LatestVersion_Should_Be_Newer_As_All()
         {
             var latest = ApiVersion.LatestVersion;
-            Assert.All(ApiVersion.GetApiVersions(), v =>
+            Assert.All(ApiVersion.ApiVersions, v =>
             {
                 if (v != latest)
                 {

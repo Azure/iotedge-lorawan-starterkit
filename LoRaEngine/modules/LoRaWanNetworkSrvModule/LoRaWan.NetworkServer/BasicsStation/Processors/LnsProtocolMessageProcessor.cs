@@ -29,28 +29,28 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         {
             if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
 
-            await ProcessIncomingRequestAsync(httpContext, InternalHandleDiscoveryAsync, token);
+            _ = await ProcessIncomingRequestAsync(httpContext, InternalHandleDiscoveryAsync, token);
         }
 
         public async Task HandleDataAsync(HttpContext httpContext, CancellationToken token)
         {
             if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
 
-            await ProcessIncomingRequestAsync(httpContext, InternalHandleDataAsync, token);
+            _ = await ProcessIncomingRequestAsync(httpContext, InternalHandleDataAsync, token);
         }
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal async Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
+        internal Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
         {
             this.logger.LogInformation($"Received message: {json}");
-            return false;
+            return Task.FromResult(false);
         }
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal async Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
+        internal Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
         {
             this.logger.LogInformation($"Received message: {json}");
-            return false;
+            return Task.FromResult(false);
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,

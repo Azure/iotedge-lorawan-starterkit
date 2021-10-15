@@ -8,10 +8,10 @@ namespace LoRaWan.Tests.Integration
 
     public class MessageProcessor_End2End_NoDep_CloudToDeviceMessage_SizeLimitBase : MessageProcessorTestBase
     {
-        public Rxpk CreateUpstreamRxpk(bool isConfirmed, bool hasMacInUpstream, string datr, SimulatedDevice simulatedDevice)
+        public static Rxpk CreateUpstreamRxpk(bool isConfirmed, bool hasMacInUpstream, string datr, SimulatedDevice simulatedDevice)
         {
-            Rxpk rxpk = null;
-            string msgPayload = null;
+            Rxpk rxpk;
+            string msgPayload;
 
             if (isConfirmed)
             {

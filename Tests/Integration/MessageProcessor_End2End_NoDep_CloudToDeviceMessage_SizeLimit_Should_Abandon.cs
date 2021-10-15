@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
+    using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
@@ -31,17 +32,17 @@ namespace LoRaWan.Tests.Integration
             const int InitialDeviceFcntDown = 20;
 
             var simulatedDevice = new SimulatedDevice(
-            TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
+            TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID),
             frmCntUp: InitialDeviceFcntUp,
             frmCntDown: InitialDeviceFcntDown);
 
-            var loraDevice = this.CreateLoRaDevice(simulatedDevice);
+            var loraDevice = CreateLoRaDevice(simulatedDevice);
 
-            var rxpk = this.CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, datr, simulatedDevice);
+            var rxpk = CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, datr, simulatedDevice);
 
             if (!hasMacInUpstream)
             {
-                this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                     .ReturnsAsync(true);
             }
 
@@ -73,32 +74,32 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2dMessage.MacCommands = new[] { c2dMessageMacCommand };
+                c2dMessage.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
             }
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
 
-            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+            LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .Callback<TimeSpan>((_) =>
                 {
-                    this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                    LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                         .ReturnsAsync((Message)null);
                 })
                 .ReturnsAsync(cloudToDeviceMessage);
 
-            this.LoRaDeviceClient.Setup(x => x.AbandonAsync(cloudToDeviceMessage))
+            LoRaDeviceClient.Setup(x => x.AbandonAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
 
-            using var cache = this.NewNonEmptyCache(loraDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = NewNonEmptyCache(loraDevice);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
-                this.ServerConfiguration,
+                ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyProvider);
+                FrameCounterUpdateStrategyProvider);
 
-            using var request = this.CreateWaitableRequest(rxpk, startTimeOffset: TestUtils.GetStartTimeOffsetForSecondWindow(), constantElapsedTime: TimeSpan.FromMilliseconds(1002));
+            using var request = CreateWaitableRequest(rxpk, startTimeOffset: TestUtils.GetStartTimeOffsetForSecondWindow(), constantElapsedTime: TimeSpan.FromMilliseconds(1002));
             messageProcessor.DispatchRequest(request);
 
             // Expectations
@@ -110,7 +111,7 @@ namespace LoRaWan.Tests.Integration
             Assert.NotNull(request.ResponseDownlink);
             Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Txpk.Datr);
 
-            var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
+            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
 
@@ -134,8 +135,8 @@ namespace LoRaWan.Tests.Integration
                 Assert.Null(payloadDataDown.MacCommands);
             }
 
-            this.LoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
+            LoRaDeviceClient.VerifyAll();
+            LoRaDeviceApi.VerifyAll();
         }
     }
 }

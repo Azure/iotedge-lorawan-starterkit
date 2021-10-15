@@ -21,6 +21,8 @@ namespace LoRaTools
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
+            if (serializer is null) throw new ArgumentNullException(nameof(serializer));
+         
             var item = JObject.Load(reader);
             var cidPropertyValue = item["cid"].Value<string>();
             if (string.IsNullOrEmpty(cidPropertyValue))
@@ -66,6 +68,13 @@ namespace LoRaTools
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
+
+                    case Cid.Zero:
+                    case Cid.One:
+                    case Cid.LinkCheckCmd:
+                    case Cid.LinkADRCmd:
+                    default:
+                        throw new JsonReaderException($"Unhandled command identifier: {macCommandType}");
                 }
             }
 

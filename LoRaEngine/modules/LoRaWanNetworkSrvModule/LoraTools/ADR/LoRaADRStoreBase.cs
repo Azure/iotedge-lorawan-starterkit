@@ -3,12 +3,16 @@
 
 namespace LoRaTools.ADR
 {
+    using System;
     using System.Linq;
 
     public abstract class LoRaADRStoreBase
     {
         protected static void AddEntryToTable(LoRaADRTable table, LoRaADRTableEntry entry)
         {
+            if (table is null) throw new ArgumentNullException(nameof(table));
+            if (entry is null) throw new ArgumentNullException(nameof(entry));
+
             var existing = table.Entries.FirstOrDefault(itm => itm.FCnt == entry.FCnt);
 
             if (existing == null)

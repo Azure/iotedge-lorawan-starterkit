@@ -29,7 +29,7 @@ namespace LoRaWan.Tests.Shared
                 NwkSKey = simulatedDevice.LoRaDevice.NwkSKey,
                 GatewayID = simulatedDevice.LoRaDevice.GatewayID,
                 IsOurDevice = true,
-                ClassType = (simulatedDevice.ClassType == 'C' || simulatedDevice.ClassType == 'c') ? LoRaDeviceClassType.C : LoRaDeviceClassType.A,
+                ClassType = (simulatedDevice.ClassType is 'C' or 'c') ? LoRaDeviceClassType.C : LoRaDeviceClassType.A,
             };
 
             result.SetFcntDown(simulatedDevice.FrmCntDown);
@@ -197,15 +197,15 @@ namespace LoRaWan.Tests.Shared
             public LoraDeviceClientConnectionManagerWrapper()
             {
                 this.memoryCache = new MemoryCache(new MemoryCacheOptions());
-                this.Value = new LoRaDeviceClientConnectionManager(this.memoryCache);
+                Value = new LoRaDeviceClientConnectionManager(this.memoryCache);
             }
 
             public LoRaDeviceClientConnectionManager Value { get; }
 
             public void Dispose()
             {
-                memoryCache.Dispose();
-                this.Value.Dispose();
+                this.memoryCache.Dispose();
+                Value.Dispose();
             }
         }
     }

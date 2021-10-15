@@ -3,7 +3,7 @@
 
 namespace LoRaWan.Tests.Shared
 {
-    public class TestConstants
+    public static class TestConstants
     {
         /// <summary>
         /// Defines the test collection name for c2d size limit validation.

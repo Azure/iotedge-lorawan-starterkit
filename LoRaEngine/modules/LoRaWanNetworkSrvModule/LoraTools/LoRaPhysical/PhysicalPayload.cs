@@ -31,36 +31,38 @@ namespace LoRaTools
         // case of inbound messages
         public PhysicalPayload(byte[] input, bool server = false)
         {
+            if (input is null) throw new ArgumentNullException(nameof(input));
+
             this.protocolVersion = input[0];
-            this.Token = new byte[2];
-            Array.Copy(input, 1, this.Token, 0, 2);
-            this.Identifier = GetIdentifierFromPayload(input);
+            Token = new byte[2];
+            Array.Copy(input, 1, Token, 0, 2);
+            Identifier = GetIdentifierFromPayload(input);
 
             if (!server)
             {
                 // PUSH_DATA That packet type is used by the gateway mainly to forward the RF packets received, and associated metadata, to the server
-                if (this.Identifier == PhysicalIdentifier.PushData)
+                if (Identifier == PhysicalIdentifier.PushData)
                 {
                     Array.Copy(input, 4, this.gatewayIdentifier, 0, 8);
-                    this.Message = new byte[input.Length - 12];
-                    Array.Copy(input, 12, this.Message, 0, input.Length - 12);
+                    Message = new byte[input.Length - 12];
+                    Array.Copy(input, 12, Message, 0, input.Length - 12);
                 }
 
                 // PULL_DATA That packet type is used by the gateway to poll data from the server.
-                if (this.Identifier == PhysicalIdentifier.PullData)
+                if (Identifier == PhysicalIdentifier.PullData)
                 {
                     Array.Copy(input, 4, this.gatewayIdentifier, 0, 8);
                 }
 
                 // TX_ACK That packet type is used by the gateway to send a feedback to the to inform if a downlink request has been accepted or rejected by the gateway.
-                if (this.Identifier == PhysicalIdentifier.TxAck)
+                if (Identifier == PhysicalIdentifier.TxAck)
                 {
                     Logger.Log($"Tx ack received from gateway", LogLevel.Debug);
                     Array.Copy(input, 4, this.gatewayIdentifier, 0, 8);
                     if (input.Length - 12 > 0)
                     {
-                        this.Message = new byte[input.Length - 12];
-                        Array.Copy(input, 12, this.Message, 0, input.Length - 12);
+                        Message = new byte[input.Length - 12];
+                        Array.Copy(input, 12, Message, 0, input.Length - 12);
                     }
                 }
             }
@@ -68,10 +70,10 @@ namespace LoRaTools
             {
                 // Case of message received on the server
                 // PULL_RESP is an answer from the client to the server for Join requests for example
-                if (this.Identifier == PhysicalIdentifier.PullResp)
+                if (Identifier == PhysicalIdentifier.PullResp)
                 {
-                    this.Message = new byte[input.Length - 4];
-                    Array.Copy(input, 4, this.Message, 0, this.Message.Length);
+                    Message = new byte[input.Length - 4];
+                    Array.Copy(input, 4, Message, 0, Message.Length);
                 }
             }
         }
@@ -81,21 +83,21 @@ namespace LoRaTools
         {
             // 0x01 PUSH_ACK That packet type is used by the server to acknowledge immediately all the PUSH_DATA packets received.
             // 0x04 PULL_ACK That packet type is used by the server to confirm that the network route is open and that the server can send PULL_RESP packets at any time.
-            if (type == PhysicalIdentifier.PushAck || type == PhysicalIdentifier.PullAck)
+            if (type is PhysicalIdentifier.PushAck or PhysicalIdentifier.PullAck)
             {
-                this.Token = token;
-                this.Identifier = type;
+                Token = token;
+                Identifier = type;
             }
 
             // 0x03 PULL_RESP That packet type is used by the server to send RF packets and  metadata that will have to be emitted by the gateway.
             else
             {
-                this.Token = token;
-                this.Identifier = type;
+                Token = token;
+                Identifier = type;
                 if (message != null)
                 {
-                    this.Message = new byte[message.Length];
-                    Array.Copy(message, 0, this.Message, 0, message.Length);
+                    Message = new byte[message.Length];
+                    Array.Copy(message, 0, Message, 0, message.Length);
                 }
             }
         }
@@ -124,30 +126,32 @@ namespace LoRaTools
             {
                 this.protocolVersion
             };
-            returnList.AddRange(this.Token);
-            returnList.Add((byte)this.Identifier);
-            if (this.Identifier == PhysicalIdentifier.PullData ||
-                this.Identifier == PhysicalIdentifier.TxAck ||
-                this.Identifier == PhysicalIdentifier.PushData)
+            returnList.AddRange(Token);
+            returnList.Add((byte)Identifier);
+            if (Identifier is PhysicalIdentifier.PullData or
+                PhysicalIdentifier.TxAck or
+                PhysicalIdentifier.PushData)
             {
                 returnList.AddRange(this.gatewayIdentifier);
             }
-            if (this.Message != null)
-                returnList.AddRange(this.Message);
+            if (Message != null)
+                returnList.AddRange(Message);
             return returnList.ToArray();
         }
 
         // Method used by Simulator
         public byte[] GetSyncHeader(byte[] mac)
         {
+            if (mac is null) throw new ArgumentNullException(nameof(mac));
+
             var buff = new byte[12];
             // first is the protocole version
             buff[0] = 2;
             // Random token
-            buff[1] = this.Token[0];
-            buff[2] = this.Token[1];
+            buff[1] = Token[0];
+            buff[2] = Token[1];
             // the identifier
-            buff[3] = (byte)this.Identifier;
+            buff[3] = (byte)Identifier;
             // Then the MAC address specific to the server
             for (var i = 0; i < 8; i++)
                 buff[4 + i] = mac[i];

@@ -11,15 +11,15 @@ namespace LoRaWan.Tests.Integration
     using Moq;
     using Xunit;
 
-    public class FunctionBundlerTests : MessageProcessorTestBase
+    public class FunctionBundlerIntegrationTests : MessageProcessorTestBase
     {
         private readonly DeduplicationStrategyFactory factory;
         private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
 
-        public FunctionBundlerTests()
+        public FunctionBundlerIntegrationTests()
         {
-            factory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object);
-            loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            this.factory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object);
+            this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
         }
 
         [Fact]
@@ -55,11 +55,11 @@ namespace LoRaWan.Tests.Integration
                 .Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            using var cache = this.NewNonEmptyCache(loRaDevice);
-            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var cache = NewNonEmptyCache(loRaDevice);
+            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             using var messageProcessor1 = new MessageDispatcher(
-                this.ServerConfiguration,
+                ServerConfiguration,
                 loRaDeviceRegistry1,
                 FrameCounterUpdateStrategyProvider);
 
@@ -68,7 +68,7 @@ namespace LoRaWan.Tests.Integration
             // Create Rxpk
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
 
-            using var request = this.CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(rxpk);
 
             messageProcessor1.DispatchRequest(request);
 

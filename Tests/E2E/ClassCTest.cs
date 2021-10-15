@@ -26,14 +26,14 @@ namespace LoRaWan.Tests.E2E
         public async Task Test_ClassC_Send_Message_From_Direct_Method_Should_Be_Received()
         {
             const int MAX_MODULE_DIRECT_METHOD_CALL_TRIES = 3;
-            var device = this.TestFixtureCi.Device24_ABP;
-            this.LogTestStart(device);
+            var device = TestFixtureCi.Device24_ABP;
+            LogTestStart(device);
 
-            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
-            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
-            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
-            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
-            await this.ArduinoDevice.setClassTypeAsync(LoRaArduinoSerial._class_type_t.CLASS_C);
+            await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWABP);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, null);
+            await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, null);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.setClassTypeAsync(LoRaArduinoSerial._class_type_t.CLASS_C);
 
             var c2d = new LoRaCloudToDeviceMessage()
             {
@@ -43,7 +43,7 @@ namespace LoRaWan.Tests.E2E
                 RawPayload = Convert.ToBase64String(new byte[] { 0xFF, 0x00 }),
             };
 
-            TestLogger.Log($"[INFO] Using service client to call direct method to {this.TestFixture.Configuration.LeafDeviceGatewayID}/{this.TestFixture.Configuration.NetworkServerModuleID}");
+            TestLogger.Log($"[INFO] Using service client to call direct method to {TestFixture.Configuration.LeafDeviceGatewayID}/{TestFixture.Configuration.NetworkServerModuleID}");
             TestLogger.Log($"[INFO] {JsonConvert.SerializeObject(c2d, Formatting.None)}");
 
             for (var i = 0; i < MAX_MODULE_DIRECT_METHOD_CALL_TRIES;)
@@ -52,7 +52,7 @@ namespace LoRaWan.Tests.E2E
 
                 try
                 {
-                    await this.TestFixtureCi.InvokeModuleDirectMethodAsync(this.TestFixture.Configuration.LeafDeviceGatewayID, this.TestFixture.Configuration.NetworkServerModuleID, "cloudtodevicemessage", c2d);
+                    await TestFixtureCi.InvokeModuleDirectMethodAsync(TestFixture.Configuration.LeafDeviceGatewayID, TestFixture.Configuration.NetworkServerModuleID, "cloudtodevicemessage", c2d);
                     break;
                 }
                 catch (Exception ex)
@@ -67,9 +67,9 @@ namespace LoRaWan.Tests.E2E
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-            Assert.Contains(this.ArduinoDevice.SerialLogs, (l) => l.StartsWith("+MSG: PORT: 23; RX: \"FF00\"", StringComparison.Ordinal));
-            Assert.Contains(this.ArduinoDevice.SerialLogs, (l) => l.StartsWith("+MSG: RXWIN0, RSSI", StringComparison.Ordinal));
-            await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
+            Assert.Contains(ArduinoDevice.SerialLogs, (l) => l.StartsWith("+MSG: PORT: 23; RX: \"FF00\"", StringComparison.Ordinal));
+            Assert.Contains(ArduinoDevice.SerialLogs, (l) => l.StartsWith("+MSG: RXWIN0, RSSI", StringComparison.Ordinal));
+            await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
         }
     }
 }

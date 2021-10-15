@@ -24,7 +24,7 @@ namespace LoRaWan.NetworkServer
 
         public void DispatchRequest(LoRaRequest request)
         {
-            Task.Run(async () => await this.ProcessJoinRequestAsync(request));
+            _ = Task.Run(async () => await ProcessJoinRequestAsync(request));
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
                 var timeWatcher = new LoRaOperationTimeWatcher(loraRegion, request.StartTime);
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
-                var udpMsgForPktForwarder = new byte[0];
+                var udpMsgForPktForwarder = Array.Empty<byte>();
 
                 devEUI = joinReq.GetDevEUIAsString();
                 var appEUI = joinReq.GetAppEUIAsString();
@@ -156,7 +156,7 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse(loRaDevice);
+                var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse();
                 if (windowToUse == Constants.InvalidReceiveWindow)
                 {
                     Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", LogLevel.Information);
@@ -223,7 +223,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 ushort rxDelay = 0;
-                if (request.Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                if (LoRaTools.Regions.Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
                 {
                     rxDelay = loRaDevice.DesiredRXDelay;
                 }
@@ -240,7 +240,7 @@ namespace LoRaWan.NetworkServer
                     rxDelay,
                     null);
 
-                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, tmst, devEUI);
+                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, tmst);
                 if (joinAccept != null)
                 {
                     _ = request.PacketForwarder.SendDownstreamAsync(joinAccept);
@@ -249,7 +249,7 @@ namespace LoRaWan.NetworkServer
                     if (Logger.LoggerLevel <= LogLevel.Debug)
                     {
                         var jsonMsg = JsonConvert.SerializeObject(joinAccept);
-                        Logger.Log(devEUI, $"{LoRaMessageType.JoinAccept.ToString()} {jsonMsg}", LogLevel.Debug);
+                        Logger.Log(devEUI, $"{LoRaMessageType.JoinAccept} {jsonMsg}", LogLevel.Debug);
                     }
                     else if (Logger.LoggerLevel == LogLevel.Information)
                     {

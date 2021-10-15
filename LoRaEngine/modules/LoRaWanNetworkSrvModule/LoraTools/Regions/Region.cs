@@ -25,13 +25,13 @@ namespace LoRaTools.Regions
         /// max application payload size N should be N= M-8 bytes.
         /// This is in case of absence of Fopts field.
         /// </summary>
-        public Dictionary<ushort, (string configuration, uint maxPyldSize)> DRtoConfiguration { get; set; } = new Dictionary<ushort, (string, uint)>();
+        public Dictionary<ushort, (string configuration, uint maxPyldSize)> DRtoConfiguration { get; } = new Dictionary<ushort, (string, uint)>();
 
         /// <summary>
         /// Gets or sets by default MaxEIRP is considered to be +16dBm.
         /// If the end-device cannot achieve 16dBm EIRP, the Max EIRP SHOULD be communicated to the network server using an out-of-band channel during the end-device commissioning process.
         /// </summary>
-        public Dictionary<uint, uint> TXPowertoMaxEIRP { get; set; } = new Dictionary<uint, uint>();
+        public Dictionary<uint, uint> TXPowertoMaxEIRP { get; } = new Dictionary<uint, uint>();
 
         /// <summary>
         /// Gets or sets table to the get receive windows Offsets.
@@ -98,24 +98,24 @@ namespace LoRaTools.Regions
         /// </summary>
         public int MaxADRDataRate { get; set; }
 
-        public Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows,
-                      uint receiveDelay1, uint receiveDelay2, uint joinAcceptDelay1, uint joinAcceptDelay2, int maxFcntGap, uint adrAckLimit,
-                      uint adrAdrDelay, (uint min, uint max) ackTimeout)
+        protected Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows,
+                         uint receiveDelay1, uint receiveDelay2, uint joinAcceptDelay1, uint joinAcceptDelay2, int maxFcntGap, uint adrAckLimit,
+                         uint adrAdrDelay, (uint min, uint max) ackTimeout)
         {
-            this.LoRaRegion = regionEnum;
-            this.AckTimeout = ackTimeout;
+            LoRaRegion = regionEnum;
+            AckTimeout = ackTimeout;
 
-            this.LoRaSyncWord = loRaSyncWord;
-            this.GFSKSyncWord = gFSKSyncWord;
+            LoRaSyncWord = loRaSyncWord;
+            GFSKSyncWord = gFSKSyncWord;
 
-            this.RX2DefaultReceiveWindows = rx2DefaultReceiveWindows;
-            this.ReceiveDelay1 = receiveDelay1;
-            this.ReceiveDelay2 = receiveDelay2;
-            this.JoinAcceptDelay1 = joinAcceptDelay1;
-            this.JoinAcceptDelay2 = joinAcceptDelay2;
-            this.MaxFcntGap = maxFcntGap;
-            this.AdrAckLimit = adrAckLimit;
-            this.AdrAdrDelay = adrAdrDelay;
+            RX2DefaultReceiveWindows = rx2DefaultReceiveWindows;
+            ReceiveDelay1 = receiveDelay1;
+            ReceiveDelay2 = receiveDelay2;
+            JoinAcceptDelay1 = joinAcceptDelay1;
+            JoinAcceptDelay2 = joinAcceptDelay2;
+            MaxFcntGap = maxFcntGap;
+            AdrAckLimit = adrAckLimit;
+            AdrAdrDelay = adrAdrDelay;
         }
 
         /// <summary>
@@ -141,8 +141,8 @@ namespace LoRaTools.Regions
             else
             {
                 // default frequency
-                Logger.Log(devEUI, $"using standard region RX2 frequency {this.RX2DefaultReceiveWindows.frequency}", LogLevel.Debug);
-                return this.RX2DefaultReceiveWindows.frequency;
+                Logger.Log(devEUI, $"using standard region RX2 frequency {RX2DefaultReceiveWindows.frequency}", LogLevel.Debug);
+                return RX2DefaultReceiveWindows.frequency;
             }
         }
 
@@ -158,9 +158,9 @@ namespace LoRaTools.Regions
             // If the rx2 datarate property is in twins, we take it from there
             if (rx2DrFromTwins.HasValue)
             {
-                if (this.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
+                if (RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(rx2DrFromTwins))
                 {
-                    var datr = this.DRtoConfiguration[rx2DrFromTwins.Value].configuration;
+                    var datr = DRtoConfiguration[rx2DrFromTwins.Value].configuration;
                     Logger.Log(devEUI, $"using device twins rx2: {rx2DrFromTwins.Value}, datr: {datr}", LogLevel.Debug);
                     return datr;
                 }
@@ -181,7 +181,7 @@ namespace LoRaTools.Regions
             }
 
             // if no settings was set we use region default.
-            var defaultDatr = this.DRtoConfiguration[this.RX2DefaultReceiveWindows.dr].configuration;
+            var defaultDatr = DRtoConfiguration[RX2DefaultReceiveWindows.dr].configuration;
             Logger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
             return defaultDatr;
         }
@@ -192,12 +192,14 @@ namespace LoRaTools.Regions
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         public string GetDownstreamDR(Rxpk upstreamChannel, uint rx1DrOffset = 0)
         {
-            if (this.IsValidUpstreamRxpk(upstreamChannel))
+            if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
+
+            if (IsValidUpstreamRxpk(upstreamChannel))
             {
                 // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
-                if (rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1))
+                if (rx1DrOffset <= RX1DROffsetTable.GetUpperBound(1))
                 {
-                    return this.DRtoConfiguration[(ushort)this.RX1DROffsetTable[this.GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].configuration;
+                    return DRtoConfiguration[(ushort)RX1DROffsetTable[GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].configuration;
                 }
                 else
                 {
@@ -215,7 +217,7 @@ namespace LoRaTools.Regions
         /// <param name="datr">the datr/configuration with which the message was transmitted.</param>
         public uint GetMaxPayloadSize(string datr)
         {
-            var maxPayloadSize = this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Value.maxPyldSize;
+            var maxPayloadSize = DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Value.maxPyldSize;
 
             return maxPayloadSize;
         }
@@ -225,9 +227,11 @@ namespace LoRaTools.Regions
         /// </summary>
         protected bool IsValidUpstreamRxpk(Rxpk rxpk)
         {
-            if (rxpk.Freq < this.RegionLimits.FrequencyRange.min ||
-                rxpk.Freq > this.RegionLimits.FrequencyRange.max ||
-                !this.RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(rxpk.Datr))
+            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
+
+            if (rxpk.Freq < RegionLimits.FrequencyRange.min ||
+                rxpk.Freq > RegionLimits.FrequencyRange.max ||
+                !RegionLimits.IsCurrentUpstreamDRValueWithinAcceptableValue(rxpk.Datr))
             {
                 Logger.Log("A Rxpk packet not fitting the current region configuration was received, aborting processing.", LogLevel.Error);
                 return false;
@@ -241,14 +245,14 @@ namespace LoRaTools.Regions
         /// </summary>
         public int GetDRFromFreqAndChan(string datr)
         {
-            return (int)this.DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Key;
+            return DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Key;
         }
 
-        public bool IsValidRX1DROffset(uint rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1);
+        public bool IsValidRX1DROffset(uint rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= RX1DROffsetTable.GetUpperBound(1);
 
-        public bool IsValidRXDelay(ushort desiredRXDelay)
+        public static bool IsValidRXDelay(ushort desiredRXDelay)
         {
-            return desiredRXDelay >= 0 && desiredRXDelay <= MAX_RX_DELAY;
+            return desiredRXDelay is >= 0 and <= MAX_RX_DELAY;
         }
     }
 }

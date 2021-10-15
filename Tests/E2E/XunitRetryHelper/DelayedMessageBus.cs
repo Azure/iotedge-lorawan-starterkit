@@ -40,20 +40,23 @@ namespace XunitRetryHelper
             }
         }
 
-        public TestFailed GetLastFailure()
+        public TestFailed LastFailure
         {
-            lock (this.delayedMessages)
+            get
             {
-                for (var i = this.delayedMessages.Count - 1; i > 0; i--)
+                lock (this.delayedMessages)
                 {
-                    if (this.delayedMessages[i] is TestFailed failed)
+                    for (var i = this.delayedMessages.Count - 1; i > 0; i--)
                     {
-                        return failed;
+                        if (this.delayedMessages[i] is TestFailed failed)
+                        {
+                            return failed;
+                        }
                     }
                 }
-            }
 
-            return null;
+                return null;
+            }
         }
 
         public void Dispose()

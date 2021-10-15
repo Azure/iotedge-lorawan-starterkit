@@ -3,6 +3,7 @@
 
 namespace LoRaTools.Regions
 {
+    using System;
     using System.Collections.Generic;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
@@ -31,9 +32,10 @@ namespace LoRaTools.Regions
                 case LoRaRegionType.US915:
                     region = US915;
                     return true;
+                case LoRaRegionType.NotSet:
+                default:
+                    return false;
             }
-
-            return false;
         }
 
         /// <summary>
@@ -44,15 +46,17 @@ namespace LoRaTools.Regions
         /// <param name="region">Region.</param>
         public static bool TryResolveRegion(Rxpk rxpk, out Region region)
         {
+            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
+
             region = null;
 
             // EU863-870
-            if (rxpk.Freq < 870 && rxpk.Freq > 863)
+            if (rxpk.Freq is < 870 and > 863)
             {
                 region = EU868;
                 return true;
             }// US902-928 frequency band, upstream messages are between 902 and 915.
-            else if (rxpk.Freq <= 915 && rxpk.Freq >= 902)
+            else if (rxpk.Freq is <= 915 and >= 902)
             {
                 region = US915;
                 return true;
@@ -71,7 +75,10 @@ namespace LoRaTools.Regions
                 {
                     lock (RegionLock)
                     {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                        // False positive
                         if (eu868 == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
                         {
                             CreateEU868Region();
                         }
@@ -140,7 +147,10 @@ namespace LoRaTools.Regions
                 {
                     lock (RegionLock)
                     {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                        // False positive
                         if (us915 == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
                         {
                             CreateUS915Region();
                         }

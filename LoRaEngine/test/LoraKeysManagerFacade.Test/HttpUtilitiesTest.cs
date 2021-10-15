@@ -15,7 +15,7 @@ namespace LoraKeysManagerFacade.Test
         public void When_No_Version_Is_Defined_Returns_Version_02()
         {
             var request = new DefaultHttpContext().Request;
-            request.Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>());
+            request.Query = new QueryCollection(new Dictionary<string, StringValues>());
 
             var actual = HttpUtilities.GetRequestedVersion(request);
             Assert.NotNull(actual);
@@ -26,7 +26,7 @@ namespace LoraKeysManagerFacade.Test
         public void When_Unknown_Version_Is_Requested_Returns_Unkown_Version()
         {
             var request = new DefaultHttpContext().Request;
-            request.Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
+            request.Query = new QueryCollection(new Dictionary<string, StringValues>
                 {
                     { ApiVersion.QueryStringParamName, "qwerty" },
                 });

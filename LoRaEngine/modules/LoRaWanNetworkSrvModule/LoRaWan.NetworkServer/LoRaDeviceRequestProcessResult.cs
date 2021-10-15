@@ -9,16 +9,16 @@ namespace LoRaWan.NetworkServer
     {
         public LoRaDeviceRequestProcessResult(LoRaDevice loRaDevice, LoRaRequest request, DownlinkPktFwdMessage downlinkMessage = null)
         {
-            this.LoRaDevice = loRaDevice;
-            this.Request = request;
-            this.DownlinkMessage = downlinkMessage;
+            LoRaDevice = loRaDevice;
+            Request = request;
+            DownlinkMessage = downlinkMessage;
         }
 
         public LoRaDeviceRequestProcessResult(LoRaDevice loRaDevice, LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
         {
-            this.LoRaDevice = loRaDevice;
-            this.Request = request;
-            this.FailedReason = failedReason;
+            LoRaDevice = loRaDevice;
+            Request = request;
+            FailedReason = failedReason;
         }
 
         public DownlinkPktFwdMessage DownlinkMessage { get; }

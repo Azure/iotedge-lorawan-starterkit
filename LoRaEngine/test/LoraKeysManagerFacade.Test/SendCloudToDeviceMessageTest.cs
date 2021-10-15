@@ -227,7 +227,7 @@ namespace LoraKeysManagerFacade.Test
             var query = new Mock<IQuery>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
             query.Setup(x => x.GetNextAsTwinAsync())
-                .ReturnsAsync(new Twin[0]);
+                .ReturnsAsync(Array.Empty<Twin>());
 
             this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
                 .Returns(query.Object);
@@ -252,11 +252,13 @@ namespace LoraKeysManagerFacade.Test
         {
             const string devEUI = "0123456789";
 
-            var deviceTwin = new Twin();
-            deviceTwin.Properties = new TwinProperties()
+            var deviceTwin = new Twin
             {
-                Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\", \"ClassType\": \"C\"}}"),
-                Reported = new TwinCollection($"{{\"PreferredGatewayID\": \"gateway1\" }}"),
+                Properties = new TwinProperties()
+                {
+                    Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\", \"ClassType\": \"C\"}}"),
+                    Reported = new TwinCollection($"{{\"PreferredGatewayID\": \"gateway1\" }}"),
+                }
             };
 
             var query = new Mock<IQuery>(MockBehavior.Strict);
@@ -307,11 +309,13 @@ namespace LoraKeysManagerFacade.Test
         {
             const string devEUI = "0123456789";
 
-            var deviceTwin = new Twin();
-            deviceTwin.Properties = new TwinProperties()
+            var deviceTwin = new Twin
             {
-                Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\", \"ClassType\": \"C\", \"GatewayID\":\"mygateway\"}}"),
-                Reported = new TwinCollection(),
+                Properties = new TwinProperties()
+                {
+                    Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\", \"ClassType\": \"C\", \"GatewayID\":\"mygateway\"}}"),
+                    Reported = new TwinCollection(),
+                }
             };
 
             var query = new Mock<IQuery>(MockBehavior.Strict);
@@ -362,10 +366,12 @@ namespace LoraKeysManagerFacade.Test
         {
             const string devEUI = "0123456789";
 
-            var deviceTwin = new Twin();
-            deviceTwin.Properties = new TwinProperties()
+            var deviceTwin = new Twin
             {
-                Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\"}}"),
+                Properties = new TwinProperties()
+                {
+                    Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\"}}"),
+                }
             };
 
             var query = new Mock<IQuery>(MockBehavior.Strict);
@@ -415,10 +421,12 @@ namespace LoraKeysManagerFacade.Test
         {
             const string devEUI = "0123456789";
 
-            var deviceTwin = new Twin();
-            deviceTwin.Properties = new TwinProperties()
+            var deviceTwin = new Twin
             {
-                Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\"}}"),
+                Properties = new TwinProperties()
+                {
+                    Desired = new TwinCollection($"{{\"DevAddr\": \"03010101\"}}"),
+                }
             };
 
             var query = new Mock<IQuery>(MockBehavior.Strict);

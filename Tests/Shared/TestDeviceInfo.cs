@@ -61,7 +61,7 @@ namespace LoRaWan.Tests.Shared
 
         public int KeepAliveTimeout { get; set; }
 
-        public bool IsMultiGw => string.IsNullOrEmpty(this.GatewayID);
+        public bool IsMultiGw => string.IsNullOrEmpty(GatewayID);
 
         /// <summary>
         /// Gets the desired properties for the <see cref="TestDeviceInfo"/>.
@@ -69,43 +69,43 @@ namespace LoRaWan.Tests.Shared
         public Dictionary<string, object> GetDesiredProperties()
         {
             var desiredProperties = new Dictionary<string, object>();
-            if (!string.IsNullOrEmpty(this.AppEUI))
-                desiredProperties[nameof(this.AppEUI)] = this.AppEUI;
+            if (!string.IsNullOrEmpty(AppEUI))
+                desiredProperties[nameof(AppEUI)] = AppEUI;
 
-            if (!string.IsNullOrEmpty(this.AppKey))
-                desiredProperties[nameof(this.AppKey)] = this.AppKey;
+            if (!string.IsNullOrEmpty(AppKey))
+                desiredProperties[nameof(AppKey)] = AppKey;
 
-            if (!string.IsNullOrEmpty(this.GatewayID))
-                desiredProperties[nameof(this.GatewayID)] = this.GatewayID;
+            if (!string.IsNullOrEmpty(GatewayID))
+                desiredProperties[nameof(GatewayID)] = GatewayID;
 
-            if (!string.IsNullOrEmpty(this.SensorDecoder))
-                desiredProperties[nameof(this.SensorDecoder)] = this.SensorDecoder;
+            if (!string.IsNullOrEmpty(SensorDecoder))
+                desiredProperties[nameof(SensorDecoder)] = SensorDecoder;
 
-            if (!string.IsNullOrEmpty(this.AppSKey))
-                desiredProperties[nameof(this.AppSKey)] = this.AppSKey;
+            if (!string.IsNullOrEmpty(AppSKey))
+                desiredProperties[nameof(AppSKey)] = AppSKey;
 
-            if (!string.IsNullOrEmpty(this.NwkSKey))
-                desiredProperties[nameof(this.NwkSKey)] = this.NwkSKey;
+            if (!string.IsNullOrEmpty(NwkSKey))
+                desiredProperties[nameof(NwkSKey)] = NwkSKey;
 
-            if (!string.IsNullOrEmpty(this.DevAddr))
-                desiredProperties[nameof(this.DevAddr)] = this.DevAddr;
+            if (!string.IsNullOrEmpty(DevAddr))
+                desiredProperties[nameof(DevAddr)] = DevAddr;
 
-            desiredProperties[nameof(this.PreferredWindow)] = this.PreferredWindow;
+            desiredProperties[nameof(PreferredWindow)] = PreferredWindow;
 
-            if (char.ToLower(this.ClassType) != 'a')
-                desiredProperties[nameof(this.ClassType)] = this.ClassType.ToString();
+            if (char.ToLower(ClassType) != 'a')
+                desiredProperties[nameof(ClassType)] = ClassType.ToString();
 
-            desiredProperties[nameof(this.RX1DROffset)] = this.RX1DROffset;
+            desiredProperties[nameof(RX1DROffset)] = RX1DROffset;
 
-            desiredProperties[nameof(this.RX2DataRate)] = this.RX2DataRate;
+            desiredProperties[nameof(RX2DataRate)] = RX2DataRate;
 
-            desiredProperties[nameof(this.RXDelay)] = this.RXDelay;
+            desiredProperties[nameof(RXDelay)] = RXDelay;
 
-            // if (this.KeepAliveTimeout > 0)
-            desiredProperties[nameof(this.KeepAliveTimeout)] = this.KeepAliveTimeout;
+            // if (KeepAliveTimeout > 0)
+            desiredProperties[nameof(KeepAliveTimeout)] = KeepAliveTimeout;
 
-            if (!string.IsNullOrEmpty(this.Deduplication))
-                desiredProperties[nameof(this.Deduplication)] = this.Deduplication;
+            if (!string.IsNullOrEmpty(Deduplication))
+                desiredProperties[nameof(Deduplication)] = Deduplication;
 
             return desiredProperties;
         }

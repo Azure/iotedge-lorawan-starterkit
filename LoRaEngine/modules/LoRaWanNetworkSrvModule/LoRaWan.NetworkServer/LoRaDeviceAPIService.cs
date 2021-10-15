@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
             Logger.Log(devEUI, $"syncing FCntDown for multigateway", LogLevel.Debug);
 
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = new Uri($"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}");
+            var url = new Uri($"{URL}NextFCntDown?code={AuthCode}&DevEUI={devEUI}&FCntDown={fcntDown}&FCntUp={fcntUp}&GatewayId={gatewayId}");
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer
         public override async Task<DeduplicationResult> CheckDuplicateMsgAsync(string devEUI, uint fcntUp, string gatewayId, uint fcntDown)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = new Uri($"{this.URL}DuplicateMsgCheck/{devEUI}?code={this.AuthCode}&FCntUp={fcntUp}&GatewayId={gatewayId}&FCntDown={fcntDown}");
+            var url = new Uri($"{URL}DuplicateMsgCheck/{devEUI}?code={AuthCode}&FCntUp={fcntUp}&GatewayId={gatewayId}&FCntDown={fcntDown}");
 
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -64,7 +64,7 @@ namespace LoRaWan.NetworkServer
         public override async Task<FunctionBundlerResult> ExecuteFunctionBundlerAsync(string devEUI, FunctionBundlerRequest request)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = new Uri($"{this.URL}FunctionBundler/{devEUI}?code={this.AuthCode}");
+            var url = new Uri($"{URL}FunctionBundler/{devEUI}?code={AuthCode}");
 
             var requestBody = JsonConvert.SerializeObject(request);
 
@@ -83,7 +83,7 @@ namespace LoRaWan.NetworkServer
         public override async Task<bool> ABPFcntCacheResetAsync(string devEUI, uint fcntUp, string gatewayId)
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
-            var url = new Uri($"{this.URL}NextFCntDown?code={this.AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true&GatewayId={gatewayId}&FCntUp={fcntUp}");
+            var url = new Uri($"{URL}NextFCntDown?code={AuthCode}&DevEUI={devEUI}&ABPFcntCacheReset=true&GatewayId={gatewayId}&FCntUp={fcntUp}");
             var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
@@ -96,11 +96,11 @@ namespace LoRaWan.NetworkServer
 
         /// <inheritdoc />
         public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string appEUI, string devNonce)
-            => this.SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, appEUI: appEUI, devNonce: devNonce);
+            => SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, appEUI: appEUI, devNonce: devNonce);
 
         /// <inheritdoc />
         public sealed override Task<SearchDevicesResult> SearchByDevAddrAsync(string devAddr)
-            => this.SearchDevicesAsync(devAddr: devAddr);
+            => SearchDevicesAsync(devAddr: devAddr);
 
         /// <summary>
         /// Helper method that calls the API GetDevice method.
@@ -109,38 +109,38 @@ namespace LoRaWan.NetworkServer
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = new StringBuilder();
-            url.Append(this.URL)
-                .Append("GetDevice?code=")
-                .Append(this.AuthCode);
+            _ = url.Append(URL)
+                   .Append("GetDevice?code=")
+                   .Append(AuthCode);
 
             if (!string.IsNullOrEmpty(gatewayID))
             {
-                url.Append("&GatewayId=")
-                    .Append(gatewayID);
+                _ = url.Append("&GatewayId=")
+                       .Append(gatewayID);
             }
 
             if (!string.IsNullOrEmpty(devAddr))
             {
-                url.Append("&DevAddr=")
-                    .Append(devAddr);
+                _ = url.Append("&DevAddr=")
+                       .Append(devAddr);
             }
 
             if (!string.IsNullOrEmpty(devEUI))
             {
-                url.Append("&DevEUI=")
-                    .Append(devEUI);
+                _ = url.Append("&DevEUI=")
+                       .Append(devEUI);
             }
 
             if (!string.IsNullOrEmpty(appEUI))
             {
-                url.Append("&AppEUI=")
-                    .Append(appEUI);
+                _ = url.Append("&AppEUI=")
+                       .Append(appEUI);
             }
 
             if (!string.IsNullOrEmpty(devNonce))
             {
-                url.Append("&DevNonce=")
-                    .Append(devNonce);
+                _ = url.Append("&DevNonce=")
+                       .Append(devNonce);
             }
 
             var response = await client.GetAsync(new Uri(url.ToString()));
@@ -183,14 +183,14 @@ namespace LoRaWan.NetworkServer
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = new StringBuilder();
-            url.Append(this.URL)
-                .Append("GetDeviceByDevEUI?code=")
-                .Append(this.AuthCode);
+            _ = url.Append(URL)
+                   .Append("GetDeviceByDevEUI?code=")
+                   .Append(AuthCode);
 
             if (!string.IsNullOrEmpty(devEUI))
             {
-                url.Append("&DevEUI=")
-                    .Append(devEUI);
+                _ = url.Append("&DevEUI=")
+                       .Append(devEUI);
             }
 
             var response = await client.GetAsync(new Uri(url.ToString()));

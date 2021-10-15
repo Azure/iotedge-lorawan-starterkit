@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
-    using LoRaWan.Shared;
+    using LoRaWan.Core;
     using Xunit;
 
     public sealed class ServiceFacadeHttpClientHandlerTest : IDisposable
@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Function_Returns_No_Version_Should_Return_Bad_Request()
         {
-            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2018_12_16_Preview, this.FakeHandler);
+            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2018_12_16_Preview, FakeHandler);
             this.fakeHttpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("100"),
@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Function_Returns_Same_Version_Should_Return_OK()
         {
-            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2018_12_16_Preview, this.FakeHandler);
+            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2018_12_16_Preview, FakeHandler);
             this.fakeHttpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("100"),
@@ -61,7 +61,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Function_Uri_Has_No_Parameter_Adds_Question_Mark()
         {
-            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2018_12_16_Preview, this.FakeHandler);
+            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2018_12_16_Preview, FakeHandler);
             this.fakeHttpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("100"),
@@ -79,7 +79,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Function_Returns_Unknown_Newer_Version_Should_Return_OK()
         {
-            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2018_12_16_Preview, this.FakeHandler);
+            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2018_12_16_Preview, FakeHandler);
             this.fakeHttpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("100"),
@@ -97,7 +97,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Function_Returns_Known_Older_Version_Should_Return_Bad_Request()
         {
-            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2019_02_12_Preview, this.FakeHandler);
+            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2019_02_12_Preview, FakeHandler);
             this.fakeHttpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("100"),
@@ -115,7 +115,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Function_Returns_Unknown_Older_Version_Should_Return_Bad_Request()
         {
-            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2019_02_12_Preview, this.FakeHandler);
+            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2019_02_12_Preview, FakeHandler);
             this.fakeHttpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("100"),
@@ -133,7 +133,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Function_Returns_Error_Does_Not_Check_Version_Compatibility()
         {
-            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2019_02_12_Preview, this.FakeHandler);
+            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2019_02_12_Preview, FakeHandler);
             this.fakeHttpResponseMessage = new HttpResponseMessage(HttpStatusCode.InternalServerError)
             {
                 Content = new StringContent("100"),
@@ -152,7 +152,7 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task When_Caller_Is_2018_12_16_And_Function_2019_02_12_Should_Return_Bad_Request()
         {
-            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2018_12_16_Preview, this.FakeHandler);
+            using var target = new ServiceFacadeHttpClientHandler(ApiVersion.Version_2018_12_16_Preview, FakeHandler);
             this.fakeHttpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("100"),

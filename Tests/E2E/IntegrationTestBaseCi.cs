@@ -15,7 +15,7 @@ namespace LoRaWan.Tests.E2E
 
         protected IntegrationTestFixtureCi TestFixtureCi
         {
-            get { return (IntegrationTestFixtureCi)this.TestFixture; }
+            get { return (IntegrationTestFixtureCi)TestFixture; }
         }
 
         protected LoRaArduinoSerial ArduinoDevice { get; }
@@ -23,7 +23,7 @@ namespace LoRaWan.Tests.E2E
         public IntegrationTestBaseCi(IntegrationTestFixtureCi testFixture)
             : base(testFixture)
         {
-            this.ArduinoDevice = testFixture.ArduinoDevice;
+            ArduinoDevice = testFixture.ArduinoDevice;
         }
 
         protected string ToHexString(string str)
@@ -46,8 +46,8 @@ namespace LoRaWan.Tests.E2E
                 if (disposing)
                 {
                     // Before starting a new test, wait 5 seconds to ensure serial port is not receiving dirty data
-                    if (this.ArduinoDevice != null)
-                        this.ArduinoDevice.WaitForIdleAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
+                    if (ArduinoDevice != null)
+                        ArduinoDevice.WaitForIdleAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
                 }
 
                 this.isDisposed = true;
@@ -58,7 +58,7 @@ namespace LoRaWan.Tests.E2E
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            this.Dispose(true);
+            Dispose(true);
             // TODO: uncomment the following line if the finalizer is overridden above.
             GC.SuppressFinalize(this);
         }

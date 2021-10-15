@@ -45,7 +45,7 @@ namespace LoRaWan.Tests.Integration
             };
 
             this.loRaRegion = RegionManager.EU868;
-            this.PacketForwarder = new TestPacketForwarder();
+            PacketForwarder = new TestPacketForwarder();
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object);
@@ -54,7 +54,7 @@ namespace LoRaWan.Tests.Integration
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
-        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
+        private static void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
             Assert.NotNull(downlink.Txpk);
@@ -64,7 +64,7 @@ namespace LoRaWan.Tests.Integration
 
             var downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
-            Assert.Equal(sentMessage.Fport, downstreamPayload.GetFPort());
+            Assert.Equal(sentMessage.Fport, downstreamPayload.FPortValue);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -100,7 +100,7 @@ namespace LoRaWan.Tests.Integration
                 - c2dMessageMacCommandSize
                 - Constants.LoraProtocolOverheadSize;
 
-            var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
+            var c2dMsgPayload = GeneratePayload("123457890", (int)c2dPayloadSize);
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 DevEUI = devEUI,
@@ -110,7 +110,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands = new[] { c2dMessageMacCommand };
+                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -118,7 +118,7 @@ namespace LoRaWan.Tests.Integration
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.PacketForwarder,
+                PacketForwarder,
                 this.frameCounterStrategyProvider);
 
             // Expectations
@@ -126,14 +126,14 @@ namespace LoRaWan.Tests.Integration
             Assert.True(await target.SendAsync(c2d));
 
             // Verify that exactly one C2D message was received
-            Assert.Single(this.PacketForwarder.DownlinkMessages);
+            Assert.Single(PacketForwarder.DownlinkMessages);
 
             // Verify donwlink message is correct
-            this.EnsureDownlinkIsCorrect(
-                this.PacketForwarder.DownlinkMessages.First(), simulatedDevice, c2d);
+            EnsureDownlinkIsCorrect(
+                PacketForwarder.DownlinkMessages.First(), simulatedDevice, c2d);
 
             // Get C2D message payload
-            var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
+            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(
                 Convert.FromBase64String(downlinkMessage.Txpk.Data));
             payloadDataDown.PerformEncryption(simulatedDevice.AppSKey);
@@ -185,7 +185,7 @@ namespace LoRaWan.Tests.Integration
                 + 1 // make message too long on purpose
                 - Constants.LoraProtocolOverheadSize;
 
-            var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
+            var c2dMsgPayload = GeneratePayload("123457890", (int)c2dPayloadSize);
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 DevEUI = devEUI,
@@ -195,7 +195,7 @@ namespace LoRaWan.Tests.Integration
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands = new[] { c2dMessageMacCommand };
+                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -203,7 +203,7 @@ namespace LoRaWan.Tests.Integration
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.PacketForwarder,
+                PacketForwarder,
                 this.frameCounterStrategyProvider);
 
             // Expectations
@@ -211,13 +211,13 @@ namespace LoRaWan.Tests.Integration
             Assert.False(await target.SendAsync(c2d));
 
             // Verify that exactly one C2D message was received
-            Assert.Empty(this.PacketForwarder.DownlinkMessages);
+            Assert.Empty(PacketForwarder.DownlinkMessages);
 
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
 
-        private string GeneratePayload(string allowedChars, int length)
+        private static string GeneratePayload(string allowedChars, int length)
         {
             var random = new Random();
 
