@@ -39,10 +39,10 @@ namespace LoraKeysManagerFacade
         private const string UpdatingDevAddrCacheLock = "globalUpdateKey";
 
         /// <summary>
-        /// This is the time we hold onto the update lock.
-        /// REVIEW: this seems to be wrong. If a full update takes longer than this value, incremental updates can come in between?
+        /// This is the time we hold onto the update lock. This should be long enough for an incremental
+        /// upate to pass.
         /// </summary>
-        private static readonly TimeSpan UpdatingDevAddrCacheLockTimeSpan = TimeSpan.FromMinutes(2);
+        private static readonly TimeSpan UpdatingDevAddrCacheLockTimeSpan = TimeSpan.FromMinutes(5);
 
         private const string CacheKeyPrefix = "devAddrTable:";
         private const string DevAddrLockName = "devAddrLock:";
