@@ -41,7 +41,10 @@ namespace LoRaTools
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
+#pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
+            // Part of the LoRaWAN specification
             cipher = aes.CreateEncryptor();
+#pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
 
             var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
             return ConversionHelper.ByteArrayToString(key);
@@ -74,7 +77,10 @@ namespace LoRaTools
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
+#pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
+            // Part of the LoRaWAN specification
             cipher = aes.CreateEncryptor();
+#pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
 
             var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
             return ConversionHelper.ByteArrayToString(key);
