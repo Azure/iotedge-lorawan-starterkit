@@ -266,7 +266,26 @@ namespace LoRaWanTest
         public void TestKeys()
         {
             // create random message
-            var rxpk = CreateRxpk();
+            var jsonUplink = @"{ ""rxpk"":[
+ 	            {
+		            ""time"":""2013-03-31T16:21:17.528002Z"",
+ 		            ""tmst"":3512348611,
+ 		            ""chan"":2,
+ 		            ""rfch"":0,
+ 		            ""freq"":866.349812,
+ 		            ""stat"":1,
+ 		            ""modu"":""LORA"",
+ 		            ""datr"":""SF7BW125"",
+ 		            ""codr"":""4/6"",
+ 		            ""rssi"":-35,
+ 		            ""lsnr"":5.1,
+ 		            ""size"":32,
+ 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
+                }]}";
+            var joinRequestInput = Encoding.Default.GetBytes(jsonUplink);
+            var physicalUpstreamPyld = new byte[12];
+            physicalUpstreamPyld[0] = 2;
+            var rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
             Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk[0], out var loRaPayload));
             Assert.Equal(LoRaMessageType.JoinRequest, loRaPayload.LoRaMessageType);
             var joinReq = (LoRaPayloadJoinRequest)loRaPayload;
@@ -308,42 +327,12 @@ namespace LoRaWanTest
         [Fact]
         public void CalculateKey_Throws_When_Key_Type_Is_None()
         {
-            // arrange
-            var rxpk = CreateRxpk();
-            _ = LoRaPayload.TryCreateLoRaPayload(rxpk[0], out var loRaPayload);
-            var joinRequest = (LoRaPayloadJoinRequest)loRaPayload;
-
-            // act + assert
-            var result = Assert.Throws<InvalidOperationException>(() => joinRequest.CalculateKey(LoRaPayloadKeyType.None,
+            var result = Assert.Throws<InvalidOperationException>(() => LoRaPayload.CalculateKey(LoRaPayloadKeyType.None,
                                                                                                  Array.Empty<byte>(),
                                                                                                  Array.Empty<byte>(),
                                                                                                  Array.Empty<byte>(),
                                                                                                  Array.Empty<byte>()));
             Assert.Equal("No key type selected.", result.Message);
-        }
-
-        private static IList<Rxpk> CreateRxpk()
-        {
-            var jsonUplink = @"{ ""rxpk"":[
- 	            {
-		            ""time"":""2013-03-31T16:21:17.528002Z"",
- 		            ""tmst"":3512348611,
- 		            ""chan"":2,
- 		            ""rfch"":0,
- 		            ""freq"":866.349812,
- 		            ""stat"":1,
- 		            ""modu"":""LORA"",
- 		            ""datr"":""SF7BW125"",
- 		            ""codr"":""4/6"",
- 		            ""rssi"":-35,
- 		            ""lsnr"":5.1,
- 		            ""size"":32,
- 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
-                }]}";
-            var joinRequestInput = Encoding.Default.GetBytes(jsonUplink);
-            var physicalUpstreamPyld = new byte[12];
-            physicalUpstreamPyld[0] = 2;
-            return Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
         }
 
         /// <summary>
