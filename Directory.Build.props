@@ -34,7 +34,7 @@
       <MicrosoftExtensionsConfigurationJsonVersion>3.1.5</MicrosoftExtensionsConfigurationJsonVersion>
       <SystemIOPortsVersion>5.0.1</SystemIOPortsVersion>
       <XUnitRunnerVisualStudio>2.4.2</XUnitRunnerVisualStudio>
-      <MicrosoftAzureEventHubsVersion>4.2.0</MicrosoftAzureEventHubsVersion>
+      <MicrosoftAzureEventHubsVersion>4.3.2</MicrosoftAzureEventHubsVersion>
       <MicrosoftAzureEventHubsProcessorVersion>4.2.0</MicrosoftAzureEventHubsProcessorVersion>
     </PropertyGroup>
 </Project>
