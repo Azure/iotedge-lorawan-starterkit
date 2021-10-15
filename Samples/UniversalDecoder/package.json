@@ -18,7 +18,7 @@
         "express-validator": "^6.12.2",
         "fs-extra": "^10.0.0",
         "glob": "^7.1.7",
-        "pino": "^6.11.3",
+        "pino": "^7.0.1",
         "pino-pretty": "^7.1.0"
     },
     "devDependencies": {
