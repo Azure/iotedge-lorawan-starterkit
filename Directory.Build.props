@@ -37,4 +37,10 @@
       <MicrosoftAzureEventHubsVersion>4.2.0</MicrosoftAzureEventHubsVersion>
       <MicrosoftAzureEventHubsProcessorVersion>4.2.0</MicrosoftAzureEventHubsProcessorVersion>
     </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="$(MSBuildThisFileDirectory)/CLSCompliant.cs"
+                 Condition="Exists('$(MSBuildThisFileDirectory)/CLSCompliant.cs')"
+                 Link="CLSCompliant.cs" />
+    </ItemGroup>
 </Project>
