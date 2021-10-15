@@ -16,17 +16,37 @@ namespace LoraKeysManagerFacade
 
     public sealed class LoRaDevAddrCache
     {
-        private const string DeltaUpdateKey = "deltaUpdateKey";
         private const string LastDeltaUpdateKeyValue = "lastDeltaUpdateKeyValue";
-        private const string FullUpdateKey = "fullUpdateKey";
+
+        /// <summary>
+        /// This is the lock controlling a complete update of the cache.
+        /// Complete updates of the cache are scheduled to happen every <see cref="FullUpdateKeyTimeSpan"/>.
+        /// The lock is used to set the TTL to that value, so it can only be taken once for that time span.
+        /// </summary>
+        private const string FullUpdateLockKey = "fullUpdateKey";
+        private static readonly TimeSpan FullUpdateKeyTimeSpan = TimeSpan.FromHours(24);
+
+        /// <summary>
+        /// Individual entries / hashes per dev address are made valid at least 1h longer than
+        /// the full update scheduled trigger. This avoids, invalidating the cache before we
+        /// re-populate it.
+        /// </summary>
+        private static readonly TimeSpan DevAddrObjectsTTL = FullUpdateKeyTimeSpan + TimeSpan.FromHours(1);
+
+        /// <summary>
+        /// All changes no matter if they are full or incremental, will have to acquire this lock
+        /// </summary>
         private const string UpdatingDevAddrCacheLock = "globalUpdateKey";
+
+        /// <summary>
+        /// This is the time we hold onto the update lock. This should be long enough for an incremental
+        /// upate to pass.
+        /// </summary>
+        private static readonly TimeSpan UpdatingDevAddrCacheLockTimeSpan = TimeSpan.FromMinutes(5);
+
         private const string CacheKeyPrefix = "devAddrTable:";
         private const string DevAddrLockName = "devAddrLock:";
-        public static readonly TimeSpan LockExpiry = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan FullUpdateKeyTimeSpan = TimeSpan.FromHours(25);
-        private static readonly TimeSpan DeltaUpdateKeyTimeSpan = TimeSpan.FromMinutes(5);
-        private static readonly TimeSpan UpdatingDevAddrCacheLockTimeSpan = TimeSpan.FromMinutes(2);
-        private static readonly TimeSpan DevAddrObjectsTTL = TimeSpan.FromHours(24);
+        public static readonly TimeSpan DefaultSingleLockExpiry = TimeSpan.FromSeconds(10);
 
         private readonly ILoRaDeviceCacheStore cacheStore;
         private readonly ILogger logger;
@@ -74,56 +94,48 @@ namespace LoraKeysManagerFacade
             return info?.Count > 0;
         }
 
-        public bool StoreInfo(DevAddrCacheInfo info, bool initialize = false)
+        public bool StoreInfo(DevAddrCacheInfo info)
         {
-            if (info == null)
-            {
-                throw new ArgumentNullException("Required DevAddrCacheInfo argument was null");
-            }
+            _ = info ?? throw new ArgumentNullException(nameof(info));
 
-            var success = false;
             var serializedObjectValue = JsonConvert.SerializeObject(info);
 
             var cacheKeyToUse = GenerateKey(info.DevAddr);
 
-            success = this.cacheStore.TrySetHashObject(cacheKeyToUse, info.DevEUI, serializedObjectValue);
-
-            if (success)
+            if(this.cacheStore.TrySetHashObject(cacheKeyToUse, info.DevEUI, serializedObjectValue))
             {
                 this.logger.LogInformation($"Successfully saved dev address info on dictionary key: {cacheKeyToUse}, hashkey: {info.DevEUI}, object: {serializedObjectValue}");
-            }
-            else
-            {
-                this.logger.LogError($"Failure to save dev address info on dictionary key: {cacheKeyToUse}, hashkey: {info?.DevEUI}, object: {serializedObjectValue}");
+
+                return true;
             }
 
-            return success;
+            this.logger.LogError($"Failure to save dev address info on dictionary key: {cacheKeyToUse}, hashkey: {info.DevEUI}, object: {serializedObjectValue}");
+            return false;
         }
 
         internal async Task PerformNeededSyncs(RegistryManager registryManager)
         {
             // If a full update is expected
-            if (await this.cacheStore.LockTakeAsync(FullUpdateKey, this.lockOwner, FullUpdateKeyTimeSpan, block: false))
+            if (await this.cacheStore.LockTakeAsync(FullUpdateLockKey, this.lockOwner, FullUpdateKeyTimeSpan, block: false))
             {
-                var ownGlobalLock = false;
+                var ownsUpdateLock = false;
                 var fullUpdatePerformed = false;
                 try
                 {
-                    // if a full update is needed I take the global lock and perform a full reload
-                    if (!await this.cacheStore.LockTakeAsync(UpdatingDevAddrCacheLock, this.lockOwner, UpdatingDevAddrCacheLockTimeSpan, block: true))
+                    // if a full update is needed we take the global lock and perform a full reload
+                    if (ownsUpdateLock = await this.cacheStore.LockTakeAsync(UpdatingDevAddrCacheLock, this.lockOwner, UpdatingDevAddrCacheLockTimeSpan, block: true))
                     {
-                        this.logger.LogDebug("A full reload was needed but failed to acquire global update lock");
-                    }
-                    else
-                    {
-                        ownGlobalLock = true;
                         this.logger.LogDebug("A full reload was started");
                         await this.PerformFullReload(registryManager);
                         this.logger.LogDebug("A full reload was completed");
-                        // if successfull i set the delta lock to 5 minutes and release the global lock
-                        this.cacheStore.StringSet(FullUpdateKey, this.lockOwner, FullUpdateKeyTimeSpan);
-                        this.cacheStore.StringSet(DeltaUpdateKey, this.lockOwner, DeltaUpdateKeyTimeSpan);
+                        // we updated the full cache, we want to delay the next update to the time FullUpdateKeyTimeSpan
+                        // and only process incremental updates for that time.
+                        this.cacheStore.TryChangeLockTTL(FullUpdateLockKey, FullUpdateKeyTimeSpan);
                         fullUpdatePerformed = true;
+                    }
+                    else
+                    {
+                        this.logger.LogDebug("A full reload was needed but failed to acquire global update lock");
                     }
                 }
                 catch (Exception ex)
@@ -132,14 +144,18 @@ namespace LoraKeysManagerFacade
                 }
                 finally
                 {
-                    if (ownGlobalLock)
+                    if (ownsUpdateLock)
                     {
+                        // potentially, if an incremental update comes in right after this,
+                        // we would be doing an incremental update to soon. We could delay that
+                        // for the time we run the incremental updates, but that could delay it
+                        // longer than what we may want.
                         this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
                     }
 
                     if (!fullUpdatePerformed)
                     {
-                        if (!this.cacheStore.TryChangeLockTTL(FullUpdateKey, timeToExpire: TimeSpan.FromMinutes(1)))
+                        if (!this.cacheStore.TryChangeLockTTL(FullUpdateLockKey, timeToExpire: TimeSpan.FromMinutes(1)))
                         {
                             this.logger.LogError("Could not change the TTL of the lock");
                         }
@@ -150,12 +166,9 @@ namespace LoraKeysManagerFacade
             {
                 try
                 {
-                    if (await this.cacheStore.LockTakeAsync(DeltaUpdateKey, this.lockOwner, TimeSpan.FromMinutes(5)))
-                    {
-                        this.logger.LogDebug("A delta reload was started");
-                        await this.PerformDeltaReload(registryManager);
-                        this.logger.LogDebug("A delta reload was completed");
-                    }
+                    this.logger.LogDebug("A delta reload was started");
+                    await this.PerformDeltaReload(registryManager);
+                    this.logger.LogDebug("A delta reload was completed");
                 }
                 catch (Exception ex)
                 {
@@ -195,7 +208,8 @@ namespace LoraKeysManagerFacade
         private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(RegistryManager registryManager, string inputQuery)
         {
             var query = registryManager.CreateQuery(inputQuery);
-            this.cacheStore.StringSet(LastDeltaUpdateKeyValue, DateTime.UtcNow.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
+            var lastQueryTs = DateTime.UtcNow.AddSeconds(-10); // account for some clock drift
+            this.cacheStore.StringSet(LastDeltaUpdateKeyValue, lastQueryTs.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
             var devAddrCacheInfos = new List<DevAddrCacheInfo>();
             while (query.HasMoreResults)
             {
@@ -261,13 +275,14 @@ namespace LoraKeysManagerFacade
         {
             // if the new value are not different we want to ensure we don't save, to not update the TTL of the item.
             var toSyncValues = newDevEUIList.ToDictionary(x => x.DevEUI);
-            var cacheValues = new Dictionary<string, DevAddrCacheInfo>();
 
             // If nothing is in the cache we want to return the new values.
             if (cacheDevEUIEntry.Length == 0)
             {
                 return toSyncValues;
             }
+
+            var cacheValues = new Dictionary<string, DevAddrCacheInfo>();
 
             foreach (var devEUIEntry in cacheDevEUIEntry)
             {
@@ -344,14 +359,14 @@ namespace LoraKeysManagerFacade
         /// Method to take a lock when querying IoT Hub for a primary key.
         /// It is blocking as only one should access it.
         /// </summary>
-        public async Task<bool> TryTakeDevAddrUpdateLock(string devEUI)
+        public async Task<bool> TryTakeDevAddrUpdateLock(string devAddr)
         {
-            return await this.cacheStore.LockTakeAsync(string.Concat(DevAddrLockName, devEUI), this.lockOwner, LockExpiry, block: true);
+            return await this.cacheStore.LockTakeAsync(string.Concat(DevAddrLockName, devAddr), this.lockOwner, DefaultSingleLockExpiry, block: true);
         }
 
-        public bool ReleaseDevAddrUpdateLock(string devEUI)
+        public bool ReleaseDevAddrUpdateLock(string devAddr)
         {
-            return this.cacheStore.LockRelease(string.Concat(DevAddrLockName, devEUI), this.lockOwner);
+            return this.cacheStore.LockRelease(string.Concat(DevAddrLockName, devAddr), this.lockOwner);
         }
     }
 }

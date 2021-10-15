@@ -10,6 +10,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Primitives;
 
     public class FCntCacheCheck
     {
@@ -25,6 +26,8 @@ namespace LoraKeysManagerFacade
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
+            _ = req ?? throw new ArgumentNullException(nameof(req));
+
             try
             {
                 VersionValidator.Validate(req);
@@ -34,22 +37,21 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            string devEUI = req.Query["DevEUI"];
-            string fCntDown = req.Query["FCntDown"];
-            string fCntUp = req.Query["FCntUp"];
-            string gatewayId = req.Query["GatewayId"];
-            string abpFcntCacheReset = req.Query["ABPFcntCacheReset"];
+            var devEUI = req.Query["DevEUI"];
+            var fCntDown = req.Query["FCntDown"];
+            var fCntUp = req.Query["FCntUp"];
+            var gatewayId = req.Query["GatewayId"];
+            var abpFcntCacheReset = req.Query["ABPFcntCacheReset"];
             uint newFCntDown = 0;
 
             EUIValidator.ValidateDevEUI(devEUI);
 
             if (!uint.TryParse(fCntUp, out var clientFCntUp))
             {
-                var errorMsg = "Missing FCntUp";
-                throw new ArgumentException(errorMsg);
+                throw new ArgumentException("Missing FCntUp");
             }
 
-            if (!string.IsNullOrEmpty(abpFcntCacheReset))
+            if (abpFcntCacheReset != StringValues.Empty)
             {
                 using (var deviceCache = new LoRaDeviceCache(this.deviceCache, devEUI, gatewayId))
                 {
@@ -62,14 +64,14 @@ namespace LoraKeysManagerFacade
                             // and continued processing
                             if (deviceInfo.FCntUp > 1)
                             {
-                                log.LogDebug("Resetting cache. FCntUp: {fcntup}", deviceInfo.FCntUp);
+                                log.LogDebug("Resetting cache for device {devEUI}. FCntUp: {fcntup}", devEUI, deviceInfo.FCntUp);
                                 deviceCache.ClearCache();
                             }
                         }
                     }
                 }
 
-                return (ActionResult)new OkObjectResult(null);
+                return new OkObjectResult(null);
             }
 
             // validate input parameters
@@ -82,7 +84,7 @@ namespace LoraKeysManagerFacade
 
             newFCntDown = await this.GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);
 
-            return (ActionResult)new OkObjectResult(newFCntDown);
+            return new OkObjectResult(newFCntDown);
         }
 
         public async Task<uint> GetNextFCntDownAsync(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)

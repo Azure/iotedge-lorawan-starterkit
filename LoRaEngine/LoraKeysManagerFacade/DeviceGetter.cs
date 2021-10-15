@@ -12,6 +12,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Primitives;
     using Newtonsoft.Json;
 
     public class DeviceGetter
@@ -33,6 +34,8 @@ namespace LoraKeysManagerFacade
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
+            _ = req ?? throw new ArgumentNullException(nameof(req));
+
             try
             {
                 VersionValidator.Validate(req);
@@ -43,13 +46,13 @@ namespace LoraKeysManagerFacade
             }
 
             // ABP parameters
-            string devAddr = req.Query["DevAddr"];
+            var devAddr = req.Query["DevAddr"];
             // OTAA parameters
-            string devEUI = req.Query["DevEUI"];
-            string devNonce = req.Query["DevNonce"];
-            string gatewayId = req.Query["GatewayId"];
+            var devEUI = req.Query["DevEUI"];
+            var devNonce = req.Query["DevNonce"];
+            var gatewayId = req.Query["GatewayId"];
 
-            if (devEUI != null)
+            if (devEUI != StringValues.Empty)
             {
                 EUIValidator.ValidateDevEUI(devEUI);
             }
@@ -101,7 +104,7 @@ namespace LoraKeysManagerFacade
 
                         if (await deviceCache.TryToLockAsync())
                         {
-                            this.cacheStore.KeyDelete(devEUI);
+                            deviceCache.ClearCache(); // clear the fcnt up/down after the join
                             log?.LogDebug("Removed key '{key}':{gwid}", devEUI, gatewayId);
                         }
                         else
