@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer.Test
 
     public class TestPacketForwarder : IPacketForwarder
     {
-        public List<DownlinkPktFwdMessage> DownlinkMessages { get; }
+        public IList<DownlinkPktFwdMessage> DownlinkMessages { get; }
 
         public TestPacketForwarder()
         {

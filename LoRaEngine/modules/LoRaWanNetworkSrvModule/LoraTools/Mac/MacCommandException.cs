@@ -23,5 +23,9 @@ namespace LoRaTools.Mac
             : base(info, context)
         {
         }
+
+        public MacCommandException()
+        {
+        }
     }
 }

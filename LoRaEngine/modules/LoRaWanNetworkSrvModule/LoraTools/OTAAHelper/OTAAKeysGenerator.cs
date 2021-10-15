@@ -8,7 +8,7 @@ namespace LoRaTools
     using System.Security.Cryptography;
     using LoRaTools.Utils;
 
-    public class OTAAKeysGenerator
+    public static class OTAAKeysGenerator
     {
         private static readonly Random RndKeysGenerator = new Random();
         private static readonly object RndLock = new object();

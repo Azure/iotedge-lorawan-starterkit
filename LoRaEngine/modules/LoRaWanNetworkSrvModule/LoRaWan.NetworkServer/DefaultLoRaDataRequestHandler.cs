@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer
                 var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
                 Logger.Log(loRaDevice.DevEUI, $"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}", LogLevel.Debug);
 
-                var payloadPort = loraPayload.GetFPort();
+                var payloadPort = loraPayload.FPortValue;
                 var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
 
                 LoRaADRResult loRaADRResult = null;
@@ -294,11 +294,11 @@ namespace LoRaWan.NetworkServer
                             {
                                 if (downlinkMessageBuilderResp.IsMessageTooLong)
                                 {
-                                    await cloudToDeviceMessage.AbandonAsync();
+                                    _ = await cloudToDeviceMessage.AbandonAsync();
                                 }
                                 else
                                 {
-                                    await cloudToDeviceMessage.CompleteAsync();
+                                    _ = await cloudToDeviceMessage.CompleteAsync();
                                 }
                             }
                         }
@@ -412,7 +412,7 @@ namespace LoRaWan.NetworkServer
                 {
                     try
                     {
-                        await loRaDevice.SaveChangesAsync();
+                        _ = await loRaDevice.SaveChangesAsync();
                     }
                     catch (Exception saveChangesException)
                     {
@@ -459,7 +459,7 @@ namespace LoRaWan.NetworkServer
         {
             if (this.classCDeviceMessageSender != null)
             {
-                Task.Run(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage));
+                _ = Task.Run(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage));
             }
         }
 
@@ -725,7 +725,7 @@ namespace LoRaWan.NetworkServer
                         // known problem when device restarts, starts fcnt from zero
                         // We need to await this reset to avoid races on the server with deduplication and
                         // fcnt down calculations
-                        await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
+                        _ = await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
                         isFrameCounterFromNewlyStartedDevice = true;
                     }
                 }

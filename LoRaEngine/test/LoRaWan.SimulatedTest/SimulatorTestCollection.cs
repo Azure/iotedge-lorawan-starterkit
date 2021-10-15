@@ -338,13 +338,13 @@ namespace LoRaWan.SimulatedTest
 
             // 4. Check that we have the right amount of devices receiving messages in IoT Hub
             // Assert.Equal(totalDevices, eventsByDevices.Count());
-            if (totalDevices == eventsByDevices.Count())
+            if (totalDevices == eventsByDevices.Count)
             {
-                TestLogger.Log($"[INFO] Devices sending messages: {totalDevices + totalJoinDevices}, == Devices receiving messages in IoT Hub: {eventsByDevices.Count()}");
+                TestLogger.Log($"[INFO] Devices sending messages: {totalDevices + totalJoinDevices}, == Devices receiving messages in IoT Hub: {eventsByDevices.Count}");
             }
             else
             {
-                TestLogger.Log($"[WARN] Devices sending messages: {totalDevices + totalJoinDevices}, != Devices receiving messages in IoT Hub: {eventsByDevices.Count()}");
+                TestLogger.Log($"[WARN] Devices sending messages: {totalDevices + totalJoinDevices}, != Devices receiving messages in IoT Hub: {eventsByDevices.Count}");
             }
 
             // 5. Check that the correct number of messages have arrived in IoT Hub per device

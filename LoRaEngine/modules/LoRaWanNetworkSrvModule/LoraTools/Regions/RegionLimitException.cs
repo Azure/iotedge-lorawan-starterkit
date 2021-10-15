@@ -17,5 +17,19 @@ namespace LoRaTools.Regions
         {
             this.RegionLimitExceptionType = regionMappingExceptionType;
         }
+
+        public RegionLimitException()
+        {
+        }
+
+        public RegionLimitException(string message)
+            : base(message)
+        {
+        }
+
+        public RegionLimitException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
 }

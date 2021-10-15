@@ -322,7 +322,7 @@ namespace LoRaWan.NetworkServer
                     if (twin.Properties.Desired.Contains(TwinProperty.Deduplication))
                     {
                         var val = twin.Properties.Desired[TwinProperty.Deduplication].Value as string;
-                        Enum.TryParse<DeduplicationMode>(val, true, out var mode);
+                        _ = Enum.TryParse<DeduplicationMode>(val, true, out var mode);
                         this.Deduplication = mode;
                     }
 
@@ -548,10 +548,10 @@ namespace LoRaWan.NetworkServer
             try
             {
                 // We only ever want a single save operation per device
-                // to happen. The save to the twins can be delayed for multiple
-                // seconds, subsequent updates should be waiting for this to complete
-                // before checking the current state and update again.
-                await this.syncSave.WaitAsync();
+                // to happen. The save to the twins can be delayed for multiple
+                // seconds, subsequent updates should be waiting for this to complete
+                // before checking the current state and update again.
+                await this.syncSave.WaitAsync();
 
                 if (reportedProperties == null)
                 {
@@ -614,7 +614,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -635,7 +635,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -665,7 +665,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -685,7 +685,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -703,7 +703,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -732,7 +732,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -783,7 +783,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -951,7 +951,7 @@ namespace LoRaWan.NetworkServer
                     this.runningRequest = request;
 
                     // Ensure that this is schedule in a new thread, releasing the lock asap
-                    Task.Run(() => { _ = this.RunAndQueueNext(request); });
+                    _ = Task.Run(() => { _ = this.RunAndQueueNext(request); });
                 }
                 else
                 {
@@ -971,7 +971,7 @@ namespace LoRaWan.NetworkServer
                 {
                     this.runningRequest = nextRequest;
                     // Ensure that this is schedule in a new thread, releasing the lock asap
-                    Task.Run(() => { _ = this.RunAndQueueNext(nextRequest); });
+                    _ = Task.Run(() => { _ = this.RunAndQueueNext(nextRequest); });
                 }
             }
         }
@@ -1149,8 +1149,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (this.deviceClientConnectionActivityCounter == 0)
                 {
-                    this.connectionManager.Get(this).Disconnect();
-                    return true;
+                    return this.connectionManager.Get(this).Disconnect();
                 }
 
                 return false;

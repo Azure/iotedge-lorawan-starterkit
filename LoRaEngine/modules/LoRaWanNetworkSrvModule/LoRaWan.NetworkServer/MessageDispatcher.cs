@@ -88,7 +88,7 @@ namespace LoRaWan.NetworkServer
             var loRaPayload = (LoRaPayloadData)request.Payload;
             if (!this.IsValidNetId(loRaPayload))
             {
-                Logger.Log(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr), $"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.GetDevAddrNetID()})", LogLevel.Debug);
+                Logger.Log(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr), $"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.DevAddrNetID})", LogLevel.Debug);
                 request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidNetId);
                 return;
             }
@@ -99,7 +99,7 @@ namespace LoRaWan.NetworkServer
         bool IsValidNetId(LoRaPayloadData loRaPayload)
         {
             // Check if the current dev addr is in our network id
-            var devAddrNwkid = loRaPayload.GetDevAddrNetID();
+            var devAddrNwkid = loRaPayload.DevAddrNetID;
             var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
             devAddrNwkid = (byte)(devAddrNwkid >> 1);
             if (devAddrNwkid == (netIdBytes[0] & 0b01111111))

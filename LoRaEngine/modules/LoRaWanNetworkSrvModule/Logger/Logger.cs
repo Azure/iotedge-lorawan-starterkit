@@ -13,7 +13,7 @@ namespace LoRaWan
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
 
-    public class Logger
+    public static class Logger
     {
         // Interval where we try to estabilish connection to udp logger
         const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
@@ -113,7 +113,7 @@ namespace LoRaWan
                         }
                         else
                         {
-                            operation.ContinueWith(_ => m.Dispose(), TaskScheduler.Default);
+                            _ = operation.ContinueWith(_ => m.Dispose(), TaskScheduler.Default);
                         }
                     }
 #pragma warning restore CA2000 // Dispose objects before losing scope
@@ -151,7 +151,7 @@ namespace LoRaWan
                 }
 
                 var messageInBytes = Encoding.UTF8.GetBytes(message);
-                udpClient.Send(messageInBytes, messageInBytes.Length, udpEndpoint);
+                _ = udpClient.Send(messageInBytes, messageInBytes.Length, udpEndpoint);
             }
             catch (Exception ex)
             {
