@@ -11,7 +11,7 @@ namespace LoRaWan.Tests.Shared
     using System.Text;
     using System.Threading.Tasks;
 
-    public class UdpLogListener : IDisposable
+    public sealed class UdpLogListener : IDisposable
     {
         private readonly ConcurrentQueue<string> events;
 
