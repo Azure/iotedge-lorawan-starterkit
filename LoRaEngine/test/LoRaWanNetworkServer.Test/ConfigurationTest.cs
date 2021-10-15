@@ -23,11 +23,7 @@ namespace LoRaWan.NetworkServer.Test
             }
         }
 
-        public static IEnumerable<object[]> AllowedDevAddressesInput
-        {
-            get
-            {
-                return new[]
+        public static IEnumerable<object[]> AllowedDevAddressesInput => new[]
                 {
                     new object[]
                     {
@@ -51,7 +47,5 @@ namespace LoRaWan.NetworkServer.Test
                         }
                     }
                 };
-            }
-        }
     }
 }
