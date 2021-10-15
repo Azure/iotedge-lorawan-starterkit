@@ -44,48 +44,6 @@ namespace LoRaWan.Tests.Shared
             TestLogger.Log($"[INFO] {nameof(Configuration.NetworkServerModuleLogAssertLevel)}: {Configuration.NetworkServerModuleLogAssertLevel}");
 
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
-
-            SetupTestDevices();
-
-            // Fix device ID if a prefix was defined (DO NOT MOVE THIS LINE ABOVE DEVICE CREATION)
-            foreach (var d in GetAllDevices())
-            {
-                if (!string.IsNullOrEmpty(Configuration.DevicePrefix))
-                {
-                    d.DeviceID = string.Concat(Configuration.DevicePrefix, d.DeviceID[Configuration.DevicePrefix.Length..]);
-                    if (!string.IsNullOrEmpty(d.AppEUI))
-                    {
-                        d.AppEUI = string.Concat(Configuration.DevicePrefix, d.AppEUI[Configuration.DevicePrefix.Length..]);
-                    }
-
-                    if (!string.IsNullOrEmpty(d.AppKey))
-                    {
-                        d.AppKey = string.Concat(Configuration.DevicePrefix, d.AppKey[Configuration.DevicePrefix.Length..]);
-                    }
-
-                    if (!string.IsNullOrEmpty(d.AppSKey))
-                    {
-                        d.AppSKey = string.Concat(Configuration.DevicePrefix, d.AppSKey[Configuration.DevicePrefix.Length..]);
-                    }
-
-                    if (!string.IsNullOrEmpty(d.NwkSKey))
-                    {
-                        d.NwkSKey = string.Concat(Configuration.DevicePrefix, d.NwkSKey[Configuration.DevicePrefix.Length..]);
-                    }
-
-                    if (!string.IsNullOrEmpty(d.DevAddr))
-                    {
-                        d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(string.Concat(Configuration.DevicePrefix, d.DevAddr[Configuration.DevicePrefix.Length..]), Configuration.NetId);
-                    }
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(d.DevAddr))
-                    {
-                        d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(d.DevAddr, Configuration.NetId);
-                    }
-                }
-            }
         }
 
         public abstract void SetupTestDevices();
@@ -263,6 +221,48 @@ namespace LoRaWan.Tests.Shared
 
         public virtual async Task InitializeAsync()
         {
+            SetupTestDevices();
+
+            // Fix device ID if a prefix was defined (DO NOT MOVE THIS LINE ABOVE DEVICE CREATION)
+            foreach (var d in GetAllDevices())
+            {
+                if (!string.IsNullOrEmpty(Configuration.DevicePrefix))
+                {
+                    d.DeviceID = string.Concat(Configuration.DevicePrefix, d.DeviceID[Configuration.DevicePrefix.Length..]);
+                    if (!string.IsNullOrEmpty(d.AppEUI))
+                    {
+                        d.AppEUI = string.Concat(Configuration.DevicePrefix, d.AppEUI[Configuration.DevicePrefix.Length..]);
+                    }
+
+                    if (!string.IsNullOrEmpty(d.AppKey))
+                    {
+                        d.AppKey = string.Concat(Configuration.DevicePrefix, d.AppKey[Configuration.DevicePrefix.Length..]);
+                    }
+
+                    if (!string.IsNullOrEmpty(d.AppSKey))
+                    {
+                        d.AppSKey = string.Concat(Configuration.DevicePrefix, d.AppSKey[Configuration.DevicePrefix.Length..]);
+                    }
+
+                    if (!string.IsNullOrEmpty(d.NwkSKey))
+                    {
+                        d.NwkSKey = string.Concat(Configuration.DevicePrefix, d.NwkSKey[Configuration.DevicePrefix.Length..]);
+                    }
+
+                    if (!string.IsNullOrEmpty(d.DevAddr))
+                    {
+                        d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(string.Concat(Configuration.DevicePrefix, d.DevAddr[Configuration.DevicePrefix.Length..]), Configuration.NetId);
+                    }
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(d.DevAddr))
+                    {
+                        d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(d.DevAddr, Configuration.NetId);
+                    }
+                }
+            }
+
             if (Configuration.CreateDevices)
             {
                 try
