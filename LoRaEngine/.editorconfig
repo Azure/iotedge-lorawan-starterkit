@@ -46,3 +46,6 @@ dotnet_style_qualification_for_field=true:error
 dotnet_style_qualification_for_property=false:error
 dotnet_style_qualification_for_method=false:error
 dotnet_style_qualification_for_event=false:error
+
+# CA1814: Prefer jagged arrays over multidimensional arrays
+dotnet_diagnostic.CA1814.severity=suggestion
