@@ -20,5 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LoraTools\LoRaTools.csproj" />
+    <ProjectReference Include="..\LoRaWan\LoRaWan.csproj" />
   </ItemGroup>
 </Project>
