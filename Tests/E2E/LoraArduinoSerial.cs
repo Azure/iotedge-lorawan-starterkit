@@ -181,7 +181,7 @@ namespace LoRaWan.Tests.E2E
                     }
 
                     // last line: does the input ends with a new line?
-                    var lastParsedLine = lines[lines.Length - 1];
+                    var lastParsedLine = lines[^1];
                     if (!string.IsNullOrEmpty(lastParsedLine))
                     {
                         // add as finished line
@@ -204,10 +204,7 @@ namespace LoRaWan.Tests.E2E
             this.serialLogs.Enqueue(message);
         }
 
-        public IReadOnlyCollection<string> SerialLogs
-        {
-            get { return this.serialLogs; }
-        }
+        public IReadOnlyCollection<string> SerialLogs => this.serialLogs;
 
         // Gets/sets if serial writes should be logged
         // Disabled by default

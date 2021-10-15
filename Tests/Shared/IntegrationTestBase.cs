@@ -9,16 +9,11 @@ namespace LoRaWan.Tests.Shared
 
     public class IntegrationTestBase
     {
-        private IntegrationTestFixtureBase testFixture;
-
-        protected IntegrationTestFixtureBase TestFixture
-        {
-            get { return this.testFixture; }
-        }
+        protected IntegrationTestFixtureBase TestFixture { get; }
 
         public IntegrationTestBase(IntegrationTestFixtureBase testFixture)
         {
-            this.testFixture = testFixture;
+            TestFixture = testFixture;
         }
 
         protected void Log(string value) => TestLogger.Log(value);

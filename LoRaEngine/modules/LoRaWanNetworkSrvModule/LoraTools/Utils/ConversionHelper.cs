@@ -32,8 +32,8 @@ namespace LoRaTools.Utils
 
             for (var i = 0; i < bytes.Length; i++)
             {
-                result.Append(HexAlphabet[byteSpan[i] >> 4]);
-                result.Append(HexAlphabet[byteSpan[i] & 0xF]);
+                _ = result.Append(HexAlphabet[byteSpan[i] >> 4]);
+                _ = result.Append(HexAlphabet[byteSpan[i] & 0xF]);
             }
 
             return result.ToString();
@@ -46,8 +46,8 @@ namespace LoRaTools.Utils
 
             for (var i = bytes.Length - 1; i >= 0; --i)
             {
-                result.Append(HexAlphabet[byteSpan[i] >> 4]);
-                result.Append(HexAlphabet[byteSpan[i] & 0xF]);
+                _ = result.Append(HexAlphabet[byteSpan[i] >> 4]);
+                _ = result.Append(HexAlphabet[byteSpan[i] & 0xF]);
             }
 
             return result.ToString();
@@ -59,8 +59,8 @@ namespace LoRaTools.Utils
 
             foreach (var b in bytes)
             {
-                result.Append(HexAlphabet[b >> 4]);
-                result.Append(HexAlphabet[b & 0xF]);
+                _ = result.Append(HexAlphabet[b >> 4]);
+                _ = result.Append(HexAlphabet[b & 0xF]);
             }
 
             return result.ToString();

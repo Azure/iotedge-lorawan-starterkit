@@ -11,8 +11,8 @@ namespace LoRaWan.Tests.Shared
     /// </summary>
     public static class RandomTokenGenerator
     {
-        static SemaphoreSlim randomLock = new SemaphoreSlim(1);
-        static Random random = new Random();
+        static readonly SemaphoreSlim randomLock = new SemaphoreSlim(1);
+        static readonly Random random = new Random();
 
         /// <summary>
         /// Gets a new token.

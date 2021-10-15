@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Shared
                 }
                 catch (Exception ex)
                 {
-                    TestLogger.Log($"Error in UDP listener: {ex.ToString()}");
+                    TestLogger.Log($"Error in UDP listener: {ex}");
                 }
             });
         }

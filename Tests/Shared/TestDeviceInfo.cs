@@ -121,9 +121,9 @@ namespace LoRaWan.Tests.Shared
 
             if (!string.IsNullOrEmpty(prefix))
             {
-                value8 = string.Concat(prefix, value8.Substring(prefix.Length));
-                value16 = string.Concat(prefix, value16.Substring(prefix.Length));
-                value32 = string.Concat(prefix, value32.Substring(prefix.Length));
+                value8 = string.Concat(prefix, value8[prefix.Length..]);
+                value16 = string.Concat(prefix, value16[prefix.Length..]);
+                value32 = string.Concat(prefix, value32[prefix.Length..]);
             }
 
             var devAddrValue = NetIdHelper.SetNwkIdPart(value8, netId);
@@ -153,8 +153,8 @@ namespace LoRaWan.Tests.Shared
 
             if (!string.IsNullOrEmpty(prefix))
             {
-                value16 = string.Concat(prefix, value16.Substring(prefix.Length));
-                value32 = string.Concat(prefix, value32.Substring(prefix.Length));
+                value16 = string.Concat(prefix, value16[prefix.Length..]);
+                value32 = string.Concat(prefix, value32[prefix.Length..]);
             }
 
             var result = new TestDeviceInfo

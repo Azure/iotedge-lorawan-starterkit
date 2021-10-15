@@ -31,8 +31,8 @@ namespace LoRaWan.Tests.Shared
                     {
                         if (message.Length >= idxEnd + 1)
                         {
-                            sourceId = message.Substring(1, idxEnd - 1);
-                            message = message.Substring(idxEnd + 1).TrimStart();
+                            sourceId = message[1..idxEnd];
+                            message = message[(idxEnd + 1)..].TrimStart();
                         }
                     }
                 }

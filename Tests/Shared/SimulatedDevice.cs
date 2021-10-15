@@ -46,19 +46,19 @@ namespace LoRaWan.Tests.Shared
 
         public string DevAddr
         {
-            get { return LoRaDevice.DevAddr; }
-            set { LoRaDevice.DevAddr = value; }
+            get => LoRaDevice.DevAddr;
+            set => LoRaDevice.DevAddr = value;
         }
 
         public string DevEUI => LoRaDevice.DeviceID;
 
         public bool Supports32BitFCnt
         {
-            get { return LoRaDevice.Supports32BitFCnt; }
-            set { LoRaDevice.Supports32BitFCnt = value; }
+            get => LoRaDevice.Supports32BitFCnt;
+            set => LoRaDevice.Supports32BitFCnt = value;
         }
 
-        SemaphoreSlim joinFinished;
+        readonly SemaphoreSlim joinFinished;
 
         private bool isFirstJoinRequest = true;
 
@@ -108,7 +108,7 @@ namespace LoRaWan.Tests.Shared
             var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
             var fCtrl = new byte[] { fctrl };
-            fcnt = fcnt ?? FrmCntUp + 1;
+            fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
 
             var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
@@ -142,7 +142,7 @@ namespace LoRaWan.Tests.Shared
                 fPort,
                 payload,
                 direction,
-                Supports32BitFCnt ? fcnt : (uint?)null);
+                Supports32BitFCnt ? fcnt : null);
 
             return payloadData;
         }
@@ -158,7 +158,7 @@ namespace LoRaWan.Tests.Shared
             Array.Reverse(devAddr);
             var fCtrl = new byte[] { 0x80 };
 
-            fcnt = fcnt ?? FrmCntUp + 1;
+            fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
 
             var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
@@ -183,7 +183,7 @@ namespace LoRaWan.Tests.Shared
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, null, fPort, payload, direction, Supports32BitFCnt ? fcnt : (uint?)null);
+            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, null, fPort, payload, direction, Supports32BitFCnt ? fcnt : null);
 
             return payloadData;
         }

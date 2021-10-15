@@ -15,9 +15,8 @@ namespace LoRaWan.Tests.Shared
         private readonly ConcurrentQueue<EventData> events;
         private readonly string connectionString;
         private EventHubClient eventHubClient;
-        List<PartitionReceiver> receivers;
-
-        HashSet<Action<IEnumerable<EventData>>> subscribers;
+        readonly List<PartitionReceiver> receivers;
+        readonly HashSet<Action<IEnumerable<EventData>>> subscribers;
 
         public bool LogToConsole { get; set; } = true;
 
@@ -102,7 +101,7 @@ namespace LoRaWan.Tests.Shared
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error processing iot hub event. {ex.ToString()}");
+                TestLogger.Log($"Error processing iot hub event. {ex}");
             }
 
             return Task.FromResult(0);
@@ -137,7 +136,7 @@ namespace LoRaWan.Tests.Shared
                         }
                         catch (Exception ex)
                         {
-                            TestLogger.Log($"Error closing event hub receiver: {ex.ToString()}");
+                            TestLogger.Log($"Error closing event hub receiver: {ex}");
                         }
 
                         this.receivers.RemoveAt(i);

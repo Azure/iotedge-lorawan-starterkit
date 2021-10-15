@@ -13,10 +13,7 @@ namespace LoRaWan.Tests.E2E
     {
         private bool isDisposed; // To detect redundant calls
 
-        protected IntegrationTestFixtureCi TestFixtureCi
-        {
-            get { return (IntegrationTestFixtureCi)TestFixture; }
-        }
+        protected IntegrationTestFixtureCi TestFixtureCi => (IntegrationTestFixtureCi)TestFixture;
 
         protected LoRaArduinoSerial ArduinoDevice { get; }
 

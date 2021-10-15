@@ -59,7 +59,7 @@ namespace LoRaWan.Tests.Shared
             var tmst = (now.UtcTicks - TimeAtBoot) / (TimeSpan.TicksPerMillisecond / 1000);
             if (tmst >= uint.MaxValue)
             {
-                tmst = tmst - uint.MaxValue;
+                tmst -= uint.MaxValue;
                 TimeAtBoot = now.UtcTicks - tmst;
             }
 
@@ -70,7 +70,7 @@ namespace LoRaWan.Tests.Shared
 
         private readonly UdpClient udpClient;
         private readonly IPEndPoint networkServerIPEndpoint;
-        Random random = new Random();
+        readonly Random random = new Random();
         private CancellationTokenSource cancellationTokenSource;
         private Task pushDataTask;
         private Task pullDataTask;
@@ -111,7 +111,7 @@ namespace LoRaWan.Tests.Shared
                         var identifier = PhysicalPayload.GetIdentifierFromPayload(receivedResults.Buffer);
                         currentToken[0] = receivedResults.Buffer[1];
                         currentToken[1] = receivedResults.Buffer[2];
-                        TestLogger.Log($"[PKTFORWARDER] Received {identifier.ToString()}");
+                        TestLogger.Log($"[PKTFORWARDER] Received {identifier}");
 
                         if (identifier == PhysicalIdentifier.PullResp)
                         {
@@ -142,7 +142,7 @@ namespace LoRaWan.Tests.Shared
             }
         }
 
-        HashSet<Func<byte[], bool>> subscribers = new HashSet<Func<byte[], bool>>();
+        readonly HashSet<Func<byte[], bool>> subscribers = new HashSet<Func<byte[], bool>>();
 
         internal void SubscribeOnce(Func<byte[], bool> value)
         {
@@ -166,7 +166,7 @@ namespace LoRaWan.Tests.Shared
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error in {nameof(PullDataAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error in {nameof(PullDataAsync)}. {ex}");
             }
         }
 
@@ -187,7 +187,7 @@ namespace LoRaWan.Tests.Shared
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error in {nameof(PushDataAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error in {nameof(PushDataAsync)}. {ex}");
             }
         }
 

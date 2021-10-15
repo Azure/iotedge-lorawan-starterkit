@@ -130,7 +130,7 @@ namespace LoraKeysManagerFacade
                         this.logger.LogDebug("A full reload was completed");
                         // we updated the full cache, we want to delay the next update to the time FullUpdateKeyTimeSpan
                         // and only process incremental updates for that time.
-                        this.cacheStore.TryChangeLockTTL(FullUpdateLockKey, FullUpdateKeyTimeSpan);
+                        _ = this.cacheStore.TryChangeLockTTL(FullUpdateLockKey, FullUpdateKeyTimeSpan);
                         fullUpdatePerformed = true;
                     }
                     else

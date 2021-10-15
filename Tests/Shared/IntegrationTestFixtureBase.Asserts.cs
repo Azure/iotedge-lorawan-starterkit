@@ -39,7 +39,7 @@ namespace LoRaWan.Tests.Shared
                 }
                 catch (Exception ex)
                 {
-                    TestLogger.Log($"Error searching device payload: {eventDataMessageBody}. {ex.ToString()}");
+                    TestLogger.Log($"Error searching device payload: {eventDataMessageBody}. {ex}");
                 }
             }
 
@@ -137,12 +137,12 @@ namespace LoRaWan.Tests.Shared
 
                 foreach (var item in this.udpLogListener.GetEvents())
                 {
-                    var parsed = SearchLogEvent.Parse(item);
-                    if (predicate(parsed.Message))
+                    var (message, sourceId) = SearchLogEvent.Parse(item);
+                    if (predicate(message))
                     {
-                        if (!string.IsNullOrEmpty(parsed.SourceId))
+                        if (!string.IsNullOrEmpty(sourceId))
                         {
-                            sourceIds.Add(parsed.SourceId);
+                            sourceIds.Add(sourceId);
                         }
 
                         if (sourceIds.Count == numberOfGw)
@@ -170,12 +170,12 @@ namespace LoRaWan.Tests.Shared
 
                 foreach (var item in this.udpLogListener.GetEvents())
                 {
-                    var parsed = SearchLogEvent.Parse(item);
-                    if (predicate(parsed.Message))
+                    var (message, sourceId) = SearchLogEvent.Parse(item);
+                    if (predicate(message))
                     {
-                        if (!string.IsNullOrEmpty(parsed.SourceId))
+                        if (!string.IsNullOrEmpty(sourceId))
                         {
-                            sourceIds.Add(parsed.SourceId);
+                            sourceIds.Add(sourceId);
                         }
                     }
                 }
@@ -201,7 +201,7 @@ namespace LoRaWan.Tests.Shared
         {
             var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID"));
             Assert.NotNull(joinConfirmMsg);
-            var devAddr = joinConfirmMsg.Substring(joinConfirmMsg.LastIndexOf(' ') + 1);
+            var devAddr = joinConfirmMsg[(joinConfirmMsg.LastIndexOf(' ') + 1)..];
             devAddr = devAddr.Replace(":", string.Empty);
 
             // wait for the twins to be stored and published -> all GW need the same state
@@ -301,7 +301,7 @@ namespace LoRaWan.Tests.Shared
             var success = false;
             if (timeIndexStart > 0 && timeIndexStop > 0)
             {
-                if (uint.TryParse(log.FoundLogResult.Substring(timeIndexStart, timeIndexStop - timeIndexStart), out parsedValue))
+                if (uint.TryParse(log.FoundLogResult[timeIndexStart..timeIndexStop], out parsedValue))
                 {
                     success = true;
                 }

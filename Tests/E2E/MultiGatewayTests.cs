@@ -131,6 +131,8 @@ namespace LoRaWan.Tests.E2E
                             var expectedPayload = $"{{\"value\":{msg}}}";
                             await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
                             break;
+                        default:
+                            throw new NotImplementedException();
                     }
                 }
 
