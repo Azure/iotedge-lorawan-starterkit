@@ -73,6 +73,15 @@ csharp_style_expression_bodied_operators = true
 # CA2225: Operator overloads have named alternates
 dotnet_diagnostic.CA2225.severity=suggestion
 
+# IDE0021: Expression-bodied constructors
+dotnet_diagnostic.IDE0021.severity=suggestion
+
+# IDE0061: Use block body for local functions
+dotnet_diagnostic.IDE0061.severity=suggestion
+
+# IDE0055: Fix formatting
+dotnet_diagnostic.IDE0055.severity=suggestion
+
 [*.cs]
 dotnet_style_qualification_for_field=true:error
 dotnet_style_qualification_for_property=false:error

@@ -44,7 +44,7 @@ namespace LoRaWan
         }
 
         public static string Format(ulong value, FormatOptions options = FormatOptions.None) =>
-            new(Format(value, stackalloc char[sizeof(ulong) * 2 + 3 /* colons */], options));
+            new(Format(value, stackalloc char[(sizeof(ulong) * 2) + 3 /* colons */], options));
 
         public static Span<char> Format(ulong value, Span<char> output, FormatOptions options = FormatOptions.None)
         {
@@ -61,7 +61,7 @@ namespace LoRaWan
             var casing = (options & FormatOptions.Lowercase) != 0 ? LetterCase.Lower : LetterCase.Upper;
 
             Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-            Span<char> chars = stackalloc char[bytes.Length * 2 + 3 /* colons */];
+            Span<char> chars = stackalloc char[(bytes.Length * 2) + 3 /* colons */];
             BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
 
             Span<char> word = stackalloc char[sizeof(ushort) * 2];
@@ -242,7 +242,7 @@ namespace LoRaWan
                 case (2, 2): (d, c) = (c, 0); break;
             }
 
-            result = (ulong)a << 48 | (ulong)b << 32 | (ulong)c << 16 | d;
+            result = ((ulong)a << 48) | ((ulong)b << 32) | ((ulong)c << 16) | d;
 
             return true;
         }
