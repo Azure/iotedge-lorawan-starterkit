@@ -7,7 +7,7 @@ namespace LoRaWan
     using System.Globalization;
 
     [Flags]
-#pragma warning disable CA1028 // Enum Storage should be Int32
+#pragma warning disable CA1028 // Enum Storage should be Int32 (byte required by LoRaWAN spec)
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
     public enum FCtrlFlags : byte
 #pragma warning restore CA1711, CA1028
