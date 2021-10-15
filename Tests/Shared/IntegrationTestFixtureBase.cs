@@ -349,7 +349,7 @@ namespace LoRaWan.Tests.Shared
             return (TestDeviceInfo)GetType().GetProperty(propertyName).GetValue(this);
         }
 
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

@@ -115,7 +115,7 @@ namespace LoRaWan.Tests.Shared
 
         public int MaxBatchSize { get; set; } = 32;
 
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {

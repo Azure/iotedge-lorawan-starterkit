@@ -50,15 +50,15 @@ namespace LoRaWan.Tests.Shared
 
         public char ClassType { get; set; } = 'A';
 
-        public int RX2DataRate { get; set; } = 0;
+        public int RX2DataRate { get; set; }
 
-        public uint RX1DROffset { get; set; } = 0;
+        public uint RX1DROffset { get; set; }
 
         public bool Supports32BitFCnt { get; set; }
 
         public string Deduplication { get; set; }
 
-        public ushort RXDelay { get; set; } = 0;
+        public ushort RXDelay { get; set; }
 
         public int KeepAliveTimeout { get; set; }
 

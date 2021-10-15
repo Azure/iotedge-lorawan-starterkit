@@ -136,7 +136,7 @@ namespace LoRaWan.Tests.E2E
             DR15
         }
 
-        readonly byte[] serialPortBuffer = null;
+        readonly byte[] serialPortBuffer;
 
         LoRaArduinoSerial(SerialPort sp)
         {
