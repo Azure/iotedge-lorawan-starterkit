@@ -52,10 +52,10 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public LoRaPayload(byte[] inputMessage)
         {
-            this.RawMessage = inputMessage;
-            this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
+            RawMessage = inputMessage;
+            Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // MIC 4 last bytes
-            this.Mic = new Memory<byte>(this.RawMessage, inputMessage.Length - 4, 4);
+            Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4, 4);
         }
 
         /// <summary>
@@ -101,8 +101,8 @@ namespace LoRaTools.LoRaMessage
             var result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);
-            this.Mic = result.Take(4).ToArray();
-            return this.Mic.ToArray();
+            Mic = result.Take(4).ToArray();
+            return Mic.ToArray();
         }
 
         /// <summary>
@@ -185,14 +185,14 @@ namespace LoRaTools.LoRaMessage
 
         public void Reset32BitBlockInfo()
         {
-            this.Server32BitFcnt = null;
+            Server32BitFcnt = null;
         }
 
         public void Ensure32BitFcntValue(uint? server32bitFcnt)
         {
-            if (this.Server32BitFcnt == null && server32bitFcnt.HasValue)
+            if (Server32BitFcnt == null && server32bitFcnt.HasValue)
             {
-                this.Server32BitFcnt = BitConverter.GetBytes(server32bitFcnt.Value);
+                Server32BitFcnt = BitConverter.GetBytes(server32bitFcnt.Value);
             }
         }
 

@@ -57,17 +57,17 @@ namespace LoRaTools.ADR
                     || !table.CurrentTxPower.HasValue
                     || fCntUp > currentStrategy.MinimumNumberOfResult)
                 {
-                    result = this.ReturnDefaultValues(upstreamDataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
+                    result = ReturnDefaultValues(upstreamDataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
                 }
                 else
                 {
-                    result = await this.GetLastResultAsync(devEUI) ?? new LoRaADRResult();
+                    result = await GetLastResultAsync(devEUI) ?? new LoRaADRResult();
                     result.NumberOfFrames = table.Entries.Count;
                     return result;
                 }
             }
 
-            var nextFcntDown = await this.NextFCntDown(devEUI, gatewayId, fCntUp, fCntDown);
+            var nextFcntDown = await NextFCntDown(devEUI, gatewayId, fCntUp, fCntDown);
             result.CanConfirmToDevice = nextFcntDown > 0;
 
             if (result.CanConfirmToDevice)
