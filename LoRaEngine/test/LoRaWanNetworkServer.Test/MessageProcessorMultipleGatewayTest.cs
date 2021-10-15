@@ -144,27 +144,14 @@ namespace LoRaWan.NetworkServer.Test
             SecondLoRaDeviceClient.Setup(ldc => ldc.Dispose());
         }
 
-        // To detect redundant calls
-        private bool _disposedValue;
-
-        ~MessageProcessorMultipleGatewayTest() => this.Dispose(false);
-
         // Protected implementation of Dispose pattern.
         protected override void Dispose(bool disposing)
         {
-            if (!this.disposedValue)
-            {
-                if (disposing)
-                {
-                    this.cache.Dispose();
-                }
-
-                this.disposedValue = true;
-            }
-        }
-
-            // Call the base class implementation.
             base.Dispose(disposing);
+            if (disposing)
+            {
+                this.cache.Dispose();
+            }
         }
     }
 }
