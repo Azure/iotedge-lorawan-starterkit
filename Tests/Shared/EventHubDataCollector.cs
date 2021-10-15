@@ -76,7 +76,7 @@ namespace LoRaWan.Tests.Shared
 
         public IReadOnlyCollection<EventData> Events => this.events;
 
-        Task IPartitionReceiveHandler.ProcessEventsAsync(IEnumerable<EventData> events)
+        public Task ProcessEventsAsync(IEnumerable<EventData> events)
         {
             try
             {
@@ -107,15 +107,13 @@ namespace LoRaWan.Tests.Shared
             return Task.FromResult(0);
         }
 
-        Task IPartitionReceiveHandler.ProcessErrorAsync(Exception error)
+        public Task ProcessErrorAsync(Exception error)
         {
             Console.Error.WriteLine(error.ToString());
             return Task.FromResult(0);
         }
 
-        int maxBatchSize = 32;
-
-        int IPartitionReceiveHandler.MaxBatchSize { get => this.maxBatchSize; set => this.maxBatchSize = value; }
+        public int MaxBatchSize { get; set; } = 32;
 
         private bool disposedValue = false; // To detect redundant calls
 
