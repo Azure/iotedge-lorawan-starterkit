@@ -3,6 +3,7 @@
 
 namespace LoRaTools.LoRaPhysical
 {
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
 
@@ -11,7 +12,7 @@ namespace LoRaTools.LoRaPhysical
     /// </summary>
     public class UplinkPktFwdMessage : PktFwdMessage
     {
-        public List<Rxpk> Rxpk { get; set; }
+        public IList<Rxpk> Rxpk { get; set; }
 
         public UplinkPktFwdMessage()
         {
@@ -56,13 +57,17 @@ namespace LoRaTools.LoRaPhysical
         }
 
         [Obsolete("to remove")]
-        public override PktFwdMessageAdapter GetPktFwdMessage()
+        [JsonIgnore]
+        public override PktFwdMessageAdapter PktFwdMessageAdapter
         {
-            var pktFwdMessageAdapter = new PktFwdMessageAdapter
+            get
             {
-                Rxpks = this.Rxpk
-            };
-            return pktFwdMessageAdapter;
+                var pktFwdMessageAdapter = new PktFwdMessageAdapter
+                {
+                    Rxpks = this.Rxpk
+                };
+                return pktFwdMessageAdapter;
+            }
         }
     }
 }

@@ -20,9 +20,11 @@ namespace LoRaTools
 
         public override int Length => 5;
 
-        public byte GetRX1DROffset() => (byte)((this.DlSettings >> 4) & 0b00001111);
+        [JsonIgnore]
+        public byte RX1DROffset => (byte)((this.DlSettings >> 4) & 0b00001111);
 
-        public byte GetRX2DataRate() => (byte)(this.DlSettings & 0b00001111);
+        [JsonIgnore]
+        public byte RX2DataRate => (byte)(this.DlSettings & 0b00001111);
 
         public RXParamSetupRequest()
         {
@@ -45,7 +47,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, rx1 datarate offset: {this.GetRX1DROffset()}, rx2 datarate: {this.GetRX2DataRate()}, frequency plan: {ConversionHelper.ByteArrayToString(this.Frequency)}";
+            return $"Type: {this.Cid} Answer, rx1 datarate offset: {this.RX1DROffset}, rx2 datarate: {this.RX2DataRate}, frequency plan: {ConversionHelper.ByteArrayToString(this.Frequency)}";
         }
     }
 }

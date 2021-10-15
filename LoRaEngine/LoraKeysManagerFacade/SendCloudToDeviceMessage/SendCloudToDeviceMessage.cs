@@ -118,7 +118,7 @@ namespace LoraKeysManagerFacade
                         {
                             // add it to cache (if it does not exist)
                             var preferredGateway = new LoRaDevicePreferredGateway(gatewayID, 0);
-                            LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEUI, preferredGateway, onlyIfNotExists: true);
+                            _ = LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEUI, preferredGateway, onlyIfNotExists: true);
 
                             return await this.SendMessageViaDirectMethodAsync(gatewayID, devEUI, c2dMessage);
                         }
@@ -167,7 +167,7 @@ namespace LoraKeysManagerFacade
             try
             {
                 var method = new CloudToDeviceMethod(LoraKeysManagerFacadeConstants.CloudToDeviceMessageMethodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
-                method.SetPayloadJson(JsonConvert.SerializeObject(c2dMessage));
+                _ = method.SetPayloadJson(JsonConvert.SerializeObject(c2dMessage));
 
                 var res = await this.serviceClient.InvokeDeviceMethodAsync(preferredGatewayID, LoraKeysManagerFacadeConstants.NetworkServerModuleId, method);
                 if (IsSuccessStatusCode(res.Status))

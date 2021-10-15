@@ -3,6 +3,7 @@
 
 namespace LoRaTools
 {
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
 
@@ -10,22 +11,24 @@ namespace LoRaTools
     {
         public byte Status { get; set; }
 
-        public bool GetDataRangeOk() => ((this.Status >> 1) & 0b00000001) == 1;
+        [JsonIgnore]
+        public bool DataRangeOk => ((this.Status >> 1) & 0b00000001) == 1;
 
-        public bool GetChannelFreqOk() => (this.Status & 0b00000001) == 1;
+        [JsonIgnore]
+        public bool ChannelFreqOk => (this.Status & 0b00000001) == 1;
 
         public NewChannelAnswer(bool drRangeOk, bool chanFreqOk)
         {
             this.Status |= (byte)((drRangeOk ? 1 : 0) << 2);
             this.Status |= (byte)(chanFreqOk ? 1 : 0);
-            this.Cid = CidEnum.NewChannelCmd;
+            this.Cid = Cid.NewChannelCmd;
         }
 
         public NewChannelAnswer(ReadOnlySpan<byte> input)
             : base(input)
         {
             this.Status = input[1];
-            this.Cid = (CidEnum)input[0];
+            this.Cid = (Cid)input[0];
         }
 
         public override int Length => 2;
@@ -38,7 +41,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, frequency: {(this.GetChannelFreqOk() ? "updated" : "not updated")}, data rate: {(this.GetDataRangeOk() ? "updated" : "not updated")}";
+            return $"Type: {this.Cid} Answer, frequency: {(this.ChannelFreqOk ? "updated" : "not updated")}, data rate: {(this.DataRangeOk ? "updated" : "not updated")}";
         }
     }
 }

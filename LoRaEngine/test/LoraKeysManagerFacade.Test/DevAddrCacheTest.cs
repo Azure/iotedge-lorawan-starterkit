@@ -18,7 +18,6 @@ namespace LoraKeysManagerFacade.Test
     {
         private const string FullUpdateKey = "fullUpdateKey";
         private const string GlobalDevAddrUpdateKey = "globalUpdateKey";
-        private const string DeltaUpdateKey = "deltaUpdateKey";
         private const string CacheKeyPrefix = "devAddrTable:";
 
         private const string PrimaryKey = "ABCDEFGH1234567890";
@@ -130,32 +129,30 @@ namespace LoraKeysManagerFacade.Test
         /// Ensure that the Locks get released if an exception pop.
         /// </summary>
         [Theory]
+        [InlineData(null)]
         [InlineData(FullUpdateKey)]
-        [InlineData(DeltaUpdateKey)]
-        public async Task When_PerformNeededSyncs_Fails_Should_Release_Lock(params string[] lockToTake)
+        public async Task When_PerformNeededSyncs_Fails_Should_Release_Lock(string lockToTake)
         {
             var devAddrcache = new LoRaDevAddrCache(this.cache, null, null);
-            await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
-            var managerInput = new List<DevAddrCacheInfo>();
-
-            for (var i = 0; i < 2; i++)
-            {
-                managerInput.Add(new DevAddrCacheInfo()
-                {
-                    DevEUI = NewUniqueEUI64(),
-                    DevAddr = NewUniqueEUI32()
-                });
-            }
-
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake == null ? null : new[] { lockToTake });
+            var managerInput = new List<DevAddrCacheInfo> { new DevAddrCacheInfo() { DevEUI = NewUniqueEUI64(), DevAddr = NewUniqueEUI32() } };
             var registryManagerMock = this.InitRegistryManager(managerInput);
             registryManagerMock.Setup(x => x.CreateQuery(It.IsAny<string>())).Throws<Exception>();
             await devAddrcache.PerformNeededSyncs(registryManagerMock.Object);
 
-            Assert.Null(this.cache.GetObject<DevAddrCacheInfo>(GlobalDevAddrUpdateKey));
-            var nextFullUpdate = await this.cache.GetObjectTTL(FullUpdateKey);
-            if (lockToTake[0] == DeltaUpdateKey)
+            // When doing a full update, the FullUpdateKey lock should be reset to 1min, the GlobalDevAddrUpdateKey should be gone
+            // When doing a partial update, the GlobalDevAddrUpdateKey should be gone
+            switch (lockToTake)
             {
-                Assert.True(nextFullUpdate < TimeSpan.FromMinutes(1));
+                case FullUpdateKey:
+                    Assert.Null(await this.cache.GetObjectTTL(GlobalDevAddrUpdateKey));
+                    break;
+                case null:
+                    var nextFullUpdate = await this.cache.GetObjectTTL(FullUpdateKey);
+                    Assert.True(nextFullUpdate <= TimeSpan.FromMinutes(1));
+                    Assert.Null(await this.cache.GetObjectTTL(GlobalDevAddrUpdateKey));
+                    break;
+                default: throw new InvalidOperationException("invalid test case");
             }
         }
 
@@ -185,7 +182,7 @@ namespace LoraKeysManagerFacade.Test
 
             // In this test we want no updates running
             // initialize locks for test to run correctly
-            var lockToTake = new string[2] { FullUpdateKey, DeltaUpdateKey };
+            var lockToTake = new string[2] { FullUpdateKey, GlobalDevAddrUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
@@ -228,7 +225,7 @@ namespace LoraKeysManagerFacade.Test
 
             // In this test we want no updates running
             // initialize locks for test to run correctly
-            var lockToTake = new string[2] { FullUpdateKey, DeltaUpdateKey };
+            var lockToTake = new string[2] { FullUpdateKey, GlobalDevAddrUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
@@ -281,7 +278,7 @@ namespace LoraKeysManagerFacade.Test
 
             // In this test we want no updates running
             // initialize locks for test to run correctly
-            var lockToTake = new string[2] { FullUpdateKey, DeltaUpdateKey };
+            var lockToTake = new string[2] { FullUpdateKey, GlobalDevAddrUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
@@ -303,7 +300,7 @@ namespace LoraKeysManagerFacade.Test
         }
 
         [Fact]
-        // This test ensure that if a device is in cache without a key, it get the keys from iot hub and saave it
+        // This test ensure that if a device is in cache without a key, it get the keys from iot hub and save it
         public async Task Multi_Gateway_When_DevAddr_Is_In_Cache_Without_Key_Should_Not_Query_Iot_Hub_For_Twin_But_Should_Get_Key_And_Update()
         {
             var gatewayId = NewUniqueEUI64();
@@ -326,7 +323,7 @@ namespace LoraKeysManagerFacade.Test
 
             // In this test we want no updates running
             // initialize locks for test to run correctly
-            var lockToTake = new string[2] { FullUpdateKey, DeltaUpdateKey };
+            var lockToTake = new string[2] { FullUpdateKey, GlobalDevAddrUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
@@ -378,7 +375,7 @@ namespace LoraKeysManagerFacade.Test
             var items = new List<IoTHubDeviceInfo>();
             // In this test we want no updates running
             // initialize locks for test to run correctly
-            var lockToTake = new string[2] { FullUpdateKey, DeltaUpdateKey };
+            var lockToTake = new string[2] { FullUpdateKey, GlobalDevAddrUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
@@ -400,7 +397,7 @@ namespace LoraKeysManagerFacade.Test
             var dateTime = DateTime.UtcNow;
             // In this test we want no updates running
             // initialize locks for test to run correctly
-            var lockToTake = new string[2] { FullUpdateKey, DeltaUpdateKey };
+            var lockToTake = new string[2] { FullUpdateKey, GlobalDevAddrUpdateKey };
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake);
 
             var items = new List<IoTHubDeviceInfo>();
@@ -465,9 +462,8 @@ namespace LoraKeysManagerFacade.Test
             var registryManagerMock = this.InitRegistryManager(managerInput);
 
             // initialize locks for test to run correctly
-            var neededLocksForTestToRun = new string[2] { FullUpdateKey, GlobalDevAddrUpdateKey };
-            await LockDevAddrHelper.PrepareLocksForTests(this.cache, null);
-
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache);
+            
             var items = new List<IoTHubDeviceInfo>();
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
@@ -515,9 +511,8 @@ namespace LoraKeysManagerFacade.Test
             var registryManagerMock = this.InitRegistryManager(managerInput);
 
             // initialize locks for test to run correctly
-            var neededLocksForTestToRun = new string[2] { GlobalDevAddrUpdateKey, DeltaUpdateKey };
-            var locksGuideTest = new string[1] { FullUpdateKey };
-            await LockDevAddrHelper.PrepareLocksForTests(this.cache, locksGuideTest);
+            var locksToTake = new string[1] { FullUpdateKey };
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache, locksToTake);
 
             var devAddrCache = new LoRaDevAddrCache(this.cache, null, gatewayId);
             await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
@@ -589,7 +584,7 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddrJoining = managerInput[0].DevAddr;
             // The cache start as empty
-            var registryManagerMock = this.InitRegistryManager(managerInput, managerInput.Count());
+            var registryManagerMock = this.InitRegistryManager(managerInput, managerInput.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -619,9 +614,8 @@ namespace LoraKeysManagerFacade.Test
             this.InitCache(this.cache, cacheInput);
 
             // initialize locks for test to run correctly
-            var neededLocksForTestToRun = new string[2] { GlobalDevAddrUpdateKey, DeltaUpdateKey };
-            var locksGuideTest = new string[1] { FullUpdateKey };
-            await LockDevAddrHelper.PrepareLocksForTests(this.cache, locksGuideTest);
+            var locksToTake = new string[1] { FullUpdateKey };
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache, locksToTake);
 
             var devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
             await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
@@ -642,7 +636,7 @@ namespace LoraKeysManagerFacade.Test
 
             // let's check the devices with a double EUI
             var query2Result = this.cache.GetHashObject(string.Concat(CacheKeyPrefix, adressForDuplicateDevAddr));
-            Assert.Equal(2, query2Result.Count());
+            Assert.Equal(2, query2Result.Length);
             for (var i = 0; i < 2; i++)
             {
                 var resultObject = JsonConvert.DeserializeObject<DevAddrCacheInfo>(query2Result[0].Value);
@@ -694,7 +688,7 @@ namespace LoraKeysManagerFacade.Test
                 });
             }
 
-            var registryManagerMock = this.InitRegistryManager(managerInput, managerInput.Count());
+            var registryManagerMock = this.InitRegistryManager(managerInput, managerInput.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -711,9 +705,8 @@ namespace LoraKeysManagerFacade.Test
 
             this.InitCache(this.cache, cacheInput);
             // initialize locks for test to run correctly
-            var neededLocksForTestToRun = new string[2] { GlobalDevAddrUpdateKey, DeltaUpdateKey };
-            var locksGuideTest = new string[1] { FullUpdateKey };
-            await LockDevAddrHelper.PrepareLocksForTests(this.cache, locksGuideTest);
+            var locksToTake = new string[1] { FullUpdateKey };
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache, locksToTake);
 
             var devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
             await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
@@ -775,7 +768,7 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddrJoining = newValues[0].DevAddr;
             // The cache start as empty
-            var registryManagerMock = this.InitRegistryManager(newValues, newValues.Count());
+            var registryManagerMock = this.InitRegistryManager(newValues, newValues.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -808,8 +801,7 @@ namespace LoraKeysManagerFacade.Test
             this.InitCache(this.cache, cacheInput);
 
             // initialize locks for test to run correctly
-            var neededLocksForTestToRun = new string[2] { GlobalDevAddrUpdateKey, FullUpdateKey };
-            await LockDevAddrHelper.PrepareLocksForTests(this.cache, null);
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache);
 
             var devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
             await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
@@ -865,7 +857,7 @@ namespace LoraKeysManagerFacade.Test
             }
 
             // The cache start as empty
-            var registryManagerMock = this.InitRegistryManager(newValues, newValues.Count());
+            var registryManagerMock = this.InitRegistryManager(newValues, newValues.Count);
 
             // Set up the cache with expectation.
             var cacheInput = new List<DevAddrCacheInfo>();
@@ -884,9 +876,8 @@ namespace LoraKeysManagerFacade.Test
             this.InitCache(this.cache, cacheInput);
 
             // initialize locks for test to run correctly
-            var neededLocksForTestToRun = new string[2] { GlobalDevAddrUpdateKey, FullUpdateKey };
-            await LockDevAddrHelper.PrepareLocksForTests(this.cache, null);
-
+            await LockDevAddrHelper.PrepareLocksForTests(this.cache);
+            
             var devAddrCache = new LoRaDevAddrCache(this.cache, null, newGatewayId);
             await devAddrCache.PerformNeededSyncs(registryManagerMock.Object);
 

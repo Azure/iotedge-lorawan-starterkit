@@ -151,7 +151,7 @@ namespace LoRaWanTest
             Assert.Equal(RegionManager.US915.GetDownstreamDR(rxpk[0]), expDatr);
         }
 
-        private static List<Rxpk> GenerateRxpk(string datr, double freq)
+        private static IList<Rxpk> GenerateRxpk(string datr, double freq)
         {
             var jsonUplink =
                 @"{ ""rxpk"":[
@@ -250,7 +250,7 @@ namespace LoRaWanTest
         public void GetDownStreamRx2(LoRaRegionType loRaRegion, string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
         {
             var devEui = "testDevice";
-            RegionManager.TryTranslateToRegion(loRaRegion, out var region);
+            _ = RegionManager.TryTranslateToRegion(loRaRegion, out var region);
             var datr = region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins);
             var freq = region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq);
             Assert.Equal(expectedFreq, freq);

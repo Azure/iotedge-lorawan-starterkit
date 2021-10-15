@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly LoRaDeviceAPIServiceBase deviceApi;
 
-        private static List<IFunctionBundlerExecutionItem> functionItems = new List<IFunctionBundlerExecutionItem>
+        private static readonly List<IFunctionBundlerExecutionItem> functionItems = new List<IFunctionBundlerExecutionItem>
         {
             new FunctionBundlerDeduplicationExecutionItem(),
             new FunctionBundlerADRExecutionItem(),

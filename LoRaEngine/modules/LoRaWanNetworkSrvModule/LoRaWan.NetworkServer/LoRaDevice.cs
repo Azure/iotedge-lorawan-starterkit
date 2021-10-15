@@ -76,17 +76,17 @@ namespace LoRaWan.NetworkServer
 
         public bool Supports32BitFCnt { get; set; }
 
-        ChangeTrackingProperty<int> dataRate = new ChangeTrackingProperty<int>(TwinProperty.DataRate);
+        readonly ChangeTrackingProperty<int> dataRate = new ChangeTrackingProperty<int>(TwinProperty.DataRate);
 
         public int DataRate => this.dataRate.Get();
 
-        ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
+        readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
 
-        ILoRaDeviceClientConnectionManager connectionManager;
+        readonly ILoRaDeviceClientConnectionManager connectionManager;
 
         public int TxPower => this.txPower.Get();
 
-        ChangeTrackingProperty<int> nbRep = new ChangeTrackingProperty<int>(TwinProperty.NbRep);
+        readonly ChangeTrackingProperty<int> nbRep = new ChangeTrackingProperty<int>(TwinProperty.NbRep);
 
         public int NbRep => this.nbRep.Get();
 
@@ -103,7 +103,7 @@ namespace LoRaWan.NetworkServer
 
             set
             {
-                if (value != Constants.RECEIVE_WINDOW_1 && value != Constants.RECEIVE_WINDOW_2)
+                if (value != Constants.ReceiveWindow1 && value != Constants.ReceiveWindow2)
                     throw new ArgumentOutOfRangeException(nameof(this.PreferredWindow), value, $"{nameof(this.PreferredWindow)} must bet 1 or 2");
 
                 this.preferredWindow = value;
@@ -315,14 +315,14 @@ namespace LoRaWan.NetworkServer
                     if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
                     {
                         var preferredWindowTwinValue = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
-                        if (preferredWindowTwinValue == Constants.RECEIVE_WINDOW_2)
+                        if (preferredWindowTwinValue == Constants.ReceiveWindow2)
                             this.PreferredWindow = preferredWindowTwinValue;
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.Deduplication))
                     {
                         var val = twin.Properties.Desired[TwinProperty.Deduplication].Value as string;
-                        Enum.TryParse<DeduplicationMode>(val, true, out var mode);
+                        _ = Enum.TryParse<DeduplicationMode>(val, true, out var mode);
                         this.Deduplication = mode;
                     }
 
@@ -366,7 +366,7 @@ namespace LoRaWan.NetworkServer
                         var value = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.KeepAliveTimeout].Value);
                         if (value > 0)
                         {
-                            this.KeepAliveTimeout = Math.Max(value, Constants.MIN_KEEP_ALIVE_TIMEOUT);
+                            this.KeepAliveTimeout = Math.Max(value, Constants.MinKeepAliveTimeout);
                         }
                     }
 
@@ -539,19 +539,19 @@ namespace LoRaWan.NetworkServer
 
         /// <summary>
         /// Saves device changes in reported twin properties
-        /// It will only save if required. Frame counters are only saved if the difference since last value is equal or greater than <see cref="Constants.MAX_FCNT_UNSAVED_DELTA"/>.
+        /// It will only save if required. Frame counters are only saved if the difference since last value is equal or greater than <see cref="Constants.MaxFcntUnsavedDelta"/>.
         /// </summary>
         /// <param name="reportedProperties">Pre populate reported properties.</param>
-        /// <param name="force">Indicates if changes should be saved even if the difference between last saved and current frame counter are less than <see cref="Constants.MAX_FCNT_UNSAVED_DELTA"/>.</param>
+        /// <param name="force">Indicates if changes should be saved even if the difference between last saved and current frame counter are less than <see cref="Constants.MaxFcntUnsavedDelta"/>.</param>
         public async Task<bool> SaveChangesAsync(TwinCollection reportedProperties = null, bool force = false)
         {
             try
             {
                 // We only ever want a single save operation per device
-                // to happen. The save to the twins can be delayed for multiple
-                // seconds, subsequent updates should be waiting for this to complete
-                // before checking the current state and update again.
-                await this.syncSave.WaitAsync();
+                // to happen. The save to the twins can be delayed for multiple
+                // seconds, subsequent updates should be waiting for this to complete
+                // before checking the current state and update again.
+                await this.syncSave.WaitAsync();
 
                 if (reportedProperties == null)
                 {
@@ -572,8 +572,8 @@ namespace LoRaWan.NetworkServer
                 var fcntDownDelta = this.FCntDown >= this.LastSavedFCntDown ? this.FCntDown - this.LastSavedFCntDown : this.LastSavedFCntDown - this.FCntDown;
 
                 if (reportedProperties.Count > 0 ||
-                            fcntDownDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
-                            fcntUpDelta >= Constants.MAX_FCNT_UNSAVED_DELTA ||
+                            fcntDownDelta >= Constants.MaxFcntUnsavedDelta ||
+                            fcntUpDelta >= Constants.MaxFcntUnsavedDelta ||
                             (this.hasFrameCountChanges && force))
                 {
                     var savedFcntDown = this.FCntDown;
@@ -614,7 +614,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -635,7 +635,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -665,7 +665,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -685,7 +685,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -703,7 +703,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -732,7 +732,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -783,7 +783,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.syncSave.Release();
+                _ = this.syncSave.Release();
             }
         }
 
@@ -951,7 +951,7 @@ namespace LoRaWan.NetworkServer
                     this.runningRequest = request;
 
                     // Ensure that this is schedule in a new thread, releasing the lock asap
-                    Task.Run(() => { _ = this.RunAndQueueNext(request); });
+                    _ = Task.Run(() => { _ = this.RunAndQueueNext(request); });
                 }
                 else
                 {
@@ -971,7 +971,7 @@ namespace LoRaWan.NetworkServer
                 {
                     this.runningRequest = nextRequest;
                     // Ensure that this is schedule in a new thread, releasing the lock asap
-                    Task.Run(() => { _ = this.RunAndQueueNext(nextRequest); });
+                    _ = Task.Run(() => { _ = this.RunAndQueueNext(nextRequest); });
                 }
             }
         }
@@ -1022,7 +1022,7 @@ namespace LoRaWan.NetworkServer
             }
 
             var delta = payloadFcntUp + (ushort.MaxValue - (ushort)this.fcntUp);
-            return delta <= Constants.MAX_FCNT_GAP;
+            return delta <= Constants.MaxFcntGap;
         }
 
         internal void Rollover32BitFCnt()
@@ -1149,8 +1149,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (this.deviceClientConnectionActivityCounter == 0)
                 {
-                    this.connectionManager.Get(this).Disconnect();
-                    return true;
+                    return this.connectionManager.Get(this).Disconnect();
                 }
 
                 return false;

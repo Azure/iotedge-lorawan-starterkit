@@ -23,7 +23,7 @@ namespace LoRaTools
         {
             // Unknown if: packet is null or does not have the physical identifier byte
             if (packet == null || packet.Length < (PHYSICAL_IDENTIFIER_INDEX + 1))
-                return PhysicalIdentifier.UNKNOWN;
+                return PhysicalIdentifier.Unknown;
 
             return (PhysicalIdentifier)packet[3];
         }
@@ -41,7 +41,7 @@ namespace LoRaTools
             if (!server)
             {
                 // PUSH_DATA That packet type is used by the gateway mainly to forward the RF packets received, and associated metadata, to the server
-                if (this.Identifier == PhysicalIdentifier.PUSH_DATA)
+                if (this.Identifier == PhysicalIdentifier.PushData)
                 {
                     Array.Copy(input, 4, this.gatewayIdentifier, 0, 8);
                     this.Message = new byte[input.Length - 12];
@@ -49,13 +49,13 @@ namespace LoRaTools
                 }
 
                 // PULL_DATA That packet type is used by the gateway to poll data from the server.
-                if (this.Identifier == PhysicalIdentifier.PULL_DATA)
+                if (this.Identifier == PhysicalIdentifier.PullData)
                 {
                     Array.Copy(input, 4, this.gatewayIdentifier, 0, 8);
                 }
 
                 // TX_ACK That packet type is used by the gateway to send a feedback to the to inform if a downlink request has been accepted or rejected by the gateway.
-                if (this.Identifier == PhysicalIdentifier.TX_ACK)
+                if (this.Identifier == PhysicalIdentifier.TxAck)
                 {
                     Logger.Log($"Tx ack received from gateway", LogLevel.Debug);
                     Array.Copy(input, 4, this.gatewayIdentifier, 0, 8);
@@ -70,7 +70,7 @@ namespace LoRaTools
             {
                 // Case of message received on the server
                 // PULL_RESP is an answer from the client to the server for Join requests for example
-                if (this.Identifier == PhysicalIdentifier.PULL_RESP)
+                if (this.Identifier == PhysicalIdentifier.PullResp)
                 {
                     this.Message = new byte[input.Length - 4];
                     Array.Copy(input, 4, this.Message, 0, this.Message.Length);
@@ -83,7 +83,7 @@ namespace LoRaTools
         {
             // 0x01 PUSH_ACK That packet type is used by the server to acknowledge immediately all the PUSH_DATA packets received.
             // 0x04 PULL_ACK That packet type is used by the server to confirm that the network route is open and that the server can send PULL_RESP packets at any time.
-            if (type == PhysicalIdentifier.PUSH_ACK || type == PhysicalIdentifier.PULL_ACK)
+            if (type == PhysicalIdentifier.PushAck || type == PhysicalIdentifier.PullAck)
             {
                 this.Token = token;
                 this.Identifier = type;
@@ -128,9 +128,9 @@ namespace LoRaTools
             };
             returnList.AddRange(this.Token);
             returnList.Add((byte)this.Identifier);
-            if (this.Identifier == PhysicalIdentifier.PULL_DATA ||
-                this.Identifier == PhysicalIdentifier.TX_ACK ||
-                this.Identifier == PhysicalIdentifier.PUSH_DATA)
+            if (this.Identifier == PhysicalIdentifier.PullData ||
+                this.Identifier == PhysicalIdentifier.TxAck ||
+                this.Identifier == PhysicalIdentifier.PushData)
             {
                 returnList.AddRange(this.gatewayIdentifier);
             }

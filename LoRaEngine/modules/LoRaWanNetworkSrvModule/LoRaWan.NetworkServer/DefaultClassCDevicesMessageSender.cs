@@ -103,13 +103,19 @@ namespace LoRaWan.NetworkServer
                 if (downlinkMessageBuilderResp.IsMessageTooLong)
                 {
                     Logger.Log(loRaDevice.DevEUI, $"[class-c] cloud to device message too large, rejecting. Id: {message.MessageId ?? "undefined"}", LogLevel.Error);
-                    await message.RejectAsync();
+                    if (!await message.RejectAsync())
+                    {
+                        Logger.Log(loRaDevice.DevEUI, $"[class-c] failed to reject. Id: {message.MessageId ?? "undefined"}", LogLevel.Error);
+                    }
                     return false;
                 }
                 else
                 {
                     await this.packetForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkPktFwdMessage);
-                    await frameCounterStrategy.SaveChangesAsync(loRaDevice);
+                    if (!await frameCounterStrategy.SaveChangesAsync(loRaDevice))
+                    {
+                        Logger.Log(loRaDevice.DevEUI, $"[class-c] failed to update framecounter.", LogLevel.Warning);
+                    }
                 }
 
                 return true;

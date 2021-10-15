@@ -193,7 +193,7 @@ namespace LoRaWan.Tests.Shared
         {
             var token = await RandomTokenGenerator.GetTokenAsync();
             if (this.LastPayload == null)
-                this.LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PUSH_DATA, null);
+                this.LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
             var header = this.LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress);
 
             var unconfirmedMessage = this.CreateUnconfirmedDataUpMessage(payload);
@@ -210,7 +210,7 @@ namespace LoRaWan.Tests.Shared
         {
             var token = await RandomTokenGenerator.GetTokenAsync();
             if (this.LastPayload == null)
-                this.LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PUSH_DATA, null);
+                this.LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
             var header = this.LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress);
 
             var confirmedMessage = this.CreateConfirmedDataUpMessage(payload);
@@ -229,7 +229,7 @@ namespace LoRaWan.Tests.Shared
                 return true;
 
             var token = await RandomTokenGenerator.GetTokenAsync();
-            this.LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PUSH_DATA, null);
+            this.LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
             var header = this.LastPayload.GetSyncHeader(packetForwarder.MacAddress);
 
             var joinRequest = this.CreateJoinRequest();

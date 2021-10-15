@@ -559,7 +559,7 @@ namespace LoRaWan.NetworkServer.Test
                deviceRegistry,
                this.FrameCounterUpdateStrategyProvider);
 
-            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrl: (byte)FctrlEnum.Ack);
+            var ackMessage = simulatedDevice.CreateUnconfirmedDataUpMessage(data, fcnt: payloadFcnt, fctrl: (byte)Fctrl.Ack);
             var ackRxpk = ackMessage.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
             using var ackRequest = new WaitableLoRaRequest(ackRxpk, this.PacketForwarder);
             messageDispatcher.DispatchRequest(ackRequest);
@@ -942,8 +942,8 @@ namespace LoRaWan.NetworkServer.Test
             var devicesInCache = deviceRegistry.InternalGetCachedDevicesForDevAddr(devAddr);
             Assert.Empty(devicesInCache);
 
-            // Wait 50ms so loader can be removed from cache
-            await Task.Delay(50);
+            // Wait 100ms so loader can be removed from cache
+            await Task.Delay(100);
 
             // sends 2nd unconfirmed message, now get twin will work
             var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2);
@@ -951,6 +951,7 @@ namespace LoRaWan.NetworkServer.Test
             using var request2 = this.CreateWaitableRequest(unconfirmedMessage2Rxpk);
             messageDispatcher.DispatchRequest(request2);
             Assert.True(await request2.WaitCompleteAsync());
+            Assert.True(request2.ProcessingSucceeded);
             Assert.Null(request2.ResponseDownlink);
             Assert.Empty(this.PacketForwarder.DownlinkMessages);
 
@@ -1437,14 +1438,14 @@ namespace LoRaWan.NetworkServer.Test
             }
             else
             {
-                Assert.Equal(simulatedDevice1.FrmCntDown + Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice1.FCntDown);
+                Assert.Equal(simulatedDevice1.FrmCntDown + Constants.MaxFcntUnsavedDelta - 1U, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);
 
             Assert.True(cachedDevices.TryGetValue(simulatedDevice2.DevEUI, out var loRaDevice2));
             Assert.Equal(simulatedDevice2.FrmCntUp, loRaDevice2.FCntUp);
-            Assert.Equal(simulatedDevice2.FrmCntDown + Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice2.FCntDown);
+            Assert.Equal(simulatedDevice2.FrmCntDown + Constants.MaxFcntUnsavedDelta - 1U, loRaDevice2.FCntDown);
 
             deviceClient1.VerifyAll();
             deviceClient2.VerifyAll();
@@ -1548,7 +1549,7 @@ namespace LoRaWan.NetworkServer.Test
             }
             else
             {
-                Assert.Equal(Constants.MAX_FCNT_UNSAVED_DELTA - 1U, loRaDevice1.FCntDown);
+                Assert.Equal(Constants.MaxFcntUnsavedDelta - 1U, loRaDevice1.FCntDown);
             }
 
             Assert.Equal(payloadFcntUp + 1, loRaDevice1.FCntUp);

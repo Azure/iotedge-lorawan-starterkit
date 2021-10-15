@@ -11,5 +11,14 @@ namespace LoraKeysManagerFacade
             : base(message)
         {
         }
+
+        public JoinRefusedException()
+        {
+        }
+
+        public JoinRefusedException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
 }

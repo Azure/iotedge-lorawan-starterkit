@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer.Test
 
     public class LoRaDeviceFrameCounterUpdateStrategyProviderTest
     {
-        private Mock<LoRaDeviceAPIServiceBase> loRaDeviceApi;
+        private readonly Mock<LoRaDeviceAPIServiceBase> loRaDeviceApi;
 
         public LoRaDeviceFrameCounterUpdateStrategyProviderTest()
         {

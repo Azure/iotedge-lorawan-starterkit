@@ -18,7 +18,7 @@ namespace LoRaTools
         /// </summary>
         public DevStatusRequest()
         {
-            this.Cid = CidEnum.DevStatusCmd;
+            this.Cid = Cid.DevStatusCmd;
         }
 
         public override string ToString()

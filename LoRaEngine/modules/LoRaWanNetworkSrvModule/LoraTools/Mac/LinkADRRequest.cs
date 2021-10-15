@@ -36,7 +36,7 @@ namespace LoRaTools
         /// </summary>
         public LinkADRRequest(byte datarate, byte txPower, ushort chMask, byte chMaskCntl, byte nbTrans)
         {
-            this.Cid = CidEnum.LinkADRCmd;
+            this.Cid = Cid.LinkADRCmd;
             this.DataRateTXPower = (byte)((datarate << 4) | txPower);
             this.ChMask = chMask;
             // bit 7 is RFU
@@ -50,12 +50,12 @@ namespace LoRaTools
         {
             if (input is null) throw new ArgumentNullException(nameof(input));
 
-            if (input.Length < this.Length || input[0] != (byte)CidEnum.LinkADRCmd)
+            if (input.Length < this.Length || input[0] != (byte)Cid.LinkADRCmd)
             {
                 throw new Exception("the input was not in the expected form");
             }
 
-            this.Cid = CidEnum.LinkADRCmd;
+            this.Cid = Cid.LinkADRCmd;
             this.DataRateTXPower = input[1];
             this.ChMask = BitConverter.ToUInt16(input, 2);
             this.Redundancy = input[4];

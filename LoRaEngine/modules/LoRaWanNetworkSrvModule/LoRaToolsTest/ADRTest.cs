@@ -15,7 +15,7 @@ namespace LoRaWanTest
 
     public class ADRTest
     {
-        ITestOutputHelper output;
+        readonly ITestOutputHelper output;
 
         public ADRTest(ITestOutputHelper output)
         {
@@ -24,14 +24,14 @@ namespace LoRaWanTest
 
         [Theory]
         [ClassData(typeof(ADRTestData))]
-        public async System.Threading.Tasks.Task TestADRAsync(string testName, string devEUI, List<LoRaADRTableEntry> tableEntries, Rxpk rxpk, bool expectDefaultAnswer, LoRaADRResult expectedResult)
+        public async System.Threading.Tasks.Task TestADRAsync(string testName, string devEUI, IList<LoRaADRTableEntry> tableEntries, Rxpk rxpk, bool expectDefaultAnswer, LoRaADRResult expectedResult)
         {
             this.output.WriteLine($"Starting test {testName}");
             var region = RegionManager.EU868;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
             var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider);
             loRaADRManager.CallBase = true;
-            loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
+            _ = loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // If the test does not expect a default answer we trigger default reset before
             if (!expectDefaultAnswer)
@@ -72,7 +72,7 @@ namespace LoRaWanTest
             rxpk.Datr = "SF7BW125";
             var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider);
             loRaADRManager.CallBase = true;
-            loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
+            _ = loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // setup table with default value
             _ = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
@@ -104,7 +104,7 @@ namespace LoRaWanTest
             Assert.Equal(1, adrResult.NbRepetition);
 
             // reset cache and check we get default values
-            await loRaADRManager.Object.ResetAsync(devEUI);
+            _ = await loRaADRManager.Object.ResetAsync(devEUI);
 
             adrResult = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
             {

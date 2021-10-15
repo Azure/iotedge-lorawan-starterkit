@@ -59,7 +59,7 @@ namespace LoRaWan.NetworkServer.Test
             var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
-                - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+                - Constants.LoraProtocolOverheadSize;
 
             var c2dMessagePayload = TestUtils.GeneratePayload("123457890", (int)c2dPayloadSize);
 
@@ -118,7 +118,7 @@ namespace LoRaWan.NetworkServer.Test
                 if (hasMacInUpstream)
                 {
                     Assert.Equal(new LinkCheckAnswer(1, 1).Length, payloadDataDown.Frmpayload.Length);
-                    Assert.Equal(0, payloadDataDown.GetFPort());
+                    Assert.Equal(0, payloadDataDown.FPortValue);
                 }
             }
             else

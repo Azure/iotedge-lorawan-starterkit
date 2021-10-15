@@ -64,7 +64,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
-            Assert.Equal(sentMessage.Fport, downstreamPayload.GetFPort());
+            Assert.Equal(sentMessage.Fport, downstreamPayload.FPortValue);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -98,7 +98,7 @@ namespace LoRaWan.NetworkServer.Test
             var datr = this.loRaRegion.DRtoConfiguration[this.loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
             var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(datr)
                 - c2dMessageMacCommandSize
-                - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+                - Constants.LoraProtocolOverheadSize;
 
             var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
@@ -183,7 +183,7 @@ namespace LoRaWan.NetworkServer.Test
             var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(datr)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
-                - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+                - Constants.LoraProtocolOverheadSize;
 
             var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
             var c2d = new ReceivedLoRaCloudToDeviceMessage()

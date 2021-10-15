@@ -65,7 +65,7 @@ namespace LoRaWan.NetworkServer
                 var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
                 Logger.Log(loRaDevice.DevEUI, $"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}", LogLevel.Debug);
 
-                var payloadPort = loraPayload.GetFPort();
+                var payloadPort = loraPayload.FPortValue;
                 var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
 
                 LoRaADRResult loRaADRResult = null;
@@ -297,11 +297,11 @@ namespace LoRaWan.NetworkServer
                             {
                                 if (downlinkMessageBuilderResp.IsMessageTooLong)
                                 {
-                                    await cloudToDeviceMessage.AbandonAsync();
+                                    _ = await cloudToDeviceMessage.AbandonAsync();
                                 }
                                 else
                                 {
-                                    await cloudToDeviceMessage.CompleteAsync();
+                                    _ = await cloudToDeviceMessage.CompleteAsync();
                                 }
                             }
                         }
@@ -415,7 +415,7 @@ namespace LoRaWan.NetworkServer
                 {
                     try
                     {
-                        await loRaDevice.SaveChangesAsync();
+                        _ = await loRaDevice.SaveChangesAsync();
                     }
                     catch (Exception saveChangesException)
                     {
@@ -462,7 +462,7 @@ namespace LoRaWan.NetworkServer
         {
             if (this.classCDeviceMessageSender != null)
             {
-                Task.Run(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage));
+                _ = Task.Run(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage));
             }
         }
 
@@ -485,7 +485,7 @@ namespace LoRaWan.NetworkServer
             uint maxPayload;
 
             // If preferred Window is RX2, this is the max. payload
-            if (loRaDevice.PreferredWindow == Constants.RECEIVE_WINDOW_2)
+            if (loRaDevice.PreferredWindow == Constants.ReceiveWindow2)
             {
                 // Get max. payload size for RX2, considering possilbe user provided Rx2DataRate
                 if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
@@ -501,7 +501,7 @@ namespace LoRaWan.NetworkServer
             }
 
             // Deduct 8 bytes from max payload size.
-            maxPayload -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+            maxPayload -= Constants.LoraProtocolOverheadSize;
 
             // Calculate total C2D message size based on optional C2D Mac commands.
             var totalPayload = cloudToDeviceMsg.GetPayload()?.Length ?? 0;
@@ -705,7 +705,7 @@ namespace LoRaWan.NetworkServer
             // ensuring the framecount difference between the node and the server
             // is <= MAX_FCNT_GAP
             var diff = payloadFcnt > loRaDevice.FCntUp ? payloadFcnt - loRaDevice.FCntUp : loRaDevice.FCntUp - payloadFcnt;
-            var valid = diff <= Constants.MAX_FCNT_GAP;
+            var valid = diff <= Constants.MaxFcntGap;
 
             if (!valid)
             {
@@ -728,7 +728,7 @@ namespace LoRaWan.NetworkServer
                         // known problem when device restarts, starts fcnt from zero
                         // We need to await this reset to avoid races on the server with deduplication and
                         // fcnt down calculations
-                        await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
+                        _ = await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
                         isFrameCounterFromNewlyStartedDevice = true;
                     }
                 }

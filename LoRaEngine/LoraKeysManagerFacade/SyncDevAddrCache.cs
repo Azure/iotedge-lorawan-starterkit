@@ -11,8 +11,8 @@ namespace LoraKeysManagerFacade
 
     public class SyncDevAddrCache
     {
-        private LoRaDevAddrCache loRaDevAddrCache;
-        private RegistryManager registryManager;
+        private readonly LoRaDevAddrCache loRaDevAddrCache;
+        private readonly RegistryManager registryManager;
 
         public SyncDevAddrCache(LoRaDevAddrCache loRaDevAddrCache, RegistryManager registryManager)
         {

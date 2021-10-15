@@ -86,7 +86,7 @@ namespace LoRaTools.LoRaPhysical
         /// </summary>
         /// <param name="inputMessage">Input byte array.</param>
         /// <returns>List of rxpk or null if no Rxpk was found.</returns>
-        public static List<Rxpk> CreateRxpk(byte[] inputMessage)
+        public static IList<Rxpk> CreateRxpk(byte[] inputMessage)
         {
             var physicalPayload = new PhysicalPayload(inputMessage);
             if (physicalPayload.Message != null)

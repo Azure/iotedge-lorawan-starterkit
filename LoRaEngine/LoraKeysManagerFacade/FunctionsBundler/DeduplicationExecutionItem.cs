@@ -69,7 +69,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                         {
                             cachedDeviceState.FCntUp = clientFCntUp;
                             cachedDeviceState.GatewayId = gatewayId;
-                            deviceCache.StoreInfo(cachedDeviceState);
+                            _ = deviceCache.StoreInfo(cachedDeviceState);
                         }
                     }
                     else

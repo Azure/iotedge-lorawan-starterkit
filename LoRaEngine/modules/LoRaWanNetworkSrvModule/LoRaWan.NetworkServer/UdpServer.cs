@@ -53,7 +53,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.randomLock.Release();
+                _ = this.randomLock.Release();
             }
         }
 
@@ -110,7 +110,11 @@ namespace LoRaWan.NetworkServer
         {
             if (messageToSend != null && messageToSend.Length != 0)
             {
-                await this.udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp, remoteLoRaAggregatorPort);
+                var bytesSent = await udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp, remoteLoRaAggregatorPort);
+                if (bytesSent < messageToSend.Length)
+                {
+                    Logger.Log($"Incomplete message transfer from {nameof(UdpServer)}", LogLevel.Warning);
+                }
             }
         }
 
@@ -129,25 +133,25 @@ namespace LoRaWan.NetworkServer
                 switch (PhysicalPayload.GetIdentifierFromPayload(receivedResults.Buffer))
                 {
                     // In this case we have a keep-alive PULL_DATA packet we don't need to start the engine and can return immediately a response to the challenge
-                    case PhysicalIdentifier.PULL_DATA:
+                    case PhysicalIdentifier.PullData:
                         if (this.pullAckRemoteLoRaAggregatorPort == 0)
                         {
                             this.pullAckRemoteLoRaAggregatorPort = receivedResults.RemoteEndPoint.Port;
                             this.pullAckRemoteLoRaAddress = receivedResults.RemoteEndPoint.Address.ToString();
                         }
 
-                        this.SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PULL_ACK, receivedResults.RemoteEndPoint);
+                        this.SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PullAck, receivedResults.RemoteEndPoint);
                         break;
 
                     // This is a PUSH_DATA (upstream message).
-                    case PhysicalIdentifier.PUSH_DATA:
-                        this.SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PUSH_ACK, receivedResults.RemoteEndPoint);
+                    case PhysicalIdentifier.PushData:
+                        this.SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PushAck, receivedResults.RemoteEndPoint);
                         this.DispatchMessages(receivedResults.Buffer, startTimeProcessing);
 
                         break;
 
                     // This is a ack to a transmission we did previously
-                    case PhysicalIdentifier.TX_ACK:
+                    case PhysicalIdentifier.TxAck:
                         if (receivedResults.Buffer.Length == 12)
                         {
                             Logger.Log(
@@ -298,7 +302,7 @@ namespace LoRaWan.NetworkServer
             {
                 return await this.ClearCache();
             }
-            else if (string.Equals(Constants.CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
             {
                 return await this.SendCloudToDeviceMessageAsync(methodRequest);
             }
@@ -377,7 +381,7 @@ namespace LoRaWan.NetworkServer
                     var jsonMsg = JsonConvert.SerializeObject(downstreamMessage);
                     var messageByte = Encoding.UTF8.GetBytes(jsonMsg);
                     var token = await this.GetTokenAsync();
-                    var pyld = new PhysicalPayload(token, PhysicalIdentifier.PULL_RESP, messageByte);
+                    var pyld = new PhysicalPayload(token, PhysicalIdentifier.PullResp, messageByte);
                     if (this.pullAckRemoteLoRaAggregatorPort != 0 && !string.IsNullOrEmpty(this.pullAckRemoteLoRaAddress))
                     {
                         Logger.Log("UDP", $"sending message with ID {ConversionHelper.ByteArrayToString(token)}, to {this.pullAckRemoteLoRaAddress}:{this.pullAckRemoteLoRaAggregatorPort}", LogLevel.Debug);

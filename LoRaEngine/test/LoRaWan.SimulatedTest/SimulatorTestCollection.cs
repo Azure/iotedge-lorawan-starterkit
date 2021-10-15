@@ -14,13 +14,15 @@ namespace LoRaWan.SimulatedTest
 
     // Tests ABP requests
     [Trait("Category", "SkipWhenLiveUnitTesting")]
+#pragma warning disable CA1711 // Identifiers should not have incorrect suffix
+    // False positive, the name is accurate in the context of xUnit collections.
     public sealed class SimulatorTestCollection : IntegrationTestBaseSim
+#pragma warning restore CA1711 // Identifiers should not have incorrect suffix
     {
         private readonly TimeSpan intervalBetweenMessages;
         private readonly TimeSpan intervalAfterJoin;
-        private TestConfiguration configuration = TestConfiguration.GetConfiguration();
 
-        public TestConfiguration Configuration { get => this.configuration; set => this.configuration = value; }
+        public TestConfiguration Configuration { get; } = TestConfiguration.GetConfiguration();
 
         public SimulatorTestCollection(IntegrationTestFixtureSim testFixture)
             : base(testFixture)
@@ -336,13 +338,13 @@ namespace LoRaWan.SimulatedTest
 
             // 4. Check that we have the right amount of devices receiving messages in IoT Hub
             // Assert.Equal(totalDevices, eventsByDevices.Count());
-            if (totalDevices == eventsByDevices.Count())
+            if (totalDevices == eventsByDevices.Count)
             {
-                TestLogger.Log($"[INFO] Devices sending messages: {totalDevices + totalJoinDevices}, == Devices receiving messages in IoT Hub: {eventsByDevices.Count()}");
+                TestLogger.Log($"[INFO] Devices sending messages: {totalDevices + totalJoinDevices}, == Devices receiving messages in IoT Hub: {eventsByDevices.Count}");
             }
             else
             {
-                TestLogger.Log($"[WARN] Devices sending messages: {totalDevices + totalJoinDevices}, != Devices receiving messages in IoT Hub: {eventsByDevices.Count()}");
+                TestLogger.Log($"[WARN] Devices sending messages: {totalDevices + totalJoinDevices}, != Devices receiving messages in IoT Hub: {eventsByDevices.Count}");
             }
 
             // 5. Check that the correct number of messages have arrived in IoT Hub per device

@@ -33,8 +33,11 @@
 
 #pragma warning disable SA1300 // Elements should begin with an uppercase letter
 #pragma warning disable SA1313 // Parameters should begin with a lowercase letter
+#pragma warning disable CA1008 // Enums should have zero value
+#pragma warning disable IDE1006 // Naming Styles
 
-namespace LoRaWan.IntegrationTest
+
+namespace LoRaWan.Tests.E2E
 {
     using System;
     using System.Collections.Concurrent;
@@ -133,7 +136,7 @@ namespace LoRaWan.IntegrationTest
             DR15
         }
 
-        byte[] serialPortBuffer = null;
+        readonly byte[] serialPortBuffer = null;
 
         LoRaArduinoSerial(SerialPort sp)
         {
@@ -192,7 +195,7 @@ namespace LoRaWan.IntegrationTest
             }
         }
 
-        ConcurrentQueue<string> serialLogs = new ConcurrentQueue<string>();
+        readonly ConcurrentQueue<string> serialLogs = new ConcurrentQueue<string>();
         string buff = string.Empty;
 
         void AppendSerialLog(string message)

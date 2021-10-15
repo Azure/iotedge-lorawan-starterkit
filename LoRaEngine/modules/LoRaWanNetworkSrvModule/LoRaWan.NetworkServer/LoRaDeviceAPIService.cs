@@ -109,38 +109,38 @@ namespace LoRaWan.NetworkServer
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = new StringBuilder();
-            url.Append(this.URL)
-                .Append("GetDevice?code=")
-                .Append(this.AuthCode);
+            _ = url.Append(this.URL)
+                   .Append("GetDevice?code=")
+                   .Append(this.AuthCode);
 
             if (!string.IsNullOrEmpty(gatewayID))
             {
-                url.Append("&GatewayId=")
-                    .Append(gatewayID);
+                _ = url.Append("&GatewayId=")
+                       .Append(gatewayID);
             }
 
             if (!string.IsNullOrEmpty(devAddr))
             {
-                url.Append("&DevAddr=")
-                    .Append(devAddr);
+                _ = url.Append("&DevAddr=")
+                       .Append(devAddr);
             }
 
             if (!string.IsNullOrEmpty(devEUI))
             {
-                url.Append("&DevEUI=")
-                    .Append(devEUI);
+                _ = url.Append("&DevEUI=")
+                       .Append(devEUI);
             }
 
             if (!string.IsNullOrEmpty(appEUI))
             {
-                url.Append("&AppEUI=")
-                    .Append(appEUI);
+                _ = url.Append("&AppEUI=")
+                       .Append(appEUI);
             }
 
             if (!string.IsNullOrEmpty(devNonce))
             {
-                url.Append("&DevNonce=")
-                    .Append(devNonce);
+                _ = url.Append("&DevNonce=")
+                       .Append(devNonce);
             }
 
             var response = await client.GetAsync(new Uri(url.ToString()));
@@ -183,14 +183,14 @@ namespace LoRaWan.NetworkServer
         {
             var client = this.serviceFacadeHttpClientProvider.GetHttpClient();
             var url = new StringBuilder();
-            url.Append(this.URL)
-                .Append("GetDeviceByDevEUI?code=")
-                .Append(this.AuthCode);
+            _ = url.Append(this.URL)
+                   .Append("GetDeviceByDevEUI?code=")
+                   .Append(this.AuthCode);
 
             if (!string.IsNullOrEmpty(devEUI))
             {
-                url.Append("&DevEUI=")
-                    .Append(devEUI);
+                _ = url.Append("&DevEUI=")
+                       .Append(devEUI);
             }
 
             var response = await client.GetAsync(new Uri(url.ToString()));

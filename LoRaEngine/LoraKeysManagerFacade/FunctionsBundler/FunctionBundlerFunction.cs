@@ -23,7 +23,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
         }
 
         [FunctionName("FunctionBundler")]
-        public async Task<IActionResult> FunctionBundlerImpl(
+        public async Task<IActionResult> FunctionBundler(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "FunctionBundler/{devEUI}")] HttpRequest req,
             ILogger logger,
             string devEUI)
