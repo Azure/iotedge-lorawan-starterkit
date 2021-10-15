@@ -127,7 +127,7 @@ namespace LoRaTools.Regions
         /// Returns channel plan type matching the frequency of the join request.
         /// </summary>
         /// <param name="joinChannel">Channel on which the join request was received.</param>
-        public virtual bool TryGetRegionPlanType(Rxpk joinChannel, out string channelPlan)
+        public virtual bool TryGetChannelPlanType(Rxpk joinChannel, out string channelPlan)
         {
             channelPlan = string.Empty;
             return false;
