@@ -54,7 +54,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
-            await this.ComputeAndSetPreferredGateway(context);
+            await ComputeAndSetPreferredGateway(context);
 
             return FunctionBundlerExecutionState.Continue;
         }
@@ -66,12 +66,12 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public async Task OnAbortExecutionAsync(IPipelineExecutionContext context)
         {
-            await this.ComputeAndSetPreferredGateway(context);
+            await ComputeAndSetPreferredGateway(context);
         }
 
         private async Task ComputeAndSetPreferredGateway(IPipelineExecutionContext context)
         {
-            context.Result.PreferredGatewayResult = await this.ComputePreferredGateway(context);
+            context.Result.PreferredGatewayResult = await ComputePreferredGateway(context);
         }
 
         private async Task<PreferredGatewayResult> ComputePreferredGateway(IPipelineExecutionContext context)

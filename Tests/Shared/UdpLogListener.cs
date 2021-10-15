@@ -39,7 +39,7 @@ namespace LoRaWan.Tests.Shared
         {
             this.events.Enqueue(msg);
 
-            if (this.LogToConsole)
+            if (LogToConsole)
             {
                 TestLogger.Log($"[UDPLOG] {msg}");
             }
@@ -57,7 +57,7 @@ namespace LoRaWan.Tests.Shared
                         if (msg != null && msg.Buffer != null)
                         {
                             var text = Encoding.UTF8.GetString(msg.Buffer);
-                            this.OnMessageReceived(text);
+                            OnMessageReceived(text);
                         }
                     }
                 }

@@ -94,7 +94,7 @@ namespace LoRaWan.NetworkServer
                 var url = new Uri($"{toCall}{queryStringParamSeparator}devEUI={devEUIEncoded}&fport={fport}&payload={payloadEncoded}");
 
                 // Call SensorDecoderModule
-                return await this.CallSensorDecoderModule(devEUI, url);
+                return await CallSensorDecoderModule(devEUI, url);
             }
         }
 

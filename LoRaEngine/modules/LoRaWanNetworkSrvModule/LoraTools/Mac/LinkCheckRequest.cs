@@ -18,17 +18,17 @@ namespace LoRaTools
         /// </summary>
         public LinkCheckRequest()
         {
-            this.Cid = Cid.LinkCheckCmd;
+            Cid = Cid.LinkCheckCmd;
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.Cid;
+            yield return (byte)Cid;
         }
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer";
+            return $"Type: {Cid} Answer";
         }
     }
 }

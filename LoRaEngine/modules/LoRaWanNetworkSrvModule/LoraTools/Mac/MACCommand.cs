@@ -29,7 +29,7 @@ namespace LoRaTools
         /// </summary>
         protected MacCommand(ReadOnlySpan<byte> input)
         {
-            if (input.Length < this.Length)
+            if (input.Length < Length)
             {
                 throw new MacCommandException("The Mac Command was not well formed, aborting mac command processing");
             }

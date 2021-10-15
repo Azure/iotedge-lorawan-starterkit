@@ -82,7 +82,7 @@ namespace LoRaTools.ADR
                 table.CurrentNbRep = result.NbRepetition;
                 table.CurrentTxPower = result.TxPower;
                 await this.store.UpdateADRTable(devEUI, table);
-                this.UpdateState(result);
+                UpdateState(result);
                 result.FCntDown = nextFcntDown;
             }
 

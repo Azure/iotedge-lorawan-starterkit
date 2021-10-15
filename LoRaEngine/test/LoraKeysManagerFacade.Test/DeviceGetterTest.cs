@@ -22,7 +22,7 @@ namespace LoraKeysManagerFacade.Test
             var devEUI2 = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
 
-            var deviceGetter = new DeviceGetter(this.InitRegistryManager(devEUI, devEUI2), new LoRaInMemoryDeviceStore());
+            var deviceGetter = new DeviceGetter(InitRegistryManager(devEUI, devEUI2), new LoRaInMemoryDeviceStore());
             var items = await deviceGetter.GetDeviceList(devEUI, gatewayId, "ABCD", null);
 
             Assert.Single(items);

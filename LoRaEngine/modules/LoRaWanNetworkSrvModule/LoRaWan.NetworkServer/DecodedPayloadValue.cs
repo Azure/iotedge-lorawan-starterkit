@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer
 
         public DecodedPayloadValue(object value)
         {
-            this.Value = value;
+            Value = value;
         }
     }
 }

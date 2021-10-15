@@ -10,7 +10,7 @@ namespace LoRaWan.SimulatedTest
     {
         protected IntegrationTestFixtureSim TestFixtureSim
         {
-            get { return (IntegrationTestFixtureSim)this.TestFixture; }
+            get { return (IntegrationTestFixtureSim)TestFixture; }
         }
 
         public IntegrationTestBaseSim(IntegrationTestFixtureSim testFixture)

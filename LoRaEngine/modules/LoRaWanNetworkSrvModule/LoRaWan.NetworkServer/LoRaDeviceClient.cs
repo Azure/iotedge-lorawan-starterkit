@@ -36,7 +36,7 @@ namespace LoRaWan.NetworkServer
             this.transportSettings = transportSettings;
             this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
 
-            this.SetRetry(false);
+            SetRetry(false);
         }
 
         private void SetRetry(bool retryon)
@@ -63,7 +63,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 60000;
 
-                this.SetRetry(true);
+                SetRetry(true);
 
                 Logger.Log(this.devEUI, $"getting device twin", LogLevel.Debug);
 
@@ -80,7 +80,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 
@@ -90,7 +90,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 120000;
 
-                this.SetRetry(true);
+                SetRetry(true);
 
                 Logger.Log(this.devEUI, $"updating twin", LogLevel.Debug);
 
@@ -107,7 +107,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 
@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer
                     this.deviceClient.OperationTimeoutInMilliseconds = 120000;
 
                     // Enable retry for this send message, off by default
-                    this.SetRetry(true);
+                    SetRetry(true);
 
                     var messageJson = JsonConvert.SerializeObject(telemetry, Formatting.None);
                     using var message = new Message(Encoding.UTF8.GetBytes(messageJson));
@@ -147,7 +147,7 @@ namespace LoRaWan.NetworkServer
                 finally
                 {
                     // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                    this.SetRetry(false);
+                    SetRetry(false);
                 }
             }
 
@@ -162,7 +162,7 @@ namespace LoRaWan.NetworkServer
                 // Should not return an operation timeout since we wait less that it
                 this.deviceClient.OperationTimeoutInMilliseconds = (uint)(timeout.TotalMilliseconds + 1000);
 
-                this.SetRetry(true);
+                SetRetry(true);
 
                 Logger.Log(this.devEUI, $"checking cloud to device message for {timeout}", LogLevel.Debug);
 
@@ -186,7 +186,7 @@ namespace LoRaWan.NetworkServer
             finally
             {
                 // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 
@@ -196,7 +196,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
-                this.SetRetry(true);
+                SetRetry(true);
 
                 Logger.Log(this.devEUI, $"completing cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
 
@@ -214,7 +214,7 @@ namespace LoRaWan.NetworkServer
             finally
             {
                 // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 
@@ -224,7 +224,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
-                this.SetRetry(true);
+                SetRetry(true);
 
                 Logger.Log(this.devEUI, $"abandoning cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
 
@@ -242,7 +242,7 @@ namespace LoRaWan.NetworkServer
             finally
             {
                 // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 
@@ -252,7 +252,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
-                this.SetRetry(true);
+                SetRetry(true);
 
                 Logger.Log(this.devEUI, $"rejecting cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
 
@@ -270,7 +270,7 @@ namespace LoRaWan.NetworkServer
             finally
             {
                 // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 

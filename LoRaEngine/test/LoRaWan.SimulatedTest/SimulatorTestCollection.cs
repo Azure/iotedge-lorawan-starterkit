@@ -33,13 +33,13 @@ namespace LoRaWan.SimulatedTest
 
         // check if we need to parametrize address
         // IPEndPoint CreateNetworkServerEndpoint() => new IPEndPoint(IPAddress.Broadcast, 1680);
-        IPEndPoint CreateNetworkServerEndpoint() => new IPEndPoint(IPAddress.Parse(this.Configuration.NetworkServerIP), 1680);
+        IPEndPoint CreateNetworkServerEndpoint() => new IPEndPoint(IPAddress.Parse(Configuration.NetworkServerIP), 1680);
 
         // [Fact]
         // public async Task Ten_Devices_Sending_Messages_Each_Second()
         // {
         //     var listSimulatedDevices = new List<SimulatedDevice>();
-        //     foreach (var device in this.TestFixture.DeviceRange1000_ABP)
+        //     foreach (var device in TestFixture.DeviceRange1000_ABP)
         //     {
         //         var simulatedDevice = new SimulatedDevice(device);
         //         listSimulatedDevices.Add(simulatedDevice);
@@ -52,7 +52,7 @@ namespace LoRaWan.SimulatedTest
         //         simulatedPacketForwarder.Start();
 
         // var deviceTasks = new List<Task>();
-        //         foreach (var device in this.TestFixture.DeviceRange1000_ABP)
+        //         foreach (var device in TestFixture.DeviceRange1000_ABP)
         //         {
         //             var simulatedDevice = new SimulatedDevice(device);
         //             deviceTasks.Add(SendDeviceMessagesAsync(simulatedPacketForwarder, simulatedDevice, 60, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(1)));
@@ -63,7 +63,7 @@ namespace LoRaWan.SimulatedTest
         //         await simulatedPacketForwarder.StopAsync();
         //     }
 
-        // var eventsByDevices = this.TestFixture.IoTHubMessages.GetEvents().GroupBy(x => x.SystemProperties["iothub-connection-device-id"]);
+        // var eventsByDevices = TestFixture.IoTHubMessages.GetEvents().GroupBy(x => x.SystemProperties["iothub-connection-device-id"]);
         //     Assert.Equal(10, eventsByDevices.Count());
         // }
         [Fact]
@@ -71,9 +71,9 @@ namespace LoRaWan.SimulatedTest
         {
             const int MessageCount = 5;
 
-            var device = this.TestFixtureSim.Device1001_Simulated_ABP;
+            var device = TestFixtureSim.Device1001_Simulated_ABP;
             var simulatedDevice = new SimulatedDevice(device);
-            var networkServerIPEndpoint = this.CreateNetworkServerEndpoint();
+            var networkServerIPEndpoint = CreateNetworkServerEndpoint();
 
             using (var simulatedPacketForwarder = new SimulatedPacketForwarder(networkServerIPEndpoint))
             {
@@ -95,9 +95,9 @@ namespace LoRaWan.SimulatedTest
         {
             const int MessageCount = 5;
 
-            var device = this.TestFixtureSim.Device1002_Simulated_OTAA;
+            var device = TestFixtureSim.Device1002_Simulated_OTAA;
             var simulatedDevice = new SimulatedDevice(device);
-            var networkServerIPEndpoint = this.CreateNetworkServerEndpoint();
+            var networkServerIPEndpoint = CreateNetworkServerEndpoint();
 
             using (var simulatedPacketForwarder = new SimulatedPacketForwarder(networkServerIPEndpoint))
             {
@@ -120,7 +120,7 @@ namespace LoRaWan.SimulatedTest
             // wait 10 seconds before checking if iot hub content is available
             await Task.Delay(TimeSpan.FromSeconds(10));
 
-            var msgsFromDevice = this.TestFixture.IoTHubMessages.GetEvents().Where(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID);
+            var msgsFromDevice = TestFixture.IoTHubMessages.GetEvents().Where(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID);
             var actualAmountOfMsgs = msgsFromDevice.Where(x => !x.Properties.ContainsKey("iothub-message-schema")).Count();
             Assert.Equal(MessageCount, actualAmountOfMsgs);
         }
@@ -128,9 +128,9 @@ namespace LoRaWan.SimulatedTest
         [Fact(Skip = "simulated")]
         public async Task Simulated_Http_Based_Decoder_Scenario()
         {
-            var device = this.TestFixtureSim.Device1003_Simulated_HttpBasedDecoder;
+            var device = TestFixtureSim.Device1003_Simulated_HttpBasedDecoder;
             var simulatedDevice = new SimulatedDevice(device);
-            var networkServerIPEndpoint = this.CreateNetworkServerEndpoint();
+            var networkServerIPEndpoint = CreateNetworkServerEndpoint();
 
             using (var simulatedPacketForwarder = new SimulatedPacketForwarder(networkServerIPEndpoint))
             {
@@ -204,7 +204,7 @@ namespace LoRaWan.SimulatedTest
 
             var count = 0;
             var listSimulatedDevices = new List<SimulatedDevice>();
-            foreach (var device in this.TestFixtureSim.DeviceRange2000_1000_ABP)
+            foreach (var device in TestFixtureSim.DeviceRange2000_1000_ABP)
             {
                 if (count < scenarioDeviceNumber)
                 {
@@ -219,13 +219,13 @@ namespace LoRaWan.SimulatedTest
             var totalJoins = 0;
 
             var listSimulatedJoinDevices = new List<SimulatedDevice>();
-            foreach (var joinDevice in this.TestFixtureSim.DeviceRange3000_10_OTAA)
+            foreach (var joinDevice in TestFixtureSim.DeviceRange3000_10_OTAA)
             {
                 var simulatedJoinDevice = new SimulatedDevice(joinDevice);
                 listSimulatedJoinDevices.Add(simulatedJoinDevice);
             }
 
-            var networkServerIPEndpoint = this.CreateNetworkServerEndpoint();
+            var networkServerIPEndpoint = CreateNetworkServerEndpoint();
 
             using (var simulatedPacketForwarder = new SimulatedPacketForwarder(networkServerIPEndpoint))
             {
@@ -324,7 +324,7 @@ namespace LoRaWan.SimulatedTest
                 {
                     // Find "<all Device ID>: message '{"value":<seed+0 to number of msg/device>}' sent to hub" in network server logs
                     expectedPayload = $"{device.LoRaDevice.DeviceID}: message '{{\"value\":{seed + messageId.ToString(CultureInfo.InvariantCulture).PadLeft(3, '0')}}}' sent to hub";
-                    await this.TestFixture.AssertNetworkServerModuleLogStartsWithAsync(expectedPayload);
+                    await TestFixture.AssertNetworkServerModuleLogStartsWithAsync(expectedPayload);
                 }
             }
 
@@ -332,7 +332,7 @@ namespace LoRaWan.SimulatedTest
             await Task.Delay(delayIoTHubCheck);
 
             // IoT Hub test for arrival of messages.
-            var eventsByDevices = this.TestFixture.IoTHubMessages.GetEvents()
+            var eventsByDevices = TestFixture.IoTHubMessages.GetEvents()
                                       .GroupBy(x => x.SystemProperties["iothub-connection-device-id"])
                                       .ToDictionary(x => x.Key, x => x.ToList());
 
@@ -383,7 +383,7 @@ namespace LoRaWan.SimulatedTest
                 {
                     // Find message containing '{"value":<seed>.<0 to number of msg/device>}' for all leaf devices in IoT Hub
                     expectedPayload = $"{{\"value\":{seed + messageId.ToString(CultureInfo.InvariantCulture).PadLeft(3, '0')}}}";
-                    await this.TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.LoRaDevice.DeviceID, expectedPayload);
+                    await TestFixture.AssertIoTHubDeviceMessageExistsAsync(device.LoRaDevice.DeviceID, expectedPayload);
                 }
             }
         }

@@ -15,7 +15,7 @@ namespace XunitRetryHelper
 
         public RetryFactAttribute(int maxRetries)
         {
-            this.MaxRetries = maxRetries;
+            MaxRetries = maxRetries;
         }
 
         public int MaxRetries { get; } = Constants.DefaultMaxRetries;

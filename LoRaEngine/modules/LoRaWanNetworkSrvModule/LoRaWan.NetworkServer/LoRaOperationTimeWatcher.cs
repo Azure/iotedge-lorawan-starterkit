@@ -53,7 +53,7 @@ namespace LoRaWan.NetworkServer
 
         public LoRaOperationTimeWatcher(Region loraRegion, DateTimeOffset startTime)
         {
-            this.Start = startTime;
+            Start = startTime;
             this.loraRegion = loraRegion;
         }
 
@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public TimeSpan GetRemainingTimeToReceiveSecondWindow(LoRaDevice loRaDevice)
         {
-            return TimeSpan.FromSeconds(this.GetReceiveWindow2Delay(loRaDevice)).Subtract(this.GetElapsedTime());
+            return TimeSpan.FromSeconds(GetReceiveWindow2Delay(loRaDevice)).Subtract(GetElapsedTime());
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public TimeSpan GetRemainingTimeToReceiveFirstWindow(LoRaDevice loRaDevice)
         {
-            return TimeSpan.FromSeconds(this.GetReceiveWindow1Delay(loRaDevice)).Subtract(this.GetElapsedTime());
+            return TimeSpan.FromSeconds(GetReceiveWindow1Delay(loRaDevice)).Subtract(GetElapsedTime());
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace LoRaWan.NetworkServer
         /// <returns>Integer containing the delay in seconds.</returns>
         public int GetReceiveWindow1Delay(LoRaDevice loRaDevice) => loRaDevice.ReceiveDelay1 ?? (int)this.loraRegion.ReceiveDelay1;
 
-        bool InTimeForReceiveFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.GetReceiveWindow1Delay(loRaDevice);
+        bool InTimeForReceiveFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow1Delay(loRaDevice);
 
         /// <summary>
         /// Gets the receive window 2 (RX2) delay in seconds
@@ -89,14 +89,14 @@ namespace LoRaWan.NetworkServer
         /// <returns>Integer containing the delay in seconds.</returns>
         public int GetReceiveWindow2Delay(LoRaDevice loRaDevice) => loRaDevice.ReceiveDelay2 ?? (int)this.loraRegion.ReceiveDelay2;
 
-        bool InTimeForReceiveSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.GetReceiveWindow2Delay(loRaDevice);
+        bool InTimeForReceiveSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow2Delay(loRaDevice);
 
         /// <summary>
         /// Calculate if there is still time to send join accept response.
         /// </summary>
         public bool InTimeForJoinAccept()
         {
-            return this.GetElapsedTime().Add(ExpectedTimeToPackageAndSendMessage) < TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay2);
+            return GetElapsedTime().Add(ExpectedTimeToPackageAndSendMessage) < TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay2);
         }
 
         /// <summary>
@@ -104,25 +104,25 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public TimeSpan GetRemainingTimeToJoinAcceptFirstWindow()
         {
-            return TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay1) - this.GetElapsedTime();
+            return TimeSpan.FromSeconds(this.loraRegion.JoinAcceptDelay1) - GetElapsedTime();
         }
 
         /// <summary>
         /// Gets time passed since start.
         /// </summary>
-        protected internal virtual TimeSpan GetElapsedTime() => DateTimeOffset.UtcNow - this.Start;
+        protected internal virtual TimeSpan GetElapsedTime() => DateTimeOffset.UtcNow - Start;
 
         /// <summary>
         /// Resolves the receive window to use.
         /// </summary>
         public int ResolveReceiveWindowToUse(LoRaDevice loRaDevice)
         {
-            var elapsed = this.GetElapsedTime();
-            if (loRaDevice.PreferredWindow == Constants.ReceiveWindow1 && this.InTimeForReceiveFirstWindow(loRaDevice, elapsed))
+            var elapsed = GetElapsedTime();
+            if (loRaDevice.PreferredWindow == Constants.ReceiveWindow1 && InTimeForReceiveFirstWindow(loRaDevice, elapsed))
             {
                 return Constants.ReceiveWindow1;
             }
-            else if (this.InTimeForReceiveSecondWindow(loRaDevice, elapsed))
+            else if (InTimeForReceiveSecondWindow(loRaDevice, elapsed))
             {
                 return Constants.ReceiveWindow2;
             }
@@ -135,12 +135,12 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public int ResolveJoinAcceptWindowToUse(LoRaDevice loRaDevice)
         {
-            var elapsed = this.GetElapsedTime();
-            if (this.InTimeForJoinAcceptFirstWindow(loRaDevice, elapsed))
+            var elapsed = GetElapsedTime();
+            if (InTimeForJoinAcceptFirstWindow(loRaDevice, elapsed))
             {
                 return Constants.ReceiveWindow1;
             }
-            else if (this.InTimeForJoinAcceptSecondWindow(loRaDevice, elapsed))
+            else if (InTimeForJoinAcceptSecondWindow(loRaDevice, elapsed))
             {
                 return Constants.ReceiveWindow2;
             }
@@ -165,10 +165,10 @@ namespace LoRaWan.NetworkServer
         /// <returns><see cref="TimeSpan.Zero"/> if there is no enough time or a positive <see cref="TimeSpan"/> value.</returns>
         public TimeSpan GetAvailableTimeToCheckCloudToDeviceMessage(LoRaDevice loRaDevice)
         {
-            var elapsed = this.GetElapsedTime();
+            var elapsed = GetElapsedTime();
             if (loRaDevice.PreferredWindow == Constants.ReceiveWindow1)
             {
-                var availableTimeForFirstWindow = TimeSpan.FromSeconds(this.GetReceiveWindow1Delay(loRaDevice)).Subtract(elapsed.Add(ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead));
+                var availableTimeForFirstWindow = TimeSpan.FromSeconds(GetReceiveWindow1Delay(loRaDevice)).Subtract(elapsed.Add(ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead));
                 if (availableTimeForFirstWindow >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
                 {
                     return availableTimeForFirstWindow;
@@ -176,7 +176,7 @@ namespace LoRaWan.NetworkServer
             }
 
             // 2nd window
-            var availableTimeForSecondWindow = TimeSpan.FromSeconds(this.GetReceiveWindow2Delay(loRaDevice)).Subtract(elapsed.Add(ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead));
+            var availableTimeForSecondWindow = TimeSpan.FromSeconds(GetReceiveWindow2Delay(loRaDevice)).Subtract(elapsed.Add(ExpectedTimeToPackageAndSendMessageAndCheckForCloudMessageOverhead));
             if (availableTimeForSecondWindow >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
             {
                 return availableTimeForSecondWindow;

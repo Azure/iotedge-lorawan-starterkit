@@ -104,7 +104,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Returns(Task.CompletedTask)
                 .Callback<DownlinkPktFwdMessage>(d =>
                 {
-                    this.EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
+                    EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
                 });
 
             var target = new DefaultClassCDevicesMessageSender(
@@ -350,7 +350,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Returns(Task.CompletedTask)
                 .Callback<DownlinkPktFwdMessage>(d =>
                 {
-                    this.EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
+                    EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
                     Assert.Equal("SF10BW500", d.Txpk.Datr);
                     Assert.Equal(0L, d.Txpk.Tmst);
                     Assert.Equal(923.3, d.Txpk.Freq);

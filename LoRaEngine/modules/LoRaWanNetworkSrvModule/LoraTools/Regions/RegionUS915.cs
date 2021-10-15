@@ -38,7 +38,7 @@ namespace LoRaTools.Regions
         {
             frequency = 0;
 
-            if (this.IsValidUpstreamRxpk(upstreamChannel))
+            if (IsValidUpstreamRxpk(upstreamChannel))
             {
                 int upstreamChannelNumber;
                 // if DR4 the coding are different.

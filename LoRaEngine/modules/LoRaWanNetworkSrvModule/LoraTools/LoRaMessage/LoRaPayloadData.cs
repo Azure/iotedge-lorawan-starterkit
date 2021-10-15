@@ -308,40 +308,40 @@ namespace LoRaTools.LoRaMessage
         /// <returns>if the Mic is valid or not.</returns>
         public override bool CheckMic(string nwskey, uint? server32BitFcnt = null)
         {
-            this.Ensure32BitFcntValue(server32BitFcnt);
-            var byteMsg = this.GetByteMessage();
+            Ensure32BitFcntValue(server32BitFcnt);
+            var byteMsg = GetByteMessage();
 
             var mac = MacUtilities.GetMac("AESCMAC");
             var key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
             mac.Init(key);
 
-            var fcntBytes = this.GetFcntBlockInfo();
+            var fcntBytes = GetFcntBlockInfo();
 
             byte[] block =
             {
-                0x49, 0x00, 0x00, 0x00, 0x00, (byte)this.Direction, this.DevAddr.Span[3], this.DevAddr.Span[2], this.DevAddr.Span[1],
-                this.DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)(byteMsg.Length - 4)
+                0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, DevAddr.Span[3], DevAddr.Span[2], DevAddr.Span[1],
+                DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)(byteMsg.Length - 4)
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length - 4)).ToArray();
 
             var result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             result = MacUtilities.DoFinal(mac);
-            return this.Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
+            return Mic.ToArray().SequenceEqual(result.Take(4).ToArray());
         }
 
         public void SetMic(string nwskey)
         {
-            var byteMsg = this.GetByteMessage();
-            var fcntBytes = this.GetFcntBlockInfo();
+            var byteMsg = GetByteMessage();
+            var fcntBytes = GetFcntBlockInfo();
 
             var mac = MacUtilities.GetMac("AESCMAC");
             var key = new KeyParameter(ConversionHelper.StringToByteArray(nwskey));
             mac.Init(key);
             byte[] block =
             {
-                0x49, 0x00, 0x00, 0x00, 0x00, (byte)this.Direction, this.DevAddr.Span[3], this.DevAddr.Span[2], this.DevAddr.Span[1],
-                this.DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)byteMsg.Length
+                0x49, 0x00, 0x00, 0x00, 0x00, (byte)Direction, DevAddr.Span[3], DevAddr.Span[2], DevAddr.Span[1],
+                DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, (byte)byteMsg.Length
             };
             var algoinput = block.Concat(byteMsg.Take(byteMsg.Length)).ToArray();
 
@@ -350,13 +350,13 @@ namespace LoRaTools.LoRaMessage
             var result = MacUtilities.DoFinal(mac);
             // var res = result.Take(4).ToArray();
             // Array.Copy(result.Take(4).ToArray(), 0, RawMessage, RawMessage.Length - 4, 4);
-            Array.Copy(result, 0, this.RawMessage, this.RawMessage.Length - 4, 4);
-            this.Mic = new Memory<byte>(this.RawMessage, this.RawMessage.Length - 4, 4);
+            Array.Copy(result, 0, RawMessage, RawMessage.Length - 4, 4);
+            Mic = new Memory<byte>(RawMessage, RawMessage.Length - 4, 4);
         }
 
         public void ChangeEndianess()
         {
-            this.DevAddr.Span.Reverse();
+            DevAddr.Span.Reverse();
         }
 
         /// <summary>
@@ -366,21 +366,21 @@ namespace LoRaTools.LoRaMessage
         /// src https://github.com/jieter/python-lora/blob/master/lora/crypto.py.</remarks>
         public byte[] GetDecryptedPayload(string appSkey)
         {
-            if (!this.Frmpayload.Span.IsEmpty)
+            if (!Frmpayload.Span.IsEmpty)
             {
                 var aesEngine = new AesEngine();
                 var tmp = ConversionHelper.StringToByteArray(appSkey);
                 aesEngine.Init(true, new KeyParameter(tmp));
-                var fcntBytes = this.GetFcntBlockInfo();
+                var fcntBytes = GetFcntBlockInfo();
 
                 byte[] aBlock =
                 {
-                    0x01, 0x00, 0x00, 0x00, 0x00, (byte)this.Direction, this.DevAddr.Span[3], this.DevAddr.Span[2], this.DevAddr.Span[1],
-                    this.DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, 0x00
+                    0x01, 0x00, 0x00, 0x00, 0x00, (byte)Direction, DevAddr.Span[3], DevAddr.Span[2], DevAddr.Span[1],
+                    DevAddr.Span[0], fcntBytes[0], fcntBytes[1], fcntBytes[2], fcntBytes[3], 0x00, 0x00
                 };
 
                 byte[] sBlock = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-                var size = this.Frmpayload.Length;
+                var size = Frmpayload.Length;
                 var decrypted = new byte[size];
                 byte bufferIndex = 0;
                 short ctr = 1;
@@ -394,7 +394,7 @@ namespace LoRaTools.LoRaMessage
 
                     for (i = 0; i < 16; i++)
                     {
-                        decrypted[bufferIndex + i] = (byte)(this.Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
+                        decrypted[bufferIndex + i] = (byte)(Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
                     }
 
                     size -= 16;
@@ -409,7 +409,7 @@ namespace LoRaTools.LoRaMessage
 
                     for (i = 0; i < size; i++)
                     {
-                        decrypted[bufferIndex + i] = (byte)(this.Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
+                        decrypted[bufferIndex + i] = (byte)(Frmpayload.Span[bufferIndex + i] ^ sBlock[i]);
                     }
                 }
 
@@ -426,10 +426,10 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public override byte[] PerformEncryption(string appSkey)
         {
-            if (!this.Frmpayload.Span.IsEmpty)
+            if (!Frmpayload.Span.IsEmpty)
             {
-                var decrypted = this.GetDecryptedPayload(appSkey);
-                Array.Copy(decrypted, 0, this.RawMessage, this.RawMessage.Length - 4 - decrypted.Length, decrypted.Length);
+                var decrypted = GetDecryptedPayload(appSkey);
+                Array.Copy(decrypted, 0, RawMessage, RawMessage.Length - 4 - decrypted.Length, decrypted.Length);
                 return decrypted;
             }
             else
@@ -441,30 +441,30 @@ namespace LoRaTools.LoRaMessage
         public override byte[] GetByteMessage()
         {
             var messageArray = new List<byte>();
-            messageArray.AddRange(this.Mhdr.ToArray());
-            this.DevAddr.Span.Reverse();
-            messageArray.AddRange(this.DevAddr.ToArray());
-            this.DevAddr.Span.Reverse();
-            messageArray.AddRange(this.Fctrl.ToArray());
-            messageArray.AddRange(this.Fcnt.ToArray());
-            if (!this.Fopts.Span.IsEmpty)
+            messageArray.AddRange(Mhdr.ToArray());
+            DevAddr.Span.Reverse();
+            messageArray.AddRange(DevAddr.ToArray());
+            DevAddr.Span.Reverse();
+            messageArray.AddRange(Fctrl.ToArray());
+            messageArray.AddRange(Fcnt.ToArray());
+            if (!Fopts.Span.IsEmpty)
             {
-                messageArray.AddRange(this.Fopts.ToArray());
+                messageArray.AddRange(Fopts.ToArray());
             }
 
-            if (!this.Fport.Span.IsEmpty)
+            if (!Fport.Span.IsEmpty)
             {
-                messageArray.AddRange(this.Fport.ToArray());
+                messageArray.AddRange(Fport.ToArray());
             }
 
-            if (!this.Frmpayload.Span.IsEmpty)
+            if (!Frmpayload.Span.IsEmpty)
             {
-                messageArray.AddRange(this.Frmpayload.ToArray());
+                messageArray.AddRange(Frmpayload.ToArray());
             }
 
-            if (this.Mic.Span != null)
+            if (Mic.Span != null)
             {
-                messageArray.AddRange(this.Mic.Span.ToArray());
+                messageArray.AddRange(Mic.Span.ToArray());
             }
 
             return messageArray.ToArray();
@@ -476,17 +476,17 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public void AddMacCommand(MacCommand mac)
         {
-            if (this.MacCommands == null)
+            if (MacCommands == null)
             {
-                this.MacCommands = new List<MacCommand>();
+                MacCommands = new List<MacCommand>();
             }
 
-            this.MacCommands.Add(mac);
+            MacCommands.Add(mac);
         }
 
         private byte[] GetFcntBlockInfo()
         {
-            return (this.Server32BitFcnt != null) ? this.Server32BitFcnt : new byte[] { this.Fcnt.Span[0], this.Fcnt.Span[1], 0x00, 0x00 };
+            return (Server32BitFcnt != null) ? Server32BitFcnt : new byte[] { Fcnt.Span[0], Fcnt.Span[1], 0x00, 0x00 };
         }
     }
 }

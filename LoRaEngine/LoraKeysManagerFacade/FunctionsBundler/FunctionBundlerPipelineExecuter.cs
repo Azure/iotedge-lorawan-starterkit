@@ -27,9 +27,9 @@ namespace LoraKeysManagerFacade.FunctionBundler
                                                ILogger logger = null)
         {
             this.registeredHandlers = registeredHandlers;
-            this.DevEUI = devEUI;
-            this.Request = request;
-            this.Logger = logger ?? NullLogger.Instance;
+            DevEUI = devEUI;
+            Request = request;
+            Logger = logger ?? NullLogger.Instance;
         }
 
         public async Task<FunctionBundlerResult> Execute()
@@ -38,7 +38,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             for (var i = 0; i < this.registeredHandlers.Length; i++)
             {
                 var handler = this.registeredHandlers[i];
-                if (handler.NeedsToExecute(this.Request.FunctionItems))
+                if (handler.NeedsToExecute(Request.FunctionItems))
                 {
                     executionPipeline.Add(handler);
                 }
@@ -60,7 +60,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 }
             }
 
-            return this.Result;
+            return Result;
         }
     }
 }

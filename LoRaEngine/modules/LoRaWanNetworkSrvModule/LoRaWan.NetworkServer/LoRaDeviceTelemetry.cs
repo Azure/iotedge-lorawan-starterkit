@@ -85,25 +85,25 @@ namespace LoRaWan.NetworkServer
         public LoRaDeviceTelemetry(Rxpk rxpk, LoRaPayloadData upstreamPayload, object payloadData, byte[] decryptedPayloadData)
         {
             if (rxpk.ExtraData != null)
-                this.ExtraData = new Dictionary<string, object>(rxpk.ExtraData);
+                ExtraData = new Dictionary<string, object>(rxpk.ExtraData);
 
-            this.Chan = rxpk.Chan;
-            this.Codr = rxpk.Codr;
-            this.Data = payloadData;
-            this.Rawdata = decryptedPayloadData?.Length > 0 ? Convert.ToBase64String(decryptedPayloadData) : string.Empty;
-            this.Datr = rxpk.Datr;
-            this.Freq = rxpk.Freq;
-            this.Lsnr = rxpk.Lsnr;
-            this.Modu = rxpk.Modu;
-            this.Rfch = rxpk.Rfch;
-            this.Rssi = rxpk.Rssi;
-            this.Size = rxpk.Size;
-            this.Stat = rxpk.Stat;
-            this.Time = rxpk.Time;
-            this.Tmms = rxpk.Tmms;
-            this.Tmst = rxpk.Tmst;
-            this.Fcnt = upstreamPayload.GetFcnt();
-            this.Port = upstreamPayload.FPortValue;
+            Chan = rxpk.Chan;
+            Codr = rxpk.Codr;
+            Data = payloadData;
+            Rawdata = decryptedPayloadData?.Length > 0 ? Convert.ToBase64String(decryptedPayloadData) : string.Empty;
+            Datr = rxpk.Datr;
+            Freq = rxpk.Freq;
+            Lsnr = rxpk.Lsnr;
+            Modu = rxpk.Modu;
+            Rfch = rxpk.Rfch;
+            Rssi = rxpk.Rssi;
+            Size = rxpk.Size;
+            Stat = rxpk.Stat;
+            Time = rxpk.Time;
+            Tmms = rxpk.Tmms;
+            Tmst = rxpk.Tmst;
+            Fcnt = upstreamPayload.GetFcnt();
+            Port = upstreamPayload.FPortValue;
         }
     }
 }

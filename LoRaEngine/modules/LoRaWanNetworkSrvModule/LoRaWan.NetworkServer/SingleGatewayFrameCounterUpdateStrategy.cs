@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer
         public async Task<bool> ResetAsync(LoRaDevice loRaDevice, uint fcntUp, string gatewayId)
         {
             loRaDevice.ResetFcnt();
-            return await this.InternalSaveChangesAsync(loRaDevice, force: true);
+            return await InternalSaveChangesAsync(loRaDevice, force: true);
         }
 
         public ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt)
@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
             return new ValueTask<uint>(loRaDevice.IncrementFcntDown(1));
         }
 
-        public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => this.InternalSaveChangesAsync(loRaDevice, force: false);
+        public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice) => InternalSaveChangesAsync(loRaDevice, force: false);
 
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)
         {

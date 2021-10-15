@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer
         {
             this.configuration = configuration;
             this.expectedFunctionVersion = expectedFunctionVersion;
-            this.httpClient = new Lazy<HttpClient>(this.CreateHttpClient);
+            this.httpClient = new Lazy<HttpClient>(CreateHttpClient);
         }
 
         public HttpClient GetHttpClient() => this.httpClient.Value;

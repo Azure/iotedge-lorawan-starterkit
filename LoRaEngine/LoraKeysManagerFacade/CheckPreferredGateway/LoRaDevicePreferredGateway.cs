@@ -23,16 +23,16 @@ namespace LoraKeysManagerFacade
 
         public LoRaDevicePreferredGateway(string gatewayID, uint fcntUp)
         {
-            this.GatewayID = gatewayID;
-            this.FcntUp = fcntUp;
-            this.UpdateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            GatewayID = gatewayID;
+            FcntUp = fcntUp;
+            UpdateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         }
 
         /// <summary>
         /// Creates a string representation of the object for caching.
         /// </summary>
         /// <returns>A string containing {GatewayID};{FcntUp};{UpdateTime}.</returns>
-        string ToCachedString() => string.Concat(this.GatewayID, ";", this.FcntUp, ";", this.UpdateTime);
+        string ToCachedString() => string.Concat(GatewayID, ";", FcntUp, ";", UpdateTime);
 
         /// <summary>
         /// Creates a <see cref="LoRaDevicePreferredGateway"/> from a string

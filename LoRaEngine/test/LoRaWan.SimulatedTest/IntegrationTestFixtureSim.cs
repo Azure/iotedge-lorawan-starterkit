@@ -42,12 +42,12 @@ namespace LoRaWan.SimulatedTest
 
         public override void SetupTestDevices()
         {
-            var gatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID") ?? this.Configuration.LeafDeviceGatewayID;
+            var gatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID") ?? Configuration.LeafDeviceGatewayID;
 
             // Simulated devices start at 1000
 
             // Device1001_Simulated_ABP: used for ABP simulator
-            this.Device1001_Simulated_ABP = new TestDeviceInfo()
+            Device1001_Simulated_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000001001",
                 GatewayID = gatewayID,
@@ -59,7 +59,7 @@ namespace LoRaWan.SimulatedTest
             };
 
             // Device1002_Simulated_OTAA: used for simulator
-            this.Device1002_Simulated_OTAA = new TestDeviceInfo()
+            Device1002_Simulated_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000001002",
                 AppEUI = "0000000000001002",
@@ -70,7 +70,7 @@ namespace LoRaWan.SimulatedTest
             };
 
             // Device1003_Simulated_HttpBasedDecoder: used for simulator http based decoding test
-            this.Device1003_Simulated_HttpBasedDecoder = new TestDeviceInfo
+            Device1003_Simulated_HttpBasedDecoder = new TestDeviceInfo
             {
                 DeviceID = "0000000000001003",
                 AppEUI = "0000000000001003",

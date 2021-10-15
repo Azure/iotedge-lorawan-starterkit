@@ -198,7 +198,7 @@ namespace LoRaWan.NetworkServer.Test
             public LoraDeviceClientConnectionManagerWrapper()
             {
                 this.memoryCache = new MemoryCache(new MemoryCacheOptions());
-                this.Value = new LoRaDeviceClientConnectionManager(this.memoryCache);
+                Value = new LoRaDeviceClientConnectionManager(this.memoryCache);
             }
 
             public LoRaDeviceClientConnectionManager Value { get; }
@@ -206,7 +206,7 @@ namespace LoRaWan.NetworkServer.Test
             public void Dispose()
             {
                 memoryCache.Dispose();
-                this.Value.Dispose();
+                Value.Dispose();
             }
         }
     }

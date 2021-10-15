@@ -35,7 +35,7 @@ namespace LoRaWan.NetworkServer
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 // Ownership is transferred to connection manager.
-                this.connectionManager.Register(loRaDevice, this.CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey));
+                this.connectionManager.Register(loRaDevice, CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey));
 #pragma warning restore CA2000 // Dispose objects before losing scope
             }
 
@@ -72,7 +72,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                var partConnection = this.CreateIoTHubConnectionString(devEUI, primaryKey);
+                var partConnection = CreateIoTHubConnectionString(devEUI, primaryKey);
                 var deviceConnectionStr = $"{partConnection}DeviceId={devEUI};SharedAccessKey={primaryKey}";
 
                 // Enabling AMQP multiplexing
