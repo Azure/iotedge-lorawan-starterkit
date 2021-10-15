@@ -10,18 +10,14 @@ namespace LoRaTools
 
     public static class OTAAKeysGenerator
     {
-        private static readonly Random RndKeysGenerator = new Random();
-        private static readonly object RndLock = new object();
+        private static readonly RandomNumberGenerator RndKeysGenerator = new RNGCryptoServiceProvider();
 
         public static string GetNwkId(byte[] netId)
         {
             var nwkPart = netId[0] << 1;
             var devAddr = new byte[4];
 
-            lock (RndLock)
-            {
-                RndKeysGenerator.NextBytes(devAddr);
-            }
+            RndKeysGenerator.GetBytes(devAddr);
 
             devAddr[0] = (byte)((nwkPart & 0b11111110) | (devAddr[0] & 0b00000001));
             return ConversionHelper.ByteArrayToString(devAddr);
@@ -81,11 +77,7 @@ namespace LoRaTools
         public static string GetAppNonce()
         {
             var appNonce = new byte[3];
-            lock (RndLock)
-            {
-                RndKeysGenerator.NextBytes(appNonce);
-            }
-
+            RndKeysGenerator.GetBytes(appNonce);
             return ConversionHelper.ByteArrayToString(appNonce);
         }
     }

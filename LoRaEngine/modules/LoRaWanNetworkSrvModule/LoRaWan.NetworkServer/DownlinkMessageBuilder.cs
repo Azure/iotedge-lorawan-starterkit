@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Security.Cryptography;
     using System.Text;
     using LoRaTools;
     using LoRaTools.ADR;
@@ -21,8 +22,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     internal static class DownlinkMessageBuilder
     {
-        private static readonly Random RndDownlinkMessageBuilder = new Random();
-        private static readonly object RndLock = new object();
+        private static readonly RandomNumberGenerator RndKeysGenerator = new RNGCryptoServiceProvider();
 
         /// <summary>
         /// Creates downlink message with ack for confirmation or cloud to device message.
@@ -63,10 +63,7 @@ namespace LoRaWan.NetworkServer
 
             var rndToken = new byte[2];
 
-            lock (RndLock)
-            {
-                RndDownlinkMessageBuilder.NextBytes(rndToken);
-            }
+            RndKeysGenerator.GetBytes(rndToken);
 
             string datr;
             double freq;
@@ -239,11 +236,7 @@ namespace LoRaWan.NetworkServer
             var macCommandType = Cid.Zero;
 
             var rndToken = new byte[2];
-
-            lock (RndLock)
-            {
-                RndDownlinkMessageBuilder.NextBytes(rndToken);
-            }
+            RndKeysGenerator.GetBytes(rndToken);
 
             var isMessageTooLong = false;
 
