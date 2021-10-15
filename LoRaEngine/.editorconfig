@@ -1,13 +1,6 @@
 [*.cs]
 csharp_indent_case_contents_when_block = false
 
-# Allow using of the "this" qualifier
-dotnet_style_qualification_for_field=true:silent
-dotnet_style_qualification_for_property=true:silent
-dotnet_style_qualification_for_method=true:silent
-dotnet_style_qualification_for_event=true:silent
-
-
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = none
 
