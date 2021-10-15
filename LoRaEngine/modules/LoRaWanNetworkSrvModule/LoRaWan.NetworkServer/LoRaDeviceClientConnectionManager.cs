@@ -97,11 +97,11 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private string GetConnectionCacheKey(string devEUI) => string.Concat("connection:", devEUI);
+        private static string GetConnectionCacheKey(string devEUI) => string.Concat("connection:", devEUI);
 
-        private string GetScheduleCacheKey(string devEUI) => string.Concat("connection:schedule:", devEUI);
+        private static string GetScheduleCacheKey(string devEUI) => string.Concat("connection:schedule:", devEUI);
 
-        public ILoRaDeviceClient Get(LoRaDevice loRaDevice)
+        public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
             if (this.managedConnections.TryGetValue(GetConnectionCacheKey(loRaDevice.DevEUI), out var managedConnection))

@@ -37,7 +37,7 @@ namespace LoRaWan.NetworkServer.Test
             if (searchDevicesDelayMs > 0)
             {
                 LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simulatedDevice.DevAddr))
-                    .Returns(Task.Delay(searchDevicesDelayMs).ContinueWith((_) => new SearchDevicesResult()));
+                    .Returns(Task.Delay(searchDevicesDelayMs).ContinueWith((_) => new SearchDevicesResult(), TaskScheduler.Default));
             }
             else
             {
@@ -355,7 +355,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.False(loraDevice.HasFrameCountChanges);
         }
 
-        bool IsTwinFcntZero(TwinCollection t) => (int)t[TwinProperty.FCntDown] == 0 && (int)t[TwinProperty.FCntUp] == 0;
+        static bool IsTwinFcntZero(TwinCollection t) => (int)t[TwinProperty.FCntDown] == 0 && (int)t[TwinProperty.FCntUp] == 0;
 
         [Theory]
         [InlineData(0)]
@@ -415,8 +415,10 @@ namespace LoRaWan.NetworkServer.Test
         [Fact]
         public async Task ABP_From_Another_Gateway_Unconfirmed_Message_Should_Load_Device_Cache_And_Disconnect()
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: "another-gateway"));
-            simulatedDevice.FrmCntUp = 9;
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: "another-gateway"))
+            {
+                FrmCntUp = 9
+            };
 
             LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simulatedDevice.DevAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "1234").AsList()));

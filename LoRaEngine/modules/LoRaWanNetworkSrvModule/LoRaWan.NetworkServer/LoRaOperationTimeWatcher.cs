@@ -160,12 +160,12 @@ namespace LoRaWan.NetworkServer
 
         bool InTimeForJoinAcceptFirstWindow(TimeSpan elapsed)
         {
-            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= (double)this.loraRegion.JoinAcceptDelay1;
+            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay1;
         }
 
         bool InTimeForJoinAcceptSecondWindow(TimeSpan elapsed)
         {
-            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= (double)this.loraRegion.JoinAcceptDelay2;
+            return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay2;
         }
 
         /// <summary>

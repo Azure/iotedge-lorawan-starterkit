@@ -75,19 +75,17 @@ namespace LoRaWan.SimulatedTest
             var simulatedDevice = new SimulatedDevice(device);
             var networkServerIPEndpoint = CreateNetworkServerEndpoint();
 
-            using (var simulatedPacketForwarder = new SimulatedPacketForwarder(networkServerIPEndpoint))
+            using var simulatedPacketForwarder = new SimulatedPacketForwarder(networkServerIPEndpoint);
+            simulatedPacketForwarder.Start();
+
+            for (var i = 1; i <= MessageCount; i++)
             {
-                simulatedPacketForwarder.Start();
-
-                for (var i = 1; i <= MessageCount; i++)
-                {
-                    await simulatedDevice.SendUnconfirmedMessageAsync(simulatedPacketForwarder, i.ToString(CultureInfo.InvariantCulture));
-                    // await simulatedDevice.SendConfirmedMessageAsync(simulatedPacketForwarder, i.ToString());
-                    await Task.Delay(this.intervalBetweenMessages);
-                }
-
-                await simulatedPacketForwarder.StopAsync();
+                await simulatedDevice.SendUnconfirmedMessageAsync(simulatedPacketForwarder, i.ToString(CultureInfo.InvariantCulture));
+                // await simulatedDevice.SendConfirmedMessageAsync(simulatedPacketForwarder, i.ToString());
+                await Task.Delay(this.intervalBetweenMessages);
             }
+
+            await simulatedPacketForwarder.StopAsync();
         }
 
         [Fact]
@@ -121,7 +119,7 @@ namespace LoRaWan.SimulatedTest
             await Task.Delay(TimeSpan.FromSeconds(10));
 
             var msgsFromDevice = TestFixture.IoTHubMessages.GetEvents().Where(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID);
-            var actualAmountOfMsgs = msgsFromDevice.Where(x => !x.Properties.ContainsKey("iothub-message-schema")).Count();
+            var actualAmountOfMsgs = msgsFromDevice.Count(x => !x.Properties.ContainsKey("iothub-message-schema"));
             Assert.Equal(MessageCount, actualAmountOfMsgs);
         }
 

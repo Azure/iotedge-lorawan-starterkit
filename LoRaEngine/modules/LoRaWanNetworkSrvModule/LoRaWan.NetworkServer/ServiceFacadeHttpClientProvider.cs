@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Net;
     using System.Net.Http;
-    using LoRaWan.Shared;
+    using LoRaWan.Core;
 
     /// <summary>
     /// Default implementation for <see cref="IServiceFacadeHttpClientProvider"/>.

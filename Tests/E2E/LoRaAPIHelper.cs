@@ -9,7 +9,7 @@ namespace LoRaWan.Tests.E2E
     using System.Text;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
-    using LoRaWan.Shared;
+    using LoRaWan.Core;
 
     public static class LoRaAPIHelper
     {

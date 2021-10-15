@@ -120,7 +120,7 @@ namespace LoRaWan.NetworkServer.Test
             LoRaDeviceApi.VerifyAll();
         }
 
-        private Memory<byte> ReversedByteArray(string value)
+        private static Memory<byte> ReversedByteArray(string value)
         {
             var array = ConversionHelper.StringToByteArray(value);
 
@@ -128,7 +128,7 @@ namespace LoRaWan.NetworkServer.Test
             return array;
         }
 
-        Memory<byte> ByteArray(string value) => ConversionHelper.StringToByteArray(value);
+        static Memory<byte> ByteArray(string value) => ConversionHelper.StringToByteArray(value);
 
         [Fact]
         public async Task When_Api_Takes_Too_Long_Should_Return_Null()
@@ -150,7 +150,7 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDeviceRegistryMock = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
             loRaDeviceRegistryMock.Setup(x => x.RegisterDeviceInitializer(It.IsNotNull<ILoRaDeviceInitializer>()));
             loRaDeviceRegistryMock.Setup(x => x.GetDeviceForJoinRequestAsync(devEUI, appEUI, devNonce))
-                .Returns(Task.Delay(TimeSpan.FromSeconds(7)).ContinueWith((_) => loRaDevice));
+                .Returns(Task.Delay(TimeSpan.FromSeconds(7)).ContinueWith((_) => loRaDevice, TaskScheduler.Default));
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
@@ -577,7 +577,7 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             joinAccept.DlSettings.Span.Reverse();
-            if (rx2datarate > 0 && rx2datarate < 8)
+            if (rx2datarate is > 0 and < 8)
             {
                 Assert.Equal(rx2datarate, joinAccept.Rx2Dr);
             }
@@ -605,7 +605,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // Message was sent on RX2 and with a correct datarate
             Assert.Equal(2000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
-            if (rx2datarate > 0 && rx2datarate < 8)
+            if (rx2datarate is > 0 and < 8)
             {
                 Assert.Equal(rx2datarate, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
             }
@@ -713,7 +713,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(afterJoinValues, joinAccept.Rx1DrOffset);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx1DROffsetValue);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRx2DRValue);
-            Assert.Equal(afterJoinValues, (int)joinAccept.RxDelay.Span[0]);
+            Assert.Equal(afterJoinValues, joinAccept.RxDelay.Span[0]);
             Assert.Equal(beforeJoinValues, reportedBeforeJoinRxDelayValue);
         }
 
@@ -803,7 +803,7 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             joinAccept.DlSettings.Span.Reverse();
-            if (rx1offset > 0 && rx1offset < 6)
+            if (rx1offset is > 0 and < 6)
             {
                 Assert.Equal(rx1offset, joinAccept.Rx1DrOffset);
             }
@@ -831,7 +831,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // Message was sent on RX1 and with a correct datarate offset
             Assert.Equal(1000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
-            if (rx1offset > 0 && rx1offset < 5)
+            if (rx1offset is > 0 and < 5)
             {
                 Assert.Equal(expectedDR, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
             }
@@ -927,13 +927,13 @@ namespace LoRaWan.NetworkServer.Test
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var joinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(downlinkMessage.Txpk.Data), simulatedDevice.LoRaDevice.AppKey);
             joinAccept.RxDelay.Span.Reverse();
-            if (rxDelay > 0 && rxDelay < 16)
+            if (rxDelay is > 0 and < 16)
             {
-                Assert.Equal((int)expectedDelay, (int)joinAccept.RxDelay.Span[0]);
+                Assert.Equal((int)expectedDelay, joinAccept.RxDelay.Span[0]);
             }
             else
             {
-                Assert.Equal(0, (int)joinAccept.RxDelay.Span[0]);
+                Assert.Equal(0, joinAccept.RxDelay.Span[0]);
             }
 
             // Send a message
@@ -954,7 +954,7 @@ namespace LoRaWan.NetworkServer.Test
             var downstreamMessage = PacketForwarder.DownlinkMessages[1];
 
             // Message was sent on RX1 with correct delay and with a correct datarate offset
-            if (rxDelay > 0 && rxDelay < 16)
+            if (rxDelay is > 0 and < 16)
             {
                 Assert.Equal(expectedDelay * 1000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
             }

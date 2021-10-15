@@ -140,7 +140,7 @@ namespace LoraKeysManagerFacade
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogError($"Exception occured during dev addresses full reload {ex.ToString()}");
+                    this.logger.LogError($"Exception occured during dev addresses full reload {ex}");
                 }
                 finally
                 {
@@ -172,7 +172,7 @@ namespace LoraKeysManagerFacade
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogError($"Exception occured during dev addresses delta reload {ex.ToString()}");
+                    this.logger.LogError($"Exception occured during dev addresses delta reload {ex}");
                 }
                 finally
                 {
@@ -271,7 +271,7 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// Method to make sure we keep information currently available in the cache and we don't perform unnessecary updates.
         /// </summary>
-        private IDictionary<string, DevAddrCacheInfo> KeepExistingCacheInformation(HashEntry[] cacheDevEUIEntry, IGrouping<string, DevAddrCacheInfo> newDevEUIList, bool canDeleteExistingDevice)
+        private static IDictionary<string, DevAddrCacheInfo> KeepExistingCacheInformation(HashEntry[] cacheDevEUIEntry, IGrouping<string, DevAddrCacheInfo> newDevEUIList, bool canDeleteExistingDevice)
         {
             // if the new value are not different we want to ensure we don't save, to not update the TTL of the item.
             var toSyncValues = newDevEUIList.ToDictionary(x => x.DevEUI);
@@ -303,7 +303,7 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// In the end we simply need to update the gateway and the Primary key. The DEVEUI and DevAddr can't be updated.
         /// </summary>
-        private IDictionary<string, DevAddrCacheInfo> MergeOldAndNewChanges(IDictionary<string, DevAddrCacheInfo> valueArrayBase, IDictionary<string, DevAddrCacheInfo> valueArrayimport, bool shouldImportFromNewValues)
+        private static IDictionary<string, DevAddrCacheInfo> MergeOldAndNewChanges(IDictionary<string, DevAddrCacheInfo> valueArrayBase, IDictionary<string, DevAddrCacheInfo> valueArrayimport, bool shouldImportFromNewValues)
         {
             var isSaveRequired = false;
             foreach (var baseValue in valueArrayBase)

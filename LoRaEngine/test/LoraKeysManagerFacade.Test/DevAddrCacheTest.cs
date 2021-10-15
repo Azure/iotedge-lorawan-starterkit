@@ -30,7 +30,7 @@ namespace LoraKeysManagerFacade.Test
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
         }
 
-        private Mock<RegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds, int numberOfDeviceDeltaUpdates = 2)
+        private static Mock<RegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds, int numberOfDeviceDeltaUpdates = 2)
         {
             var currentDevAddrContext = new List<DevAddrCacheInfo>();
             var currentDevices = deviceIds;
@@ -73,11 +73,13 @@ namespace LoraKeysManagerFacade.Test
                     var twins = new List<Twin>();
                     foreach (var devaddrItem in devAddressesToConsider)
                     {
-                        var deviceTwin = new Twin();
-                        deviceTwin.DeviceId = devaddrItem.DevEUI;
-                        deviceTwin.Properties = new TwinProperties()
+                        var deviceTwin = new Twin
                         {
-                            Desired = new TwinCollection($"{{\"{LoraKeysManagerFacadeConstants.TwinProperty_DevAddr}\": \"{devaddrItem.DevAddr}\", \"{LoraKeysManagerFacadeConstants.TwinProperty_GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
+                            DeviceId = devaddrItem.DevEUI,
+                            Properties = new TwinProperties()
+                            {
+                                Desired = new TwinCollection($"{{\"{LoraKeysManagerFacadeConstants.TwinProperty_DevAddr}\": \"{devaddrItem.DevAddr}\", \"{LoraKeysManagerFacadeConstants.TwinProperty_GatewayID}\": \"{devaddrItem.GatewayId}\"}}", $"{{\"$lastUpdated\": \"{devaddrItem.LastUpdatedTwins.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat)}\"}}"),
+                            }
                         };
 
                         twins.Add(deviceTwin);
@@ -116,7 +118,7 @@ namespace LoraKeysManagerFacade.Test
             return mockRegistryManager;
         }
 
-        private void InitCache(ILoRaDeviceCacheStore cache, List<DevAddrCacheInfo> deviceIds)
+        private static void InitCache(ILoRaDeviceCacheStore cache, List<DevAddrCacheInfo> deviceIds)
         {
             var loradevaddrcache = new LoRaDevAddrCache(cache, null, null);
             foreach (var device in deviceIds)

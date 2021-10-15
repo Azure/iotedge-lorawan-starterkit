@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             apiService.Setup(x => x.SearchByDevAddrAsync(It.IsNotNull<string>()))
-                .Throws(new Exception());
+                .Throws(new InvalidOperationException());
 
             var deviceFactory = new Mock<ILoRaDeviceFactory>(MockBehavior.Strict);
 

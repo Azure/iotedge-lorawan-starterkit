@@ -34,15 +34,15 @@ namespace LoraKeysManagerFacade
             !(left == right);
 
         public static bool operator <(DevAddrCacheInfo left, DevAddrCacheInfo right) =>
-            ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
+            left is null ? right is not null : left.CompareTo(right) < 0;
 
         public static bool operator <=(DevAddrCacheInfo left, DevAddrCacheInfo right) =>
-            ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
+            left is null || left.CompareTo(right) <= 0;
 
         public static bool operator >(DevAddrCacheInfo left, DevAddrCacheInfo right) =>
-            !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
+            left is not null && left.CompareTo(right) > 0;
 
         public static bool operator >=(DevAddrCacheInfo left, DevAddrCacheInfo right) =>
-            ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
+            left is null ? right is null : left.CompareTo(right) >= 0;
     }
 }

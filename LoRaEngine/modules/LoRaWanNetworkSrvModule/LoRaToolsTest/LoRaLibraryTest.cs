@@ -61,10 +61,7 @@ namespace LoRaWanTest
         public void JoinRequest_Should_Succeed_Mic_Check()
         {
             var appEUIText = "0005100000000004";
-            var appEUIBytes = ConversionHelper.StringToByteArray(appEUIText);
-
             var devEUIText = "0005100000000004";
-            var devEUIBytes = ConversionHelper.StringToByteArray(devEUIText);
 
             var devNonceText = "ABCD";
             var devNonceBytes = ConversionHelper.StringToByteArray(devNonceText);
@@ -269,7 +266,26 @@ namespace LoRaWanTest
         public void TestKeys()
         {
             // create random message
-            var rxpk = CreateRxpk();
+            var jsonUplink = @"{ ""rxpk"":[
+ 	            {
+		            ""time"":""2013-03-31T16:21:17.528002Z"",
+ 		            ""tmst"":3512348611,
+ 		            ""chan"":2,
+ 		            ""rfch"":0,
+ 		            ""freq"":866.349812,
+ 		            ""stat"":1,
+ 		            ""modu"":""LORA"",
+ 		            ""datr"":""SF7BW125"",
+ 		            ""codr"":""4/6"",
+ 		            ""rssi"":-35,
+ 		            ""lsnr"":5.1,
+ 		            ""size"":32,
+ 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
+                }]}";
+            var joinRequestInput = Encoding.Default.GetBytes(jsonUplink);
+            var physicalUpstreamPyld = new byte[12];
+            physicalUpstreamPyld[0] = 2;
+            var rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
             Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk[0], out var loRaPayload));
             Assert.Equal(LoRaMessageType.JoinRequest, loRaPayload.LoRaMessageType);
             var joinReq = (LoRaPayloadJoinRequest)loRaPayload;
@@ -302,7 +318,7 @@ namespace LoRaWanTest
             {
                 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
             };
-            var key = joinReq.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netId, joinReq.DevNonce.ToArray(), appKey);
+            var key = LoRaPayload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netId, joinReq.DevNonce.ToArray(), appKey);
             Assert.Equal(
                 key,
                 new byte[16] { 223, 83, 195, 95, 48, 52, 204, 206, 208, 255, 53, 76, 112, 222, 4, 223, });
@@ -311,42 +327,12 @@ namespace LoRaWanTest
         [Fact]
         public void CalculateKey_Throws_When_Key_Type_Is_None()
         {
-            // arrange
-            var rxpk = CreateRxpk();
-            _ = LoRaPayload.TryCreateLoRaPayload(rxpk[0], out var loRaPayload);
-            var joinRequest = (LoRaPayloadJoinRequest)loRaPayload;
-
-            // act + assert
-            var result = Assert.Throws<InvalidOperationException>(() => joinRequest.CalculateKey(LoRaPayloadKeyType.None,
+            var result = Assert.Throws<InvalidOperationException>(() => LoRaPayload.CalculateKey(LoRaPayloadKeyType.None,
                                                                                                  Array.Empty<byte>(),
                                                                                                  Array.Empty<byte>(),
                                                                                                  Array.Empty<byte>(),
                                                                                                  Array.Empty<byte>()));
             Assert.Equal("No key type selected.", result.Message);
-        }
-
-        private static IList<Rxpk> CreateRxpk()
-        {
-            var jsonUplink = @"{ ""rxpk"":[
- 	            {
-		            ""time"":""2013-03-31T16:21:17.528002Z"",
- 		            ""tmst"":3512348611,
- 		            ""chan"":2,
- 		            ""rfch"":0,
- 		            ""freq"":866.349812,
- 		            ""stat"":1,
- 		            ""modu"":""LORA"",
- 		            ""datr"":""SF7BW125"",
- 		            ""codr"":""4/6"",
- 		            ""rssi"":-35,
- 		            ""lsnr"":5.1,
- 		            ""size"":32,
- 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
-                }]}";
-            var joinRequestInput = Encoding.Default.GetBytes(jsonUplink);
-            var physicalUpstreamPyld = new byte[12];
-            physicalUpstreamPyld[0] = 2;
-            return Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
         }
 
         /// <summary>

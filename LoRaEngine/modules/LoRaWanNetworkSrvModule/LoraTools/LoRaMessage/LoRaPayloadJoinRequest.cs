@@ -77,7 +77,7 @@ namespace LoRaTools.LoRaMessage
             AppEUI = new Memory<byte>(appEUIBytes);
             DevEUI = new Memory<byte>(devEUIBytes);
             DevNonce = new Memory<byte>(devNonce);
-            Mic = default(Memory<byte>);
+            Mic = default;
         }
 
         public override bool CheckMic(string nwskey, uint? server32BitFcnt = null)
@@ -102,11 +102,11 @@ namespace LoRaTools.LoRaMessage
             var offset = 0;
             Mhdr.CopyTo(algoInput);
             offset += Mhdr.Length;
-            AppEUI.CopyTo(algoInput.Slice(offset));
+            AppEUI.CopyTo(algoInput[offset..]);
             offset += AppEUI.Length;
-            DevEUI.CopyTo(algoInput.Slice(offset));
+            DevEUI.CopyTo(algoInput[offset..]);
             offset += DevEUI.Length;
-            DevNonce.CopyTo(algoInput.Slice(offset));
+            DevNonce.CopyTo(algoInput[offset..]);
 
             mac.BlockUpdate(algoInputBytes, 0, algoInputBytes.Length);
 

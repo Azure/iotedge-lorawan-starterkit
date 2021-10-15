@@ -35,7 +35,7 @@ namespace LoRaTools
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)Status;
+            yield return Status;
             yield return (byte)Cid;
         }
 

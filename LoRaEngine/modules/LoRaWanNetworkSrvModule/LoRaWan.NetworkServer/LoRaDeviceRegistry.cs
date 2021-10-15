@@ -219,7 +219,7 @@ namespace LoRaWan.NetworkServer
         /// It validates that the device has a <see cref="LoRaDevice.NwkSKey"/> and mic check.
         /// </summary>
         /// <param name="logError">Indicates if error should be log if mic check fails.</param>
-        private bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool logError)
+        private static bool IsValidDeviceForPayload(LoRaDevice loRaDevice, LoRaPayloadData loraPayload, bool logError)
         {
             if (string.IsNullOrEmpty(loRaDevice.NwkSKey))
                 return false;
@@ -234,7 +234,7 @@ namespace LoRaWan.NetworkServer
         }
 
         // Creates cache key for join device loader: "joinloader:{devEUI}"
-        string GetJoinDeviceLoaderCacheKey(string devEUI) => string.Concat("joinloader:", devEUI);
+        static string GetJoinDeviceLoaderCacheKey(string devEUI) => string.Concat("joinloader:", devEUI);
 
         // Removes join device loader from cache
         void RemoveJoinDeviceLoader(string devEUI) => this.cache.Remove(GetJoinDeviceLoaderCacheKey(devEUI));

@@ -38,8 +38,8 @@ namespace LoRaTools
         public LinkCheckAnswer(ReadOnlySpan<byte> input)
         {
             Cid = (Cid)input[2];
-            Margin = (uint)input[1];
-            GwCnt = (uint)input[0];
+            Margin = input[1];
+            GwCnt = input[0];
         }
 
         public override IEnumerable<byte> ToBytes()

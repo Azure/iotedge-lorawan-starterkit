@@ -202,6 +202,6 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// Gets if the http status code indicates success.
         /// </summary>
-        static bool IsSuccessStatusCode(int statusCode) => (statusCode >= 200) && (statusCode <= 299);
+        static bool IsSuccessStatusCode(int statusCode) => statusCode is >= 200 and <= 299;
     }
 }

@@ -103,7 +103,7 @@ namespace LoRaWan.NetworkServer
 
             set
             {
-                if (value != Constants.ReceiveWindow1 && value != Constants.ReceiveWindow2)
+                if (value is not Constants.ReceiveWindow1 and not Constants.ReceiveWindow2)
                     throw new ArgumentOutOfRangeException(nameof(PreferredWindow), value, $"{nameof(PreferredWindow)} must bet 1 or 2");
 
                 this.preferredWindow = value;
@@ -123,8 +123,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public LoRaRegionType LoRaRegion
         {
-            get { return this.region.Get(); }
-            set { this.region.Set(value); }
+            get => this.region.Get();
+            set => this.region.Set(value);
         }
 
         ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
@@ -152,7 +152,7 @@ namespace LoRaWan.NetworkServer
 
         private volatile bool hasFrameCountChanges;
 
-        private byte confirmationResubmitCount = 0;
+        private byte confirmationResubmitCount;
         private volatile uint fcntUp;
         private volatile uint fcntDown;
         private volatile uint lastSavedFcntUp;
@@ -198,7 +198,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public async Task<bool> InitializeAsync()
         {
-            var twin = await this.connectionManager.Get(this)?.GetTwinAsync();
+            var twin = await this.connectionManager.GetClient(this)?.GetTwinAsync();
 
             if (twin != null)
             {
@@ -430,7 +430,7 @@ namespace LoRaWan.NetworkServer
         {
             var desired = twin.Properties.Desired;
             var reported = twin.Properties.Reported;
-            uint? newfCnt = null;
+            uint? newfCnt;
 
             var frameCounterStartDesired = GetUintFromTwin(desired, propertyNameStart);
             var frameCounterStartReported = GetUintFromTwin(reported, propertyNameStart);
@@ -438,7 +438,7 @@ namespace LoRaWan.NetworkServer
             {
                 // force this counter in the start desired
                 newfCnt = frameCounterStartDesired;
-                toReport = toReport ?? new TwinCollection();
+                toReport ??= new TwinCollection();
                 toReport[propertyNameStart] = newfCnt.Value;
                 this.hasFrameCountChanges = true;
                 Logger.Log(DevEUI, $"set {fcntPropertyName} from {propertyNameStart} with {newfCnt.Value}, reset: {reset}", LogLevel.Debug);
@@ -497,7 +497,7 @@ namespace LoRaWan.NetworkServer
                 return 0;
             }
 
-            if (value is uint valueUint)
+            if (value is uint)
             {
                 return value;
             }
@@ -529,7 +529,7 @@ namespace LoRaWan.NetworkServer
                 return valueBool;
             }
 
-            if (value is int valueInt)
+            if (value is int)
             {
                 return value == 1;
             }
@@ -583,31 +583,29 @@ namespace LoRaWan.NetworkServer
                     reportedProperties[TwinProperty.FCntUp] = savedFcntUp;
 
                     // For class C devices this might be the only moment the connection is established
-                    using (var deviceClientActivityScope = BeginDeviceClientConnectionActivity())
+                    using var deviceClientActivityScope = BeginDeviceClientConnectionActivity();
+                    if (deviceClientActivityScope == null)
                     {
-                        if (deviceClientActivityScope == null)
-                        {
-                            // Logging as information because the real error was logged as error
-                            Logger.Log(DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
-                            return false;
-                        }
-
-                        var result = await this.connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
-                        if (result)
-                        {
-                            InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
-
-                            for (var i = 0; i < savedProperties.Count; i++)
-                                savedProperties[i].AcceptChanges();
-                        }
-                        else
-                        {
-                            for (var i = 0; i < savedProperties.Count; i++)
-                                savedProperties[i].Rollback();
-                        }
-
-                        return result;
+                        // Logging as information because the real error was logged as error
+                        Logger.Log(DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
+                        return false;
                     }
+
+                    var result = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
+                    if (result)
+                    {
+                        InternalAcceptFrameCountChanges(savedFcntUp, savedFcntDown);
+
+                        for (var i = 0; i < savedProperties.Count; i++)
+                            savedProperties[i].AcceptChanges();
+                    }
+                    else
+                    {
+                        for (var i = 0; i < savedProperties.Count; i++)
+                            savedProperties[i].Rollback();
+                    }
+
+                    return result;
                 }
 
                 return true;
@@ -787,15 +785,15 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => this.connectionManager.Get(this).SendEventAsync(telemetry, properties);
+        public Task<bool> SendEventAsync(LoRaDeviceTelemetry telemetry, Dictionary<string, string> properties = null) => this.connectionManager.GetClient(this).SendEventAsync(telemetry, properties);
 
-        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => this.connectionManager.Get(this).ReceiveAsync(timeout);
+        public Task<Message> ReceiveCloudToDeviceAsync(TimeSpan timeout) => this.connectionManager.GetClient(this).ReceiveAsync(timeout);
 
-        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).CompleteAsync(cloudToDeviceMessage);
+        public Task<bool> CompleteCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.GetClient(this).CompleteAsync(cloudToDeviceMessage);
 
-        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).AbandonAsync(cloudToDeviceMessage);
+        public Task<bool> AbandonCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.GetClient(this).AbandonAsync(cloudToDeviceMessage);
 
-        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.Get(this).RejectAsync(cloudToDeviceMessage);
+        public Task<bool> RejectCloudToDeviceMessageAsync(Message cloudToDeviceMessage) => this.connectionManager.GetClient(this).RejectAsync(cloudToDeviceMessage);
 
         /// <summary>
         /// Updates device on the server after a join succeeded.
@@ -842,7 +840,7 @@ namespace LoRaWan.NetworkServer
                     reportedProperties[TwinProperty.RX2DataRate] = null;
                 }
 
-                if (DesiredRXDelay != DefaultJoinValues && currentRegion.IsValidRXDelay(DesiredRXDelay))
+                if (DesiredRXDelay != DefaultJoinValues && Region.IsValidRXDelay(DesiredRXDelay))
                 {
                     reportedProperties[TwinProperty.RXDelay] = DesiredRXDelay;
                 }
@@ -873,69 +871,67 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            using (var activityScope = BeginDeviceClientConnectionActivity())
+            using var activityScope = BeginDeviceClientConnectionActivity();
+            if (activityScope == null)
             {
-                if (activityScope == null)
+                // Logging as information because the real error was logged as error
+                Logger.Log(DevEUI, "failed to update twin after join, could not reconnect", LogLevel.Debug);
+                return false;
+            }
+
+            var devAddrBeforeSave = DevAddr;
+            var succeeded = await this.connectionManager.GetClient(this).UpdateReportedPropertiesAsync(reportedProperties);
+
+            // Only save if the devAddr remains the same, otherwise ignore the save
+            if (succeeded && devAddrBeforeSave == DevAddr)
+            {
+                DevAddr = updateProperties.DevAddr;
+                NwkSKey = updateProperties.NwkSKey;
+                AppSKey = updateProperties.AppSKey;
+                AppNonce = updateProperties.AppNonce;
+                DevNonce = updateProperties.DevNonce;
+                NetID = updateProperties.NetID;
+
+                if (currentRegion.IsValidRX1DROffset(DesiredRX1DROffset))
                 {
-                    // Logging as information because the real error was logged as error
-                    Logger.Log(DevEUI, "failed to update twin after join, could not reconnect", LogLevel.Debug);
-                    return false;
-                }
-
-                var devAddrBeforeSave = DevAddr;
-                var succeeded = await this.connectionManager.Get(this).UpdateReportedPropertiesAsync(reportedProperties);
-
-                // Only save if the devAddr remains the same, otherwise ignore the save
-                if (succeeded && devAddrBeforeSave == DevAddr)
-                {
-                    DevAddr = updateProperties.DevAddr;
-                    NwkSKey = updateProperties.NwkSKey;
-                    AppSKey = updateProperties.AppSKey;
-                    AppNonce = updateProperties.AppNonce;
-                    DevNonce = updateProperties.DevNonce;
-                    NetID = updateProperties.NetID;
-
-                    if (currentRegion.IsValidRX1DROffset(DesiredRX1DROffset))
-                    {
-                        ReportedRX1DROffset = DesiredRX1DROffset;
-                    }
-                    else
-                    {
-                        Logger.Log(DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
-                    }
-
-                    if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(DesiredRX2DataRate))
-                    {
-                        ReportedRX2DataRate = DesiredRX2DataRate;
-                    }
-                    else
-                    {
-                        Logger.Log(DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
-                    }
-
-                    if (currentRegion.IsValidRXDelay(DesiredRXDelay))
-                    {
-                        ReportedRXDelay = DesiredRXDelay;
-                    }
-                    else
-                    {
-                        Logger.Log(DevEUI, "the provided RXDelay is not valid", LogLevel.Error);
-                    }
-
-                    this.region.AcceptChanges();
-                    this.preferredGatewayID.AcceptChanges();
-
-                    ResetFcnt();
-                    InternalAcceptFrameCountChanges(this.fcntUp, this.fcntDown);
+                    ReportedRX1DROffset = DesiredRX1DROffset;
                 }
                 else
                 {
-                    this.region.Rollback();
-                    this.preferredGatewayID.Rollback();
+                    Logger.Log(DevEUI, "the provided RX1DROffset is not valid", LogLevel.Error);
                 }
 
-                return succeeded;
+                if (currentRegion.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(DesiredRX2DataRate))
+                {
+                    ReportedRX2DataRate = DesiredRX2DataRate;
+                }
+                else
+                {
+                    Logger.Log(DevEUI, "the provided RX2DataRate is not valid", LogLevel.Error);
+                }
+
+                if (Region.IsValidRXDelay(DesiredRXDelay))
+                {
+                    ReportedRXDelay = DesiredRXDelay;
+                }
+                else
+                {
+                    Logger.Log(DevEUI, "the provided RXDelay is not valid", LogLevel.Error);
+                }
+
+                this.region.AcceptChanges();
+                this.preferredGatewayID.AcceptChanges();
+
+                ResetFcnt();
+                InternalAcceptFrameCountChanges(this.fcntUp, this.fcntDown);
             }
+            else
+            {
+                this.region.Rollback();
+                this.preferredGatewayID.Rollback();
+            }
+
+            return succeeded;
         }
 
         internal void SetRequestHandler(ILoRaDataRequestHandler dataRequestHandler) => this.dataRequestHandler = dataRequestHandler;
@@ -1149,7 +1145,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (this.deviceClientConnectionActivityCounter == 0)
                 {
-                    return this.connectionManager.Get(this).Disconnect();
+                    return this.connectionManager.GetClient(this).Disconnect();
                 }
 
                 return false;

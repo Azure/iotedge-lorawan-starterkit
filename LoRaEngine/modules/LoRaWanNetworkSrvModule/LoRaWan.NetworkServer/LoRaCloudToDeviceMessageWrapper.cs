@@ -32,16 +32,15 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         private void ParseMessage()
         {
-            var json = string.Empty;
             var bytes = this.message.GetBytes();
             if (bytes?.Length > 0)
             {
-                json = Encoding.UTF8.GetString(bytes);
+                var json = Encoding.UTF8.GetString(bytes);
                 try
                 {
                     this.parseCloudToDeviceMessage = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(json);
                 }
-                catch (Exception ex) when (ex is JsonReaderException || ex is JsonSerializationException)
+                catch (Exception ex) when (ex is JsonReaderException or JsonSerializationException)
                 {
                     this.invalidErrorMessage = $"could not parse cloud to device message: {json}";
                 }
@@ -80,7 +79,7 @@ namespace LoRaWan.NetworkServer
             if (this.parseCloudToDeviceMessage != null)
                 return this.parseCloudToDeviceMessage.GetPayload();
 
-            return new byte[0];
+            return Array.Empty<byte>();
         }
 
         public IList<MacCommand> MacCommands

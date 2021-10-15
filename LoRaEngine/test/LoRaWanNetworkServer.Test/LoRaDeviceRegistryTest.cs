@@ -42,7 +42,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             apiService.Setup(x => x.SearchAndLockForJoinAsync(this.serverConfiguration.GatewayID, devEUI, appEUI, devNonce))
-                .Throws(new Exception());
+                .Throws(new InvalidOperationException());
             using var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, this.loraDeviceFactoryMock.Object);
 
             var actual = await target.GetDeviceForJoinRequestAsync(devEUI, appEUI, devNonce);

@@ -52,7 +52,7 @@ namespace LoRaTools.LoRaMessage
         protected LoRaPayload(byte[] inputMessage)
         {
             RawMessage = inputMessage ?? throw new ArgumentNullException(nameof(inputMessage));
-            Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
+            Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // MIC 4 last bytes
             Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4, 4);
         }
@@ -98,10 +98,8 @@ namespace LoRaTools.LoRaMessage
             mac.Init(key);
             var rfu = new byte[1];
             rfu[0] = 0x0;
-            var msgLength = BitConverter.GetBytes(algoinput.Length);
-            var result = new byte[16];
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
-            result = MacUtilities.DoFinal(mac);
+            var result = MacUtilities.DoFinal(mac);
             Mic = result.Take(4).ToArray();
             return Mic.ToArray();
         }
@@ -109,7 +107,7 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Calculate the Netwok and Application Server Key used to encrypt data and compute MIC.
         /// </summary>
-        public byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
+        public static byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
             if (keyType == LoRaPayloadKeyType.None) throw new InvalidOperationException("No key type selected.");
 
@@ -183,6 +181,9 @@ namespace LoRaTools.LoRaMessage
                     case LoRaMessageType.ConfirmedDataDown:
                         loRaPayload = new LoRaPayloadData();
                         return true;
+                    default:
+                        loRaPayload = null;
+                        return false;
                 }
             }
 

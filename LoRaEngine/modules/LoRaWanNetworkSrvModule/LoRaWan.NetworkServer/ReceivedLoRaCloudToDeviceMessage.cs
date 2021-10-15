@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            return new byte[0];
+            return Array.Empty<byte>();
         }
     }
 }

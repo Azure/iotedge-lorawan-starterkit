@@ -63,12 +63,10 @@ namespace LoraKeysManagerFacade
 
         public async Task UpdateADRTable(string devEUI, LoRaADRTable table)
         {
-            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
+            using var redisLock = new RedisLockWrapper(devEUI, this.redisCache);
+            if (await redisLock.TakeLockAsync())
             {
-                if (await redisLock.TakeLockAsync())
-                {
-                    _ = await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
-                }
+                _ = await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
             }
         }
 

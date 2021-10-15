@@ -3,7 +3,7 @@
 
 #pragma warning disable CA1707 // Identifiers should not contain underscores
 
-namespace LoRaWan.Shared
+namespace LoRaWan.Core
 {
     using System;
     using System.Collections.Generic;
@@ -184,14 +184,18 @@ namespace LoRaWan.Shared
             Version_2019_04_15_Preview = new ApiVersion("2019-04-15-Preview");
             Version_2019_04_15_Preview.MinCompatibleVersion = Version_2019_04_15_Preview;
 
-            Version_2019_07_05 = new ApiVersion("2019-07-05");
-            Version_2019_07_05.MinCompatibleVersion = Version_2019_04_15_Preview;
+            Version_2019_07_05 = new ApiVersion("2019-07-05")
+            {
+                MinCompatibleVersion = Version_2019_04_15_Preview
+            };
 
             Version_2019_07_16 = new ApiVersion("2019-07-16");
             Version_2019_07_16.MinCompatibleVersion = Version_2019_07_16;
 
-            Version_2020_08_11 = new ApiVersion("2020-08-11");
-            Version_2020_08_11.MinCompatibleVersion = Version_2019_07_16;
+            Version_2020_08_11 = new ApiVersion("2020-08-11")
+            {
+                MinCompatibleVersion = Version_2019_07_16
+            };
 
             Version_2020_10_09 = new ApiVersion("2020-10-09");
             Version_2020_10_09.MinCompatibleVersion = Version_2020_10_09;
@@ -250,32 +254,16 @@ namespace LoRaWan.Shared
             Name == version.Name &&
             IsKnown == version.IsKnown;
 
-        public static bool operator <(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
+        public static bool operator <(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) < 0;
 
-            return value1.CompareTo(value2) < 0;
-        }
+        public static bool operator <=(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) <= 0;
 
-        public static bool operator <=(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
+        public static bool operator >=(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) >= 0;
 
-            return value1.CompareTo(value2) <= 0;
-        }
-
-        public static bool operator >=(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
-
-            return value1.CompareTo(value2) >= 0;
-        }
-
-        public static bool operator >(ApiVersion value1, ApiVersion value2)
-        {
-            if (value1 is null) throw new ArgumentNullException(nameof(value1));
-
-            return value1.CompareTo(value2) > 0;
-        }
+        public static bool operator >(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) > 0;
     }
 }

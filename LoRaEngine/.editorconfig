@@ -32,6 +32,15 @@ dotnet_diagnostic.IDE0040.severity=suggestion
 # CA1721: Property names should not match get methods
 dotnet_diagnostic.CA1721.severity = suggestion
 
+# IDE0045: Use conditional if statements
+dotnet_diagnostic.IDE0045.severity=suggestion
+
+# IDE0024: Use expression body for operators
+csharp_style_expression_bodied_operators = true
+
+# CA2225: Operator overloads have named alternates
+dotnet_diagnostic.CA2225.severity=suggestion
+
 [*.cs]
 dotnet_style_qualification_for_field=true:error
 dotnet_style_qualification_for_property=false:error

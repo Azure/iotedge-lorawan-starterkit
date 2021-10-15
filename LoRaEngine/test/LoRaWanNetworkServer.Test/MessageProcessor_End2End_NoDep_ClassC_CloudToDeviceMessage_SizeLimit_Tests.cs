@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer.Test
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
-        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
+        private static void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
             Assert.NotNull(downlink.Txpk);
@@ -110,7 +110,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands = new[] { c2dMessageMacCommand };
+                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -195,7 +195,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands = new[] { c2dMessageMacCommand };
+                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
             }
 
             using var cloudToDeviceMessage = c2d.CreateMessage();
@@ -217,7 +217,7 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceClient.VerifyAll();
         }
 
-        private string GeneratePayload(string allowedChars, int length)
+        private static string GeneratePayload(string allowedChars, int length)
         {
             var random = new Random();
 

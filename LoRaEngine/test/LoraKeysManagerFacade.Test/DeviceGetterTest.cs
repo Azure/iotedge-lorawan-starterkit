@@ -29,7 +29,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.Equal(devEUI, items[0].DevEUI);
         }
 
-        private RegistryManager InitRegistryManager(string devEui1, string devEui2)
+        private static RegistryManager InitRegistryManager(string devEui1, string devEui2)
         {
             var mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));

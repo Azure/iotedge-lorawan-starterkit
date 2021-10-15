@@ -46,7 +46,7 @@ namespace LoRaWan.NetworkServer
 
         private void LogProcessingTime(string deviceId)
         {
-            deviceId = deviceId ?? ConversionHelper.ByteArrayToString(this.wrappedRequest.Payload.DevAddr);
+            deviceId ??= ConversionHelper.ByteArrayToString(this.wrappedRequest.Payload.DevAddr);
             Logger.Log(deviceId, $"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}", LogLevel.Debug);
         }
 
