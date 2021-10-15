@@ -16,7 +16,7 @@ namespace LoRaWan.NetworkServer.Test
     {
         private readonly TestUtils.LoraDeviceClientConnectionManagerWrapper connectionManagerWrapper;
         private readonly LoRaDevice sampleDevice;
-        private LoRaDeviceClientConnectionManager ConnectionManager => connectionManagerWrapper.Value;
+        private LoRaDeviceClientConnectionManager ConnectionManager => this.connectionManagerWrapper.Value;
 
         public LoRaCloudToDeviceMessageWrapperTest()
         {

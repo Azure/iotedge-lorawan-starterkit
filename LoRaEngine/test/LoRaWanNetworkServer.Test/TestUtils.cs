@@ -205,7 +205,7 @@ namespace LoRaWan.NetworkServer.Test
 
             public void Dispose()
             {
-                memoryCache.Dispose();
+                this.memoryCache.Dispose();
                 Value.Dispose();
             }
         }
