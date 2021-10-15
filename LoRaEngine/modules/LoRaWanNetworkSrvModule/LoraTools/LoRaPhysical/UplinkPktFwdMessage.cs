@@ -16,12 +16,12 @@ namespace LoRaTools.LoRaPhysical
 
         public UplinkPktFwdMessage()
         {
-            this.Rxpk = new List<Rxpk>();
+            Rxpk = new List<Rxpk>();
         }
 
         public UplinkPktFwdMessage(Rxpk rxpkInput)
         {
-            this.Rxpk = new List<Rxpk>()
+            Rxpk = new List<Rxpk>()
             {
                 rxpkInput
             };
@@ -38,7 +38,7 @@ namespace LoRaTools.LoRaPhysical
             if (loRaData is null) throw new ArgumentNullException(nameof(loRaData));
 
             // This is a new ctor, must be validated by MIK
-            this.Rxpk = new List<Rxpk>()
+            Rxpk = new List<Rxpk>()
             {
                 new Rxpk()
                 {
@@ -64,7 +64,7 @@ namespace LoRaTools.LoRaPhysical
             {
                 var pktFwdMessageAdapter = new PktFwdMessageAdapter
                 {
-                    Rxpks = this.Rxpk
+                    Rxpks = Rxpk
                 };
                 return pktFwdMessageAdapter;
             }

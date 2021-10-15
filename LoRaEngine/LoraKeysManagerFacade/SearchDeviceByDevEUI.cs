@@ -38,7 +38,7 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            return await this.RunGetDeviceByDevEUI(req, log);
+            return await RunGetDeviceByDevEUI(req, log);
         }
 
         private async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log)

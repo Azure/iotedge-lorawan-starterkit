@@ -24,7 +24,7 @@ namespace LoRaWan.NetworkServer
 
             loRaDevice.ResetFcnt();
 
-            if (await this.InternalSaveChangesAsync(loRaDevice, force: true))
+            if (await InternalSaveChangesAsync(loRaDevice, force: true))
             {
                 return await this.loRaDeviceAPIService.ABPFcntCacheResetAsync(loRaDevice.DevEUI, fcntUp, gatewayId);
             }
@@ -53,7 +53,7 @@ namespace LoRaWan.NetworkServer
         public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new System.ArgumentNullException(nameof(loRaDevice));
-            return this.InternalSaveChangesAsync(loRaDevice, force: false);
+            return InternalSaveChangesAsync(loRaDevice, force: false);
         }
 
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)

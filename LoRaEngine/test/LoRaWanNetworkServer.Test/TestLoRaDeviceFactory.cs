@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer.Test
             {
                 ExpirationScanFrequency = TimeSpan.FromSeconds(5),
             });
-            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(memoryCache);
+            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(this.memoryCache);
         }
 
         public TestLoRaDeviceFactory(

@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.Shared
             this.events = new ConcurrentQueue<EventData>();
             this.receivers = new List<PartitionReceiver>();
             if (!string.IsNullOrEmpty(consumerGroupName))
-                this.ConsumerGroupName = consumerGroupName;
+                ConsumerGroupName = consumerGroupName;
 
             this.subscribers = new HashSet<Action<IEnumerable<EventData>>>();
         }
@@ -45,15 +45,15 @@ namespace LoRaWan.Tests.Shared
             if (this.receivers.Count > 0)
                 throw new InvalidOperationException("Already started");
 
-            if (this.LogToConsole)
+            if (LogToConsole)
             {
-                TestLogger.Log($"Connecting to IoT Hub Event Hub @{this.connectionString} using consumer group {this.ConsumerGroupName}");
+                TestLogger.Log($"Connecting to IoT Hub Event Hub @{this.connectionString} using consumer group {ConsumerGroupName}");
             }
 
             var rti = await this.eventHubClient.GetRuntimeInformationAsync();
             foreach (var partitionId in rti.PartitionIds)
             {
-                var receiver = this.eventHubClient.CreateReceiver(this.ConsumerGroupName, partitionId, EventPosition.FromEnqueuedTime(DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(1))));
+                var receiver = this.eventHubClient.CreateReceiver(ConsumerGroupName, partitionId, EventPosition.FromEnqueuedTime(DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(1))));
                 receiver.SetReceiveHandler(this);
                 this.receivers.Add(receiver);
             }
@@ -93,7 +93,7 @@ namespace LoRaWan.Tests.Shared
                 {
                     this.events.Enqueue(item);
 
-                    if (this.LogToConsole)
+                    if (LogToConsole)
                     {
                         var bodyText = Encoding.UTF8.GetString(item.Body);
                         TestLogger.Log($"[IOTHUB] {bodyText}");
@@ -157,7 +157,7 @@ namespace LoRaWan.Tests.Shared
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
     }

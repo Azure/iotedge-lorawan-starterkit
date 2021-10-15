@@ -41,18 +41,18 @@ namespace LoraKeysManagerFacade
         {
             if (preferredGateway is null) throw new ArgumentNullException(nameof(preferredGateway));
 
-            this.DevEUI = devEUI;
-            this.RequestFcntUp = fcntUp;
-            this.CurrentFcntUp = preferredGateway.FcntUp;
-            this.PreferredGatewayID = preferredGateway.GatewayID;
-            this.Conflict = fcntUp != preferredGateway.FcntUp;
+            DevEUI = devEUI;
+            RequestFcntUp = fcntUp;
+            CurrentFcntUp = preferredGateway.FcntUp;
+            PreferredGatewayID = preferredGateway.GatewayID;
+            Conflict = fcntUp != preferredGateway.FcntUp;
         }
 
         public PreferredGatewayResult(string devEUI, uint fcntUp, string errorMessage)
         {
-            this.DevEUI = devEUI;
-            this.RequestFcntUp = fcntUp;
-            this.ErrorMessage = errorMessage;
+            DevEUI = devEUI;
+            RequestFcntUp = fcntUp;
+            ErrorMessage = errorMessage;
         }
     }
 }

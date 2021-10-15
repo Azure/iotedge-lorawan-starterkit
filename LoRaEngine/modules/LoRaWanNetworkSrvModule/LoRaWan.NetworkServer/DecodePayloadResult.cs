@@ -32,7 +32,7 @@ namespace LoRaWan.NetworkServer
 
         public DecodePayloadResult(object value)
         {
-            this.Value = value;
+            Value = value;
         }
 
         public DecodePayloadResult()
@@ -41,13 +41,13 @@ namespace LoRaWan.NetworkServer
 
         public object GetDecodedPayload()
         {
-            if (!string.IsNullOrEmpty(this.Error) ||
-                !string.IsNullOrEmpty(this.ErrorDetail))
+            if (!string.IsNullOrEmpty(Error) ||
+                !string.IsNullOrEmpty(ErrorDetail))
             {
-                return new DecodingFailedPayload(this.Error, this.ErrorDetail);
+                return new DecodingFailedPayload(Error, ErrorDetail);
             }
 
-            return this.Value;
+            return Value;
         }
     }
 }

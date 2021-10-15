@@ -12,8 +12,8 @@ namespace LoRaWan.Tests.Shared
         public SearchLogEvent(string rawMessage)
         {
             var parsedMessage = Parse(rawMessage);
-            this.Message = parsedMessage.Message;
-            this.SourceId = parsedMessage.SourceId;
+            Message = parsedMessage.Message;
+            SourceId = parsedMessage.SourceId;
         }
 
         internal static (string Message, string SourceId) Parse(string rawMessage)

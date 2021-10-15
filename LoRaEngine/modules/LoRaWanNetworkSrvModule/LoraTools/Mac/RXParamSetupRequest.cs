@@ -21,10 +21,10 @@ namespace LoRaTools
         public override int Length => 5;
 
         [JsonIgnore]
-        public byte RX1DROffset => (byte)((this.DlSettings >> 4) & 0b00001111);
+        public byte RX1DROffset => (byte)((DlSettings >> 4) & 0b00001111);
 
         [JsonIgnore]
-        public byte RX2DataRate => (byte)(this.DlSettings & 0b00001111);
+        public byte RX2DataRate => (byte)(DlSettings & 0b00001111);
 
         public RXParamSetupRequest()
         {
@@ -32,22 +32,22 @@ namespace LoRaTools
 
         public RXParamSetupRequest(byte rx1DROffset, byte rx2DataRateOffset, byte[] frequency)
         {
-            this.DlSettings = (byte)(((rx1DROffset << 4) | rx2DataRateOffset) & 0b01111111);
-            this.Frequency = frequency;
+            DlSettings = (byte)(((rx1DROffset << 4) | rx2DataRateOffset) & 0b01111111);
+            Frequency = frequency;
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return this.Frequency[2];
-            yield return this.Frequency[1];
-            yield return this.Frequency[0];
-            yield return this.DlSettings;
-            yield return (byte)this.Cid;
+            yield return Frequency[2];
+            yield return Frequency[1];
+            yield return Frequency[0];
+            yield return DlSettings;
+            yield return (byte)Cid;
         }
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, rx1 datarate offset: {this.RX1DROffset}, rx2 datarate: {this.RX2DataRate}, frequency plan: {ConversionHelper.ByteArrayToString(this.Frequency)}";
+            return $"Type: {Cid} Answer, rx1 datarate offset: {RX1DROffset}, rx2 datarate: {RX2DataRate}, frequency plan: {ConversionHelper.ByteArrayToString(Frequency)}";
         }
     }
 }

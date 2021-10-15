@@ -37,7 +37,7 @@ namespace LoRaWan.NetworkServer
         {
             var result = await this.loRaDeviceAPIService.CheckDuplicateMsgAsync(this.loRaDevice.DevEUI, fctUp, gatewayId, fcntDown);
 
-            return this.Process(result, fctUp);
+            return Process(result, fctUp);
         }
     }
 }

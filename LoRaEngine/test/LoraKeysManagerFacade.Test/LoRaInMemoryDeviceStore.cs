@@ -67,7 +67,7 @@ namespace LoraKeysManagerFacade.Test
         public T GetObject<T>(string key)
             where T : class
         {
-            var str = this.StringGet(key);
+            var str = StringGet(key);
             if (string.IsNullOrEmpty(str))
             {
                 return null;
@@ -98,7 +98,7 @@ namespace LoraKeysManagerFacade.Test
             where T : class
         {
             var str = value != null ? JsonConvert.SerializeObject(value) : null;
-            return this.StringSet(key, str, expiration, onlyIfNotExists);
+            return StringSet(key, str, expiration, onlyIfNotExists);
         }
 
         public long ListAdd(string key, string value, TimeSpan? expiry = null)

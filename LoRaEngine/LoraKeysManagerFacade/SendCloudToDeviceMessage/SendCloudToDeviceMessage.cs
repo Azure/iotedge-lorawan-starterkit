@@ -55,7 +55,7 @@ namespace LoraKeysManagerFacade
             var c2dMessage = JsonConvert.DeserializeObject<LoRaCloudToDeviceMessage>(requestBody);
             c2dMessage.DevEUI = devEUI;
 
-            return await this.SendCloudToDeviceMessageImplementationAsync(devEUI, c2dMessage);
+            return await SendCloudToDeviceMessageImplementationAsync(devEUI, c2dMessage);
         }
 
         public async Task<IActionResult> SendCloudToDeviceMessageImplementationAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
@@ -78,7 +78,7 @@ namespace LoraKeysManagerFacade
             var cachedPreferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEUI);
             if (cachedPreferredGateway != null && !string.IsNullOrEmpty(cachedPreferredGateway.GatewayID))
             {
-                return await this.SendMessageViaDirectMethodAsync(cachedPreferredGateway.GatewayID, devEUI, c2dMessage);
+                return await SendMessageViaDirectMethodAsync(cachedPreferredGateway.GatewayID, devEUI, c2dMessage);
             }
 
             var queryText = $"SELECT * FROM devices WHERE deviceId = '{devEUI}'";
@@ -120,7 +120,7 @@ namespace LoraKeysManagerFacade
                             var preferredGateway = new LoRaDevicePreferredGateway(gatewayID, 0);
                             _ = LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEUI, preferredGateway, onlyIfNotExists: true);
 
-                            return await this.SendMessageViaDirectMethodAsync(gatewayID, devEUI, c2dMessage);
+                            return await SendMessageViaDirectMethodAsync(gatewayID, devEUI, c2dMessage);
                         }
 
                         // class c device that did not send a single upstream message
@@ -128,7 +128,7 @@ namespace LoraKeysManagerFacade
                     }
 
                     // Not a class C device? Send message using sdk/queue
-                    return await this.SendMessageViaCloudToDeviceMessageAsync(devEUI, c2dMessage);
+                    return await SendMessageViaCloudToDeviceMessageAsync(devEUI, c2dMessage);
                 }
             }
 

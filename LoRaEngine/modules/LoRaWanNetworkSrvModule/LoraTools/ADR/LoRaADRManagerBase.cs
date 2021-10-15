@@ -57,17 +57,17 @@ namespace LoRaTools.ADR
                     || !table.CurrentTxPower.HasValue
                     || fCntUp > currentStrategy.MinimumNumberOfResult)
                 {
-                    result = this.ReturnDefaultValues(dataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
+                    result = ReturnDefaultValues(dataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
                 }
                 else
                 {
-                    result = await this.GetLastResultAsync(devEUI) ?? new LoRaADRResult();
+                    result = await GetLastResultAsync(devEUI) ?? new LoRaADRResult();
                     result.NumberOfFrames = table.Entries.Count;
                     return result;
                 }
             }
 
-            var nextFcntDown = await this.NextFCntDown(devEUI, gatewayId, fCntUp, fCntDown);
+            var nextFcntDown = await NextFCntDown(devEUI, gatewayId, fCntUp, fCntDown);
             result.CanConfirmToDevice = nextFcntDown > 0;
 
             if (result.CanConfirmToDevice)
@@ -82,7 +82,7 @@ namespace LoRaTools.ADR
                 table.CurrentNbRep = result.NbRepetition;
                 table.CurrentTxPower = result.TxPower;
                 await this.store.UpdateADRTable(devEUI, table);
-                this.UpdateState(result);
+                UpdateState(result);
                 result.FCntDown = nextFcntDown;
             }
 

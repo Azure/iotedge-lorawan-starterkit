@@ -21,7 +21,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
         {
             if (context is null) throw new ArgumentNullException(nameof(context));
 
-            context.Result.AdrResult = await this.HandleADRRequest(context.DevEUI, context.Request.AdrRequest);
+            context.Result.AdrResult = await HandleADRRequest(context.DevEUI, context.Request.AdrRequest);
+
             context.Result.NextFCntDown = context.Result.AdrResult != null && context.Result.AdrResult.FCntDown > 0 ? context.Result.AdrResult.FCntDown : (uint?)null;
             return FunctionBundlerExecutionState.Continue;
         }
@@ -40,7 +41,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             // aborts of the full pipeline indicate we do not calculate but we still want to capture the frame
             // if we have one
             context.Request.AdrRequest.PerformADRCalculation = false;
-            context.Result.AdrResult = await this.HandleADRRequest(context.DevEUI, context.Request.AdrRequest);
+            context.Result.AdrResult = await HandleADRRequest(context.DevEUI, context.Request.AdrRequest);
         }
 
         internal async Task<LoRaADRResult> HandleADRRequest(string devEUI, LoRaADRRequest request)

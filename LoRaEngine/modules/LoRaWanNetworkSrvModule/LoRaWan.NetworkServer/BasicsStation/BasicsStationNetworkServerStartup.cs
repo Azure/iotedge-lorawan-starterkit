@@ -19,8 +19,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         public BasicsStationNetworkServerStartup(IConfiguration configuration)
         {
-            this.Configuration = configuration;
-            this.NetworkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
+            Configuration = configuration;
+            NetworkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
         }
 
         public void ConfigureServices(IServiceCollection services)

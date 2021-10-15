@@ -36,7 +36,7 @@ namespace LoRaTools.Regions
 
             frequency = 0;
 
-            if (this.IsValidUpstreamRxpk(upstreamChannel))
+            if (IsValidUpstreamRxpk(upstreamChannel))
             {
                 // in case of EU, you respond on same frequency as you sent data.
                 frequency = upstreamChannel.Freq;

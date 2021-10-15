@@ -41,9 +41,9 @@ namespace LoRaTools.ADR
 
             lock (this.cache)
             {
-                var table = this.cache.GetOrCreate<LoRaADRTable>(entry.DevEUI, (cacheEntry) => new LoRaADRTable());
+                var table = this.cache.GetOrCreate(entry.DevEUI, (cacheEntry) => new LoRaADRTable());
                 AddEntryToTable(table, entry);
-                return Task.FromResult<LoRaADRTable>(table);
+                return Task.FromResult(table);
             }
         }
 

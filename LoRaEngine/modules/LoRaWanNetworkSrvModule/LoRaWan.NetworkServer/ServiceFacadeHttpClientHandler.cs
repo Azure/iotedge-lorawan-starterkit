@@ -30,7 +30,7 @@ namespace LoRaWan.Shared
         /// <param name="minFunctionVersion"></param>
         public ServiceFacadeHttpClientHandler(ApiVersion minFunctionVersion)
         {
-            this.MinFunctionVersion = minFunctionVersion;
+            MinFunctionVersion = minFunctionVersion;
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace LoRaWan.Shared
         /// <param name="next"></param>
         public ServiceFacadeHttpClientHandler(ApiVersion minFunctionVersion, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> next)
         {
-            this.MinFunctionVersion = minFunctionVersion;
+            MinFunctionVersion = minFunctionVersion;
             this.next = next;
         }
 
@@ -55,16 +55,16 @@ namespace LoRaWan.Shared
             if (request is null) throw new ArgumentNullException(nameof(request));
 
             // adds the version to the request
-            request.RequestUri = new Uri(string.Concat(request.RequestUri.ToString(), string.IsNullOrEmpty(request.RequestUri.Query) ? "?" : "&", ApiVersion.QueryStringParamName, "=", this.MinFunctionVersion.Version));
+            request.RequestUri = new Uri(string.Concat(request.RequestUri.ToString(), string.IsNullOrEmpty(request.RequestUri.Query) ? "?" : "&", ApiVersion.QueryStringParamName, "=", MinFunctionVersion.Version));
 
             // use next if one was provided (for unit testing)
             var response = (this.next != null) ? await this.next(request, cancellationToken) : await base.SendAsync(request, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
-                var functionVersion = this.GetFunctionVersion(response);
-                if (!functionVersion.SupportsVersion(this.MinFunctionVersion))
+                var functionVersion = GetFunctionVersion(response);
+                if (!functionVersion.SupportsVersion(MinFunctionVersion))
                 {
-                    var msg = $"Version mismatch (expected: {this.MinFunctionVersion.Name}, function version: {functionVersion.Name}), ensure you have the latest version deployed";
+                    var msg = $"Version mismatch (expected: {MinFunctionVersion.Name}, function version: {functionVersion.Name}), ensure you have the latest version deployed";
 
                     return new HttpResponseMessage(HttpStatusCode.BadRequest)
                     {

@@ -30,17 +30,17 @@ namespace LoRaWan.Tests.E2E
         [RetryFact]
         public async Task OTAA_Join_With_Valid_Device_Updates_DeviceTwin()
         {
-            var device = this.TestFixtureCi.Device1_OTAA;
-            this.LogTestStart(device);
+            var device = TestFixtureCi.Device1_OTAA;
+            LogTestStart(device);
 
-            var twinBeforeJoin = await this.TestFixtureCi.GetTwinAsync(device.DeviceID);
-            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            var twinBeforeJoin = await TestFixtureCi.GetTwinAsync(device.DeviceID);
+            await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
 
-            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
 
             Assert.True(joinSucceeded, "Join failed");
 
@@ -52,11 +52,11 @@ namespace LoRaWan.Tests.E2E
             // Assert.Contains("+JOIN: Network joined", this.lora.SerialLogs);
             await AssertUtils.ContainsWithRetriesAsync(
                 (s) => s.StartsWith("+JOIN: NetID", StringComparison.Ordinal),
-                this.ArduinoDevice.SerialLogs);
+                ArduinoDevice.SerialLogs);
 
             // verify status in device twin
             await Task.Delay(TimeSpan.FromSeconds(60));
-            var twinAfterJoin = await this.TestFixtureCi.GetTwinAsync(device.DeviceID);
+            var twinAfterJoin = await TestFixtureCi.GetTwinAsync(device.DeviceID);
             Assert.NotNull(twinAfterJoin);
             Assert.NotNull(twinAfterJoin.Properties.Reported);
             try
@@ -75,15 +75,15 @@ namespace LoRaWan.Tests.E2E
                 Assert.NotEqual(devAddrAfter, devAddrBefore);
                 Assert.Equal(device.DeviceID, actualReportedDevEUI);
                 Assert.True(twinBeforeJoin.Properties.Reported.Version < twinAfterJoin.Properties.Reported.Version, "Twin was not updated after join");
-                this.Log($"[INFO] Twin was updated successfully. Version changed from {twinBeforeJoin.Properties.Reported.Version} to {twinAfterJoin.Properties.Reported.Version}");
+                Log($"[INFO] Twin was updated successfully. Version changed from {twinBeforeJoin.Properties.Reported.Version} to {twinAfterJoin.Properties.Reported.Version}");
             }
             catch (XunitException xunitException)
             {
-                if (this.TestFixtureCi.Configuration.IoTHubAssertLevel == LogValidationAssertLevel.Warning)
+                if (TestFixtureCi.Configuration.IoTHubAssertLevel == LogValidationAssertLevel.Warning)
                 {
-                    this.Log($"[WARN] {nameof(this.OTAA_Join_With_Valid_Device_Updates_DeviceTwin)} failed. {xunitException.ToString()}");
+                    Log($"[WARN] {nameof(OTAA_Join_With_Valid_Device_Updates_DeviceTwin)} failed. {xunitException.ToString()}");
                 }
-                else if (this.TestFixtureCi.Configuration.IoTHubAssertLevel == LogValidationAssertLevel.Error)
+                else if (TestFixtureCi.Configuration.IoTHubAssertLevel == LogValidationAssertLevel.Error)
                 {
                     throw;
                 }
@@ -96,18 +96,18 @@ namespace LoRaWan.Tests.E2E
         [RetryFact]
         public async Task OTAA_Join_With_Wrong_DevEUI_Fails()
         {
-            var device = this.TestFixtureCi.Device2_OTAA;
-            this.LogTestStart(device);
-            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            var device = TestFixtureCi.Device2_OTAA;
+            LogTestStart(device);
+            await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
 
-            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 3);
+            var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 3);
             Assert.False(joinSucceeded, "Join suceeded for invalid DevEUI");
 
-            await this.ArduinoDevice.WaitForIdleAsync();
+            await ArduinoDevice.WaitForIdleAsync();
         }
 
         // Ensure that a join with an invalid AppKey fails
@@ -115,23 +115,23 @@ namespace LoRaWan.Tests.E2E
         [RetryFact]
         public async Task OTAA_Join_With_Wrong_AppKey_Fails()
         {
-            var device = this.TestFixtureCi.Device3_OTAA;
-            this.LogTestStart(device);
+            var device = TestFixtureCi.Device3_OTAA;
+            LogTestStart(device);
             var appKeyToUse = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
             Assert.NotEqual(appKeyToUse, device.AppKey);
-            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, appKeyToUse);
+            await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, appKeyToUse);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
 
-            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 3);
+            var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 3);
             Assert.False(joinSucceeded, "Join suceeded for invalid AppKey (mic check should fail)");
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync(
+            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync(
                 $"{device.DeviceID}: join refused: invalid MIC",
                 $"{device.DeviceID}: join request MIC invalid");
 
-            await this.ArduinoDevice.WaitForIdleAsync();
+            await ArduinoDevice.WaitForIdleAsync();
         }
 
         // Ensure that a join with an invalid AppKey fails
@@ -139,47 +139,47 @@ namespace LoRaWan.Tests.E2E
         [RetryFact]
         public async Task OTAA_Join_With_Wrong_AppEUI_Fails()
         {
-            var device = this.TestFixtureCi.Device13_OTAA;
-            this.LogTestStart(device);
+            var device = TestFixtureCi.Device13_OTAA;
+            LogTestStart(device);
 
             var appEUIToUse = "FF7A00000000FCE3";
             Assert.NotEqual(appEUIToUse, device.AppEUI);
-            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, appEUIToUse);
-            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, appEUIToUse);
+            await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
 
-            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 3);
+            var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 3);
             Assert.False(joinSucceeded, "Join suceeded for invalid AppKey");
 
-            await this.ArduinoDevice.WaitForIdleAsync();
+            await ArduinoDevice.WaitForIdleAsync();
         }
 
         [RetryFact]
         public Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR_Single()
         {
-            return this.Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(nameof(this.TestFixtureCi.Device20_OTAA));
+            return Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(nameof(TestFixtureCi.Device20_OTAA));
         }
 
         [RetryFact]
         public Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR_MultiGw()
         {
-            return this.Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(nameof(this.TestFixtureCi.Device20_OTAA_MultiGw));
+            return Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(nameof(TestFixtureCi.Device20_OTAA_MultiGw));
         }
 
         // Performs a OTAA join and sends 1 unconfirmed, 1 confirmed and rejoins
         private async Task Test_OTAA_Join_Send_And_Rejoin_With_Custom_RX2_DR(string devicePropertyName)
         {
-            var device = this.TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
-            this.LogTestStart(device);
-            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            var device = TestFixtureCi.GetDeviceByPropertyName(devicePropertyName);
+            LogTestStart(device);
+            await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
 
-            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
 
-            var joinSucceeded = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            var joinSucceeded = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded, "Join failed");
 
             // wait 1 second after joined
@@ -187,77 +187,77 @@ namespace LoRaWan.Tests.E2E
 
             if (device.IsMultiGw)
             {
-                await this.TestFixtureCi.WaitForTwinSyncAfterJoinAsync(this.ArduinoDevice.SerialLogs, device.DeviceID);
+                await TestFixtureCi.WaitForTwinSyncAfterJoinAsync(ArduinoDevice.SerialLogs, device.DeviceID);
             }
 
             // Sends 1x unconfirmed messages
-            this.TestFixtureCi.ClearLogs();
+            TestFixtureCi.ClearLogs();
 
             var msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
-            await this.ArduinoDevice.transferPacketAsync(msg, 10);
+            await ArduinoDevice.transferPacketAsync(msg, 10);
 
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
             // After transferPacket: Expectation from serial
             // +MSG: Done
-            await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", this.ArduinoDevice.SerialLogs);
+            await AssertUtils.ContainsWithRetriesAsync("+MSG: Done", ArduinoDevice.SerialLogs);
 
             // 0000000000000004: valid frame counter, msg: 1 server: 0
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
+            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: valid frame counter, msg:");
 
             // 0000000000000004: decoding with: DecoderValueSensor port: 8
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
 
             // 0000000000000004: message '{"value": 51}' sent to hub
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
             // Ensure device payload is available
             // Data: {"value": 51}
             var expectedPayload = $"{{\"value\":{msg}}}";
-            await this.TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
-            this.TestFixtureCi.ClearLogs();
+            TestFixtureCi.ClearLogs();
 
             msg = PayloadGenerator.Next().ToString(CultureInfo.InvariantCulture);
-            await this.ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
+            await ArduinoDevice.transferPacketWithConfirmedAsync(msg, 10);
 
             await Task.Delay(Constants.DELAY_FOR_SERIAL_AFTER_SENDING_PACKET);
 
             // After transferPacketWithConfirmed: Expectation from serial
             // +CMSG: ACK Received
-            await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", this.ArduinoDevice.SerialLogs);
+            await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
             // Checking than the communication occurs on DR 4 and RX2 as part of preferred windows RX2 and custom RX2 DR
-            await AssertUtils.ContainsWithRetriesAsync(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.Ordinal), this.ArduinoDevice.SerialLogs);
-            await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"datr\":\"SF9BW125\"", StringComparison.Ordinal), null);
+            await AssertUtils.ContainsWithRetriesAsync(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.Ordinal), ArduinoDevice.SerialLogs);
+            await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync(x => x.Contains($"\"datr\":\"SF9BW125\"", StringComparison.Ordinal), null);
 
             // 0000000000000004: decoding with: DecoderValueSensor port: 8
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
+            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: decoding with: {device.SensorDecoder} port:");
 
             // 0000000000000004: message '{"value": 51}' sent to hub
-            await this.TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
+            await TestFixtureCi.AssertNetworkServerModuleLogStartsWithAsync($"{device.DeviceID}: message '{{\"value\":{msg}}}' sent to hub");
 
             // Ensure device payload is available
             // Data: {"value": 51}
             expectedPayload = $"{{\"value\":{msg}}}";
-            await this.TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
+            await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
 
             await Task.Delay(Constants.DELAY_BETWEEN_MESSAGES);
 
             // rejoin
-            await this.ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
-            await this.ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
-            await this.ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
-            await this.ArduinoDevice.SetupLora(this.TestFixtureCi.Configuration.LoraRegion);
-            var joinSucceeded2 = await this.ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
+            await ArduinoDevice.setDeviceModeAsync(LoRaArduinoSerial._device_mode_t.LWOTAA);
+            await ArduinoDevice.setIdAsync(device.DevAddr, device.DeviceID, device.AppEUI);
+            await ArduinoDevice.setKeyAsync(device.NwkSKey, device.AppSKey, device.AppKey);
+            await ArduinoDevice.SetupLora(TestFixtureCi.Configuration.LoraRegion);
+            var joinSucceeded2 = await ArduinoDevice.setOTAAJoinAsyncWithRetry(LoRaArduinoSerial._otaa_join_cmd_t.JOIN, 20000, 5);
             Assert.True(joinSucceeded2, "Rejoin failed");
 
             if (device.IsMultiGw)
             {
                 const string joinRefusedMsg = "join refused";
-                var joinRefused = await this.TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg, StringComparison.Ordinal) != -1, new SearchLogOptions(joinRefusedMsg));
+                var joinRefused = await TestFixtureCi.AssertNetworkServerModuleLogExistsAsync((s) => s.IndexOf(joinRefusedMsg, StringComparison.Ordinal) != -1, new SearchLogOptions(joinRefusedMsg));
                 Assert.True(joinRefused.Found);
             }
         }

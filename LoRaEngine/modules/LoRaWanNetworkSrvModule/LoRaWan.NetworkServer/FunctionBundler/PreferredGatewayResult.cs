@@ -35,6 +35,6 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Indicates if the preferred gateway resolution was executed successfully.
         /// </summary>
-        internal bool IsSuccessful() => !this.Conflict && string.IsNullOrEmpty(this.ErrorMessage);
+        internal bool IsSuccessful() => !Conflict && string.IsNullOrEmpty(ErrorMessage);
     }
 }

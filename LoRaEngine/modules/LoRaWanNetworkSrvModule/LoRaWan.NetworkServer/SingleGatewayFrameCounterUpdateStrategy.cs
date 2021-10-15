@@ -13,7 +13,7 @@ namespace LoRaWan.NetworkServer
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
             loRaDevice.ResetFcnt();
-            return await this.InternalSaveChangesAsync(loRaDevice, force: true);
+            return await InternalSaveChangesAsync(loRaDevice, force: true);
         }
 
         public ValueTask<uint> NextFcntDown(LoRaDevice loRaDevice, uint messageFcnt)
@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer
         public Task<bool> SaveChangesAsync(LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
-            return this.InternalSaveChangesAsync(loRaDevice, force: false);
+            return InternalSaveChangesAsync(loRaDevice, force: false);
         }
 
         private async Task<bool> InternalSaveChangesAsync(LoRaDevice loRaDevice, bool force)

@@ -17,12 +17,12 @@ namespace LoRaWan.NetworkServer
 
         public ChangeTrackingProperty(string propertyName)
         {
-            this.PropertyName = propertyName;
+            PropertyName = propertyName;
         }
 
         public ChangeTrackingProperty(string propertyName, T value)
         {
-            this.PropertyName = propertyName;
+            PropertyName = propertyName;
             this.current = this.original = value;
         }
 

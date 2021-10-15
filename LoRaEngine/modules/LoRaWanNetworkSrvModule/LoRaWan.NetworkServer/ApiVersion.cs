@@ -151,9 +151,9 @@ namespace LoRaWan.Shared
 
         private ApiVersion(string version, string name = null, bool isKnown = true)
         {
-            this.Version = version;
-            this.Name = name ?? version;
-            this.IsKnown = isKnown;
+            Version = version;
+            Name = name ?? version;
+            IsKnown = isKnown;
         }
 
         static ApiVersion()
@@ -227,28 +227,28 @@ namespace LoRaWan.Shared
         {
             return other != null &&
                 other.IsKnown &&
-                this.IsKnown &&
+                IsKnown &&
                 this >= other &&
-                (this.MinCompatibleVersion == null || this.MinCompatibleVersion <= other);
+                (MinCompatibleVersion == null || MinCompatibleVersion <= other);
         }
 
-        public override int GetHashCode() => this.Version.GetHashCode(StringComparison.Ordinal);
+        public override int GetHashCode() => Version.GetHashCode(StringComparison.Ordinal);
 
         public int CompareTo(ApiVersion other)
         {
             if (other is null) throw new ArgumentNullException(nameof(other));
 
-            if (this.Equals(other)) return 0;
-            return string.Compare(this.Version, other.Version, StringComparison.Ordinal);
+            if (Equals(other)) return 0;
+            return string.Compare(Version, other.Version, StringComparison.Ordinal);
         }
 
-        public override string ToString() => this.Version.ToString();
+        public override string ToString() => Version.ToString();
 
         public override bool Equals(object obj) =>
             obj is ApiVersion version &&
-            this.Version == version.Version &&
-            this.Name == version.Name &&
-            this.IsKnown == version.IsKnown;
+            Version == version.Version &&
+            Name == version.Name &&
+            IsKnown == version.IsKnown;
 
         public static bool operator <(ApiVersion value1, ApiVersion value2)
         {

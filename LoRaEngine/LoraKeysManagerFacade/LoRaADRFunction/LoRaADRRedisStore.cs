@@ -82,7 +82,7 @@ namespace LoraKeysManagerFacade
                 if (await redisLock.TakeLockAsync())
                 {
                     var entryKey = GetEntryKey(entry.DevEUI);
-                    table = await this.GetADRTableCore(entryKey) ?? new LoRaADRTable();
+                    table = await GetADRTableCore(entryKey) ?? new LoRaADRTable();
 
                     AddEntryToTable(table, entry);
 
@@ -100,7 +100,7 @@ namespace LoraKeysManagerFacade
             {
                 if (await redisLock.TakeLockAsync())
                 {
-                    return await this.GetADRTableCore(GetEntryKey(devEUI));
+                    return await GetADRTableCore(GetEntryKey(devEUI));
                 }
             }
 

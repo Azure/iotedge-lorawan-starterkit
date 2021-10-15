@@ -59,7 +59,7 @@ namespace LoraKeysManagerFacade
 
             try
             {
-                var results = await this.GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
+                var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
                 var json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);
             }
@@ -84,7 +84,7 @@ namespace LoraKeysManagerFacade
 
             if (devEUI != null)
             {
-                var joinInfo = await this.TryGetJoinInfoAndValidateAsync(devEUI, gatewayId, log);
+                var joinInfo = await TryGetJoinInfoAndValidateAsync(devEUI, gatewayId, log);
 
                 // OTAA join
                 using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId))
@@ -145,7 +145,7 @@ namespace LoraKeysManagerFacade
                                     {
                                         // we need to load the primaryKey from IoTHub
                                         // Add a lock loadPrimaryKey get lock get
-                                        devAddressesInfo[i].PrimaryKey = await this.LoadPrimaryKeyAsync(devAddressesInfo[i].DevEUI);
+                                        devAddressesInfo[i].PrimaryKey = await LoadPrimaryKeyAsync(devAddressesInfo[i].DevEUI);
                                         results.Add(devAddressesInfo[i]);
                                         _ = devAddrCache.StoreInfo(devAddressesInfo[i]);
                                     }
