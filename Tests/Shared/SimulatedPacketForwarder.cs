@@ -78,7 +78,7 @@ namespace LoRaWan.Tests.Shared
         private Task pullDataTask;
         private Task listenerTask;
 
-        byte[] GetRandomToken()
+        static byte[] GetRandomToken()
         {
             // random is not thread safe
             var token = new byte[2];
