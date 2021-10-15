@@ -106,11 +106,13 @@ namespace LoRaWanTest
             Assert.False(lesser > greater);
             Assert.True(greater > lesser);
 
+#pragma warning disable CS1718 // Comparison made to same variable (unit tests for operator)
             Assert.True(lesser <= lesser);
             Assert.True(lesser <= greater);
             Assert.False(greater <= lesser);
 
             Assert.True(greater >= greater);
+#pragma warning restore CS1718 // Comparison made to same variable
             Assert.True(greater >= lesser);
             Assert.False(lesser >= greater);
         }

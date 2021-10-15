@@ -71,7 +71,9 @@ namespace LoRaWan
             for (; !bytes.IsEmpty; bytes = bytes[sizeof(ushort)..])
             {
                 bool colon;
+#pragma warning disable IDE0072 // Add missing cases (false positive)
                 (colon, state) = state switch
+#pragma warning restore IDE0072 // Add missing cases
                 {
                     var s and (FormatterState.Word or FormatterState.Blank or FormatterState.ColonColonWord)  => (true, s),
                     FormatterState.WordColonBlank or FormatterState.BlankColonBlank => (true, FormatterState.ColonColon),
@@ -88,7 +90,9 @@ namespace LoRaWan
                 {
                     tw.CopyTo(chars[i..]);
                     i += tw.Length;
+#pragma warning disable IDE0072 // Add missing cases (false positive)
                     state = (state, colon) switch
+#pragma warning restore IDE0072 // Add missing cases
                     {
                         (FormatterState.Init, _) or (FormatterState.Word or FormatterState.Blank, true) => FormatterState.Word,
                         (FormatterState.ColonColon, _) or (FormatterState.ColonColonWord, true) => FormatterState.ColonColonWord,
@@ -97,7 +101,9 @@ namespace LoRaWan
                 }
                 else
                 {
+#pragma warning disable IDE0072 // Add missing cases (false positive)
                     state = (state, colon) switch
+#pragma warning restore IDE0072 // Add missing cases
                     {
                         (FormatterState.Init, _) => FormatterState.Blank,
                         (FormatterState.Word, true) => FormatterState.WordColonBlank,
@@ -240,6 +246,7 @@ namespace LoRaWan
                 case (1, 1): (d, b) = (b, 0); break;
                 case (1, 2): (d, c, b) = (c, b, 0); break;
                 case (2, 2): (d, c) = (c, 0); break;
+                default: throw new NotImplementedException("Internal implementation error.");
             }
 
             result = ((ulong)a << 48) | ((ulong)b << 32) | ((ulong)c << 16) | d;

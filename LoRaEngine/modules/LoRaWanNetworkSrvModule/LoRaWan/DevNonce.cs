@@ -20,11 +20,13 @@ namespace LoRaWan
     {
         public const int Size = sizeof(ushort);
 
+#pragma warning disable IDE0032 // Use auto property (explicit name)
         readonly ushort value;
 
         public DevNonce(ushort value) => this.value = value;
 
         public ushort AsUInt16 => this.value;
+#pragma warning restore IDE0032 // Use auto property
 
         public bool Equals(DevNonce other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is DevNonce other && this.Equals(other);
