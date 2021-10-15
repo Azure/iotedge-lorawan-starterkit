@@ -90,7 +90,7 @@ namespace LoRaWan.Tests.Shared
             if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
                 return null;
 
-            return await AssertNetworkServerModuleLogExistsAsync((input) => input.StartsWith(logMessageStart), new SearchLogOptions(logMessageStart));
+            return await AssertNetworkServerModuleLogExistsAsync((input) => input.StartsWith(logMessageStart, StringComparison.Ordinal), new SearchLogOptions(logMessageStart));
         }
 
         public async Task AssertNetworkServerModuleLogStartsWithAsync(string logMessageStart1, string logMessageStart2)
@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.Shared
                 return;
 
             await AssertNetworkServerModuleLogExistsAsync(
-                (input) => input.StartsWith(logMessageStart1) || input.StartsWith(logMessageStart2),
+                (input) => input.StartsWith(logMessageStart1, StringComparison.Ordinal) || input.StartsWith(logMessageStart2, StringComparison.Ordinal),
                 new SearchLogOptions(string.Concat(logMessageStart1, " or ", logMessageStart2)));
         }
 
@@ -199,10 +199,10 @@ namespace LoRaWan.Tests.Shared
         /// <param name="devEUI">The device EUI of the current device.</param>
         public async Task<bool> WaitForTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, string devEUI)
         {
-            var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID"));
+            var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID", StringComparison.Ordinal));
             Assert.NotNull(joinConfirmMsg);
             var devAddr = joinConfirmMsg[(joinConfirmMsg.LastIndexOf(' ') + 1)..];
-            devAddr = devAddr.Replace(":", string.Empty);
+            devAddr = devAddr.Replace(":", string.Empty, StringComparison.Ordinal);
 
             // wait for the twins to be stored and published -> all GW need the same state
             const int DelayForJoinTwinStore = 20 * 1000;
@@ -216,7 +216,7 @@ namespace LoRaWan.Tests.Shared
                 var twins = await GetTwinAsync(devEUI);
                 if (twins.Properties.Reported.Contains(DevAddrProperty))
                 {
-                    reported = devAddr.Equals(twins.Properties.Reported[DevAddrProperty].Value as string, StringComparison.InvariantCultureIgnoreCase);
+                    reported = devAddr.Equals(twins.Properties.Reported[DevAddrProperty].Value as string, StringComparison.OrdinalIgnoreCase);
                 }
             }
 
@@ -288,15 +288,15 @@ namespace LoRaWan.Tests.Shared
             SearchLogResult log;
             if (isUpstream)
             {
-                log = await SearchIoTHubLogs(x => x.Contains(message), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+                log = await SearchIoTHubLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
             }
             else
             {
-                log = await SearchUdpLogs(x => x.Contains(message), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+                log = await SearchUdpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
             }
 
-            var timeIndexStart = log.FoundLogResult.IndexOf(token) + token.Length;
-            var timeIndexStop = log.FoundLogResult.IndexOf(",", timeIndexStart);
+            var timeIndexStart = log.FoundLogResult.IndexOf(token, StringComparison.Ordinal) + token.Length;
+            var timeIndexStop = log.FoundLogResult.IndexOf(",", timeIndexStart, StringComparison.Ordinal);
             uint parsedValue = 0;
             var success = false;
             if (timeIndexStart > 0 && timeIndexStop > 0)
@@ -341,7 +341,7 @@ namespace LoRaWan.Tests.Shared
                 {
                     var searchLogEvent = new SearchLogEvent(item);
                     processedEvents.Add(searchLogEvent);
-                    if (!string.IsNullOrEmpty(sourceIdFilter) && !sourceIdFilter.Equals(searchLogEvent.SourceId))
+                    if (!string.IsNullOrEmpty(sourceIdFilter) && !sourceIdFilter.Equals(searchLogEvent.SourceId, StringComparison.Ordinal))
                     {
                         continue;
                     }

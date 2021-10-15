@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace LoRaWan.Tests.Shared
 {
     public class SearchLogEvent
@@ -26,7 +28,7 @@ namespace LoRaWan.Tests.Shared
                 message = rawMessage.Trim();
                 if (message.StartsWith('['))
                 {
-                    var idxEnd = message.IndexOf(']');
+                    var idxEnd = message.IndexOf(']', StringComparison.Ordinal);
                     if (idxEnd != -1)
                     {
                         if (message.Length >= idxEnd + 1)

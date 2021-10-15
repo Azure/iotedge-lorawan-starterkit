@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Shared
 {
     using System.Collections.Generic;
+    using System.Globalization;
     using LoRaTools.Utils;
 
     public class TestDeviceInfo
@@ -115,9 +116,9 @@ namespace LoRaWan.Tests.Shared
         /// </summary>
         public static TestDeviceInfo CreateABPDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", uint netId = 1, char deviceClassType = 'A', bool supports32BitFcnt = false)
         {
-            var value8 = deviceID.ToString("00000000");
-            var value16 = deviceID.ToString("0000000000000000");
-            var value32 = deviceID.ToString("00000000000000000000000000000000");
+            var value8 = deviceID.ToString("00000000", CultureInfo.InvariantCulture);
+            var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
+            var value32 = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture);
 
             if (!string.IsNullOrEmpty(prefix))
             {
@@ -148,8 +149,8 @@ namespace LoRaWan.Tests.Shared
         /// <param name="deviceID">Device identifier. It will padded with 0's.</param>
         public static TestDeviceInfo CreateOTAADevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", char deviceClassType = 'A')
         {
-            var value16 = deviceID.ToString("0000000000000000");
-            var value32 = deviceID.ToString("00000000000000000000000000000000");
+            var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
+            var value32 = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture);
 
             if (!string.IsNullOrEmpty(prefix))
             {
