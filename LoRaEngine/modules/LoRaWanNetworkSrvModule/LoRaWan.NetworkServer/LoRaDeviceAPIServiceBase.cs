@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
@@ -42,9 +43,9 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Sets the new URL value.
         /// </summary>
-        public void SetURL(string value) => this.URL = this.SanitizeApiURL(value);
+        public void SetURL(string value) => URL = SanitizeApiURL(value);
 
-        private string SanitizeApiURL(string value)
+        private static string SanitizeApiURL(string value)
         {
             if (string.IsNullOrEmpty(value))
                 return string.Empty;
@@ -59,7 +60,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Sets the authorization code for the URL.
         /// </summary>
-        public void SetAuthCode(string value) => this.AuthCode = value;
+        public void SetAuthCode(string value) => AuthCode = value;
 
         /// <summary>
         /// Validates if the specified message from the device
@@ -79,8 +80,9 @@ namespace LoRaWan.NetworkServer
 
         protected LoRaDeviceAPIServiceBase(NetworkServerConfiguration configuration)
         {
-            this.AuthCode = configuration.FacadeAuthCode;
-            this.URL = this.SanitizeApiURL(configuration.FacadeServerUrl);
+            if (configuration is null) throw new ArgumentNullException(nameof(configuration));
+            AuthCode = configuration.FacadeAuthCode;
+            URL = SanitizeApiURL(configuration.FacadeServerUrl);
         }
 
         protected static ByteArrayContent PreparePostContent(string requestBody)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools
@@ -21,51 +21,60 @@ namespace LoRaTools
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            JObject item = JObject.Load(reader);
+            if (serializer is null) throw new ArgumentNullException(nameof(serializer));
+         
+            var item = JObject.Load(reader);
             var cidPropertyValue = item["cid"].Value<string>();
             if (string.IsNullOrEmpty(cidPropertyValue))
             {
                 throw new JsonReaderException("Undefined mac command identifier");
             }
 
-            if (Enum.TryParse<CidEnum>(cidPropertyValue, true, out var macCommandType))
+            if (Enum.TryParse<Cid>(cidPropertyValue, true, out var macCommandType))
             {
                 switch (macCommandType)
                 {
-                    case CidEnum.DevStatusCmd:
+                    case Cid.DevStatusCmd:
                     {
                         var cmd = new DevStatusRequest();
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
 
-                    case CidEnum.DutyCycleCmd:
+                    case Cid.DutyCycleCmd:
                     {
                         var cmd = new DutyCycleRequest();
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
 
-                    case CidEnum.NewChannelCmd:
+                    case Cid.NewChannelCmd:
                     {
                         var cmd = new NewChannelRequest();
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
 
-                    case CidEnum.RXParamCmd:
+                    case Cid.RXParamCmd:
                     {
                         var cmd = new RXParamSetupRequest();
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
 
-                    case CidEnum.RXTimingCmd:
+                    case Cid.RXTimingCmd:
                     {
                         var cmd = new RXTimingSetupRequest();
                         serializer.Populate(item.CreateReader(), cmd);
                         return cmd;
                     }
+
+                    case Cid.Zero:
+                    case Cid.One:
+                    case Cid.LinkCheckCmd:
+                    case Cid.LinkADRCmd:
+                    default:
+                        throw new JsonReaderException($"Unhandled command identifier: {macCommandType}");
                 }
             }
 

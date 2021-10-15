@@ -23,8 +23,8 @@ namespace LoRaWan.NetworkServer
         private DeviceClient deviceClient;
 
         // TODO: verify if those are thread safe and can be static
-        NoRetry noRetryPolicy;
-        ExponentialBackoff exponentialBackoff;
+        readonly NoRetry noRetryPolicy;
+        readonly ExponentialBackoff exponentialBackoff;
 
         public LoRaDeviceClient(string devEUI, string connectionString, ITransportSettings[] transportSettings)
         {
@@ -36,7 +36,7 @@ namespace LoRaWan.NetworkServer
             this.transportSettings = transportSettings;
             this.deviceClient = DeviceClient.CreateFromConnectionString(this.connectionString, this.transportSettings);
 
-            this.SetRetry(false);
+            SetRetry(false);
         }
 
         private void SetRetry(bool retryon)
@@ -63,7 +63,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 60000;
 
-                this.SetRetry(true);
+                SetRetry(true);
 
                 Logger.Log(this.devEUI, $"getting device twin", LogLevel.Debug);
 
@@ -80,7 +80,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 
@@ -90,7 +90,7 @@ namespace LoRaWan.NetworkServer
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 120000;
 
-                this.SetRetry(true);
+                SetRetry(true);
 
                 Logger.Log(this.devEUI, $"updating twin", LogLevel.Debug);
 
@@ -107,7 +107,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 
@@ -120,10 +120,10 @@ namespace LoRaWan.NetworkServer
                     this.deviceClient.OperationTimeoutInMilliseconds = 120000;
 
                     // Enable retry for this send message, off by default
-                    this.SetRetry(true);
+                    SetRetry(true);
 
                     var messageJson = JsonConvert.SerializeObject(telemetry, Formatting.None);
-                    var message = new Message(Encoding.UTF8.GetBytes(messageJson));
+                    using var message = new Message(Encoding.UTF8.GetBytes(messageJson));
 
                     Logger.Log(this.devEUI, $"sending message {messageJson} to hub", LogLevel.Debug);
 
@@ -147,7 +147,7 @@ namespace LoRaWan.NetworkServer
                 finally
                 {
                     // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                    this.SetRetry(false);
+                    SetRetry(false);
                 }
             }
 
@@ -162,11 +162,11 @@ namespace LoRaWan.NetworkServer
                 // Should not return an operation timeout since we wait less that it
                 this.deviceClient.OperationTimeoutInMilliseconds = (uint)(timeout.TotalMilliseconds + 1000);
 
-                this.SetRetry(true);
+                SetRetry(true);
 
                 Logger.Log(this.devEUI, $"checking cloud to device message for {timeout}", LogLevel.Debug);
 
-                Message msg = await this.deviceClient.ReceiveAsync(timeout);
+                var msg = await this.deviceClient.ReceiveAsync(timeout);
 
                 if (Logger.LoggerLevel >= LogLevel.Debug)
                 {
@@ -186,91 +186,97 @@ namespace LoRaWan.NetworkServer
             finally
             {
                 // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 
-        public async Task<bool> CompleteAsync(Message message)
+        public async Task<bool> CompleteAsync(Message cloudToDeviceMessage)
         {
+            if (cloudToDeviceMessage is null) throw new ArgumentNullException(nameof(cloudToDeviceMessage));
+
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
-                this.SetRetry(true);
+                SetRetry(true);
 
-                Logger.Log(this.devEUI, $"completing cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
-                await this.deviceClient.CompleteAsync(message);
+                await this.deviceClient.CompleteAsync(cloudToDeviceMessage);
 
-                Logger.Log(this.devEUI, $"done completing cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"done completing cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.Log(this.devEUI, $"could not complete cloud to device message (id: {message.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
+                Logger.Log(this.devEUI, $"could not complete cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
                 return false;
             }
             finally
             {
                 // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 
-        public async Task<bool> AbandonAsync(Message message)
+        public async Task<bool> AbandonAsync(Message cloudToDeviceMessage)
         {
+            if (cloudToDeviceMessage is null) throw new ArgumentNullException(nameof(cloudToDeviceMessage));
+
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
-                this.SetRetry(true);
+                SetRetry(true);
 
-                Logger.Log(this.devEUI, $"abandoning cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
-                await this.deviceClient.AbandonAsync(message);
+                await this.deviceClient.AbandonAsync(cloudToDeviceMessage);
 
-                Logger.Log(this.devEUI, $"done abandoning cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"done abandoning cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.Log(this.devEUI, $"could not abandon cloud to device message (id: {message.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
+                Logger.Log(this.devEUI, $"could not abandon cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
                 return false;
             }
             finally
             {
                 // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 
-        public async Task<bool> RejectAsync(Message message)
+        public async Task<bool> RejectAsync(Message cloudToDeviceMessage)
         {
+            if (cloudToDeviceMessage is null) throw new ArgumentNullException(nameof(cloudToDeviceMessage));
+
             try
             {
                 this.deviceClient.OperationTimeoutInMilliseconds = 30000;
 
-                this.SetRetry(true);
+                SetRetry(true);
 
-                Logger.Log(this.devEUI, $"rejecting cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
-                await this.deviceClient.RejectAsync(message);
+                await this.deviceClient.RejectAsync(cloudToDeviceMessage);
 
-                Logger.Log(this.devEUI, $"done rejecting cloud to device message, id: {message.MessageId ?? "undefined"}", LogLevel.Debug);
+                Logger.Log(this.devEUI, $"done rejecting cloud to device message, id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Debug);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.Log(this.devEUI, $"could not reject cloud to device message (id: {message.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
+                Logger.Log(this.devEUI, $"could not reject cloud to device message (id: {cloudToDeviceMessage.MessageId ?? "undefined"}) with error: {ex.Message}", LogLevel.Error);
                 return false;
             }
             finally
             {
                 // disable retry, this allows the server to close the connection if another gateway tries to open the connection for the same device
-                this.SetRetry(false);
+                SetRetry(false);
             }
         }
 

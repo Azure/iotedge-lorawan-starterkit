@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -8,7 +8,7 @@ namespace LoRaWan.NetworkServer.Test
     /// </summary>
     internal class SingleDeviceConnectionManager : ILoRaDeviceClientConnectionManager
     {
-        private ILoRaDeviceClient singleDeviceClient;
+        private readonly ILoRaDeviceClient singleDeviceClient;
 
         public SingleDeviceConnectionManager(ILoRaDeviceClient deviceClient)
         {
@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer.Test
 
         public bool EnsureConnected(LoRaDevice loRaDevice) => true;
 
-        public ILoRaDeviceClient Get(LoRaDevice loRaDevice) => this.singleDeviceClient;
+        public ILoRaDeviceClient GetClient(LoRaDevice loRaDevice) => this.singleDeviceClient;
 
         public void Register(LoRaDevice loRaDevice, ILoRaDeviceClient loraDeviceClient)
         {
@@ -31,5 +31,7 @@ namespace LoRaWan.NetworkServer.Test
         public void TryScanExpiredItems()
         {
         }
+
+        public void Dispose() => this.singleDeviceClient.Dispose();
     }
 }

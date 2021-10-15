@@ -1,13 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
 {
-    public interface ILoRaDeviceClientConnectionManager
+    using System;
+
+    public interface ILoRaDeviceClientConnectionManager : IDisposable
     {
         bool EnsureConnected(LoRaDevice loRaDevice);
 
-        ILoRaDeviceClient Get(LoRaDevice loRaDevice);
+        ILoRaDeviceClient GetClient(LoRaDevice loRaDevice);
 
         void Release(LoRaDevice loRaDevice);
 

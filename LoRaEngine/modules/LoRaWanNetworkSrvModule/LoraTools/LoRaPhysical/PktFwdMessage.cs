@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.LoRaPhysical
 {
+    using Newtonsoft.Json;
     using System;
 
     /// <summary>
@@ -11,7 +12,8 @@ namespace LoRaTools.LoRaPhysical
     public abstract class PktFwdMessage
     {
         [Obsolete("toremove")]
-        public abstract PktFwdMessageAdapter GetPktFwdMessage();
+        [JsonIgnore]
+        public abstract PktFwdMessageAdapter PktFwdMessageAdapter { get; }
 
         enum PktFwdType
         {

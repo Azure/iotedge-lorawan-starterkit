@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.Test
@@ -14,8 +14,9 @@ namespace LoraKeysManagerFacade.Test
     using Moq;
     using Xunit;
 
-    public class FunctionBundlerTest : FunctionTestBase
+    public sealed class FunctionBundlerTest : FunctionTestBase, IDisposable
     {
+        private readonly LoRaADRInMemoryStore adrStore;
         private readonly ILoRaADRManager adrManager;
         private readonly FunctionBundlerFunction functionBundler;
         private readonly ADRExecutionItem adrExecutionItem;
@@ -46,7 +47,8 @@ namespace LoraKeysManagerFacade.Test
 
             // .Returns(new LoRaADRStandardStrategy());
             var cacheStore = new LoRaInMemoryDeviceStore();
-            this.adrManager = new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, cacheStore);
+            this.adrStore = new LoRaADRInMemoryStore();
+            this.adrManager = new LoRaADRServerManager(this.adrStore, strategyProvider.Object, cacheStore);
             this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
 
             var items = new IFunctionBundlerExecutionItem[]
@@ -171,7 +173,7 @@ namespace LoraKeysManagerFacade.Test
             // with ADR frames
             await this.adrManager.ResetAsync(devEUI);
 
-            await this.PrepareADRFrames(devEUI, LoRaADRTable.FrameCountCaptureCount - 1, req.AdrRequest);
+            await PrepareADRFrames(devEUI, LoRaADRTable.FrameCountCaptureCount - 1, req.AdrRequest);
             req.ClientFCntUp = req.AdrRequest.FCntUp;
 
             resp = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
@@ -228,7 +230,7 @@ namespace LoraKeysManagerFacade.Test
 
             foreach (var req in requests)
             {
-                await this.PrepareADRFrames(devEUI, 20, req.AdrRequest);
+                await PrepareADRFrames(devEUI, 20, req.AdrRequest);
                 req.ClientFCntUp = req.AdrRequest.FCntUp;
                 req.ClientFCntDown = req.AdrRequest.FCntDown;
             }
@@ -240,7 +242,7 @@ namespace LoraKeysManagerFacade.Test
             {
                 tasks.Add(Task.Run(async () =>
                 {
-                    functionBundlerResults.Add(await this.ExecuteRequest(devEUI, req));
+                    functionBundlerResults.Add(await ExecuteRequest(devEUI, req));
                 }));
             }
 
@@ -311,7 +313,7 @@ namespace LoraKeysManagerFacade.Test
 
         private async Task PrepareADRFrames(string deviceEUI, int numberOfFrames, LoRaADRRequest req)
         {
-            await this.PrepareADRFrames(deviceEUI, numberOfFrames, new List<LoRaADRRequest>() { req });
+            await PrepareADRFrames(deviceEUI, numberOfFrames, new List<LoRaADRRequest>() { req });
         }
 
         private async Task PrepareADRFrames(string deviceEUI, int numberOfFrames, List<LoRaADRRequest> requests)
@@ -357,5 +359,7 @@ namespace LoraKeysManagerFacade.Test
             // Ensure no item has the same priority
             Assert.Empty(items.GroupBy(x => x.Priority).Where(x => x.Count() > 1));
         }
+
+        public void Dispose() => this.adrStore.Dispose();
     }
 }

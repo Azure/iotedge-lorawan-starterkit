@@ -27,12 +27,12 @@ namespace LoRaWan.NetworkServer
         /// Gets or sets a message to be sent to the device (optional)
         /// Assigning a value to <see cref="ILoRaCloudToDeviceMessage.DevEUI"/> will send the message to a class C device.
         /// </summary>
-        [JsonProperty(Constants.CLOUD_TO_DEVICE_DECODER_ELEMENT_NAME, NullValueHandling = NullValueHandling.Ignore)]
+        [JsonProperty(Constants.CloudToDeviceDecoderElementName, NullValueHandling = NullValueHandling.Ignore)]
         public ReceivedLoRaCloudToDeviceMessage CloudToDeviceMessage { get; set; }
 
         public DecodePayloadResult(object value)
         {
-            this.Value = value;
+            Value = value;
         }
 
         public DecodePayloadResult()
@@ -41,13 +41,13 @@ namespace LoRaWan.NetworkServer
 
         public object GetDecodedPayload()
         {
-            if (!string.IsNullOrEmpty(this.Error) ||
-                !string.IsNullOrEmpty(this.ErrorDetail))
+            if (!string.IsNullOrEmpty(Error) ||
+                !string.IsNullOrEmpty(ErrorDetail))
             {
-                return new DecodingFailedPayload(this.Error, this.ErrorDetail);
+                return new DecodingFailedPayload(Error, ErrorDetail);
             }
 
-            return this.Value;
+            return Value;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.ADR
@@ -15,7 +15,7 @@ namespace LoRaWan.NetworkServer.ADR
         public LoRaADRDefaultManager(ILoRaADRStore store, ILoRaADRStrategyProvider strategyProvider, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy, LoRaDevice loRaDevice)
             : base(store, strategyProvider)
         {
-            this.LoRaDevice = loRaDevice;
+            LoRaDevice = loRaDevice;
             this.frameCounterStrategy = frameCounterStrategy;
         }
 
@@ -23,13 +23,13 @@ namespace LoRaWan.NetworkServer.ADR
         {
             if (loRaADRResult != null)
             {
-                this.LoRaDevice.UpdatedADRProperties(loRaADRResult.DataRate, loRaADRResult.TxPower.GetValueOrDefault(), loRaADRResult.NbRepetition.GetValueOrDefault());
+                LoRaDevice.UpdatedADRProperties(loRaADRResult.DataRate, loRaADRResult.TxPower.GetValueOrDefault(), loRaADRResult.NbRepetition.GetValueOrDefault());
             }
         }
 
         public override Task<uint> NextFCntDown(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown)
         {
-            return this.frameCounterStrategy.NextFcntDown(this.LoRaDevice, clientFCntUp).AsTask();
+            return this.frameCounterStrategy.NextFcntDown(LoRaDevice, clientFCntUp).AsTask();
             // update twins
         }
     }

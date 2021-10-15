@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -9,16 +9,16 @@ namespace LoRaWan.NetworkServer
     {
         public LoRaDeviceRequestProcessResult(LoRaDevice loRaDevice, LoRaRequest request, DownlinkPktFwdMessage downlinkMessage = null)
         {
-            this.LoRaDevice = loRaDevice;
-            this.Request = request;
-            this.DownlinkMessage = downlinkMessage;
+            LoRaDevice = loRaDevice;
+            Request = request;
+            DownlinkMessage = downlinkMessage;
         }
 
         public LoRaDeviceRequestProcessResult(LoRaDevice loRaDevice, LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
         {
-            this.LoRaDevice = loRaDevice;
-            this.Request = request;
-            this.FailedReason = failedReason;
+            LoRaDevice = loRaDevice;
+            Request = request;
+            FailedReason = failedReason;
         }
 
         public DownlinkPktFwdMessage DownlinkMessage { get; }

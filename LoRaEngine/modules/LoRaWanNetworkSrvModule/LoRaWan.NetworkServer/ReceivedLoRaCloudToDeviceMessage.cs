@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -25,25 +25,25 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public byte[] GetPayload()
         {
-            if (!string.IsNullOrEmpty(this.Payload))
+            if (!string.IsNullOrEmpty(Payload))
             {
-                return Encoding.UTF8.GetBytes(this.Payload);
+                return Encoding.UTF8.GetBytes(Payload);
             }
 
-            if (!string.IsNullOrEmpty(this.RawPayload))
+            if (!string.IsNullOrEmpty(RawPayload))
             {
                 try
                 {
-                    return Convert.FromBase64String(this.RawPayload);
+                    return Convert.FromBase64String(RawPayload);
                 }
                 catch (FormatException ex)
                 {
                     // Invalid base64 string, return empty payload
-                    Logger.Log($"Payload '{this.RawPayload}' is not a valid base64 value: {ex.Message}", LogLevel.Error);
+                    Logger.Log($"Payload '{RawPayload}' is not a valid base64 value: {ex.Message}", LogLevel.Error);
                 }
             }
 
-            return new byte[0];
+            return Array.Empty<byte>();
         }
     }
 }

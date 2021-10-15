@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.Tests.Shared
@@ -25,16 +25,16 @@ namespace LoRaWan.Tests.Shared
 
         public SimulatedPacketForwarder(IPEndPoint networkServerIPEndpoint, Rxpk rxpk = null)
         {
-            IPAddress ip = IPAddress.Any;
-            int port = 1681;
-            IPEndPoint endPoint = new IPEndPoint(ip, port);
+            var ip = IPAddress.Any;
+            var port = 1681;
+            var endPoint = new IPEndPoint(ip, port);
 
             this.udpClient = new UdpClient(endPoint);
             this.networkServerIPEndpoint = networkServerIPEndpoint;
-            this.TimeAtBoot = DateTimeOffset.Now.UtcTicks;
-            this.MacAddress = Utility.GetMacAddress();
+            TimeAtBoot = DateTimeOffset.Now.UtcTicks;
+            MacAddress = Utility.GetMacAddress();
 
-            this.Rxpk = rxpk ?? new Rxpk()
+            Rxpk = rxpk ?? new Rxpk()
             {
                 Chan = 7,
                 Rfch = 1,
@@ -52,20 +52,20 @@ namespace LoRaWan.Tests.Shared
 
         string CreateMessagePacket(byte[] data)
         {
-            this.Rxpk.Data = Convert.ToBase64String(data);
-            this.Rxpk.Size = (uint)data.Length;
+            Rxpk.Data = Convert.ToBase64String(data);
+            Rxpk.Size = (uint)data.Length;
             // tmst it is time in micro seconds
             var now = DateTimeOffset.UtcNow;
-            var tmst = (now.UtcTicks - this.TimeAtBoot) / (TimeSpan.TicksPerMillisecond / 1000);
+            var tmst = (now.UtcTicks - TimeAtBoot) / (TimeSpan.TicksPerMillisecond / 1000);
             if (tmst >= uint.MaxValue)
             {
                 tmst = tmst - uint.MaxValue;
-                this.TimeAtBoot = now.UtcTicks - tmst;
+                TimeAtBoot = now.UtcTicks - tmst;
             }
 
-            this.Rxpk.Tmst = Convert.ToUInt32(tmst);
+            Rxpk.Tmst = Convert.ToUInt32(tmst);
 
-            return JsonConvert.SerializeObject(this.Rxpk);
+            return JsonConvert.SerializeObject(Rxpk);
         }
 
         private readonly UdpClient udpClient;
@@ -79,7 +79,7 @@ namespace LoRaWan.Tests.Shared
         byte[] GetRandomToken()
         {
             // random is not thread safe
-            byte[] token = new byte[2];
+            var token = new byte[2];
             lock (this.random)
             {
                 this.random.NextBytes(token);
@@ -91,9 +91,9 @@ namespace LoRaWan.Tests.Shared
         public void Start()
         {
             this.cancellationTokenSource = new CancellationTokenSource();
-            this.pushDataTask = Task.Run(async () => await this.PushDataAsync(this.cancellationTokenSource.Token));
-            this.pullDataTask = Task.Run(async () => await this.PullDataAsync(this.cancellationTokenSource.Token));
-            this.listenerTask = Task.Run(async () => await this.ListenAsync(this.cancellationTokenSource.Token));
+            this.pushDataTask = Task.Run(async () => await PushDataAsync(this.cancellationTokenSource.Token));
+            this.pullDataTask = Task.Run(async () => await PullDataAsync(this.cancellationTokenSource.Token));
+            this.listenerTask = Task.Run(async () => await ListenAsync(this.cancellationTokenSource.Token));
         }
 
         async Task ListenAsync(CancellationToken cts)
@@ -113,7 +113,7 @@ namespace LoRaWan.Tests.Shared
                         currentToken[1] = receivedResults.Buffer[2];
                         TestLogger.Log($"[PKTFORWARDER] Received {identifier.ToString()}");
 
-                        if (identifier == PhysicalIdentifier.PULL_RESP)
+                        if (identifier == PhysicalIdentifier.PullResp)
                         {
                             if (this.subscribers.Count > 0)
                             {
@@ -155,8 +155,8 @@ namespace LoRaWan.Tests.Shared
             {
                 while (!cts.IsCancellationRequested)
                 {
-                    var sync = new PhysicalPayload(this.GetRandomToken(), PhysicalIdentifier.PULL_DATA, null);
-                    var data = sync.GetSyncHeader(this.MacAddress);
+                    var sync = new PhysicalPayload(GetRandomToken(), PhysicalIdentifier.PullData, null);
+                    var data = sync.GetSyncHeader(MacAddress);
                     await this.udpClient.SendAsync(data, data.Length, this.networkServerIPEndpoint);
                     await Task.Delay(30000, cts);
                 }
@@ -166,7 +166,7 @@ namespace LoRaWan.Tests.Shared
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error in {nameof(this.PullDataAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error in {nameof(PullDataAsync)}. {ex.ToString()}");
             }
         }
 
@@ -176,8 +176,8 @@ namespace LoRaWan.Tests.Shared
             {
                 while (!cts.IsCancellationRequested)
                 {
-                    var sync = new PhysicalPayload(this.GetRandomToken(), PhysicalIdentifier.PUSH_DATA, null);
-                    var data = sync.GetSyncHeader(this.MacAddress);
+                    var sync = new PhysicalPayload(GetRandomToken(), PhysicalIdentifier.PushData, null);
+                    var data = sync.GetSyncHeader(MacAddress);
                     await this.udpClient.SendAsync(data, data.Length, this.networkServerIPEndpoint);
                     await Task.Delay(10000, cts);
                 }
@@ -187,17 +187,17 @@ namespace LoRaWan.Tests.Shared
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error in {nameof(this.PushDataAsync)}. {ex.ToString()}");
+                TestLogger.Log($"Error in {nameof(PushDataAsync)}. {ex.ToString()}");
             }
         }
 
         internal async Task<PhysicalPayload> SendAsync(byte[] syncHeader, byte[] data)
         {
-            var rxpkgateway = this.CreateMessagePacket(data);
+            var rxpkgateway = CreateMessagePacket(data);
             var msg = "{\"rxpk\":[" + rxpkgateway + "]}";
 
             var gatewayInfo = Encoding.UTF8.GetBytes(msg);
-            byte[] packetData = new byte[syncHeader.Length + gatewayInfo.Length];
+            var packetData = new byte[syncHeader.Length + gatewayInfo.Length];
             Array.Copy(syncHeader, packetData, syncHeader.Length);
             Array.Copy(gatewayInfo, 0, packetData, syncHeader.Length, gatewayInfo.Length);
 
@@ -232,7 +232,7 @@ namespace LoRaWan.Tests.Shared
 
         public void Dispose()
         {
-            this.StopAsync().GetAwaiter().GetResult();
+            StopAsync().GetAwaiter().GetResult();
             GC.SuppressFinalize(this);
         }
     }

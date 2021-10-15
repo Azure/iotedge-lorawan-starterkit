@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Caching.Memory;
 
-    internal class TestLoRaDeviceFactory : ILoRaDeviceFactory
+    internal sealed class TestLoRaDeviceFactory : ILoRaDeviceFactory, IDisposable
     {
         private readonly ILoRaDeviceClient loRaDeviceClient;
         private readonly ILoRaDataRequestHandler requestHandler;
@@ -23,24 +23,27 @@ namespace LoRaWan.NetworkServer.Test
         private readonly ILoRAADRManagerFactory adrManagerFactory;
         private readonly IFunctionBundlerProvider functionBundlerProvider;
         private readonly ILoRaDeviceClientConnectionManager connectionManager;
+        private readonly IMemoryCache memoryCache;
 
         public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, ILoRaDeviceClientConnectionManager connectionManager = null)
         {
             this.loRaDeviceClient = loRaDeviceClient;
-            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions
+            this.memoryCache = new MemoryCache(new MemoryCacheOptions
             {
                 ExpirationScanFrequency = TimeSpan.FromSeconds(5),
-            }));
+            });
+            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(this.memoryCache);
         }
 
         public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, ILoRaDataRequestHandler requestHandler, ILoRaDeviceClientConnectionManager connectionManager = null)
         {
             this.loRaDeviceClient = loRaDeviceClient;
             this.requestHandler = requestHandler;
-            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions
+            this.memoryCache = new MemoryCache(new MemoryCacheOptions
             {
                 ExpirationScanFrequency = TimeSpan.FromSeconds(5),
-            }));
+            });
+            this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(this.memoryCache);
         }
 
         public TestLoRaDeviceFactory(
@@ -73,9 +76,10 @@ namespace LoRaWan.NetworkServer.Test
             var loRaDevice = new LoRaDevice(
                 deviceInfo.DevAddr,
                 deviceInfo.DevEUI,
-                this.connectionManager);
-
-            loRaDevice.GatewayID = deviceInfo.GatewayId;
+                this.connectionManager)
+            {
+                GatewayID = deviceInfo.GatewayId
+            };
 
             this.connectionManager.Register(loRaDevice, deviceClientToAssign);
 
@@ -89,5 +93,7 @@ namespace LoRaWan.NetworkServer.Test
         internal bool TryGetLoRaDevice(string devEUI, out LoRaDevice device) => this.deviceMap.TryGetValue(devEUI, out device);
 
         internal void SetClient(string devEUI, ILoRaDeviceClient deviceClient) => this.deviceClientMap[devEUI] = deviceClient;
+
+        public void Dispose() => this.memoryCache.Dispose();
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -23,6 +23,8 @@ namespace LoRaWan.NetworkServer.Test
     {
         const string SecondServerGatewayID = "second-gateway";
 
+        private readonly MemoryCache cache;
+
         public NetworkServerConfiguration SecondServerConfiguration { get; }
 
         public TestPacketForwarder SecondPacketForwarder { get; }
@@ -31,7 +33,7 @@ namespace LoRaWan.NetworkServer.Test
 
         public LoRaDeviceFrameCounterUpdateStrategyProvider SecondFrameCounterUpdateStrategyProvider { get; }
 
-        private DefaultLoRaDataRequestHandler secondRequestHandlerImplementation;
+        private readonly DefaultLoRaDataRequestHandler secondRequestHandlerImplementation;
 
         public Mock<ILoRaDeviceClient> SecondLoRaDeviceClient { get; }
 
@@ -39,28 +41,27 @@ namespace LoRaWan.NetworkServer.Test
 
         internal TestLoRaDeviceFactory SecondLoRaDeviceFactory { get; }
 
-        LoRaDevice CreateSecondLoRaDevice(SimulatedDevice simulatedDevice) => TestUtils.CreateFromSimulatedDevice(simulatedDevice, this.SecondLoRaDeviceClient.Object, this.secondRequestHandlerImplementation);
-
         public MessageProcessorMultipleGatewayTest()
         {
-            this.SecondServerConfiguration = new NetworkServerConfiguration
+            SecondServerConfiguration = new NetworkServerConfiguration
             {
                 GatewayID = SecondServerGatewayID,
                 LogToConsole = true,
                 LogLevel = ((int)LogLevel.Debug).ToString(CultureInfo.InvariantCulture),
             };
 
-            this.SecondPacketForwarder = new TestPacketForwarder();
-            this.SecondLoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            this.SecondFrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(SecondServerGatewayID, this.SecondLoRaDeviceApi.Object);
-            var deduplicationStrategyFactory = new DeduplicationStrategyFactory(this.SecondLoRaDeviceApi.Object);
-            var loRaAdrManagerFactory = new LoRAADRManagerFactory(this.SecondLoRaDeviceApi.Object);
+            SecondPacketForwarder = new TestPacketForwarder();
+            SecondLoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+            SecondFrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(SecondServerGatewayID, SecondLoRaDeviceApi.Object);
+            var deduplicationStrategyFactory = new DeduplicationStrategyFactory(SecondLoRaDeviceApi.Object);
+            var loRaAdrManagerFactory = new LoRAADRManagerFactory(SecondLoRaDeviceApi.Object);
             var adrStrategyProvider = new LoRaADRStrategyProvider();
-            var functionBundlerProvider = new FunctionBundlerProvider(this.SecondLoRaDeviceApi.Object);
-            this.secondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.SecondServerConfiguration, this.SecondFrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider);
-            this.SecondLoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.SecondConnectionManager = new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) }));
-            this.SecondLoRaDeviceFactory = new TestLoRaDeviceFactory(this.SecondServerConfiguration, this.SecondFrameCounterUpdateStrategyProvider, this.SecondLoRaDeviceClient.Object, deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider, this.SecondConnectionManager);
+            var functionBundlerProvider = new FunctionBundlerProvider(SecondLoRaDeviceApi.Object);
+            this.secondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(SecondServerConfiguration, SecondFrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider);
+            SecondLoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
+            SecondConnectionManager = new LoRaDeviceClientConnectionManager(this.cache);
+            SecondLoRaDeviceFactory = new TestLoRaDeviceFactory(SecondServerConfiguration, SecondFrameCounterUpdateStrategyProvider, SecondLoRaDeviceClient.Object, deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider, SecondConnectionManager);
         }
 
         [Fact]
@@ -69,41 +70,44 @@ namespace LoRaWan.NetworkServer.Test
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
 
             // 1 messages will be sent
-            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+            LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
-            this.SecondLoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+            SecondLoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
-            this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                 .ReturnsAsync(true);
-            this.SecondLoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+            SecondLoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                 .ReturnsAsync(true);
 
             // cloud to device messages will be checked twice
-            this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null)
                 .ReturnsAsync((Message)null);
 
-            this.SecondLoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+            SecondLoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null)
                 .ReturnsAsync((Message)null);
 
-            var loRaDevice1 = this.CreateLoRaDevice(simulatedDevice);
-            var loRaDevice2 = this.CreateSecondLoRaDevice(simulatedDevice);
+            var loRaDevice1 = CreateLoRaDevice(simulatedDevice);
+            using var connectionManager2 = new SingleDeviceConnectionManager(SecondLoRaDeviceClient.Object);
+            var loRaDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, connectionManager2, this.secondRequestHandlerImplementation);
 
-            var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice1), this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
-            var loRaDeviceRegistry2 = new LoRaDeviceRegistry(this.ServerConfiguration, this.NewNonEmptyCache(loRaDevice2), this.SecondLoRaDeviceApi.Object, this.SecondLoRaDeviceFactory);
+            using var cache1 = NewNonEmptyCache(loRaDevice1);
+            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory);
+            using var cache2 = NewNonEmptyCache(loRaDevice2);
+            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(ServerConfiguration, cache2, SecondLoRaDeviceApi.Object, SecondLoRaDeviceFactory);
 
             // Send to message processor
-            var messageProcessor1 = new MessageDispatcher(
-                this.ServerConfiguration,
+            using var messageProcessor1 = new MessageDispatcher(
+                ServerConfiguration,
                 loRaDeviceRegistry1,
-                this.FrameCounterUpdateStrategyProvider);
+                FrameCounterUpdateStrategyProvider);
 
-            var messageProcessor2 = new MessageDispatcher(
-                this.SecondServerConfiguration,
+            using var messageProcessor2 = new MessageDispatcher(
+                SecondServerConfiguration,
                 loRaDeviceRegistry2,
-                this.SecondFrameCounterUpdateStrategyProvider);
+                SecondFrameCounterUpdateStrategyProvider);
 
             // Starts with fcnt up zero
             Assert.Equal(0U, loRaDevice1.FCntUp);
@@ -113,8 +117,8 @@ namespace LoRaWan.NetworkServer.Test
 
             // Create Rxpk
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            var request1 = this.CreateWaitableRequest(rxpk);
-            var request2 = this.CreateWaitableRequest(rxpk, this.SecondPacketForwarder);
+            using var request1 = CreateWaitableRequest(rxpk);
+            using var request2 = CreateWaitableRequest(rxpk, SecondPacketForwarder);
             messageProcessor1.DispatchRequest(request1);
             messageProcessor2.DispatchRequest(request2);
 
@@ -122,12 +126,12 @@ namespace LoRaWan.NetworkServer.Test
 
             // Expectations
             // 1. Message was sent to IoT Hub
-            this.LoRaDeviceClient.VerifyAll();
-            this.SecondLoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
-            this.SecondLoRaDeviceApi.VerifyAll();
-            this.LoRaDeviceClient.Verify(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null), Times.Once());
-            this.SecondLoRaDeviceClient.Verify(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null), Times.Once());
+            LoRaDeviceClient.VerifyAll();
+            SecondLoRaDeviceClient.VerifyAll();
+            LoRaDeviceApi.VerifyAll();
+            SecondLoRaDeviceApi.VerifyAll();
+            LoRaDeviceClient.Verify(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null), Times.Once());
+            SecondLoRaDeviceClient.Verify(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null), Times.Once());
 
             // 2. Return is null (there is nothing to send downstream)
             Assert.Null(request1.ResponseDownlink);
@@ -136,6 +140,18 @@ namespace LoRaWan.NetworkServer.Test
             // 3. Frame counter up was updated to 1
             Assert.Equal(1U, loRaDevice1.FCntUp);
             Assert.Equal(1U, loRaDevice2.FCntUp);
+
+            SecondLoRaDeviceClient.Setup(ldc => ldc.Dispose());
+        }
+
+        // Protected implementation of Dispose pattern.
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing)
+            {
+                this.cache.Dispose();
+            }
         }
     }
 }

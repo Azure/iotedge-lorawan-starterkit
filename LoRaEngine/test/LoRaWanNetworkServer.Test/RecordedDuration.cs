@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 namespace LoRaWan.NetworkServer.Test
 {
@@ -16,41 +16,41 @@ namespace LoRaWan.NetworkServer.Test
 
         public RecordedDuration(int duration)
         {
-            this.Duration = duration;
+            Duration = duration;
         }
 
         public RecordedDuration(IReadOnlyList<int> sequence)
         {
-            this.Sequence = sequence;
+            Sequence = sequence;
         }
 
         public TimeSpan Next()
         {
-            if (this.Sequence != null && this.Sequence.Count > 0)
+            if (Sequence != null && Sequence.Count > 0)
             {
-                lock (this.Sequence)
+                lock (Sequence)
                 {
-                    if (this.sequenceIndex < (this.Sequence.Count - 1))
+                    if (this.sequenceIndex < (Sequence.Count - 1))
                     {
-                        return TimeSpan.FromMilliseconds(this.Sequence[this.sequenceIndex++]);
+                        return TimeSpan.FromMilliseconds(Sequence[this.sequenceIndex++]);
                     }
 
                     // returns the last one
-                    return TimeSpan.FromMilliseconds(this.Sequence[this.Sequence.Count - 1]);
+                    return TimeSpan.FromMilliseconds(Sequence[Sequence.Count - 1]);
                 }
             }
 
-            return TimeSpan.FromMilliseconds(this.Duration);
+            return TimeSpan.FromMilliseconds(Duration);
         }
 
         public override string ToString()
         {
-            if (this.Sequence == null)
+            if (Sequence == null)
             {
-                return $"{this.Duration}ms";
+                return $"{Duration}ms";
             }
 
-            return $"{string.Join(',', this.Sequence.Take(2))}ms";
+            return $"{string.Join(',', Sequence.Take(2))}ms";
         }
 
         public static implicit operator RecordedDuration(int value) => new RecordedDuration(value);

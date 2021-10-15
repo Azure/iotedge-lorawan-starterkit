@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -21,9 +21,9 @@ namespace LoRaWan.NetworkServer
 
         public IoTHubDeviceInfo(string devAddr, string devEUI, string primaryKey)
         {
-            this.DevAddr = devAddr;
-            this.DevEUI = devEUI;
-            this.PrimaryKey = primaryKey;
+            DevAddr = devAddr;
+            DevEUI = devEUI;
+            PrimaryKey = primaryKey;
         }
     }
 }

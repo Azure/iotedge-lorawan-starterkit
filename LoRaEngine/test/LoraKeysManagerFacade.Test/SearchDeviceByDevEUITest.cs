@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.Test
@@ -7,7 +7,7 @@ namespace LoraKeysManagerFacade.Test
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
-    using LoRaWan.Shared;
+    using LoRaWan.Core;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
@@ -28,8 +28,8 @@ namespace LoraKeysManagerFacade.Test
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?{ApiVersion.QueryStringParamName}={ApiVersion.Version_2019_02_12_Preview.Version}");
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
-            SearchDeviceByDevEUI searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance, new ExecutionContext());
+            var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
@@ -39,8 +39,8 @@ namespace LoraKeysManagerFacade.Test
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI=193123");
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
-            SearchDeviceByDevEUI searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance, new ExecutionContext());
+            var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
@@ -52,8 +52,8 @@ namespace LoraKeysManagerFacade.Test
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString($"?devEUI=193123&{ApiVersion.QueryStringParamName}={version}");
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
-            SearchDeviceByDevEUI searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance, new ExecutionContext());
+            var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<BadRequestObjectResult>(result);
         }
 
@@ -68,9 +68,9 @@ namespace LoraKeysManagerFacade.Test
             registryManager.Setup(x => x.GetDeviceAsync(devEUI))
                 .ReturnsAsync((Device)null);
 
-            SearchDeviceByDevEUI searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
+            var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
 
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance, new ExecutionContext());
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<NotFoundObjectResult>(result);
 
             registryManager.VerifyAll();
@@ -87,15 +87,15 @@ namespace LoraKeysManagerFacade.Test
             var registryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var deviceInfo = new Device(devEUI)
             {
-               Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } },
+                Authentication = new AuthenticationMechanism() { SymmetricKey = new SymmetricKey() { PrimaryKey = primaryKey } },
             };
 
             registryManager.Setup(x => x.GetDeviceAsync(devEUI))
                 .ReturnsAsync(deviceInfo);
 
-            SearchDeviceByDevEUI searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
+            var searchDeviceByDevEUI = new SearchDeviceByDevEUI(registryManager.Object);
 
-            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance, new ExecutionContext());
+            var result = await searchDeviceByDevEUI.GetDeviceByDevEUI(ctx.Request, NullLogger.Instance);
             Assert.IsType<OkObjectResult>(result);
             Assert.IsType<List<IoTHubDeviceInfo>>(((OkObjectResult)result).Value);
             var devices = (List<IoTHubDeviceInfo>)((OkObjectResult)result).Value;

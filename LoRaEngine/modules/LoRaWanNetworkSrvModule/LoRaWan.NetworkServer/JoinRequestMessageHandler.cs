@@ -24,7 +24,7 @@ namespace LoRaWan.NetworkServer
 
         public void DispatchRequest(LoRaRequest request)
         {
-            Task.Run(async () => await this.ProcessJoinRequestAsync(request));
+            _ = Task.Run(async () => await ProcessJoinRequestAsync(request));
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
                 var timeWatcher = new LoRaOperationTimeWatcher(loraRegion, request.StartTime);
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
-                byte[] udpMsgForPktForwarder = new byte[0];
+                var udpMsgForPktForwarder = Array.Empty<byte>();
 
                 devEUI = joinReq.GetDevEUIAsString();
                 var appEUI = joinReq.GetAppEUIAsString();
@@ -96,7 +96,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 // Check that the device is joining through the linked gateway and not another
-                if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.InvariantCultureIgnoreCase))
+                if (!string.IsNullOrEmpty(loRaDevice.GatewayID) && !string.Equals(loRaDevice.GatewayID, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase))
                 {
                     Logger.Log(devEUI, $"join refused: trying to join not through its linked gateway, ignoring join request", LogLevel.Information);
                     loRaDevice.IsOurDevice = false;
@@ -156,8 +156,8 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse(loRaDevice);
-                if (windowToUse == Constants.INVALID_RECEIVE_WINDOW)
+                var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse();
+                if (windowToUse == Constants.InvalidReceiveWindow)
                 {
                     Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", LogLevel.Information);
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ReceiveWindowMissed);
@@ -167,10 +167,10 @@ namespace LoRaWan.NetworkServer
                 double freq = 0;
                 string datr = null;
                 uint tmst = 0;
-                if (windowToUse == Constants.RECEIVE_WINDOW_1)
+                if (windowToUse == Constants.ReceiveWindow1)
                 {
                     datr = loraRegion.GetDownstreamDR(request.Rxpk);
-                    if (!loraRegion.TryGetUpstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
+                    if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
                     {
                         Logger.Log(loRaDevice.DevEUI, "could not resolve DR and/or frequency for downstream", LogLevel.Error);
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidRxpk);
@@ -178,12 +178,12 @@ namespace LoRaWan.NetworkServer
                     }
 
                     // set tmst for the normal case
-                    tmst = request.Rxpk.Tmst + loraRegion.Join_accept_delay1 * 1000000;
+                    tmst = request.Rxpk.Tmst + loraRegion.JoinAcceptDelay1 * 1000000;
                 }
                 else
                 {
                     Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Debug);
-                    tmst = request.Rxpk.Tmst + loraRegion.Join_accept_delay2 * 1000000;
+                    tmst = request.Rxpk.Tmst + loraRegion.JoinAcceptDelay2 * 1000000;
 
                     freq = loraRegion.GetDownstreamRX2Freq(devEUI, this.configuration.Rx2Frequency);
                     datr = loraRegion.GetDownstreamRX2Datarate(devEUI, this.configuration.Rx2DataRate, null);
@@ -197,7 +197,7 @@ namespace LoRaWan.NetworkServer
                 Array.Reverse(appNonceBytes);
 
                 // Build the DlSettings fields that is a superposition of RX2DR and RX1DROffset field
-                byte[] dlSettings = new byte[1];
+                var dlSettings = new byte[1];
 
                 if (loRaDevice.DesiredRX2DataRate.HasValue)
                 {
@@ -223,7 +223,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 ushort rxDelay = 0;
-                if (request.Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                if (LoRaTools.Regions.Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
                 {
                     rxDelay = loRaDevice.DesiredRXDelay;
                 }
@@ -240,7 +240,7 @@ namespace LoRaWan.NetworkServer
                     rxDelay,
                     null);
 
-                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, tmst, devEUI);
+                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, tmst);
                 if (joinAccept != null)
                 {
                     _ = request.PacketForwarder.SendDownstreamAsync(joinAccept);
@@ -249,7 +249,7 @@ namespace LoRaWan.NetworkServer
                     if (Logger.LoggerLevel <= LogLevel.Debug)
                     {
                         var jsonMsg = JsonConvert.SerializeObject(joinAccept);
-                        Logger.Log(devEUI, $"{LoRaMessageType.JoinAccept.ToString()} {jsonMsg}", LogLevel.Debug);
+                        Logger.Log(devEUI, $"{LoRaMessageType.JoinAccept} {jsonMsg}", LogLevel.Debug);
                     }
                     else if (Logger.LoggerLevel == LogLevel.Information)
                     {

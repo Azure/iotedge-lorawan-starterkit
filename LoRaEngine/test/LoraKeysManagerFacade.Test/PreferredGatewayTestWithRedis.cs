@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 // #define IS_REDIS_RUNNING
@@ -21,6 +21,8 @@ namespace LoraKeysManagerFacade.Test
 
         public PreferredGatewayTestWithRedis(RedisFixture redis)
         {
+            if (redis is null) throw new ArgumentNullException(nameof(redis));
+
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
             this.preferredGatewayExecutionItem = new PreferredGatewayExecutionItem(this.cache, new NullLogger<PreferredGatewayExecutionItem>(), null);
         }
@@ -99,7 +101,7 @@ namespace LoraKeysManagerFacade.Test
 
             var t1 = Task.Run(() => this.preferredGatewayExecutionItem.ExecuteAsync(pipeline1));
 
-            await Task.Delay(PreferredGatewayExecutionItem.DEFAULT_RECEIVE_REQUESTS_PERIOD_IN_MS + 50);
+            await Task.Delay(PreferredGatewayExecutionItem.DefaultReceiveRequestsPeriodInMs + 50);
 
             var t2 = Task.Run(() => this.preferredGatewayExecutionItem.ExecuteAsync(pipeline2));
 

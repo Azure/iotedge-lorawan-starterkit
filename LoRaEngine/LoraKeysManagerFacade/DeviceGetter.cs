@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade
@@ -12,6 +12,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Primitives;
     using Newtonsoft.Json;
 
     public class DeviceGetter
@@ -30,9 +31,11 @@ namespace LoraKeysManagerFacade
         /// </summary>
         [FunctionName(nameof(GetDevice))]
         public async Task<IActionResult> GetDevice(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
+            if (req is null) throw new ArgumentNullException(nameof(req));
+
             try
             {
                 VersionValidator.Validate(req);
@@ -43,21 +46,21 @@ namespace LoraKeysManagerFacade
             }
 
             // ABP parameters
-            string devAddr = req.Query["DevAddr"];
+            var devAddr = req.Query["DevAddr"];
             // OTAA parameters
-            string devEUI = req.Query["DevEUI"];
-            string devNonce = req.Query["DevNonce"];
-            string gatewayId = req.Query["GatewayId"];
+            var devEUI = req.Query["DevEUI"];
+            var devNonce = req.Query["DevNonce"];
+            var gatewayId = req.Query["GatewayId"];
 
-            if (devEUI != null)
+            if (devEUI != StringValues.Empty)
             {
                 EUIValidator.ValidateDevEUI(devEUI);
             }
 
             try
             {
-                var results = await this.GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
-                string json = JsonConvert.SerializeObject(results);
+                var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
+                var json = JsonConvert.SerializeObject(results);
                 return new OkObjectResult(json);
             }
             catch (DeviceNonceUsedException)
@@ -81,39 +84,37 @@ namespace LoraKeysManagerFacade
 
             if (devEUI != null)
             {
-                var joinInfo = await this.TryGetJoinInfoAndValidateAsync(devEUI, gatewayId, log);
+                var joinInfo = await TryGetJoinInfoAndValidateAsync(devEUI, gatewayId, log);
 
                 // OTAA join
-                using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId))
+                using var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId);
+                var cacheKeyDevNonce = string.Concat(devEUI, ":", devNonce);
+                var lockKeyDevNonce = string.Concat(cacheKeyDevNonce, ":joinlockdevnonce");
+
+                if (this.cacheStore.StringSet(cacheKeyDevNonce, devNonce, TimeSpan.FromMinutes(5), onlyIfNotExists: true))
                 {
-                    var cacheKeyDevNonce = string.Concat(devEUI, ":", devNonce);
-                    var lockKeyDevNonce = string.Concat(cacheKeyDevNonce, ":joinlockdevnonce");
-
-                    if (this.cacheStore.StringSet(cacheKeyDevNonce, devNonce, TimeSpan.FromMinutes(5), onlyIfNotExists: true))
+                    var iotHubDeviceInfo = new IoTHubDeviceInfo
                     {
-                        var iotHubDeviceInfo = new IoTHubDeviceInfo
-                        {
-                            DevEUI = devEUI,
-                            PrimaryKey = joinInfo.PrimaryKey
-                        };
+                        DevEUI = devEUI,
+                        PrimaryKey = joinInfo.PrimaryKey
+                    };
 
-                        results.Add(iotHubDeviceInfo);
+                    results.Add(iotHubDeviceInfo);
 
-                        if (await deviceCache.TryToLockAsync())
-                        {
-                            this.cacheStore.KeyDelete(devEUI);
-                            log?.LogDebug("Removed key '{key}':{gwid}", devEUI, gatewayId);
-                        }
-                        else
-                        {
-                            log?.LogWarning("Failed to acquire lock for '{key}'", devEUI);
-                        }
+                    if (await deviceCache.TryToLockAsync())
+                    {
+                        deviceCache.ClearCache(); // clear the fcnt up/down after the join
+                        log?.LogDebug("Removed key '{key}':{gwid}", devEUI, gatewayId);
                     }
                     else
                     {
-                        log?.LogDebug("dev nonce already used. Ignore request '{key}':{gwid}", devEUI, gatewayId);
-                        throw new DeviceNonceUsedException();
+                        log?.LogWarning("Failed to acquire lock for '{key}'", devEUI);
                     }
+                }
+                else
+                {
+                    log?.LogDebug("dev nonce already used. Ignore request '{key}':{gwid}", devEUI, gatewayId);
+                    throw new DeviceNonceUsedException();
                 }
             }
             else if (devAddr != null)
@@ -127,9 +128,9 @@ namespace LoraKeysManagerFacade
                 {
                     try
                     {
-                        if (devAddrCache.TryGetInfo(devAddr, out List<DevAddrCacheInfo> devAddressesInfo))
+                        if (devAddrCache.TryGetInfo(devAddr, out var devAddressesInfo))
                         {
-                            for (int i = 0; i < devAddressesInfo.Count; i++)
+                            for (var i = 0; i < devAddressesInfo.Count; i++)
                             {
                                 if (!string.IsNullOrEmpty(devAddressesInfo[i].DevEUI))
                                 {
@@ -142,9 +143,9 @@ namespace LoraKeysManagerFacade
                                     {
                                         // we need to load the primaryKey from IoTHub
                                         // Add a lock loadPrimaryKey get lock get
-                                        devAddressesInfo[i].PrimaryKey = await this.LoadPrimaryKeyAsync(devAddressesInfo[i].DevEUI);
+                                        devAddressesInfo[i].PrimaryKey = await LoadPrimaryKeyAsync(devAddressesInfo[i].DevEUI);
                                         results.Add(devAddressesInfo[i]);
-                                        devAddrCache.StoreInfo(devAddressesInfo[i]);
+                                        _ = devAddrCache.StoreInfo(devAddressesInfo[i]);
                                     }
 
                                     // even if we fail to acquire the lock we wont enter in the next condition as devaddressinfo is not null
@@ -161,7 +162,7 @@ namespace LoraKeysManagerFacade
                                 try
                                 {
                                     var query = this.registryManager.CreateQuery($"SELECT * FROM devices WHERE properties.desired.DevAddr = '{devAddr}' OR properties.reported.DevAddr ='{devAddr}'", 100);
-                                    int resultCount = 0;
+                                    var resultCount = 0;
                                     while (query.HasMoreResults)
                                     {
                                         var page = await query.GetNextAsTwinAsync();
@@ -181,7 +182,7 @@ namespace LoraKeysManagerFacade
                                                     LastUpdatedTwins = twin.Properties.Desired.GetLastUpdated()
                                                 };
                                                 results.Add(iotHubDeviceInfo);
-                                                devAddrCache.StoreInfo((DevAddrCacheInfo)iotHubDeviceInfo);
+                                                _ = devAddrCache.StoreInfo(iotHubDeviceInfo);
                                             }
 
                                             resultCount++;
@@ -191,7 +192,7 @@ namespace LoraKeysManagerFacade
                                     // todo save when not our devaddr
                                     if (resultCount == 0)
                                     {
-                                        devAddrCache.StoreInfo(new DevAddrCacheInfo()
+                                        _ = devAddrCache.StoreInfo(new DevAddrCacheInfo()
                                         {
                                             DevAddr = devAddr,
                                             DevEUI = string.Empty
@@ -200,20 +201,20 @@ namespace LoraKeysManagerFacade
                                 }
                                 finally
                                 {
-                                    devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
+                                    _ = devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
                                 }
                             }
                         }
                     }
                     finally
                     {
-                        devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
+                        _ = devAddrCache.ReleaseDevAddrUpdateLock(devAddr);
                     }
                 }
             }
             else
             {
-                throw new Exception("Missing devEUI or devAddr");
+                throw new ArgumentException("Missing devEUI or devAddr");
             }
 
             return results;
@@ -257,13 +258,13 @@ namespace LoraKeysManagerFacade
                             }
                         }
 
-                        this.cacheStore.ObjectSet(cacheKeyJoinInfo, joinInfo, TimeSpan.FromMinutes(60));
+                        _ = this.cacheStore.ObjectSet(cacheKeyJoinInfo, joinInfo, TimeSpan.FromMinutes(60));
                         log?.LogDebug("updated cache with join info '{key}':{gwid}", devEUI, gatewayId);
                     }
                 }
                 finally
                 {
-                    this.cacheStore.LockRelease(lockKeyJoinInfo, gatewayId);
+                    _ = this.cacheStore.LockRelease(lockKeyJoinInfo, gatewayId);
                 }
 
                 if (string.IsNullOrEmpty(joinInfo.PrimaryKey))

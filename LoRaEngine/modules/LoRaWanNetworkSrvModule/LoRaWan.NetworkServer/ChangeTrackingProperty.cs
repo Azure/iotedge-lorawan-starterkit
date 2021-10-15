@@ -1,34 +1,35 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Collections.Generic;
 
     /// <summary>
     /// Primitive that keep tracks of changes.
     /// </summary>
     /// <typeparam name="T">The underlying type that we keep track of. Must implement <see cref="IEqualityComparer{T}"/>.</typeparam>
-    public class ChangeTrackingProperty<T> : IChangeTrackingProperty
+    public sealed class ChangeTrackingProperty<T> : IChangeTrackingProperty
     {
         T current;
         T original;
 
         public ChangeTrackingProperty(string propertyName)
         {
-            this.PropertyName = propertyName;
+            PropertyName = propertyName;
         }
 
         public ChangeTrackingProperty(string propertyName, T value)
         {
-            this.PropertyName = propertyName;
+            PropertyName = propertyName;
             this.current = this.original = value;
         }
 
         /// <summary>
         /// Gets the property name.
         /// </summary>
-        public string PropertyName { get;  }
+        public string PropertyName { get; }
 
         /// <summary>
         /// Gets the value that must be persisted in twin collection.
@@ -72,6 +73,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Implicit operator for {T}.
         /// </summary>
-        public static implicit operator T(ChangeTrackingProperty<T> t) => t.current;
+        public static implicit operator T(ChangeTrackingProperty<T> t) =>
+            t is null ? default : t.current;
     }
 }

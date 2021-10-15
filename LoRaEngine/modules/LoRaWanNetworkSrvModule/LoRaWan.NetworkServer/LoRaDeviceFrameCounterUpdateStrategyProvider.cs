@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
             if (string.IsNullOrEmpty(deviceGatewayID))
                 return this.multiGateway;
 
-            if (string.Equals(this.gatewayID, deviceGatewayID, StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(this.gatewayID, deviceGatewayID, StringComparison.OrdinalIgnoreCase))
                 return this.singleGateway;
 
             return null;

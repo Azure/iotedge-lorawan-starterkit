@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -18,11 +18,10 @@ namespace LoRaWan.NetworkServer.Test
     {
         internal static LoRaDevice CreateFromSimulatedDevice(
             SimulatedDevice simulatedDevice,
-            ILoRaDeviceClient loRaDeviceClient,
-            DefaultLoRaDataRequestHandler requestHandler = null,
-            ILoRaDeviceClientConnectionManager connectionManager = null)
+            ILoRaDeviceClientConnectionManager connectionManager,
+            DefaultLoRaDataRequestHandler requestHandler = null)
         {
-            var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, connectionManager ?? new SingleDeviceConnectionManager(loRaDeviceClient))
+            var result = new LoRaDevice(simulatedDevice.LoRaDevice.DevAddr, simulatedDevice.LoRaDevice.DeviceID, connectionManager)
             {
                 AppEUI = simulatedDevice.LoRaDevice.AppEUI,
                 AppKey = simulatedDevice.LoRaDevice.AppKey,
@@ -31,7 +30,7 @@ namespace LoRaWan.NetworkServer.Test
                 NwkSKey = simulatedDevice.LoRaDevice.NwkSKey,
                 GatewayID = simulatedDevice.LoRaDevice.GatewayID,
                 IsOurDevice = true,
-                ClassType = (simulatedDevice.ClassType == 'C' || simulatedDevice.ClassType == 'c') ? LoRaDeviceClassType.C : LoRaDeviceClassType.A,
+                ClassType = (simulatedDevice.ClassType is 'C' or 'c') ? LoRaDeviceClassType.C : LoRaDeviceClassType.A,
             };
 
             result.SetFcntDown(simulatedDevice.FrmCntDown);
@@ -141,7 +140,7 @@ namespace LoRaWan.NetworkServer.Test
 
             if (reportedProperties != null)
             {
-               foreach (var kv in reportedProperties)
+                foreach (var kv in reportedProperties)
                 {
                     finalReportedProperties[kv.Key] = kv.Value;
                 }
@@ -165,12 +164,12 @@ namespace LoRaWan.NetworkServer.Test
 
         public static string GeneratePayload(string allowedChars, int length)
         {
-            Random random = new Random();
+            var random = new Random();
 
-            char[] chars = new char[length];
-            int setLength = allowedChars.Length;
+            var chars = new char[length];
+            var setLength = allowedChars.Length;
 
-            for (int i = 0; i < length; ++i)
+            for (var i = 0; i < length; ++i)
             {
                 chars[i] = allowedChars[random.Next(setLength)];
             }
@@ -189,6 +188,26 @@ namespace LoRaWan.NetworkServer.Test
         /// <summary>
         /// Helper method for testing.
         /// </summary>
-        public static LoRaDeviceClientConnectionManager CreateConnectionManager() => new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions()));
+        public static LoraDeviceClientConnectionManagerWrapper CreateConnectionManager() =>
+            new LoraDeviceClientConnectionManagerWrapper();
+
+        public sealed class LoraDeviceClientConnectionManagerWrapper : IDisposable
+        {
+            private readonly IMemoryCache memoryCache;
+
+            public LoraDeviceClientConnectionManagerWrapper()
+            {
+                this.memoryCache = new MemoryCache(new MemoryCacheOptions());
+                Value = new LoRaDeviceClientConnectionManager(this.memoryCache);
+            }
+
+            public LoRaDeviceClientConnectionManager Value { get; }
+
+            public void Dispose()
+            {
+                this.memoryCache.Dispose();
+                Value.Dispose();
+            }
+        }
     }
 }

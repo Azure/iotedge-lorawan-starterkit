@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.Regions
 {
+    using System;
     using System.Collections.Generic;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
@@ -31,9 +32,10 @@ namespace LoRaTools.Regions
                 case LoRaRegionType.US915:
                     region = US915;
                     return true;
+                case LoRaRegionType.NotSet:
+                default:
+                    return false;
             }
-
-            return false;
         }
 
         /// <summary>
@@ -44,15 +46,17 @@ namespace LoRaTools.Regions
         /// <param name="region">Region.</param>
         public static bool TryResolveRegion(Rxpk rxpk, out Region region)
         {
+            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
+
             region = null;
 
             // EU863-870
-            if (rxpk.Freq < 870 && rxpk.Freq > 863)
+            if (rxpk.Freq is < 870 and > 863)
             {
                 region = EU868;
                 return true;
             }// US902-928 frequency band, upstream messages are between 902 and 915.
-            else if (rxpk.Freq <= 915 && rxpk.Freq >= 902)
+            else if (rxpk.Freq is <= 915 and >= 902)
             {
                 region = US915;
                 return true;
@@ -71,7 +75,10 @@ namespace LoRaTools.Regions
                 {
                     lock (RegionLock)
                     {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                        // False positive
                         if (eu868 == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
                         {
                             CreateEU868Region();
                         }
@@ -84,18 +91,7 @@ namespace LoRaTools.Regions
 
         private static void CreateEU868Region()
         {
-            eu868 = new RegionEU868(
-                0x34,
-                ConversionHelper.StringToByteArray("C194C1"),
-                (frequency: 869.525, datr: 0),
-                1,
-                2,
-                5,
-                6,
-                16384,
-                64,
-                32,
-                (min: 1, max: 3));
+            eu868 = new RegionEU868();
             eu868.DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
             eu868.DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
             eu868.DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 59));
@@ -125,7 +121,7 @@ namespace LoRaTools.Regions
             { 6, 5, 4, 3, 2, 1 },
             { 7, 6, 5, 4, 3, 2 }
             };
-            HashSet<string> validDataRangeUpAndDownstream = new HashSet<string>()
+            var validDataRangeUpAndDownstream = new HashSet<string>()
             {
                 "SF12BW125", // 0
                 "SF11BW125", // 1
@@ -151,7 +147,10 @@ namespace LoRaTools.Regions
                 {
                     lock (RegionLock)
                     {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                        // False positive
                         if (us915 == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
                         {
                             CreateUS915Region();
                         }
@@ -164,18 +163,7 @@ namespace LoRaTools.Regions
 
         private static void CreateUS915Region()
         {
-            us915 = new RegionUS915(
-                0x34,
-                null, // no GFSK in US Band
-                (frequency: 923.3, datr: 8),
-                1,
-                2,
-                5,
-                6,
-                16384,
-                64,
-                32,
-                (min: 1, max: 3));
+            us915 = new RegionUS915();
             us915.DRtoConfiguration.Add(0, (configuration: "SF10BW125", maxPyldSize: 19));
             us915.DRtoConfiguration.Add(1, (configuration: "SF9BW125", maxPyldSize: 61));
             us915.DRtoConfiguration.Add(2, (configuration: "SF8BW125", maxPyldSize: 133));
@@ -202,7 +190,7 @@ namespace LoRaTools.Regions
             { 13, 13, 12, 11 },
             };
 
-            HashSet<string> upstreamValidDataranges = new HashSet<string>()
+            var upstreamValidDataranges = new HashSet<string>()
             {
                 "SF10BW125", // 0
                 "SF9BW125", // 1
@@ -211,7 +199,7 @@ namespace LoRaTools.Regions
                 "SF8BW500", // 4
             };
 
-            HashSet<string> downstreamValidDataranges = new HashSet<string>()
+            var downstreamValidDataranges = new HashSet<string>()
             {
                 "SF12BW500", // 8
                 "SF11BW500", // 9

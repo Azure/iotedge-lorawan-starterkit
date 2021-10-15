@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools
@@ -14,17 +14,17 @@ namespace LoRaTools
 
         public RXTimingSetupAnswer()
         {
-            this.Cid = CidEnum.RXTimingCmd;
+            Cid = Cid.RXTimingCmd;
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.Cid;
+            yield return (byte)Cid;
         }
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer";
+            return $"Type: {Cid} Answer";
         }
     }
 }

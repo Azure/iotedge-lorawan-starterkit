@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer.Test
     using Moq;
     using Xunit;
 
-    public class DefaultClassCDevicesMessageSenderTest
+    public sealed class DefaultClassCDevicesMessageSenderTest : IDisposable
     {
         const string ServerGatewayID = "test-gateway";
 
@@ -29,6 +29,7 @@ namespace LoRaWan.NetworkServer.Test
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceApi;
         private readonly Mock<ILoRaDeviceClient> deviceClient;
         private readonly TestLoRaDeviceFactory loRaDeviceFactory;
+        private readonly IMemoryCache cache;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterStrategyProvider;
 
         public DefaultClassCDevicesMessageSenderTest()
@@ -44,11 +45,12 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object);
-            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, new MemoryCache(new MemoryCacheOptions()), this.deviceApi.Object, this.loRaDeviceFactory);
+            this.cache = new MemoryCache(new MemoryCacheOptions());
+            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory);
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
-        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
+        private static void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
             Assert.NotNull(downlink.Txpk);
@@ -56,9 +58,9 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0, downlink.Txpk.Tmst);
             Assert.NotEmpty(downlink.Txpk.Data);
 
-            byte[] downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
+            var downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
-            Assert.Equal(sentMessage.Fport, downstreamPayload.GetFPort());
+            Assert.Equal(sentMessage.Fport, downstreamPayload.FPortValue);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -102,7 +104,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Returns(Task.CompletedTask)
                 .Callback<DownlinkPktFwdMessage>(d =>
                 {
-                    this.EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
+                    EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
                 });
 
             var target = new DefaultClassCDevicesMessageSender(
@@ -348,7 +350,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Returns(Task.CompletedTask)
                 .Callback<DownlinkPktFwdMessage>(d =>
                 {
-                    this.EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
+                    EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
                     Assert.Equal("SF10BW500", d.Txpk.Datr);
                     Assert.Equal(0L, d.Txpk.Tmst);
                     Assert.Equal(923.3, d.Txpk.Freq);
@@ -368,6 +370,13 @@ namespace LoRaWan.NetworkServer.Test
             this.packetForwarder.VerifyAll();
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
+        }
+
+        public void Dispose()
+        {
+            this.loRaDeviceRegistry.Dispose();
+            this.cache.Dispose();
+            this.loRaDeviceFactory.Dispose();
         }
     }
 }

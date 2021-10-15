@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWanTest
@@ -63,10 +63,7 @@ namespace LoRaWanTest
             var c2d = new LoRaCloudToDeviceMessage()
             {
                 MessageId = "01",
-                MacCommands = new MacCommand[]
-                {
-                    new DevStatusRequest(),
-                },
+                MacCommands = { new DevStatusRequest() },
                 Fport = LoRaFPort.MacCommand,
             };
 
@@ -81,10 +78,7 @@ namespace LoRaWanTest
             {
                 MessageId = "01",
                 Payload = "hello",
-                MacCommands = new MacCommand[]
-                {
-                    new DevStatusRequest(),
-                },
+                MacCommands = { new DevStatusRequest() },
                 Fport = 1,
             };
 
@@ -95,10 +89,7 @@ namespace LoRaWanTest
             {
                 MessageId = "01",
                 RawPayload = "AAAA",
-                MacCommands = new MacCommand[]
-                {
-                    new DevStatusRequest(),
-                },
+                MacCommands = { new DevStatusRequest() },
                 Fport = 2,
             };
 
@@ -138,10 +129,7 @@ namespace LoRaWanTest
                 MessageId = "01",
                 Payload = "hello",
                 Fport = LoRaFPort.MacCommand,
-                MacCommands = new MacCommand[]
-                {
-                    new DevStatusRequest(),
-                },
+                MacCommands = { new DevStatusRequest() },
             };
 
             Assert.False(payloadC2d.IsValid(out var errorMessage));
@@ -152,10 +140,7 @@ namespace LoRaWanTest
                 MessageId = "02",
                 RawPayload = "AAAA",
                 Fport = LoRaFPort.MacCommand,
-                MacCommands = new MacCommand[]
-                {
-                    new DevStatusRequest(),
-                },
+                MacCommands = { new DevStatusRequest() },
             };
 
             Assert.False(rawPayloadC2d.IsValid(out errorMessage));

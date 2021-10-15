@@ -1,6 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-namespace LoRaWan.Shared
+
+#pragma warning disable CA1707 // Identifiers should not contain underscores
+
+namespace LoRaWan.Core
 {
     using System;
     using System.Collections.Generic;
@@ -114,20 +117,23 @@ namespace LoRaWan.Shared
         /// <summary>
         /// Returns all known versions.
         /// </summary>
-        public static IEnumerable<ApiVersion> GetApiVersions()
+        public static IEnumerable<ApiVersion> ApiVersions
         {
-            yield return Version_0_2_Or_Earlier;
-            yield return Version_2018_12_16_Preview;
-            yield return Version_2019_02_12_Preview;
-            yield return Version_2019_02_20_Preview;
-            yield return Version_2019_03_08_Preview;
-            yield return Version_2019_03_26;
-            yield return Version_2019_04_02;
-            yield return Version_2019_04_15_Preview;
-            yield return Version_2019_07_05;
-            yield return Version_2019_07_16;
-            yield return Version_2020_08_11;
-            yield return Version_2020_10_09;
+            get
+            {
+                yield return Version_0_2_Or_Earlier;
+                yield return Version_2018_12_16_Preview;
+                yield return Version_2019_02_12_Preview;
+                yield return Version_2019_02_20_Preview;
+                yield return Version_2019_03_08_Preview;
+                yield return Version_2019_03_26;
+                yield return Version_2019_04_02;
+                yield return Version_2019_04_15_Preview;
+                yield return Version_2019_07_05;
+                yield return Version_2019_07_16;
+                yield return Version_2020_08_11;
+                yield return Version_2020_10_09;
+            }
         }
 
         /// <summary>
@@ -139,15 +145,15 @@ namespace LoRaWan.Shared
         /// <returns>The <see cref="ApiVersion"/> from <paramref name="version"/>.</returns>
         public static ApiVersion Parse(string version, bool returnAsKnown = false)
         {
-            return GetApiVersions().FirstOrDefault(v => string.Equals(version, v.Version, StringComparison.InvariantCultureIgnoreCase))
+            return ApiVersions.FirstOrDefault(v => string.Equals(version, v.Version, StringComparison.OrdinalIgnoreCase))
                 ?? new ApiVersion(version, name: null, isKnown: returnAsKnown);
         }
 
         private ApiVersion(string version, string name = null, bool isKnown = true)
         {
-            this.Version = version;
-            this.Name = name ?? version;
-            this.IsKnown = isKnown;
+            Version = version;
+            Name = name ?? version;
+            IsKnown = isKnown;
         }
 
         static ApiVersion()
@@ -178,14 +184,18 @@ namespace LoRaWan.Shared
             Version_2019_04_15_Preview = new ApiVersion("2019-04-15-Preview");
             Version_2019_04_15_Preview.MinCompatibleVersion = Version_2019_04_15_Preview;
 
-            Version_2019_07_05 = new ApiVersion("2019-07-05");
-            Version_2019_07_05.MinCompatibleVersion = Version_2019_04_15_Preview;
+            Version_2019_07_05 = new ApiVersion("2019-07-05")
+            {
+                MinCompatibleVersion = Version_2019_04_15_Preview
+            };
 
             Version_2019_07_16 = new ApiVersion("2019-07-16");
             Version_2019_07_16.MinCompatibleVersion = Version_2019_07_16;
 
-            Version_2020_08_11 = new ApiVersion("2020-08-11");
-            Version_2020_08_11.MinCompatibleVersion = Version_2019_07_16;
+            Version_2020_08_11 = new ApiVersion("2020-08-11")
+            {
+                MinCompatibleVersion = Version_2019_07_16
+            };
 
             Version_2020_10_09 = new ApiVersion("2020-10-09");
             Version_2020_10_09.MinCompatibleVersion = Version_2020_10_09;
@@ -221,38 +231,39 @@ namespace LoRaWan.Shared
         {
             return other != null &&
                 other.IsKnown &&
-                this.IsKnown &&
+                IsKnown &&
                 this >= other &&
-                (this.MinCompatibleVersion == null || this.MinCompatibleVersion <= other);
+                (MinCompatibleVersion == null || MinCompatibleVersion <= other);
         }
 
-        public override int GetHashCode() => this.Version.GetHashCode();
+        public override int GetHashCode() => Version.GetHashCode(StringComparison.Ordinal);
 
         public int CompareTo(ApiVersion other)
         {
-            return string.Compare(this.Version, other.Version, true);
+            if (other is null) throw new ArgumentNullException(nameof(other));
+
+            if (Equals(other)) return 0;
+            return string.Compare(Version, other.Version, StringComparison.Ordinal);
         }
 
-        public override string ToString() => this.Version.ToString();
+        public override string ToString() => Version.ToString();
 
-        public static bool operator <(ApiVersion value1, ApiVersion value2)
-        {
-            return value1.CompareTo(value2) < 0;
-        }
+        public override bool Equals(object obj) =>
+            obj is ApiVersion version &&
+            Version == version.Version &&
+            Name == version.Name &&
+            IsKnown == version.IsKnown;
 
-        public static bool operator <=(ApiVersion value1, ApiVersion value2)
-        {
-            return value1.CompareTo(value2) <= 0;
-        }
+        public static bool operator <(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) < 0;
 
-        public static bool operator >=(ApiVersion value1, ApiVersion value2)
-        {
-            return value1.CompareTo(value2) >= 0;
-        }
+        public static bool operator <=(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) <= 0;
 
-        public static bool operator >(ApiVersion value1, ApiVersion value2)
-        {
-            return value1.CompareTo(value2) > 0;
-        }
+        public static bool operator >=(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) >= 0;
+
+        public static bool operator >(ApiVersion value1, ApiVersion value2) =>
+            value1.CompareTo(value2) > 0;
     }
 }

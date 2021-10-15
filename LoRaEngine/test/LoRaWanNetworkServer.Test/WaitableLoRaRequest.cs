@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -10,9 +10,9 @@ namespace LoRaWan.NetworkServer.Test
     using LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
 
-    public class WaitableLoRaRequest : LoRaRequest
+    public sealed class WaitableLoRaRequest : LoRaRequest, IDisposable
     {
-        SemaphoreSlim complete;
+        readonly SemaphoreSlim complete;
 
         public bool ProcessingFailed { get; private set; }
 
@@ -43,8 +43,8 @@ namespace LoRaWan.NetworkServer.Test
         {
             base.NotifyFailed(deviceId, reason, exception);
 
-            this.ProcessingFailed = true;
-            this.ProcessingFailedReason = reason;
+            ProcessingFailed = true;
+            ProcessingFailedReason = reason;
             this.complete.Release();
         }
 
@@ -52,14 +52,14 @@ namespace LoRaWan.NetworkServer.Test
         {
             base.NotifySucceeded(loRaDevice, downlink);
 
-            this.ResponseDownlink = downlink;
-            this.ProcessingSucceeded = true;
+            ResponseDownlink = downlink;
+            ProcessingSucceeded = true;
             this.complete.Release();
         }
 
-        internal Task<bool> WaitCompleteAsync(int timeout = default(int))
+        internal Task<bool> WaitCompleteAsync(int timeout = default)
         {
-            if (timeout == default(int))
+            if (timeout == default)
             {
                 if (System.Diagnostics.Debugger.IsAttached)
                 {
@@ -79,5 +79,7 @@ namespace LoRaWan.NetworkServer.Test
         internal void UseTimeWatcher(LoRaOperationTimeWatcher timeWatcher) => this.fixTimeWacher = timeWatcher;
 
         public override LoRaOperationTimeWatcher GetTimeWatcher() => this.fixTimeWacher ?? base.GetTimeWatcher();
+
+        public void Dispose() => this.complete.Dispose();
     }
 }

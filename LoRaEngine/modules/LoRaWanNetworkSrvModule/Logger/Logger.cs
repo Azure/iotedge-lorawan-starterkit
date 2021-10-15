@@ -1,32 +1,34 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan
 {
     using System;
+    using System.Globalization;
     using System.Net;
     using System.Net.Sockets;
     using System.Text;
     using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Logging;
 
-    public class Logger
+    public static class Logger
     {
         // Interval where we try to estabilish connection to udp logger
         const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
 
-        public static LogLevel LoggerLevel => (LogLevel)configuration.LogLevel;
+        public static LogLevel LoggerLevel => configuration.LogLevel;
 
         static LoggerConfiguration configuration = new LoggerConfiguration();
         static volatile UdpClient udpClient;
         static IPEndPoint udpEndpoint;
-        static volatile bool isInitializeUdpLoggerRunning = false;
+        static volatile bool isInitializeUdpLoggerRunning;
         private static Timer retryUdpLogInitializationTimer;
 
         public static void Init(LoggerConfiguration loggerConfiguration)
         {
-            configuration = loggerConfiguration;
+            configuration = loggerConfiguration ?? throw new ArgumentNullException(nameof(loggerConfiguration));
 
             if (configuration.LogToUdp)
             {
@@ -50,11 +52,6 @@ namespace LoRaWan
         }
 
         public static void LogAlways(string message)
-        {
-            LogAlways(null, message);
-        }
-
-        public static void LogAlways(string deviceId, string message)
         {
             Log(null, message, LogLevel.Critical);
         }
@@ -93,7 +90,28 @@ namespace LoRaWan
 
                 if (configuration.LogToHub && configuration.ModuleClient != null)
                 {
-                    configuration.ModuleClient.SendEventAsync(new Message(UTF8Encoding.ASCII.GetBytes(msg)));
+#pragma warning disable CA2000 // Dispose objects before losing scope
+                    // Message is always disposed when the SendEventAsync completes.
+                    var m = new Message(UTF8Encoding.ASCII.GetBytes(msg));
+
+                    Task operation = null;
+
+                    try
+                    {
+                        operation = configuration.ModuleClient.SendEventAsync(m);
+                    }
+                    finally
+                    {
+                        if (operation is null)
+                        {
+                            m.Dispose();
+                        }
+                        else
+                        {
+                            _ = operation.ContinueWith(_ => m.Dispose(), TaskScheduler.Default);
+                        }
+                    }
+#pragma warning restore CA2000 // Dispose objects before losing scope
                 }
 
                 if (configuration.LogToConsole)
@@ -106,13 +124,15 @@ namespace LoRaWan
 
         static void LogToConsole(string message, LogLevel logLevel = LogLevel.Information)
         {
+            var loggedMessage = FormattableString.Invariant($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}");
+
             if (logLevel == LogLevel.Error)
             {
-                Console.Error.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+                Console.Error.WriteLine(loggedMessage);
             }
             else
             {
-                Console.WriteLine(string.Concat(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), " ", message));
+                Console.WriteLine(loggedMessage);
             }
         }
 
@@ -126,7 +146,7 @@ namespace LoRaWan
                 }
 
                 var messageInBytes = Encoding.UTF8.GetBytes(message);
-                udpClient.Send(messageInBytes, messageInBytes.Length, udpEndpoint);
+                _ = udpClient.Send(messageInBytes, messageInBytes.Length, udpEndpoint);
             }
             catch (Exception ex)
             {

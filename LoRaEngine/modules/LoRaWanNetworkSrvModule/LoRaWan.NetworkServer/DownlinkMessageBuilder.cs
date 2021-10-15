@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -42,26 +42,26 @@ namespace LoRaWan.NetworkServer
             var upstreamPayload = (LoRaPayloadData)request.Payload;
             var rxpk = request.Rxpk;
             var loRaRegion = request.Region;
-            bool isMessageTooLong = false;
+            var isMessageTooLong = false;
 
             // default fport
             byte fctrl = 0;
             if (upstreamPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
             {
                 // Confirm receiving message to device
-                fctrl = (byte)FctrlEnum.Ack;
+                fctrl = (byte)Fctrl.Ack;
             }
 
             // Calculate receive window
             var receiveWindow = timeWatcher.ResolveReceiveWindowToUse(loRaDevice);
-            if (receiveWindow == Constants.INVALID_RECEIVE_WINDOW)
+            if (receiveWindow == Constants.InvalidReceiveWindow)
             {
                 // No valid receive window. Abandon the message
                 isMessageTooLong = true;
                 return new DownlinkMessageBuilderResponse(null, isMessageTooLong);
             }
 
-            byte[] rndToken = new byte[2];
+            var rndToken = new byte[2];
 
             lock (RndLock)
             {
@@ -72,7 +72,7 @@ namespace LoRaWan.NetworkServer
             double freq;
             long tmst;
 
-            if (receiveWindow == Constants.RECEIVE_WINDOW_2)
+            if (receiveWindow == Constants.ReceiveWindow2)
             {
                 tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow2Delay(loRaDevice), loRaDevice.ReportedRXDelay);
                 freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency);
@@ -80,14 +80,14 @@ namespace LoRaWan.NetworkServer
             }
             else
             {
-                datr = loRaRegion.GetDownstreamDR(rxpk, (uint)loRaDevice.ReportedRX1DROffset);
+                datr = loRaRegion.GetDownstreamDR(rxpk, loRaDevice.ReportedRX1DROffset);
                 if (datr == null)
                 {
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the data rate in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
 
-                if (!loRaRegion.TryGetUpstreamChannelFrequency(rxpk, out freq))
+                if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq))
                 {
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the frequency in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);
@@ -100,7 +100,7 @@ namespace LoRaWan.NetworkServer
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
 
             // Deduct 8 bytes from max payload size.
-            maxPayloadSize -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+            maxPayloadSize -= Constants.LoraProtocolOverheadSize;
 
             var availablePayloadSize = maxPayloadSize;
 
@@ -108,14 +108,14 @@ namespace LoRaWan.NetworkServer
 
             byte? fport = null;
             var requiresDeviceAcknowlegement = false;
-            var macCommandType = CidEnum.Zero;
+            var macCommandType = Cid.Zero;
 
             byte[] frmPayload = null;
 
             if (cloudToDeviceMessage != null)
             {
                 // Get C2D Mac coomands
-                var macCommandsC2d = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage?.MacCommands, rxpk, null);
+                var macCommandsC2d = PrepareMacCommandAnswer(loRaDevice.DevEUI, null, cloudToDeviceMessage.MacCommands, rxpk, null);
 
                 // Calculate total C2D payload size
                 var totalC2dSize = cloudToDeviceMessage.GetPayload()?.Length ?? 0;
@@ -130,7 +130,7 @@ namespace LoRaWan.NetworkServer
                     // Add C2D Mac commands
                     if (macCommandsC2d?.Count > 0)
                     {
-                        foreach (MacCommand macCommand in macCommandsC2d)
+                        foreach (var macCommand in macCommandsC2d)
                         {
                             macCommands.Add(macCommand);
                         }
@@ -156,7 +156,7 @@ namespace LoRaWan.NetworkServer
                 else
                 {
                     // Flag message to be abandoned and log
-                    Logger.Log(loRaDevice.DevEUI, $"cloud to device message: {((frmPayload?.Length ?? 0) == 0 ? "empty" : Encoding.UTF8.GetString(frmPayload))}, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: {fport ?? 0}, confirmed: {requiresDeviceAcknowlegement} too long for current receive window. Abandoning.", LogLevel.Debug);
+                    Logger.Log(loRaDevice.DevEUI, $"cloud to device message: empty, id: {cloudToDeviceMessage.MessageId ?? "undefined"}, fport: 0, confirmed: {requiresDeviceAcknowlegement} too long for current receive window. Abandoning.", LogLevel.Debug);
                     isMessageTooLong = true;
                 }
             }
@@ -172,7 +172,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (macCommandsRequest?.Count > 0)
                 {
-                    foreach (MacCommand macCommand in macCommandsRequest)
+                    foreach (var macCommand in macCommandsRequest)
                     {
                         macCommands.Add(macCommand);
                     }
@@ -181,19 +181,19 @@ namespace LoRaWan.NetworkServer
 
             if (fpending || isMessageTooLong)
             {
-                fctrl |= (int)FctrlEnum.FpendingOrClassB;
+                fctrl |= (int)Fctrl.FpendingOrClassB;
             }
 
             if (upstreamPayload.IsAdrEnabled)
             {
-                fctrl |= (byte)FctrlEnum.ADR;
+                fctrl |= (byte)Fctrl.ADR;
             }
 
             var srcDevAddr = upstreamPayload.DevAddr.Span;
             var reversedDevAddr = new byte[srcDevAddr.Length];
-            for (int i = reversedDevAddr.Length - 1; i >= 0; --i)
+            for (var i = reversedDevAddr.Length - 1; i >= 0; --i)
             {
-                reversedDevAddr[i] = srcDevAddr[srcDevAddr.Length - (1 + i)];
+                reversedDevAddr[i] = srcDevAddr[^(1 + i)];
             }
 
             var msgType = requiresDeviceAcknowlegement ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
@@ -206,7 +206,7 @@ namespace LoRaWan.NetworkServer
                 fport.HasValue ? new byte[] { fport.Value } : null,
                 frmPayload,
                 1,
-                loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
+                loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
             // todo: check the device twin preference if using confirmed or unconfirmed down
             Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Information);
@@ -219,7 +219,7 @@ namespace LoRaWan.NetworkServer
         {
             if (fcntDown == 0)
             {
-                throw new ArgumentOutOfRangeException("fcntDown");
+                throw new ArgumentOutOfRangeException(nameof(fcntDown));
             }
 
             return (ushort)fcntDown;
@@ -236,16 +236,16 @@ namespace LoRaWan.NetworkServer
 
             // default fport
             byte fctrl = 0;
-            CidEnum macCommandType = CidEnum.Zero;
+            var macCommandType = Cid.Zero;
 
-            byte[] rndToken = new byte[2];
+            var rndToken = new byte[2];
 
             lock (RndLock)
             {
                 RndDownlinkMessageBuilder.NextBytes(rndToken);
             }
 
-            bool isMessageTooLong = false;
+            var isMessageTooLong = false;
 
             // Class C always uses RX2
             string datr;
@@ -260,7 +260,7 @@ namespace LoRaWan.NetworkServer
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
 
             // Deduct 8 bytes from max payload size.
-            maxPayloadSize -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+            maxPayloadSize -= Constants.LoraProtocolOverheadSize;
 
             var availablePayloadSize = maxPayloadSize;
 
@@ -299,9 +299,9 @@ namespace LoRaWan.NetworkServer
 
             var payloadDevAddr = ConversionHelper.StringToByteArray(loRaDevice.DevAddr);
             var reversedDevAddr = new byte[payloadDevAddr.Length];
-            for (int i = reversedDevAddr.Length - 1; i >= 0; --i)
+            for (var i = reversedDevAddr.Length - 1; i >= 0; --i)
             {
-                reversedDevAddr[i] = payloadDevAddr[payloadDevAddr.Length - (1 + i)];
+                reversedDevAddr[i] = payloadDevAddr[^(1 + i)];
             }
 
             var msgType = cloudToDeviceMessage.Confirmed ? LoRaMessageType.ConfirmedDataDown : LoRaMessageType.UnconfirmedDataDown;
@@ -314,7 +314,7 @@ namespace LoRaWan.NetworkServer
                 new byte[] { cloudToDeviceMessage.Fport },
                 frmPayload,
                 1,
-                loRaDevice.Supports32BitFCnt ? fcntDown : (uint?)null);
+                loRaDevice.Supports32BitFCnt ? fcntDown : null);
 
             return new DownlinkMessageBuilderResponse(
                 ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI),
@@ -339,19 +339,29 @@ namespace LoRaWan.NetworkServer
                 {
                     switch (requestedMacCommand.Cid)
                     {
-                        case CidEnum.LinkCheckCmd:
+                        case Cid.LinkCheckCmd:
                         {
                             if (rxpk != null)
                             {
                                 var linkCheckAnswer = new LinkCheckAnswer(rxpk.GetModulationMargin(), 1);
-                                if (macCommands.TryAdd((int)CidEnum.LinkCheckCmd, linkCheckAnswer))
+                                if (macCommands.TryAdd((int)Cid.LinkCheckCmd, linkCheckAnswer))
                                 {
-                                    Logger.Log(devEUI, $"answering to a MAC command request {linkCheckAnswer.ToString()}", LogLevel.Information);
+                                    Logger.Log(devEUI, $"answering to a MAC command request {linkCheckAnswer}", LogLevel.Information);
                                 }
                             }
 
                             break;
                         }
+                        case Cid.Zero:
+                        case Cid.One:
+                        case Cid.LinkADRCmd:
+                        case Cid.DutyCycleCmd:
+                        case Cid.RXParamCmd:
+                        case Cid.DevStatusCmd:
+                        case Cid.NewChannelCmd:
+                        case Cid.RXTimingCmd:
+                        default:
+                            break;
                     }
                 }
             }
@@ -384,8 +394,8 @@ namespace LoRaWan.NetworkServer
             if (loRaADRResult?.CanConfirmToDevice == true)
             {
                 const int placeholderChannel = 25;
-                LinkADRRequest linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, placeholderChannel, 0, (byte)loRaADRResult.NbRepetition);
-                macCommands.Add((int)CidEnum.LinkADRCmd, linkADR);
+                var linkADR = new LinkADRRequest((byte)loRaADRResult.DataRate, (byte)loRaADRResult.TxPower, placeholderChannel, 0, (byte)loRaADRResult.NbRepetition);
+                macCommands.Add((int)Cid.LinkADRCmd, linkADR);
                 Logger.Log(devEUI, $"performing a rate adaptation: DR {loRaADRResult.DataRate}, transmit power {loRaADRResult.TxPower}, #repetition {loRaADRResult.NbRepetition}", LogLevel.Information);
             }
 
@@ -394,13 +404,13 @@ namespace LoRaWan.NetworkServer
 
         private static long CalculateTime(int windowTime, ushort rXDelay)
         {
-            if (rXDelay > 1 && rXDelay < 16)
+            if (rXDelay is > 1 and < 16)
             {
-                return (windowTime + rXDelay - 1) * Constants.CONVERT_TO_PKT_FWD_TIME;
+                return (windowTime + rXDelay - 1) * Constants.ConvertToPktFwdTime;
             }
             else
             {
-                return windowTime * Constants.CONVERT_TO_PKT_FWD_TIME;
+                return windowTime * Constants.ConvertToPktFwdTime;
             }
         }
     }

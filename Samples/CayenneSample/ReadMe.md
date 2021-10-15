@@ -1,4 +1,4 @@
-﻿# Azure IoT Edge LoRaWAN Starter Kit
+# Azure IoT Edge LoRaWAN Starter Kit
 
 ## Cayenne Decoder
 

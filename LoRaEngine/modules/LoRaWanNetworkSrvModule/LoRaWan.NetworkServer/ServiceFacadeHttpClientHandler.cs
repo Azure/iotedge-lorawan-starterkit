@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.Shared
+namespace LoRaWan.Core
 {
     using System;
     using System.Linq;
@@ -17,12 +17,10 @@ namespace LoRaWan.Shared
     /// </summary>
     public class ServiceFacadeHttpClientHandler : HttpClientHandler
     {
-        private readonly ApiVersion minFunctionVersion;
-
         /// <summary>
         /// Expected Function version.
         /// </summary>
-        public ApiVersion MinFunctionVersion => this.minFunctionVersion;
+        public ApiVersion MinFunctionVersion { get; private set; }
 
         private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> next;
 
@@ -32,7 +30,7 @@ namespace LoRaWan.Shared
         /// <param name="minFunctionVersion"></param>
         public ServiceFacadeHttpClientHandler(ApiVersion minFunctionVersion)
         {
-            this.minFunctionVersion = minFunctionVersion;
+            MinFunctionVersion = minFunctionVersion;
         }
 
         /// <summary>
@@ -42,7 +40,7 @@ namespace LoRaWan.Shared
         /// <param name="next"></param>
         public ServiceFacadeHttpClientHandler(ApiVersion minFunctionVersion, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> next)
         {
-            this.minFunctionVersion = minFunctionVersion;
+            MinFunctionVersion = minFunctionVersion;
             this.next = next;
         }
 
@@ -54,17 +52,19 @@ namespace LoRaWan.Shared
         /// <returns></returns>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            if (request is null) throw new ArgumentNullException(nameof(request));
+
             // adds the version to the request
-            request.RequestUri = new Uri(string.Concat(request.RequestUri.ToString(), string.IsNullOrEmpty(request.RequestUri.Query) ? "?" : "&", ApiVersion.QueryStringParamName, "=", this.minFunctionVersion.Version));
+            request.RequestUri = new Uri(string.Concat(request.RequestUri.ToString(), string.IsNullOrEmpty(request.RequestUri.Query) ? "?" : "&", ApiVersion.QueryStringParamName, "=", MinFunctionVersion.Version));
 
             // use next if one was provided (for unit testing)
             var response = (this.next != null) ? await this.next(request, cancellationToken) : await base.SendAsync(request, cancellationToken);
             if (response.IsSuccessStatusCode)
             {
-                var functionVersion = this.GetFunctionVersion(response);
-                if (!functionVersion.SupportsVersion(this.minFunctionVersion))
+                var functionVersion = GetFunctionVersion(response);
+                if (!functionVersion.SupportsVersion(MinFunctionVersion))
                 {
-                    var msg = $"Version mismatch (expected: {this.minFunctionVersion.Name}, function version: {functionVersion.Name}), ensure you have the latest version deployed";
+                    var msg = $"Version mismatch (expected: {MinFunctionVersion.Name}, function version: {functionVersion.Name}), ensure you have the latest version deployed";
 
                     return new HttpResponseMessage(HttpStatusCode.BadRequest)
                     {
@@ -82,7 +82,7 @@ namespace LoRaWan.Shared
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        private ApiVersion GetFunctionVersion(HttpResponseMessage response)
+        private static ApiVersion GetFunctionVersion(HttpResponseMessage response)
         {
             // if no version information is available in response header, log error. Validation failed!
             if (!response.Headers.TryGetValues(ApiVersion.HttpHeaderName, out var versionValues) || !versionValues.Any())

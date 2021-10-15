@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.Tests.Shared
@@ -26,14 +26,14 @@ namespace LoRaWan.Tests.Shared
         // Logs starts of a test method call
         protected void LogTestStart(TestDeviceInfo device, [CallerMemberName] string memberName = "")
         {
-            this.Log($"[INFO] ** Starting {memberName} using device {device.DeviceID} **");
+            Log($"[INFO] ** Starting {memberName} using device {device.DeviceID} **");
         }
 
         // Logs starts of a test method call
         protected void LogTestStart(IEnumerable<TestDeviceInfo> devices, [CallerMemberName] string memberName = "")
         {
             var deviceIdList = string.Join(',', devices.Select(x => x.DeviceID));
-            this.Log($"[INFO] ** Starting {memberName} using devices {deviceIdList} **");
+            Log($"[INFO] ** Starting {memberName} using devices {deviceIdList} **");
         }
     }
 }

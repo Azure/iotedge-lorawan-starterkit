@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -6,7 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Net;
     using System.Net.Http;
-    using LoRaWan.Shared;
+    using LoRaWan.Core;
 
     /// <summary>
     /// Default implementation for <see cref="IServiceFacadeHttpClientProvider"/>.
@@ -21,7 +21,7 @@ namespace LoRaWan.NetworkServer
         {
             this.configuration = configuration;
             this.expectedFunctionVersion = expectedFunctionVersion;
-            this.httpClient = new Lazy<HttpClient>(this.CreateHttpClient);
+            this.httpClient = new Lazy<HttpClient>(CreateHttpClient);
         }
 
         public HttpClient GetHttpClient() => this.httpClient.Value;

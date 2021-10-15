@@ -1,8 +1,9 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
@@ -20,6 +21,8 @@ namespace LoRaWan.NetworkServer
 
         public DeduplicationResult Process(DeduplicationResult result, uint fCntUp)
         {
+            if (result is null) throw new ArgumentNullException(nameof(result));
+
             result.CanProcess = !result.IsDuplicate;
 
             if (result.IsDuplicate)
@@ -30,11 +33,11 @@ namespace LoRaWan.NetworkServer
             return result;
         }
 
-        public async Task<DeduplicationResult> ResolveDeduplication(uint fcntUp, uint fcntDown, string gatewayId)
+        public async Task<DeduplicationResult> ResolveDeduplication(uint fctUp, uint fcntDown, string gatewayId)
         {
-            var result = await this.loRaDeviceAPIService.CheckDuplicateMsgAsync(this.loRaDevice.DevEUI, fcntUp, gatewayId, fcntDown);
+            var result = await this.loRaDeviceAPIService.CheckDuplicateMsgAsync(this.loRaDevice.DevEUI, fctUp, gatewayId, fcntDown);
 
-            return this.Process(result, fcntUp);
+            return Process(result, fctUp);
         }
     }
 }

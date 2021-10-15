@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.SimulatedTest
@@ -19,21 +19,21 @@ namespace LoRaWan.SimulatedTest
         // Device1003_Simulated_HttpBasedDecoder: used for simulator http based decoding test
         public TestDeviceInfo Device1003_Simulated_HttpBasedDecoder { get; private set; }
 
-        List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
+        readonly List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP
         {
             get { return this.deviceRange1000_ABP; }
         }
 
-        List<TestDeviceInfo> deviceRange2000_1000_ABP = new List<TestDeviceInfo>();
+        readonly List<TestDeviceInfo> deviceRange2000_1000_ABP = new List<TestDeviceInfo>();
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange2000_1000_ABP
         {
             get { return this.deviceRange2000_1000_ABP; }
         }
 
-        List<TestDeviceInfo> deviceRange3000_10_OTAA = new List<TestDeviceInfo>();
+        readonly List<TestDeviceInfo> deviceRange3000_10_OTAA = new List<TestDeviceInfo>();
 
         public IReadOnlyCollection<TestDeviceInfo> DeviceRange3000_10_OTAA
         {
@@ -42,12 +42,12 @@ namespace LoRaWan.SimulatedTest
 
         public override void SetupTestDevices()
         {
-            string gatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID") ?? this.Configuration.LeafDeviceGatewayID;
+            var gatewayID = Environment.GetEnvironmentVariable("IOTEDGE_DEVICEID") ?? Configuration.LeafDeviceGatewayID;
 
             // Simulated devices start at 1000
 
             // Device1001_Simulated_ABP: used for ABP simulator
-            this.Device1001_Simulated_ABP = new TestDeviceInfo()
+            Device1001_Simulated_ABP = new TestDeviceInfo()
             {
                 DeviceID = "0000000000001001",
                 GatewayID = gatewayID,
@@ -59,7 +59,7 @@ namespace LoRaWan.SimulatedTest
             };
 
             // Device1002_Simulated_OTAA: used for simulator
-            this.Device1002_Simulated_OTAA = new TestDeviceInfo()
+            Device1002_Simulated_OTAA = new TestDeviceInfo()
             {
                 DeviceID = "0000000000001002",
                 AppEUI = "0000000000001002",
@@ -70,7 +70,7 @@ namespace LoRaWan.SimulatedTest
             };
 
             // Device1003_Simulated_HttpBasedDecoder: used for simulator http based decoding test
-            this.Device1003_Simulated_HttpBasedDecoder = new TestDeviceInfo
+            Device1003_Simulated_HttpBasedDecoder = new TestDeviceInfo
             {
                 DeviceID = "0000000000001003",
                 AppEUI = "0000000000001003",
@@ -80,7 +80,7 @@ namespace LoRaWan.SimulatedTest
                 SensorDecoder = "http://localhost:8888/api/DecoderValueSensor",
             };
 
-            for (int deviceID = 1100; deviceID <= 1110; deviceID++)
+            for (var deviceID = 1100; deviceID <= 1110; deviceID++)
             {
                 this.deviceRange1000_ABP.Add(
                     new TestDeviceInfo
@@ -98,7 +98,7 @@ namespace LoRaWan.SimulatedTest
             }
 
             // Range of 1000 ABP devices from 2000 to 2999: Used for load testing
-            for (int deviceID = 2000; deviceID <= 2999; deviceID++)
+            for (var deviceID = 2000; deviceID <= 2999; deviceID++)
             {
                 this.deviceRange2000_1000_ABP.Add(
                     new TestDeviceInfo
@@ -115,7 +115,7 @@ namespace LoRaWan.SimulatedTest
             }
 
             // Range of 10 OTAA devices from 3000 to 3009: Used for load testing
-            for (int deviceID = 3000; deviceID <= 3009; deviceID++)
+            for (var deviceID = 3000; deviceID <= 3009; deviceID++)
             {
                 this.deviceRange3000_10_OTAA.Add(
                     new TestDeviceInfo

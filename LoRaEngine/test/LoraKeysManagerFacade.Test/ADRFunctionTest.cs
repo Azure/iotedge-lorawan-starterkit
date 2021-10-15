@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.Test
@@ -10,8 +10,9 @@ namespace LoraKeysManagerFacade.Test
     using Moq;
     using Xunit;
 
-    public class ADRFunctionTest : FunctionTestBase
+    public sealed class ADRFunctionTest : FunctionTestBase, IDisposable
     {
+        private readonly LoRaADRInMemoryStore adrStore;
         private readonly ILoRaADRManager adrManager;
         private readonly ADRExecutionItem adrExecutionItem;
 
@@ -40,7 +41,8 @@ namespace LoraKeysManagerFacade.Test
                 .Setup(x => x.GetStrategy())
                 .Returns(adrStrategy.Object);
 
-            this.adrManager = new LoRaADRServerManager(new LoRaADRInMemoryStore(), strategyProvider.Object, new LoRaInMemoryDeviceStore());
+            this.adrStore = new LoRaADRInMemoryStore();
+            this.adrManager = new LoRaADRServerManager(this.adrStore, strategyProvider.Object, new LoRaInMemoryDeviceStore());
             this.adrExecutionItem = new ADRExecutionItem(this.adrManager);
         }
 
@@ -142,5 +144,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.Equal(req1.FCntDown + 1, result1.FCntDown);
             Assert.Equal(0U, result2.FCntDown.GetValueOrDefault());
         }
+
+        public void Dispose() => this.adrStore.Dispose();
     }
 }

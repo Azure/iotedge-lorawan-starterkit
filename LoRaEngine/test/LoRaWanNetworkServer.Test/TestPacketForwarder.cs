@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -10,16 +10,16 @@ namespace LoRaWan.NetworkServer.Test
 
     public class TestPacketForwarder : IPacketForwarder
     {
-        public List<DownlinkPktFwdMessage> DownlinkMessages { get; }
+        public IList<DownlinkPktFwdMessage> DownlinkMessages { get; }
 
         public TestPacketForwarder()
         {
-            this.DownlinkMessages = new List<DownlinkPktFwdMessage>();
+            DownlinkMessages = new List<DownlinkPktFwdMessage>();
         }
 
         public Task SendDownstreamAsync(DownlinkPktFwdMessage message)
         {
-            this.DownlinkMessages.Add(message);
+            DownlinkMessages.Add(message);
             return Task.FromResult(0);
         }
     }

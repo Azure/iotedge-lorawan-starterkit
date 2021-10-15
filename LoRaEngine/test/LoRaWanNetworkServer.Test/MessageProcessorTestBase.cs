@@ -1,9 +1,10 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
 {
     using System;
+    using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaTools.LoRaPhysical;
@@ -17,12 +18,14 @@ namespace LoRaWan.NetworkServer.Test
     using Moq;
     using Xunit;
 
-    public class MessageProcessorTestBase
+    public class MessageProcessorTestBase : IDisposable
     {
         protected const string ServerGatewayID = "test-gateway";
 
+        private readonly MemoryCache cache;
         private readonly byte[] macAddress;
-        private long startTime;
+        private readonly long startTime;
+        private bool disposedValue;
 
         public TestPacketForwarder PacketForwarder { get; }
 
@@ -40,7 +43,7 @@ namespace LoRaWan.NetworkServer.Test
 
         protected DefaultLoRaDataRequestHandler RequestHandlerImplementation { get; }
 
-        protected Task<Message> EmptyAdditionalMessageReceiveAsync => Task.Delay(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage).ContinueWith((_) => (Message)null);
+        protected static Task<Message> EmptyAdditionalMessageReceiveAsync => Task.Delay(LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage).ContinueWith((_) => (Message)null, TaskScheduler.Default);
 
         protected LoRaDeviceClientConnectionManager ConnectionManager { get; }
 
@@ -49,11 +52,11 @@ namespace LoRaWan.NetworkServer.Test
             this.startTime = DateTimeOffset.UtcNow.Ticks;
 
             this.macAddress = Utility.GetMacAddress();
-            this.ServerConfiguration = new NetworkServerConfiguration
+            ServerConfiguration = new NetworkServerConfiguration
             {
                 GatewayID = ServerGatewayID,
                 LogToConsole = true,
-                LogLevel = ((int)LogLevel.Debug).ToString(),
+                LogLevel = ((int)LogLevel.Debug).ToString(CultureInfo.InvariantCulture),
             };
 
             Logger.Init(new LoggerConfiguration()
@@ -62,26 +65,27 @@ namespace LoRaWan.NetworkServer.Test
                 LogToConsole = true,
             });
 
-            this.PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder());
-            this.PacketForwarder = new TestPacketForwarder();
-            this.LoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            this.FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerGatewayID, this.LoRaDeviceApi.Object);
-            var deduplicationFactory = new DeduplicationStrategyFactory(this.LoRaDeviceApi.Object);
+            PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder());
+            PacketForwarder = new TestPacketForwarder();
+            LoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
+            FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerGatewayID, LoRaDeviceApi.Object);
+            var deduplicationFactory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object);
             var adrStrategyProvider = new LoRaADRStrategyProvider();
-            var adrManagerFactory = new LoRAADRManagerFactory(this.LoRaDeviceApi.Object);
-            var functionBundlerProvider = new FunctionBundlerProvider(this.LoRaDeviceApi.Object);
-            this.RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
-            this.LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.ConnectionManager = new LoRaDeviceClientConnectionManager(new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) }));
-            this.LoRaDeviceFactory = new TestLoRaDeviceFactory(this.ServerConfiguration, this.FrameCounterUpdateStrategyProvider, this.LoRaDeviceClient.Object, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, this.ConnectionManager);
+            var adrManagerFactory = new LoRAADRManagerFactory(LoRaDeviceApi.Object);
+            var functionBundlerProvider = new FunctionBundlerProvider(LoRaDeviceApi.Object);
+            RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
+            LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
+            this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
+            ConnectionManager = new LoRaDeviceClientConnectionManager(this.cache);
+            LoRaDeviceFactory = new TestLoRaDeviceFactory(ServerConfiguration, FrameCounterUpdateStrategyProvider, LoRaDeviceClient.Object, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, ConnectionManager);
         }
 
-        public MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());
+        public static MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());
 
         /// <summary>
         /// Creates a <see cref="IMemoryCache"/> containing the <paramref name="loRaDevice"/> already available.
         /// </summary>
-        public IMemoryCache NewNonEmptyCache(LoRaDevice loRaDevice)
+        public static IMemoryCache NewNonEmptyCache(LoRaDevice loRaDevice)
         {
             var cache = new MemoryCache(new MemoryCacheOptions());
 
@@ -98,15 +102,15 @@ namespace LoRaWan.NetworkServer.Test
 
         public LoRaDevice CreateLoRaDevice(SimulatedDevice simulatedDevice)
         {
-            var device = TestUtils.CreateFromSimulatedDevice(simulatedDevice, this.LoRaDeviceClient.Object, this.RequestHandlerImplementation, this.ConnectionManager);
-            this.ConnectionManager.Register(device, this.LoRaDeviceClient.Object);
+            var device = TestUtils.CreateFromSimulatedDevice(simulatedDevice, ConnectionManager, RequestHandlerImplementation);
+            ConnectionManager.Register(device, LoRaDeviceClient.Object);
             return device;
         }
 
         public WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk, IPacketForwarder packetForwarder = null, TimeSpan? startTimeOffset = null, TimeSpan? constantElapsedTime = null)
         {
             var requestStartTime = startTimeOffset.HasValue ? DateTime.UtcNow.Subtract(startTimeOffset.Value) : DateTime.UtcNow;
-            var request = new WaitableLoRaRequest(rxpk, packetForwarder ?? this.PacketForwarder, requestStartTime);
+            var request = new WaitableLoRaRequest(rxpk, packetForwarder ?? PacketForwarder, requestStartTime);
 
             if (constantElapsedTime.HasValue)
             {
@@ -116,6 +120,26 @@ namespace LoRaWan.NetworkServer.Test
             }
 
             return request;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposedValue)
+            {
+                if (disposing)
+                {
+                    this.cache.Dispose();
+                }
+
+                this.disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

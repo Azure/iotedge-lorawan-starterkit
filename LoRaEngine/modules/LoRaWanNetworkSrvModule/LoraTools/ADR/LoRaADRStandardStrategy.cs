@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.ADR
@@ -9,11 +9,10 @@ namespace LoRaTools.ADR
     /// <summary>
     /// A strategy based on the standard ADR strategy.
     /// </summary>
-    public class LoRaADRStandardStrategy : ILoRaADRStrategy
+    public sealed class LoRaADRStandardStrategy : ILoRaADRStrategy
     {
         private const int MarginDb = 5;
         private const int MaxTxPowerIndex = 0;
-        private const int DefaultNbRep = 1;
 
         /// <summary>
         /// Array to calculate nb Repetion given packet loss
@@ -51,8 +50,8 @@ namespace LoRaTools.ADR
             }
 
             // This is a case of standard ADR calculus.
-            var newNbRep = this.ComputeNbRepetion(table.Entries[0].FCnt, table.Entries[LoRaADRTable.FrameCountCaptureCount - 1].FCnt, table.CurrentNbRep.GetValueOrDefault());
-            (int newTxPowerIndex, int newDatarate) = this.GetPowerAndDRConfiguration(requiredSnr, upstreamDataRate, table.Entries.Max(x => x.Snr), table.CurrentTxPower.GetValueOrDefault(), minTxPower, maxDr);
+            var newNbRep = ComputeNbRepetion(table.Entries[0].FCnt, table.Entries[LoRaADRTable.FrameCountCaptureCount - 1].FCnt, table.CurrentNbRep.GetValueOrDefault());
+            (var newTxPowerIndex, var newDatarate) = GetPowerAndDRConfiguration(requiredSnr, upstreamDataRate, table.Entries.Max(x => x.Snr), table.CurrentTxPower.GetValueOrDefault(), minTxPower, maxDr);
 
             if (newNbRep != table.CurrentNbRep || newTxPowerIndex != table.CurrentTxPower || newDatarate != upstreamDataRate)
             {
@@ -67,13 +66,13 @@ namespace LoRaTools.ADR
             return null;
         }
 
-        private (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex, int maxDr)
+        private static (int txPower, int datarate) GetPowerAndDRConfiguration(float requiredSnr, int dataRate, double maxSnr, int currentTxPowerIndex, int minTxPowerIndex, int maxDr)
         {
-            double snrMargin = maxSnr - requiredSnr - MarginDb;
+            var snrMargin = maxSnr - requiredSnr - MarginDb;
 
-            int computedDataRate = dataRate;
+            var computedDataRate = dataRate;
 
-            int nStep = (int)snrMargin;
+            var nStep = (int)snrMargin;
 
             while (nStep != 0)
             {
@@ -119,12 +118,12 @@ namespace LoRaTools.ADR
                 return this.pktLossToNbRep[0, currentNbRep - 1];
             }
 
-            if (pktLossRate >= 0.05 && pktLossRate < 0.10)
+            if (pktLossRate is >= 0.05 and < 0.10)
             {
                 return this.pktLossToNbRep[1, currentNbRep - 1];
             }
 
-            if (pktLossRate >= 0.10 && pktLossRate < 0.30)
+            if (pktLossRate is >= 0.10 and < 0.30)
             {
                 return this.pktLossToNbRep[2, currentNbRep - 1];
             }

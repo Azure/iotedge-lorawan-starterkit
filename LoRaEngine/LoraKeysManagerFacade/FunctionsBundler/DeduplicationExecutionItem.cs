@@ -18,7 +18,10 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
-            context.Result.DeduplicationResult = await this.GetDuplicateMessageResultAsync(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.Logger);
+            if (context is null) throw new System.ArgumentNullException(nameof(context));
+
+            context.Result.DeduplicationResult = await GetDuplicateMessageResultAsync(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.Logger);
+
             return context.Result.DeduplicationResult.IsDuplicate ? FunctionBundlerExecutionState.Abort : FunctionBundlerExecutionState.Continue;
         }
 
@@ -37,14 +40,14 @@ namespace LoraKeysManagerFacade.FunctionBundler
         internal async Task<DuplicateMsgResult> GetDuplicateMessageResultAsync(string devEUI, string gatewayId, uint clientFCntUp, uint clientFCntDown, ILogger logger = null)
         {
             var isDuplicate = true;
-            string processedDevice = gatewayId;
+            var processedDevice = gatewayId;
 
             using (var deviceCache = new LoRaDeviceCache(this.cacheStore, devEUI, gatewayId))
             {
                 if (await deviceCache.TryToLockAsync())
                 {
                     // we are owning the lock now
-                    if (deviceCache.TryGetInfo(out DeviceCacheInfo cachedDeviceState))
+                    if (deviceCache.TryGetInfo(out var cachedDeviceState))
                     {
                         var updateCacheState = false;
 
@@ -67,7 +70,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                         {
                             cachedDeviceState.FCntUp = clientFCntUp;
                             cachedDeviceState.GatewayId = gatewayId;
-                            deviceCache.StoreInfo(cachedDeviceState);
+                            _ = deviceCache.StoreInfo(cachedDeviceState);
                         }
                     }
                     else

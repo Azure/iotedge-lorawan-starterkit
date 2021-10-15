@@ -1,11 +1,12 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Threading.Tasks;
 
-    public interface ILoRaDeviceRegistry
+    public interface ILoRaDeviceRegistry : IDisposable
     {
         /// <summary>
         /// Gets devices that matches an OTAA join request.

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools.Regions
@@ -15,7 +15,21 @@ namespace LoRaTools.Regions
         public RegionLimitException(string message, RegionLimitExceptionType regionMappingExceptionType)
             : base(message)
         {
-            this.RegionLimitExceptionType = regionMappingExceptionType;
+            RegionLimitExceptionType = regionMappingExceptionType;
+        }
+
+        public RegionLimitException()
+        {
+        }
+
+        public RegionLimitException(string message)
+            : base(message)
+        {
+        }
+
+        public RegionLimitException(string message, Exception innerException)
+            : base(message, innerException)
+        {
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -22,7 +22,7 @@ namespace LoRaWan.NetworkServer.Test
     // End to end tests without external dependencies (IoT Hub, Service Facade Function)
     // Class CCloud to device message processing max payload size tests (Join tests are handled in other class)
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
-    public class MessageProcessor_End2End_NoDep_ClassC_CloudToDeviceMessage_SizeLimit_Tests
+    public sealed class MessageProcessor_End2End_NoDep_ClassC_CloudToDeviceMessage_SizeLimit_Tests : IDisposable
     {
         const string ServerGatewayID = "test-gateway";
 
@@ -33,6 +33,7 @@ namespace LoRaWan.NetworkServer.Test
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceApi;
         private readonly Mock<ILoRaDeviceClient> deviceClient;
         private readonly TestLoRaDeviceFactory loRaDeviceFactory;
+        private readonly MemoryCache cache;
         private readonly LoRaDeviceRegistry loRaDeviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterStrategyProvider;
 
@@ -44,15 +45,16 @@ namespace LoRaWan.NetworkServer.Test
             };
 
             this.loRaRegion = RegionManager.EU868;
-            this.PacketForwarder = new TestPacketForwarder();
+            PacketForwarder = new TestPacketForwarder();
             this.deviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             this.deviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.loRaDeviceFactory = new TestLoRaDeviceFactory(this.deviceClient.Object);
-            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, new MemoryCache(new MemoryCacheOptions()), this.deviceApi.Object, this.loRaDeviceFactory);
+            this.cache = new MemoryCache(new MemoryCacheOptions());
+            this.loRaDeviceRegistry = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, this.deviceApi.Object, this.loRaDeviceFactory);
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
-        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
+        private static void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
             Assert.NotNull(downlink.Txpk);
@@ -60,9 +62,9 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(0, downlink.Txpk.Tmst);
             Assert.NotEmpty(downlink.Txpk.Data);
 
-            byte[] downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
+            var downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
-            Assert.Equal(sentMessage.Fport, downstreamPayload.GetFPort());
+            Assert.Equal(sentMessage.Fport, downstreamPayload.FPortValue);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -96,9 +98,9 @@ namespace LoRaWan.NetworkServer.Test
             var datr = this.loRaRegion.DRtoConfiguration[this.loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
             var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(datr)
                 - c2dMessageMacCommandSize
-                - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+                - Constants.LoraProtocolOverheadSize;
 
-            var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
+            var c2dMsgPayload = GeneratePayload("123457890", (int)c2dPayloadSize);
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 DevEUI = devEUI,
@@ -108,15 +110,15 @@ namespace LoRaWan.NetworkServer.Test
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands = new[] { c2dMessageMacCommand };
+                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
             }
 
-            var cloudToDeviceMessage = c2d.CreateMessage();
+            using var cloudToDeviceMessage = c2d.CreateMessage();
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.PacketForwarder,
+                PacketForwarder,
                 this.frameCounterStrategyProvider);
 
             // Expectations
@@ -124,14 +126,14 @@ namespace LoRaWan.NetworkServer.Test
             Assert.True(await target.SendAsync(c2d));
 
             // Verify that exactly one C2D message was received
-            Assert.Single(this.PacketForwarder.DownlinkMessages);
+            Assert.Single(PacketForwarder.DownlinkMessages);
 
             // Verify donwlink message is correct
-            this.EnsureDownlinkIsCorrect(
-                this.PacketForwarder.DownlinkMessages.First(), simulatedDevice, c2d);
+            EnsureDownlinkIsCorrect(
+                PacketForwarder.DownlinkMessages.First(), simulatedDevice, c2d);
 
             // Get C2D message payload
-            var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
+            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(
                 Convert.FromBase64String(downlinkMessage.Txpk.Data));
             payloadDataDown.PerformEncryption(simulatedDevice.AppSKey);
@@ -181,9 +183,9 @@ namespace LoRaWan.NetworkServer.Test
             var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(datr)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
-                - Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+                - Constants.LoraProtocolOverheadSize;
 
-            var c2dMsgPayload = this.GeneratePayload("123457890", (int)c2dPayloadSize);
+            var c2dMsgPayload = GeneratePayload("123457890", (int)c2dPayloadSize);
             var c2d = new ReceivedLoRaCloudToDeviceMessage()
             {
                 DevEUI = devEUI,
@@ -193,15 +195,15 @@ namespace LoRaWan.NetworkServer.Test
 
             if (hasMacInC2D)
             {
-                c2d.MacCommands = new[] { c2dMessageMacCommand };
+                c2d.MacCommands.ResetTo(new[] { c2dMessageMacCommand });
             }
 
-            var cloudToDeviceMessage = c2d.CreateMessage();
+            using var cloudToDeviceMessage = c2d.CreateMessage();
 
             var target = new DefaultClassCDevicesMessageSender(
                 this.serverConfiguration,
                 this.loRaDeviceRegistry,
-                this.PacketForwarder,
+                PacketForwarder,
                 this.frameCounterStrategyProvider);
 
             // Expectations
@@ -209,25 +211,32 @@ namespace LoRaWan.NetworkServer.Test
             Assert.False(await target.SendAsync(c2d));
 
             // Verify that exactly one C2D message was received
-            Assert.Empty(this.PacketForwarder.DownlinkMessages);
+            Assert.Empty(PacketForwarder.DownlinkMessages);
 
             this.deviceApi.VerifyAll();
             this.deviceClient.VerifyAll();
         }
 
-        private string GeneratePayload(string allowedChars, int length)
+        private static string GeneratePayload(string allowedChars, int length)
         {
-            Random random = new Random();
+            var random = new Random();
 
-            char[] chars = new char[length];
-            int setLength = allowedChars.Length;
+            var chars = new char[length];
+            var setLength = allowedChars.Length;
 
-            for (int i = 0; i < length; ++i)
+            for (var i = 0; i < length; ++i)
             {
                 chars[i] = allowedChars[random.Next(setLength)];
             }
 
             return new string(chars, 0, length);
+        }
+
+        public void Dispose()
+        {
+            this.loRaDeviceRegistry.Dispose();
+            this.cache.Dispose();
+            this.loRaDeviceFactory.Dispose();
         }
     }
 }

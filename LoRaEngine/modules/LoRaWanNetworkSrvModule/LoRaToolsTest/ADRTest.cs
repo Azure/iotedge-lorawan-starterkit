@@ -1,5 +1,7 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+#pragma warning disable CA1062 // Validate arguments of public methods
 
 namespace LoRaWanTest
 {
@@ -13,7 +15,7 @@ namespace LoRaWanTest
 
     public class ADRTest
     {
-        ITestOutputHelper output;
+        readonly ITestOutputHelper output;
 
         public ADRTest(ITestOutputHelper output)
         {
@@ -22,14 +24,16 @@ namespace LoRaWanTest
 
         [Theory]
         [ClassData(typeof(ADRTestData))]
-        public async System.Threading.Tasks.Task TestADRAsync(string testName, string devEUI, List<LoRaADRTableEntry> tableEntries, Rxpk rxpk, bool expectDefaultAnswer, LoRaADRResult expectedResult)
+        public async System.Threading.Tasks.Task TestADRAsync(string testName, string devEUI, IList<LoRaADRTableEntry> tableEntries, Rxpk rxpk, bool expectDefaultAnswer, LoRaADRResult expectedResult)
         {
             this.output.WriteLine($"Starting test {testName}");
             var region = RegionManager.EU868;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
-            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider);
-            loRaADRManager.CallBase = true;
-            loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
+            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider)
+            {
+                CallBase = true
+            };
+            _ = loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // If the test does not expect a default answer we trigger default reset before
             if (!expectDefaultAnswer)
@@ -44,7 +48,7 @@ namespace LoRaWanTest
                 });
             }
 
-            for (int i = 0; i < tableEntries.Count; i++)
+            for (var i = 0; i < tableEntries.Count; i++)
             {
                 await loRaADRManager.Object.StoreADREntryAsync(tableEntries[i]);
             }
@@ -63,14 +67,18 @@ namespace LoRaWanTest
         [Fact]
         public async System.Threading.Tasks.Task CheckADRReturnsDefaultValueIfCacheCrash()
         {
-            string devEUI = "myloratest";
+            var devEUI = "myloratest";
             var region = RegionManager.EU868;
             ILoRaADRStrategyProvider provider = new LoRaADRStrategyProvider();
-            Rxpk rxpk = new Rxpk();
-            rxpk.Datr = "SF7BW125";
-            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider);
-            loRaADRManager.CallBase = true;
-            loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
+            var rxpk = new Rxpk
+            {
+                Datr = "SF7BW125"
+            };
+            var loRaADRManager = new Mock<LoRaADRManagerBase>(MockBehavior.Loose, new LoRaADRInMemoryStore(), provider)
+            {
+                CallBase = true
+            };
+            _ = loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // setup table with default value
             _ = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
@@ -102,7 +110,7 @@ namespace LoRaWanTest
             Assert.Equal(1, adrResult.NbRepetition);
 
             // reset cache and check we get default values
-            await loRaADRManager.Object.ResetAsync(devEUI);
+            _ = await loRaADRManager.Object.ResetAsync(devEUI);
 
             adrResult = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
             {

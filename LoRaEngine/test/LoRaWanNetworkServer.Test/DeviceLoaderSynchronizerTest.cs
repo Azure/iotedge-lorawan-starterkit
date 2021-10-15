@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer.Test
@@ -41,12 +41,12 @@ namespace LoRaWan.NetworkServer.Test
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
             apiService.Setup(x => x.SearchByDevAddrAsync(It.IsNotNull<string>()))
-                .Throws(new Exception());
+                .Throws(new InvalidOperationException());
 
             var deviceFactory = new Mock<ILoRaDeviceFactory>(MockBehavior.Strict);
 
             var destinationDictionary = new DevEUIToLoRaDeviceDictionary();
-            var finished = new SemaphoreSlim(0);
+            using var finished = new SemaphoreSlim(0);
             var target = new DeviceLoaderSynchronizer(
                 devAddr,
                 apiService.Object,
@@ -89,7 +89,7 @@ namespace LoRaWan.NetworkServer.Test
             var deviceFactory = new Mock<ILoRaDeviceFactory>(MockBehavior.Strict);
 
             var destinationDictionary = new DevEUIToLoRaDeviceDictionary();
-            var finished = new SemaphoreSlim(0);
+            using var finished = new SemaphoreSlim(0);
             var target = new DeviceLoaderSynchronizer(
                 devAddr,
                 apiService.Object,
@@ -100,7 +100,7 @@ namespace LoRaWan.NetworkServer.Test
                 (_, l) => { finished.Release(); },
                 (d) => destinationDictionary.TryAdd(d.DevEUI, d));
 
-            var req1 = new WaitableLoRaRequest(payload1);
+            using var req1 = new WaitableLoRaRequest(payload1);
             target.Queue(req1);
 
             await finished.WaitAsync();
@@ -110,7 +110,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var payload2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2");
             payload2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
-            var req2 = new WaitableLoRaRequest(payload2);
+            using var req2 = new WaitableLoRaRequest(payload2);
             target.Queue(req2);
 
             Assert.True(await req2.WaitCompleteAsync());
@@ -140,10 +140,10 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceClient.Setup(x => x.Disconnect())
                 .Returns(true);
 
-            var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+            using var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
 
             var destinationDictionary = new DevEUIToLoRaDeviceDictionary();
-            var finished = new SemaphoreSlim(0);
+            using var finished = new SemaphoreSlim(0);
             var target = new DeviceLoaderSynchronizer(
                 simulatedDevice.DevAddr,
                 apiService.Object,
@@ -154,7 +154,7 @@ namespace LoRaWan.NetworkServer.Test
                 (_, l) => { finished.Release(); },
                 (d) => destinationDictionary.TryAdd(d.DevEUI, d));
 
-            var request = new WaitableLoRaRequest(payload);
+            using var request = new WaitableLoRaRequest(payload);
             target.Queue(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingFailed);
@@ -183,10 +183,10 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(new SearchDevicesResult(iotHubDeviceInfo.AsList()));
 
             var loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+            using var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
 
             var destinationDictionary = new DevEUIToLoRaDeviceDictionary();
-            var finished = new SemaphoreSlim(0);
+            using var finished = new SemaphoreSlim(0);
             var target = new DeviceLoaderSynchronizer(
                 simulatedDevice.DevAddr,
                 apiService.Object,
@@ -197,7 +197,7 @@ namespace LoRaWan.NetworkServer.Test
                 (_, l) => { finished.Release(); },
                 (d) => destinationDictionary.TryAdd(d.DevEUI, d));
 
-            var request = new WaitableLoRaRequest(payload);
+            using var request = new WaitableLoRaRequest(payload);
             target.Queue(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingFailed);
@@ -233,10 +233,10 @@ namespace LoRaWan.NetworkServer.Test
             loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(TestUtils.CreateABPTwin(simulatedDevice));
 
-            var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
+            using var deviceFactory = new TestLoRaDeviceFactory(loRaDeviceClient.Object);
 
             var destinationDictionary = new DevEUIToLoRaDeviceDictionary();
-            var finished = new SemaphoreSlim(0);
+            using var finished = new SemaphoreSlim(0);
             var target = new DeviceLoaderSynchronizer(
                 simulatedDevice.DevAddr,
                 apiService.Object,
@@ -250,7 +250,7 @@ namespace LoRaWan.NetworkServer.Test
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
             payload.SerializeUplink(simulatedDevice.AppSKey, "00000000000000000000000000EEAAFF");
 
-            var request = new WaitableLoRaRequest(payload);
+            using var request = new WaitableLoRaRequest(payload);
             target.Queue(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingFailed);

@@ -38,51 +38,51 @@ namespace LoRaWan.Tests.Shared
 
         public IntegrationTestFixtureBase()
         {
-            this.Configuration = TestConfiguration.GetConfiguration();
-            this.serviceClient = new Lazy<ServiceClient>(() => ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString));
-            TestLogger.Log($"[INFO] {nameof(this.Configuration.IoTHubAssertLevel)}: {this.Configuration.IoTHubAssertLevel}");
-            TestLogger.Log($"[INFO] {nameof(this.Configuration.NetworkServerModuleLogAssertLevel)}: {this.Configuration.NetworkServerModuleLogAssertLevel}");
+            Configuration = TestConfiguration.GetConfiguration();
+            this.serviceClient = new Lazy<ServiceClient>(() => ServiceClient.CreateFromConnectionString(Configuration.IoTHubConnectionString));
+            TestLogger.Log($"[INFO] {nameof(Configuration.IoTHubAssertLevel)}: {Configuration.IoTHubAssertLevel}");
+            TestLogger.Log($"[INFO] {nameof(Configuration.NetworkServerModuleLogAssertLevel)}: {Configuration.NetworkServerModuleLogAssertLevel}");
 
-            AppDomain.CurrentDomain.UnhandledException += this.OnUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-            this.SetupTestDevices();
+            SetupTestDevices();
 
             // Fix device ID if a prefix was defined (DO NOT MOVE THIS LINE ABOVE DEVICE CREATION)
-            foreach (var d in this.GetAllDevices())
+            foreach (var d in GetAllDevices())
             {
-                if (!string.IsNullOrEmpty(this.Configuration.DevicePrefix))
+                if (!string.IsNullOrEmpty(Configuration.DevicePrefix))
                 {
-                    d.DeviceID = string.Concat(this.Configuration.DevicePrefix, d.DeviceID.Substring(this.Configuration.DevicePrefix.Length, d.DeviceID.Length - this.Configuration.DevicePrefix.Length));
+                    d.DeviceID = string.Concat(Configuration.DevicePrefix, d.DeviceID.Substring(Configuration.DevicePrefix.Length, d.DeviceID.Length - Configuration.DevicePrefix.Length));
                     if (!string.IsNullOrEmpty(d.AppEUI))
                     {
-                        d.AppEUI = string.Concat(this.Configuration.DevicePrefix, d.AppEUI.Substring(this.Configuration.DevicePrefix.Length, d.AppEUI.Length - this.Configuration.DevicePrefix.Length));
+                        d.AppEUI = string.Concat(Configuration.DevicePrefix, d.AppEUI.Substring(Configuration.DevicePrefix.Length, d.AppEUI.Length - Configuration.DevicePrefix.Length));
                     }
 
                     if (!string.IsNullOrEmpty(d.AppKey))
                     {
-                        d.AppKey = string.Concat(this.Configuration.DevicePrefix, d.AppKey.Substring(this.Configuration.DevicePrefix.Length, d.AppKey.Length - this.Configuration.DevicePrefix.Length));
+                        d.AppKey = string.Concat(Configuration.DevicePrefix, d.AppKey.Substring(Configuration.DevicePrefix.Length, d.AppKey.Length - Configuration.DevicePrefix.Length));
                     }
 
                     if (!string.IsNullOrEmpty(d.AppSKey))
                     {
-                        d.AppSKey = string.Concat(this.Configuration.DevicePrefix, d.AppSKey.Substring(this.Configuration.DevicePrefix.Length, d.AppSKey.Length - this.Configuration.DevicePrefix.Length));
+                        d.AppSKey = string.Concat(Configuration.DevicePrefix, d.AppSKey.Substring(Configuration.DevicePrefix.Length, d.AppSKey.Length - Configuration.DevicePrefix.Length));
                     }
 
                     if (!string.IsNullOrEmpty(d.NwkSKey))
                     {
-                        d.NwkSKey = string.Concat(this.Configuration.DevicePrefix, d.NwkSKey.Substring(this.Configuration.DevicePrefix.Length, d.NwkSKey.Length - this.Configuration.DevicePrefix.Length));
+                        d.NwkSKey = string.Concat(Configuration.DevicePrefix, d.NwkSKey.Substring(Configuration.DevicePrefix.Length, d.NwkSKey.Length - Configuration.DevicePrefix.Length));
                     }
 
                     if (!string.IsNullOrEmpty(d.DevAddr))
                     {
-                        d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(string.Concat(this.Configuration.DevicePrefix, d.DevAddr.Substring(this.Configuration.DevicePrefix.Length, d.DevAddr.Length - this.Configuration.DevicePrefix.Length)), this.Configuration.NetId);
+                        d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(string.Concat(Configuration.DevicePrefix, d.DevAddr.Substring(Configuration.DevicePrefix.Length, d.DevAddr.Length - Configuration.DevicePrefix.Length)), Configuration.NetId);
                     }
                 }
                 else
                 {
                     if (!string.IsNullOrEmpty(d.DevAddr))
                     {
-                        d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(d.DevAddr, this.Configuration.NetId);
+                        d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(d.DevAddr, Configuration.NetId);
                     }
                 }
             }
@@ -98,7 +98,7 @@ namespace LoRaWan.Tests.Shared
         // Helper method to return all devices
         IEnumerable<TestDeviceInfo> GetAllDevices()
         {
-            var types = this.GetType();
+            var types = GetType();
             foreach (var prop in types.GetProperties())
             {
                 if (prop.PropertyType == typeof(TestDeviceInfo))
@@ -120,7 +120,7 @@ namespace LoRaWan.Tests.Shared
         // Clear IoT Hub, Udp logs and Arduino serial logs
         public virtual void ClearLogs()
         {
-            this.IoTHubMessages?.ResetEvents();
+            IoTHubMessages?.ResetEvents();
             this.udpLogListener?.ResetEvents();
         }
 
@@ -128,12 +128,12 @@ namespace LoRaWan.Tests.Shared
 
         RegistryManager GetRegistryManager()
         {
-            return this.registryManager ?? (this.registryManager = RegistryManager.CreateFromConnectionString(this.Configuration.IoTHubConnectionString));
+            return this.registryManager ?? (this.registryManager = RegistryManager.CreateFromConnectionString(Configuration.IoTHubConnectionString));
         }
 
         public async Task<Twin> GetTwinAsync(string deviceId)
         {
-            return await this.GetRegistryManager().GetTwinAsync(deviceId);
+            return await GetRegistryManager().GetTwinAsync(deviceId);
         }
 
         public async Task SendCloudToDeviceMessageAsync(string deviceId, LoRaCloudToDeviceMessage message)
@@ -146,14 +146,14 @@ namespace LoRaWan.Tests.Shared
                 msg.MessageId = message.MessageId;
             }
 
-            await this.SendCloudToDeviceMessageAsync(deviceId, msg);
+            await SendCloudToDeviceMessageAsync(deviceId, msg);
         }
 
         public async Task CleanupC2DDeviceQueueAsync(string deviceId)
         {
             try
             {
-                using (var client = Microsoft.Azure.Devices.Client.DeviceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString + $";DeviceId={deviceId}", Microsoft.Azure.Devices.Client.TransportType.Amqp))
+                using (var client = Microsoft.Azure.Devices.Client.DeviceClient.CreateFromConnectionString(Configuration.IoTHubConnectionString + $";DeviceId={deviceId}", Microsoft.Azure.Devices.Client.TransportType.Amqp))
                 {
                     Microsoft.Azure.Devices.Client.Message msg = null;
                     Console.WriteLine($"Cleaning up messages for device {deviceId}");
@@ -194,14 +194,14 @@ namespace LoRaWan.Tests.Shared
                 msg.MessageId = messageId;
             }
 
-            await this.SendCloudToDeviceMessageAsync(deviceId, msg);
+            await SendCloudToDeviceMessageAsync(deviceId, msg);
         }
 
         ServiceClient GetServiceClient() => this.serviceClient.Value;
 
         public async Task SendCloudToDeviceMessageAsync(string deviceId, Message message)
         {
-            await this.GetServiceClient().SendAsync(deviceId, message);
+            await GetServiceClient().SendAsync(deviceId, message);
         }
 
         /// <summary>
@@ -229,7 +229,7 @@ namespace LoRaWan.Tests.Shared
             {
                 var c2d = new CloudToDeviceMethod(methodName, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1));
                 c2d.SetPayloadJson(JsonConvert.SerializeObject(body));
-                await this.GetServiceClient().InvokeDeviceMethodAsync(edgeDeviceId, moduleId, c2d);
+                await GetServiceClient().InvokeDeviceMethodAsync(edgeDeviceId, moduleId, c2d);
             }
             catch (Exception ex)
             {
@@ -240,7 +240,7 @@ namespace LoRaWan.Tests.Shared
 
         public async Task InvokeDeviceMethodAsync(string deviceId, string moduleId, CloudToDeviceMethod method)
         {
-            using (var sc = ServiceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString))
+            using (var sc = ServiceClient.CreateFromConnectionString(Configuration.IoTHubConnectionString))
             {
                 await sc.InvokeDeviceMethodAsync(deviceId, moduleId, method);
             }
@@ -250,7 +250,7 @@ namespace LoRaWan.Tests.Shared
         {
             try
             {
-                Microsoft.Azure.Devices.Client.DeviceClient device = Microsoft.Azure.Devices.Client.DeviceClient.CreateFromConnectionString(this.Configuration.IoTHubConnectionString, deviceId);
+                var device = Microsoft.Azure.Devices.Client.DeviceClient.CreateFromConnectionString(Configuration.IoTHubConnectionString, deviceId);
                 var twinCollection = new TwinCollection();
                 twinCollection[twinName] = twinValue;
                 await device.UpdateReportedPropertiesAsync(twinCollection);
@@ -263,11 +263,11 @@ namespace LoRaWan.Tests.Shared
 
         public virtual async Task InitializeAsync()
         {
-            if (this.Configuration.CreateDevices)
+            if (Configuration.CreateDevices)
             {
                 try
                 {
-                    await this.CreateOrUpdateDevicesAsync();
+                    await CreateOrUpdateDevicesAsync();
                 }
                 catch (Exception ex)
                 {
@@ -275,15 +275,15 @@ namespace LoRaWan.Tests.Shared
                 }
             }
 
-            if (!string.IsNullOrEmpty(this.Configuration.IoTHubEventHubConnectionString) && this.Configuration.NetworkServerModuleLogAssertLevel != LogValidationAssertLevel.Ignore)
+            if (!string.IsNullOrEmpty(Configuration.IoTHubEventHubConnectionString) && Configuration.NetworkServerModuleLogAssertLevel != LogValidationAssertLevel.Ignore)
             {
-                this.IoTHubMessages = new EventHubDataCollector(this.Configuration.IoTHubEventHubConnectionString, this.Configuration.IoTHubEventHubConsumerGroup);
-                await this.IoTHubMessages.StartAsync();
+                IoTHubMessages = new EventHubDataCollector(Configuration.IoTHubEventHubConnectionString, Configuration.IoTHubEventHubConsumerGroup);
+                await IoTHubMessages.StartAsync();
             }
 
-            if (this.Configuration.UdpLog)
+            if (Configuration.UdpLog)
             {
-                this.udpLogListener = new UdpLogListener(this.Configuration.UdpLogPort);
+                this.udpLogListener = new UdpLogListener(Configuration.UdpLogPort);
                 this.udpLogListener.Start();
             }
         }
@@ -291,13 +291,13 @@ namespace LoRaWan.Tests.Shared
         private async Task CreateOrUpdateDevicesAsync()
         {
             TestLogger.Log($"Creating or updating IoT Hub devices...");
-            var registryManager = this.GetRegistryManager();
-            foreach (var testDevice in this.GetAllDevices().Where(x => x.IsIoTHubDevice))
+            var registryManager = GetRegistryManager();
+            foreach (var testDevice in GetAllDevices().Where(x => x.IsIoTHubDevice))
             {
                 var deviceID = testDevice.DeviceID;
-                if (!string.IsNullOrEmpty(this.Configuration.DevicePrefix))
+                if (!string.IsNullOrEmpty(Configuration.DevicePrefix))
                 {
-                    deviceID = string.Concat(this.Configuration.DevicePrefix, deviceID.Substring(this.Configuration.DevicePrefix.Length, deviceID.Length - this.Configuration.DevicePrefix.Length));
+                    deviceID = string.Concat(Configuration.DevicePrefix, deviceID.Substring(Configuration.DevicePrefix.Length, deviceID.Length - Configuration.DevicePrefix.Length));
                     testDevice.DeviceID = deviceID;
                 }
 
@@ -346,7 +346,7 @@ namespace LoRaWan.Tests.Shared
         // Usefull when running theories
         public TestDeviceInfo GetDeviceByPropertyName(string propertyName)
         {
-            return (TestDeviceInfo)this.GetType().GetProperty(propertyName).GetValue(this);
+            return (TestDeviceInfo)GetType().GetProperty(propertyName).GetValue(this);
         }
 
         private bool disposedValue = false; // To detect redundant calls
@@ -359,10 +359,10 @@ namespace LoRaWan.Tests.Shared
             {
                 if (disposing)
                 {
-                    AppDomain.CurrentDomain.UnhandledException -= this.OnUnhandledException;
+                    AppDomain.CurrentDomain.UnhandledException -= OnUnhandledException;
 
-                    this.IoTHubMessages?.Dispose();
-                    this.IoTHubMessages = null;
+                    IoTHubMessages?.Dispose();
+                    IoTHubMessages = null;
                     this.registryManager?.Dispose();
                     this.registryManager = null;
 
@@ -378,7 +378,7 @@ namespace LoRaWan.Tests.Shared
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
     }

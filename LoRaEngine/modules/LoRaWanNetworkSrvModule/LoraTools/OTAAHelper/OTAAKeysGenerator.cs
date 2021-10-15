@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaTools
@@ -8,15 +8,17 @@ namespace LoRaTools
     using System.Security.Cryptography;
     using LoRaTools.Utils;
 
-    public class OTAAKeysGenerator
+    public static class OTAAKeysGenerator
     {
         private static readonly Random RndKeysGenerator = new Random();
         private static readonly object RndLock = new object();
 
         public static string GetNwkId(byte[] netId)
         {
-            int nwkPart = netId[0] << 1;
-            byte[] devAddr = new byte[4];
+            if (netId is null) throw new ArgumentNullException(nameof(netId));
+
+            var nwkPart = netId[0] << 1;
+            var devAddr = new byte[4];
 
             lock (RndLock)
             {
@@ -30,7 +32,7 @@ namespace LoRaTools
         // don't work with CFLIST atm
         public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
-            Aes aes = new AesManaged
+            using Aes aes = new AesManaged
             {
                 Key = appKey,
 
@@ -38,7 +40,7 @@ namespace LoRaTools
                 Padding = PaddingMode.None
             };
 
-            byte[] pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
+            var pt = type.Concat(appnonce).Concat(netid).Concat(devnonce).Concat(new byte[7]).ToArray();
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
@@ -51,7 +53,11 @@ namespace LoRaTools
         // don't work with CFLIST atm
         public static string CalculateKey(byte[] type, byte[] appnonce, byte[] netid, ReadOnlyMemory<byte> devnonce, byte[] appKey)
         {
-            Aes aes = new AesManaged
+            if (type is null) throw new ArgumentNullException(nameof(type));
+            if (appnonce is null) throw new ArgumentNullException(nameof(appnonce));
+            if (netid is null) throw new ArgumentNullException(nameof(netid));
+
+            using Aes aes = new AesManaged
             {
                 Key = appKey,
                 Mode = CipherMode.ECB,
@@ -80,7 +86,7 @@ namespace LoRaTools
 
         public static string GetAppNonce()
         {
-            byte[] appNonce = new byte[3];
+            var appNonce = new byte[3];
             lock (RndLock)
             {
                 RndKeysGenerator.NextBytes(appNonce);

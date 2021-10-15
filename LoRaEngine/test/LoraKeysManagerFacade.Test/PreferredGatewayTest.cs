@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.Test
@@ -94,7 +94,7 @@ namespace LoraKeysManagerFacade.Test
 
             var t1 = Task.Run(() => this.preferredGatewayExecutionItem.ExecuteAsync(pipeline1));
 
-            await Task.Delay(PreferredGatewayExecutionItem.DEFAULT_RECEIVE_REQUESTS_PERIOD_IN_MS + 50);
+            await Task.Delay(PreferredGatewayExecutionItem.DefaultReceiveRequestsPeriodInMs + 50);
 
             var t2 = Task.Run(() => this.preferredGatewayExecutionItem.ExecuteAsync(pipeline2));
 

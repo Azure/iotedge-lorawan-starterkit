@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -35,6 +35,6 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Indicates if the preferred gateway resolution was executed successfully.
         /// </summary>
-        internal bool IsSuccessful() => !this.Conflict && string.IsNullOrEmpty(this.ErrorMessage);
+        internal bool IsSuccessful() => !Conflict && string.IsNullOrEmpty(ErrorMessage);
     }
 }

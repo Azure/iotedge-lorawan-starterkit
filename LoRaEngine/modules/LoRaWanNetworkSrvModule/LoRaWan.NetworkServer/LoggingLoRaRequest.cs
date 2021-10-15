@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -35,18 +35,18 @@ namespace LoRaWan.NetworkServer
         public override void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)
         {
             this.wrappedRequest.NotifyFailed(deviceId, reason, exception);
-            this.LogProcessingTime(deviceId);
+            LogProcessingTime(deviceId);
         }
 
         public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkPktFwdMessage downlink)
         {
             this.wrappedRequest.NotifySucceeded(loRaDevice, downlink);
-            this.LogProcessingTime(loRaDevice?.DevEUI);
+            LogProcessingTime(loRaDevice?.DevEUI);
         }
 
         private void LogProcessingTime(string deviceId)
         {
-            deviceId = deviceId ?? ConversionHelper.ByteArrayToString(this.wrappedRequest.Payload.DevAddr);
+            deviceId ??= ConversionHelper.ByteArrayToString(this.wrappedRequest.Payload.DevAddr);
             Logger.Log(deviceId, $"processing time: {DateTime.UtcNow.Subtract(this.wrappedRequest.StartTime)}", LogLevel.Debug);
         }
 
