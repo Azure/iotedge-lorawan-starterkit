@@ -103,7 +103,7 @@ namespace LoRaWan.NetworkServer
             this.Tmms = rxpk.Tmms;
             this.Tmst = rxpk.Tmst;
             this.Fcnt = upstreamPayload.GetFcnt();
-            this.Port = upstreamPayload.GetFPort();
+            this.Port = upstreamPayload.FPortValue;
         }
     }
 }

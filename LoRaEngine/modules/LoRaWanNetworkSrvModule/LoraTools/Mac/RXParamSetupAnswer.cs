@@ -18,11 +18,14 @@ namespace LoRaTools
 
         public override int Length => 2;
 
-        public bool GetRx1DROffsetAck() => ((this.Status >> 2) & 0b00000001) == 1;
+        [JsonIgnore]
+        public bool Rx1DROffsetAck => ((this.Status >> 2) & 0b00000001) == 1;
 
-        public bool GetRx2DROffsetAck() => ((this.Status >> 1) & 0b00000001) == 1;
+        [JsonIgnore]
+        public bool Rx2DROffsetAck => ((this.Status >> 1) & 0b00000001) == 1;
 
-        public bool GetChannelAck() => (this.Status & 0b00000001) == 1;
+        [JsonIgnore]
+        public bool ChannelAck => (this.Status & 0b00000001) == 1;
 
         public RXParamSetupAnswer(bool rx1DROffsetAck, bool rx2DataRateOffsetAck, bool channelAck)
         {
@@ -54,7 +57,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, rx1 datarate offset ack: {this.GetRx1DROffsetAck()}, rx2 datarate offset ack: {this.GetRx2DROffsetAck()}, channel ack: {this.GetChannelAck()}";
+            return $"Type: {this.Cid} Answer, rx1 datarate offset ack: {this.Rx1DROffsetAck}, rx2 datarate offset ack: {this.Rx2DROffsetAck}, channel ack: {this.ChannelAck}";
         }
     }
 }

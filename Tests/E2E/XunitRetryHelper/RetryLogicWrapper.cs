@@ -36,7 +36,7 @@ namespace XunitRetryHelper
                 {
                     var summary = await executer(diagnosticMessageSink, delayedMessageBus, constructorArguments, aggregator, cancellationTokenSource);
 
-                    var lastAssert = delayedMessageBus.GetLastFailure();
+                    var lastAssert = delayedMessageBus.LastFailure;
 
                     if (aggregator.HasExceptions || summary.Failed == 0 || testRetryCount + 1 > maxRetries)
                     {

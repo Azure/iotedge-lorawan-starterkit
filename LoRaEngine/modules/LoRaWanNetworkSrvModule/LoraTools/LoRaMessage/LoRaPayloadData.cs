@@ -25,21 +25,13 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets or sets list of Mac Commands in the LoRaPayload.
         /// </summary>
-        public List<MacCommand> MacCommands { get; set; }
+        public IList<MacCommand> MacCommands { get; set; }
 
         /// <summary>
         /// Gets the LoRa payload fport as value.
         /// </summary>
-        public byte GetFPort()
-        {
-            byte fportUp = 0;
-            if (this.Fport.Span.Length > 0)
-            {
-                fportUp = this.Fport.Span[0];
-            }
-
-            return fportUp;
-        }
+        [JsonIgnore]
+        public byte FPortValue => this.Fport.Span.Length > 0 ? this.Fport.Span[0] : (byte)0;
 
         /// <summary>
         /// Gets the LoRa payload frame counter.
@@ -49,7 +41,8 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets the DevAdd netID.
         /// </summary>
-        public byte GetDevAddrNetID() => (byte)(this.DevAddr.Span[0] & 0b11111110);
+        [JsonIgnore]
+        public byte DevAddrNetID => (byte)(this.DevAddr.Span[0] & 0b11111110);
 
         /// <summary>
         /// Gets a value indicating whether the payload is a confirmation (ConfirmedDataDown or ConfirmedDataUp).
@@ -194,12 +187,12 @@ namespace LoRaTools.LoRaMessage
             var fPortLen = fPort == null ? 0 : fPort.Length;
 
             // TODO If there are mac commands to send and no payload, we need to put the mac commands in the frmpayload.
-            if (macBytes.Count > 0 && (frmPayload == null || frmPayload?.Count() == 0))
+            if (macBytes.Count > 0 && (frmPayload == null || frmPayload?.Length == 0))
             {
                 frmPayload = fOpts;
                 fOpts = null;
                 fOptsLen = 0;
-                frmPayloadLen = frmPayload.Count();
+                frmPayloadLen = frmPayload.Length;
                 fPortLen = 1;
                 fPort = new byte[1] { 0 };
             }
@@ -280,7 +273,7 @@ namespace LoRaTools.LoRaMessage
         public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI)
         {
             // It is a Mac Command payload, needs to encrypt with nwkskey
-            if (this.GetFPort() == 0)
+            if (this.FPortValue == 0)
             {
                 this.PerformEncryption(nwkSKey);
             }

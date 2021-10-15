@@ -22,7 +22,7 @@ namespace LoRaWanTest
 
         [Theory]
         [ClassData(typeof(ADRTestData))]
-        public async System.Threading.Tasks.Task TestADRAsync(string testName, string devEUI, List<LoRaADRTableEntry> tableEntries, Rxpk rxpk, bool expectDefaultAnswer, LoRaADRResult expectedResult)
+        public async System.Threading.Tasks.Task TestADRAsync(string testName, string devEUI, IList<LoRaADRTableEntry> tableEntries, Rxpk rxpk, bool expectDefaultAnswer, LoRaADRResult expectedResult)
         {
             this.output.WriteLine($"Starting test {testName}");
             var region = RegionManager.EU868;

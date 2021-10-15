@@ -17,11 +17,14 @@ namespace LoRaTools
 
         public override int Length => 2;
 
-        public bool GetPowerAck() => ((this.Status >> 2) & 0b00000001) == 1;
+        [JsonIgnore]
+        public bool PowerAck => ((this.Status >> 2) & 0b00000001) == 1;
 
-        public bool GetDRAck() => ((this.Status >> 1) & 0b00000001) == 1;
+        [JsonIgnore]
+        public bool DRAck => ((this.Status >> 1) & 0b00000001) == 1;
 
-        public bool GetCHMaskAck() => ((this.Status >> 0) & 0b00000001) == 1;
+        [JsonIgnore]
+        public bool CHMaskAck => ((this.Status >> 0) & 0b00000001) == 1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRAnswer"/> class.
@@ -51,7 +54,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, power: {(this.GetPowerAck() ? "changed" : "not changed")}, data rate: {(this.GetDRAck() ? "changed" : "not changed")}, channels: {(this.GetCHMaskAck() ? "changed" : "not changed")}";
+            return $"Type: {this.Cid} Answer, power: {(this.PowerAck ? "changed" : "not changed")}, data rate: {(this.DRAck ? "changed" : "not changed")}, channels: {(this.CHMaskAck ? "changed" : "not changed")}";
         }
     }
 }

@@ -38,7 +38,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(rxpk.Tmms, target.Tmms);
             Assert.Equal(rxpk.Tmst, target.Tmst);
             Assert.Equal(payload.GetFcnt(), target.Fcnt);
-            Assert.Equal(payload.GetFPort(), target.Port);
+            Assert.Equal(payload.FPortValue, target.Port);
         }
     }
 }

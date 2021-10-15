@@ -75,7 +75,7 @@ namespace LoraKeysManagerFacade
             this.lockOwner = gatewayId ?? Guid.NewGuid().ToString();
         }
 
-        public bool TryGetInfo(string devAddr, out List<DevAddrCacheInfo> info)
+        public bool TryGetInfo(string devAddr, out IList<DevAddrCacheInfo> info)
         {
             var tmp = this.cacheStore.GetHashObject(GenerateKey(devAddr));
             if (tmp?.Length > 0)
