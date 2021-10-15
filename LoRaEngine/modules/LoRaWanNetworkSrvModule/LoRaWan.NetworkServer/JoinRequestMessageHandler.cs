@@ -150,8 +150,10 @@ namespace LoRaWan.NetworkServer
 
                 if (request.Region.LoRaRegion == LoRaRegionType.CN470)
                 {
-                    // TODO: update with correct plan type
-                    updatedProperties.RegionChannelPlan = RegionCN470PlanType.PlanA20MHz.ToString();
+                    if (request.Region.TryGetRegionPlanType(request.Rxpk, out var channelPlan))
+                    {
+                        updatedProperties.RegionChannelPlan = channelPlan;
+                    }
                 }
 
                 var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties);

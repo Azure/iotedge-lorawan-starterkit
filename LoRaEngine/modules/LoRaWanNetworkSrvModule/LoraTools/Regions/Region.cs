@@ -123,6 +123,11 @@ namespace LoRaTools.Regions
         /// <param name="channelPlan">optional active channel plan type to be used for the given region, if applicable.</param>
         public abstract bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, string channelPlan = null);
 
+        public virtual bool TryGetRegionPlanType(Rxpk joinChannel, out string channelPlan)
+        {
+            throw new NotImplementedException($"Region {LoRaRegion} does not support different channel plans.");
+        }
+
         /// <summary>
         /// Get the downstream RX2 frequency.
         /// </summary>

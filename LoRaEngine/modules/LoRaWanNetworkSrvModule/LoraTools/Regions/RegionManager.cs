@@ -227,6 +227,17 @@ namespace LoRaTools.Regions
         private static void CreateCN470Region()
         {
             cn470 = new RegionCN470();
+
+            var upstreamValidDataranges = new HashSet<string>()
+            {
+            };
+
+            var downstreamValidDataranges = new HashSet<string>()
+            {
+            };
+
+            //TODO: correct upstream & downstream data ranges, DR indexes
+            us915.RegionLimits = new RegionLimits((min: 470.3, max: 509.7), upstreamValidDataranges, downstreamValidDataranges, 0, 8);
         }
     }
 }

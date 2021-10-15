@@ -12,12 +12,14 @@ namespace LoRaTools.Regions
     {
         private const double FrequencyIncrement = 0.2;
 
-        private readonly Dictionary<RegionCN470PlanType, List<double>> DownstreamFrequenciesPerPlan;
+        private readonly List<Tuple<HashSet<double>, RegionCN470PlanType>> JoinFrequenciesToPlanType; 
+
+        private readonly Dictionary<RegionCN470PlanType, List<double>> PlanTypeToDownstreamFrequencies;
 
         public RegionCN470()
             : base(
                   LoRaRegionType.CN470,
-                  //TODO: change below params
+                  //TODO: change below params for CN
                   0x34,
                   null,
                   (frequency: 923.3, datr: 8),
@@ -30,27 +32,37 @@ namespace LoRaTools.Regions
                   32,
                   (min: 1, max: 3))
         {
-            DownstreamFrequenciesPerPlan = new Dictionary<RegionCN470PlanType, List<double>>
+            PlanTypeToDownstreamFrequencies = new Dictionary<RegionCN470PlanType, List<double>>
             {
                 [RegionCN470PlanType.PlanA20MHz] = BuildFrequencyPlanList(483.9, 0, 31).Concat(BuildFrequencyPlanList(490.3, 32, 63)).ToList(),
                 [RegionCN470PlanType.PlanB20MHz] = BuildFrequencyPlanList(476.9, 0, 32).Concat(BuildFrequencyPlanList(496.9, 32, 63)).ToList(),
                 [RegionCN470PlanType.PlanA26MHz] = BuildFrequencyPlanList(490.1, 0, 23),
                 [RegionCN470PlanType.PlanB26MHz] = BuildFrequencyPlanList(500.1, 0, 23)
             };
+
+            JoinFrequenciesToPlanType = new List<Tuple<HashSet<double>, RegionCN470PlanType>>
+            {
+                Tuple.Create(new HashSet<double> { 470.9, 472.5, 474.1, 475.7, 504.1, 505.7, 507.3, 508.9 }, RegionCN470PlanType.PlanA20MHz ),
+                Tuple.Create(new HashSet<double> { 479.9, 499.9 }, RegionCN470PlanType.PlanB20MHz ),
+                Tuple.Create(new HashSet<double> { 470.3, 472.3, 474.3, 476.3, 478.3 }, RegionCN470PlanType.PlanA26MHz ),
+                Tuple.Create(new HashSet<double> { 480.3, 482.3, 484.3, 486.3, 488.3 }, RegionCN470PlanType.PlanB26MHz ),
+            };
         }
 
-        private static List<double> BuildFrequencyPlanList(double startFrequency, int startChannel, int endChannel)
+        public override bool TryGetRegionPlanType(Rxpk joinChannel, out string channelPlan)
         {
-            var frequencies = new List<double>();
-            var currentFreq = startFrequency;
+            if (joinChannel is null) throw new ArgumentNullException(nameof(joinChannel));
 
-            for (var channel = startChannel; channel <= endChannel; ++channel)
+            foreach (var (joinFrequencies, planType) in JoinFrequenciesToPlanType)
             {
-                frequencies.Add(currentFreq);
-                currentFreq += FrequencyIncrement;
+                if (joinFrequencies.Contains(joinChannel.Freq))
+                {
+                    channelPlan = planType.ToString();
+                    return true;
+                }
             }
-
-            return frequencies;
+            channelPlan = string.Empty;
+            return false;
         }
 
         /// <summary>
@@ -76,27 +88,41 @@ namespace LoRaTools.Regions
             {
                 case RegionCN470PlanType.PlanA20MHz:
                     channelNumber = upstreamChannel.Freq < 500 ? GetChannelNumber(upstreamChannel, 470.3) : GetChannelNumber(upstreamChannel, 503.5, 32);
-                    frequency = DownstreamFrequenciesPerPlan[channelPlanType][channelNumber];
+                    frequency = PlanTypeToDownstreamFrequencies[channelPlanType][channelNumber];
                     return true;
 
                 case RegionCN470PlanType.PlanB20MHz:
                     channelNumber = upstreamChannel.Freq < 490 ? GetChannelNumber(upstreamChannel, 476.9) : GetChannelNumber(upstreamChannel, 496.9, 32);
-                    frequency = DownstreamFrequenciesPerPlan[channelPlanType][channelNumber];
+                    frequency = PlanTypeToDownstreamFrequencies[channelPlanType][channelNumber];
                     return true;
 
                 case RegionCN470PlanType.PlanA26MHz:
                     channelNumber = GetChannelNumber(upstreamChannel, 470.3);
-                    frequency = DownstreamFrequenciesPerPlan[channelPlanType][channelNumber % 24];
+                    frequency = PlanTypeToDownstreamFrequencies[channelPlanType][channelNumber % 24];
                     return true;
 
                 case RegionCN470PlanType.PlanB26MHz:
                     channelNumber = GetChannelNumber(upstreamChannel, 480.3);
-                    frequency = DownstreamFrequenciesPerPlan[channelPlanType][channelNumber % 24];
+                    frequency = PlanTypeToDownstreamFrequencies[channelPlanType][channelNumber % 24];
                     return true;
 
                 default:
                     return false;
             }
+        }
+
+        private static List<double> BuildFrequencyPlanList(double startFrequency, int startChannel, int endChannel)
+        {
+            var frequencies = new List<double>();
+            var currentFreq = startFrequency;
+
+            for (var channel = startChannel; channel <= endChannel; ++channel)
+            {
+                frequencies.Add(currentFreq);
+                currentFreq += FrequencyIncrement;
+            }
+
+            return frequencies;
         }
 
         private static int GetChannelNumber(Rxpk upstreamChannel, double startUpstreamFreq, int startChannelNumber = 0) =>

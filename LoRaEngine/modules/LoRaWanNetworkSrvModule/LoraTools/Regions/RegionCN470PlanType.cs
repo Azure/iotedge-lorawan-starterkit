@@ -8,6 +8,6 @@ namespace LoRaTools.Regions
         PlanA20MHz,
         PlanB20MHz,
         PlanA26MHz,
-        PlanB26MHz,
+        PlanB26MHz
     }
 }
