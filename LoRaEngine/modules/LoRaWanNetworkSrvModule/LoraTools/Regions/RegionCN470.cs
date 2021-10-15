@@ -10,9 +10,9 @@ namespace LoRaTools.Regions
 
     public class RegionCN470 : Region
     {
-        private const double DownstreamFrequencyIncrement = 0.2;
+        private const double FrequencyIncrement = 0.2;
 
-        private readonly Dictionary<RegionCN470PlanType, IEnumerable<double>> DownstreamFrequenciesPerPlan;
+        private readonly Dictionary<RegionCN470PlanType, List<double>> DownstreamFrequenciesPerPlan;
 
         public RegionCN470()
             : base(
@@ -30,16 +30,16 @@ namespace LoRaTools.Regions
                   32,
                   (min: 1, max: 3))
         {
-            DownstreamFrequenciesPerPlan = new Dictionary<RegionCN470PlanType, IEnumerable<double>>
+            DownstreamFrequenciesPerPlan = new Dictionary<RegionCN470PlanType, List<double>>
             {
-                [RegionCN470PlanType.PlanA20MHz] = BuildFrequencyPlanList(483.9, 0, 31).Concat(BuildFrequencyPlanList(490.3, 32, 63)),
-                [RegionCN470PlanType.PlanB20MHz] = BuildFrequencyPlanList(476.9, 0, 32).Concat(BuildFrequencyPlanList(496.9, 32, 63)),
+                [RegionCN470PlanType.PlanA20MHz] = BuildFrequencyPlanList(483.9, 0, 31).Concat(BuildFrequencyPlanList(490.3, 32, 63)).ToList(),
+                [RegionCN470PlanType.PlanB20MHz] = BuildFrequencyPlanList(476.9, 0, 32).Concat(BuildFrequencyPlanList(496.9, 32, 63)).ToList(),
                 [RegionCN470PlanType.PlanA26MHz] = BuildFrequencyPlanList(490.1, 0, 23),
                 [RegionCN470PlanType.PlanB26MHz] = BuildFrequencyPlanList(500.1, 0, 23)
             };
         }
 
-        private static IEnumerable<double> BuildFrequencyPlanList(double startFrequency, int startChannel, int endChannel)
+        private static List<double> BuildFrequencyPlanList(double startFrequency, int startChannel, int endChannel)
         {
             var frequencies = new List<double>();
             var currentFreq = startFrequency;
@@ -47,7 +47,7 @@ namespace LoRaTools.Regions
             for (var channel = startChannel; channel <= endChannel; ++channel)
             {
                 frequencies.Add(currentFreq);
-                currentFreq += DownstreamFrequencyIncrement;
+                currentFreq += FrequencyIncrement;
             }
 
             return frequencies;
@@ -70,10 +70,44 @@ namespace LoRaTools.Regions
 
             //TODO: check IsValidUpstreamRxpk
 
-            var upstreamChannelNumber = 0;
+            int channelNumber;
 
+            switch (channelPlanType)
+            {
+                case RegionCN470PlanType.PlanA20MHz:
+                    if (upstreamChannel.Freq < 500)
+                        channelNumber = GetChannelNumber(upstreamChannel, 470.3);
+                    else
+                        channelNumber = GetChannelNumber(upstreamChannel, 503.5, 32);
 
-            return false;
+                    frequency = DownstreamFrequenciesPerPlan[channelPlanType][channelNumber];
+                    return true;
+
+                case RegionCN470PlanType.PlanB20MHz:
+                    if (upstreamChannel.Freq < 490)
+                        channelNumber = GetChannelNumber(upstreamChannel, 476.9);
+                    else
+                        channelNumber = GetChannelNumber(upstreamChannel, 496.9, 32);
+
+                    frequency = DownstreamFrequenciesPerPlan[channelPlanType][channelNumber];
+                    return true;
+
+                case RegionCN470PlanType.PlanA26MHz:
+                    channelNumber = GetChannelNumber(upstreamChannel, 470.3);
+                    frequency = DownstreamFrequenciesPerPlan[channelPlanType][channelNumber % 24];
+                    return true;
+
+                case RegionCN470PlanType.PlanB26MHz:
+                    channelNumber = GetChannelNumber(upstreamChannel, 480.3);
+                    frequency = DownstreamFrequenciesPerPlan[channelPlanType][channelNumber % 24];
+                    return true;
+
+                default:
+                    return false;
+            }
         }
+
+        private static int GetChannelNumber(Rxpk upstreamChannel, double startUpstreamFreq, int startChannelNumber = 0) =>
+            startChannelNumber + (int)Math.Round((upstreamChannel.Freq - startUpstreamFreq) / FrequencyIncrement, 0, MidpointRounding.AwayFromZero);
     }
 }
