@@ -80,16 +80,16 @@ namespace LoRaWan.NetworkServer
                 // https://github.com/aspnet/Extensions/issues/708
                 lock (this.devEUIToLoRaDeviceDictionaryLock)
                 {
-                    return this.cache.GetOrCreate<DevEUIToLoRaDeviceDictionary>(devAddr, (cacheEntry) =>
+                    return this.cache.GetOrCreate(devAddr, (cacheEntry) =>
                     {
-                        cacheEntry.SetAbsoluteExpiration(TimeSpan.FromDays(2));
-                        cacheEntry.ExpirationTokens.Add(this.resetCacheChangeToken);
+                        cacheEntry.SetAbsoluteExpiration(TimeSpan.FromDays(2))
+                                  .ExpirationTokens.Add(this.resetCacheChangeToken);
                         return new DevEUIToLoRaDeviceDictionary();
                     });
                 }
             }
 
-            this.cache.TryGetValue<DevEUIToLoRaDeviceDictionary>(devAddr, out var cachedValue);
+            _ = this.cache.TryGetValue<DevEUIToLoRaDeviceDictionary>(devAddr, out var cachedValue);
             return cachedValue;
         }
 
@@ -168,12 +168,9 @@ namespace LoRaWan.NetworkServer
         void UpdateDeviceRegistration(LoRaDevice loRaDevice, string oldDevAddr = null)
         {
             var dictionary = this.InternalGetCachedDevicesForDevAddr(loRaDevice.DevAddr);
-            dictionary.AddOrUpdate(loRaDevice.DevEUI, loRaDevice, (k, old) =>
-            {
-                return loRaDevice;
-            });
+            dictionary[loRaDevice.DevEUI] = loRaDevice;
 
-            this.cache.Set(CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice, this.resetCacheChangeToken);
+            _ = this.cache.Set(CacheKeyForDevEUIDevice(loRaDevice.DevEUI), loRaDevice, this.resetCacheChangeToken);
             Logger.Log(loRaDevice.DevEUI, "device added to cache", LogLevel.Debug);
 
             if (!string.IsNullOrEmpty(oldDevAddr))
@@ -201,7 +198,7 @@ namespace LoRaWan.NetworkServer
                 return null;
 
             var loRaDevice = this.deviceFactory.Create(deviceInfo.Devices[0]);
-            await loRaDevice.InitializeAsync();
+            _ = await loRaDevice.InitializeAsync();
             if (this.initializers != null)
             {
                 foreach (var initializers in this.initializers)

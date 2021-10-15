@@ -102,7 +102,11 @@ namespace LoRaWan.NetworkServer
         {
             if (messageToSend != null && messageToSend.Length != 0)
             {
-                await this.udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp, remoteLoRaAggregatorPort);
+                var bytesSent = await udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp, remoteLoRaAggregatorPort);
+                if (bytesSent < messageToSend.Length)
+                {
+                    Logger.Log($"Incomplete message transfer from {nameof(UdpServer)}", LogLevel.Warning);
+                }
             }
         }
 

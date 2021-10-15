@@ -244,14 +244,14 @@ namespace LoRaWanTest
             var appkey = new byte[16] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
             var lora = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
-            lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
+            _ = lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
             var testEncrypt = new byte[4]
             {
                 226, 100, 212, 247,
             };
             Assert.Equal(testEncrypt, lora.Frmpayload.ToArray());
             lora.SetMic(ConversionHelper.ByteArrayToString(nwkkey));
-            lora.CheckMic(ConversionHelper.ByteArrayToString(nwkkey));
+            _ = lora.CheckMic(ConversionHelper.ByteArrayToString(nwkkey));
             var testMic = new byte[4]
             {
                 181, 106, 14, 117,
@@ -390,7 +390,7 @@ namespace LoRaWanTest
             // Now try to recreate LoRaPayloadData from rxpk
             Assert.True(LoRaPayload.TryCreateLoRaPayload(uplinkMsg.Rxpk[0], out var parsedLoRaPayload));
             Assert.Equal(loRaMessageType, parsedLoRaPayload.LoRaMessageType);
-            Assert.IsType<LoRaPayloadData>(parsedLoRaPayload);
+            _ = Assert.IsType<LoRaPayloadData>(parsedLoRaPayload);
             var parsedLoRaPayloadData = (LoRaPayloadData)parsedLoRaPayload;
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
@@ -464,7 +464,7 @@ namespace LoRaWanTest
             var rxpk = uplinkMessage.Rxpk[0];
 
             Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk, out var parsedLoRaPayload));
-            Assert.IsType<LoRaPayloadJoinRequest>(parsedLoRaPayload);
+            _ = Assert.IsType<LoRaPayloadJoinRequest>(parsedLoRaPayload);
             var parsedLoRaJoinRequest = (LoRaPayloadJoinRequest)parsedLoRaPayload;
 
             Assert.True(parsedLoRaPayload.CheckMic(appKeyText), "Parsed join request should pass mic check with correct appKey");

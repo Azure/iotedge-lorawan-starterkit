@@ -145,7 +145,7 @@ namespace LoRaWan.NetworkServer
 
                 try
                 {
-                    await Task.WhenAll(initTasks);
+                    _ = await Task.WhenAll(initTasks);
                 }
                 catch (Exception ex)
                 {
