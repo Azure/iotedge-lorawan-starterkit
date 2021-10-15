@@ -229,6 +229,7 @@ namespace LoRaWan.Tests.Shared
 
             // listener will stop once we dispose the udp client
             this.udpClient?.Dispose();
+            this.cancellationTokenSource?.Dispose();
         }
 
         public void Dispose()

@@ -138,7 +138,7 @@ namespace LoRaWan.Tests.Shared
 
         public async Task SendCloudToDeviceMessageAsync(string deviceId, LoRaCloudToDeviceMessage message)
         {
-            var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)))
+            using var msg = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message)))
             {
                 ExpiryTimeUtc = DateTime.UtcNow.AddMinutes(C2dExpiryTime)
             };
@@ -182,7 +182,7 @@ namespace LoRaWan.Tests.Shared
 
         public async Task SendCloudToDeviceMessageAsync(string deviceId, string messageId, string messageText, Dictionary<string, string> messageProperties = null)
         {
-            var msg = new Message(Encoding.UTF8.GetBytes(messageText));
+            using var msg = new Message(Encoding.UTF8.GetBytes(messageText));
             if (messageProperties != null)
             {
                 foreach (var messageProperty in messageProperties)

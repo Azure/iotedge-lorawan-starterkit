@@ -228,7 +228,7 @@ namespace LoRaWan.Tests.Shared
             var header = LastPayload.GetSyncHeader(packetForwarder.MacAddress.ToArray());
 
             var joinRequest = CreateJoinRequest();
-            var joinCompleted = new SemaphoreSlim(0);
+            using var joinCompleted = new SemaphoreSlim(0);
 
             var joinRequestUplinkMessage = joinRequest.SerializeUplink(AppKey);
 
