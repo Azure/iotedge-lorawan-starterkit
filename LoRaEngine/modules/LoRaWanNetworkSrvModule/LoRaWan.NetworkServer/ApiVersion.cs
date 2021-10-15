@@ -265,5 +265,10 @@ namespace LoRaWan.Core
 
         public static bool operator >(ApiVersion value1, ApiVersion value2) =>
             value1.CompareTo(value2) > 0;
+
+        public static bool operator ==(ApiVersion left, ApiVersion right) =>
+            left is null ? right is null : left.Equals(right);
+
+        public static bool operator !=(ApiVersion left, ApiVersion right) => !(left == right);
     }
 }
