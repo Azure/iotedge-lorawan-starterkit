@@ -587,7 +587,7 @@ namespace LoRaWan.NetworkServer
                     if (deviceClientActivityScope == null)
                     {
                         // Logging as information because the real error was logged as error
-                        Logger.Log(this.DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
+                        Logger.Log(DevEUI, "failed to save twin, could not reconnect", LogLevel.Debug);
                         return false;
                     }
 

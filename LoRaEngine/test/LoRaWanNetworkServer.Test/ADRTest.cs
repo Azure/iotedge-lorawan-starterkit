@@ -415,7 +415,7 @@ namespace LoRaWan.NetworkServer.Test
         .ReturnsAsync(true);
 
             using var cache = NewNonEmptyCache(loraDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(

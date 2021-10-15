@@ -52,7 +52,7 @@ namespace LoRaTools.LoRaMessage
         protected LoRaPayload(byte[] inputMessage)
         {
             RawMessage = inputMessage ?? throw new ArgumentNullException(nameof(inputMessage));
-            Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
+            Mhdr = new Memory<byte>(RawMessage, 0, 1);
             // MIC 4 last bytes
             Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4, 4);
         }

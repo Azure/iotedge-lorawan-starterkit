@@ -238,7 +238,7 @@ namespace LoRaWan.NetworkServer
                                 }
                                 else
                                 {
-                                    this.SendClassCDeviceMessage(decodePayloadResult.CloudToDeviceMessage);
+                                    SendClassCDeviceMessage(decodePayloadResult.CloudToDeviceMessage);
                                 }
                             }
                         }

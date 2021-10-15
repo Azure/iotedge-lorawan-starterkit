@@ -13,8 +13,8 @@ namespace LoRaTools.LoRaPhysical
 
         public PktFwdMessageAdapter(IList<Rxpk> rxpks, Txpk txpk)
         {
-            this.Rxpks = rxpks;
-            this.Txpk = txpk;
+            Rxpks = rxpks;
+            Txpk = txpk;
         }
 
         public IList<Rxpk> Rxpks { get; } = new List<Rxpk>();
