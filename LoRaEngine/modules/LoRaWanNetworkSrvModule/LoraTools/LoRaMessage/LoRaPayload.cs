@@ -116,7 +116,10 @@ namespace LoRaTools.LoRaMessage
             using Aes aes = new AesManaged
             {
                 Key = appKey,
+#pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
+                // Cipher is part of the LoRaWAN specification
                 Mode = CipherMode.ECB,
+#pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
                 Padding = PaddingMode.None
             };
 
@@ -124,7 +127,10 @@ namespace LoRaTools.LoRaMessage
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
+#pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
+            // Part of the LoRaWAN specification
             cipher = aes.CreateEncryptor();
+#pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
             var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
             return key;
         }

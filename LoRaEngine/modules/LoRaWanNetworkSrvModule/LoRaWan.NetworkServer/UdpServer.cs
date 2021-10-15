@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using System.Globalization;
     using System.Net;
     using System.Net.Sockets;
+    using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -33,8 +34,7 @@ namespace LoRaWan.NetworkServer
         private readonly MessageDispatcher messageDispatcher;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
-        readonly SemaphoreSlim randomLock = new SemaphoreSlim(1);
-        readonly Random random = new Random();
+        private readonly RandomNumberGenerator RndKeysGenerator = new RNGCryptoServiceProvider();
 
         private IClassCDeviceMessageSender classCMessageSender;
         private ModuleClient ioTHubModuleClient;
@@ -44,17 +44,9 @@ namespace LoRaWan.NetworkServer
 
         private async Task<byte[]> GetTokenAsync()
         {
-            try
-            {
-                await this.randomLock.WaitAsync();
-                var token = new byte[2];
-                this.random.NextBytes(token);
-                return token;
-            }
-            finally
-            {
-                _ = this.randomLock.Release();
-            }
+            var token = new byte[2];
+            this.RndKeysGenerator.GetBytes(token);
+            return token;
         }
 
         // Creates a new instance of UdpServer
@@ -412,7 +404,6 @@ namespace LoRaWan.NetworkServer
         {
             this.udpClient?.Dispose();
             this.udpClient = null;
-            this.randomLock?.Dispose();
             this.messageDispatcher?.Dispose();
         }
     }

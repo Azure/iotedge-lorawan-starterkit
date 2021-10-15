@@ -10,8 +10,7 @@ namespace LoRaTools
 
     public static class OTAAKeysGenerator
     {
-        private static readonly Random RndKeysGenerator = new Random();
-        private static readonly object RndLock = new object();
+        private static readonly RandomNumberGenerator RndKeysGenerator = new RNGCryptoServiceProvider();
 
         public static string GetNwkId(byte[] netId)
         {
@@ -20,10 +19,7 @@ namespace LoRaTools
             var nwkPart = netId[0] << 1;
             var devAddr = new byte[4];
 
-            lock (RndLock)
-            {
-                RndKeysGenerator.NextBytes(devAddr);
-            }
+            RndKeysGenerator.GetBytes(devAddr);
 
             devAddr[0] = (byte)((nwkPart & 0b11111110) | (devAddr[0] & 0b00000001));
             return ConversionHelper.ByteArrayToString(devAddr);
@@ -36,7 +32,10 @@ namespace LoRaTools
             {
                 Key = appKey,
 
+#pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
+                // Cipher is part of the LoRaWAN specification
                 Mode = CipherMode.ECB,
+#pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
                 Padding = PaddingMode.None
             };
 
@@ -44,7 +43,10 @@ namespace LoRaTools
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
+#pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
+            // Part of the LoRaWAN specification
             cipher = aes.CreateEncryptor();
+#pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
 
             var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
             return ConversionHelper.ByteArrayToString(key);
@@ -60,7 +62,10 @@ namespace LoRaTools
             using Aes aes = new AesManaged
             {
                 Key = appKey,
+#pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
+                // Cipher is part of the LoRaWAN specification
                 Mode = CipherMode.ECB,
+#pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
                 Padding = PaddingMode.None
             };
             var pt = new byte[type.Length + appnonce.Length + netid.Length + devnonce.Length + 7];
@@ -78,7 +83,10 @@ namespace LoRaTools
 
             aes.IV = new byte[16];
             ICryptoTransform cipher;
+#pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
+            // Part of the LoRaWAN specification
             cipher = aes.CreateEncryptor();
+#pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
 
             var key = cipher.TransformFinalBlock(pt, 0, pt.Length);
             return ConversionHelper.ByteArrayToString(key);
@@ -87,11 +95,7 @@ namespace LoRaTools
         public static string GetAppNonce()
         {
             var appNonce = new byte[3];
-            lock (RndLock)
-            {
-                RndKeysGenerator.NextBytes(appNonce);
-            }
-
+            RndKeysGenerator.GetBytes(appNonce);
             return ConversionHelper.ByteArrayToString(appNonce);
         }
     }
