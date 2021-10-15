@@ -405,6 +405,7 @@ namespace LoRaWan.NetworkServer
             this.udpClient?.Dispose();
             this.udpClient = null;
             this.messageDispatcher?.Dispose();
+            this.RndKeysGenerator?.Dispose();
         }
     }
 }
