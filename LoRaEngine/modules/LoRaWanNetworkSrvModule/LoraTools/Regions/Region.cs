@@ -98,9 +98,9 @@ namespace LoRaTools.Regions
         /// </summary>
         public int MaxADRDataRate { get; set; }
 
-        public Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows,
-                      uint receiveDelay1, uint receiveDelay2, uint joinAcceptDelay1, uint joinAcceptDelay2, int maxFcntGap, uint adrAckLimit,
-                      uint adrAdrDelay, (uint min, uint max) ackTimeout)
+        protected Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows,
+                         uint receiveDelay1, uint receiveDelay2, uint joinAcceptDelay1, uint joinAcceptDelay2, int maxFcntGap, uint adrAckLimit,
+                         uint adrAdrDelay, (uint min, uint max) ackTimeout)
         {
             this.LoRaRegion = regionEnum;
             this.AckTimeout = ackTimeout;

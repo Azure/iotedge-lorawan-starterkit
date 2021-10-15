@@ -208,8 +208,8 @@ namespace LoRaTools.LoRaMessage
             if (!this.CfList.Span.IsEmpty)
                 algoinput = algoinput.Concat(this.CfList.ToArray()).ToArray();
 
-            this.CalculateMic(appKey, algoinput);
-            this.PerformEncryption(appKey);
+            _ = this.CalculateMic(appKey, algoinput);
+            _ = this.PerformEncryption(appKey);
 
             return new DownlinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
         }

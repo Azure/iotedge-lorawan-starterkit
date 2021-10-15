@@ -244,14 +244,14 @@ namespace LoRaWanTest
             var appkey = new byte[16] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
             var lora = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
-            lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
+            _ = lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
             var testEncrypt = new byte[4]
             {
                 226, 100, 212, 247,
             };
             Assert.Equal(testEncrypt, lora.Frmpayload.ToArray());
             lora.SetMic(ConversionHelper.ByteArrayToString(nwkkey));
-            lora.CheckMic(ConversionHelper.ByteArrayToString(nwkkey));
+            _ = lora.CheckMic(ConversionHelper.ByteArrayToString(nwkkey));
             var testMic = new byte[4]
             {
                 181, 106, 14, 117,
@@ -269,26 +269,7 @@ namespace LoRaWanTest
         public void TestKeys()
         {
             // create random message
-            var jsonUplink = @"{ ""rxpk"":[
- 	            {
-		            ""time"":""2013-03-31T16:21:17.528002Z"",
- 		            ""tmst"":3512348611,
- 		            ""chan"":2,
- 		            ""rfch"":0,
- 		            ""freq"":866.349812,
- 		            ""stat"":1,
- 		            ""modu"":""LORA"",
- 		            ""datr"":""SF7BW125"",
- 		            ""codr"":""4/6"",
- 		            ""rssi"":-35,
- 		            ""lsnr"":5.1,
- 		            ""size"":32,
- 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
-                }]}";
-            var joinRequestInput = Encoding.Default.GetBytes(jsonUplink);
-            var physicalUpstreamPyld = new byte[12];
-            physicalUpstreamPyld[0] = 2;
-            var rxpk = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
+            var rxpk = CreateRxpk();
             Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk[0], out var loRaPayload));
             Assert.Equal(LoRaMessageType.JoinRequest, loRaPayload.LoRaMessageType);
             var joinReq = (LoRaPayloadJoinRequest)loRaPayload;
@@ -327,6 +308,47 @@ namespace LoRaWanTest
                 new byte[16] { 223, 83, 195, 95, 48, 52, 204, 206, 208, 255, 53, 76, 112, 222, 4, 223, });
         }
 
+        [Fact]
+        public void CalculateKey_Throws_When_Key_Type_Is_None()
+        {
+            // arrange
+            var rxpk = CreateRxpk();
+            _ = LoRaPayload.TryCreateLoRaPayload(rxpk[0], out var loRaPayload);
+            var joinRequest = (LoRaPayloadJoinRequest)loRaPayload;
+
+            // act + assert
+            var result = Assert.Throws<InvalidOperationException>(() => joinRequest.CalculateKey(LoRaPayloadKeyType.None,
+                                                                                                 Array.Empty<byte>(),
+                                                                                                 Array.Empty<byte>(),
+                                                                                                 Array.Empty<byte>(),
+                                                                                                 Array.Empty<byte>()));
+            Assert.Equal("No key type selected.", result.Message);
+        }
+
+        private static IList<Rxpk> CreateRxpk()
+        {
+            var jsonUplink = @"{ ""rxpk"":[
+ 	            {
+		            ""time"":""2013-03-31T16:21:17.528002Z"",
+ 		            ""tmst"":3512348611,
+ 		            ""chan"":2,
+ 		            ""rfch"":0,
+ 		            ""freq"":866.349812,
+ 		            ""stat"":1,
+ 		            ""modu"":""LORA"",
+ 		            ""datr"":""SF7BW125"",
+ 		            ""codr"":""4/6"",
+ 		            ""rssi"":-35,
+ 		            ""lsnr"":5.1,
+ 		            ""size"":32,
+ 		            ""data"":""AAQDAgEEAwIBBQQDAgUEAwItEGqZDhI=""
+                }]}";
+            var joinRequestInput = Encoding.Default.GetBytes(jsonUplink);
+            var physicalUpstreamPyld = new byte[12];
+            physicalUpstreamPyld[0] = 2;
+            return Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(joinRequestInput).ToArray());
+        }
+
         /// <summary>
         /// This test will validate if creating payloads will work, using new approach
         ///  LoRaPayloadData (UnconfirmedDataUp) -> SerializeUplink -> Uplink.Rxpk[0] -> LoRaPayloadData -> check properties.
@@ -358,7 +380,7 @@ namespace LoRaWanTest
 
             Assert.Equal(12, devicePayloadData.GetFcnt());
             Assert.Equal(0, devicePayloadData.Direction);
-            Assert.Equal(1, devicePayloadData.GetFPort());
+            Assert.Equal(1, devicePayloadData.FPortValue);
 
             var datr = "SF10BW125";
             var freq = 868.3;
@@ -368,11 +390,11 @@ namespace LoRaWanTest
             // Now try to recreate LoRaPayloadData from rxpk
             Assert.True(LoRaPayload.TryCreateLoRaPayload(uplinkMsg.Rxpk[0], out var parsedLoRaPayload));
             Assert.Equal(loRaMessageType, parsedLoRaPayload.LoRaMessageType);
-            Assert.IsType<LoRaPayloadData>(parsedLoRaPayload);
+            _ = Assert.IsType<LoRaPayloadData>(parsedLoRaPayload);
             var parsedLoRaPayloadData = (LoRaPayloadData)parsedLoRaPayload;
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPortValue);
 
             // Ensure that mic check and getting payload back works
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
@@ -382,7 +404,7 @@ namespace LoRaWanTest
             // checking mic and getting payload should not change the payload properties
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPortValue);
 
             // checking mic should not break getting the payload
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
@@ -392,7 +414,7 @@ namespace LoRaWanTest
             // checking mic and getting payload should not change the payload properties
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPortValue);
         }
 
         /// <summary>
@@ -442,7 +464,7 @@ namespace LoRaWanTest
             var rxpk = uplinkMessage.Rxpk[0];
 
             Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk, out var parsedLoRaPayload));
-            Assert.IsType<LoRaPayloadJoinRequest>(parsedLoRaPayload);
+            _ = Assert.IsType<LoRaPayloadJoinRequest>(parsedLoRaPayload);
             var parsedLoRaJoinRequest = (LoRaPayloadJoinRequest)parsedLoRaPayload;
 
             Assert.True(parsedLoRaPayload.CheckMic(appKeyText), "Parsed join request should pass mic check with correct appKey");

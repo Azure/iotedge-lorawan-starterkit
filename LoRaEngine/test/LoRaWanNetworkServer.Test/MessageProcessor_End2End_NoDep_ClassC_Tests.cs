@@ -113,7 +113,7 @@ namespace LoRaWan.NetworkServer.Test
             var downstreamPayloadBytes = Convert.FromBase64String(downstreamMsg.Txpk.Data);
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(expectedFcntDown, downstreamPayload.GetFcnt());
-            Assert.Equal(c2d.Fport, downstreamPayload.GetFPort());
+            Assert.Equal(c2d.Fport, downstreamPayload.FPortValue);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(c2d.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -217,7 +217,7 @@ namespace LoRaWan.NetworkServer.Test
             var downstreamPayloadBytes = Convert.FromBase64String(downstreamMsg.Txpk.Data);
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
             Assert.Equal(1, downstreamPayload.GetFcnt());
-            Assert.Equal(c2d.Fport, downstreamPayload.GetFPort());
+            Assert.Equal(c2d.Fport, downstreamPayload.FPortValue);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(savedDevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(c2d.Payload, Encoding.UTF8.GetString(decryptedPayload));

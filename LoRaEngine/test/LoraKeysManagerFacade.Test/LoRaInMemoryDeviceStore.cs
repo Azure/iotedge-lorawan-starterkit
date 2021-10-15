@@ -38,7 +38,7 @@ namespace LoraKeysManagerFacade.Test
                 }
                 else
                 {
-                    return true;
+                    return false;
                 }
             }
         }
@@ -55,12 +55,7 @@ namespace LoraKeysManagerFacade.Test
                 }
             }
 
-            if (block && await waiter.WaitAsync((int)LockTimeout.TotalMilliseconds))
-            {
-                return true;
-            }
-
-            return false;
+            return await waiter.WaitAsync(block ? (int)LockTimeout.TotalMilliseconds : 0);
         }
 
         public string StringGet(string key)
@@ -82,7 +77,7 @@ namespace LoraKeysManagerFacade.Test
             {
                 return JsonConvert.DeserializeObject<T>(str);
             }
-            catch
+            catch (JsonSerializationException)
             {
                 return null;
             }
@@ -137,7 +132,7 @@ namespace LoraKeysManagerFacade.Test
 
         public bool TryChangeLockTTL(string key, TimeSpan timeToExpire)
         {
-            throw new NotImplementedException();
+            return LockTakeAsync(key, null, timeToExpire, false).GetAwaiter().GetResult();
         }
 
         public bool TrySetHashObject(string key, string subkey, string value, TimeSpan? timeToExpire = null)

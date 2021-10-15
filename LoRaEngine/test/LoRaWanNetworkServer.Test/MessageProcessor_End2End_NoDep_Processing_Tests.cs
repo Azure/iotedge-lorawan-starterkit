@@ -942,8 +942,8 @@ namespace LoRaWan.NetworkServer.Test
             var devicesInCache = deviceRegistry.InternalGetCachedDevicesForDevAddr(devAddr);
             Assert.Empty(devicesInCache);
 
-            // Wait 50ms so loader can be removed from cache
-            await Task.Delay(50);
+            // Wait 100ms so loader can be removed from cache
+            await Task.Delay(100);
 
             // sends 2nd unconfirmed message, now get twin will work
             var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2);
@@ -951,6 +951,7 @@ namespace LoRaWan.NetworkServer.Test
             using var request2 = this.CreateWaitableRequest(unconfirmedMessage2Rxpk);
             messageDispatcher.DispatchRequest(request2);
             Assert.True(await request2.WaitCompleteAsync());
+            Assert.True(request2.ProcessingSucceeded);
             Assert.Null(request2.ResponseDownlink);
             Assert.Empty(this.PacketForwarder.DownlinkMessages);
 

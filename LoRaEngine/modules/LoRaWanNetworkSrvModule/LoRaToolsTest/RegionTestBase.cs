@@ -26,7 +26,7 @@ namespace LoRaWanTest
             Assert.Null(Region.GetDownstreamDR(rxpk[0]));
         }
 
-        protected static List<Rxpk> GenerateRxpk(string dr, double freq)
+        protected static IList<Rxpk> GenerateRxpk(string dr, double freq)
         {
             var jsonUplink =
                 @"{ ""rxpk"":[

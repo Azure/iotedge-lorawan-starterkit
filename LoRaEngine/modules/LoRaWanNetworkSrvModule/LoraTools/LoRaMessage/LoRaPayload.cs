@@ -8,7 +8,6 @@ namespace LoRaTools.LoRaMessage
     using System.Security.Cryptography;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
-    using Org.BouncyCastle.Crypto;
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
@@ -50,7 +49,7 @@ namespace LoRaTools.LoRaMessage
         /// Wrapper of a LoRa message, consisting of the MIC and MHDR, common to all LoRa messages
         /// This is used for uplink / decoding.
         /// </summary>
-        public LoRaPayload(byte[] inputMessage)
+        protected LoRaPayload(byte[] inputMessage)
         {
             RawMessage = inputMessage;
             Mhdr = new Memory<byte>(RawMessage, 0, 1);
@@ -62,7 +61,7 @@ namespace LoRaTools.LoRaMessage
         /// Initializes a new instance of the <see cref="LoRaPayload"/> class.
         /// This is used for downlink, The field will be computed at message creation.
         /// </summary>
-        public LoRaPayload()
+        protected LoRaPayload()
         {
         }
 
@@ -110,6 +109,8 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
+            if (keyType == LoRaPayloadKeyType.None) throw new InvalidOperationException("No key type selected.");
+
             var type = new byte[1];
             type[0] = (byte)keyType;
             using Aes aes = new AesManaged
