@@ -945,8 +945,6 @@ namespace LoRaWan.NetworkServer.Test
             // Wait 100ms so loader can be removed from cache
             await Task.Delay(100);
 
-            Assert.Single(devicesInCache);
-
             // sends 2nd unconfirmed message, now get twin will work
             var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 2);
             var unconfirmedMessage2Rxpk = unconfirmedMessage2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
