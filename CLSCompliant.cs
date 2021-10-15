@@ -1,1 +1,0 @@
-[assembly: System.CLSCompliant(false)]

@@ -44,7 +44,11 @@ namespace LoRaWan.NetworkServer
                 handler.UseProxy = true;
             }
 
+#pragma warning disable CA5399 // Definitely disable HttpClient certificate revocation list check
+            // Related to: https://github.com/Azure/iotedge-lorawan-starterkit/issues/534
+            // Will be resolved once we migrate to DI
             return new HttpClient(handler);
+#pragma warning restore CA5399 // Definitely disable HttpClient certificate revocation list check
         }
     }
 }

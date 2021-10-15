@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Shared
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -73,9 +74,9 @@ namespace LoRaWan.Tests.Shared
             var devNonce = new byte[2];
             if (string.IsNullOrEmpty(DevNonce) || (!this.isFirstJoinRequest))
             {
-                var random = new Random();
+                using var random = new RNGCryptoServiceProvider();
                 // DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
-                random.NextBytes(devNonce);
+                random.GetBytes(devNonce);
                 DevNonce = BitConverter.ToString(devNonce).Replace("-", string.Empty, StringComparison.Ordinal);
                 Array.Reverse(devNonce);
                 this.isFirstJoinRequest = false;

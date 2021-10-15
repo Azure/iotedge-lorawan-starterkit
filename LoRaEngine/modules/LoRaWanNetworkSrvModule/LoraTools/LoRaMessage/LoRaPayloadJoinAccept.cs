@@ -113,13 +113,19 @@ namespace LoRaTools.LoRaMessage
             {
                 Key = key,
                 IV = new byte[16],
+#pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
+                // Cipher is part of the LoRaWAN specification
                 Mode = CipherMode.ECB,
+#pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
                 Padding = PaddingMode.None
             };
 
             ICryptoTransform cipher;
 
+#pragma warning disable CA5401 // Do not use CreateEncryptor with non-default IV
+            // Part of the LoRaWAN specification
             cipher = aes.CreateEncryptor();
+#pragma warning restore CA5401 // Do not use CreateEncryptor with non-default IV
             var pt = new byte[inputMessage.Length - 1];
             Array.Copy(inputMessage, 1, pt, 0, pt.Length);
             // Array.Reverse(pt);
@@ -173,7 +179,10 @@ namespace LoRaTools.LoRaMessage
             {
                 Key = ConversionHelper.StringToByteArray(appSkey),
                 IV = new byte[16],
+#pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
+                // Cipher is part of the LoRaWAN specification
                 Mode = CipherMode.ECB,
+#pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
                 Padding = PaddingMode.None
             };
 

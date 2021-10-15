@@ -39,8 +39,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="$(MSBuildThisFileDirectory)/CLSCompliant.cs"
-                 Condition="Exists('$(MSBuildThisFileDirectory)/CLSCompliant.cs')"
-                 Link="CLSCompliant.cs" />
+        <Compile Include="$(MSBuildThisFileDirectory)/AssemblyInfo.cs"
+                 Condition="Exists('$(MSBuildThisFileDirectory)/AssemblyInfo.cs')"
+                 Link="AssemblyInfo.cs" />
     </ItemGroup>
 </Project>

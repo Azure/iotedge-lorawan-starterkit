@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Shared
     using System.Linq;
     using System.Net;
     using System.Net.Sockets;
+    using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -71,7 +72,7 @@ namespace LoRaWan.Tests.Shared
 
         private readonly UdpClient udpClient;
         private readonly IPEndPoint networkServerIPEndpoint;
-        readonly Random random = new Random();
+        private static readonly RandomNumberGenerator RndKeysGenerator = new RNGCryptoServiceProvider();
         private CancellationTokenSource cancellationTokenSource;
         private Task pushDataTask;
         private Task pullDataTask;
@@ -81,11 +82,7 @@ namespace LoRaWan.Tests.Shared
         {
             // random is not thread safe
             var token = new byte[2];
-            lock (this.random)
-            {
-                this.random.NextBytes(token);
-            }
-
+            RndKeysGenerator.GetBytes(token);
             return token;
         }
 
