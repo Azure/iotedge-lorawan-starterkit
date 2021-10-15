@@ -32,7 +32,7 @@
       <MicrosoftExtensionsConfigurationBinderVersion>5.0.0</MicrosoftExtensionsConfigurationBinderVersion>
       <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>3.1.5</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
       <MicrosoftExtensionsConfigurationJsonVersion>3.1.5</MicrosoftExtensionsConfigurationJsonVersion>
-      <SystemIOPortsVersion>4.7.0</SystemIOPortsVersion>
+      <SystemIOPortsVersion>5.0.1</SystemIOPortsVersion>
       <XUnitRunnerVisualStudio>2.4.2</XUnitRunnerVisualStudio>
       <MicrosoftAzureEventHubsVersion>4.2.0</MicrosoftAzureEventHubsVersion>
       <MicrosoftAzureEventHubsProcessorVersion>4.2.0</MicrosoftAzureEventHubsProcessorVersion>
