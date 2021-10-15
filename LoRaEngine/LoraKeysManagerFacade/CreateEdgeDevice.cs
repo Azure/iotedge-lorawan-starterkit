@@ -34,11 +34,17 @@ namespace LoraKeysManagerFacade
             // parse query parameter
             var queryStrings = req.GetQueryParameterDictionary();
 
-            _ = queryStrings.TryGetValue("deviceName", out var deviceName);
-            _ = queryStrings.TryGetValue("publishingUserName", out var publishingUserName);
-            _ = queryStrings.TryGetValue("publishingPassword", out var publishingPassword);
-            _ = queryStrings.TryGetValue("region", out var region);
-            _ = queryStrings.TryGetValue("resetPin", out var resetPin);
+            // required arguments
+            if (!queryStrings.TryGetValue("deviceName", out var deviceName) ||
+                !queryStrings.TryGetValue("publishingUserName", out var publishingUserName) ||
+                !queryStrings.TryGetValue("publishingPassword", out var publishingPassword) ||
+                !queryStrings.TryGetValue("region", out var region) ||
+                !queryStrings.TryGetValue("resetPin", out var resetPin))
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Missing required parameters." };
+            }
+
+            // optional arguments
             _ = queryStrings.TryGetValue("spiSpeed", out var spiSpeed);
             _ = queryStrings.TryGetValue("spiDev", out var spiDev);
 
