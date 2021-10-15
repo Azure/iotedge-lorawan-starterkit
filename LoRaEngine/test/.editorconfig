@@ -8,3 +8,9 @@ dotnet_diagnostic.CA1303.severity = none
 
 # Expression value is never used
 dotnet_diagnostic.IDE0058.severity=suggestion
+
+# Allow using of the "this" qualifier
+dotnet_style_qualification_for_field=true:silent
+dotnet_style_qualification_for_property=true:silent
+dotnet_style_qualification_for_method=true:silent
+dotnet_style_qualification_for_event=true:silent
