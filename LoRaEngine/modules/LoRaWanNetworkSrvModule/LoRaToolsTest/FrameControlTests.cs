@@ -38,6 +38,8 @@ namespace LoRaWanTest
             public const bool DownlinkFramePending = false;
         }
 
+        const FCtrlFlags AllFCtrlFlags = FCtrlFlags.Adr | FCtrlFlags.AdrAckReq | FCtrlFlags.Ack | FCtrlFlags.FPending;
+
         [Theory]
         [InlineData(FCtrlFlags.None         , 0, False.Adr, False.AdrAckRequested, False.Ack, False.DownlinkFramePending, 0)]
         [InlineData(FCtrlFlags.None         , 3, False.Adr, False.AdrAckRequested, False.Ack, False.DownlinkFramePending, 3)]
@@ -45,8 +47,8 @@ namespace LoRaWanTest
         [InlineData(FCtrlFlags.AdrAckReq    , 0, False.Adr, True.AdrAckRequested , False.Ack, False.DownlinkFramePending, 0)]
         [InlineData(FCtrlFlags.Ack          , 0, False.Adr, False.AdrAckRequested, True.Ack , False.DownlinkFramePending, 0)]
         [InlineData(FCtrlFlags.FPending     , 0, False.Adr, False.AdrAckRequested, False.Ack, True.DownlinkFramePending , 0)]
-        [InlineData(~FCtrlFlags.FOptsLenMask, 0, True.Adr , True.AdrAckRequested , True.Ack , True.DownlinkFramePending , 0)]
-        [InlineData(~FCtrlFlags.FOptsLenMask, 5, True.Adr , True.AdrAckRequested , True.Ack , True.DownlinkFramePending , 5)]
+        [InlineData(AllFCtrlFlags           , 0, True.Adr , True.AdrAckRequested , True.Ack , True.DownlinkFramePending , 0)]
+        [InlineData(AllFCtrlFlags           , 5, True.Adr , True.AdrAckRequested , True.Ack , True.DownlinkFramePending , 5)]
         public void Properties(FCtrlFlags flags, int initOptionsLength,
                                bool adr, bool adrAckRequested, bool ack, bool downlinkFramePending, int optionsLength)
         {
