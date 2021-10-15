@@ -110,6 +110,8 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public byte[] CalculateKey(LoRaPayloadKeyType keyType, byte[] appnonce, byte[] netid, byte[] devnonce, byte[] appKey)
         {
+            if (keyType == LoRaPayloadKeyType.None) throw new InvalidOperationException("No key type selected.");
+
             var type = new byte[1];
             type[0] = (byte)keyType;
             using Aes aes = new AesManaged
