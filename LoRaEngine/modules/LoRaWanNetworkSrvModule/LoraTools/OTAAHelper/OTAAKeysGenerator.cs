@@ -30,7 +30,10 @@ namespace LoRaTools
             {
                 Key = appKey,
 
+#pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
+                // Cipher is part of the LoRaWAN specification
                 Mode = CipherMode.ECB,
+#pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
                 Padding = PaddingMode.None
             };
 
@@ -50,7 +53,10 @@ namespace LoRaTools
             using Aes aes = new AesManaged
             {
                 Key = appKey,
+#pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
+                // Cipher is part of the LoRaWAN specification
                 Mode = CipherMode.ECB,
+#pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
                 Padding = PaddingMode.None
             };
             var pt = new byte[type.Length + appnonce.Length + netid.Length + devnonce.Length + 7];

@@ -117,7 +117,10 @@ namespace LoRaTools.LoRaMessage
             using Aes aes = new AesManaged
             {
                 Key = appKey,
+#pragma warning disable CA5358 // Review cipher mode usage with cryptography experts
+                // Cipher is part of the LoRaWAN specification
                 Mode = CipherMode.ECB,
+#pragma warning restore CA5358 // Review cipher mode usage with cryptography experts
                 Padding = PaddingMode.None
             };
 
