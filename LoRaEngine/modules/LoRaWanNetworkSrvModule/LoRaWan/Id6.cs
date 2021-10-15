@@ -246,7 +246,7 @@ namespace LoRaWan
                 case (1, 1): (d, b) = (b, 0); break;
                 case (1, 2): (d, c, b) = (c, b, 0); break;
                 case (2, 2): (d, c) = (c, 0); break;
-                default: throw new NotImplementedException("Internal implementation error.");
+                default: break;
             }
 
             result = ((ulong)a << 48) | ((ulong)b << 32) | ((ulong)c << 16) | d;
