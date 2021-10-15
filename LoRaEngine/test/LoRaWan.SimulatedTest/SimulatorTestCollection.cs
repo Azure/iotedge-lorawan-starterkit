@@ -118,7 +118,7 @@ namespace LoRaWan.SimulatedTest
             // wait 10 seconds before checking if iot hub content is available
             await Task.Delay(TimeSpan.FromSeconds(10));
 
-            var msgsFromDevice = TestFixture.IoTHubMessages.GetEvents().Where(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID);
+            var msgsFromDevice = TestFixture.IoTHubMessages.Events.Where(x => x.GetDeviceId() == simulatedDevice.LoRaDevice.DeviceID);
             var actualAmountOfMsgs = msgsFromDevice.Count(x => !x.Properties.ContainsKey("iothub-message-schema"));
             Assert.Equal(MessageCount, actualAmountOfMsgs);
         }
@@ -330,7 +330,7 @@ namespace LoRaWan.SimulatedTest
             await Task.Delay(delayIoTHubCheck);
 
             // IoT Hub test for arrival of messages.
-            var eventsByDevices = TestFixture.IoTHubMessages.GetEvents()
+            var eventsByDevices = TestFixture.IoTHubMessages.Events
                                       .GroupBy(x => x.SystemProperties["iothub-connection-device-id"])
                                       .ToDictionary(x => x.Key, x => x.ToList());
 

@@ -135,7 +135,7 @@ namespace LoRaWan.Tests.Shared
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in this.udpLogListener.GetEvents())
+                foreach (var item in this.udpLogListener.Events)
                 {
                     var (message, sourceId) = SearchLogEvent.Parse(item);
                     if (predicate(message))
@@ -168,7 +168,7 @@ namespace LoRaWan.Tests.Shared
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in this.udpLogListener.GetEvents())
+                foreach (var item in this.udpLogListener.Events)
                 {
                     var (message, sourceId) = SearchLogEvent.Parse(item);
                     if (predicate(message))
@@ -337,7 +337,7 @@ namespace LoRaWan.Tests.Shared
 
                 var sourceIdFilter = options?.SourceIdFilter;
 
-                foreach (var item in this.udpLogListener.GetEvents())
+                foreach (var item in this.udpLogListener.Events)
                 {
                     var searchLogEvent = new SearchLogEvent(item);
                     processedEvents.Add(searchLogEvent);
@@ -385,7 +385,7 @@ namespace LoRaWan.Tests.Shared
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in IoTHubMessages.GetEvents())
+                foreach (var item in IoTHubMessages.Events)
                 {
                     var bodyText = item.Body.Count > 0 ? Encoding.UTF8.GetString(item.Body) : string.Empty;
                     var searchLogEvent = new SearchLogEvent
@@ -436,7 +436,7 @@ namespace LoRaWan.Tests.Shared
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in IoTHubMessages.GetEvents())
+                foreach (var item in IoTHubMessages.Events)
                 {
                     try
                     {

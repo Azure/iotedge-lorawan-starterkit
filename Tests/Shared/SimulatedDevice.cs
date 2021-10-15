@@ -97,7 +97,7 @@ namespace LoRaWan.Tests.Shared
         /// <summary>
         /// Creates request to send unconfirmed data message.
         /// </summary>
-        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, byte fctrl = 0, bool isHexPayload = false, List<MacCommand> macCommands = null)
+        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, byte fctrl = 0, bool isHexPayload = false, IList<MacCommand> macCommands = null)
         {
             var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);

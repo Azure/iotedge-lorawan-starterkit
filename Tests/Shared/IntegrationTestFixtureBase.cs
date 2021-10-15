@@ -36,7 +36,7 @@ namespace LoRaWan.Tests.Shared
         readonly Lazy<ServiceClient> serviceClient;
         Microsoft.Azure.Devices.Client.ModuleClient moduleClient;
 
-        public IntegrationTestFixtureBase()
+        protected IntegrationTestFixtureBase()
         {
             Configuration = TestConfiguration.GetConfiguration();
             this.serviceClient = new Lazy<ServiceClient>(() => ServiceClient.CreateFromConnectionString(Configuration.IoTHubConnectionString));

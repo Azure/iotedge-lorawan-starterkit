@@ -25,7 +25,7 @@ namespace LoRaWan.Tests.Shared
             this.events.Clear();
         }
 
-        public IReadOnlyCollection<string> GetEvents() => this.events;
+        public IReadOnlyCollection<string> Events => this.events;
 
         public UdpLogListener(int port)
         {

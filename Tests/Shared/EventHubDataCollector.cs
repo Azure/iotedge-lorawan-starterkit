@@ -74,7 +74,7 @@ namespace LoRaWan.Tests.Shared
             this.subscribers.Remove(subscriber);
         }
 
-        public IReadOnlyCollection<EventData> GetEvents() => this.events;
+        public IReadOnlyCollection<EventData> Events => this.events;
 
         Task IPartitionReceiveHandler.ProcessEventsAsync(IEnumerable<EventData> events)
         {
