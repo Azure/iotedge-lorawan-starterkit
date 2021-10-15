@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -188,7 +189,7 @@ namespace LoRaWan.Tests.Shared
             var token = await RandomTokenGenerator.GetTokenAsync();
             if (LastPayload == null)
                 LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
-            var header = LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress);
+            var header = LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress.ToArray());
 
             var unconfirmedMessage = CreateUnconfirmedDataUpMessage(payload);
             unconfirmedMessage.SerializeUplink(AppSKey, NwkSKey);
@@ -205,7 +206,7 @@ namespace LoRaWan.Tests.Shared
             var token = await RandomTokenGenerator.GetTokenAsync();
             if (LastPayload == null)
                 LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
-            var header = LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress);
+            var header = LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress.ToArray());
 
             var confirmedMessage = CreateConfirmedDataUpMessage(payload);
             confirmedMessage.SerializeUplink(AppSKey, NwkSKey);
@@ -224,7 +225,7 @@ namespace LoRaWan.Tests.Shared
 
             var token = await RandomTokenGenerator.GetTokenAsync();
             LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
-            var header = LastPayload.GetSyncHeader(packetForwarder.MacAddress);
+            var header = LastPayload.GetSyncHeader(packetForwarder.MacAddress.ToArray());
 
             var joinRequest = CreateJoinRequest();
             var joinCompleted = new SemaphoreSlim(0);

@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Net;
     using System.Net.Sockets;
     using System.Text;
@@ -21,7 +22,7 @@ namespace LoRaWan.Tests.Shared
         // Used for the point 0. Always increase
         public long TimeAtBoot { get; internal set; }
 
-        public byte[] MacAddress { get; }
+        public IReadOnlyList<byte> MacAddress { get; }
 
         public SimulatedPacketForwarder(IPEndPoint networkServerIPEndpoint, Rxpk rxpk = null)
         {
@@ -156,7 +157,7 @@ namespace LoRaWan.Tests.Shared
                 while (!cts.IsCancellationRequested)
                 {
                     var sync = new PhysicalPayload(GetRandomToken(), PhysicalIdentifier.PullData, null);
-                    var data = sync.GetSyncHeader(MacAddress);
+                    var data = sync.GetSyncHeader(MacAddress.ToArray());
                     await this.udpClient.SendAsync(data, data.Length, this.networkServerIPEndpoint);
                     await Task.Delay(30000, cts);
                 }
@@ -177,7 +178,7 @@ namespace LoRaWan.Tests.Shared
                 while (!cts.IsCancellationRequested)
                 {
                     var sync = new PhysicalPayload(GetRandomToken(), PhysicalIdentifier.PushData, null);
-                    var data = sync.GetSyncHeader(MacAddress);
+                    var data = sync.GetSyncHeader(MacAddress.ToArray());
                     await this.udpClient.SendAsync(data, data.Length, this.networkServerIPEndpoint);
                     await Task.Delay(10000, cts);
                 }
