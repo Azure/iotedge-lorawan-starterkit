@@ -5,6 +5,7 @@ namespace LoRaTools.Regions
 {
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
+    using System;
 
     public class RegionEU868 : Region
     {
@@ -31,9 +32,11 @@ namespace LoRaTools.Regions
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency)
         {
+            if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
+
             frequency = 0;
 
-            if (this.IsValidUpstreamRxpk(upstreamChannel))
+            if (IsValidUpstreamRxpk(upstreamChannel))
             {
                 // in case of EU, you respond on same frequency as you sent data.
                 frequency = upstreamChannel.Freq;

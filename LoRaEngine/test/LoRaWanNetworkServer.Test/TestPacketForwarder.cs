@@ -14,12 +14,12 @@ namespace LoRaWan.NetworkServer.Test
 
         public TestPacketForwarder()
         {
-            this.DownlinkMessages = new List<DownlinkPktFwdMessage>();
+            DownlinkMessages = new List<DownlinkPktFwdMessage>();
         }
 
         public Task SendDownstreamAsync(DownlinkPktFwdMessage message)
         {
-            this.DownlinkMessages.Add(message);
+            DownlinkMessages.Add(message);
             return Task.FromResult(0);
         }
     }

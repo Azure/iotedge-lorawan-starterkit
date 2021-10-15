@@ -22,7 +22,7 @@ namespace LoRaTools.Regions
 
         public RegionLimits((double min, double max) frequencyRange, HashSet<string> upstreamValidDR, HashSet<string> downstreamValidDR, uint startUpstreamDRIndex, uint startDownstreamDRIndex)
         {
-            this.FrequencyRange = frequencyRange;
+            FrequencyRange = frequencyRange;
             this.downstreamValidDR = downstreamValidDR;
             this.upstreamValidDR = upstreamValidDR;
             this.startDownstreamDRIndex = startDownstreamDRIndex;

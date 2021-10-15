@@ -36,7 +36,7 @@ namespace LoRaWanTest
             {
                 Datr = "SF7BW125"
             };
-            this.AddRow("Not enough entries to calculate ADR", deviceNameNotEnoughEntries, tableentries, rxpk, true, new LoRaADRResult()
+            AddRow("Not enough entries to calculate ADR", deviceNameNotEnoughEntries, tableentries, rxpk, true, new LoRaADRResult()
             {
                 DataRate = 5,
                 TxPower = 0,
@@ -73,7 +73,7 @@ namespace LoRaWanTest
                 NbRepetition = 1,
                 TxPower = 0
             };
-            this.AddRow("ADR setting DR to 0", lowerDRDeviceName, lowerDRTable, notenoughentriesrxpk, false, loRaADRResult);
+            AddRow("ADR setting DR to 0", lowerDRDeviceName, lowerDRTable, notenoughentriesrxpk, false, loRaADRResult);
             // **************************************************************
             // Third test enough entries increase nbrep, as one message every three is received
             // **************************************************************
@@ -105,7 +105,7 @@ namespace LoRaWanTest
                 FCntDown = 1
             };
 
-            this.AddRow("ADR increase NbRep", increaseNbRepDeviceName, increaseNbReptableentries, increaseNbReprxpk, false, increaseNbReploRaADRResult);
+            AddRow("ADR increase NbRep", increaseNbRepDeviceName, increaseNbReptableentries, increaseNbReprxpk, false, increaseNbReploRaADRResult);
 
             // **************************************************************
             // Fourth test enough entries decrease nbrep messages pass through
@@ -151,7 +151,7 @@ namespace LoRaWanTest
                 TxPower = 2,
                 FCntDown = 1
             };
-            this.AddRow("ADR decrease NbRep", decreaseNbRepDeviceName, decreaseNbReptableentries, decreaseNbReprxpk, false, decreaseNbReploRaADRResult);
+            AddRow("ADR decrease NbRep", decreaseNbRepDeviceName, decreaseNbReptableentries, decreaseNbReprxpk, false, decreaseNbReploRaADRResult);
         }
     }
 }

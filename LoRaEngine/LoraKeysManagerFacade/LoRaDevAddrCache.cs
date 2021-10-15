@@ -61,7 +61,7 @@ namespace LoraKeysManagerFacade
             this.lockOwner = gatewayId ?? Guid.NewGuid().ToString();
 
             // perform the necessary syncs
-            _ = this.PerformNeededSyncs(registryManager);
+            _ = PerformNeededSyncs(registryManager);
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace LoraKeysManagerFacade
 
         public bool StoreInfo(DevAddrCacheInfo info)
         {
-            _ = info ?? throw new ArgumentNullException(nameof(info));
+            if (info is null) throw new ArgumentNullException(nameof(info));
 
             var serializedObjectValue = JsonConvert.SerializeObject(info);
 
@@ -126,7 +126,7 @@ namespace LoraKeysManagerFacade
                     if (ownsUpdateLock = await this.cacheStore.LockTakeAsync(UpdatingDevAddrCacheLock, this.lockOwner, UpdatingDevAddrCacheLockTimeSpan, block: true))
                     {
                         this.logger.LogDebug("A full reload was started");
-                        await this.PerformFullReload(registryManager);
+                        await PerformFullReload(registryManager);
                         this.logger.LogDebug("A full reload was completed");
                         // we updated the full cache, we want to delay the next update to the time FullUpdateKeyTimeSpan
                         // and only process incremental updates for that time.
@@ -150,7 +150,7 @@ namespace LoraKeysManagerFacade
                         // we would be doing an incremental update to soon. We could delay that
                         // for the time we run the incremental updates, but that could delay it
                         // longer than what we may want.
-                        this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
+                        _ = this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
                     }
 
                     if (!fullUpdatePerformed)
@@ -167,7 +167,7 @@ namespace LoraKeysManagerFacade
                 try
                 {
                     this.logger.LogDebug("A delta reload was started");
-                    await this.PerformDeltaReload(registryManager);
+                    await PerformDeltaReload(registryManager);
                     this.logger.LogDebug("A delta reload was completed");
                 }
                 catch (Exception ex)
@@ -176,7 +176,7 @@ namespace LoraKeysManagerFacade
                 }
                 finally
                 {
-                    this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
+                    _ = this.cacheStore.LockRelease(UpdatingDevAddrCacheLock, this.lockOwner);
                 }
             }
         }
@@ -189,8 +189,8 @@ namespace LoraKeysManagerFacade
         private async Task PerformFullReload(RegistryManager registryManager)
         {
             var query = $"SELECT * FROM devices WHERE is_defined(properties.desired.AppKey) OR is_defined(properties.desired.AppSKey) OR is_defined(properties.desired.NwkSKey)";
-            var devAddrCacheInfos = await this.GetDeviceTwinsFromIotHub(registryManager, query);
-            this.BulkSaveDevAddrCache(devAddrCacheInfos, true);
+            var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(registryManager, query);
+            BulkSaveDevAddrCache(devAddrCacheInfos, true);
         }
 
         /// <summary>
@@ -201,15 +201,15 @@ namespace LoraKeysManagerFacade
             // if the value is null (first call), we take five minutes before this call
             var lastUpdate = this.cacheStore.StringGet(LastDeltaUpdateKeyValue) ?? DateTime.UtcNow.AddMinutes(-5).ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture);
             var query = $"SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= '{lastUpdate}' OR properties.reported.$metadata.DevAddr.$lastUpdated >= '{lastUpdate}'";
-            var devAddrCacheInfos = await this.GetDeviceTwinsFromIotHub(registryManager, query);
-            this.BulkSaveDevAddrCache(devAddrCacheInfos, false);
+            var devAddrCacheInfos = await GetDeviceTwinsFromIotHub(registryManager, query);
+            BulkSaveDevAddrCache(devAddrCacheInfos, false);
         }
 
         private async Task<List<DevAddrCacheInfo>> GetDeviceTwinsFromIotHub(RegistryManager registryManager, string inputQuery)
         {
             var query = registryManager.CreateQuery(inputQuery);
             var lastQueryTs = DateTime.UtcNow.AddSeconds(-10); // account for some clock drift
-            this.cacheStore.StringSet(LastDeltaUpdateKeyValue, lastQueryTs.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
+            _ = this.cacheStore.StringSet(LastDeltaUpdateKeyValue, lastQueryTs.ToString(LoraKeysManagerFacadeConstants.RoundTripDateTimeStringFormat, CultureInfo.InvariantCulture), TimeSpan.FromDays(1));
             var devAddrCacheInfos = new List<DevAddrCacheInfo>();
             while (query.HasMoreResults)
             {
@@ -333,7 +333,7 @@ namespace LoraKeysManagerFacade
                     }
 
                     // I remove the key from the import to be able to import any delta element later.
-                    valueArrayimport.Remove(baseValue.Key);
+                    _ = valueArrayimport.Remove(baseValue.Key);
                 }
                 else
                 {

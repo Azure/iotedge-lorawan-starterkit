@@ -3,6 +3,7 @@
 
 namespace LoraKeysManagerFacade
 {
+    using System;
     using System.Linq;
     using LoRaWan.Core;
     using Microsoft.AspNetCore.Http;
@@ -18,8 +19,10 @@ namespace LoraKeysManagerFacade
         /// </summary>
         public static ApiVersion GetRequestedVersion(this HttpRequest req)
         {
+            if (req is null) throw new ArgumentNullException(nameof(req));
+
             var versionText = req.Query[ApiVersion.QueryStringParamName];
-            if (!StringValues.IsNullOrEmpty(versionText))
+            if (StringValues.IsNullOrEmpty(versionText))
             {
                 if (req.Headers.TryGetValue(ApiVersion.HttpHeaderName, out var headerValues))
                 {

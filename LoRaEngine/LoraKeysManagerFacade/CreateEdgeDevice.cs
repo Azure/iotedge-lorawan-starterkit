@@ -29,21 +29,26 @@ namespace LoraKeysManagerFacade
 
         [FunctionName(nameof(CreateEdgeDevice))]
         public async Task<HttpResponseMessage> CreateEdgeDeviceImp(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-            ExecutionContext context)
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req)
         {
             // parse query parameter
             var queryStrings = req.GetQueryParameterDictionary();
 
-            queryStrings.TryGetValue("deviceName", out var deviceName);
-            queryStrings.TryGetValue("publishingUserName", out var publishingUserName);
-            queryStrings.TryGetValue("publishingPassword", out var publishingPassword);
-            queryStrings.TryGetValue("region", out var region);
-            queryStrings.TryGetValue("resetPin", out var resetPin);
-            queryStrings.TryGetValue("spiSpeed", out var spiSpeed);
-            queryStrings.TryGetValue("spiDev", out var spiDev);
+            // required arguments
+            if (!queryStrings.TryGetValue("deviceName", out var deviceName) ||
+                !queryStrings.TryGetValue("publishingUserName", out var publishingUserName) ||
+                !queryStrings.TryGetValue("publishingPassword", out var publishingPassword) ||
+                !queryStrings.TryGetValue("region", out var region) ||
+                !queryStrings.TryGetValue("resetPin", out var resetPin))
+            {
+                return new HttpResponseMessage(HttpStatusCode.BadRequest) { ReasonPhrase = "Missing required parameters." };
+            }
 
-            bool.TryParse(Environment.GetEnvironmentVariable("DEPLOY_DEVICE"), out var deployEndDevice);
+            // optional arguments
+            _ = queryStrings.TryGetValue("spiSpeed", out var spiSpeed);
+            _ = queryStrings.TryGetValue("spiDev", out var spiDev);
+
+            _ = bool.TryParse(Environment.GetEnvironmentVariable("DEPLOY_DEVICE"), out var deployEndDevice);
 
             // Get function facade key
             var base64Auth = Convert.ToBase64String(Encoding.Default.GetBytes($"{publishingUserName}:{publishingPassword}"));
@@ -77,7 +82,7 @@ namespace LoraKeysManagerFacade
 
             try
             {
-                await this.registryManager.AddDeviceAsync(edgeGatewayDevice);
+                _ = await this.registryManager.AddDeviceAsync(edgeGatewayDevice);
 
                 var deviceConfigurationUrl = Environment.GetEnvironmentVariable("DEVICE_CONFIG_LOCATION");
                 string json = null;
@@ -91,7 +96,7 @@ namespace LoraKeysManagerFacade
                 json = ReplaceJsonWithCorrectValues(region, resetPin, json, spiSpeed, spiDev);
 
                 var spec = JsonConvert.DeserializeObject<ConfigurationContent>(json);
-                await this.registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
+                _ = await this.registryManager.AddModuleAsync(new Module(deviceName, "LoRaWanNetworkSrvModule"));
 
                 await this.registryManager.ApplyConfigurationContentOnDeviceAsync(deviceName, spec);
 
@@ -99,7 +104,7 @@ namespace LoraKeysManagerFacade
                 twin.Properties.Desired = new TwinCollection($"{{FacadeServerUrl:'https://{GetEnvironmentVariable("FACADE_HOST_NAME")}.azurewebsites.net/api/',FacadeAuthCode: '{facadeKey}'}}");
                 var remoteTwin = await this.registryManager.GetTwinAsync(deviceName);
 
-                await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
+                _ = await this.registryManager.UpdateTwinAsync(deviceName, "LoRaWanNetworkSrvModule", twin, remoteTwin.ETag);
 
                 // This section will get deployed ONLY if the user selected the "deploy end device" options.
                 // Information in this if clause, is for demo purpose only and should not be used for productive workloads.
@@ -107,19 +112,19 @@ namespace LoraKeysManagerFacade
                 {
                     var otaaDevice = new Device(OtaaDeviceId);
 
-                    await this.registryManager.AddDeviceAsync(otaaDevice);
+                    _ = await this.registryManager.AddDeviceAsync(otaaDevice);
 
                     var otaaEndTwin = new Twin();
                     otaaEndTwin.Properties.Desired = new TwinCollection(@"{AppEUI:'BE7A0000000014E2',AppKey:'8AFE71A145B253E49C3031AD068277A1',GatewayID:'',SensorDecoder:'DecoderValueSensor'}");
-                    var otaaRemoteTwin = await this.registryManager.GetTwinAsync(OtaaDeviceId);
-                    await this.registryManager.UpdateTwinAsync(OtaaDeviceId, otaaEndTwin, otaaRemoteTwin.ETag);
+                    var otaaRemoteTwin = _ = await this.registryManager.GetTwinAsync(OtaaDeviceId);
+                    _ = await this.registryManager.UpdateTwinAsync(OtaaDeviceId, otaaEndTwin, otaaRemoteTwin.ETag);
 
                     var abpDevice = new Device(AbpDeviceId);
-                    await this.registryManager.AddDeviceAsync(abpDevice);
+                    _ = await this.registryManager.AddDeviceAsync(abpDevice);
                     var abpTwin = new Twin();
                     abpTwin.Properties.Desired = new TwinCollection(@"{AppSKey:'2B7E151628AED2A6ABF7158809CF4F3C',NwkSKey:'3B7E151628AED2A6ABF7158809CF4F3C',GatewayID:'',DevAddr:'0228B1B1',SensorDecoder:'DecoderValueSensor'}");
                     var abpRemoteTwin = await this.registryManager.GetTwinAsync(AbpDeviceId);
-                    await this.registryManager.UpdateTwinAsync(AbpDeviceId, abpTwin, abpRemoteTwin.ETag);
+                    _ = await this.registryManager.UpdateTwinAsync(AbpDeviceId, abpTwin, abpRemoteTwin.ETag);
                 }
             }
             catch (Exception)

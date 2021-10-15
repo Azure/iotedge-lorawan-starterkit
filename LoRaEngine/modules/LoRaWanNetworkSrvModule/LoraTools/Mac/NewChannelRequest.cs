@@ -22,10 +22,10 @@ namespace LoRaTools
         public byte DrRange { get; set; }
 
         [JsonIgnore]
-        public int MaxDR => (this.DrRange >> 4) & 0b00001111;
+        public int MaxDR => (DrRange >> 4) & 0b00001111;
 
         [JsonIgnore]
-        public int MinDR => this.DrRange & 0b00001111;
+        public int MinDR => DrRange & 0b00001111;
 
         public override int Length => 6;
 
@@ -35,25 +35,25 @@ namespace LoRaTools
 
         public NewChannelRequest(byte chIndex, byte[] freq, byte maxDr, byte minDr)
         {
-            this.ChIndex = chIndex;
-            this.Freq = freq;
-            this.DrRange = (byte)((byte)(maxDr << 4) | (minDr & 0b00001111));
-            this.Cid = Cid.NewChannelCmd;
+            ChIndex = chIndex;
+            Freq = freq;
+            DrRange = (byte)((byte)(maxDr << 4) | (minDr & 0b00001111));
+            Cid = Cid.NewChannelCmd;
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return this.DrRange;
-            yield return this.Freq[2];
-            yield return this.Freq[1];
-            yield return this.Freq[0];
-            yield return this.ChIndex;
-            yield return (byte)this.Cid;
+            yield return DrRange;
+            yield return Freq[2];
+            yield return Freq[1];
+            yield return Freq[0];
+            yield return ChIndex;
+            yield return (byte)Cid;
         }
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, channel index: {this.ChIndex}, frequency: {ConversionHelper.ByteArrayToString(this.Freq)}, min DR: {this.MinDR}, max DR: {this.MaxDR}";
+            return $"Type: {Cid} Answer, channel index: {ChIndex}, frequency: {ConversionHelper.ByteArrayToString(Freq)}, min DR: {MinDR}, max DR: {MaxDR}";
         }
     }
 }

@@ -28,7 +28,7 @@ namespace LoRaWan.NetworkServer
 
         public SearchDevicesResult(IReadOnlyList<IoTHubDeviceInfo> devices)
         {
-            this.Devices = devices;
+            Devices = devices;
         }
     }
 }

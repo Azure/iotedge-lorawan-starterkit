@@ -53,7 +53,7 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
-                this.randomLock.Release();
+                _ = this.randomLock.Release();
             }
         }
 
@@ -110,7 +110,11 @@ namespace LoRaWan.NetworkServer
         {
             if (messageToSend != null && messageToSend.Length != 0)
             {
-                await this.udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp, remoteLoRaAggregatorPort);
+                var bytesSent = await this.udpClient.SendAsync(messageToSend, messageToSend.Length, remoteLoRaAggregatorIp, remoteLoRaAggregatorPort);
+                if (bytesSent < messageToSend.Length)
+                {
+                    Logger.Log($"Incomplete message transfer from {nameof(UdpServer)}", LogLevel.Warning);
+                }
             }
         }
 
@@ -136,13 +140,13 @@ namespace LoRaWan.NetworkServer
                             this.pullAckRemoteLoRaAddress = receivedResults.RemoteEndPoint.Address.ToString();
                         }
 
-                        this.SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PullAck, receivedResults.RemoteEndPoint);
+                        SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PullAck, receivedResults.RemoteEndPoint);
                         break;
 
                     // This is a PUSH_DATA (upstream message).
                     case PhysicalIdentifier.PushData:
-                        this.SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PushAck, receivedResults.RemoteEndPoint);
-                        this.DispatchMessages(receivedResults.Buffer, startTimeProcessing);
+                        SendAcknowledgementMessage(receivedResults, (int)PhysicalIdentifier.PushAck, receivedResults.RemoteEndPoint);
+                        DispatchMessages(receivedResults.Buffer, startTimeProcessing);
 
                         break;
 
@@ -205,7 +209,7 @@ namespace LoRaWan.NetworkServer
                 receivedResults.Buffer[2],
                 messageType
             };
-            _ = this.UdpSendMessageAsync(response, remoteEndpoint.Address.ToString(), remoteEndpoint.Port);
+            _ = UdpSendMessageAsync(response, remoteEndpoint.Address.ToString(), remoteEndpoint.Port);
         }
 
         async Task InitCallBack()
@@ -264,9 +268,9 @@ namespace LoRaWan.NetworkServer
                         throw;
                     }
 
-                    await this.ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(this.OnDesiredPropertiesUpdate, null);
+                    await this.ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
 
-                    await this.ioTHubModuleClient.SetMethodDefaultHandlerAsync(this.OnDirectMethodCalled, null);
+                    await this.ioTHubModuleClient.SetMethodDefaultHandlerAsync(OnDirectMethodCalled, null);
                 }
 
                 // running as non edge module for test and debugging
@@ -299,11 +303,11 @@ namespace LoRaWan.NetworkServer
         {
             if (string.Equals("clearcache", methodRequest.Name, StringComparison.OrdinalIgnoreCase))
             {
-                return await this.ClearCache(methodRequest, userContext);
+                return await ClearCache();
             }
             else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
             {
-                return await this.SendCloudToDeviceMessageAsync(methodRequest);
+                return await SendCloudToDeviceMessageAsync(methodRequest);
             }
 
             Logger.Log($"Unknown direct method called: {methodRequest?.Name}", LogLevel.Error);
@@ -333,7 +337,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private Task<MethodResponse> ClearCache(MethodRequest methodRequest, object userContext)
+        private Task<MethodResponse> ClearCache()
         {
             this.loRaDeviceRegistry.ResetDeviceCache();
 
@@ -379,12 +383,12 @@ namespace LoRaWan.NetworkServer
                 {
                     var jsonMsg = JsonConvert.SerializeObject(downstreamMessage);
                     var messageByte = Encoding.UTF8.GetBytes(jsonMsg);
-                    var token = await this.GetTokenAsync();
+                    var token = await GetTokenAsync();
                     var pyld = new PhysicalPayload(token, PhysicalIdentifier.PullResp, messageByte);
                     if (this.pullAckRemoteLoRaAggregatorPort != 0 && !string.IsNullOrEmpty(this.pullAckRemoteLoRaAddress))
                     {
                         Logger.Log("UDP", $"sending message with ID {ConversionHelper.ByteArrayToString(token)}, to {this.pullAckRemoteLoRaAddress}:{this.pullAckRemoteLoRaAggregatorPort}", LogLevel.Debug);
-                        await this.UdpSendMessageAsync(pyld.GetMessage(), this.pullAckRemoteLoRaAddress, this.pullAckRemoteLoRaAggregatorPort);
+                        await UdpSendMessageAsync(pyld.GetMessage(), this.pullAckRemoteLoRaAddress, this.pullAckRemoteLoRaAggregatorPort);
                         Logger.Log("UDP", $"message sent with ID {ConversionHelper.ByteArrayToString(token)}", LogLevel.Debug);
                     }
                     else

@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#pragma warning disable CA1062 // Validate arguments of public methods
+
 namespace LoRaWanTest
 {
     using System.Collections.Generic;
@@ -31,7 +33,7 @@ namespace LoRaWanTest
             {
                 CallBase = true
             };
-            loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
+            _ = loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // If the test does not expect a default answer we trigger default reset before
             if (!expectDefaultAnswer)
@@ -76,7 +78,7 @@ namespace LoRaWanTest
             {
                 CallBase = true
             };
-            loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
+            _ = loRaADRManager.Setup(x => x.NextFCntDown(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>())).ReturnsAsync(1U);
 
             // setup table with default value
             _ = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
@@ -108,7 +110,7 @@ namespace LoRaWanTest
             Assert.Equal(1, adrResult.NbRepetition);
 
             // reset cache and check we get default values
-            await loRaADRManager.Object.ResetAsync(devEUI);
+            _ = await loRaADRManager.Object.ResetAsync(devEUI);
 
             adrResult = await loRaADRManager.Object.CalculateADRResultAndAddEntryAsync(devEUI, string.Empty, 1, 1, (float)rxpk.RequiredSnr, region.GetDRFromFreqAndChan(rxpk.Datr), region.TXPowertoMaxEIRP.Count - 1, region.MaxADRDataRate, new LoRaADRTableEntry()
             {

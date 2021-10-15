@@ -27,7 +27,7 @@ namespace LoRaWan.Tests.Shared
 
         public SearchLogOptions(string description)
         {
-            this.Description = description;
+            Description = description;
         }
     }
 }

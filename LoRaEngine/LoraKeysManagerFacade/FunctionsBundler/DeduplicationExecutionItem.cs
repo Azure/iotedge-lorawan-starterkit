@@ -18,7 +18,10 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
-            context.Result.DeduplicationResult = await this.GetDuplicateMessageResultAsync(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.Logger);
+            if (context is null) throw new System.ArgumentNullException(nameof(context));
+
+            context.Result.DeduplicationResult = await GetDuplicateMessageResultAsync(context.DevEUI, context.Request.GatewayId, context.Request.ClientFCntUp, context.Request.ClientFCntDown, context.Logger);
+
             return context.Result.DeduplicationResult.IsDuplicate ? FunctionBundlerExecutionState.Abort : FunctionBundlerExecutionState.Continue;
         }
 
@@ -67,7 +70,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                         {
                             cachedDeviceState.FCntUp = clientFCntUp;
                             cachedDeviceState.GatewayId = gatewayId;
-                            deviceCache.StoreInfo(cachedDeviceState);
+                            _ = deviceCache.StoreInfo(cachedDeviceState);
                         }
                     }
                     else

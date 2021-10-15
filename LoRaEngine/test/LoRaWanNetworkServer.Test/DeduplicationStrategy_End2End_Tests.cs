@@ -19,7 +19,7 @@ namespace LoRaWan.NetworkServer.Test
 
         public DeduplicationStrategy_End2End_Tests()
         {
-            this.factory = new DeduplicationStrategyFactory(this.LoRaDeviceApi.Object);
+            this.factory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object);
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
         }
 
@@ -33,7 +33,7 @@ namespace LoRaWan.NetworkServer.Test
             var messageProcessed = mode == DeduplicationMode.Drop;
             messageProcessed = false;
 
-            this.LoRaDeviceApi.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
+            LoRaDeviceApi.Setup(x => x.ExecuteFunctionBundlerAsync(simulatedDevice.DevEUI, It.IsNotNull<FunctionBundlerRequest>()))
                 .Returns<string, FunctionBundlerRequest>((dev, req) =>
                 {
                     var isDup = messageProcessed;
@@ -47,7 +47,7 @@ namespace LoRaWan.NetworkServer.Test
                     });
                 });
 
-            this.LoRaDeviceApi
+            LoRaDeviceApi
                 .Setup(x => x.NextFCntDownAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<uint>(), It.IsAny<string>()))
                 .ReturnsAsync(simulatedDevice.FrmCntDown + 1)
                 .Callback(() =>
@@ -57,12 +57,12 @@ namespace LoRaWan.NetworkServer.Test
                     Assert.True(mode == DeduplicationMode.None);
                 });
 
-            this.LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
+            LoRaDeviceApi.Setup(x => x.ABPFcntCacheResetAsync(It.IsNotNull<string>(), It.IsAny<uint>(), It.IsNotNull<string>()))
                 .ReturnsAsync(true);
 
             var shouldBeMarked = false;
 
-            this.LoRaDeviceClient
+            LoRaDeviceClient
                 .Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true)
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((telemetry, dict) =>
@@ -79,42 +79,42 @@ namespace LoRaWan.NetworkServer.Test
                     shouldBeMarked = mode == DeduplicationMode.Mark;
                 });
 
-            this.LoRaDeviceClient
+            LoRaDeviceClient
                 .Setup(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
-            await this.SendTwoMessages(mode);
+            await SendTwoMessages(mode);
         }
 
         private async Task SendTwoMessages(DeduplicationMode mode)
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
 
-            var loRaDevice = this.CreateLoRaDevice(simulatedDevice);
+            var loRaDevice = CreateLoRaDevice(simulatedDevice);
             loRaDevice.Deduplication = mode;
 
             using var cache1 = NewNonEmptyCache(loRaDevice);
-            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(this.ServerConfiguration, cache1, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory);
             using var cache2 = NewNonEmptyCache(loRaDevice);
-            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(this.SecondServerConfiguration, cache2, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var loRaDeviceRegistry2 = new LoRaDeviceRegistry(SecondServerConfiguration, cache2, LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             using var messageProcessor1 = new MessageDispatcher(
-                this.ServerConfiguration,
+                ServerConfiguration,
                 loRaDeviceRegistry1,
-                this.FrameCounterUpdateStrategyProvider);
+                FrameCounterUpdateStrategyProvider);
 
             using var messageProcessor2 = new MessageDispatcher(
-                this.SecondServerConfiguration,
+                SecondServerConfiguration,
                 loRaDeviceRegistry2,
-                this.SecondFrameCounterUpdateStrategyProvider);
+                SecondFrameCounterUpdateStrategyProvider);
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: 1);
 
             // Create Rxpk
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
 
-            using var request1 = this.CreateWaitableRequest(rxpk);
-            using var request2 = this.CreateWaitableRequest(rxpk);
+            using var request1 = CreateWaitableRequest(rxpk);
+            using var request2 = CreateWaitableRequest(rxpk);
 
             messageProcessor1.DispatchRequest(request1);
 

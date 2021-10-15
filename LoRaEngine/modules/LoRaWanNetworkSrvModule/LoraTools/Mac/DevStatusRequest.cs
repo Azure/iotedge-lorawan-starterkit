@@ -18,17 +18,17 @@ namespace LoRaTools
         /// </summary>
         public DevStatusRequest()
         {
-            this.Cid = Cid.DevStatusCmd;
+            Cid = Cid.DevStatusCmd;
         }
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Request";
+            return $"Type: {Cid} Request";
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.Cid;
+            yield return (byte)Cid;
         }
     }
 }

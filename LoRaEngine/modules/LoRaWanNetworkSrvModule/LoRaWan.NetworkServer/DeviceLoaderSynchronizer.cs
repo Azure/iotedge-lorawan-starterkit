@@ -72,7 +72,7 @@ namespace LoRaWan.NetworkServer
             this.loadingDevicesFailed = false;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
-            this.loading = Task.Run(() => this.Load().ContinueWith((t) => continuationAction(t, this),
+            this.loading = Task.Run(() => Load().ContinueWith((t) => continuationAction(t, this),
                                                                    CancellationToken.None,
                                                                    TaskContinuationOptions.ExecuteSynchronously,
                                                                    TaskScheduler.Default));
@@ -99,36 +99,36 @@ namespace LoRaWan.NetworkServer
                     throw;
                 }
 
-                this.SetState(LoaderState.CreatingDeviceInstances);
-                var createdDevices = await this.CreateDevicesAsync(searchDeviceResult.Devices);
+                SetState(LoaderState.CreatingDeviceInstances);
+                var createdDevices = await CreateDevicesAsync(searchDeviceResult.Devices);
 
                 // Dispatch queued requests to created devices
                 // those without a matching device will receive "failed" notification
                 lock (this.queueLock)
                 {
-                    this.SetState(LoaderState.DispatchingQueuedItems);
+                    SetState(LoaderState.DispatchingQueuedItems);
 
-                    this.DispatchQueuedItems(createdDevices);
+                    DispatchQueuedItems(createdDevices);
 
                     foreach (var device in createdDevices)
                     {
                         this.registerDeviceAction(device);
                     }
 
-                    this.CreatedDevicesCount = createdDevices.Count;
+                    CreatedDevicesCount = createdDevices.Count;
 
-                    this.SetState(LoaderState.Finished);
+                    SetState(LoaderState.Finished);
                 }
             }
             catch (Exception ex)
             {
                 Logger.Log(this.devAddr, $"failed to create one or more devices. {ex.Message}", LogLevel.Error);
-                this.NotifyQueueItemsDueToError();
+                NotifyQueueItemsDueToError();
                 throw;
             }
             finally
             {
-                this.SetState(LoaderState.Finished);
+                SetState(LoaderState.Finished);
             }
         }
 
@@ -143,13 +143,13 @@ namespace LoRaWan.NetworkServer
                     if (!this.existingDevices.ContainsKey(foundDevice.DevEUI))
                     {
                         var loRaDevice = this.deviceFactory.Create(foundDevice);
-                        initTasks.Add(this.InitializeDeviceAsync(loRaDevice));
+                        initTasks.Add(InitializeDeviceAsync(loRaDevice));
                     }
                 }
 
                 try
                 {
-                    await Task.WhenAll(initTasks);
+                    _ = await Task.WhenAll(initTasks);
                 }
                 catch (Exception ex)
                 {
@@ -173,12 +173,12 @@ namespace LoRaWan.NetworkServer
                         else
                         {
                             // if device twin load fails, error will be logged and device will be null
-                            this.HasLoadingDeviceError = true;
+                            HasLoadingDeviceError = true;
                         }
                     }
                     else
                     {
-                        this.HasLoadingDeviceError = true;
+                        HasLoadingDeviceError = true;
                     }
                 }
             }

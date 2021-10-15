@@ -142,7 +142,7 @@ namespace LoRaWan.Tests.E2E
         {
             this.serialPort = sp;
             this.serialPortBuffer = new byte[this.serialPort.ReadBufferSize];
-            this.serialPort.DataReceived += this.OnSerialDeviceData;
+            this.serialPort.DataReceived += OnSerialDeviceData;
         }
 
         private void OnSerialDeviceData(object sender, SerialDataReceivedEventArgs e)
@@ -153,7 +153,7 @@ namespace LoRaWan.Tests.E2E
                 var input = myserialPort.ReadLine();
                 // var readCount = myserialPort.Read(this.serialPortBuffer, 0, this.serialPortBuffer.Length);
                 // var dataread = System.Text.Encoding.UTF8.GetString(this.serialPortBuffer, 0, readCount);
-                this.OnSerialDataReceived(input);
+                OnSerialDataReceived(input);
             }
             catch (Exception ex)
             {
@@ -176,7 +176,7 @@ namespace LoRaWan.Tests.E2E
                     {
                         if (!string.IsNullOrEmpty(lines[i]))
                         {
-                            this.AppendSerialLog(lines[i]);
+                            AppendSerialLog(lines[i]);
                         }
                     }
 
@@ -185,7 +185,7 @@ namespace LoRaWan.Tests.E2E
                     if (!string.IsNullOrEmpty(lastParsedLine))
                     {
                         // add as finished line
-                        this.AppendSerialLog(lastParsedLine);
+                        AppendSerialLog(lastParsedLine);
                     }
                 }
             }
@@ -255,7 +255,7 @@ namespace LoRaWan.Tests.E2E
                     var cmd = $"AT+ID=DevAddr,{DevAddr}\r\n";
                     this.sendCommand(cmd);
 
-                    await this.EnsureSerialAnswerAsync("+ID: DevAddr", 30);
+                    await EnsureSerialAnswerAsync("+ID: DevAddr", 30);
                 }
 
                 if (!string.IsNullOrEmpty(DevEUI))
@@ -263,7 +263,7 @@ namespace LoRaWan.Tests.E2E
                     var cmd = $"AT+ID=DevEui,{DevEUI}\r\n";
                     this.sendCommand(cmd);
 
-                    await this.EnsureSerialAnswerAsync("+ID: DevEui", 30);
+                    await EnsureSerialAnswerAsync("+ID: DevEui", 30);
                 }
 
                 if (!string.IsNullOrEmpty(AppEUI))
@@ -271,7 +271,7 @@ namespace LoRaWan.Tests.E2E
                     var cmd = $"AT+ID=AppEui,{AppEUI}\r\n";
                     this.sendCommand(cmd);
 
-                    await this.EnsureSerialAnswerAsync("+ID: AppEui", 30);
+                    await EnsureSerialAnswerAsync("+ID: AppEui", 30);
                 }
             }
             catch (ArduinoDeviceFailedException)
@@ -320,7 +320,7 @@ namespace LoRaWan.Tests.E2E
                 {
                     var cmd = $"AT+KEY=NWKSKEY,{NwkSKey}\r\n";
                     this.sendCommand(cmd);
-                    await this.EnsureSerialAnswerAsync("+KEY: NWKSKEY", 30);
+                    await EnsureSerialAnswerAsync("+KEY: NWKSKEY", 30);
                 }
 
                 if (!string.IsNullOrEmpty(AppSKey))
@@ -328,7 +328,7 @@ namespace LoRaWan.Tests.E2E
                     var cmd = $"AT+KEY=APPSKEY,{AppSKey}\r\n";
                     this.sendCommand(cmd);
 
-                    await this.EnsureSerialAnswerAsync("+KEY: APPSKEY", 30);
+                    await EnsureSerialAnswerAsync("+KEY: APPSKEY", 30);
                 }
 
                 if (!string.IsNullOrEmpty(AppKey))
@@ -336,7 +336,7 @@ namespace LoRaWan.Tests.E2E
                     var cmd = $"AT+KEY= APPKEY,{AppKey}\r\n";
                     this.sendCommand(cmd);
 
-                    await this.EnsureSerialAnswerAsync("+KEY: APPKEY", 30);
+                    await EnsureSerialAnswerAsync("+KEY: APPKEY", 30);
                 }
             }
             catch (ArduinoDeviceFailedException)
@@ -409,14 +409,14 @@ namespace LoRaWan.Tests.E2E
             else if (physicalType == _physical_type_t.IN865)
                 this.sendCommand("AT+DR=IN865\r\n");
 
-            await this.EnsureSerialAnswerAsync("+DR:", 30);
+            await EnsureSerialAnswerAsync("+DR:", 30);
 
             await Task.Delay(DEFAULT_TIMEWAIT);
 
             var cmd = $"AT+DR={dataRate}\r\n";
             this.sendCommand(cmd);
 
-            await this.EnsureSerialAnswerAsync("+DR:", 30);
+            await EnsureSerialAnswerAsync("+DR:", 30);
         }
 
         public LoRaArduinoSerial setPower(short power)
@@ -434,7 +434,7 @@ namespace LoRaWan.Tests.E2E
             var cmd = $"AT+POWER={power}\r\n";
             this.sendCommand(cmd);
 
-            await this.EnsureSerialAnswerAsync("+POWER:", 30);
+            await EnsureSerialAnswerAsync("+POWER:", 30);
         }
 
         public async Task setPortAsync(int port)
@@ -442,7 +442,7 @@ namespace LoRaWan.Tests.E2E
             var cmd = $"AT+PORT={port}\r\n";
             this.sendCommand(cmd);
 
-            await this.EnsureSerialAnswerAsync("+PORT:", 30);
+            await EnsureSerialAnswerAsync("+PORT:", 30);
         }
 
         public LoRaArduinoSerial setAdaptiveDataRate(bool command)
@@ -464,7 +464,7 @@ namespace LoRaWan.Tests.E2E
             else
                 this.sendCommand("AT+ADR=OFF\r\n");
 
-            await this.EnsureSerialAnswerAsync("+ADR:", 30);
+            await EnsureSerialAnswerAsync("+ADR:", 30);
         }
 
         // Wait until the serial data is empty
@@ -476,10 +476,10 @@ namespace LoRaWan.Tests.E2E
 
             do
             {
-                this.ClearSerialLogs();
+                ClearSerialLogs();
                 await Task.Delay(delayTime);
 
-                if (!this.SerialLogs.Any())
+                if (!SerialLogs.Any())
                     return true;
             }
             while (start.Subtract(DateTime.UtcNow) <= timeoutToUse);
@@ -502,7 +502,7 @@ namespace LoRaWan.Tests.E2E
             var cmd = $"AT+CH={channel},{(short)frequency}.{(short)(frequency * 10) % 10}\r\n";
             this.sendCommand(cmd);
 
-            await this.EnsureSerialAnswerAsync("+CH:", 30);
+            await EnsureSerialAnswerAsync("+CH:", 30);
         }
 
         public LoRaArduinoSerial setChannel(char channel, float frequency, _data_rate_t dataRata)
@@ -540,7 +540,7 @@ namespace LoRaWan.Tests.E2E
 
                 while (true)
                 {
-                    if (this.ReceivedSerial(x => x.StartsWith("+MSG: Done", StringComparison.Ordinal)))
+                    if (ReceivedSerial(x => x.StartsWith("+MSG: Done", StringComparison.Ordinal)))
                         return true;
                     else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                         return false;
@@ -569,7 +569,7 @@ namespace LoRaWan.Tests.E2E
 
                 while (true)
                 {
-                    if (this.ReceivedSerial(x => x.StartsWith("+MSGHEX: Done", StringComparison.Ordinal)))
+                    if (ReceivedSerial(x => x.StartsWith("+MSGHEX: Done", StringComparison.Ordinal)))
                         return true;
                     else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                         return false;
@@ -596,7 +596,7 @@ namespace LoRaWan.Tests.E2E
 
             while (true)
             {
-                if (this.ReceivedSerial(x => x.StartsWith("+MSG: Done", StringComparison.Ordinal)))
+                if (ReceivedSerial(x => x.StartsWith("+MSG: Done", StringComparison.Ordinal)))
                     return true;
                 else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                     return false;
@@ -605,7 +605,7 @@ namespace LoRaWan.Tests.E2E
 
         private bool ReceivedSerial(Func<string, bool> predicate)
         {
-            foreach (var serialLine in this.SerialLogs)
+            foreach (var serialLine in SerialLogs)
             {
                 if (predicate(serialLine))
                     return true;
@@ -624,7 +624,7 @@ namespace LoRaWan.Tests.E2E
 
             while (true)
             {
-                if (this.ReceivedSerial(x => x.StartsWith("+CMSG: ACK Received", StringComparison.Ordinal)))
+                if (ReceivedSerial(x => x.StartsWith("+CMSG: ACK Received", StringComparison.Ordinal)))
                     return true;
                 else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                     return false;
@@ -645,7 +645,7 @@ namespace LoRaWan.Tests.E2E
 
                 while (true)
                 {
-                    if (this.ReceivedSerial(x => x.StartsWith("+CMSG: ACK Received", StringComparison.Ordinal)))
+                    if (ReceivedSerial(x => x.StartsWith("+CMSG: ACK Received", StringComparison.Ordinal)))
                         return true;
                     else if (start.AddSeconds(timeout) < DateTime.UtcNow)
                         return false;
@@ -750,7 +750,7 @@ namespace LoRaWan.Tests.E2E
             var cmd = $"AT+RXWIN2={(short)frequency}.{(short)(frequency * 10) % 10},{dataRate}\r\n";
             this.sendCommand(cmd);
 
-            await this.EnsureSerialAnswerAsync("+RXWIN2:", 10);
+            await EnsureSerialAnswerAsync("+RXWIN2:", 10);
         }
 
         public LoRaArduinoSerial setReceiceWindowSecond(float frequency, _spreading_factor_t spreadingFactor, _band_width_t bandwidth)
@@ -872,7 +872,7 @@ namespace LoRaWan.Tests.E2E
                 TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex}");
             }
 
-            await this.EnsureSerialAnswerAsync("+MODE:", 30);
+            await EnsureSerialAnswerAsync("+MODE:", 30);
         }
 
         public bool setOTAAJoin(_otaa_join_cmd_t command, int timeout)
@@ -887,11 +887,11 @@ namespace LoRaWan.Tests.E2E
             var start = DateTime.UtcNow;
             while (true)
             {
-                if (this.ReceivedSerial(x => x.StartsWith("+JOIN: Done", StringComparison.Ordinal)))
+                if (ReceivedSerial(x => x.StartsWith("+JOIN: Done", StringComparison.Ordinal)))
                     return true;
-                else if (this.ReceivedSerial(x => x.StartsWith("+JOIN: LoRaWAN modem is busy", StringComparison.Ordinal)))
+                else if (ReceivedSerial(x => x.StartsWith("+JOIN: LoRaWAN modem is busy", StringComparison.Ordinal)))
                     return false;
-                else if (this.ReceivedSerial(x => x.StartsWith("+JOIN: Join failed", StringComparison.Ordinal)))
+                else if (ReceivedSerial(x => x.StartsWith("+JOIN: Join failed", StringComparison.Ordinal)))
                     return false;
                 else if (start.AddMilliseconds(timeout) < DateTime.UtcNow)
                     return false;
@@ -919,11 +919,11 @@ namespace LoRaWan.Tests.E2E
 
                 while (DateTime.UtcNow.Subtract(start).TotalMilliseconds < timeoutPerTry)
                 {
-                    if (this.ReceivedSerial((s) => s.Contains("+JOIN: Network joined", StringComparison.Ordinal)))
+                    if (ReceivedSerial((s) => s.Contains("+JOIN: Network joined", StringComparison.Ordinal)))
                         return true;
-                    else if (this.ReceivedSerial(x => x.Contains("+JOIN: LoRaWAN modem is busy", StringComparison.Ordinal)))
+                    else if (ReceivedSerial(x => x.Contains("+JOIN: LoRaWAN modem is busy", StringComparison.Ordinal)))
                         break;
-                    else if (this.ReceivedSerial(x => x.Contains("+JOIN: Join failed", StringComparison.Ordinal)))
+                    else if (ReceivedSerial(x => x.Contains("+JOIN: Join failed", StringComparison.Ordinal)))
                         break;
 
                     // wait a bit to not starve CPU, still waiting for a response from serial port
@@ -933,7 +933,7 @@ namespace LoRaWan.Tests.E2E
                 await Task.Delay(timeoutPerTry);
 
                 // check serial log again before sending another request
-                if (this.ReceivedSerial((s) => s.StartsWith("+JOIN: Network joined", StringComparison.Ordinal)))
+                if (ReceivedSerial((s) => s.StartsWith("+JOIN: Network joined", StringComparison.Ordinal)))
                     return true;
             }
 
@@ -964,7 +964,7 @@ namespace LoRaWan.Tests.E2E
 
             await Task.Delay(DEFAULT_TIMEWAIT);
 
-            await this.EnsureSerialAnswerAsync("+RESET:", 10);
+            await EnsureSerialAnswerAsync("+RESET:", 10);
         }
 
         /// <summary>
@@ -981,7 +981,7 @@ namespace LoRaWan.Tests.E2E
                 TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex}");
             }
 
-            await this.EnsureSerialAnswerAsync("+FDEFAULT:", 10);
+            await EnsureSerialAnswerAsync("+FDEFAULT:", 10);
         }
 
         short getBatteryVoltage()
@@ -1002,7 +1002,7 @@ namespace LoRaWan.Tests.E2E
             {
                 this.serialPort.Write(command);
 
-                if (this.LogWrites)
+                if (LogWrites)
                     TestLogger.Log($"[SERIALW] {command}");
             }
             catch (Exception ex)
@@ -1014,7 +1014,7 @@ namespace LoRaWan.Tests.E2E
 
         public void Dispose()
         {
-            this.serialPort.DataReceived -= this.OnSerialDeviceData;
+            this.serialPort.DataReceived -= OnSerialDeviceData;
             this.serialPort.Close();
             this.serialPort = null;
             GC.SuppressFinalize(this);
@@ -1024,7 +1024,7 @@ namespace LoRaWan.Tests.E2E
         {
             for (var i = 0; i < retries; i++)
             {
-                if (this.ReceivedSerial(x => x.StartsWith(expectedSerialStartText, StringComparison.InvariantCultureIgnoreCase)))
+                if (ReceivedSerial(x => x.StartsWith(expectedSerialStartText, StringComparison.InvariantCultureIgnoreCase)))
                 {
                     await Task.Delay(DEFAULT_TIMEWAIT);
                     return;

@@ -46,6 +46,8 @@ namespace LoRaTools.Regions
         /// <param name="region">Region.</param>
         public static bool TryResolveRegion(Rxpk rxpk, out Region region)
         {
+            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
+
             region = null;
 
             // EU863-870

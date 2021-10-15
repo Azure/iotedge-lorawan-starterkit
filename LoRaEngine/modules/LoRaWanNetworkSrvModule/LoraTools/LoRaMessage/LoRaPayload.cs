@@ -8,7 +8,6 @@ namespace LoRaTools.LoRaMessage
     using System.Security.Cryptography;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
-    using Org.BouncyCastle.Crypto;
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
@@ -52,10 +51,10 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         protected LoRaPayload(byte[] inputMessage)
         {
-            this.RawMessage = inputMessage;
-            this.Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
+            RawMessage = inputMessage ?? throw new ArgumentNullException(nameof(inputMessage));
+            Mhdr = new Memory<byte>(this.RawMessage, 0, 1);
             // MIC 4 last bytes
-            this.Mic = new Memory<byte>(this.RawMessage, inputMessage.Length - 4, 4);
+            Mic = new Memory<byte>(RawMessage, inputMessage.Length - 4, 4);
         }
 
         /// <summary>
@@ -92,6 +91,8 @@ namespace LoRaTools.LoRaMessage
         /// <returns> the Mic bytes.</returns>
         public byte[] CalculateMic(string appKey, byte[] algoinput)
         {
+            if (algoinput is null) throw new ArgumentNullException(nameof(algoinput));
+
             var mac = MacUtilities.GetMac("AESCMAC");
             var key = new KeyParameter(ConversionHelper.StringToByteArray(appKey));
             mac.Init(key);
@@ -99,8 +100,8 @@ namespace LoRaTools.LoRaMessage
             rfu[0] = 0x0;
             mac.BlockUpdate(algoinput, 0, algoinput.Length);
             var result = MacUtilities.DoFinal(mac);
-            this.Mic = result.Take(4).ToArray();
-            return this.Mic.ToArray();
+            Mic = result.Take(4).ToArray();
+            return Mic.ToArray();
         }
 
         /// <summary>
@@ -130,6 +131,8 @@ namespace LoRaTools.LoRaMessage
 
         public static bool TryCreateLoRaPayload(Rxpk rxpk, out LoRaPayload loRaPayloadMessage)
         {
+            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
+
             var convertedInputMessage = Convert.FromBase64String(rxpk.Data);
             var messageType = convertedInputMessage[0];
 
@@ -159,6 +162,8 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public static bool TryCreateLoRaPayloadForSimulator(Txpk txpk, string appKey, out LoRaPayload loRaPayload)
         {
+            if (txpk is null) throw new ArgumentNullException(nameof(txpk));
+
             if (txpk.Data != null)
             {
                 var convertedInputMessage = Convert.FromBase64String(txpk.Data);
@@ -188,14 +193,14 @@ namespace LoRaTools.LoRaMessage
 
         public void Reset32BitBlockInfo()
         {
-            this.Server32BitFcnt = null;
+            Server32BitFcnt = null;
         }
 
         public void Ensure32BitFcntValue(uint? server32bitFcnt)
         {
-            if (this.Server32BitFcnt == null && server32bitFcnt.HasValue)
+            if (Server32BitFcnt == null && server32bitFcnt.HasValue)
             {
-                this.Server32BitFcnt = BitConverter.GetBytes(server32bitFcnt.Value);
+                Server32BitFcnt = BitConverter.GetBytes(server32bitFcnt.Value);
             }
         }
 

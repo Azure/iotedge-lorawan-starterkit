@@ -24,7 +24,7 @@ namespace LoRaWan.NetworkServer
             this.loRaDevice = loRaDevice ?? throw new ArgumentNullException(nameof(loRaDevice));
             this.message = message ?? throw new ArgumentNullException(nameof(message));
 
-            this.ParseMessage();
+            ParseMessage();
         }
 
         /// <summary>

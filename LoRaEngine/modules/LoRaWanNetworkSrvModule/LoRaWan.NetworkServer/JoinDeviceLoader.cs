@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer
             this.ioTHubDevice = ioTHubDevice;
             this.deviceFactory = deviceFactory;
             this.canCache = true;
-            this.loading = Task.Run(() => this.LoadAsync());
+            this.loading = Task.Run(() => LoadAsync());
         }
 
         /// <summary>

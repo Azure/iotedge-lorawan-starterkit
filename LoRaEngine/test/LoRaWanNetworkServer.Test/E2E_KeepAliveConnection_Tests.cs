@@ -39,7 +39,7 @@ namespace LoRaWan.NetworkServer.Test
             var totalWaitTime = 0;
             while (totalWaitTime < actualTimeout)
             {
-                this.ConnectionManager.TryScanExpiredItems();
+                ConnectionManager.TryScanExpiredItems();
                 if (await disconnectedEvent.WaitAsync(actualTimeout / 4))
                     break;
 
@@ -59,47 +59,47 @@ namespace LoRaWan.NetworkServer.Test
 
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
-            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+            LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
                 .ReturnsAsync(true);
 
             // C2D message will be checked
-            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+            LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
             // will check client connection
-            this.LoRaDeviceClient.Setup(x => x.EnsureConnected())
+            LoRaDeviceClient.Setup(x => x.EnsureConnected())
                 .Returns(true);
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            this.LoRaDeviceClient.Setup(x => x.Disconnect())
+            LoRaDeviceClient.Setup(x => x.Disconnect())
                 .Callback(() => disconnectedEvent.Release())
                 .Returns(true);
 
-            var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
+            var cachedDevice = CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(
-                this.ServerConfiguration,
+                ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyProvider);
+                FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello");
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            using var request = new WaitableLoRaRequest(rxpk, PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
 
-            await this.EnsureDisconnectedAsync(disconnectedEvent);
+            await EnsureDisconnectedAsync(disconnectedEvent);
 
-            this.LoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
+            LoRaDeviceClient.VerifyAll();
+            LoRaDeviceApi.VerifyAll();
         }
 
         [Fact]
@@ -114,7 +114,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
-            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+            LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
                 {
                     Assert.False(isDisconnected);
@@ -123,7 +123,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true);
 
             // C2D message will be checked
-            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+            LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .Callback(() =>
                 {
                     Assert.False(isDisconnected);
@@ -131,12 +131,12 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync((Message)null);
 
             // will check client connection
-            this.LoRaDeviceClient.Setup(x => x.EnsureConnected())
+            LoRaDeviceClient.Setup(x => x.EnsureConnected())
                 .Returns(true);
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            this.LoRaDeviceClient.Setup(x => x.Disconnect())
+            LoRaDeviceClient.Setup(x => x.Disconnect())
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
@@ -144,23 +144,23 @@ namespace LoRaWan.NetworkServer.Test
                 })
                 .Returns(true);
 
-            var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
+            var cachedDevice = CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(
-                this.ServerConfiguration,
+                ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyProvider);
+                FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
             foreach (var msg in Enumerable.Range(1, 3))
             {
                 var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msg.ToString(CultureInfo.InvariantCulture));
                 var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-                using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+                using var request = new WaitableLoRaRequest(rxpk, PacketForwarder);
                 messageDispatcher.DispatchRequest(request);
                 Assert.True(await request.WaitCompleteAsync());
                 Assert.True(request.ProcessingSucceeded);
@@ -168,10 +168,10 @@ namespace LoRaWan.NetworkServer.Test
                 await Task.Delay(1500);
             }
 
-            await this.EnsureDisconnectedAsync(disconnectedEvent);
+            await EnsureDisconnectedAsync(disconnectedEvent);
 
-            this.LoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
+            LoRaDeviceClient.VerifyAll();
+            LoRaDeviceApi.VerifyAll();
         }
 
         [Fact]
@@ -186,7 +186,7 @@ namespace LoRaWan.NetworkServer.Test
 
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
-            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+            LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) =>
                 {
                     Assert.False(isDisconnected);
@@ -195,7 +195,7 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync(true);
 
             // C2D message will be checked
-            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+            LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .Callback(() =>
                 {
                     Assert.False(isDisconnected);
@@ -203,13 +203,13 @@ namespace LoRaWan.NetworkServer.Test
                 .ReturnsAsync((Message)null);
 
             // will check client connection
-            this.LoRaDeviceClient.Setup(x => x.EnsureConnected())
+            LoRaDeviceClient.Setup(x => x.EnsureConnected())
                 .Callback(() => isDisconnected = false)
                 .Returns(true);
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            this.LoRaDeviceClient.Setup(x => x.Disconnect())
+            LoRaDeviceClient.Setup(x => x.Disconnect())
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
@@ -217,38 +217,38 @@ namespace LoRaWan.NetworkServer.Test
                 })
                 .Returns(true);
 
-            var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
+            var cachedDevice = CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
 
             using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(
-                this.ServerConfiguration,
+                ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyProvider);
+                FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message #1
-            using var request1 = new WaitableLoRaRequest(simulatedDevice.CreateUnconfirmedMessageUplink("1").Rxpk[0], this.PacketForwarder);
+            using var request1 = new WaitableLoRaRequest(simulatedDevice.CreateUnconfirmedMessageUplink("1").Rxpk[0], PacketForwarder);
             messageDispatcher.DispatchRequest(request1);
             Assert.True(await request1.WaitCompleteAsync());
             Assert.True(request1.ProcessingSucceeded);
 
-            await this.EnsureDisconnectedAsync(disconnectedEvent);
+            await EnsureDisconnectedAsync(disconnectedEvent);
 
             // sends unconfirmed message #2
-            using var request2 = new WaitableLoRaRequest(simulatedDevice.CreateUnconfirmedMessageUplink("2").Rxpk[0], this.PacketForwarder);
+            using var request2 = new WaitableLoRaRequest(simulatedDevice.CreateUnconfirmedMessageUplink("2").Rxpk[0], PacketForwarder);
             messageDispatcher.DispatchRequest(request2);
             Assert.True(await request2.WaitCompleteAsync());
             Assert.True(request2.ProcessingSucceeded);
 
-            await this.EnsureDisconnectedAsync(disconnectedEvent);
+            await EnsureDisconnectedAsync(disconnectedEvent);
 
-            this.LoRaDeviceClient.Verify(x => x.Disconnect(), Times.Exactly(2));
-            this.LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
+            LoRaDeviceClient.Verify(x => x.Disconnect(), Times.Exactly(2));
+            LoRaDeviceClient.Verify(x => x.EnsureConnected(), Times.Exactly(2));
 
-            this.LoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
+            LoRaDeviceClient.VerifyAll();
+            LoRaDeviceApi.VerifyAll();
         }
 
         [Fact]
@@ -257,7 +257,7 @@ namespace LoRaWan.NetworkServer.Test
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerGatewayID));
 
             // will search for the device by devAddr
-            this.LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simulatedDevice.DevAddr))
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(simulatedDevice.DevAddr))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simulatedDevice.DevAddr, simulatedDevice.DevEUI, "ada").AsList()));
 
             // will read the device twins
@@ -266,60 +266,60 @@ namespace LoRaWan.NetworkServer.Test
                 { TwinProperty.KeepAliveTimeout, 3 }
             });
 
-            this.LoRaDeviceClient.Setup(x => x.GetTwinAsync())
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(twin);
 
             // message will be sent
             LoRaDeviceTelemetry loRaDeviceTelemetry = null;
-            this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+            LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .Callback<LoRaDeviceTelemetry, Dictionary<string, string>>((t, _) => loRaDeviceTelemetry = t)
                 .ReturnsAsync(true);
 
             // C2D message will be checked
-            this.LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
+            LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
             // will check client connection
-            this.LoRaDeviceClient.Setup(x => x.EnsureConnected())
+            LoRaDeviceClient.Setup(x => x.EnsureConnected())
                 .Returns(true);
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            this.LoRaDeviceClient.Setup(x => x.Disconnect())
+            LoRaDeviceClient.Setup(x => x.Disconnect())
                 .Callback(() => disconnectedEvent.Release())
                 .Returns(true);
 
             using var cache = NewMemoryCache();
-            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             using var messageDispatcher = new MessageDispatcher(
-                this.ServerConfiguration,
+                ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyProvider);
+                FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello");
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = new WaitableLoRaRequest(rxpk, this.PacketForwarder);
+            using var request = new WaitableLoRaRequest(rxpk, PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
 
-            await this.EnsureDisconnectedAsync(disconnectedEvent, (int)TimeSpan.FromSeconds(Constants.MinKeepAliveTimeout * 2).TotalMilliseconds);
+            await EnsureDisconnectedAsync(disconnectedEvent, (int)TimeSpan.FromSeconds(Constants.MinKeepAliveTimeout * 2).TotalMilliseconds);
 
-            this.LoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
+            LoRaDeviceClient.VerifyAll();
+            LoRaDeviceApi.VerifyAll();
         }
 
         [Fact]
         public async Task After_Sending_Class_C_Downstream_Should_Disconnect_Client()
         {
-            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID, deviceClassType: 'c'));
+            var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID, deviceClassType: 'c'));
             var devEUI = simulatedDevice.DevEUI;
 
             // will disconnected client
             using var disconnectedEvent = new SemaphoreSlim(0, 1);
-            this.LoRaDeviceClient.Setup(x => x.Disconnect())
+            LoRaDeviceClient.Setup(x => x.Disconnect())
                 .Callback(() =>
                 {
                     disconnectedEvent.Release();
@@ -327,11 +327,11 @@ namespace LoRaWan.NetworkServer.Test
                 .Returns(true);
 
             // will check client connection
-            this.LoRaDeviceClient.Setup(x => x.EnsureConnected())
+            LoRaDeviceClient.Setup(x => x.EnsureConnected())
                 .Returns(true);
 
             // will save twin
-            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .ReturnsAsync(true);
 
             var c2dToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage()
@@ -342,28 +342,28 @@ namespace LoRaWan.NetworkServer.Test
                 MessageId = Guid.NewGuid().ToString(),
             };
 
-            var cachedDevice = this.CreateLoRaDevice(simulatedDevice);
+            var cachedDevice = CreateLoRaDevice(simulatedDevice);
             cachedDevice.KeepAliveTimeout = 3;
             cachedDevice.LoRaRegion = LoRaRegionType.EU868;
             cachedDevice.InternalAcceptChanges();
             cachedDevice.SetFcntDown(cachedDevice.FCntDown + Constants.MaxFcntUnsavedDelta - 1);
 
             using var cache = NewNonEmptyCache(cachedDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             var target = new DefaultClassCDevicesMessageSender(
-                this.ServerConfiguration,
+                ServerConfiguration,
                 deviceRegistry,
-                this.PacketForwarder,
-                this.FrameCounterUpdateStrategyProvider);
+                PacketForwarder,
+                FrameCounterUpdateStrategyProvider);
 
             Assert.True(await target.SendAsync(c2dToDeviceMessage));
-            Assert.Single(this.PacketForwarder.DownlinkMessages);
+            Assert.Single(PacketForwarder.DownlinkMessages);
 
-            await this.EnsureDisconnectedAsync(disconnectedEvent);
+            await EnsureDisconnectedAsync(disconnectedEvent);
 
-            this.LoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
+            LoRaDeviceClient.VerifyAll();
+            LoRaDeviceApi.VerifyAll();
         }
     }
 }

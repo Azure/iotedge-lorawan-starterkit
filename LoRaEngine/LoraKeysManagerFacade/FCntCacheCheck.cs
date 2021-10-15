@@ -26,7 +26,7 @@ namespace LoraKeysManagerFacade
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            _ = req ?? throw new ArgumentNullException(nameof(req));
+            if (req is null) throw new ArgumentNullException(nameof(req));
 
             try
             {
@@ -81,7 +81,7 @@ namespace LoraKeysManagerFacade
                 throw new ArgumentException(errorMsg);
             }
 
-            var newFCntDown = await this.GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);
+            var newFCntDown = await GetNextFCntDownAsync(devEUI, gatewayId, clientFCntUp, clientFCntDown);
 
             return new OkObjectResult(newFCntDown);
         }
@@ -127,7 +127,7 @@ namespace LoraKeysManagerFacade
                     cachedDeviceState.FCntDown = newFCntDown;
                     cachedDeviceState.GatewayId = gatewayId;
 
-                    deviceCache.StoreInfo(cachedDeviceState);
+                    _ = deviceCache.StoreInfo(cachedDeviceState);
                 }
                 else if (clientFCntUp == cachedDeviceState.FCntUp && gatewayId == cachedDeviceState.GatewayId)
                 {
@@ -135,7 +135,7 @@ namespace LoraKeysManagerFacade
                     newFCntDown = cachedDeviceState.FCntDown + 1;
                     cachedDeviceState.FCntDown = newFCntDown;
 
-                    deviceCache.StoreInfo(cachedDeviceState);
+                    _ = deviceCache.StoreInfo(cachedDeviceState);
                 }
             }
 

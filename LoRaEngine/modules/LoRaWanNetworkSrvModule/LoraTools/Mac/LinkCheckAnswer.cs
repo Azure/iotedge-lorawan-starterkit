@@ -26,9 +26,9 @@ namespace LoRaTools
         /// </summary>
         public LinkCheckAnswer(uint margin, uint gwCnt)
         {
-            this.Margin = margin;
-            this.GwCnt = gwCnt;
-            this.Cid = Cid.LinkCheckCmd;
+            Margin = margin;
+            GwCnt = gwCnt;
+            Cid = Cid.LinkCheckCmd;
         }
 
         /// <summary>
@@ -37,21 +37,21 @@ namespace LoRaTools
         /// </summary>
         public LinkCheckAnswer(ReadOnlySpan<byte> input)
         {
-            this.Cid = (Cid)input[2];
-            this.Margin = input[1];
-            this.GwCnt = input[0];
+            Cid = (Cid)input[2];
+            Margin = input[1];
+            GwCnt = input[0];
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.GwCnt;
-            yield return (byte)this.Margin;
-            yield return (byte)this.Cid;
+            yield return (byte)GwCnt;
+            yield return (byte)Margin;
+            yield return (byte)Cid;
         }
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, margin: {this.Margin}, gateway count: {this.GwCnt}";
+            return $"Type: {Cid} Answer, margin: {Margin}, gateway count: {GwCnt}";
         }
     }
 }

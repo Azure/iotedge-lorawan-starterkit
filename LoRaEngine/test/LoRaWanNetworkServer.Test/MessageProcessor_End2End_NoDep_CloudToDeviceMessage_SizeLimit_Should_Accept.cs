@@ -40,17 +40,17 @@ namespace LoRaWan.NetworkServer.Test
                 return;
 
             var simulatedDevice = new SimulatedDevice(
-                TestDeviceInfo.CreateABPDevice(1, gatewayID: this.ServerConfiguration.GatewayID),
+                TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID),
                 frmCntUp: InitialDeviceFcntUp,
                 frmCntDown: InitialDeviceFcntDown);
 
-            var loraDevice = this.CreateLoRaDevice(simulatedDevice);
+            var loraDevice = CreateLoRaDevice(simulatedDevice);
 
             var rxpk = CreateUpstreamRxpk(isConfirmed, hasMacInUpstream, datr, simulatedDevice);
 
             if (!hasMacInUpstream)
             {
-                this.LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                     .ReturnsAsync(true);
             }
 
@@ -90,25 +90,25 @@ namespace LoRaWan.NetworkServer.Test
 
             using var cloudToDeviceMessage = c2dMessage.CreateMessage();
 
-            this.LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
                 .ReturnsAsync(cloudToDeviceMessage)
                 .ReturnsAsync((Message)null);
 
-            this.LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+            LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
                 .ReturnsAsync(true);
 
             using var cache = NewNonEmptyCache(loraDevice);
-            using var deviceRegistry = new LoRaDeviceRegistry(this.ServerConfiguration, cache, this.LoRaDeviceApi.Object, this.LoRaDeviceFactory);
+            using var deviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
 
             // Send to message processor
             using var messageProcessor = new MessageDispatcher(
-                this.ServerConfiguration,
+                ServerConfiguration,
                 deviceRegistry,
-                this.FrameCounterUpdateStrategyProvider);
+                FrameCounterUpdateStrategyProvider);
 
             var startTimeOffset = isSendingInRx2 ? TestUtils.GetStartTimeOffsetForSecondWindow() : TimeSpan.Zero;
 
-            using var request = this.CreateWaitableRequest(rxpk, startTimeOffset: startTimeOffset);
+            using var request = CreateWaitableRequest(rxpk, startTimeOffset: startTimeOffset);
             messageProcessor.DispatchRequest(request);
 
             // Expectations
@@ -121,7 +121,7 @@ namespace LoRaWan.NetworkServer.Test
             Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Txpk.Datr);
 
             // Get downlink message
-            var downlinkMessage = this.PacketForwarder.DownlinkMessages[0];
+            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
             payloadDataDown.PerformEncryption(loraDevice.AppSKey);
 
@@ -148,8 +148,8 @@ namespace LoRaWan.NetworkServer.Test
                 Assert.Null(payloadDataDown.MacCommands);
             }
 
-            this.LoRaDeviceClient.VerifyAll();
-            this.LoRaDeviceApi.VerifyAll();
+            LoRaDeviceClient.VerifyAll();
+            LoRaDeviceApi.VerifyAll();
         }
     }
 }

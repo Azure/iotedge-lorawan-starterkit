@@ -43,8 +43,8 @@ namespace LoRaWan.NetworkServer.Test
         {
             base.NotifyFailed(deviceId, reason, exception);
 
-            this.ProcessingFailed = true;
-            this.ProcessingFailedReason = reason;
+            ProcessingFailed = true;
+            ProcessingFailedReason = reason;
             this.complete.Release();
         }
 
@@ -52,8 +52,8 @@ namespace LoRaWan.NetworkServer.Test
         {
             base.NotifySucceeded(loRaDevice, downlink);
 
-            this.ResponseDownlink = downlink;
-            this.ProcessingSucceeded = true;
+            ResponseDownlink = downlink;
+            ProcessingSucceeded = true;
             this.complete.Release();
         }
 

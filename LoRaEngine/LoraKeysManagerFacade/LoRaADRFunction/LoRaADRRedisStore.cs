@@ -50,7 +50,7 @@ namespace LoraKeysManagerFacade
             {
                 if (this.ownsLock)
                 {
-                    this.redisCache.LockRelease(this.lockKey, this.owner);
+                    _ = this.redisCache.LockRelease(this.lockKey, this.owner);
                     this.ownsLock = false;
                 }
             }
@@ -66,24 +66,26 @@ namespace LoraKeysManagerFacade
             using var redisLock = new RedisLockWrapper(devEUI, this.redisCache);
             if (await redisLock.TakeLockAsync())
             {
-                await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
+                _ = await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
             }
         }
 
         public async Task<LoRaADRTable> AddTableEntry(LoRaADRTableEntry entry)
         {
+            if (entry is null) throw new ArgumentNullException(nameof(entry));
+
             LoRaADRTable table = null;
             using (var redisLock = new RedisLockWrapper(entry.DevEUI, this.redisCache))
             {
                 if (await redisLock.TakeLockAsync())
                 {
                     var entryKey = GetEntryKey(entry.DevEUI);
-                    table = await this.GetADRTableCore(entryKey) ?? new LoRaADRTable();
+                    table = await GetADRTableCore(entryKey) ?? new LoRaADRTable();
 
                     AddEntryToTable(table, entry);
 
                     // update redis store
-                    this.redisCache.StringSet(entryKey, JsonConvert.SerializeObject(table));
+                    _ = this.redisCache.StringSet(entryKey, JsonConvert.SerializeObject(table));
                 }
             }
 
@@ -96,7 +98,7 @@ namespace LoraKeysManagerFacade
             {
                 if (await redisLock.TakeLockAsync())
                 {
-                    return await this.GetADRTableCore(GetEntryKey(devEUI));
+                    return await GetADRTableCore(GetEntryKey(devEUI));
                 }
             }
 

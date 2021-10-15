@@ -22,7 +22,7 @@ namespace LoRaTools
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, Battery Level: {this.Battery}, Margin: {this.Margin}";
+            return $"Type: {Cid} Answer, Battery Level: {Battery}, Margin: {Margin}";
         }
 
         /// <summary>
@@ -31,31 +31,31 @@ namespace LoRaTools
         /// </summary>
         public DevStatusAnswer(byte battery, byte margin)
         {
-            this.Battery = battery;
-            this.Margin = margin;
-            this.Cid = Cid.DevStatusCmd;
+            Battery = battery;
+            Margin = margin;
+            Cid = Cid.DevStatusCmd;
         }
 
         public DevStatusAnswer(ReadOnlySpan<byte> readOnlySpan)
             : base(readOnlySpan)
         {
-            if (readOnlySpan.Length < this.Length)
+            if (readOnlySpan.Length < Length)
             {
                 throw new InvalidOperationException("DevStatusAnswer detected but the byte format is not correct");
             }
             else
             {
-                this.Battery = readOnlySpan[1];
-                this.Margin = readOnlySpan[2];
-                this.Cid = (Cid)readOnlySpan[0];
+                Battery = readOnlySpan[1];
+                Margin = readOnlySpan[2];
+                Cid = (Cid)readOnlySpan[0];
             }
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return this.Margin;
-            yield return this.Battery;
-            yield return (byte)this.Cid;
+            yield return Margin;
+            yield return Battery;
+            yield return (byte)Cid;
         }
     }
 }

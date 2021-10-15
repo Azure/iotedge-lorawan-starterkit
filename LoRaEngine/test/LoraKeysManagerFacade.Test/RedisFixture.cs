@@ -100,13 +100,13 @@ namespace LoraKeysManagerFacade.Test
 
         public async Task InitializeAsync()
         {
-            await this.StartRedisContainer();
+            await StartRedisContainer();
 
             var redisConnectionString = $"localhost:{this.redisPort}";
             try
             {
                 this.redis = ConnectionMultiplexer.Connect(redisConnectionString);
-                this.Database = this.redis.GetDatabase();
+                Database = this.redis.GetDatabase();
             }
             catch (Exception ex)
             {

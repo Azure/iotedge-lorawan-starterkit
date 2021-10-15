@@ -31,6 +31,8 @@ namespace LoRaWan.NetworkServer
                     IDeduplicationStrategyFactory deduplicationFactory,
                     LoRaRequest request)
         {
+            if (loRaPayload is null) throw new System.ArgumentNullException(nameof(loRaPayload));
+            if (loRaDevice is null) throw new System.ArgumentNullException(nameof(loRaDevice));
             if (!string.IsNullOrEmpty(loRaDevice.GatewayID))
             {
                 // single gateway mode

@@ -17,7 +17,7 @@ namespace LoRaTools
         public override int Length => 2;
 
         [JsonIgnore]
-        public int Delay => this.Settings & 0b00001111;
+        public int Delay => Settings & 0b00001111;
 
         public RXTimingSetupRequest()
         {
@@ -25,19 +25,19 @@ namespace LoRaTools
 
         public RXTimingSetupRequest(byte delay)
         {
-            this.Cid = Cid.RXTimingCmd;
-            this.Settings |= delay;
+            Cid = Cid.RXTimingCmd;
+            Settings |= delay;
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return this.Settings;
-            yield return (byte)this.Cid;
+            yield return Settings;
+            yield return (byte)Cid;
         }
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, delay: {this.Delay}";
+            return $"Type: {Cid} Answer, delay: {Delay}";
         }
     }
 }

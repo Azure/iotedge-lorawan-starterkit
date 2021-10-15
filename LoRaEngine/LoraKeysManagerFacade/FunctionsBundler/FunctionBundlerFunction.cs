@@ -46,7 +46,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
 
             var functionBundlerRequest = JsonConvert.DeserializeObject<FunctionBundlerRequest>(requestBody);
-            var result = await this.HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest, logger);
+            var result = await HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest, logger);
 
             return new OkObjectResult(result);
         }

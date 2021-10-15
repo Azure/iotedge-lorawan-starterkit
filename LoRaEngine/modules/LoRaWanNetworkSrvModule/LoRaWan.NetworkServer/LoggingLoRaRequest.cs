@@ -35,13 +35,13 @@ namespace LoRaWan.NetworkServer
         public override void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)
         {
             this.wrappedRequest.NotifyFailed(deviceId, reason, exception);
-            this.LogProcessingTime(deviceId);
+            LogProcessingTime(deviceId);
         }
 
         public override void NotifySucceeded(LoRaDevice loRaDevice, DownlinkPktFwdMessage downlink)
         {
             this.wrappedRequest.NotifySucceeded(loRaDevice, downlink);
-            this.LogProcessingTime(loRaDevice?.DevEUI);
+            LogProcessingTime(loRaDevice?.DevEUI);
         }
 
         private void LogProcessingTime(string deviceId)

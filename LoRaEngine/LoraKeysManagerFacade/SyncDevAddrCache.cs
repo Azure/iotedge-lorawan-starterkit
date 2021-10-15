@@ -3,6 +3,7 @@
 
 namespace LoraKeysManagerFacade
 {
+    using System;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
@@ -22,6 +23,8 @@ namespace LoraKeysManagerFacade
         [FunctionName("SyncDevAddrCache")]
         public async Task Run([TimerTrigger("0 */5 * * * *")] TimerInfo myTimer, ILogger log)
         {
+            if (myTimer is null) throw new ArgumentNullException(nameof(myTimer));
+
             log.LogDebug($"{(myTimer.IsPastDue ? "The timer is past due" : "The timer is on schedule")}, Function last ran at {myTimer.ScheduleStatus.Last} Function next scheduled run at {myTimer.ScheduleStatus.Next})");
 
             await this.loRaDevAddrCache.PerformNeededSyncs(this.registryManager);
