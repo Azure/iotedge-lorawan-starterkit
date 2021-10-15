@@ -81,3 +81,4 @@ dotnet_style_qualification_for_event=false:error
 
 # CA1814: Prefer jagged arrays over multidimensional arrays
 dotnet_diagnostic.CA1814.severity=suggestion
+dotnet_diagnostic.IDE0047.severity=suggestion

@@ -42,11 +42,11 @@ namespace LoRaWan.NetworkServer
         private volatile string pullAckRemoteLoRaAddress;
         UdpClient udpClient;
 
-        private async Task<byte[]> GetTokenAsync()
+        private Task<byte[]> GetTokenAsync()
         {
             var token = new byte[2];
             this.RndKeysGenerator.GetBytes(token);
-            return token;
+            return Task.FromResult(token);
         }
 
         // Creates a new instance of UdpServer
