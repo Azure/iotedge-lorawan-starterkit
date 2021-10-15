@@ -57,9 +57,6 @@ namespace LoRaWan.Tests.E2E
                 }
                 catch (Exception ex)
                 {
-                    if (i == MAX_MODULE_DIRECT_METHOD_CALL_TRIES)
-                        throw;
-
                     TestLogger.Log($"[ERR] Failed to call module direct method: {ex.Message}");
                     await Task.Delay(TimeSpan.FromSeconds(5));
                 }
