@@ -9,16 +9,14 @@ namespace LoRaWan
     [Flags]
 #pragma warning disable CA1028 // Enum Storage should be Int32
 #pragma warning disable CA1711 // Identifiers should not have incorrect suffix
-#pragma warning disable CA2217 // Do not mark enums with FlagsAttribute
     public enum FCtrlFlags : byte
-#pragma warning restore CA2217, CA1711, CA1028
+#pragma warning restore CA1711, CA1028
     {
-        None         = 0,
-        Adr          = 0x80,
-        AdrAckReq    = 0x40,
-        Ack          = 0x20,
-        FPending     = 0x10,
-        FOptsLenMask = 0x0f,
+        None      = 0,
+        Adr       = 0x80,
+        AdrAckReq = 0x40,
+        Ack       = 0x20,
+        FPending  = 0x10,
     }
 
     /// <summary>
@@ -27,6 +25,8 @@ namespace LoRaWan
     /// </summary>
     public readonly struct FrameControl : IEquatable<FrameControl>
     {
+        const byte FOptsLenMask = 0xf;
+
         public const int Size = sizeof(byte);
 
         readonly byte value;
@@ -34,7 +34,7 @@ namespace LoRaWan
         public FrameControl(byte value) => this.value = value;
 
         public FrameControl(FCtrlFlags flags, int optionsLength = 0) :
-            this(unchecked((byte)((byte)((flags & FCtrlFlags.FOptsLenMask) == 0 ? flags : throw new ArgumentException(null, nameof(flags)))
+            this(unchecked((byte)((byte)(((byte)flags & FOptsLenMask) == 0 ? flags : throw new ArgumentException(null, nameof(flags)))
                                          | (optionsLength is >= 0 and <= 15 ? optionsLength : throw new ArgumentOutOfRangeException(nameof(optionsLength), optionsLength, null))))) { }
 
         bool HasFlags(FCtrlFlags flags) => ((FCtrlFlags)this.value & flags) == flags;
