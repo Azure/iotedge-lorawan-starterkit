@@ -249,7 +249,7 @@ namespace LoRaWan.NetworkServer
                     var moduleTwinCollection = moduleTwin.Properties.Desired;
                     try
                     {
-                        this.loRaDeviceAPIService.SetURL(moduleTwinCollection["FacadeServerUrl"].Value as string);
+                        this.loRaDeviceAPIService.URL = new Uri(moduleTwinCollection["FacadeServerUrl"].Value);
                         Logger.LogAlways($"Facade function url: {this.loRaDeviceAPIService.URL}");
                     }
                     catch (ArgumentOutOfRangeException)
@@ -350,7 +350,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (desiredProperties.Contains("FacadeServerUrl"))
                 {
-                    this.loRaDeviceAPIService.SetURL((string)desiredProperties["FacadeServerUrl"]);
+                    this.loRaDeviceAPIService.URL = new Uri(desiredProperties["FacadeServerUrl"]);
                 }
 
                 if (desiredProperties.Contains("FacadeAuthCode"))

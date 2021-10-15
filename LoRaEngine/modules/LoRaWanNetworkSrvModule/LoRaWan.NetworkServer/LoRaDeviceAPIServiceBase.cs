@@ -17,7 +17,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets URL of the API.
         /// </summary>
-        public string URL { get; private set; }
+        public Uri URL { get; set; }
 
         /// <summary>
         /// Gets the authentication code for the API.
@@ -39,23 +39,6 @@ namespace LoRaWan.NetworkServer
         public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string appEUI, string devNonce);
 
         public abstract Task<SearchDevicesResult> SearchByDevEUIAsync(string devEUI);
-
-        /// <summary>
-        /// Sets the new URL value.
-        /// </summary>
-        public void SetURL(string value) => URL = SanitizeApiURL(value);
-
-        private static string SanitizeApiURL(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return string.Empty;
-
-            value = value.Trim();
-            if (value.EndsWith('/'))
-                return value;
-
-            return string.Concat(value, "/");
-        }
 
         /// <summary>
         /// Sets the authorization code for the URL.
@@ -82,7 +65,7 @@ namespace LoRaWan.NetworkServer
         {
             if (configuration is null) throw new ArgumentNullException(nameof(configuration));
             AuthCode = configuration.FacadeAuthCode;
-            URL = SanitizeApiURL(configuration.FacadeServerUrl);
+            this.URL = configuration.FacadeServerUrl;
         }
 
         protected static ByteArrayContent PreparePostContent(string requestBody)
