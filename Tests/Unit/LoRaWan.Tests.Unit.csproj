@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkVersion)" />
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
+    <PackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisVersion)" />
     <PackageReference Include="xunit" Version="$(XUnitVersion)" />
     <PackageReference Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XUnitRunnerVisualStudio)">
@@ -23,5 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
     <ProjectReference Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoRaWan\LoRaWan.csproj" />
+    <ProjectReference Include="..\..\LoRaEngine\LoraKeysManagerFacade\LoraKeysManagerFacade.csproj" />
+    <ProjectReference Include="..\Shared\LoRaWan.Tests.Shared.csproj" />
   </ItemGroup>
 </Project>
