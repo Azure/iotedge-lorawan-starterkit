@@ -104,11 +104,13 @@ jobs:
     - name: Run integration tests
       run: |
         dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Integration \
-          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
+          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/Tests/" \
           ${{ env.TESTS_FOLDER }}/Integration/LoRaWan.Tests.Integration.csproj
 
-    - name: Upload to Codecov
+    - name: Upload to Codecov test reports
       uses: codecov/codecov-action@v2
+      with:
+        directory: Tests/
   
   check_if_deploy:
     needs:
