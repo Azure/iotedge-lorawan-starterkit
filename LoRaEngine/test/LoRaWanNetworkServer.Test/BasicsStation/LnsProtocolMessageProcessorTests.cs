@@ -3,11 +3,15 @@
 
 namespace LoRaWan.NetworkServer.Test.BasicsStation
 {
+    using LoRaWan.NetworkServer.BasicsStation;
+    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging;
     using Moq;
     using System;
+    using System.Linq;
+    using System.Net.NetworkInformation;
     using System.Net.WebSockets;
     using System.Text;
     using System.Threading;
@@ -16,18 +20,19 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
 
     public class LnsProtocolMessageProcessorTests
     {
-        private readonly Mock<LnsProtocolMessageProcessor> lnsMessageProcessorMock;
+        private readonly LnsProtocolMessageProcessor lnsMessageProcessorMock;
         private readonly Mock<WebSocket> socketMock;
         private readonly Mock<HttpContext> httpContextMock;
 
         public LnsProtocolMessageProcessorTests()
         {
             var loggerMock = Mock.Of<ILogger<LnsProtocolMessageProcessor>>();
-            this.lnsMessageProcessorMock = new Mock<LnsProtocolMessageProcessor>(loggerMock);
-
             this.socketMock = new Mock<WebSocket>();
             this.httpContextMock = new Mock<HttpContext>();
+            var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+            httpContextAccessorMock.Setup(x => x.HttpContext).Returns(this.httpContextMock.Object);
 
+            this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(loggerMock, httpContextAccessorMock.Object);
         }
 
         [Fact]
@@ -37,7 +42,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
             this.socketMock.Setup(x => x.State).Returns(WebSocketState.Open);
 
             // act
-            await this.lnsMessageProcessorMock.Object.CloseSocketAsync(this.socketMock.Object, CancellationToken.None);
+            await this.lnsMessageProcessorMock.CloseSocketAsync(this.socketMock.Object, CancellationToken.None);
 
             // assert
             this.socketMock.Verify(x => x.CloseAsync(WebSocketCloseStatus.NormalClosure, nameof(WebSocketCloseStatus.NormalClosure), It.IsAny<CancellationToken>()));
@@ -50,7 +55,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
             this.socketMock.Setup(x => x.State).Returns(WebSocketState.Closed);
 
             // act
-            await this.lnsMessageProcessorMock.Object.CloseSocketAsync(this.socketMock.Object, CancellationToken.None);
+            await this.lnsMessageProcessorMock.CloseSocketAsync(this.socketMock.Object, CancellationToken.None);
 
             // assert
             this.socketMock.Verify(x => x.CloseAsync(WebSocketCloseStatus.NormalClosure, nameof(WebSocketCloseStatus.NormalClosure), It.IsAny<CancellationToken>()), Times.Never);
@@ -70,7 +75,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
             this.httpContextMock.Setup(m => m.Response).Returns(httpResponseMock.Object);
 
             // act
-            await this.lnsMessageProcessorMock.Object.ProcessIncomingRequestAsync(this.httpContextMock.Object,
+            await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(this.httpContextMock.Object,
                                                                             (string a, WebSocket s, CancellationToken t) => { return Task.FromResult(false); },
                                                                             CancellationToken.None);
 
@@ -116,13 +121,13 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
             httpContextMock.Setup(m => m.Connection).Returns(connectionInfo.Object);
 
             // act and assert
-            await this.lnsMessageProcessorMock.Object.ProcessIncomingRequestAsync(httpContextMock.Object,
-                                                                            (string input, WebSocket _, CancellationToken _) =>
-                                                                                {
-                                                                                    Assert.Equal(input, testString);
-                                                                                    return Task.FromResult(false);
-                                                                                },
-                                                                            CancellationToken.None);
+            await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(httpContextMock.Object,
+                                                                           (string input, WebSocket _, CancellationToken _) =>
+                                                                               {
+                                                                                   Assert.Equal(input, testString);
+                                                                                   return Task.FromResult(false);
+                                                                               },
+                                                                           CancellationToken.None);
 
             // assert that websocket is closed, as the input string was verified through local function handler
             Assert.Equal(WebSocketState.Closed, this.socketMock.Object.State);
@@ -182,7 +187,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
             httpContextMock.Setup(m => m.Connection).Returns(connectionInfo.Object);
 
             // act
-            await this.lnsMessageProcessorMock.Object.ProcessIncomingRequestAsync(httpContextMock.Object,
+            await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(httpContextMock.Object,
                                                                             (string input, WebSocket _, CancellationToken _) =>
                                                                                 {
                                                                                     Assert.Equal(string.Concat(testString1, testString2), input);
@@ -249,26 +254,81 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
             var handlerInvokationCount = 0;
 
             // act
-            await this.lnsMessageProcessorMock.Object.ProcessIncomingRequestAsync(httpContextMock.Object,
-                                                                            (string input, WebSocket _, CancellationToken _) =>
-                                                                            {
-                                                                                if (handlerInvokationCount++ == 0)
-                                                                                {
-                                                                                    Assert.Equal(testString1, input);
-                                                                                    return Task.FromResult(true);
-                                                                                }
-                                                                                else
-                                                                                {
-                                                                                    Assert.Equal(testString2, input);
-                                                                                    return Task.FromResult(false);
-                                                                                }
-                                                                            },
-                                                                            CancellationToken.None);
+            await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(httpContextMock.Object,
+                                                                           (string input, WebSocket _, CancellationToken _) =>
+                                                                           {
+                                                                               if (handlerInvokationCount++ == 0)
+                                                                               {
+                                                                                   Assert.Equal(testString1, input);
+                                                                                   return Task.FromResult(true);
+                                                                               }
+                                                                               else
+                                                                               {
+                                                                                   Assert.Equal(testString2, input);
+                                                                                   return Task.FromResult(false);
+                                                                               }
+                                                                           },
+                                                                           CancellationToken.None);
 
             // assert that websocket is closed, as the input string was already verified through local function handler
             Assert.Equal(WebSocketState.Closed, this.socketMock.Object.State);
             Assert.Equal(WebSocketCloseStatus.NormalClosure, this.socketMock.Object.CloseStatus);
             Assert.Equal(2, handlerInvokationCount);
+        }
+
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        public async Task InternalHandleDiscoveryAsync_ShouldSendProperJson(bool isHttps, bool isValidNic)
+        {
+            // arrange
+            var inputJsonString = @"{ ""router"": ""b827:ebff:fee1:e39a"" }";
+
+            // mocking localIpAddress
+            var connectionInfoMock = new Mock<ConnectionInfo>();
+            var firstNic = isValidNic ? NetworkInterface.GetAllNetworkInterfaces()
+                                                        .FirstOrDefault()
+                                      : null;
+            if (firstNic is not null)
+            {
+                var firstNicIp = firstNic.GetIPProperties()
+                                     .UnicastAddresses
+                                     .FirstOrDefault()
+                                     .Address;
+                connectionInfoMock.SetupGet(ci => ci.LocalIpAddress).Returns(firstNicIp);
+                this.httpContextMock.Setup(h => h.Connection).Returns(connectionInfoMock.Object);
+            }
+            else
+            {
+                connectionInfoMock.SetupGet(ci => ci.LocalIpAddress).Returns(new System.Net.IPAddress(new byte[] { 192, 168, 1, 10 }));
+                this.httpContextMock.Setup(h => h.Connection).Returns(connectionInfoMock.Object);
+            }
+
+            var mockHttpRequest = new Mock<HttpRequest>();
+            mockHttpRequest.SetupGet(x => x.Host).Returns(new HostString("localhost", 1234));
+            mockHttpRequest.SetupGet(x => x.IsHttps).Returns(isHttps);
+            this.httpContextMock.Setup(h => h.Request).Returns(mockHttpRequest.Object);
+
+
+            // intercepting the SendAsync to verify that what we sent is actually what we expected
+            var sentString = string.Empty;
+            this.socketMock.Setup(x => x.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                           .Callback<ArraySegment<byte>, WebSocketMessageType, bool, CancellationToken>((message, type, end, _) =>
+                           {
+                               sentString = Encoding.UTF8.GetString(message);
+                               Assert.Equal(WebSocketMessageType.Text, type);
+                               Assert.True(end);
+                           });
+
+            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{Discovery.GetMacAddressAsID6(firstNic)}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}""}}";
+
+            // act
+            await this.lnsMessageProcessorMock.InternalHandleDiscoveryAsync(inputJsonString, this.socketMock.Object, CancellationToken.None);
+
+            // assert
+            Assert.Equal(expectedString, sentString);
         }
     }
 }

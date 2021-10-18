@@ -10,9 +10,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System;
     using System.Buffers;
     using System.IO;
+    using System.Linq;
+    using System.Net.NetworkInformation;
     using System.Net.WebSockets;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging;
 
@@ -42,24 +46,28 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         }
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
+        internal async Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
         {
-            this.logger.LogInformation($"Received message: {json}");
+            Discovery.ReadQuery(json, out var stationEui);
+            this.logger.LogInformation($"Received discovery request from: {stationEui}");
 
+            var httpContext = this.httpContextAccessor.HttpContext;
+            var schema = httpContext.Request.IsHttps ? "wss" : "ws";
+            var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
+                                                   .Where(iface => iface.GetIPProperties()
+                                                                        .UnicastAddresses
+                                                                        .Any(unicastInfo => unicastInfo.Address.Equals(httpContext.Connection.LocalIpAddress)))
+                                                   .SingleOrDefault();
 
-            /* Following JSON Object needs to be returned
-                 {
-                   "router": ID6,
-                   "muxs"  : ID6,
-                   "uri"   : "URI",
-                   "error" : STRING   // only in case of error
-                 }
-             */
+            var response = Discovery.SerializeResponse(stationEui,
+                                                       Discovery.GetMacAddressAsID6(networkInterface),
+                                                       new Uri($"{schema}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}"),
+                                                       string.Empty);
+            await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, token);
 
-            // the Request is going to be used for populating uri (i.e. "ws://{Request.Host}/{BasicsStationNetworkServer.DataEndpoint}")
-            var request = httpContextAccessor.HttpContext.Request;
-            return Task.FromResult(false);
+            return false;
         }
+
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
         internal Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
