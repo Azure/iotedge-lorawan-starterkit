@@ -52,18 +52,5 @@ namespace LoRaTools.Utils
 
             return result.ToString();
         }
-
-        static string ByteArrayToString(byte[] bytes)
-        {
-            var result = new StringBuilder(bytes.Length * 2);
-
-            foreach (var b in bytes)
-            {
-                _ = result.Append(HexAlphabet[b >> 4]);
-                _ = result.Append(HexAlphabet[b & 0xF]);
-            }
-
-            return result.ToString();
-        }
     }
 }

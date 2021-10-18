@@ -25,6 +25,9 @@ indent_size = 2
 charset = utf-8
 indent_size = 4
 
+dotnet_analyzer_diagnostic.severity = error
+dotnet_code_quality.severity = error
+
 # Prefer "var" everywhere
 csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
@@ -35,9 +38,6 @@ csharp_indent_case_contents_when_block = false
 
 # CA2007: Consider calling ConfigureAwait on the awaited task
 dotnet_diagnostic.CA2007.severity = none
-
-# Default severity for analyzer diagnostics with category 'Style' (escalated to build warnings)
-dotnet_analyzer_diagnostic.category-Style.severity = warning
 
 # IDE0065: Misplaced using directive
 # Prefer using directives to be placed inside the namespace
@@ -81,6 +81,12 @@ dotnet_diagnostic.IDE0061.severity=suggestion
 
 # IDE0055: Fix formatting
 dotnet_diagnostic.IDE0055.severity=suggestion
+
+# IDE0052: Unused private member
+dotnet_diagnostic.IDE0052.severity=suggestion
+
+# xUnit1004: Do not skip tests
+dotnet_diagnostic.xUnit1004.severity=suggestion
 
 [*.cs]
 dotnet_style_qualification_for_field=true:error
