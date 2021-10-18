@@ -19,10 +19,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     public class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
+        private readonly IHttpContextAccessor httpContextAccessor;
 
-        public LnsProtocolMessageProcessor(ILogger<LnsProtocolMessageProcessor> logger)
+        public LnsProtocolMessageProcessor(ILogger<LnsProtocolMessageProcessor> logger, IHttpContextAccessor httpContextAccessor)
         {
             this.logger = logger;
+            this.httpContextAccessor = httpContextAccessor;
         }
 
         public async Task HandleDiscoveryAsync(HttpContext httpContext, CancellationToken token)
@@ -43,6 +45,19 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         internal Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
         {
             this.logger.LogInformation($"Received message: {json}");
+
+
+            /* Following JSON Object needs to be returned
+                 {
+                   "router": ID6,
+                   "muxs"  : ID6,
+                   "uri"   : "URI",
+                   "error" : STRING   // only in case of error
+                 }
+             */
+
+            // the Request is going to be used for populating uri (i.e. "ws://{Request.Host}/{BasicsStationNetworkServer.DataEndpoint}")
+            var request = httpContextAccessor.HttpContext.Request;
             return Task.FromResult(false);
         }
 
