@@ -14,7 +14,7 @@ namespace LoRaTools.Regions
 
         private readonly List<double> JoinFrequencies;
 
-        private readonly Dictionary<RegionCN470PlanType, List<double>> PlanTypeToDownstreamFrequencies;
+        private readonly List<List<double>> DownstreamFrequenciesByPlanType;
 
         public RegionCN470()
             : base(
@@ -23,17 +23,18 @@ namespace LoRaTools.Regions
                   null,
                   (frequency: 485.3, datr: 1)) // TODO: support multiple RX2 receive windows, see #561
         {
-            PlanTypeToDownstreamFrequencies = new Dictionary<RegionCN470PlanType, List<double>>
+            DownstreamFrequenciesByPlanType = new List<List<double>>
             {
-                [RegionCN470PlanType.PlanA20MHz] = BuildFrequencyPlanList(483.9, 0, 31).Concat(BuildFrequencyPlanList(490.3, 32, 63)).ToList(),
-                [RegionCN470PlanType.PlanB20MHz] = BuildFrequencyPlanList(476.9, 0, 32).Concat(BuildFrequencyPlanList(496.9, 32, 63)).ToList(),
-                [RegionCN470PlanType.PlanA26MHz] = BuildFrequencyPlanList(490.1, 0, 23),
-                [RegionCN470PlanType.PlanB26MHz] = BuildFrequencyPlanList(500.1, 0, 23)
+                BuildFrequencyPlanList(483.9, 0, 31).Concat(BuildFrequencyPlanList(490.3, 32, 63)).ToList(),
+                BuildFrequencyPlanList(476.9, 0, 32).Concat(BuildFrequencyPlanList(496.9, 32, 63)).ToList(),
+                BuildFrequencyPlanList(490.1, 0, 23),
+                BuildFrequencyPlanList(500.1, 0, 23)
             };
 
             JoinFrequencies = new List<double>
             {
-                470.9, 472.5, 474.1, 475.7, 504.1, 505.7, 507.3, 508.9, 479.9, 499.9, 470.3, 472.3, 474.3, 476.3, 478.3, 480.3, 482.3, 484.3, 486.3, 488.3
+                470.9, 472.5, 474.1, 475.7, 504.1, 505.7, 507.3, 508.9, 479.9, 499.9,
+                470.3, 472.3, 474.3, 476.3, 478.3, 480.3, 482.3, 484.3, 486.3, 488.3
             };
         }
 
@@ -61,15 +62,12 @@ namespace LoRaTools.Regions
         /// Logic to get the correct downstream transmission frequency for region CN470.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        /// <param name="channelPlan">optional active channel plan type to be used for the given region, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, string channelPlan = null)
+        /// <param name="joinChannelIndex">index of the join channel.</param>
+        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex = null)
         {
             frequency = 0;
 
-            if (channelPlan == null)
-                return false;
-
-            if (!Enum.TryParse<RegionCN470PlanType>(channelPlan, true, out var channelPlanType))
+            if (joinChannelIndex == null)
                 return false;
 
             if (!IsValidUpstreamRxpk(upstreamChannel))
@@ -77,31 +75,36 @@ namespace LoRaTools.Regions
 
             int channelNumber;
 
-            switch (channelPlanType)
+            // 20 MHz plan A
+            if (joinChannelIndex <= 7)
             {
-                case RegionCN470PlanType.PlanA20MHz:
-                    channelNumber = upstreamChannel.Freq < 500 ? GetChannelNumber(upstreamChannel, 470.3) : GetChannelNumber(upstreamChannel, 503.5, 32);
-                    frequency = PlanTypeToDownstreamFrequencies[channelPlanType][channelNumber];
-                    return true;
-
-                case RegionCN470PlanType.PlanB20MHz:
-                    channelNumber = upstreamChannel.Freq < 490 ? GetChannelNumber(upstreamChannel, 476.9) : GetChannelNumber(upstreamChannel, 496.9, 32);
-                    frequency = PlanTypeToDownstreamFrequencies[channelPlanType][channelNumber];
-                    return true;
-
-                case RegionCN470PlanType.PlanA26MHz:
-                    channelNumber = GetChannelNumber(upstreamChannel, 470.3);
-                    frequency = PlanTypeToDownstreamFrequencies[channelPlanType][channelNumber % 24];
-                    return true;
-
-                case RegionCN470PlanType.PlanB26MHz:
-                    channelNumber = GetChannelNumber(upstreamChannel, 480.3);
-                    frequency = PlanTypeToDownstreamFrequencies[channelPlanType][channelNumber % 24];
-                    return true;
-
-                default:
-                    return false;
+                channelNumber = upstreamChannel.Freq < 500 ? GetChannelNumber(upstreamChannel, 470.3) : GetChannelNumber(upstreamChannel, 503.5, 32);
+                frequency = DownstreamFrequenciesByPlanType[0][channelNumber];
+                return true;
             }
+            // 20 MHz plan B
+            if (joinChannelIndex <= 9)
+            {
+                channelNumber = upstreamChannel.Freq < 490 ? GetChannelNumber(upstreamChannel, 476.9) : GetChannelNumber(upstreamChannel, 496.9, 32);
+                frequency = DownstreamFrequenciesByPlanType[1][channelNumber];
+                return true;
+            }
+            // 26 MHz plan A
+            if (joinChannelIndex <= 14)
+            {
+                channelNumber = GetChannelNumber(upstreamChannel, 470.3);
+                frequency = DownstreamFrequenciesByPlanType[2][channelNumber % 24];
+                return true;
+            }
+            // 26 MHz plan B
+            if (joinChannelIndex <= 19)
+            {
+                channelNumber = GetChannelNumber(upstreamChannel, 480.3);
+                frequency = DownstreamFrequenciesByPlanType[3][channelNumber % 24];
+                return true;
+            }
+
+            return false;
         }
 
         private static List<double> BuildFrequencyPlanList(double startFrequency, int startChannel, int endChannel)

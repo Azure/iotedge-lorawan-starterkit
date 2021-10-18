@@ -19,10 +19,10 @@ namespace LoRaWanTest
             Assert.Equal(_region.GetDownstreamDR(rxpk[0]), outputDr);
         }
 
-        protected void TestRegionLimit(double freq, string datarate)
+        protected void TestRegionLimit(double freq, string datarate, int? joinChannelIndex = null)
         {
             var rxpk = GenerateRxpk(datarate, freq);
-            Assert.False(_region.TryGetDownstreamChannelFrequency(rxpk[0], out _));
+            Assert.False(_region.TryGetDownstreamChannelFrequency(rxpk[0], out _, joinChannelIndex));
             Assert.Null(_region.GetDownstreamDR(rxpk[0]));
         }
 

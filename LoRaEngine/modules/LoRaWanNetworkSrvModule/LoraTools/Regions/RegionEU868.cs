@@ -21,8 +21,8 @@ namespace LoRaTools.Regions
         /// Logic to get the correct downstream transmission frequency for region EU868.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        /// <param name="channelPlan">optional active channel plan type to be used for the given region, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, string channelPlan = null)
+        /// <param name="joinChannelIndex">index of the join channel, if applicable.</param>
+        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex = null)
         {
             frequency = 0;
 
