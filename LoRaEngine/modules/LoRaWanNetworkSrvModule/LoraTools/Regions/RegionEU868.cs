@@ -13,15 +13,7 @@ namespace LoRaTools.Regions
                   LoRaRegionType.EU868,
                   0x34,
                   ConversionHelper.StringToByteArray("C194C1"),
-                  (frequency: 869.525, datr: 0),
-                  1,
-                  2,
-                  5,
-                  6,
-                  16384,
-                  64,
-                  32,
-                  (min: 1, max: 3))
+                  (frequency: 869.525, datr: 0))
         {
         }
 

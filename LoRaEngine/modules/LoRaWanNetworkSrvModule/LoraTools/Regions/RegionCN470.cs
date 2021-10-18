@@ -12,25 +12,16 @@ namespace LoRaTools.Regions
     {
         private const double FrequencyIncrement = 0.2;
 
-        private readonly List<Tuple<HashSet<double>, RegionCN470PlanType>> JoinFrequenciesToPlanType; 
+        private readonly List<Tuple<HashSet<double>, RegionCN470PlanType>> JoinFrequenciesToPlanType;
 
         private readonly Dictionary<RegionCN470PlanType, List<double>> PlanTypeToDownstreamFrequencies;
 
         public RegionCN470()
             : base(
                   LoRaRegionType.CN470,
-                  //TODO: change below params for CN
                   0x34,
                   null,
-                  (frequency: 923.3, datr: 8),
-                  1,
-                  2,
-                  5,
-                  6,
-                  16384,
-                  64,
-                  32,
-                  (min: 1, max: 3))
+                  (frequency: 485.3, datr: 1)) // TODO: support multiple RX2 receive windows, see #561
         {
             PlanTypeToDownstreamFrequencies = new Dictionary<RegionCN470PlanType, List<double>>
             {
@@ -84,7 +75,8 @@ namespace LoRaTools.Regions
             if (!Enum.TryParse<RegionCN470PlanType>(channelPlan, true, out var channelPlanType))
                 return false;
 
-            //TODO: check IsValidUpstreamRxpk
+            if (!IsValidUpstreamRxpk(upstreamChannel))
+                return false;
 
             int channelNumber;
 

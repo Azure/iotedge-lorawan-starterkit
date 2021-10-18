@@ -86,7 +86,7 @@ namespace LoRaTools.Regions
         /// Gets or sets timeout for ack transmissiont, tuple with (min,max). Value should be a delay between min and max. [sec, sec].
         /// If  an  end-­device  does  not  receive  a  frame  with  the  ACK  bit  set  in  one  of  the  two  receive  19   windows  immediately  following  the  uplink  transmission  it  may  resend  the  same  frame  with  20   the  same  payload  and  frame  counter  again  at  least  ACK_TIMEOUT  seconds  after  the  21   second  reception  window.
         /// </summary>
-        public (uint min, uint max) Ack_timeout { get; set; }
+        public (uint min, uint max) Retransmit_Timeout { get; set; }
 
         /// <summary>
         /// Gets or sets the limits on the region to ensure valid properties.
@@ -98,22 +98,22 @@ namespace LoRaTools.Regions
         /// </summary>
         public int MaxADRDataRate { get; set; }
 
-        public Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows, uint receive_delay1, uint receive_delay2, uint join_accept_delay1, uint join_accept_delay2, int max_fcnt_gap, uint adr_ack_limit, uint adr_adr_delay, (uint min, uint max) ack_timeout)
+        public Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows)
         {
             this.LoRaRegion = regionEnum;
-            this.Ack_timeout = ack_timeout;
+            this.Retransmit_Timeout = (min: 1, max: 3);
 
             this.LoRaSyncWord = loRaSyncWord;
             this.GFSKSyncWord = gFSKSyncWord;
 
             this.RX2DefaultReceiveWindows = rx2DefaultReceiveWindows;
-            this.Receive_delay1 = receive_delay1;
-            this.Receive_delay2 = receive_delay2;
-            this.Join_accept_delay1 = join_accept_delay1;
-            this.Join_accept_delay2 = join_accept_delay2;
-            this.Max_fcnt_gap = max_fcnt_gap;
-            this.Adr_ack_limit = adr_ack_limit;
-            this.Adr_adr_delay = adr_adr_delay;
+            this.Receive_delay1 = 1;
+            this.Receive_delay2 = 2;
+            this.Join_accept_delay1 = 5;
+            this.Join_accept_delay2 = 6;
+            this.Max_fcnt_gap = 16384;
+            this.Adr_ack_limit = 64;
+            this.Adr_adr_delay = 32;
         }
 
         /// <summary>
