@@ -21,6 +21,8 @@ namespace LoRaWan
 
         public DevEui(ulong value) => this.value = value;
 
+        public ulong AsUInt64 => this.value;
+
         public bool Equals(DevEui other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is DevEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
@@ -79,6 +81,8 @@ namespace LoRaWan
 
         public JoinEui(ulong value) => this.value = value;
 
+        public ulong AsUInt64 => this.value;
+
         public bool Equals(JoinEui other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is JoinEui other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
@@ -136,6 +140,8 @@ namespace LoRaWan
         readonly ulong value;
 
         public StationEui(ulong value) => this.value = value;
+
+        public ulong AsUInt64 => this.value;
 
         public bool Equals(StationEui other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is StationEui other && this.Equals(other);

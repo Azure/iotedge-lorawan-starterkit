@@ -15,6 +15,8 @@ namespace LoRaWan
 
         public Hertz(ulong value) => this.value = value;
 
+        public ulong AsUInt64 => this.value;
+
         public double Kilo => this.value / 1e3;
         public double Mega => this.value / 1e6;
         public double Giga => this.value / 1e9;
