@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.E2E
 {
     using System;
     using System.Globalization;
+    using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using LoRaWan.Tests.Shared;
     using Xunit;
@@ -132,7 +133,7 @@ namespace LoRaWan.Tests.E2E
                             await TestFixtureCi.AssertIoTHubDeviceMessageExistsAsync(device.DeviceID, expectedPayload);
                             break;
                         default:
-                            throw new NotImplementedException();
+                            throw new SwitchExpressionException();
                     }
                 }
 
