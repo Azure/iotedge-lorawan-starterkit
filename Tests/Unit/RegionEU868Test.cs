@@ -1,4 +1,4 @@
-namespace LoRaWanTest
+namespace LoRaWan.Tests.Unit
 {
     using LoRaTools.Regions;
     using Xunit;

@@ -1,38 +1,27 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWanTest
+namespace LoRaWan.Tests.Unit
 {
+    using System;
     using LoRaWan;
     using Xunit;
 
-    public class DevAddrTests
+    public class DevNonceTests
     {
-        readonly DevAddr subject = new(0xeb6f7bde);
-        readonly DevAddr other = new(0x12345678);
+        readonly DevNonce subject = new(0x1234);
+        readonly DevNonce other = new(0x5678);
 
         [Fact]
         public void Size()
         {
-            Assert.Equal(4, DevAddr.Size);
-        }
-
-        [Fact]
-        public void NetworkId()
-        {
-            Assert.Equal(0x75, this.subject.NetworkId);
-        }
-
-        [Fact]
-        public void NetworkAddress()
-        {
-            Assert.Equal(0x16f7bde, this.subject.NetworkAddress);
+            Assert.Equal(2, DevNonce.Size);
         }
 
         [Fact]
         public void Equals_Returns_True_When_Value_Equals()
         {
-            var other = this.subject; // assignment = value copy semantics
+            var other = new DevNonce(subject.AsUInt16);
             Assert.True(this.subject.Equals(other));
         }
 
@@ -58,7 +47,7 @@ namespace LoRaWanTest
         [Fact]
         public void Op_Equality_Returns_True_When_Values_Equal()
         {
-            var other = this.subject; // assignment = value copy semantics
+            var other = new DevNonce(subject.AsUInt16);
             Assert.True(this.subject == other);
         }
 
@@ -71,7 +60,7 @@ namespace LoRaWanTest
         [Fact]
         public void Op_Inequality_Returns_False_When_Values_Equal()
         {
-            var other = this.subject; // assignment = value copy semantics
+            var other = new DevNonce(subject.AsUInt16);
             Assert.False(this.subject != other);
         }
 
@@ -84,7 +73,46 @@ namespace LoRaWanTest
         [Fact]
         public void ToString_Returns_Hexadecimal_String()
         {
-            Assert.Equal("EB6F7BDE", this.subject.ToString());
+            Assert.Equal("4660", this.subject.ToString());
+        }
+
+        [Fact]
+        public void CompareTo_Returns_Zero_For_Equal_Inputs()
+        {
+            Assert.Equal(0, this.subject.CompareTo(this.subject));
+        }
+
+        [Fact]
+        public void CompareTo_Returns_Negative_Integer_When_Left_Is_Lesser()
+        {
+            Assert.Equal(-1, Math.Sign(this.subject.CompareTo(this.other)));
+        }
+
+        [Fact]
+        public void CompareTo_Returns_Positive_Integer_When_Left_Is_Greater()
+        {
+            Assert.Equal(1, Math.Sign(this.other.CompareTo(this.subject)));
+        }
+
+        [Fact]
+        public void Relational_Operators_Compare_Operands()
+        {
+            var lesser = this.subject;
+            var greater = this.other;
+
+            Assert.True(lesser < greater);
+            Assert.False(greater < lesser);
+
+            Assert.False(lesser > greater);
+            Assert.True(greater > lesser);
+
+            Assert.True(lesser <= lesser);
+            Assert.True(lesser <= greater);
+            Assert.False(greater <= lesser);
+
+            Assert.True(greater >= greater);
+            Assert.True(greater >= lesser);
+            Assert.False(lesser >= greater);
         }
     }
 }

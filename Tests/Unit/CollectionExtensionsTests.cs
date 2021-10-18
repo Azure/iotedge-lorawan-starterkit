@@ -1,4 +1,4 @@
-namespace LoRaWanTest
+namespace LoRaWan.Tests.Unit
 {
     using System;
     using System.Linq;

@@ -1,20 +1,32 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWanTest
+namespace LoRaWan.Tests.Unit
 {
     using LoRaWan;
     using Xunit;
 
-    public class MicTests
+    public class DevAddrTests
     {
-        readonly Mic subject = new(0x12345678);
-        readonly Mic other = new(0x87654321);
+        readonly DevAddr subject = new(0xeb6f7bde);
+        readonly DevAddr other = new(0x12345678);
 
         [Fact]
         public void Size()
         {
-            Assert.Equal(4, Mic.Size);
+            Assert.Equal(4, DevAddr.Size);
+        }
+
+        [Fact]
+        public void NetworkId()
+        {
+            Assert.Equal(0x75, this.subject.NetworkId);
+        }
+
+        [Fact]
+        public void NetworkAddress()
+        {
+            Assert.Equal(0x16f7bde, this.subject.NetworkAddress);
         }
 
         [Fact]
@@ -51,7 +63,7 @@ namespace LoRaWanTest
         }
 
         [Fact]
-        public void Op_Equality_Returns_True_When_Values_Differ()
+        public void Op_Equality_Returns_False_When_Values_Differ()
         {
             Assert.False(this.subject == this.other);
         }
@@ -72,19 +84,7 @@ namespace LoRaWanTest
         [Fact]
         public void ToString_Returns_Hexadecimal_String()
         {
-            Assert.Equal("12345678", this.subject.ToString());
-        }
-
-        [Fact]
-        public void Compute()
-        {
-            var joinEui = JoinEui.Parse("00-05-10-00-00-00-00-04");
-            var devEui = DevEui.Parse("00-05-10-00-00-00-00-04");
-            var devNonce = DevNonce.Read(new byte[] { 0xab, 0xcd });
-            var appKey = AppKey.Parse("00000000000000000005100000000004");
-            var mhdr = new MacHeader(0);
-            var mic = Mic.ComputeForJoinRequest(appKey, mhdr, joinEui, devEui, devNonce);
-            Assert.Equal(new Mic(0xb6dee36c), mic);
+            Assert.Equal("EB6F7BDE", this.subject.ToString());
         }
     }
 }
