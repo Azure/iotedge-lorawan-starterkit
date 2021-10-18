@@ -4,6 +4,7 @@
 namespace SensorDecoderModule.Controllers
 {
     using System;
+    using System.Globalization;
     using System.Net;
     using System.Reflection;
     using Microsoft.AspNetCore.Mvc;
@@ -22,12 +23,12 @@ namespace SensorDecoderModule.Controllers
             // Validate that fport and payload URL parameters are present.
             Validator.ValidateParameters(fport, payload);
 
-            Type decoderType = typeof(LoraDecoders);
-            MethodInfo toInvoke = decoderType.GetMethod(decoder, BindingFlags.Static | BindingFlags.NonPublic);
+            var decoderType = typeof(LoraDecoders);
+            var toInvoke = decoderType.GetMethod(decoder, BindingFlags.Static | BindingFlags.NonPublic);
 
             if (toInvoke != null)
             {
-                var decoderResult = (string)toInvoke.Invoke(null, new object[] { devEUI, Convert.FromBase64String(payload), Convert.ToByte(fport) });
+                var decoderResult = (string)toInvoke.Invoke(null, new object[] { devEUI, Convert.FromBase64String(payload), Convert.ToByte(fport, CultureInfo.InvariantCulture) });
                 return this.Ok(decoderResult);
             }
             else
