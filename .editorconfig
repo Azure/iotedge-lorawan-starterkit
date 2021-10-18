@@ -91,3 +91,11 @@ dotnet_style_qualification_for_event=false:error
 # CA1814: Prefer jagged arrays over multidimensional arrays
 dotnet_diagnostic.CA1814.severity=suggestion
 dotnet_diagnostic.IDE0047.severity=suggestion
+
+# CA1716: Avoid reserved keywords.
+# Will be reenabled with https://github.com/Azure/iotedge-lorawan-starterkit/issues/552.
+dotnet_diagnostic.CA1716.severity=suggestion
+
+# CA1031: Do not catch general exception types
+# Will be reenabled with https://github.com/Azure/iotedge-lorawan-starterkit/pull/549.
+dotnet_diagnostic.CA1031.severity=suggestion
