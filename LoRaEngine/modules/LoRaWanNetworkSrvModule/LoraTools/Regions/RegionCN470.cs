@@ -12,7 +12,7 @@ namespace LoRaTools.Regions
     {
         private const double FrequencyIncrement = 0.2;
 
-        private readonly List<Tuple<HashSet<double>, RegionCN470PlanType>> JoinFrequenciesToPlanType;
+        private readonly List<double> JoinFrequencies;
 
         private readonly Dictionary<RegionCN470PlanType, List<double>> PlanTypeToDownstreamFrequencies;
 
@@ -31,32 +31,29 @@ namespace LoRaTools.Regions
                 [RegionCN470PlanType.PlanB26MHz] = BuildFrequencyPlanList(500.1, 0, 23)
             };
 
-            JoinFrequenciesToPlanType = new List<Tuple<HashSet<double>, RegionCN470PlanType>>
+            JoinFrequencies = new List<double>
             {
-                Tuple.Create(new HashSet<double> { 470.9, 472.5, 474.1, 475.7, 504.1, 505.7, 507.3, 508.9 }, RegionCN470PlanType.PlanA20MHz ),
-                Tuple.Create(new HashSet<double> { 479.9, 499.9 }, RegionCN470PlanType.PlanB20MHz ),
-                Tuple.Create(new HashSet<double> { 470.3, 472.3, 474.3, 476.3, 478.3 }, RegionCN470PlanType.PlanA26MHz ),
-                Tuple.Create(new HashSet<double> { 480.3, 482.3, 484.3, 486.3, 488.3 }, RegionCN470PlanType.PlanB26MHz ),
+                470.9, 472.5, 474.1, 475.7, 504.1, 505.7, 507.3, 508.9, 479.9, 499.9, 470.3, 472.3, 474.3, 476.3, 478.3, 480.3, 482.3, 484.3, 486.3, 488.3
             };
         }
 
         /// <summary>
-        /// Returns channel plan type for region CN470 matching the frequency of the join request.
+        /// Returns join channel indexfor region CN470 matching the frequency of the join request.
         /// </summary>
         /// <param name="joinChannel">Channel on which the join request was received.</param>
-        public override bool TryGetChannelPlanType(Rxpk joinChannel, out string channelPlan)
+        public override bool TryGetJoinChannelIndex(Rxpk joinChannel, out int channelIndex)
         {
             if (joinChannel is null) throw new ArgumentNullException(nameof(joinChannel));
 
-            foreach (var (joinFrequencies, planType) in JoinFrequenciesToPlanType)
+            for (var index = 0; index < JoinFrequencies.Count; ++index)
             {
-                if (joinFrequencies.Contains(joinChannel.Freq))
+                if (JoinFrequencies[index] == joinChannel.Freq)
                 {
-                    channelPlan = planType.ToString();
+                    channelIndex = index;
                     return true;
                 }
             }
-            channelPlan = string.Empty;
+            channelIndex = -1;
             return false;
         }
 

@@ -37,8 +37,8 @@ namespace LoRaWan.NetworkServer
         public bool SavePreferredGateway { get; set; }
 
         /// <summary>
-        /// Gets or sets value indicating the active channel plan for the given region, if applicable.
+        /// Gets or sets value indicating the join channel plan for region CN470.
         /// </summary>
-        public string RegionChannelPlan { get; set; }
+        public int? CN470JoinChannel { get; set; }
     }
 }

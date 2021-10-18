@@ -150,9 +150,9 @@ namespace LoRaWan.NetworkServer
 
                 if (request.Region.LoRaRegion == LoRaRegionType.CN470)
                 {
-                    if (request.Region.TryGetChannelPlanType(request.Rxpk, out var channelPlan))
+                    if (request.Region.TryGetJoinChannelIndex(request.Rxpk, out var channelIndex))
                     {
-                        updatedProperties.RegionChannelPlan = channelPlan;
+                        updatedProperties.CN470JoinChannel = channelIndex;
                     }
                 }
 

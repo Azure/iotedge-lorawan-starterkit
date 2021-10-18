@@ -124,12 +124,12 @@ namespace LoRaTools.Regions
         public abstract bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, string channelPlan = null);
 
         /// <summary>
-        /// Returns channel plan type matching the frequency of the join request.
+        /// Returns join channel index matching the frequency of the join request.
         /// </summary>
         /// <param name="joinChannel">Channel on which the join request was received.</param>
-        public virtual bool TryGetChannelPlanType(Rxpk joinChannel, out string channelPlan)
+        public virtual bool TryGetJoinChannelIndex(Rxpk joinChannel, out int channelIndex)
         {
-            channelPlan = string.Empty;
+            channelIndex = -1;
             return false;
         }
 

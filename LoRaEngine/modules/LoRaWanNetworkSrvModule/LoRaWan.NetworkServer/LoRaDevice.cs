@@ -128,10 +128,16 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
-        /// Gets or sets the active channel plan type for the device.
-        /// Relevant only for selected regions.
+        /// Gets or sets the join channel for the device based on reported properties.
+        /// Relevant only for region CN470.
         /// </summary>
-        public string? RegionChannelPlan { get; set; }
+        public int? ReportedCN470JoinChannel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the join channel for the device based on desired properties.
+        /// Relevant only for region CN470.
+        /// </summary>
+        public int? DesiredCN470JoinChannel { get; set; }
 
         ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
 
@@ -362,10 +368,13 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    if (twin.Properties.Reported.Contains(TwinProperty.RegionChannelPlan))
+                    if (twin.Properties.Reported.Contains(TwinProperty.CN470JoinChannel))
                     {
-                        var regionChannelPlan = twin.Properties.Reported[TwinProperty.RegionChannelPlan].Value as string;
-                        this.RegionChannelPlan = regionChannelPlan;
+                        this.ReportedCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.CN470JoinChannel].Value);
+                    }
+                    else if (twin.Properties.Desired.Contains(TwinProperty.CN470JoinChannel))
+                    {
+                        this.DesiredCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.CN470JoinChannel].Value);
                     }
 
                     if (twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt))
@@ -833,13 +842,13 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            if (updateProperties.RegionChannelPlan != null)
+            if (updateProperties.CN470JoinChannel != null)
             {
-                reportedProperties[TwinProperty.RegionChannelPlan] = updateProperties.RegionChannelPlan;
+                reportedProperties[TwinProperty.CN470JoinChannel] = updateProperties.CN470JoinChannel;
             }
             else
             {
-                reportedProperties[TwinProperty.RegionChannelPlan] = null;
+                reportedProperties[TwinProperty.CN470JoinChannel] = null;
             }
 
             if (RegionManager.TryTranslateToRegion(updateProperties.Region, out var currentRegion))
