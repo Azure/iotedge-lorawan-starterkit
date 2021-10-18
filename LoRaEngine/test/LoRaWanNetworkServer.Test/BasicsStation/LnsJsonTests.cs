@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.Test.BasicsStation
 {
+    using System.IO;
     using System.Text;
     using System.Text.Json;
     using LoRaWan;
@@ -51,11 +52,11 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
         {
             // const string expected = @"{""freq_range"":[863000000,870000000],""msgtype"":""router_config"",""JoinEUI"":[[13725282814365013217,13725282814365013219]],""NetID"":[1],""DRs"":[[12,125,0],[11,125,0],[10,125,0],[9,125,0],[8,125,0],[7,125,0],[7,250,0]],""hwspec"":""sx1301/1"",""region"":""EU863"",""nocca"":true,""nodc"":true,""nodwell"":true,""sx1301_conf"":[{""radio_0"":{""enable"":true,""freq"":867500000},""radio_1"":{""enable"":true,""freq"":868500000},""chan_FSK"":{""enable"":true,""radio"":1,""if"":300000},""chan_Lora_std"":{""enable"":true,""radio"":1,""if"":-200000,""bandwidth"":250000,""spread_factor"":7},""chan_multiSF_0"":{""enable"":true,""radio"":1,""if"":-400000},""chan_multiSF_1"":{""enable"":true,""radio"":1,""if"":-200000},""chan_multiSF_2"":{""enable"":true,""radio"":1,""if"":0},""chan_multiSF_3"":{""enable"":true,""radio"":0,""if"":-400000},""chan_multiSF_4"":{""enable"":true,""radio"":0,""if"":-200000},""chan_multiSF_5"":{""enable"":true,""radio"":0,""if"":0},""chan_multiSF_6"":{""enable"":true,""radio"":0,""if"":200000},""chan_multiSF_7"":{""enable"":true,""radio"":0,""if"":400000}}]}";
 
-            const string expected = @"{" +
-                    @"""msgtype"":""router_config""," +
-                    @"""freq_range"":[863000000,870000000]," +
-                    @"""JoinEUI"":[[13725282814365013217,13725282814365013219]]" +
-                @"}";
+            const string expected = @"{
+                    ""msgtype"": ""router_config"",
+                    ""freq_range"": [863000000, 870000000],
+                    ""JoinEUI"": [[13725282814365013217, 13725282814365013219]]
+                }";
 
             var actual = LnsJson.WriteRouterConfig(
                 freqRange: (new(863000000), new(870000000)),
@@ -64,7 +65,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
                     (new(13725282814365013217), new(13725282814365013219))
                 });
 
-            Assert.Equal(expected, actual);
+            Assert.Equal(TrimJson(expected), actual);
         }
 
         [Theory]
@@ -77,6 +78,15 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
             _ = reader.Read();
             LnsJson.ReadRouter(reader, out var stationEui);
             Assert.Equal(new StationEui(0xb827_ebff_fee1_e39aUL), stationEui);
+        }
+
+        static string TrimJson(string json)
+        {
+            using var ms = new MemoryStream();
+            using var writer = new Utf8JsonWriter(ms);
+            JsonDocument.Parse(json).WriteTo(writer);
+            writer.Flush();
+            return Encoding.UTF8.GetString(ms.ToArray());
         }
     }
 }
