@@ -96,9 +96,6 @@ jobs:
         name: unit-test-results
         path: ${{ env.TESTS_RESULTS_FOLDER }}/Unit
 
-    - name: Upload to Codecov
-      uses: codecov/codecov-action@v2
-
     # Pull Redis Cache docker image
     - name: Pulling Redis Cache image
       run: docker pull redis:5.0.4-alpine
@@ -110,6 +107,9 @@ jobs:
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
           ${{ env.TESTS_FOLDER }}/Integration/LoRaWan.Tests.Integration.csproj
 
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v2
+  
   check_if_deploy:
     needs:
       - env_var
