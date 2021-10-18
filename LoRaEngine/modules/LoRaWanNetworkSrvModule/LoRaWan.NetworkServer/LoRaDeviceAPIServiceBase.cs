@@ -65,7 +65,7 @@ namespace LoRaWan.NetworkServer
         {
             if (configuration is null) throw new ArgumentNullException(nameof(configuration));
             AuthCode = configuration.FacadeAuthCode;
-            this.URL = configuration.FacadeServerUrl;
+            URL = configuration.FacadeServerUrl;
         }
 
         protected static ByteArrayContent PreparePostContent(string requestBody)
