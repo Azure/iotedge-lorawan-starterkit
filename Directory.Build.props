@@ -35,7 +35,7 @@
       <SystemIOPortsVersion>5.0.1</SystemIOPortsVersion>
       <XUnitRunnerVisualStudio>2.4.2</XUnitRunnerVisualStudio>
       <CoverletMSBuild>3.1.0</CoverletMSBuild>
-      <MicrosoftAzureEventHubsVersion>4.3.2/MicrosoftAzureEventHubsVersion>
+      <MicrosoftAzureEventHubsVersion>4.3.2</MicrosoftAzureEventHubsVersion>
       <MicrosoftAzureEventHubsProcessorVersion>4.2.0</MicrosoftAzureEventHubsProcessorVersion>
     </PropertyGroup>
 </Project>
