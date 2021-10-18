@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace CayenneDecoderModule.Classes
 {
     /// <summary>
@@ -29,6 +24,9 @@ namespace CayenneDecoderModule.Classes
     /// This enum is sued to find the size of the message for a specific sensor
     /// The member names has to match with the CayenneTypes one
     /// </summary>
+#pragma warning disable CA1008 // Enums should have zero value
+#pragma warning disable CA1069 // Enums values should not be duplicated
+    // Enum is used as a lookup for constants.
     public enum CayenneTypeSize
     {
         // Data ID + Data Type + Data Size
@@ -45,5 +43,7 @@ namespace CayenneDecoderModule.Classes
         Gyrometer = 8,     // 2 bytes per axis, 0.01 °/s
         Gps = 11      // 3 byte lon/lat 0.0001 °, 3 bytes alt 0.01 meter
     }
+#pragma warning restore CA1069 // Enums values should not be duplicated
+#pragma warning restore CA1008 // Enums should have zero value
 }
 

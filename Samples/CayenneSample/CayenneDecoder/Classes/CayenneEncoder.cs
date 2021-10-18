@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace CayenneDecoderModule.Classes
 {
+    using System;
+
     public class CayenneEncoder
     {
 
@@ -17,13 +14,10 @@ namespace CayenneDecoderModule.Classes
 
         public void Reset()
         {
-            buffer = new byte[0];
+            buffer = Array.Empty<byte>();
         }
 
-        public int GetSize()
-        {
-            return buffer.Length;
-        }
+        public int Size => buffer.Length;
 
         public byte[] GetBuffer()
         {
@@ -33,7 +27,7 @@ namespace CayenneDecoderModule.Classes
         public int AddDigitalInput(byte channel, byte value)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.DigitalInput);
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.DigitalInput);
             buffer[cursor++] = channel;
             buffer[cursor++] = (byte)CayenneTypes.DigitalInput;
             buffer[cursor++] = value;
@@ -44,7 +38,7 @@ namespace CayenneDecoderModule.Classes
         public int AddDigitalOutput(byte channel, byte value)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.DigitalOutput);
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.DigitalOutput);
             buffer[cursor++] = channel;
             buffer[cursor++] = (byte)CayenneTypes.DigitalOutput;
             buffer[cursor++] = value;
@@ -55,8 +49,8 @@ namespace CayenneDecoderModule.Classes
         public int AddAnalogInput(byte channel, double value)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.AnalogInput);
-            Int16 val = (Int16)(value * 100);
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.AnalogInput);
+            var val = (short)(value * 100);
             buffer[cursor++] = channel;
             buffer[cursor++] = (byte)CayenneTypes.AnalogInput;
             buffer[cursor++] = (byte)(val >> 8);
@@ -68,8 +62,8 @@ namespace CayenneDecoderModule.Classes
         public int AddAnalogOutput(byte channel, double value)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.AnalogOutput);
-            Int16 val = (Int16)(value * 100);
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.AnalogOutput);
+            var val = (short)(value * 100);
             buffer[cursor++] = channel;
             buffer[cursor++] = (byte)CayenneTypes.AnalogOutput;
             buffer[cursor++] = (byte)((val >> 8) & 0xFF);
@@ -78,10 +72,10 @@ namespace CayenneDecoderModule.Classes
             return cursor;
         }
 
-        public int AddLuminosity(byte channel, UInt16 lux)
+        public int AddLuminosity(byte channel, ushort lux)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.Luminosity);
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.Luminosity);
             buffer[cursor++] = channel;
             buffer[cursor++] = (byte)CayenneTypes.Luminosity;
             buffer[cursor++] = (byte)((lux >> 8) & 0xFF);
@@ -93,7 +87,7 @@ namespace CayenneDecoderModule.Classes
         public int AddPresence(byte channel, byte value)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.Presence);
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.Presence);
             buffer[cursor++] = channel;
             buffer[cursor++] = (byte)CayenneTypes.Presence;
             buffer[cursor++] = value;
@@ -104,8 +98,8 @@ namespace CayenneDecoderModule.Classes
         public int AddTemperature(byte channel, double celsius)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.Temperature);
-            Int16 val = (Int16)(celsius * 10);
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.Temperature);
+            var val = (short)(celsius * 10);
             buffer[cursor++] = channel;
             buffer[cursor++] = (byte)CayenneTypes.Temperature;
             buffer[cursor++] = (byte)((val >> 8) & 0xFF);
@@ -117,7 +111,7 @@ namespace CayenneDecoderModule.Classes
         public int AddRelativeHumidity(byte channel, double rh)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.RelativeHumidity);
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.RelativeHumidity);
             buffer[cursor++] = channel;
             buffer[cursor++] = (byte)CayenneTypes.RelativeHumidity;
             buffer[cursor++] = (byte)(rh * 2);
@@ -128,10 +122,10 @@ namespace CayenneDecoderModule.Classes
         public int AddAccelerometer(byte channel, double x, double y, double z)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.Accelerator);
-            Int16 vx = (Int16)(x * 1000);
-            Int16 vy = (Int16)(y * 1000);
-            Int16 vz = (Int16)(z * 1000);
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.Accelerator);
+            var vx = (short)(x * 1000);
+            var vy = (short)(y * 1000);
+            var vz = (short)(z * 1000);
 
             buffer[cursor++] = channel;
             buffer[cursor++] = (byte)CayenneTypes.Accelerator;
@@ -148,8 +142,8 @@ namespace CayenneDecoderModule.Classes
         public int AddBarometricPressure(byte channel, double hpa)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.Barometer);
-            Int16 val = (Int16)(hpa * 10);
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.Barometer);
+            var val = (short)(hpa * 10);
             buffer[cursor++] = channel;
             buffer[cursor++] = (byte)CayenneTypes.Barometer;
             buffer[cursor++] = (byte)((val >> 8) & 0xFF);
@@ -161,10 +155,10 @@ namespace CayenneDecoderModule.Classes
         public int AddGyrometer(byte channel, double x, double y, double z)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.Gyrometer);
-            Int16 vx = (Int16)(x * 100);
-            Int16 vy = (Int16)(y * 100);
-            Int16 vz = (Int16)(z * 100);
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.Gyrometer);
+            var vx = (short)(x * 100);
+            var vy = (short)(y * 100);
+            var vz = (short)(z * 100);
             buffer[cursor++] = channel;
             buffer[cursor++] = (byte)CayenneTypes.Gyrometer;
             buffer[cursor++] = (byte)((vx >> 8) & 0xFF);
@@ -180,15 +174,15 @@ namespace CayenneDecoderModule.Classes
         public int AddGPS(byte channel, double latitude, double longitude, double meters)
         {
             var cursor = buffer.Length;
-            Array.Resize<byte>(ref buffer, cursor + (int)CayenneTypeSize.Gps);
-            Int32 lat = (Int32)(latitude * 10000);
-            bool latNeg = lat < 0;
+            Array.Resize(ref buffer, cursor + (int)CayenneTypeSize.Gps);
+            var lat = (int)(latitude * 10000);
+            var latNeg = lat < 0;
             lat = latNeg ? -lat : lat;
-            Int32 lon = (Int32)(longitude * 10000);
-            bool lonNeg = lon < 0;
+            var lon = (int)(longitude * 10000);
+            var lonNeg = lon < 0;
             lon = lonNeg ? -lon : lon;
-            Int32 alt = (Int32)(meters * 100);
-            bool altNeg = alt < 0;
+            var alt = (int)(meters * 100);
+            var altNeg = alt < 0;
             alt = altNeg ? -alt : alt;
             // Need to add the sign
             buffer[cursor++] = channel;
