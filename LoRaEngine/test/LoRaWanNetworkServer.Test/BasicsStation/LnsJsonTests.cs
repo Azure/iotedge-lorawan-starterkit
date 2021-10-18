@@ -68,18 +68,6 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation
             Assert.Equal(TrimJson(expected), actual);
         }
 
-        [Theory]
-        [InlineData(@"{ ""router"": ""b827:ebff:fee1:e39a"" }")]
-        [InlineData(@"{ ""router"": ""b8-27-eb-ff-fe-e1-e3-9a"" }")]
-        [InlineData(@"{ ""router"": 13269834311795860378 }")]
-        public void ReadRouter(string json)
-        {
-            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
-            _ = reader.Read();
-            LnsJson.ReadRouter(reader, out var stationEui);
-            Assert.Equal(new StationEui(0xb827_ebff_fee1_e39aUL), stationEui);
-        }
-
         static string TrimJson(string json)
         {
             using var ms = new MemoryStream();

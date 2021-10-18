@@ -80,56 +80,6 @@ namespace LoRaWanTest
             writer.WriteEndArray();
         }
 
-        public static void ReadRouter(Utf8JsonReader reader,
-                                      out StationEui stationEui)
-        {
-            // TODO adapt to documentation on when to throw "JsonException" vs "NotSupportedException"
-
-            stationEui = default;
-
-            if (reader.TokenType != JsonTokenType.StartObject)
-                throw new JsonException();
-            _ = reader.Read();
-            var readRouter = false;
-            while (reader.TokenType != JsonTokenType.EndObject)
-            {
-                if (reader.ValueTextEquals("router"))
-                {
-                    _ = reader.Read();
-                    switch (reader.TokenType)
-                    {
-                        case JsonTokenType.Number:
-                        {
-                            var v = reader.GetUInt64();
-                            stationEui = new StationEui(v);
-                            break;
-                        }
-                        case JsonTokenType.String:
-                        {
-                            var s = reader.GetString();
-                            stationEui = s.Contains(':', StringComparison.Ordinal)
-                                       ? Id6.TryParse(s, out var id6) ? new StationEui(id6) : throw new JsonException()
-                                       : Hexadecimal.TryParse(s, out var hhd, '-') ? new StationEui(hhd) : throw new JsonException();
-                            break;
-                        }
-                        default:
-                            throw new NotSupportedException();
-                    }
-                    readRouter = true;
-                    _ = reader.Read();
-                }
-                else
-                {
-                    _ = reader.Read();
-                    reader.Skip();
-                    _ = reader.Read();
-                }
-            }
-
-            if (!readRouter)
-                throw new JsonException();
-        }
-
         [Flags]
         enum UplinkDataFrameFields { None, MessageType = 1, MacHeader = 2, DevAddr = 4, Mic = 8 }
 
