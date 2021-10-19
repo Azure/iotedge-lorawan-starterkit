@@ -14,12 +14,21 @@ namespace LoRaWan.NetworkServer.Test
         [MemberData(nameof(AllowedDevAddressesInput))]
         public void Should_Setup_Allowed_Dev_Addresses_Correctly(string inputAllowedDevAddrValues, HashSet<string> expectedAllowedDevAddrValues)
         {
-            Environment.SetEnvironmentVariable("AllowedDevAddresses", inputAllowedDevAddrValues);
-            var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
-            Assert.Equal(expectedAllowedDevAddrValues.Count, networkServerConfiguration.AllowedDevAddresses.Count);
-            foreach (var devAddr in expectedAllowedDevAddrValues)
+            var envVariableName = "AllowedDevAddresses";
+
+            try
             {
-                Assert.Contains(devAddr, networkServerConfiguration.AllowedDevAddresses);
+                Environment.SetEnvironmentVariable(envVariableName, inputAllowedDevAddrValues);
+                var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
+                Assert.Equal(expectedAllowedDevAddrValues.Count, networkServerConfiguration.AllowedDevAddresses.Count);
+                foreach (var devAddr in expectedAllowedDevAddrValues)
+                {
+                    Assert.Contains(devAddr, networkServerConfiguration.AllowedDevAddresses);
+                }
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(envVariableName, string.Empty);
             }
         }
 
