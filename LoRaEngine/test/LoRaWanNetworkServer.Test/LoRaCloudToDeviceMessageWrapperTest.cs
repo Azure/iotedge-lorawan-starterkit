@@ -8,13 +8,14 @@ namespace LoRaWan.NetworkServer.Test
     using System.Text;
     using LoRaTools;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
 
     public sealed class LoRaCloudToDeviceMessageWrapperTest : IDisposable
     {
-        private readonly TestUtils.LoraDeviceClientConnectionManagerWrapper connectionManagerWrapper;
+        private readonly LoraDeviceClientConnectionManagerWrapper connectionManagerWrapper;
         private readonly LoRaDevice sampleDevice;
         private LoRaDeviceClientConnectionManager ConnectionManager => this.connectionManagerWrapper.Value;
 

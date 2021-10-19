@@ -3,6 +3,7 @@
 
 namespace LoraKeysManagerFacade.Test
 {
+    using LoRaWan.Tests.Shared;
     using System.Threading.Tasks;
     using Xunit;
 

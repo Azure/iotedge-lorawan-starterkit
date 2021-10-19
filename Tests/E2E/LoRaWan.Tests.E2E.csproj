@@ -40,7 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\ApiVersion.cs" Link="ApiVersion.cs" />
     <Compile Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\ServiceFacadeHttpClientHandler.cs" Link="ServiceFacadeHttpClientHandler.cs" />
   </ItemGroup>
 

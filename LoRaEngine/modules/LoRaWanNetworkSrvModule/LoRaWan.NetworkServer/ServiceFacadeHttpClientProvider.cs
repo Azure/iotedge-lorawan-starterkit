@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Net;
     using System.Net.Http;
+    using LoRaTools.CommonAPI;
     using LoRaWan.Core;
 
     /// <summary>

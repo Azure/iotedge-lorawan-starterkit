@@ -1,10 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Docker.DotNet.X509" Version="$(DockerDotNetX509Version)" />
     <PackageReference Include="Microsoft.Azure.Devices" Version="$(MicrosoftAzureDevicesVersion)" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(MicrosoftExtensionsCachingMemoryVersion)" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="$(MicrosoftAzureFunctionsExtensionsVersion)" />
@@ -15,9 +14,6 @@
   </ItemGroup>
 
   <!-- Add shared files -->
-  <ItemGroup>
-    <Compile Include="../modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/ApiVersion.cs" />
-  </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -30,5 +26,4 @@
   <ItemGroup>
     <ProjectReference Include="..\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
   </ItemGroup>
-
 </Project>

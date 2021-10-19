@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
+    <ProjectReference Include="..\..\LoRaEngine\LoraKeysManagerFacade\LoraKeysManagerFacade.csproj" />
+    <ProjectReference Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\LoRaWan.NetworkServer.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,5 +21,6 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfigurationJsonVersion)" />
     <PackageReference Include="xunit" Version="$(XUnitVersion)" />
+    <PackageReference Include="Moq" Version="$(MoqVersion)" />
   </ItemGroup>
 </Project>

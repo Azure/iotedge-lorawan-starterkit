@@ -7,11 +7,10 @@ namespace LoraKeysManagerFacade.Test
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
-    using LoRaWan.Core;
+    using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
-    using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
