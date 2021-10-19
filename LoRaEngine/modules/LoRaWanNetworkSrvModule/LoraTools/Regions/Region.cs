@@ -206,10 +206,9 @@ namespace LoRaTools.Regions
                 // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
                 if (rx1DrOffset <= this.RX1DROffsetTable.GetUpperBound(1))
                 {
-                    var dr = this.GetDRFromFreqAndChan(upstreamChannel.Datr);
-                    var offset = this.RX1DROffsetTable[dr, rx1DrOffset];
-                    var newDr = this.DRtoConfiguration[(ushort)offset];
-                    return newDr.configuration;
+                    var drIndex = this.GetDRFromFreqAndChan(upstreamChannel.Datr);
+                    var offset = this.RX1DROffsetTable[drIndex, rx1DrOffset];
+                    return this.DRtoConfiguration[(ushort)offset].configuration;
                 }
                 else
                 {
