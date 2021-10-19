@@ -4,85 +4,11 @@
 namespace LoRaWanTest
 {
     using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Text;
     using System.Text.Json;
     using LoRaWan;
 
     public static class LnsJson
     {
-        public static string WriteRouterConfig((Hertz Min, Hertz Max) freqRange,
-                                               IEnumerable<(JoinEui Min, JoinEui Max)> joinEuiRanges)
-        {
-            using var ms = new MemoryStream();
-            using var writer = new Utf8JsonWriter(ms);
-            WriteRouterConfig(writer, freqRange, joinEuiRanges);
-            writer.Flush();
-            return Encoding.UTF8.GetString(ms.ToArray());
-        }
-
-        public static void WriteRouterConfig(Utf8JsonWriter writer,
-                                             (Hertz Min, Hertz Max) freqRange,
-                                             IEnumerable<(JoinEui Min, JoinEui Max)> joinEuiRanges)
-        {
-            if (writer is null) throw new ArgumentNullException(nameof(writer));
-            if (joinEuiRanges is null) throw new ArgumentNullException(nameof(joinEuiRanges));
-
-            writer.WriteStartObject();
-
-            writer.WriteString("msgtype", "router_config");
-            Tuple(writer, "freq_range", freqRange, h => h.AsUInt64);
-            Array(writer, "JoinEUI", joinEuiRanges, (w, r) => Tuple(w, r, (w, eui) => w.WriteNumberValue(eui.AsUInt64)));
-
-//            Sx1301Conf(writer, //* ... */);
-
-            writer.WriteEndObject();
-        }
-
-//        public static void Sx1301Conf(Utf8JsonWriter writer,
-//                                      bool enable, int centreFreq, int rfChain)
-//        {
-//            /*
-//{
-//  "chip_enable"      : BOOL
-//  "chip_center_freq" : INT
-//  "chip_rf_chain"    : INT
-//  "chan_multiSF_X"   : CHANCONF   // where X in {0..7}
-//  "chan_LoRa_std"    : CHANCONF
-//  "chan_FSK"         : CHANCONF
-//}
-//             */
-//        }
-
-        static void Tuple<T>(Utf8JsonWriter writer, string name, (T, T) value, Func<T, ulong> f)
-        {
-            writer.WritePropertyName(name);
-            writer.WriteStartArray();
-            var (a, b) = value;
-            writer.WriteNumberValue(f(a));
-            writer.WriteNumberValue(f(b));
-            writer.WriteEndArray();
-        }
-
-        static void Array<T>(Utf8JsonWriter writer, string name, IEnumerable<T> items, Action<Utf8JsonWriter, T> f)
-        {
-            writer.WritePropertyName(name);
-            writer.WriteStartArray();
-            foreach (var item in items)
-                f(writer, item);
-            writer.WriteEndArray();
-        }
-
-        static void Tuple<T>(Utf8JsonWriter writer, (T, T) value, Action<Utf8JsonWriter, T> f)
-        {
-            writer.WriteStartArray();
-            var (a, b) = value;
-            f(writer, a);
-            f(writer, b);
-            writer.WriteEndArray();
-        }
-
         [Flags]
         enum UplinkDataFrameFields { None, MessageType = 1, MacHeader = 2, DevAddr = 4, Mic = 8 }
 
