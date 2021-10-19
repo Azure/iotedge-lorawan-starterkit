@@ -24,4 +24,4 @@ dotnet_style_qualification_for_property=false:error
 dotnet_style_qualification_for_method=false:error
 dotnet_style_qualification_for_event=false:error
 
-dotnet_diagnostic.IDE0009.severity = none
+# dotnet_diagnostic.IDE0009.severity = none
