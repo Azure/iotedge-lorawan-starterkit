@@ -10,8 +10,8 @@ on:
     - cron: '59 23 * * *'
 
 jobs:
-  analyze_dotnet:
-    name: Analyze Dotnet
+  analyze_csharp:
+    name: Analyze Csharp
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -26,7 +26,7 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
-        languages: dotnet
+        languages: csharp
         queries: +security-and-quality,security-extended
 
      # build LoRa Engine
