@@ -86,8 +86,7 @@ jobs:
       run: |
         dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Unit \
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
-          --filter 'FullyQualifiedName~LoRaWanTest|FullyQualifiedName~LoRaWan.NetworkServer.Test|FullyQualifiedName~LoraKeysManagerFacade.Test' \
-          LoRaEngine
+          --filter 'FullyQualifiedName~LoRaWanTest|FullyQualifiedName~LoRaWan.NetworkServer.Test|FullyQualifiedName~LoraKeysManagerFacade.Test'
 
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
