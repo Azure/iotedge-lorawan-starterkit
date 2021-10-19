@@ -87,7 +87,7 @@ jobs:
         dotnet test --configuration ${{ env.buildConfiguration }} --no-build \
           --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Unit \
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/${{ env.TESTS_FOLDER }}/" \
-          ${{ env.TESTS_FOLDER }}\Unit\
+          ${{ env.TESTS_FOLDER }}/Unit/LoRaWan.Tests.Unit.csproj
 
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
