@@ -12,9 +12,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkSrvModule", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logger", "modules\LoRaWanNetworkSrvModule\Logger\Logger.csproj", "{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWanNetworkServer.Test", "test\LoRaWanNetworkServer.Test\LoRaWanNetworkServer.Test.csproj", "{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.SimulatedTest", "test\LoRaWan.SimulatedTest\LoRaWan.SimulatedTest.csproj", "{4FA0718D-15A2-4D4E-9310-7FB17B285757}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan", "modules\LoRaWanNetworkSrvModule\LoRaWan\LoRaWan.csproj", "{E38EDA03-9026-4528-8B4E-3ACA37373E69}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{67C7C34B-B11C-4E10-9D97-728FB122683F}"
 	ProjectSection(SolutionItems) = preProject
@@ -23,8 +21,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan", "modules\LoRaWanNetworkSrvModule\LoRaWan\LoRaWan.csproj", "{E38EDA03-9026-4528-8B4E-3ACA37373E69}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tests.Shared", "..\Tests\Shared\LoRaWan.Tests.Shared.csproj", "{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tests.Unit", "..\Tests\Unit\LoRaWan.Tests.Unit.csproj", "{D4595D27-2318-4C8F-AD64-D42C6CD70626}"
@@ -32,6 +28,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tests.Integration", "..\Tests\Integration\LoRaWan.Tests.Integration.csproj", "{8F615E91-40E2-4BF4-8573-577CEC7701FF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tests.E2E", "..\Tests\E2E\LoRaWan.Tests.E2E.csproj", "{A871D30D-2634-4321-A0EB-B116A1BA1CD3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.SimulatedTest", "test\LoRaWan.SimulatedTest\LoRaWan.SimulatedTest.csproj", "{4FA0718D-15A2-4D4E-9310-7FB17B285757}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A3AF6806-947C-426F-8063-7229B71A4472}"
 	ProjectSection(SolutionItems) = preProject
@@ -86,14 +84,6 @@ Global
 		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|x86.ActiveCfg = Release|Any CPU
 		{0F8CDB3B-34C9-4C14-B4B2-34BCAD232D45}.Release|x86.Build.0 = Release|Any CPU
-		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Debug|x86.Build.0 = Debug|Any CPU
-		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Release|x86.ActiveCfg = Release|Any CPU
-		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305}.Release|x86.Build.0 = Release|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FA0718D-15A2-4D4E-9310-7FB17B285757}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -147,12 +137,11 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{D65BF8E2-DB42-4EA9-8A5E-CD7E671C4305} = {A3AF6806-947C-426F-8063-7229B71A4472}
-		{4FA0718D-15A2-4D4E-9310-7FB17B285757} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{D4595D27-2318-4C8F-AD64-D42C6CD70626} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{8F615E91-40E2-4BF4-8573-577CEC7701FF} = {A3AF6806-947C-426F-8063-7229B71A4472}
 		{A871D30D-2634-4321-A0EB-B116A1BA1CD3} = {A3AF6806-947C-426F-8063-7229B71A4472}
+		{4FA0718D-15A2-4D4E-9310-7FB17B285757} = {A3AF6806-947C-426F-8063-7229B71A4472}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FD60E938-DB16-4486-8BEF-4F2CE460E71D}

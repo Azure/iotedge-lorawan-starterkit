@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.Test
+namespace LoRaWan.Tests.Unit
 {
     using System;
     using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace LoRaWan.NetworkServer.Test
     using Moq;
     using Xunit;
 
-    public class ADRTest : MessageProcessorTestBase
+    public class ADRMessageProcessorTest : MessageProcessorTestBase
     {
         [Theory]
         // deviceId, # messages sent, ExpectedDR, expectedPower, expectedNbRep

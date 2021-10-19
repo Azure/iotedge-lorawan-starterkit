@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaWan.NetworkServer.Test
+namespace LoRaWan.Tests.Unit
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using LoRaTools.Regions;
+    using LoRaWan.NetworkServer;
     using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;

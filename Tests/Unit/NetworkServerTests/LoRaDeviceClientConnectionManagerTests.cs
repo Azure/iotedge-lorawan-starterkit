@@ -2,7 +2,6 @@ namespace LoRaWanNetworkServer.Test
 {
     using System.Linq;
     using LoRaWan.NetworkServer;
-    using LoRaWan.NetworkServer.Test;
     using LoRaWan.Tests.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
