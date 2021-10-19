@@ -103,7 +103,8 @@ jobs:
     # Run integration tests
     - name: Run integration tests
       run: |
-        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Integration \
+        dotnet test --configuration ${{ env.buildConfiguration }} --no-build \
+          --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Integration \
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/${{ env.TESTS_FOLDER }}/" \
           ${{ env.TESTS_FOLDER }}/Integration/LoRaWan.Tests.Integration.csproj
 
