@@ -167,9 +167,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         }
                     };
                 }
-                catch (WebSocketException wsException)
+                catch (OperationCanceledException operationCanceled) when (operationCanceled.InnerException is WebSocketException wsException
+                                                                           && wsException.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
                 {
-                    this.logger.LogError(wsException, wsException.Message);
+                    // This can happen if the basic station client is losing connectivity
+                    this.logger.LogDebug(wsException, wsException.Message);
                 }
             }
             else
