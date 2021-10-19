@@ -3,6 +3,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using System.Text.Json;
 
@@ -55,6 +56,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         internal static void ReadVersionMessage(string input, out string stationVersion)
         {
             // We are deliberately ignoring firmware/package/model/protocol/features as these are not strictly needed at this stage of implementation
+            // TODO Tests for this method are missing (waiting for more usefulness of it)
             var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(input));
             _ = reader.Read();
             if (reader.TokenType != JsonTokenType.StartObject)
@@ -106,11 +108,17 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                                  string hwspec,
                                                  (Hertz Min, Hertz Max) freqRange,
                                                  IEnumerable<(DataRate SpreadingFactor, Hertz Bandwidth, bool DnOnly)> dataRates,
-                                                 bool nocca,
-                                                 bool nodc,
-                                                 bool nodwell)
+                                                 bool nocca = false,
+                                                 bool nodc = false,
+                                                 bool nodwell = false)
         {
-            if (joinEuiRanges is null) throw new ArgumentNullException(nameof(joinEuiRanges));
+            if (region is null) throw new ArgumentNullException(nameof(region));
+            if (region.Length == 0) throw new ArgumentException("Region should not be empty.", nameof(region));
+            if (hwspec is null) throw new ArgumentNullException(nameof(hwspec));
+            if (hwspec.Length == 0) throw new ArgumentException("hwspec should not be empty.", nameof(hwspec));
+            if (freqRange is var (min, max) && min.Equals(max)) throw new ArgumentException("Expecting a range, therefore minimum and maximum frequencies should differ.");
+            if (dataRates is null) throw new ArgumentNullException(nameof(dataRates));
+            if (dataRates.Count() is 0) throw new ArgumentException($"Datarates list should not be empty.", nameof(dataRates));
 
             using var ms = new MemoryStream();
             using var writer = new Utf8JsonWriter(ms);
@@ -123,21 +131,27 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             #region NetID
             writer.WritePropertyName("NetID");
             writer.WriteStartArray();
-            foreach (var netId in allowedNetIds)
+            if (allowedNetIds is not null)
             {
-                writer.WriteNumberValue(netId.NetworkId);
+                foreach (var netId in allowedNetIds)
+                {
+                    writer.WriteNumberValue(netId.NetworkId);
+                }
             }
             writer.WriteEndArray();
             #endregion
             #region JoinEui
             writer.WritePropertyName("JoinEui");
             writer.WriteStartArray();
-            foreach (var (Min, Max) in joinEuiRanges)
+            if (joinEuiRanges is not null)
             {
-                writer.WriteStartArray();
-                writer.WriteNumberValue(Min.AsUInt64);
-                writer.WriteNumberValue(Max.AsUInt64);
-                writer.WriteEndArray();
+                foreach (var (Min, Max) in joinEuiRanges)
+                {
+                    writer.WriteStartArray();
+                    writer.WriteNumberValue(Min.AsUInt64);
+                    writer.WriteNumberValue(Max.AsUInt64);
+                    writer.WriteEndArray();
+                }
             }
             writer.WriteEndArray();
             #endregion
