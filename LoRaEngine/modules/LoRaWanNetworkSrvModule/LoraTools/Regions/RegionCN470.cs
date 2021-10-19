@@ -23,6 +23,52 @@ namespace LoRaTools.Regions
                   null,
                   (frequency: 485.3, datr: 1)) // TODO: support multiple RX2 receive windows, see #561
         {
+            // Values assuming FOpts param is not used
+            DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 31)); // documentation has no max payload size for DR 0
+            DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 31));
+            DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 94));
+            DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 192));
+            DRtoConfiguration.Add(4, (configuration: "SF8BW125", maxPyldSize: 250));
+            DRtoConfiguration.Add(5, (configuration: "SF7BW125", maxPyldSize: 250));
+            DRtoConfiguration.Add(6, (configuration: "SF7BW500", maxPyldSize: 250));
+            DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 250)); // FSK 50
+
+            TXPowertoMaxEIRP.Add(0, 19);
+            TXPowertoMaxEIRP.Add(1, 17);
+            TXPowertoMaxEIRP.Add(2, 15);
+            TXPowertoMaxEIRP.Add(3, 13);
+            TXPowertoMaxEIRP.Add(4, 11);
+            TXPowertoMaxEIRP.Add(5, 9);
+            TXPowertoMaxEIRP.Add(6, 7);
+            TXPowertoMaxEIRP.Add(7, 5);
+
+            RX1DROffsetTable = new int[8, 6]
+            {
+                { 0, 0, 0, 0, 0, 0 },
+                { 1, 1, 1, 1, 1, 1 },
+                { 2, 1, 1, 1, 1, 1 },
+                { 3, 2, 1, 1, 1, 1 },
+                { 4, 3, 2, 1, 1, 1 },
+                { 5, 4, 3, 2, 1, 1 },
+                { 6, 5, 4, 3, 2, 1 },
+                { 7, 6, 5, 4, 3, 2 },
+            };
+
+            var validDataranges = new HashSet<string>()
+            {
+                "SF12BW125", // 0
+                "SF11BW125", // 1
+                "SF10BW125", // 2 
+                "SF9BW125",  // 3
+                "SF8BW125",  // 4
+                "SF7BW125",  // 5
+                "SF7BW500",  // 6
+                "50"         // 7 FSK 50
+            };
+
+            MaxADRDataRate = 7; // needs to be clarified
+            RegionLimits = new RegionLimits((min: 470.3, max: 509.7), validDataranges, validDataranges, 0, 0);
+
             DownstreamFrequenciesByPlanType = new List<List<double>>
             {
                 BuildFrequencyPlanList(483.9, 0, 31).Concat(BuildFrequencyPlanList(490.3, 32, 63)).ToList(),
