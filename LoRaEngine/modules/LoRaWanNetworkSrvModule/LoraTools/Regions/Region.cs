@@ -198,7 +198,7 @@ namespace LoRaTools.Regions
         /// <summary>
         /// Implement correct logic to get the downstream data rate based on the region.
         /// </summary>
-        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param
+        /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         public string GetDownstreamDR(Rxpk upstreamChannel, int rx1DrOffset = 0)
         {
             if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
