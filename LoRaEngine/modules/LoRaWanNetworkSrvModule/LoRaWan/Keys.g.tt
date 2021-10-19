@@ -15,6 +15,7 @@ namespace LoRaWan
     using System;
 <#  foreach (var t in new[]
         {
+            "NewKey",
             "AppKey",
             "AppSessionKey",
             "NetworkSessionKey",
