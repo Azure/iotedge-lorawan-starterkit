@@ -75,7 +75,7 @@ jobs:
 
     # build LoRa Engine
     - name: Build LoRa Engine
-      run: dotnet build --configuration ${{ env.buildConfiguration }} LoRaEngine/LoRaEngine.sln
+      run: dotnet build --configuration ${{ env.buildConfiguration }}
 
     # build C# Samples/DecoderSample
     - name: Build C# Samples/DecoderSample
@@ -86,8 +86,8 @@ jobs:
       run: |
         dotnet test --configuration ${{ env.buildConfiguration }} --no-build \
           --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Unit \
-          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
-          .\Tests\Unit\LoRaWan.Tests.Unit.csproj
+          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/${{ env.TESTS_FOLDER }}/" \
+          ${{ env.TESTS_FOLDER }}\Unit\
 
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
@@ -104,7 +104,7 @@ jobs:
     - name: Run integration tests
       run: |
         dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Integration \
-          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/Tests/" \
+          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/${{ env.TESTS_FOLDER }}/" \
           ${{ env.TESTS_FOLDER }}/Integration/LoRaWan.Tests.Integration.csproj
 
     - name: Upload to Codecov test reports
