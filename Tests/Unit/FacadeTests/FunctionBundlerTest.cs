@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using LoraKeysManagerFacade;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
