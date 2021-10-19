@@ -81,12 +81,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
                     // A future implementation should retrieve dynamically a SX1301CONF for 'regional' configurations based on the 'stationEui'
                     // Current implementation is statically returning a SX1301CONF for EU863
-                    var response = LnsData.WriteRouterConfig(new NetId[] { new NetId(1) },
-                                                             new (JoinEui, JoinEui)[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
+                    var response = LnsData.WriteRouterConfig(new[] { new NetId(1) },
+                                                             new[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
                                                              "EU863",
                                                              "sx1301/1",
                                                              (new Hertz(863000000), new Hertz(870000000)),
-                                                             new (DataRate, Hertz, bool)[]
+                                                             new[]
                                                              {
                                                                  // The following is actually a tuple of SF, Bandwidth and DownlinkOnly.
                                                                  // TODO let's consider the idea of bringing primitives for SF and BW ?
