@@ -15,14 +15,14 @@ namespace LoRaWan
 
         public Hertz(ulong value) => this.value = value;
 
-        public ulong AsUInt64 => this.value;
+        public ulong AsUInt64() => this.value;
 
         public double Kilo => this.value / 1e3;
         public double Mega => this.value / 1e6;
         public double Giga => this.value / 1e9;
 
         public bool Equals(Hertz other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is Hertz other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is Hertz other && Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
         public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);

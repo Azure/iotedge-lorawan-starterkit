@@ -30,7 +30,7 @@ namespace LoRaWan
 
         public <#= t #>(ulong value) => this.value = value;
 
-        public ulong AsUInt64 => this.value;
+        public ulong AsUInt64() => this.value;
 
         public bool Equals(<#= t #> other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is <#= t #> other && this.Equals(other);
