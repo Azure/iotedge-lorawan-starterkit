@@ -51,13 +51,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public byte Fport
-        {
-            get
-            {
-                return this.parseCloudToDeviceMessage?.Fport ?? 0;
-            }
-        }
+        public byte Fport => this.parseCloudToDeviceMessage?.Fport ?? 0;
 
         public bool Confirmed
         {

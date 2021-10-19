@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Net;
     using System.Net.Http;
+    using LoRaTools.CommonAPI;
     using LoRaWan.Core;
 
     /// <summary>
@@ -28,7 +29,11 @@ namespace LoRaWan.NetworkServer
 
         HttpClient CreateHttpClient()
         {
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // Will be handled once we migrate to DI.
+            // https://github.com/Azure/iotedge-lorawan-starterkit/issues/534
             var handler = new ServiceFacadeHttpClientHandler(this.expectedFunctionVersion);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             if (!string.IsNullOrEmpty(this.configuration.HttpsProxy))
             {

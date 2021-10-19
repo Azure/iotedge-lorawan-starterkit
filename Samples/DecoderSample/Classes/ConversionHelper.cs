@@ -15,9 +15,10 @@ namespace SensorDecoderModule.Classes
         /// <returns>byte[] containing converted hex string</returns>
         public static byte[] StringToByteArray(string hex)
         {
-            int numberChars = hex.Length;
-            byte[] bytes = new byte[numberChars / 2];
-            for (int i = 0; i < numberChars; i += 2)
+            if (hex is null) throw new ArgumentNullException(nameof(hex));
+            var numberChars = hex.Length;
+            var bytes = new byte[numberChars / 2];
+            for (var i = 0; i < numberChars; i += 2)
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
             return bytes;
         }
@@ -29,13 +30,14 @@ namespace SensorDecoderModule.Classes
         /// <returns>string containing converted byte[]</returns>
         public static string ByteArrayToString(byte[] bytes)
         {
-            StringBuilder result = new StringBuilder(bytes.Length * 2);
-            string hexAlphabet = "0123456789ABCDEF";
+            if (bytes is null) throw new ArgumentNullException(nameof(bytes));
+            var result = new StringBuilder(bytes.Length * 2);
+            var hexAlphabet = "0123456789ABCDEF";
 
-            foreach (byte b in bytes)
+            foreach (var b in bytes)
             {
-                result.Append(hexAlphabet[(int)(b >> 4)]);
-                result.Append(hexAlphabet[(int)(b & 0xF)]);
+                _ = result.Append(hexAlphabet[b >> 4]);
+                _ = result.Append(hexAlphabet[b & 0xF]);
             }
 
             return result.ToString();

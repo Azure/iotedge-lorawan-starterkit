@@ -35,6 +35,7 @@
 #pragma warning disable SA1313 // Parameters should begin with a lowercase letter
 #pragma warning disable CA1008 // Enums should have zero value
 #pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable CA1822 // Mark members as static
 
 
 namespace LoRaWan.Tests.E2E
@@ -136,7 +137,7 @@ namespace LoRaWan.Tests.E2E
             DR15
         }
 
-        readonly byte[] serialPortBuffer = null;
+        readonly byte[] serialPortBuffer;
 
         LoRaArduinoSerial(SerialPort sp)
         {
@@ -181,7 +182,7 @@ namespace LoRaWan.Tests.E2E
                     }
 
                     // last line: does the input ends with a new line?
-                    var lastParsedLine = lines[lines.Length - 1];
+                    var lastParsedLine = lines[^1];
                     if (!string.IsNullOrEmpty(lastParsedLine))
                     {
                         // add as finished line
@@ -204,10 +205,7 @@ namespace LoRaWan.Tests.E2E
             this.serialLogs.Enqueue(message);
         }
 
-        public IReadOnlyCollection<string> SerialLogs
-        {
-            get { return this.serialLogs; }
-        }
+        public IReadOnlyCollection<string> SerialLogs => this.serialLogs;
 
         // Gets/sets if serial writes should be logged
         // Disabled by default

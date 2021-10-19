@@ -178,12 +178,12 @@ namespace LoRaWan.NetworkServer
                     }
 
                     // set tmst for the normal case
-                    tmst = request.Rxpk.Tmst + loraRegion.JoinAcceptDelay1 * 1000000;
+                    tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay1 * 1000000);
                 }
                 else
                 {
                     Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Debug);
-                    tmst = request.Rxpk.Tmst + loraRegion.JoinAcceptDelay2 * 1000000;
+                    tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay2 * 1000000);
 
                     freq = loraRegion.GetDownstreamRX2Freq(devEUI, this.configuration.Rx2Frequency);
                     datr = loraRegion.GetDownstreamRX2Datarate(devEUI, this.configuration.Rx2DataRate, null);

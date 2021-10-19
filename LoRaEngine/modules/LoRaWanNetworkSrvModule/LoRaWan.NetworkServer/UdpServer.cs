@@ -14,6 +14,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
+    using LoRaTools.CommonAPI;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan.Core;
@@ -42,11 +43,11 @@ namespace LoRaWan.NetworkServer
         private volatile string pullAckRemoteLoRaAddress;
         UdpClient udpClient;
 
-        private async Task<byte[]> GetTokenAsync()
+        private Task<byte[]> GetTokenAsync()
         {
             var token = new byte[2];
             this.RndKeysGenerator.GetBytes(token);
-            return token;
+            return Task.FromResult(token);
         }
 
         // Creates a new instance of UdpServer
@@ -241,7 +242,7 @@ namespace LoRaWan.NetworkServer
                     var moduleTwinCollection = moduleTwin.Properties.Desired;
                     try
                     {
-                        this.loRaDeviceAPIService.SetURL(moduleTwinCollection["FacadeServerUrl"].Value as string);
+                        this.loRaDeviceAPIService.URL = new Uri(moduleTwinCollection["FacadeServerUrl"].Value);
                         Logger.LogAlways($"Facade function url: {this.loRaDeviceAPIService.URL}");
                     }
                     catch (ArgumentOutOfRangeException)
@@ -342,7 +343,7 @@ namespace LoRaWan.NetworkServer
             {
                 if (desiredProperties.Contains("FacadeServerUrl"))
                 {
-                    this.loRaDeviceAPIService.SetURL((string)desiredProperties["FacadeServerUrl"]);
+                    this.loRaDeviceAPIService.URL = new Uri(desiredProperties["FacadeServerUrl"]);
                 }
 
                 if (desiredProperties.Contains("FacadeAuthCode"))
@@ -405,6 +406,7 @@ namespace LoRaWan.NetworkServer
             this.udpClient?.Dispose();
             this.udpClient = null;
             this.messageDispatcher?.Dispose();
+            this.RndKeysGenerator?.Dispose();
         }
     }
 }

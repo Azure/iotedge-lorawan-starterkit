@@ -18,7 +18,7 @@ namespace LoRaTools.Regions
 
         public byte LoRaSyncWord { get; private set; }
 
-        public byte[] GFSKSyncWord { get; private set; }
+        public IReadOnlyList<byte> GFSKSyncWord { get; private set; }
 
         /// <summary>
         /// Gets or sets datarate to configuration and max payload size (M)
@@ -38,7 +38,7 @@ namespace LoRaTools.Regions
         /// X = RX1DROffset Upstream DR
         /// Y = Downstream DR in RX1 slot.
         /// </summary>
-        public int[,] RX1DROffsetTable { get; set; }
+        public IReadOnlyList<IReadOnlyList<int>> RX1DROffsetTable { get; set; }
 
         /// <summary>
         /// Gets or sets default parameters for the RX2 receive Windows, This windows use a fix frequency and Data rate.
@@ -190,16 +190,16 @@ namespace LoRaTools.Regions
         /// Implement correct logic to get the downstream data rate based on the region.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        public string GetDownstreamDR(Rxpk upstreamChannel, uint rx1DrOffset = 0)
+        public string GetDownstreamDR(Rxpk upstreamChannel, int rx1DrOffset = 0)
         {
             if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
 
             if (IsValidUpstreamRxpk(upstreamChannel))
             {
                 // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
-                if (rx1DrOffset <= RX1DROffsetTable.GetUpperBound(1))
+                if (rx1DrOffset <= this.RX1DROffsetTable[0].Count - 1)
                 {
-                    return DRtoConfiguration[(ushort)RX1DROffsetTable[GetDRFromFreqAndChan(upstreamChannel.Datr), rx1DrOffset]].configuration;
+                    return this.DRtoConfiguration[(ushort)RX1DROffsetTable[GetDRFromFreqAndChan(upstreamChannel.Datr)][rx1DrOffset]].configuration;
                 }
                 else
                 {
@@ -248,7 +248,7 @@ namespace LoRaTools.Regions
             return DRtoConfiguration.FirstOrDefault(x => x.Value.configuration == datr).Key;
         }
 
-        public bool IsValidRX1DROffset(uint rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= RX1DROffsetTable.GetUpperBound(1);
+        public bool IsValidRX1DROffset(uint rx1DrOffset) => rx1DrOffset >= 0 && rx1DrOffset <= RX1DROffsetTable[0].Count - 1;
 
         public static bool IsValidRXDelay(ushort desiredRXDelay)
         {

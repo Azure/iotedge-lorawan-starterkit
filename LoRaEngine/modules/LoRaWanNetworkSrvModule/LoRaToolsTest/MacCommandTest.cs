@@ -16,8 +16,8 @@ namespace LoRaWanTest
             var input = @"[ { ""cid"": ""DutyCycleCmd"", ""dutyCyclePL"": 12 }, { ""cid"": ""DevStatusCmd"" } ]";
             var list = JsonConvert.DeserializeObject<List<MacCommand>>(input);
             Assert.Equal(2, list.Count);
-            Assert.IsType<DutyCycleRequest>(list[0]);
-            Assert.IsType<DevStatusRequest>(list[1]);
+            _ = Assert.IsType<DutyCycleRequest>(list[0]);
+            _ = Assert.IsType<DevStatusRequest>(list[1]);
 
             var dutyCycleCmd = (DutyCycleRequest)list[0];
             Assert.Equal(12, dutyCycleCmd.DutyCyclePL);
@@ -29,7 +29,7 @@ namespace LoRaWanTest
             var input = @"{ ""cid"": ""DutyCycleCmd"", ""dutyCyclePL"": 12 }";
             var genericMACCommand = JsonConvert.DeserializeObject<MacCommand>(input);
             Assert.NotNull(genericMACCommand);
-            Assert.IsType<DutyCycleRequest>(genericMACCommand);
+            _ = Assert.IsType<DutyCycleRequest>(genericMACCommand);
             var dutyCycleCmd = (DutyCycleRequest)genericMACCommand;
             Assert.Equal(12, dutyCycleCmd.DutyCyclePL);
         }

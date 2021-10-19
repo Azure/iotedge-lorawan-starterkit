@@ -3,6 +3,8 @@
 
 namespace LoRaWan.Tests.Shared
 {
+    using System;
+
     public class SearchLogEvent
     {
         public SearchLogEvent()
@@ -26,13 +28,13 @@ namespace LoRaWan.Tests.Shared
                 message = rawMessage.Trim();
                 if (message.StartsWith('['))
                 {
-                    var idxEnd = message.IndexOf(']');
+                    var idxEnd = message.IndexOf(']', StringComparison.Ordinal);
                     if (idxEnd != -1)
                     {
                         if (message.Length >= idxEnd + 1)
                         {
-                            sourceId = message.Substring(1, idxEnd - 1);
-                            message = message.Substring(idxEnd + 1).TrimStart();
+                            sourceId = message[1..idxEnd];
+                            message = message[(idxEnd + 1)..].TrimStart();
                         }
                     }
                 }

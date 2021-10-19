@@ -11,7 +11,7 @@ namespace LoRaWan.Tests.Shared
     using System.Text;
     using System.Threading.Tasks;
 
-    public class UdpLogListener : IDisposable
+    public sealed class UdpLogListener : IDisposable
     {
         private readonly ConcurrentQueue<string> events;
 
@@ -25,7 +25,7 @@ namespace LoRaWan.Tests.Shared
             this.events.Clear();
         }
 
-        public IReadOnlyCollection<string> GetEvents() => this.events;
+        public IReadOnlyCollection<string> Events => this.events;
 
         public UdpLogListener(int port)
         {
@@ -54,7 +54,7 @@ namespace LoRaWan.Tests.Shared
                     while (true)
                     {
                         var msg = await this.udpClient.ReceiveAsync();
-                        if (msg != null && msg.Buffer != null)
+                        if (msg.Buffer != null)
                         {
                             var text = Encoding.UTF8.GetString(msg.Buffer);
                             OnMessageReceived(text);
@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Shared
                 }
                 catch (Exception ex)
                 {
-                    TestLogger.Log($"Error in UDP listener: {ex.ToString()}");
+                    TestLogger.Log($"Error in UDP listener: {ex}");
                 }
             });
         }

@@ -81,10 +81,6 @@ jobs:
     - name: Build C# Samples/DecoderSample
       run: dotnet build --configuration ${{ env.buildConfiguration }} Samples/DecoderSample
 
-    # Pull Redis Cache docker image
-    - name: Pulling Redis Cache image
-      run: docker pull redis:5.0.4-alpine
-
     # Run unit tests
     - name: Run unit tests
       run: |
@@ -100,9 +96,22 @@ jobs:
         name: unit-test-results
         path: ${{ env.TESTS_RESULTS_FOLDER }}/Unit
 
-    - name: Upload to Codecov
-      uses: codecov/codecov-action@v2
+    # Pull Redis Cache docker image
+    - name: Pulling Redis Cache image
+      run: docker pull redis:5.0.4-alpine
 
+    # Run integration tests
+    - name: Run integration tests
+      run: |
+        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Integration \
+          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/Tests/" \
+          ${{ env.TESTS_FOLDER }}/Integration/LoRaWan.Tests.Integration.csproj
+
+    - name: Upload to Codecov test reports
+      uses: codecov/codecov-action@v2
+      with:
+        directory: Tests/
+  
   check_if_deploy:
     needs:
       - env_var

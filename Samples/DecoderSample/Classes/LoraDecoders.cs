@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#pragma warning disable IDE0051 // Remove unused private members
+#pragma warning disable CA1801 // Review unused parameters
+#pragma warning disable IDE0060 // Remove unused parameter
+#pragma warning disable CA1812 // Remove unused class
+// Disabling warnings since it's sample code
+
 namespace SensorDecoderModule.Classes
 {
     using System;
@@ -15,7 +21,7 @@ namespace SensorDecoderModule.Classes
             var result = Encoding.UTF8.GetString(payload);
 
             // OR: Convert a payload containing binary data to HEX string for further processing
-            var result_binary = ConversionHelper.ByteArrayToString(payload);
+            _ = ConversionHelper.ByteArrayToString(payload);
 
             // Write code that decodes the payload here.
 

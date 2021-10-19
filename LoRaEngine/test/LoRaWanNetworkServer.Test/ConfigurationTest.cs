@@ -14,20 +14,28 @@ namespace LoRaWan.NetworkServer.Test
         [MemberData(nameof(AllowedDevAddressesInput))]
         public void Should_Setup_Allowed_Dev_Addresses_Correctly(string inputAllowedDevAddrValues, HashSet<string> expectedAllowedDevAddrValues)
         {
-            Environment.SetEnvironmentVariable("AllowedDevAddresses", inputAllowedDevAddrValues);
-            var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
-            Assert.Equal(expectedAllowedDevAddrValues.Count, networkServerConfiguration.AllowedDevAddresses.Count);
-            foreach (var devAddr in expectedAllowedDevAddrValues)
+            var envVariables = new[] { ("AllowedDevAddresses", inputAllowedDevAddrValues), ("FACADE_SERVER_URL", "https://aka.ms") };
+
+            try
             {
-                Assert.Contains(devAddr, networkServerConfiguration.AllowedDevAddresses);
+                foreach (var (key, value) in envVariables)
+                    Environment.SetEnvironmentVariable(key, value);
+
+                var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
+                Assert.Equal(expectedAllowedDevAddrValues.Count, networkServerConfiguration.AllowedDevAddresses.Count);
+                foreach (var devAddr in expectedAllowedDevAddrValues)
+                {
+                    Assert.Contains(devAddr, networkServerConfiguration.AllowedDevAddresses);
+                }
+            }
+            finally
+            {
+                foreach (var (key, _) in envVariables)
+                    Environment.SetEnvironmentVariable(key, string.Empty);
             }
         }
 
-        public static IEnumerable<object[]> AllowedDevAddressesInput
-        {
-            get
-            {
-                return new[]
+        public static IEnumerable<object[]> AllowedDevAddressesInput => new[]
                 {
                     new object[]
                     {
@@ -51,7 +59,5 @@ namespace LoRaWan.NetworkServer.Test
                         }
                     }
                 };
-            }
-        }
     }
 }

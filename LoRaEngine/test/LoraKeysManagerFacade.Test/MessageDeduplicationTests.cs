@@ -5,6 +5,7 @@ namespace LoraKeysManagerFacade.Test
 {
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.FunctionBundler;
+    using LoRaWan.Tests.Shared;
     using Xunit;
 
     public class MessageDeduplicationTests : FunctionTestBase

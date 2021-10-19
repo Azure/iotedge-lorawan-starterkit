@@ -7,9 +7,8 @@ namespace LoraKeysManagerFacade.Test
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.FunctionBundler;
-    using LoRaWan.Core;
+    using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Http.Internal;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -35,14 +34,12 @@ namespace LoraKeysManagerFacade.Test
 
             foreach (var apiCall in apiCalls)
             {
-                var request = new DefaultHttpRequest(new DefaultHttpContext())
-                {
-                    Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
-                                                        {
-                                                            { ApiVersion.QueryStringParamName, ApiVersion.LatestVersion.Name },
-                                                            { "DevEUI", devEUI }
-                                                        })
-                };
+                var request = new DefaultHttpContext().Request;
+                request.Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
+                    {
+                        { ApiVersion.QueryStringParamName, ApiVersion.LatestVersion.Name },
+                        { "DevEUI", devEUI }
+                    });
 
                 await Assert.ThrowsAsync<ArgumentException>(async () => await apiCall(request));
             }

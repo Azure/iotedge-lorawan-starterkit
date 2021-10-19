@@ -18,12 +18,12 @@ namespace SensorDecoderModule.Classes
 
             if (payload == null)
             {
-                if (error != string.Empty)
+                if (!string.IsNullOrEmpty(error))
                     error += " and ";
                 error += "Payload missing";
             }
 
-            if (error != string.Empty)
+            if (!string.IsNullOrEmpty(error))
             {
                 throw new WebException(error);
             }

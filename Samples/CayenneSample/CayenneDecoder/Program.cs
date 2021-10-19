@@ -1,10 +1,10 @@
-using System;
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
-
 namespace CayenneDecoderModule
 {
-    public class Program
+    using System;
+    using Microsoft.AspNetCore;
+    using Microsoft.AspNetCore.Hosting;
+
+    public static class Program
     {
         public static void Main(string[] args)
         {

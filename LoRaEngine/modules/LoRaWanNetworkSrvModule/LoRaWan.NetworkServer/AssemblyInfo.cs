@@ -2,5 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System.Runtime.CompilerServices;
 
-// Lets test assembly access internal methods
 [assembly: InternalsVisibleTo("LoRaWanNetworkServer.Test")]
+[assembly: InternalsVisibleTo("LoRaWan.Tests.Shared")]
+[assembly: InternalsVisibleTo("LoRaWan.Tests.Integration")]

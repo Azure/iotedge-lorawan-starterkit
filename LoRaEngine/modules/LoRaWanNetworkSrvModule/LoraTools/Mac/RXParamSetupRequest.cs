@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#pragma warning disable CA1819 // Properties should not return arrays
+
 namespace LoRaTools
 {
     using System.Collections.Generic;

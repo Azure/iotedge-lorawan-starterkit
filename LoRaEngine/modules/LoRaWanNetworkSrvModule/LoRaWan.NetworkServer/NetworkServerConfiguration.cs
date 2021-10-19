@@ -57,7 +57,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets or sets the Azure Facade function URL.
         /// </summary>
-        public string FacadeServerUrl { get; set; }
+        public Uri FacadeServerUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the Azure Facade Function auth code.
@@ -129,7 +129,7 @@ namespace LoRaWan.NetworkServer
             config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", string.Empty);
             config.Rx2Frequency = envVars.GetEnvVar("RX2_FREQ");
             config.IoTEdgeTimeout = envVars.GetEnvVar("IOTEDGE_TIMEOUT", config.IoTEdgeTimeout);
-            config.FacadeServerUrl = envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty);
+            config.FacadeServerUrl = new Uri(envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty));
             config.FacadeAuthCode = envVars.GetEnvVar("FACADE_AUTH_CODE", string.Empty);
             config.LogToHub = envVars.GetEnvVar("LOG_TO_HUB", config.LogToHub);
             config.LogLevel = envVars.GetEnvVar("LOG_LEVEL", config.LogLevel);
