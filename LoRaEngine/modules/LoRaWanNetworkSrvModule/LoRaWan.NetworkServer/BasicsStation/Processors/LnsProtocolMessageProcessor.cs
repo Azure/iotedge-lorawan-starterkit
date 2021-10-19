@@ -52,7 +52,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.logger.LogInformation($"Received discovery request from: {stationEui}");
 
             var httpContext = this.httpContextAccessor.HttpContext;
-            var schema = httpContext.Request.IsHttps ? "wss" : "ws";
+            var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
             var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
                                                    .Where(iface => iface.GetIPProperties()
                                                                         .UnicastAddresses
@@ -61,7 +61,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
             var response = LnsDiscovery.SerializeResponse(stationEui,
                                                           LnsDiscovery.GetMacAddressAsID6(networkInterface),
-                                                          new Uri($"{schema}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}"),
+                                                          new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}"),
                                                           string.Empty);
             await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, token);
 
