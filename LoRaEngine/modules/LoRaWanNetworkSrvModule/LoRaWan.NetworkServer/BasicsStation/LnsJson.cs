@@ -32,8 +32,8 @@ namespace LoRaWanTest
             writer.WriteStartObject();
 
             writer.WriteString("msgtype", "router_config");
-            Tuple(writer, "freq_range", freqRange, h => h.AsUInt64());
-            Array(writer, "JoinEUI", joinEuiRanges, (w, r) => Tuple(w, r, (w, eui) => w.WriteNumberValue(eui.AsUInt64())));
+            Tuple(writer, "freq_range", freqRange, h => h.AsUInt64);
+            Array(writer, "JoinEUI", joinEuiRanges, (w, r) => Tuple(w, r, (w, eui) => w.WriteNumberValue(eui.AsUInt64)));
 
 //            Sx1301Conf(writer, //* ... */);
 

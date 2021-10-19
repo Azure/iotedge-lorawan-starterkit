@@ -97,7 +97,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         {
             writer.WriteStartObject();
 
-            writer.WriteString("router", Id6.Format(station.AsUInt64(), Id6.FormatOptions.Lowercase));
+            writer.WriteString("router", Id6.Format(station.AsUInt64, Id6.FormatOptions.Lowercase));
             writer.WriteString("muxs", lnsEndpoint);
             writer.WriteString("uri", lnsUri.ToString());
             if (!string.IsNullOrEmpty(error))
