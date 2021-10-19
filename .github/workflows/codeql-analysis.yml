@@ -7,22 +7,17 @@ on:
     # The branches below must be a subset of the branches above
     branches: [ dev ]
   schedule:
-    - cron: '59 23 * * 2'
+    - cron: '59 23 * * *'
 
 jobs:
-  analyze:
-    name: Analyze
+  analyze_dotnet:
+    name: Analyze Dotnet
     runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
       security-events: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'javascript', 'csharp' ]
-       
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -31,7 +26,32 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
-        languages: ${{ matrix.language }}
+        languages: dotnet
+        queries: +security-and-quality,security-extended
+
+     # build LoRa Engine
+    - name: Build LoRa Engine
+      run: dotnet build --configuration Release
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
+
+  analyze_javascript:
+    name: Analyze Javascript
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # Initializes the CodeQL tools for scanning.
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        languages: javascript
         queries: +security-and-quality,security-extended
 
 
