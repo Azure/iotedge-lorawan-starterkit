@@ -118,7 +118,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             writer.WriteStartObject();
 
             #region msgtype
-            writer.WriteString("msgtype", "router_config");
+            writer.WriteString("msgtype", nameof(LnsMessageType.router_config));
             #endregion
             #region NetID
             writer.WritePropertyName("NetID");
