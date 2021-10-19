@@ -157,12 +157,14 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix:
-        gateway: [ primary, secondary ]
+        gateway: [ primary, eflow ]
         include:
           - gateway: primary
             architecture: arm32v7
-          - gateway: secondary
-            architecture: arm32v7
+            nwkServerIp: '172.17.0.1'
+          - gateway: eflow
+            architecture: amd64
+            nwkServerIp: '52.158.42.244'
     needs:
     - env_var
     - check_if_deploy
@@ -193,6 +195,7 @@ jobs:
       DEV_IMAGE_TAG: dev
       DEVICE_ID: ${{ matrix.gateway }}
       MASTER_IMAGE_TAG: master
+      PKT_FWD_NETWORK_SERVER: ${{ matrix.nwkServerIp }}
     runs-on: ubuntu-latest
     name: Run IoT Edge Deployment on ARM gateway
     steps:

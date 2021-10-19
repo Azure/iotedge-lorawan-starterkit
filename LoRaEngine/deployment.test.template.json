@@ -137,6 +137,9 @@
               },
               "PKT_FWD_SPI_DEV":{
                 "value":"$SPI_DEV"
+              },
+              "NETWORK_SERVER": {
+                "value": "$PKT_FWD_NETWORK_SERVER"
               }
             },
             "version": "1.0",
