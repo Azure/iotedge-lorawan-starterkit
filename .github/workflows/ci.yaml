@@ -73,6 +73,22 @@ jobs:
     - name: .NET SDK Information
       run: dotnet --info
 
+    - name: Restore Tools
+      run: dotnet tool restore
+
+    - name: Refresh T4 Generated Code
+      # Re-run all T4 templates to refresh them.
+      run: git ls-files *.tt | xargs -t -n 1 dotnet t4
+
+    - name: Check for Modifications
+      # "git diff" with "--exit-code" makes the program exit with codes similar to diff.
+      # That is, it exits with 1 if there were differences and 0 means no differences.
+      # This is to ensure that the last step did not introduce any changes to the working
+      # tree, which would mean that the tracked generated code is not up to date with the
+      # template. The templates should be executed on a local clone (either using VS or
+      # via "dotnet t4") and the (refreshed) generated code committed.
+      run: git diff --exit-code
+
     # build LoRa Engine
     - name: Build LoRa Engine
       run: dotnet build --configuration ${{ env.buildConfiguration }}
