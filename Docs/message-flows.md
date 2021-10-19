@@ -245,5 +245,3 @@ end
 12. If not, we print out a warning
 
 13. We return the `IoTHubDeviceInfo`
-
-**Bug?**: It looks like we do not store anything ever under the DevEUI key. The invalidation of the cache looks like it should have targeted the the DevAddr hash table and removed the entry from there. That would enforce to re-fetch the information from the twins after a re-join.
