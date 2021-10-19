@@ -35,12 +35,17 @@ namespace LoRaWanTest
         }
 
         [Theory]
-        [InlineData("SF12BW125", "SF12BW125")]
-        [InlineData("SF11BW125", "SF11BW125")]
-        public void TestDataRate(string inputDr, string outputDr)
+        [InlineData("SF12BW125", "SF12BW125", 0)]
+        [InlineData("SF11BW125", "SF11BW125", 0)]
+        [InlineData("SF10BW125", "SF10BW125", 0)]
+        [InlineData("SF7BW500", "SF7BW500", 0)]
+        [InlineData("SF10BW125", "SF11BW125", 1)]
+        [InlineData("SF8BW125", "SF10BW125", 2)]
+        [InlineData("SF7BW500", "SF9BW125", 3)]
+        public void TestDataRate(string inputDr, string outputDr, uint rx1DrOffset)
         {
             var rxpk = GenerateRxpk(inputDr, 470.3);
-            TestRegionDataRate(rxpk, outputDr);
+            TestRegionDataRate(rxpk, outputDr, rx1DrOffset);
         }
 
         [Theory]

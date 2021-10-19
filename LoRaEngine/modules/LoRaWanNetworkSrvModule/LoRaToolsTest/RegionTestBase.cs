@@ -24,9 +24,9 @@ namespace LoRaWanTest
             Assert.Equal(frequency, outputFreq);
         }
 
-        protected void TestRegionDataRate(List<Rxpk> rxpk, string outputDr)
+        protected void TestRegionDataRate(List<Rxpk> rxpk, string outputDr, uint rx1DrOffset = 0)
         {
-            Assert.Equal(_region.GetDownstreamDR(rxpk[0]), outputDr);
+            Assert.Equal(_region.GetDownstreamDR(rxpk[0], rx1DrOffset), outputDr);
         }
 
         protected void TestRegionLimit(double freq, string datarate, int? joinChannelIndex = null)
