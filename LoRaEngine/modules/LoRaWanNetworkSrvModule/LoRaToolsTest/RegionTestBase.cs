@@ -75,5 +75,18 @@ namespace LoRaWanTest
             Assert.Equal(expectedFreq, freq);
             Assert.Equal(expectedDr, datr);
         }
+
+        protected void TestTranslateToRegion(LoRaRegionType loRaRegion)
+        {
+            Assert.True(RegionManager.TryTranslateToRegion(loRaRegion, out var region));
+            Assert.IsType(Region.GetType(), region);
+        }
+
+        protected void TestTryResolveRegion(string dr, double freq)
+        {
+            var rxpk = GenerateRxpk(dr, freq);
+            Assert.True(RegionManager.TryResolveRegion(rxpk[0], out var region));
+            Assert.IsType(Region.GetType(), region);
+        }
     }
 }

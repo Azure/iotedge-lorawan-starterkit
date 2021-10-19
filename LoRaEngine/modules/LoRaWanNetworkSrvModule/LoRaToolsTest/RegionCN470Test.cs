@@ -11,6 +11,21 @@ namespace LoRaWanTest
         }
 
         [Theory]
+        [InlineData(470.9, 0)]
+        [InlineData(475.7, 3)]
+        [InlineData(507.3, 6)]
+        [InlineData(499.9, 9)]
+        [InlineData(478.3, 14)]
+        [InlineData(482.3, 16)]
+        [InlineData(488.3, 19)]
+        public void TestTryGetJoinChannelIndex(double freq, int expectedIndex)
+        {
+            var rxpk = GenerateRxpk("SF12BW125", freq);
+            Assert.True(Region.TryGetJoinChannelIndex(rxpk[0], out var channelIndex));
+            Assert.Equal(expectedIndex, channelIndex);
+        }
+
+        [Theory]
         // 20 MHz plan A
         [InlineData(470.3, 483.9, 0)]
         [InlineData(476.5, 490.1, 1)]
@@ -42,6 +57,7 @@ namespace LoRaWanTest
         [InlineData("SF10BW125", "SF11BW125", 1)]
         [InlineData("SF8BW125", "SF10BW125", 2)]
         [InlineData("SF7BW500", "SF9BW125", 3)]
+        [InlineData("SF7BW500", "SF7BW500", 10)]
         public void TestDataRate(string inputDr, string outputDr, int rx1DrOffset)
         {
             var rxpk = GenerateRxpk(inputDr, 470.3);
@@ -78,6 +94,18 @@ namespace LoRaWanTest
         public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
         {
             TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
+        }
+
+        [Fact]
+        public void TestTranslateRegionType()
+        {
+            TestTranslateToRegion(LoRaRegionType.CN470);
+        }
+
+        [Fact]
+        public void TestResolveRegion()
+        {
+            TestTryResolveRegion("SF11BW125", 470.3);
         }
     }
 }
