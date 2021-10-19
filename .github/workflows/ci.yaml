@@ -84,10 +84,10 @@ jobs:
     # Run unit tests
     - name: Run unit tests
       run: |
-        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Unit \
+        dotnet test --configuration ${{ env.buildConfiguration }} --no-build \
+          --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Unit \
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
-          --filter 'FullyQualifiedName~LoRaWanTest|FullyQualifiedName~LoRaWan.NetworkServer.Test|FullyQualifiedName~LoraKeysManagerFacade.Test' \
-          LoRaEngine
+          Tests\Unit\LoRaWan.Tests.Unit.csproj
 
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
