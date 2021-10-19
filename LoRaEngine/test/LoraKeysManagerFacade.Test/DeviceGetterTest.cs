@@ -6,6 +6,7 @@ namespace LoraKeysManagerFacade.Test
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Moq;

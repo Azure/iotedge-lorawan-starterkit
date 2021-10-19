@@ -3,7 +3,7 @@
 
 namespace LoraKeysManagerFacade
 {
-    using LoRaWan.Core;
+    using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using System;
 

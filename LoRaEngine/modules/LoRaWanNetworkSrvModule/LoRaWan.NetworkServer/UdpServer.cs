@@ -14,6 +14,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.ADR;
+    using LoRaTools.CommonAPI;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
     using LoRaWan.Core;

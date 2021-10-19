@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer.Test
     using System.Text;
     using LoRaTools;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;

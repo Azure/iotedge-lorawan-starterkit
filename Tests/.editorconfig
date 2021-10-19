@@ -1,0 +1,27 @@
+[*.cs]
+
+# CA1707: Identifiers should not contain underscores
+dotnet_diagnostic.CA1707.severity = none
+
+# CA1303: Console.WriteLine should get strings from resource table
+dotnet_diagnostic.CA1303.severity = none
+
+# Expression value is never used
+dotnet_diagnostic.IDE0058.severity=suggestion
+
+# CA5394: Do not use insecure randomness
+dotnet_diagnostic.CA5394.severity = none
+
+# CA5399: Definitely disable HttpClient certificate revocation list check
+dotnet_diagnostic.CA5399.severity = none
+
+# CA1062: Validate arguments of public methods
+dotnet_diagnostic.CA1062.severity = suggestion
+
+# Allow using of the "this" qualifier
+dotnet_style_qualification_for_field=true:error
+dotnet_style_qualification_for_property=false:error
+dotnet_style_qualification_for_method=false:error
+dotnet_style_qualification_for_event=false:error
+
+# dotnet_diagnostic.IDE0009.severity = none
