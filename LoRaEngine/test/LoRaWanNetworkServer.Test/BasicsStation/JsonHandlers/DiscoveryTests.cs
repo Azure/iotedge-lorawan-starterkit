@@ -48,13 +48,13 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
         [Theory]
         [InlineData("b8-27-eb-ff-fe-e1-e3-9a", validMuxs, validUriString, "", @"{""router"":""b827:ebff:fee1:e39a"",""muxs"":""0000:00FF:FE00:0000"",""uri"":""ws://localhost:5000/router-data""}")]
         [InlineData("b827:ebff:fee1:e39a", validMuxs, validUriString, "", @"{""router"":""b827:ebff:fee1:e39a"",""muxs"":""0000:00FF:FE00:0000"",""uri"":""ws://localhost:5000/router-data""}")]
-        public void Serialize_Succeeds(string stationId6, string muxs, string url, string error, string expected)
+        public void Serialize_Succeeds(string stationId6, string muxs, string routerDataEndpoint, string error, string expected)
         {
             var stationEui = stationId6.Contains(':', StringComparison.Ordinal)
                              ? Id6.TryParse(stationId6, out var id6) ? new StationEui(id6) : throw new JsonException()
                              : Hexadecimal.TryParse(stationId6, out var hhd, '-') ? new StationEui(hhd) : throw new JsonException();
 
-            var computed = Discovery.SerializeResponse(stationEui, muxs, new Uri(url), error);
+            var computed = Discovery.SerializeResponse(stationEui, muxs, new Uri(routerDataEndpoint), error);
             Assert.Equal(expected, computed);
         }
 

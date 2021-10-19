@@ -34,7 +34,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 if (reader.ValueTextEquals("router"))
                 {
                     _ = reader.Read();
+#pragma warning disable IDE0010 // All missing cases are handled with NotSupportedException
                     switch (reader.TokenType)
+#pragma warning restore IDE0010 // All missing cases are handled with NotSupportedException
                     {
                         case JsonTokenType.Number:
                         {
@@ -95,7 +97,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         {
             writer.WriteStartObject();
 
-            writer.WriteString("router", Id6.Format(station.AsUInt64, Id6.FormatOptions.Lowercase));
+            writer.WriteString("router", Id6.Format(station.AsUInt64(), Id6.FormatOptions.Lowercase));
             writer.WriteString("muxs", lnsEndpoint);
             writer.WriteString("uri", lnsUri.ToString());
             if (!string.IsNullOrEmpty(error))

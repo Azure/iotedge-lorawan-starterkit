@@ -26,31 +26,34 @@ namespace LoRaWanTest
                                              (Hertz Min, Hertz Max) freqRange,
                                              IEnumerable<(JoinEui Min, JoinEui Max)> joinEuiRanges)
         {
+            if (writer is null) throw new ArgumentNullException(nameof(writer));
+            if (joinEuiRanges is null) throw new ArgumentNullException(nameof(joinEuiRanges));
+
             writer.WriteStartObject();
 
             writer.WriteString("msgtype", "router_config");
-            Tuple(writer, "freq_range", freqRange, h => h.AsUInt64);
-            Array(writer, "JoinEUI", joinEuiRanges, (w, r) => Tuple(w, r, (w, eui) => w.WriteNumberValue(eui.AsUInt64)));
+            Tuple(writer, "freq_range", freqRange, h => h.AsUInt64());
+            Array(writer, "JoinEUI", joinEuiRanges, (w, r) => Tuple(w, r, (w, eui) => w.WriteNumberValue(eui.AsUInt64())));
 
 //            Sx1301Conf(writer, //* ... */);
 
             writer.WriteEndObject();
         }
 
-        public static void Sx1301Conf(Utf8JsonWriter writer,
-                                      bool enable, int centreFreq, int rfChain)
-        {
-            /*
-{
-  "chip_enable"      : BOOL
-  "chip_center_freq" : INT
-  "chip_rf_chain"    : INT
-  "chan_multiSF_X"   : CHANCONF   // where X in {0..7}
-  "chan_LoRa_std"    : CHANCONF
-  "chan_FSK"         : CHANCONF
-}
-             */
-        }
+//        public static void Sx1301Conf(Utf8JsonWriter writer,
+//                                      bool enable, int centreFreq, int rfChain)
+//        {
+//            /*
+//{
+//  "chip_enable"      : BOOL
+//  "chip_center_freq" : INT
+//  "chip_rf_chain"    : INT
+//  "chan_multiSF_X"   : CHANCONF   // where X in {0..7}
+//  "chan_LoRa_std"    : CHANCONF
+//  "chan_FSK"         : CHANCONF
+//}
+//             */
+//        }
 
         static void Tuple<T>(Utf8JsonWriter writer, string name, (T, T) value, Func<T, ulong> f)
         {
