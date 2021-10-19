@@ -6,7 +6,7 @@ Authors: Maggie Salak, Mikhail Chatillon
 
 ## Overview / Problem Statement
 
-The specification of region CN470 has significant differences compared to regions already supported by the Starterkit. Specifically, there are 4 different frequency channel plans involved and calculation of downstream frequencies requires knowing which channel plan should be used for a given device:
+The specification of region CN470 has significant differences compared to regions already supported by the Starterkit. Specifically, there are 4 different frequency channel plans involved and calculation of downstream frequencies requires knowing which channel plan has been activated for a given device during join or device provisioning:
 - Plan A for 20 MHz antennas
 - Plan B for 20 MHz antennas
 - Plan A for 26 MHz antennas
@@ -16,13 +16,14 @@ This document summarizes decisions taken for the purpose of implementing support
 
 ## In-Scope
 
-* support for OTAA and ABP devices
-* correct handling of join requests
-* calculation of downstream frequencies and data rates
-* calculation of RX2 default frequency
+- Support for OTAA and ABP devices
+- Correct handling of join requests
+- Calculation of downstream frequencies and data rates
+- Calculation of RX2 default frequency
 
 ## Out-of-scope
 
+- MAC commands - support for MAC commands will be added later on 
 
 ## Choices
 
