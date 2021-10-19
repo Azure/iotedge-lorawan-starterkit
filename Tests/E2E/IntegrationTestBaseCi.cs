@@ -13,10 +13,7 @@ namespace LoRaWan.Tests.E2E
     {
         private bool isDisposed; // To detect redundant calls
 
-        protected IntegrationTestFixtureCi TestFixtureCi
-        {
-            get { return (IntegrationTestFixtureCi)TestFixture; }
-        }
+        protected IntegrationTestFixtureCi TestFixtureCi => (IntegrationTestFixtureCi)TestFixture;
 
         protected LoRaArduinoSerial ArduinoDevice { get; }
 
@@ -26,7 +23,7 @@ namespace LoRaWan.Tests.E2E
             ArduinoDevice = testFixture.ArduinoDevice;
         }
 
-        protected string ToHexString(string str)
+        protected static string ToHexString(string str)
         {
             var sb = new StringBuilder();
 

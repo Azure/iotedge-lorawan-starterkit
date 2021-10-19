@@ -16,10 +16,6 @@ namespace LoRaWan.Tests.E2E
     {
         public static LoRaArduinoSerial CreateFromPort(string port)
         {
-            var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
-            LoRaArduinoSerial result = null;
-
             TestLogger.Log($"** Starting serial port '{port}' **");
 
             var serialPort = new SerialPort(port)
@@ -31,7 +27,7 @@ namespace LoRaWan.Tests.E2E
                 DtrEnable = true,
                 Handshake = Handshake.None
             };
-            result = new LoRaArduinoSerial(serialPort);
+            var result = new LoRaArduinoSerial(serialPort);
 
             try
             {
@@ -39,7 +35,7 @@ namespace LoRaWan.Tests.E2E
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error opening serial port '{port}': {ex.ToString()}");
+                TestLogger.Log($"Error opening serial port '{port}': {ex}");
                 throw;
             }
 
@@ -82,7 +78,7 @@ namespace LoRaWan.Tests.E2E
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error during {nameof(SetupLora)}. {ex.ToString()}");
+                TestLogger.Log($"Error during {nameof(SetupLora)}. {ex}");
             }
         }
     }

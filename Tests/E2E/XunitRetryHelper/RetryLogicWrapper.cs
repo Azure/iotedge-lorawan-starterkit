@@ -30,47 +30,45 @@ namespace XunitRetryHelper
             var testRetryCount = 0;
             var rnd = new Random();
 
-            using (var delayedMessageBus = new DelayedMessageBus(messageBus))
+            using var delayedMessageBus = new DelayedMessageBus(messageBus);
+            while (true)
             {
-                while (true)
+                var summary = await executer(diagnosticMessageSink, delayedMessageBus, constructorArguments, aggregator, cancellationTokenSource);
+
+                var lastAssert = delayedMessageBus.LastFailure;
+
+                if (aggregator.HasExceptions || summary.Failed == 0 || testRetryCount + 1 > maxRetries)
                 {
-                    var summary = await executer(diagnosticMessageSink, delayedMessageBus, constructorArguments, aggregator, cancellationTokenSource);
+                    delayedMessageBus.Complete();
 
-                    var lastAssert = delayedMessageBus.LastFailure;
-
-                    if (aggregator.HasExceptions || summary.Failed == 0 || testRetryCount + 1 > maxRetries)
+                    if (testRetryCount > 0)
                     {
-                        delayedMessageBus.Complete();
+                        LogMessage($"test '{testCase.DisplayName}' retry finished. Number of failed tests of last run: {summary.Failed}, retry state: {testRetryCount}/{maxRetries}");
 
-                        if (testRetryCount > 0)
+                        if (summary.Failed == 0)
                         {
-                            LogMessage($"test '{testCase.DisplayName}' retry finished. Number of failed tests of last run: {summary.Failed}, retry state: {testRetryCount}/{maxRetries}");
-
-                            if (summary.Failed == 0)
-                            {
-                                LogMessage($"test '{testCase.DisplayName}' succeeded after {testRetryCount}/{maxRetries} executions.");
-                            }
-                            else if (testRetryCount == maxRetries)
-                            {
-                                LogMessage($"test '{testCase.DisplayName}' failed after {testRetryCount}/{maxRetries} executions.", lastAssert);
-                            }
+                            LogMessage($"test '{testCase.DisplayName}' succeeded after {testRetryCount}/{maxRetries} executions.");
                         }
-
-                        if (aggregator.HasExceptions)
+                        else if (testRetryCount == maxRetries)
                         {
-                            LogMessage($"test '{testCase.DisplayName}' failed with exception. {aggregator.ToException()}");
+                            LogMessage($"test '{testCase.DisplayName}' failed after {testRetryCount}/{maxRetries} executions.", lastAssert);
                         }
-
-                        return summary;
                     }
 
-                    testRetryCount++;
-                    var retryDelay = (int)Math.Min(180_000, Math.Pow(2, testRetryCount) * rnd.Next(5000, 30_000));
-                    var msg = $"performing retry number {testRetryCount}/{maxRetries} in {retryDelay}ms for Test '{testCase.DisplayName}'";
-                    LogMessage(msg, lastAssert);
+                    if (aggregator.HasExceptions)
+                    {
+                        LogMessage($"test '{testCase.DisplayName}' failed with exception. {aggregator.ToException()}");
+                    }
 
-                    await Task.Delay(retryDelay, cancellationTokenSource.Token);
+                    return summary;
                 }
+
+                testRetryCount++;
+                var retryDelay = (int)Math.Min(180_000, Math.Pow(2, testRetryCount) * rnd.Next(5000, 30_000));
+                var msg = $"performing retry number {testRetryCount}/{maxRetries} in {retryDelay}ms for Test '{testCase.DisplayName}'";
+                LogMessage(msg, lastAssert);
+
+                await Task.Delay(retryDelay, cancellationTokenSource.Token);
             }
         }
 

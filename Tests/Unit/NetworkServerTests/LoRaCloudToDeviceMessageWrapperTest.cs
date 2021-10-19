@@ -15,7 +15,7 @@ namespace LoRaWan.Tests.Unit
 
     public sealed class LoRaCloudToDeviceMessageWrapperTest : IDisposable
     {
-        private readonly TestUtils.LoraDeviceClientConnectionManagerWrapper connectionManagerWrapper;
+        private readonly LoraDeviceClientConnectionManagerWrapper connectionManagerWrapper;
         private readonly LoRaDevice sampleDevice;
         private LoRaDeviceClientConnectionManager ConnectionManager => this.connectionManagerWrapper.Value;
 

@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.E2E
         /// Ensures that a cloud to device message has not been seen more than expected.
         /// </summary>
         /// <param name="foundCount">number of times found.</param>
-        private void EnsureNotSeenTooManyTimes(int foundCount)
+        private static void EnsureNotSeenTooManyTimes(int foundCount)
         {
             Assert.True(foundCount <= CloudToDeviceMessageReceiveCountThreshold, $"Cloud to device message was processed {foundCount} times");
             if (foundCount > 1)
@@ -127,11 +127,11 @@ namespace LoRaWan.Tests.E2E
                 await AssertUtils.ContainsWithRetriesAsync("+CMSG: ACK Received", ArduinoDevice.SerialLogs);
 
                 // Check that RXDelay was correctly used
-                if (ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN1", StringComparison.OrdinalIgnoreCase)).Count() > 0)
+                if (ArduinoDevice.SerialLogs.Any(x => x.StartsWith("+CMSG: RXWIN1", StringComparison.OrdinalIgnoreCase)))
                 {
                     await TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, false, device.GatewayID);
                 }
-                else if (ArduinoDevice.SerialLogs.Where(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.OrdinalIgnoreCase)).Count() > 0)
+                else if (ArduinoDevice.SerialLogs.Any(x => x.StartsWith("+CMSG: RXWIN2", StringComparison.OrdinalIgnoreCase)))
                 {
                     await TestFixtureCi.CheckAnswerTimingAsync(device.RXDelay * Constants.CONVERT_TO_PKT_FWD_TIME, true, device.GatewayID);
                 }

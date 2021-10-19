@@ -81,7 +81,7 @@ namespace LoRaWan.Tests.E2E
             {
                 if (TestFixtureCi.Configuration.IoTHubAssertLevel == LogValidationAssertLevel.Warning)
                 {
-                    Log($"[WARN] {nameof(OTAA_Join_With_Valid_Device_Updates_DeviceTwin)} failed. {xunitException.ToString()}");
+                    Log($"[WARN] {nameof(OTAA_Join_With_Valid_Device_Updates_DeviceTwin)} failed. {xunitException}");
                 }
                 else if (TestFixtureCi.Configuration.IoTHubAssertLevel == LogValidationAssertLevel.Error)
                 {

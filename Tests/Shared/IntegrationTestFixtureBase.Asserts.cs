@@ -18,13 +18,13 @@ namespace LoRaWan.Tests.Shared
     /// </summary>
     public abstract partial class IntegrationTestFixtureBase : IDisposable, IAsyncLifetime
     {
-        internal string GetMessageIdentifier(EventData eventData)
+        internal static string GetMessageIdentifier(EventData eventData)
         {
             eventData.Properties.TryGetValue("messageIdentifier", out var actualMessageIdentifier);
             return actualMessageIdentifier?.ToString();
         }
 
-        bool IsDeviceMessage(string expectedDeviceID, string jsonPropertyToValidate, string expectedValue, string eventDeviceID, string eventDataMessageBody)
+        static bool IsDeviceMessage(string expectedDeviceID, string jsonPropertyToValidate, string expectedValue, string eventDeviceID, string eventDataMessageBody)
         {
             if (eventDeviceID != null && eventDeviceID == expectedDeviceID)
             {
@@ -39,7 +39,7 @@ namespace LoRaWan.Tests.Shared
                 }
                 catch (Exception ex)
                 {
-                    TestLogger.Log($"Error searching device payload: {eventDataMessageBody}. {ex.ToString()}");
+                    TestLogger.Log($"Error searching device payload: {eventDataMessageBody}. {ex}");
                 }
             }
 
@@ -90,7 +90,7 @@ namespace LoRaWan.Tests.Shared
             if (Configuration.NetworkServerModuleLogAssertLevel == LogValidationAssertLevel.Ignore)
                 return null;
 
-            return await AssertNetworkServerModuleLogExistsAsync((input) => input.StartsWith(logMessageStart), new SearchLogOptions(logMessageStart));
+            return await AssertNetworkServerModuleLogExistsAsync((input) => input.StartsWith(logMessageStart, StringComparison.Ordinal), new SearchLogOptions(logMessageStart));
         }
 
         public async Task AssertNetworkServerModuleLogStartsWithAsync(string logMessageStart1, string logMessageStart2)
@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.Shared
                 return;
 
             await AssertNetworkServerModuleLogExistsAsync(
-                (input) => input.StartsWith(logMessageStart1) || input.StartsWith(logMessageStart2),
+                (input) => input.StartsWith(logMessageStart1, StringComparison.Ordinal) || input.StartsWith(logMessageStart2, StringComparison.Ordinal),
                 new SearchLogOptions(string.Concat(logMessageStart1, " or ", logMessageStart2)));
         }
 
@@ -135,14 +135,14 @@ namespace LoRaWan.Tests.Shared
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in this.udpLogListener.GetEvents())
+                foreach (var item in this.udpLogListener.Events)
                 {
-                    var parsed = SearchLogEvent.Parse(item);
-                    if (predicate(parsed.Message))
+                    var (message, sourceId) = SearchLogEvent.Parse(item);
+                    if (predicate(message))
                     {
-                        if (!string.IsNullOrEmpty(parsed.SourceId))
+                        if (!string.IsNullOrEmpty(sourceId))
                         {
-                            sourceIds.Add(parsed.SourceId);
+                            sourceIds.Add(sourceId);
                         }
 
                         if (sourceIds.Count == numberOfGw)
@@ -168,14 +168,14 @@ namespace LoRaWan.Tests.Shared
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in this.udpLogListener.GetEvents())
+                foreach (var item in this.udpLogListener.Events)
                 {
-                    var parsed = SearchLogEvent.Parse(item);
-                    if (predicate(parsed.Message))
+                    var (message, sourceId) = SearchLogEvent.Parse(item);
+                    if (predicate(message))
                     {
-                        if (!string.IsNullOrEmpty(parsed.SourceId))
+                        if (!string.IsNullOrEmpty(sourceId))
                         {
-                            sourceIds.Add(parsed.SourceId);
+                            sourceIds.Add(sourceId);
                         }
                     }
                 }
@@ -199,10 +199,10 @@ namespace LoRaWan.Tests.Shared
         /// <param name="devEUI">The device EUI of the current device.</param>
         public async Task<bool> WaitForTwinSyncAfterJoinAsync(IReadOnlyCollection<string> serialLog, string devEUI)
         {
-            var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID"));
+            var joinConfirmMsg = serialLog.FirstOrDefault(s => s.StartsWith("+JOIN: NetID", StringComparison.Ordinal));
             Assert.NotNull(joinConfirmMsg);
-            var devAddr = joinConfirmMsg.Substring(joinConfirmMsg.LastIndexOf(' ') + 1);
-            devAddr = devAddr.Replace(":", string.Empty);
+            var devAddr = joinConfirmMsg[(joinConfirmMsg.LastIndexOf(' ') + 1)..];
+            devAddr = devAddr.Replace(":", string.Empty, StringComparison.Ordinal);
 
             // wait for the twins to be stored and published -> all GW need the same state
             const int DelayForJoinTwinStore = 20 * 1000;
@@ -216,7 +216,7 @@ namespace LoRaWan.Tests.Shared
                 var twins = await GetTwinAsync(devEUI);
                 if (twins.Properties.Reported.Contains(DevAddrProperty))
                 {
-                    reported = devAddr.Equals(twins.Properties.Reported[DevAddrProperty].Value as string, StringComparison.InvariantCultureIgnoreCase);
+                    reported = devAddr.Equals(twins.Properties.Reported[DevAddrProperty].Value as string, StringComparison.OrdinalIgnoreCase);
                 }
             }
 
@@ -288,20 +288,20 @@ namespace LoRaWan.Tests.Shared
             SearchLogResult log;
             if (isUpstream)
             {
-                log = await SearchIoTHubLogs(x => x.Contains(message), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+                log = await SearchIoTHubLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
             }
             else
             {
-                log = await SearchUdpLogs(x => x.Contains(message), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
+                log = await SearchUdpLogs(x => x.Contains(message, StringComparison.Ordinal), new SearchLogOptions { SourceIdFilter = sourceIdFilter });
             }
 
-            var timeIndexStart = log.FoundLogResult.IndexOf(token) + token.Length;
-            var timeIndexStop = log.FoundLogResult.IndexOf(",", timeIndexStart);
+            var timeIndexStart = log.FoundLogResult.IndexOf(token, StringComparison.Ordinal) + token.Length;
+            var timeIndexStop = log.FoundLogResult.IndexOf(",", timeIndexStart, StringComparison.Ordinal);
             uint parsedValue = 0;
             var success = false;
             if (timeIndexStart > 0 && timeIndexStop > 0)
             {
-                if (uint.TryParse(log.FoundLogResult.Substring(timeIndexStart, timeIndexStop - timeIndexStart), out parsedValue))
+                if (uint.TryParse(log.FoundLogResult[timeIndexStart..timeIndexStop], out parsedValue))
                 {
                     success = true;
                 }
@@ -337,11 +337,11 @@ namespace LoRaWan.Tests.Shared
 
                 var sourceIdFilter = options?.SourceIdFilter;
 
-                foreach (var item in this.udpLogListener.GetEvents())
+                foreach (var item in this.udpLogListener.Events)
                 {
                     var searchLogEvent = new SearchLogEvent(item);
                     processedEvents.Add(searchLogEvent);
-                    if (!string.IsNullOrEmpty(sourceIdFilter) && !sourceIdFilter.Equals(searchLogEvent.SourceId))
+                    if (!string.IsNullOrEmpty(sourceIdFilter) && !sourceIdFilter.Equals(searchLogEvent.SourceId, StringComparison.Ordinal))
                     {
                         continue;
                     }
@@ -385,7 +385,7 @@ namespace LoRaWan.Tests.Shared
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in IoTHubMessages.GetEvents())
+                foreach (var item in IoTHubMessages.Events)
                 {
                     var bodyText = item.Body.Count > 0 ? Encoding.UTF8.GetString(item.Body) : string.Empty;
                     var searchLogEvent = new SearchLogEvent
@@ -436,7 +436,7 @@ namespace LoRaWan.Tests.Shared
                     await Task.Delay(TimeSpan.FromSeconds(timeToWait));
                 }
 
-                foreach (var item in IoTHubMessages.GetEvents())
+                foreach (var item in IoTHubMessages.Events)
                 {
                     try
                     {

@@ -20,22 +20,24 @@ namespace LoRaWan
     {
         public const int Size = sizeof(ushort);
 
+#pragma warning disable IDE0032 // Use auto property (explicit name)
         readonly ushort value;
 
         public DevNonce(ushort value) => this.value = value;
 
         public ushort AsUInt16 => this.value;
+#pragma warning restore IDE0032 // Use auto property
 
         public bool Equals(DevNonce other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is DevNonce other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => value.ToString(CultureInfo.InvariantCulture);
+        public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);
 
         public static bool operator ==(DevNonce left, DevNonce right) => left.Equals(right);
         public static bool operator !=(DevNonce left, DevNonce right) => !left.Equals(right);
 
-        public int CompareTo(DevNonce other) => value.CompareTo(other.value);
+        public int CompareTo(DevNonce other) => this.value.CompareTo(other.value);
 
         public static bool operator >(DevNonce left, DevNonce right) => left.CompareTo(right) > 0;
         public static bool operator <(DevNonce left, DevNonce right) => left.CompareTo(right) < 0;

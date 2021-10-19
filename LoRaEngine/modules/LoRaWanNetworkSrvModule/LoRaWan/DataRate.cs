@@ -25,7 +25,7 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is DataRate other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => value.ToString(CultureInfo.InvariantCulture);
+        public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);
 
         public static bool operator ==(DataRate left, DataRate right) => left.Equals(right);
         public static bool operator !=(DataRate left, DataRate right) => !left.Equals(right);

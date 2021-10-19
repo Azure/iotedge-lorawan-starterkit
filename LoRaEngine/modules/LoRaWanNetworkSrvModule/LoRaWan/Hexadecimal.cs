@@ -64,7 +64,7 @@ namespace LoRaWan
 
         public static void Write(ReadOnlySpan<byte> buffer, Span<char> output, char? separator, LetterCase letterCase)
         {
-            var length = separator is null ? buffer.Length * 2 : buffer.Length * 3 - 1;
+            var length = separator is null ? buffer.Length * 2 : (buffer.Length * 3) - 1;
 
             if (output.Length < length)
                 throw new ArgumentException(InsufficientBufferSizeErrorMessage, nameof(output));
@@ -84,7 +84,7 @@ namespace LoRaWan
         {
             value = default;
             const int size = sizeof(ulong);
-            if (chars.IsEmpty || chars.Length != (separator is null ? size * 2 : size * 3 - 1))
+            if (chars.IsEmpty || chars.Length != (separator is null ? size * 2 : (size * 3) - 1))
                 return false;
             Span<byte> bytes = stackalloc byte[size];
             if (!TryParse(chars, bytes, separator))
@@ -99,7 +99,7 @@ namespace LoRaWan
         /// </remarks>
         public static bool TryParse(ReadOnlySpan<char> chars, Span<byte> output, char? separator = null)
         {
-            static bool IsHexDigit(char ch) => ch is >= '0' and <= '9' or >= 'A' and <= 'F' or >= 'a' and <= 'f';
+            static bool IsHexDigit(char ch) => ch is (>= '0' and <= '9') or (>= 'A' and <= 'F') or (>= 'a' and <= 'f');
 
             if (chars.IsEmpty) // nothing to do
                 return true;
@@ -108,13 +108,13 @@ namespace LoRaWan
             // - not enough source characters
             // - first or last character is not a hexadecimal digit
 
-            if (chars.Length == 1 || !IsHexDigit(chars[0]) || !IsHexDigit(chars[^1]) || separator is null && chars.Length % 2 != 0)
+            if (chars.Length == 1 || !IsHexDigit(chars[0]) || !IsHexDigit(chars[^1]) || (separator is null && chars.Length % 2 != 0))
                 return false;
 
             // Create a temporary working buffer of the expected size so that we do not put partial
             // results into the final output buffer if there is a parsing error partway.
 
-            var size = separator is null ? chars.Length / 2 : chars.Length / 3 + 1;
+            var size = separator is null ? chars.Length / 2 : (chars.Length / 3) + 1;
             var temp = size <= 128 ? stackalloc byte[size] : new byte[size];
 
             var i = 0;

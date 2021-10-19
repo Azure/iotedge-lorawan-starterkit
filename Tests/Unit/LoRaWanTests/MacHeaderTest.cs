@@ -97,7 +97,7 @@ namespace LoRaWan.Tests.Unit
         public void Write_Writes_Byte_And_Returns_Updated_Span()
         {
             var bytes = new byte[4];
-            var remainingBytes = unconfirmedDataUp.Write(bytes);
+            var remainingBytes = this.unconfirmedDataUp.Write(bytes);
             remainingBytes.Fill(0xff);
             Assert.Equal(3, remainingBytes.Length);
             Assert.Equal(new byte[] { 0x40, 0xff, 0xff, 0xff }, bytes);

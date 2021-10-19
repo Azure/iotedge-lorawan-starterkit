@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Unit
         [Fact]
         public void Equals_Returns_True_When_Value_Equals()
         {
-            var other = new DevNonce(subject.AsUInt16);
+            var other = new DevNonce(this.subject.AsUInt16);
             Assert.True(this.subject.Equals(other));
         }
 
@@ -47,7 +47,7 @@ namespace LoRaWan.Tests.Unit
         [Fact]
         public void Op_Equality_Returns_True_When_Values_Equal()
         {
-            var other = new DevNonce(subject.AsUInt16);
+            var other = new DevNonce(this.subject.AsUInt16);
             Assert.True(this.subject == other);
         }
 
@@ -60,7 +60,7 @@ namespace LoRaWan.Tests.Unit
         [Fact]
         public void Op_Inequality_Returns_False_When_Values_Equal()
         {
-            var other = new DevNonce(subject.AsUInt16);
+            var other = new DevNonce(this.subject.AsUInt16);
             Assert.False(this.subject != other);
         }
 
@@ -106,11 +106,13 @@ namespace LoRaWan.Tests.Unit
             Assert.False(lesser > greater);
             Assert.True(greater > lesser);
 
+#pragma warning disable CS1718 // Comparison made to same variable (unit tests for operator)
             Assert.True(lesser <= lesser);
             Assert.True(lesser <= greater);
             Assert.False(greater <= lesser);
 
             Assert.True(greater >= greater);
+#pragma warning restore CS1718 // Comparison made to same variable
             Assert.True(greater >= lesser);
             Assert.False(lesser >= greater);
         }

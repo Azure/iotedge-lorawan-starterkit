@@ -14,14 +14,14 @@ namespace LoRaWan.Tests.E2E
     public static class LoRaAPIHelper
     {
         private static string authCode;
-        private static string baseUrl;
+        private static Uri baseUrl;
         private static ServiceFacadeHttpClientHandler httpHandler;
         private static Lazy<HttpClient> httpClient;
 
-        internal static void Initialize(string functionAppCode, string functionAppBaseUrl)
+        internal static void Initialize(string functionAppCode, Uri functionAppBaseUrl)
         {
             authCode = functionAppCode;
-            baseUrl = SanitizeApiURL(functionAppBaseUrl);
+            baseUrl = functionAppBaseUrl;
             httpHandler = new ServiceFacadeHttpClientHandler(ApiVersion.LatestVersion);
             httpClient = new Lazy<HttpClient>(CreateHttpClient);
         }
@@ -49,18 +49,6 @@ namespace LoRaWan.Tests.E2E
             var byteContent = new ByteArrayContent(buffer);
             byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
             return byteContent;
-        }
-
-        private static string SanitizeApiURL(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return string.Empty;
-
-            value = value.Trim();
-            if (value.EndsWith('/'))
-                return value;
-
-            return string.Concat(value, "/");
         }
     }
 }

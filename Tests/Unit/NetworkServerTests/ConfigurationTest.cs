@@ -14,11 +14,13 @@ namespace LoRaWan.Tests.Unit
         [MemberData(nameof(AllowedDevAddressesInput))]
         public void Should_Setup_Allowed_Dev_Addresses_Correctly(string inputAllowedDevAddrValues, HashSet<string> expectedAllowedDevAddrValues)
         {
-            var envVariableName = "AllowedDevAddresses";
+            var envVariables = new[] { ("AllowedDevAddresses", inputAllowedDevAddrValues), ("FACADE_SERVER_URL", "https://aka.ms") };
 
             try
             {
-                Environment.SetEnvironmentVariable(envVariableName, inputAllowedDevAddrValues);
+                foreach (var (key, value) in envVariables)
+                    Environment.SetEnvironmentVariable(key, value);
+
                 var networkServerConfiguration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
                 Assert.Equal(expectedAllowedDevAddrValues.Count, networkServerConfiguration.AllowedDevAddresses.Count);
                 foreach (var devAddr in expectedAllowedDevAddrValues)
@@ -28,15 +30,12 @@ namespace LoRaWan.Tests.Unit
             }
             finally
             {
-                Environment.SetEnvironmentVariable(envVariableName, string.Empty);
+                foreach (var (key, _) in envVariables)
+                    Environment.SetEnvironmentVariable(key, string.Empty);
             }
         }
 
-        public static IEnumerable<object[]> AllowedDevAddressesInput
-        {
-            get
-            {
-                return new[]
+        public static IEnumerable<object[]> AllowedDevAddressesInput => new[]
                 {
                     new object[]
                     {
@@ -60,7 +59,5 @@ namespace LoRaWan.Tests.Unit
                         }
                     }
                 };
-            }
-        }
     }
 }

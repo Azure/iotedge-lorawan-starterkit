@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Shared
 {
     using Microsoft.Extensions.Configuration;
+    using System;
 
     public class TestConfiguration
     {
@@ -69,7 +70,7 @@ namespace LoRaWan.Tests.Shared
 
         public string FunctionAppCode { get; set; }
 
-        public string FunctionAppBaseUrl { get; set; }
+        public Uri FunctionAppBaseUrl { get; set; }
 
         public int NumberOfGateways { get; set; } = 2;
     }

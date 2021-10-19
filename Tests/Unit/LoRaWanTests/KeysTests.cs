@@ -93,7 +93,9 @@ namespace LoRaWan.Tests.Unit
         [Fact]
         public void Parse_Input_Is_Case_Insensitive()
         {
+#pragma warning disable CA1308 // Normalize strings to uppercase
             var result = Parse(this.Subject.ToString().ToLowerInvariant());
+#pragma warning restore CA1308 // Normalize strings to uppercase
             Assert.Equal(Subject, result);
         }
 
@@ -114,7 +116,9 @@ namespace LoRaWan.Tests.Unit
         [Fact]
         public void TryParse_Input_Is_Case_Insensitive()
         {
+#pragma warning disable CA1308 // Normalize strings to uppercase
             var succeeded = TryParse(this.Subject.ToString().ToLowerInvariant(), out var result);
+#pragma warning restore CA1308 // Normalize strings to uppercase
             Assert.True(succeeded);
             Assert.Equal(Subject, result);
         }

@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.Unit
             physicalUpstreamPyld[0] = 2;
             var request = Encoding.Default.GetBytes(jsonUplink);
             var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());
-            Assert.Single(rxpks);
+            _ = Assert.Single(rxpks);
             Assert.Equal(2U, rxpks[0].Chan);
         }
 
@@ -65,7 +65,7 @@ namespace LoRaWan.Tests.Unit
             physicalUpstreamPyld[0] = 2;
             var request = Encoding.Default.GetBytes(jsonUplink);
             var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());
-            Assert.Single(rxpks);
+            _ = Assert.Single(rxpks);
             Assert.Equal(2, rxpks[0].ExtraData.Count);
             Assert.Contains("custom_prop_a", rxpks[0].ExtraData.Keys);
             Assert.Contains("custom_prop_b", rxpks[0].ExtraData.Keys);

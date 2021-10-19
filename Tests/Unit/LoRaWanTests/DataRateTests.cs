@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.Unit
         [Fact]
         public void Equals_Returns_True_When_Value_Equals()
         {
-            var other = new DataRate(subject.AsInt32);
+            var other = new DataRate(this.subject.AsInt32);
             Assert.True(this.subject.Equals(other));
         }
 
@@ -61,7 +61,7 @@ namespace LoRaWan.Tests.Unit
         [Fact]
         public void Op_Equality_Returns_True_When_Values_Equal()
         {
-            var other = new DataRate(subject.AsInt32);
+            var other = new DataRate(this.subject.AsInt32);
             Assert.True(this.subject == other);
         }
 
@@ -74,7 +74,7 @@ namespace LoRaWan.Tests.Unit
         [Fact]
         public void Op_Inequality_Returns_False_When_Values_Equal()
         {
-            var other = new DataRate(subject.AsInt32);
+            var other = new DataRate(this.subject.AsInt32);
             Assert.False(this.subject != other);
         }
 

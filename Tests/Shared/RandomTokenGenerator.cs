@@ -22,11 +22,11 @@ namespace LoRaWan.Tests.Shared
             return token;
         }
 
-        internal static async Task<byte[]> GetTokenAsync()
+        internal static Task<byte[]> GetTokenAsync()
         {
             var token = new byte[2];
             RndKeysGenerator.GetBytes(token);
-            return token;
+            return Task.FromResult(token);
         }
     }
 }
