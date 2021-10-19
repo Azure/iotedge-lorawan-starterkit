@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly LoRaDeviceAPIServiceBase deviceApi;
 
-        private static List<IFunctionBundlerExecutionItem> functionItems = new List<IFunctionBundlerExecutionItem>
+        private static readonly List<IFunctionBundlerExecutionItem> functionItems = new List<IFunctionBundlerExecutionItem>
         {
             new FunctionBundlerDeduplicationExecutionItem(),
             new FunctionBundlerADRExecutionItem(),
@@ -31,6 +31,8 @@ namespace LoRaWan.NetworkServer
                     IDeduplicationStrategyFactory deduplicationFactory,
                     LoRaRequest request)
         {
+            if (loRaPayload is null) throw new System.ArgumentNullException(nameof(loRaPayload));
+            if (loRaDevice is null) throw new System.ArgumentNullException(nameof(loRaDevice));
             if (!string.IsNullOrEmpty(loRaDevice.GatewayID))
             {
                 // single gateway mode

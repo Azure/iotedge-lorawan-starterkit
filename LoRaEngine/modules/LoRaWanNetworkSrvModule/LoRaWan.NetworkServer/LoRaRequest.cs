@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer
 
         protected LoRaRequest(LoRaPayload payload)
         {
-            this.Payload = payload;
+            Payload = payload;
         }
 
         public LoRaRequest(
@@ -34,16 +34,16 @@ namespace LoRaWan.NetworkServer
             IPacketForwarder packetForwarder,
             DateTime startTime)
         {
-            this.Rxpk = rxpk;
-            this.PacketForwarder = packetForwarder;
-            this.StartTime = startTime;
+            Rxpk = rxpk;
+            PacketForwarder = packetForwarder;
+            StartTime = startTime;
         }
 
-        internal void NotifyFailed(LoRaDevice loRaDevice, Exception error) => this.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ApplicationError, error);
+        internal void NotifyFailed(LoRaDevice loRaDevice, Exception error) => NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ApplicationError, error);
 
-        internal void NotifyFailed(LoRaDevice loRaDevice, LoRaDeviceRequestFailedReason reason, Exception exception = null) => this.NotifyFailed(loRaDevice?.DevEUI, reason, exception);
+        internal void NotifyFailed(LoRaDevice loRaDevice, LoRaDeviceRequestFailedReason reason, Exception exception = null) => NotifyFailed(loRaDevice?.DevEUI, reason, exception);
 
-        internal void NotifyFailed(LoRaDeviceRequestFailedReason reason, Exception exception = null) => this.NotifyFailed((string)null, reason, exception);
+        internal void NotifyFailed(LoRaDeviceRequestFailedReason reason, Exception exception = null) => NotifyFailed((string)null, reason, exception);
 
         public virtual void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)
         {
@@ -53,10 +53,10 @@ namespace LoRaWan.NetworkServer
         {
         }
 
-        internal void SetPayload(LoRaPayload loRaPayload) => this.Payload = loRaPayload;
+        internal void SetPayload(LoRaPayload loRaPayload) => Payload = loRaPayload;
 
-        internal void SetRegion(Region loRaRegion) => this.Region = loRaRegion;
+        internal void SetRegion(Region loRaRegion) => Region = loRaRegion;
 
-        public virtual LoRaOperationTimeWatcher GetTimeWatcher() => new LoRaOperationTimeWatcher(this.Region, this.StartTime);
+        public virtual LoRaOperationTimeWatcher GetTimeWatcher() => new LoRaOperationTimeWatcher(Region, StartTime);
     }
 }

@@ -18,6 +18,8 @@ namespace LoRaWan.NetworkServer
 
         public CaseInsensitiveEnvironmentVariables(IDictionary source)
         {
+            if (source is null) throw new ArgumentNullException(nameof(source));
+
             this.envVars = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (DictionaryEntry kv in source)
             {

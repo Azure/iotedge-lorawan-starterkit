@@ -36,10 +36,10 @@ namespace LoRaTools.ADR
                 throw new ArgumentException("Missing DevEUI or GatewayId");
             }
 
-            await this.store.AddTableEntry(newEntry);
+            _ = await this.store.AddTableEntry(newEntry);
         }
 
-        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, int upstreamDataRate, int minTxPower, int maxDr, LoRaADRTableEntry newEntry = null)
+        public virtual async Task<LoRaADRResult> CalculateADRResultAndAddEntryAsync(string devEUI, string gatewayId, uint fCntUp, uint fCntDown, float requiredSnr, int dataRate, int minTxPower, int maxDr, LoRaADRTableEntry newEntry = null)
         {
             var table = newEntry != null
                         ? await this.store.AddTableEntry(newEntry)
@@ -47,7 +47,7 @@ namespace LoRaTools.ADR
 
             var currentStrategy = this.strategyProvider.GetStrategy();
 
-            var result = currentStrategy.ComputeResult(devEUI, table, requiredSnr, upstreamDataRate, minTxPower, maxDr);
+            var result = currentStrategy.ComputeResult(devEUI, table, requiredSnr, dataRate, minTxPower, maxDr);
 
             if (result == null)
             {
@@ -57,17 +57,17 @@ namespace LoRaTools.ADR
                     || !table.CurrentTxPower.HasValue
                     || fCntUp > currentStrategy.MinimumNumberOfResult)
                 {
-                    result = this.ReturnDefaultValues(upstreamDataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
+                    result = ReturnDefaultValues(dataRate, currentStrategy.DefaultNbRep, currentStrategy.DefaultTxPower);
                 }
                 else
                 {
-                    result = await this.GetLastResultAsync(devEUI) ?? new LoRaADRResult();
+                    result = await GetLastResultAsync(devEUI) ?? new LoRaADRResult();
                     result.NumberOfFrames = table.Entries.Count;
                     return result;
                 }
             }
 
-            var nextFcntDown = await this.NextFCntDown(devEUI, gatewayId, fCntUp, fCntDown);
+            var nextFcntDown = await NextFCntDown(devEUI, gatewayId, fCntUp, fCntDown);
             result.CanConfirmToDevice = nextFcntDown > 0;
 
             if (result.CanConfirmToDevice)
@@ -82,7 +82,7 @@ namespace LoRaTools.ADR
                 table.CurrentNbRep = result.NbRepetition;
                 table.CurrentTxPower = result.TxPower;
                 await this.store.UpdateADRTable(devEUI, table);
-                this.UpdateState(result);
+                UpdateState(result);
                 result.FCntDown = nextFcntDown;
             }
 
@@ -121,7 +121,7 @@ namespace LoRaTools.ADR
             return await this.store.Reset(devEUI);
         }
 
-        private LoRaADRResult ReturnDefaultValues(int upstreamDataRate, int defaultNbRep, int maxTxPowerIndex)
+        private static LoRaADRResult ReturnDefaultValues(int upstreamDataRate, int defaultNbRep, int maxTxPowerIndex)
         {
             return new LoRaADRResult
             {

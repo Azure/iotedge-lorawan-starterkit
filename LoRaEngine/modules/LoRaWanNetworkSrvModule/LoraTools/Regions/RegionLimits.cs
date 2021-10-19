@@ -12,17 +12,17 @@ namespace LoRaTools.Regions
         /// </summary>
         public (double min, double max) FrequencyRange { get; set; }
 
-        private HashSet<string> downstreamValidDR;
+        private readonly HashSet<string> downstreamValidDR;
 
-        private HashSet<string> upstreamValidDR;
+        private readonly HashSet<string> upstreamValidDR;
 
-        private uint startUpstreamDRIndex;
+        private readonly uint startUpstreamDRIndex;
 
-        private uint startDownstreamDRIndex;
+        private readonly uint startDownstreamDRIndex;
 
         public RegionLimits((double min, double max) frequencyRange, HashSet<string> upstreamValidDR, HashSet<string> downstreamValidDR, uint startUpstreamDRIndex, uint startDownstreamDRIndex)
         {
-            this.FrequencyRange = frequencyRange;
+            FrequencyRange = frequencyRange;
             this.downstreamValidDR = downstreamValidDR;
             this.upstreamValidDR = upstreamValidDR;
             this.startDownstreamDRIndex = startDownstreamDRIndex;

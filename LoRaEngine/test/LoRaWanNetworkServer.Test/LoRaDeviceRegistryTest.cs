@@ -42,7 +42,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
             apiService.Setup(x => x.SearchAndLockForJoinAsync(this.serverConfiguration.GatewayID, devEUI, appEUI, devNonce))
-                .Throws(new Exception());
+                .Throws(new InvalidOperationException());
             using var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, this.loraDeviceFactoryMock.Object);
 
             var actual = await target.GetDeviceForJoinRequestAsync(devEUI, appEUI, devNonce);
@@ -149,7 +149,7 @@ namespace LoRaWan.NetworkServer.Test
             loraDevice1.IsOurDevice = false;
 
             var existingCache = new DevEUIToLoRaDeviceDictionary();
-            this.cache.Set<DevEUIToLoRaDeviceDictionary>(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
+            this.cache.Set(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
             existingCache.TryAdd(loraDevice1.DevEUI, loraDevice1);
 
             var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
@@ -187,7 +187,7 @@ namespace LoRaWan.NetworkServer.Test
             var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice2, null);
 
             var existingCache = new DevEUIToLoRaDeviceDictionary();
-            this.cache.Set<DevEUIToLoRaDeviceDictionary>(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
+            this.cache.Set(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
             existingCache.TryAdd(loraDevice1.DevEUI, loraDevice1);
             existingCache.TryAdd(loraDevice2.DevEUI, loraDevice2);
 

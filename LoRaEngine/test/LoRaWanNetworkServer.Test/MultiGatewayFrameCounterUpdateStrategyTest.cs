@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer.Test
 {
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Shared;
     using Moq;
     using Xunit;
@@ -13,7 +14,7 @@ namespace LoRaWan.NetworkServer.Test
     {
         private readonly Mock<ILoRaDeviceClient> deviceClient;
         private readonly Mock<LoRaDeviceAPIServiceBase> deviceApi;
-        private string gatewayID;
+        private readonly string gatewayID;
 
         public MultiGatewayFrameCounterUpdateStrategyTest()
         {
@@ -142,7 +143,7 @@ namespace LoRaWan.NetworkServer.Test
             this.deviceApi.Setup(x => x.NextFCntDownAsync(device.DevEUI, It.IsAny<uint>(), It.IsAny<uint>(), this.gatewayID))
                 .Returns<string, uint, uint, string>((devEUI, fcntDown, payloadFcnt, gatewayID) =>
                 {
-                    return Task.FromResult((uint)(fcntDown + 1));
+                    return Task.FromResult(fcntDown + 1);
                 });
 
             for (var i = 1; i <= 15; i++)

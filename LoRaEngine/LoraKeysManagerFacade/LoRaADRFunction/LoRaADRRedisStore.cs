@@ -15,15 +15,15 @@ namespace LoraKeysManagerFacade
     {
         const string CacheToken = ":ADR";
         const string LockToken = ":lock";
-        IDatabase redisCache;
+        readonly IDatabase redisCache;
 
         sealed class RedisLockWrapper : IDisposable
         {
             private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(10);
             private static readonly TimeSpan LockDuration = TimeSpan.FromSeconds(15);
-            private string lockKey;
-            private string owner;
-            private IDatabase redisCache;
+            private readonly string lockKey;
+            private readonly string owner;
+            private readonly IDatabase redisCache;
             private bool ownsLock;
 
             internal RedisLockWrapper(string devEUI, IDatabase redisCache, string owner = ":LoRaRedisStore")
@@ -50,7 +50,7 @@ namespace LoraKeysManagerFacade
             {
                 if (this.ownsLock)
                 {
-                    this.redisCache.LockRelease(this.lockKey, this.owner);
+                    _ = this.redisCache.LockRelease(this.lockKey, this.owner);
                     this.ownsLock = false;
                 }
             }
@@ -63,29 +63,29 @@ namespace LoraKeysManagerFacade
 
         public async Task UpdateADRTable(string devEUI, LoRaADRTable table)
         {
-            using (var redisLock = new RedisLockWrapper(devEUI, this.redisCache))
+            using var redisLock = new RedisLockWrapper(devEUI, this.redisCache);
+            if (await redisLock.TakeLockAsync())
             {
-                if (await redisLock.TakeLockAsync())
-                {
-                    await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
-                }
+                _ = await this.redisCache.StringSetAsync(GetEntryKey(devEUI), JsonConvert.SerializeObject(table));
             }
         }
 
         public async Task<LoRaADRTable> AddTableEntry(LoRaADRTableEntry entry)
         {
+            if (entry is null) throw new ArgumentNullException(nameof(entry));
+
             LoRaADRTable table = null;
             using (var redisLock = new RedisLockWrapper(entry.DevEUI, this.redisCache))
             {
                 if (await redisLock.TakeLockAsync())
                 {
                     var entryKey = GetEntryKey(entry.DevEUI);
-                    table = await this.GetADRTableCore(entryKey) ?? new LoRaADRTable();
+                    table = await GetADRTableCore(entryKey) ?? new LoRaADRTable();
 
                     AddEntryToTable(table, entry);
 
                     // update redis store
-                    this.redisCache.StringSet(entryKey, JsonConvert.SerializeObject(table));
+                    _ = this.redisCache.StringSet(entryKey, JsonConvert.SerializeObject(table));
                 }
             }
 
@@ -98,7 +98,7 @@ namespace LoraKeysManagerFacade
             {
                 if (await redisLock.TakeLockAsync())
                 {
-                    return await this.GetADRTableCore(GetEntryKey(devEUI));
+                    return await GetADRTableCore(GetEntryKey(devEUI));
                 }
             }
 

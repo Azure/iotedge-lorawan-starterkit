@@ -17,6 +17,8 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
         public async Task<FunctionBundlerExecutionState> ExecuteAsync(IPipelineExecutionContext context)
         {
+            if (context is null) throw new System.ArgumentNullException(nameof(context));
+
             if (context.Result.AdrResult?.FCntDown != null)
             {
                 // adr already processed the next fcnt down check

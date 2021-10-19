@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer
 
         public void DispatchRequest(LoRaRequest request)
         {
-            Task.Run(async () => await this.ProcessJoinRequestAsync(request));
+            _ = Task.Run(async () => await ProcessJoinRequestAsync(request));
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace LoRaWan.NetworkServer
                 var timeWatcher = new LoRaOperationTimeWatcher(loraRegion, request.StartTime);
 
                 var joinReq = (LoRaPayloadJoinRequest)request.Payload;
-                var udpMsgForPktForwarder = new byte[0];
+                var udpMsgForPktForwarder = Array.Empty<byte>();
 
                 devEUI = joinReq.GetDevEUIAsString();
                 var appEUI = joinReq.GetAppEUIAsString();
@@ -114,8 +114,8 @@ namespace LoRaWan.NetworkServer
                 };
 
                 var appNonce = OTAAKeysGenerator.GetAppNonce();
-                var appNonceBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(appNonce);
-                var appKeyBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(loRaDevice.AppKey);
+                var appNonceBytes = ConversionHelper.StringToByteArray(appNonce);
+                var appKeyBytes = ConversionHelper.StringToByteArray(loRaDevice.AppKey);
                 var appSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
                 var nwkSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
                 var devAddr = OTAAKeysGenerator.GetNwkId(netId);
@@ -165,8 +165,8 @@ namespace LoRaWan.NetworkServer
                     return;
                 }
 
-                var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse(loRaDevice);
-                if (windowToUse == Constants.INVALID_RECEIVE_WINDOW)
+                var windowToUse = timeWatcher.ResolveJoinAcceptWindowToUse();
+                if (windowToUse == Constants.InvalidReceiveWindow)
                 {
                     Logger.Log(devEUI, $"join refused: processing of the join request took too long, sending no message", LogLevel.Information);
                     request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ReceiveWindowMissed);
@@ -176,7 +176,7 @@ namespace LoRaWan.NetworkServer
                 double freq = 0;
                 string datr = null;
                 uint tmst = 0;
-                if (windowToUse == Constants.RECEIVE_WINDOW_1)
+                if (windowToUse == Constants.ReceiveWindow1)
                 {
                     datr = loraRegion.GetDownstreamDR(request.Rxpk);
                     if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
@@ -187,12 +187,12 @@ namespace LoRaWan.NetworkServer
                     }
 
                     // set tmst for the normal case
-                    tmst = request.Rxpk.Tmst + loraRegion.Join_accept_delay1 * 1000000;
+                    tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay1 * 1000000);
                 }
                 else
                 {
                     Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Debug);
-                    tmst = request.Rxpk.Tmst + loraRegion.Join_accept_delay2 * 1000000;
+                    tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay2 * 1000000);
 
                     freq = loraRegion.GetDownstreamRX2Freq(devEUI, this.configuration.Rx2Frequency);
                     datr = loraRegion.GetDownstreamRX2Datarate(devEUI, this.configuration.Rx2DataRate, null);
@@ -232,7 +232,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 ushort rxDelay = 0;
-                if (request.Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                if (Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
                 {
                     rxDelay = loRaDevice.DesiredRXDelay;
                 }
@@ -242,14 +242,14 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept(
-                    LoRaTools.Utils.ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
+                    ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
                     ConversionHelper.StringToByteArray(devAddr), // todo add device address management
                     appNonceBytes,
                     dlSettings,
                     rxDelay,
                     null);
 
-                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, tmst, devEUI);
+                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, tmst);
                 if (joinAccept != null)
                 {
                     _ = request.PacketForwarder.SendDownstreamAsync(joinAccept);
@@ -258,7 +258,7 @@ namespace LoRaWan.NetworkServer
                     if (Logger.LoggerLevel <= LogLevel.Debug)
                     {
                         var jsonMsg = JsonConvert.SerializeObject(joinAccept);
-                        Logger.Log(devEUI, $"{LoRaMessageType.JoinAccept.ToString()} {jsonMsg}", LogLevel.Debug);
+                        Logger.Log(devEUI, $"{LoRaMessageType.JoinAccept} {jsonMsg}", LogLevel.Debug);
                     }
                     else if (Logger.LoggerLevel == LogLevel.Information)
                     {

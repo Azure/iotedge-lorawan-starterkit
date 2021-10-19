@@ -8,7 +8,10 @@ namespace LoRaWanTest
     using LoRaTools.LoRaPhysical;
     using Xunit;
 
+#pragma warning disable CA1812 // Unused class
+    // Used as Theory Data
     class ADRTestData : TheoryData<string, string, List<LoRaADRTableEntry>, Rxpk, LoRaADRResult>
+#pragma warning restore CA1812 // Unused class
     {
         public ADRTestData()
         {
@@ -29,9 +32,11 @@ namespace LoRaWanTest
                 });
             }
 
-            var rxpk = new Rxpk();
-            rxpk.Datr = "SF7BW125";
-            this.AddRow("Not enough entries to calculate ADR", deviceNameNotEnoughEntries, tableentries, rxpk, true, new LoRaADRResult()
+            var rxpk = new Rxpk
+            {
+                Datr = "SF7BW125"
+            };
+            AddRow("Not enough entries to calculate ADR", deviceNameNotEnoughEntries, tableentries, rxpk, true, new LoRaADRResult()
             {
                 DataRate = 5,
                 TxPower = 0,
@@ -57,16 +62,18 @@ namespace LoRaWanTest
                 });
             }
 
-            var notenoughentriesrxpk = new Rxpk();
-            // Set Input DR to 5
-            notenoughentriesrxpk.Datr = "SF7BW125";
+            var notenoughentriesrxpk = new Rxpk
+            {
+                // Set Input DR to 5
+                Datr = "SF7BW125"
+            };
             var loRaADRResult = new LoRaADRResult()
             {
                 DataRate = 0,
                 NbRepetition = 1,
                 TxPower = 0
             };
-            this.AddRow("ADR setting DR to 0", lowerDRDeviceName, lowerDRTable, notenoughentriesrxpk, false, loRaADRResult);
+            AddRow("ADR setting DR to 0", lowerDRDeviceName, lowerDRTable, notenoughentriesrxpk, false, loRaADRResult);
             // **************************************************************
             // Third test enough entries increase nbrep, as one message every three is received
             // **************************************************************
@@ -85,9 +92,11 @@ namespace LoRaWanTest
                 });
             }
 
-            var increaseNbReprxpk = new Rxpk();
-            // DR5
-            increaseNbReprxpk.Datr = "SF7BW125";
+            var increaseNbReprxpk = new Rxpk
+            {
+                // DR5
+                Datr = "SF7BW125"
+            };
             var increaseNbReploRaADRResult = new LoRaADRResult()
             {
                 DataRate = 5,
@@ -96,7 +105,7 @@ namespace LoRaWanTest
                 FCntDown = 1
             };
 
-            this.AddRow("ADR increase NbRep", increaseNbRepDeviceName, increaseNbReptableentries, increaseNbReprxpk, false, increaseNbReploRaADRResult);
+            AddRow("ADR increase NbRep", increaseNbRepDeviceName, increaseNbReptableentries, increaseNbReprxpk, false, increaseNbReploRaADRResult);
 
             // **************************************************************
             // Fourth test enough entries decrease nbrep messages pass through
@@ -130,9 +139,11 @@ namespace LoRaWanTest
                     });
             }
 
-            var decreaseNbReprxpk = new Rxpk();
-            // DR5
-            decreaseNbReprxpk.Datr = "SF7BW125";
+            var decreaseNbReprxpk = new Rxpk
+            {
+                // DR5
+                Datr = "SF7BW125"
+            };
             var decreaseNbReploRaADRResult = new LoRaADRResult()
             {
                 DataRate = 5,
@@ -140,7 +151,7 @@ namespace LoRaWanTest
                 TxPower = 2,
                 FCntDown = 1
             };
-            this.AddRow("ADR decrease NbRep", decreaseNbRepDeviceName, decreaseNbReptableentries, decreaseNbReprxpk, false, decreaseNbReploRaADRResult);
+            AddRow("ADR decrease NbRep", decreaseNbRepDeviceName, decreaseNbReptableentries, decreaseNbReprxpk, false, decreaseNbReploRaADRResult);
         }
     }
 }

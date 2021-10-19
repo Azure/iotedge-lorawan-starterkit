@@ -23,7 +23,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
         }
 
         [FunctionName("FunctionBundler")]
-        public async Task<IActionResult> FunctionBundlerImpl(
+        public async Task<IActionResult> FunctionBundler(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "FunctionBundler/{devEUI}")] HttpRequest req,
             ILogger logger,
             string devEUI)
@@ -46,7 +46,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
 
             var functionBundlerRequest = JsonConvert.DeserializeObject<FunctionBundlerRequest>(requestBody);
-            var result = await this.HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest, logger);
+            var result = await HandleFunctionBundlerInvoke(devEUI, functionBundlerRequest, logger);
 
             return new OkObjectResult(result);
         }

@@ -3,6 +3,7 @@
 
 namespace LoRaTools.LoRaPhysical
 {
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
 
@@ -11,16 +12,19 @@ namespace LoRaTools.LoRaPhysical
     /// </summary>
     public class UplinkPktFwdMessage : PktFwdMessage
     {
-        public List<Rxpk> Rxpk { get; set; }
+#pragma warning disable CA2227 // Collection properties should be read only
+        // Class is a DTO.
+        public IList<Rxpk> Rxpk { get; set; }
+#pragma warning restore CA2227 // Collection properties should be read only
 
         public UplinkPktFwdMessage()
         {
-            this.Rxpk = new List<Rxpk>();
+            Rxpk = new List<Rxpk>();
         }
 
         public UplinkPktFwdMessage(Rxpk rxpkInput)
         {
-            this.Rxpk = new List<Rxpk>()
+            Rxpk = new List<Rxpk>()
             {
                 rxpkInput
             };
@@ -34,8 +38,10 @@ namespace LoRaTools.LoRaPhysical
         /// <returns>UplinkPktFwdMessage object ready to be sent.</returns>
         public UplinkPktFwdMessage(byte[] loRaData, string datr, double freq, uint tmst = 0, float lsnr = 0)
         {
+            if (loRaData is null) throw new ArgumentNullException(nameof(loRaData));
+
             // This is a new ctor, must be validated by MIK
-            this.Rxpk = new List<Rxpk>()
+            Rxpk = new List<Rxpk>()
             {
                 new Rxpk()
                 {
@@ -54,13 +60,7 @@ namespace LoRaTools.LoRaPhysical
         }
 
         [Obsolete("to remove")]
-        public override PktFwdMessageAdapter GetPktFwdMessage()
-        {
-            var pktFwdMessageAdapter = new PktFwdMessageAdapter
-            {
-                Rxpks = this.Rxpk
-            };
-            return pktFwdMessageAdapter;
-        }
+        [JsonIgnore]
+        public override PktFwdMessageAdapter PktFwdMessageAdapter => new PktFwdMessageAdapter(Rxpk, null);
     }
 }

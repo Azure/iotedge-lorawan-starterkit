@@ -5,6 +5,7 @@ namespace LoRaTools.Regions
 {
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
+    using System;
 
     public class RegionEU868 : Region
     {
@@ -24,9 +25,11 @@ namespace LoRaTools.Regions
         /// <param name="joinChannelIndex">index of the join channel, if applicable.</param>
         public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex = null)
         {
+            if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
+
             frequency = 0;
 
-            if (this.IsValidUpstreamRxpk(upstreamChannel))
+            if (IsValidUpstreamRxpk(upstreamChannel))
             {
                 // in case of EU, you respond on same frequency as you sent data.
                 frequency = upstreamChannel.Freq;

@@ -9,7 +9,7 @@ namespace LoRaWan.NetworkServer
     {
         bool EnsureConnected(LoRaDevice loRaDevice);
 
-        ILoRaDeviceClient Get(LoRaDevice loRaDevice);
+        ILoRaDeviceClient GetClient(LoRaDevice loRaDevice);
 
         void Release(LoRaDevice loRaDevice);
 

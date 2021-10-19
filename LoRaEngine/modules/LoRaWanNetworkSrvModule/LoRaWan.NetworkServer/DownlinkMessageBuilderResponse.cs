@@ -13,8 +13,8 @@ namespace LoRaWan.NetworkServer
 
         internal DownlinkMessageBuilderResponse(DownlinkPktFwdMessage downlinkPktFwdMessage, bool isMessageTooLong)
         {
-            this.DownlinkPktFwdMessage = downlinkPktFwdMessage;
-            this.IsMessageTooLong = isMessageTooLong;
+            DownlinkPktFwdMessage = downlinkPktFwdMessage;
+            IsMessageTooLong = isMessageTooLong;
         }
     }
 }

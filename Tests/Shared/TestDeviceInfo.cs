@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Shared
 {
     using System.Collections.Generic;
+    using System.Globalization;
     using LoRaTools.Utils;
 
     public class TestDeviceInfo
@@ -49,19 +50,19 @@ namespace LoRaWan.Tests.Shared
 
         public char ClassType { get; set; } = 'A';
 
-        public int RX2DataRate { get; set; } = 0;
+        public int RX2DataRate { get; set; }
 
-        public uint RX1DROffset { get; set; } = 0;
+        public uint RX1DROffset { get; set; }
 
         public bool Supports32BitFCnt { get; set; }
 
         public string Deduplication { get; set; }
 
-        public ushort RXDelay { get; set; } = 0;
+        public ushort RXDelay { get; set; }
 
         public int KeepAliveTimeout { get; set; }
 
-        public bool IsMultiGw => string.IsNullOrEmpty(this.GatewayID);
+        public bool IsMultiGw => string.IsNullOrEmpty(GatewayID);
 
         /// <summary>
         /// Gets the desired properties for the <see cref="TestDeviceInfo"/>.
@@ -69,43 +70,43 @@ namespace LoRaWan.Tests.Shared
         public Dictionary<string, object> GetDesiredProperties()
         {
             var desiredProperties = new Dictionary<string, object>();
-            if (!string.IsNullOrEmpty(this.AppEUI))
-                desiredProperties[nameof(this.AppEUI)] = this.AppEUI;
+            if (!string.IsNullOrEmpty(AppEUI))
+                desiredProperties[nameof(AppEUI)] = AppEUI;
 
-            if (!string.IsNullOrEmpty(this.AppKey))
-                desiredProperties[nameof(this.AppKey)] = this.AppKey;
+            if (!string.IsNullOrEmpty(AppKey))
+                desiredProperties[nameof(AppKey)] = AppKey;
 
-            if (!string.IsNullOrEmpty(this.GatewayID))
-                desiredProperties[nameof(this.GatewayID)] = this.GatewayID;
+            if (!string.IsNullOrEmpty(GatewayID))
+                desiredProperties[nameof(GatewayID)] = GatewayID;
 
-            if (!string.IsNullOrEmpty(this.SensorDecoder))
-                desiredProperties[nameof(this.SensorDecoder)] = this.SensorDecoder;
+            if (!string.IsNullOrEmpty(SensorDecoder))
+                desiredProperties[nameof(SensorDecoder)] = SensorDecoder;
 
-            if (!string.IsNullOrEmpty(this.AppSKey))
-                desiredProperties[nameof(this.AppSKey)] = this.AppSKey;
+            if (!string.IsNullOrEmpty(AppSKey))
+                desiredProperties[nameof(AppSKey)] = AppSKey;
 
-            if (!string.IsNullOrEmpty(this.NwkSKey))
-                desiredProperties[nameof(this.NwkSKey)] = this.NwkSKey;
+            if (!string.IsNullOrEmpty(NwkSKey))
+                desiredProperties[nameof(NwkSKey)] = NwkSKey;
 
-            if (!string.IsNullOrEmpty(this.DevAddr))
-                desiredProperties[nameof(this.DevAddr)] = this.DevAddr;
+            if (!string.IsNullOrEmpty(DevAddr))
+                desiredProperties[nameof(DevAddr)] = DevAddr;
 
-            desiredProperties[nameof(this.PreferredWindow)] = this.PreferredWindow;
+            desiredProperties[nameof(PreferredWindow)] = PreferredWindow;
 
-            if (char.ToLower(this.ClassType) != 'a')
-                desiredProperties[nameof(this.ClassType)] = this.ClassType.ToString();
+            if (char.ToLower(ClassType, CultureInfo.InvariantCulture) != 'a')
+                desiredProperties[nameof(ClassType)] = ClassType.ToString();
 
-            desiredProperties[nameof(this.RX1DROffset)] = this.RX1DROffset;
+            desiredProperties[nameof(RX1DROffset)] = RX1DROffset;
 
-            desiredProperties[nameof(this.RX2DataRate)] = this.RX2DataRate;
+            desiredProperties[nameof(RX2DataRate)] = RX2DataRate;
 
-            desiredProperties[nameof(this.RXDelay)] = this.RXDelay;
+            desiredProperties[nameof(RXDelay)] = RXDelay;
 
-            // if (this.KeepAliveTimeout > 0)
-            desiredProperties[nameof(this.KeepAliveTimeout)] = this.KeepAliveTimeout;
+            // if (KeepAliveTimeout > 0)
+            desiredProperties[nameof(KeepAliveTimeout)] = KeepAliveTimeout;
 
-            if (!string.IsNullOrEmpty(this.Deduplication))
-                desiredProperties[nameof(this.Deduplication)] = this.Deduplication;
+            if (!string.IsNullOrEmpty(Deduplication))
+                desiredProperties[nameof(Deduplication)] = Deduplication;
 
             return desiredProperties;
         }
@@ -115,15 +116,15 @@ namespace LoRaWan.Tests.Shared
         /// </summary>
         public static TestDeviceInfo CreateABPDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", uint netId = 1, char deviceClassType = 'A', bool supports32BitFcnt = false)
         {
-            var value8 = deviceID.ToString("00000000");
-            var value16 = deviceID.ToString("0000000000000000");
-            var value32 = deviceID.ToString("00000000000000000000000000000000");
+            var value8 = deviceID.ToString("00000000", CultureInfo.InvariantCulture);
+            var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
+            var value32 = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture);
 
             if (!string.IsNullOrEmpty(prefix))
             {
-                value8 = string.Concat(prefix, value8.Substring(prefix.Length));
-                value16 = string.Concat(prefix, value16.Substring(prefix.Length));
-                value32 = string.Concat(prefix, value32.Substring(prefix.Length));
+                value8 = string.Concat(prefix, value8[prefix.Length..]);
+                value16 = string.Concat(prefix, value16[prefix.Length..]);
+                value32 = string.Concat(prefix, value32[prefix.Length..]);
             }
 
             var devAddrValue = NetIdHelper.SetNwkIdPart(value8, netId);
@@ -148,13 +149,13 @@ namespace LoRaWan.Tests.Shared
         /// <param name="deviceID">Device identifier. It will padded with 0's.</param>
         public static TestDeviceInfo CreateOTAADevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", char deviceClassType = 'A')
         {
-            var value16 = deviceID.ToString("0000000000000000");
-            var value32 = deviceID.ToString("00000000000000000000000000000000");
+            var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
+            var value32 = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture);
 
             if (!string.IsNullOrEmpty(prefix))
             {
-                value16 = string.Concat(prefix, value16.Substring(prefix.Length));
-                value32 = string.Concat(prefix, value32.Substring(prefix.Length));
+                value16 = string.Concat(prefix, value16[prefix.Length..]);
+                value32 = string.Concat(prefix, value32[prefix.Length..]);
             }
 
             var result = new TestDeviceInfo

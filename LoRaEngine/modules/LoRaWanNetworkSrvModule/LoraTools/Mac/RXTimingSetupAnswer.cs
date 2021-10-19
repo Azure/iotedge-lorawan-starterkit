@@ -14,17 +14,17 @@ namespace LoRaTools
 
         public RXTimingSetupAnswer()
         {
-            this.Cid = CidEnum.RXTimingCmd;
+            Cid = Cid.RXTimingCmd;
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return (byte)this.Cid;
+            yield return (byte)Cid;
         }
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer";
+            return $"Type: {Cid} Answer";
         }
     }
 }

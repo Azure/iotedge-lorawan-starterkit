@@ -1,7 +1,7 @@
-using System.Net;
-
 namespace CayenneDecoderModule.Classes
 {
+    using System.Net;
+
     public static class Validator
     {
         public static void ValidateParameters(string fport, string payload)
@@ -14,12 +14,12 @@ namespace CayenneDecoderModule.Classes
             }
             if (payload == null)
             {
-                if (error != "")
+                if (!string.IsNullOrEmpty(error))
                     error += " and ";
                 error += "Payload missing";
             }
 
-            if (error != "")
+            if (!string.IsNullOrEmpty(error))
             {
                 throw new WebException(error);
             }

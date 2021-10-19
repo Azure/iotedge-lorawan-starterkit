@@ -4,6 +4,7 @@
 namespace LoRaWan.NetworkServer
 {
     using Microsoft.Extensions.Logging;
+    using System;
 
     public class DeduplicationStrategyFactory : IDeduplicationStrategyFactory
     {
@@ -16,6 +17,8 @@ namespace LoRaWan.NetworkServer
 
         public ILoRaDeviceMessageDeduplicationStrategy Create(LoRaDevice loRaDevice)
         {
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             if (!string.IsNullOrEmpty(loRaDevice.GatewayID))
             {
                 Logger.Log(loRaDevice.DevEUI, "LoRa device has a specific gateway assigned. Ignoring deduplication as it is not applicable.", LogLevel.Debug);
@@ -26,6 +29,7 @@ namespace LoRaWan.NetworkServer
             {
                 case DeduplicationMode.Drop: return new DeduplicationStrategyDrop(this.loRaDeviceAPIService, loRaDevice);
                 case DeduplicationMode.Mark: return new DeduplicationStrategyMark(this.loRaDeviceAPIService, loRaDevice);
+                case DeduplicationMode.None:
                 default:
                 {
                     Logger.Log(loRaDevice.DevEUI, "no Deduplication Strategy selected", LogLevel.Debug);

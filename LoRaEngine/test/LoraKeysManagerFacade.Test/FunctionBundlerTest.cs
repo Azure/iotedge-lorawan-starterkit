@@ -10,6 +10,7 @@ namespace LoraKeysManagerFacade.Test
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;
@@ -173,7 +174,7 @@ namespace LoraKeysManagerFacade.Test
             // with ADR frames
             await this.adrManager.ResetAsync(devEUI);
 
-            await this.PrepareADRFrames(devEUI, LoRaADRTable.FrameCountCaptureCount - 1, req.AdrRequest);
+            await PrepareADRFrames(devEUI, LoRaADRTable.FrameCountCaptureCount - 1, req.AdrRequest);
             req.ClientFCntUp = req.AdrRequest.FCntUp;
 
             resp = await this.functionBundler.HandleFunctionBundlerInvoke(devEUI, req);
@@ -230,7 +231,7 @@ namespace LoraKeysManagerFacade.Test
 
             foreach (var req in requests)
             {
-                await this.PrepareADRFrames(devEUI, 20, req.AdrRequest);
+                await PrepareADRFrames(devEUI, 20, req.AdrRequest);
                 req.ClientFCntUp = req.AdrRequest.FCntUp;
                 req.ClientFCntDown = req.AdrRequest.FCntDown;
             }
@@ -242,7 +243,7 @@ namespace LoraKeysManagerFacade.Test
             {
                 tasks.Add(Task.Run(async () =>
                 {
-                    functionBundlerResults.Add(await this.ExecuteRequest(devEUI, req));
+                    functionBundlerResults.Add(await ExecuteRequest(devEUI, req));
                 }));
             }
 
@@ -313,7 +314,7 @@ namespace LoraKeysManagerFacade.Test
 
         private async Task PrepareADRFrames(string deviceEUI, int numberOfFrames, LoRaADRRequest req)
         {
-            await this.PrepareADRFrames(deviceEUI, numberOfFrames, new List<LoRaADRRequest>() { req });
+            await PrepareADRFrames(deviceEUI, numberOfFrames, new List<LoRaADRRequest>() { req });
         }
 
         private async Task PrepareADRFrames(string deviceEUI, int numberOfFrames, List<LoRaADRRequest> requests)

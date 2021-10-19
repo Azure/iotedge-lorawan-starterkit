@@ -3,15 +3,16 @@
 
 namespace LoraKeysManagerFacade
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using LoRaWan.Shared;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Primitives;
 
     public class SearchDeviceByDevEUI
     {
@@ -23,8 +24,10 @@ namespace LoraKeysManagerFacade
         }
 
         [FunctionName(nameof(GetDeviceByDevEUI))]
-        public async Task<IActionResult> GetDeviceByDevEUI([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log, ExecutionContext context)
+        public async Task<IActionResult> GetDeviceByDevEUI([HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req, ILogger log)
         {
+            if (req is null) throw new ArgumentNullException(nameof(req));
+
             try
             {
                 VersionValidator.Validate(req);
@@ -35,13 +38,13 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(ex.Message);
             }
 
-            return await this.RunGetDeviceByDevEUI(req, log, context, ApiVersion.LatestVersion);
+            return await RunGetDeviceByDevEUI(req, log);
         }
 
-        private async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log, ExecutionContext context, ApiVersion currentApiVersion)
+        private async Task<IActionResult> RunGetDeviceByDevEUI(HttpRequest req, ILogger log)
         {
-            string devEUI = req.Query["DevEUI"];
-            if (string.IsNullOrEmpty(devEUI))
+            var devEUI = req.Query["DevEUI"];
+            if (StringValues.IsNullOrEmpty(devEUI))
             {
                 log.LogError("DevEUI missing in request");
                 return new BadRequestObjectResult("DevEUI missing in request");
@@ -51,14 +54,11 @@ namespace LoraKeysManagerFacade
             var device = await this.registryManager.GetDeviceAsync(devEUI);
             if (device != null)
             {
-                if (device != null)
+                result.Add(new IoTHubDeviceInfo()
                 {
-                    result.Add(new IoTHubDeviceInfo()
-                    {
-                        DevEUI = devEUI,
-                        PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey
-                    });
-                }
+                    DevEUI = devEUI,
+                    PrimaryKey = device.Authentication.SymmetricKey.PrimaryKey
+                });
 
                 log.LogDebug($"Search for {devEUI} found 1 device");
                 return new OkObjectResult(result);

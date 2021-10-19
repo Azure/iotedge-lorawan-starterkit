@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Text;
@@ -16,7 +17,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets URL of the API.
         /// </summary>
-        public string URL { get; private set; }
+        public Uri URL { get; set; }
 
         /// <summary>
         /// Gets the authentication code for the API.
@@ -40,26 +41,9 @@ namespace LoRaWan.NetworkServer
         public abstract Task<SearchDevicesResult> SearchByDevEUIAsync(string devEUI);
 
         /// <summary>
-        /// Sets the new URL value.
-        /// </summary>
-        public void SetURL(string value) => this.URL = this.SanitizeApiURL(value);
-
-        private string SanitizeApiURL(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return string.Empty;
-
-            value = value.Trim();
-            if (value.EndsWith('/'))
-                return value;
-
-            return string.Concat(value, "/");
-        }
-
-        /// <summary>
         /// Sets the authorization code for the URL.
         /// </summary>
-        public void SetAuthCode(string value) => this.AuthCode = value;
+        public void SetAuthCode(string value) => AuthCode = value;
 
         /// <summary>
         /// Validates if the specified message from the device
@@ -79,8 +63,9 @@ namespace LoRaWan.NetworkServer
 
         protected LoRaDeviceAPIServiceBase(NetworkServerConfiguration configuration)
         {
-            this.AuthCode = configuration.FacadeAuthCode;
-            this.URL = this.SanitizeApiURL(configuration.FacadeServerUrl);
+            if (configuration is null) throw new ArgumentNullException(nameof(configuration));
+            AuthCode = configuration.FacadeAuthCode;
+            URL = configuration.FacadeServerUrl;
         }
 
         protected static ByteArrayContent PreparePostContent(string requestBody)

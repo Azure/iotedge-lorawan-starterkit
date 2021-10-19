@@ -8,21 +8,22 @@ namespace LoRaWan.NetworkServer.Test
     using System.Text;
     using LoRaTools;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
 
     public sealed class LoRaCloudToDeviceMessageWrapperTest : IDisposable
     {
-        private readonly TestUtils.LoraDeviceClientConnectionManagerWrapper connectionManagerWrapper;
+        private readonly LoraDeviceClientConnectionManagerWrapper connectionManagerWrapper;
         private readonly LoRaDevice sampleDevice;
-        private LoRaDeviceClientConnectionManager connectionManager => connectionManagerWrapper.Value;
+        private LoRaDeviceClientConnectionManager ConnectionManager => this.connectionManagerWrapper.Value;
 
         public LoRaCloudToDeviceMessageWrapperTest()
         {
             this.connectionManagerWrapper = TestUtils.CreateConnectionManager();
-            this.sampleDevice = new LoRaDevice("123131", "1231231232132", this.connectionManager);
-            connectionManager.Register(this.sampleDevice, new Mock<ILoRaDeviceClient>().Object);
+            this.sampleDevice = new LoRaDevice("123131", "1231231232132", ConnectionManager);
+            ConnectionManager.Register(this.sampleDevice, new Mock<ILoRaDeviceClient>().Object);
         }
 
         [Fact]

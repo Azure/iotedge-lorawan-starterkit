@@ -15,9 +15,8 @@ namespace LoRaWan.Tests.Shared
         private readonly ConcurrentQueue<EventData> events;
         private readonly string connectionString;
         private EventHubClient eventHubClient;
-        List<PartitionReceiver> receivers;
-
-        HashSet<Action<IEnumerable<EventData>>> subscribers;
+        readonly List<PartitionReceiver> receivers;
+        readonly HashSet<Action<IEnumerable<EventData>>> subscribers;
 
         public bool LogToConsole { get; set; } = true;
 
@@ -35,7 +34,7 @@ namespace LoRaWan.Tests.Shared
             this.events = new ConcurrentQueue<EventData>();
             this.receivers = new List<PartitionReceiver>();
             if (!string.IsNullOrEmpty(consumerGroupName))
-                this.ConsumerGroupName = consumerGroupName;
+                ConsumerGroupName = consumerGroupName;
 
             this.subscribers = new HashSet<Action<IEnumerable<EventData>>>();
         }
@@ -45,15 +44,15 @@ namespace LoRaWan.Tests.Shared
             if (this.receivers.Count > 0)
                 throw new InvalidOperationException("Already started");
 
-            if (this.LogToConsole)
+            if (LogToConsole)
             {
-                TestLogger.Log($"Connecting to IoT Hub Event Hub @{this.connectionString} using consumer group {this.ConsumerGroupName}");
+                TestLogger.Log($"Connecting to IoT Hub Event Hub @{this.connectionString} using consumer group {ConsumerGroupName}");
             }
 
             var rti = await this.eventHubClient.GetRuntimeInformationAsync();
             foreach (var partitionId in rti.PartitionIds)
             {
-                var receiver = this.eventHubClient.CreateReceiver(this.ConsumerGroupName, partitionId, EventPosition.FromEnqueuedTime(DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(1))));
+                var receiver = this.eventHubClient.CreateReceiver(ConsumerGroupName, partitionId, EventPosition.FromEnqueuedTime(DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(1))));
                 receiver.SetReceiveHandler(this);
                 this.receivers.Add(receiver);
             }
@@ -75,9 +74,9 @@ namespace LoRaWan.Tests.Shared
             this.subscribers.Remove(subscriber);
         }
 
-        public IReadOnlyCollection<EventData> GetEvents() => this.events;
+        public IReadOnlyCollection<EventData> Events => this.events;
 
-        Task IPartitionReceiveHandler.ProcessEventsAsync(IEnumerable<EventData> events)
+        public Task ProcessEventsAsync(IEnumerable<EventData> events)
         {
             try
             {
@@ -93,7 +92,7 @@ namespace LoRaWan.Tests.Shared
                 {
                     this.events.Enqueue(item);
 
-                    if (this.LogToConsole)
+                    if (LogToConsole)
                     {
                         var bodyText = Encoding.UTF8.GetString(item.Body);
                         TestLogger.Log($"[IOTHUB] {bodyText}");
@@ -102,23 +101,21 @@ namespace LoRaWan.Tests.Shared
             }
             catch (Exception ex)
             {
-                TestLogger.Log($"Error processing iot hub event. {ex.ToString()}");
+                TestLogger.Log($"Error processing iot hub event. {ex}");
             }
 
             return Task.FromResult(0);
         }
 
-        Task IPartitionReceiveHandler.ProcessErrorAsync(Exception error)
+        public Task ProcessErrorAsync(Exception error)
         {
             Console.Error.WriteLine(error.ToString());
             return Task.FromResult(0);
         }
 
-        int maxBatchSize = 32;
+        public int MaxBatchSize { get; set; } = 32;
 
-        int IPartitionReceiveHandler.MaxBatchSize { get => this.maxBatchSize; set => this.maxBatchSize = value; }
-
-        private bool disposedValue = false; // To detect redundant calls
+        private bool disposedValue; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing)
         {
@@ -137,7 +134,7 @@ namespace LoRaWan.Tests.Shared
                         }
                         catch (Exception ex)
                         {
-                            TestLogger.Log($"Error closing event hub receiver: {ex.ToString()}");
+                            TestLogger.Log($"Error closing event hub receiver: {ex}");
                         }
 
                         this.receivers.RemoveAt(i);
@@ -157,7 +154,7 @@ namespace LoRaWan.Tests.Shared
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
     }

@@ -6,7 +6,8 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Net;
     using System.Net.Http;
-    using LoRaWan.Shared;
+    using LoRaTools.CommonAPI;
+    using LoRaWan.Core;
 
     /// <summary>
     /// Default implementation for <see cref="IServiceFacadeHttpClientProvider"/>.
@@ -21,14 +22,18 @@ namespace LoRaWan.NetworkServer
         {
             this.configuration = configuration;
             this.expectedFunctionVersion = expectedFunctionVersion;
-            this.httpClient = new Lazy<HttpClient>(this.CreateHttpClient);
+            this.httpClient = new Lazy<HttpClient>(CreateHttpClient);
         }
 
         public HttpClient GetHttpClient() => this.httpClient.Value;
 
         HttpClient CreateHttpClient()
         {
-            using var handler = new ServiceFacadeHttpClientHandler(this.expectedFunctionVersion);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            // Will be handled once we migrate to DI.
+            // https://github.com/Azure/iotedge-lorawan-starterkit/issues/534
+            var handler = new ServiceFacadeHttpClientHandler(this.expectedFunctionVersion);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             if (!string.IsNullOrEmpty(this.configuration.HttpsProxy))
             {
@@ -40,7 +45,11 @@ namespace LoRaWan.NetworkServer
                 handler.UseProxy = true;
             }
 
+#pragma warning disable CA5399 // Definitely disable HttpClient certificate revocation list check
+            // Related to: https://github.com/Azure/iotedge-lorawan-starterkit/issues/534
+            // Will be resolved once we migrate to DI
             return new HttpClient(handler);
+#pragma warning restore CA5399 // Definitely disable HttpClient certificate revocation list check
         }
     }
 }

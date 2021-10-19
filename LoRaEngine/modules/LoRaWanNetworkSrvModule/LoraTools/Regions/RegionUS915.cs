@@ -11,7 +11,7 @@ namespace LoRaTools.Regions
         // Frequencies calculated according to formula:
         // 923.3 + upstreamChannelNumber % 8 * 0.6,
         // rounded to first decimal point
-        private static double[] DownstreamChannelFrequencies = new double[] { 923.3, 923.9, 924.5, 925.1, 925.7, 926.3, 926.9, 927.5 };
+        private static readonly double[] DownstreamChannelFrequencies = new double[] { 923.3, 923.9, 924.5, 925.1, 925.7, 926.3, 926.9, 927.5 };
 
         public RegionUS915()
             : base(
@@ -29,9 +29,11 @@ namespace LoRaTools.Regions
         /// <param name="joinChannelIndex">index of the join channel, if applicable.</param>
         public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex = null)
         {
+            if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
+
             frequency = 0;
 
-            if (this.IsValidUpstreamRxpk(upstreamChannel))
+            if (IsValidUpstreamRxpk(upstreamChannel))
             {
                 int upstreamChannelNumber;
                 // if DR4 the coding are different.

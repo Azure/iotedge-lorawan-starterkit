@@ -55,10 +55,10 @@ namespace LoRaTools.LoRaPhysical
         [JsonProperty("data")]
         public string Data { get; set; }
 
-        public double RequiredSnr => this.SpreadFactorToSNR[this.SpreadingFactor];
+        public double RequiredSnr => SpreadFactorToSNR[SpreadingFactor];
 
-        public int SpreadingFactor => int.Parse(this.Datr.Substring(this.Datr.IndexOf("SF", StringComparison.Ordinal) + 2,
-                                                                    this.Datr.IndexOf("BW", StringComparison.Ordinal) - this.Datr.IndexOf("SF", StringComparison.Ordinal) - 2),
+        public int SpreadingFactor => int.Parse(Datr.Substring(Datr.IndexOf("SF", StringComparison.Ordinal) + 2,
+                                                                    Datr.IndexOf("BW", StringComparison.Ordinal) - Datr.IndexOf("SF", StringComparison.Ordinal) - 2),
                                                 CultureInfo.InvariantCulture);
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace LoRaTools.LoRaPhysical
         /// </summary>
         /// <param name="inputMessage">Input byte array.</param>
         /// <returns>List of rxpk or null if no Rxpk was found.</returns>
-        public static List<Rxpk> CreateRxpk(byte[] inputMessage)
+        public static IList<Rxpk> CreateRxpk(byte[] inputMessage)
         {
             var physicalPayload = new PhysicalPayload(inputMessage);
             if (physicalPayload.Message != null)
@@ -116,10 +116,10 @@ namespace LoRaTools.LoRaPhysical
         public uint GetModulationMargin()
         {
             // required SNR:
-            var requiredSNR = this.SpreadFactorToSNR[this.SpreadingFactor];
+            var requiredSNR = SpreadFactorToSNR[SpreadingFactor];
 
             // get the link budget
-            var signedMargin = Math.Max(0, (int)(this.Lsnr - requiredSNR));
+            var signedMargin = Math.Max(0, (int)(Lsnr - requiredSNR));
 
             return (uint)signedMargin;
         }

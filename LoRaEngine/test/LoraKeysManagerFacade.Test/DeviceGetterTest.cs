@@ -6,6 +6,7 @@ namespace LoraKeysManagerFacade.Test
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Moq;
@@ -22,14 +23,14 @@ namespace LoraKeysManagerFacade.Test
             var devEUI2 = NewUniqueEUI64();
             var gatewayId = NewUniqueEUI64();
 
-            var deviceGetter = new DeviceGetter(this.InitRegistryManager(devEUI, devEUI2), new LoRaInMemoryDeviceStore());
+            var deviceGetter = new DeviceGetter(InitRegistryManager(devEUI, devEUI2), new LoRaInMemoryDeviceStore());
             var items = await deviceGetter.GetDeviceList(devEUI, gatewayId, "ABCD", null);
 
             Assert.Single(items);
             Assert.Equal(devEUI, items[0].DevEUI);
         }
 
-        private RegistryManager InitRegistryManager(string devEui1, string devEui2)
+        private static RegistryManager InitRegistryManager(string devEui1, string devEui2)
         {
             var mockRegistryManager = new Mock<RegistryManager>(MockBehavior.Strict);
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));
@@ -47,7 +48,7 @@ namespace LoraKeysManagerFacade.Test
             var queryMock = new Mock<IQuery>(MockBehavior.Loose);
             queryMock
                 .Setup(x => x.HasMoreResults)
-                .Returns(() => (deviceCount < numberOfDevices));
+                .Returns(() => deviceCount < numberOfDevices);
 
             var deviceIds = new string[numberOfDevices] { devEui1, devEui2 };
 

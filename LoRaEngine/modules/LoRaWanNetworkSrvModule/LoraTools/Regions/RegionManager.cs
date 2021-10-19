@@ -3,9 +3,9 @@
 
 namespace LoRaTools.Regions
 {
+    using System;
     using System.Collections.Generic;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Utils;
 
     public static class RegionManager
     {
@@ -31,9 +31,15 @@ namespace LoRaTools.Regions
                 case LoRaRegionType.US915:
                     region = US915;
                     return true;
-            }
 
-            return false;
+                case LoRaRegionType.CN470:
+                    region = CN470;
+                    return true;
+
+                case LoRaRegionType.NotSet:
+                default:
+                    return false;
+            }
         }
 
         /// <summary>
@@ -44,15 +50,17 @@ namespace LoRaTools.Regions
         /// <param name="region">Region.</param>
         public static bool TryResolveRegion(Rxpk rxpk, out Region region)
         {
+            if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
+
             region = null;
 
             // EU863-870
-            if (rxpk.Freq < 870 && rxpk.Freq > 863)
+            if (rxpk.Freq is < 870 and > 863)
             {
                 region = EU868;
                 return true;
             }// US902-928 frequency band, upstream messages are between 902 and 915.
-            else if (rxpk.Freq <= 915 && rxpk.Freq >= 902)
+            else if (rxpk.Freq is <= 915 and >= 902)
             {
                 region = US915;
                 return true;
@@ -71,7 +79,10 @@ namespace LoRaTools.Regions
                 {
                     lock (RegionLock)
                     {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                        // False positive
                         if (eu868 == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
                         {
                             CreateEU868Region();
                         }
@@ -103,16 +114,16 @@ namespace LoRaTools.Regions
             eu868.TXPowertoMaxEIRP.Add(6, 4);
             eu868.TXPowertoMaxEIRP.Add(7, 2);
 
-            eu868.RX1DROffsetTable = new int[8, 6]
+            eu868.RX1DROffsetTable = new int[8][]
             {
-            { 0, 0, 0, 0, 0, 0 },
-            { 1, 0, 0, 0, 0, 0 },
-            { 2, 1, 0, 0, 0, 0 },
-            { 3, 2, 1, 0, 0, 0 },
-            { 4, 3, 2, 1, 0, 0 },
-            { 5, 4, 3, 2, 1, 0 },
-            { 6, 5, 4, 3, 2, 1 },
-            { 7, 6, 5, 4, 3, 2 }
+                new int[] { 0, 0, 0, 0, 0, 0 },
+                new int[] { 1, 0, 0, 0, 0, 0 },
+                new int[] { 2, 1, 0, 0, 0, 0 },
+                new int[] { 3, 2, 1, 0, 0, 0 },
+                new int[] { 4, 3, 2, 1, 0, 0 },
+                new int[] { 5, 4, 3, 2, 1, 0 },
+                new int[] { 6, 5, 4, 3, 2, 1 },
+                new int[] { 7, 6, 5, 4, 3, 2 }
             };
             var validDataRangeUpAndDownstream = new HashSet<string>()
             {
@@ -140,7 +151,10 @@ namespace LoRaTools.Regions
                 {
                     lock (RegionLock)
                     {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                        // False positive
                         if (us915 == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
                         {
                             CreateUS915Region();
                         }
@@ -171,13 +185,13 @@ namespace LoRaTools.Regions
                 us915.TXPowertoMaxEIRP.Add(i, 30 - i);
             }
 
-            us915.RX1DROffsetTable = new int[5, 4]
+            us915.RX1DROffsetTable = new int[5][]
             {
-            { 10, 9, 8, 8 },
-            { 11, 10, 9, 8 },
-            { 12, 11, 10, 9 },
-            { 13, 12, 11, 10 },
-            { 13, 13, 12, 11 },
+                new int[] { 10, 9, 8, 8 },
+                new int[] { 11, 10, 9, 8 },
+                new int[] { 12, 11, 10, 9 },
+                new int[] { 13, 12, 11, 10 },
+                new int[] { 13, 13, 12, 11 },
             };
 
             var upstreamValidDataranges = new HashSet<string>()
@@ -213,7 +227,10 @@ namespace LoRaTools.Regions
                 {
                     lock (RegionLock)
                     {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                        // False positive
                         if (cn470 == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
                         {
                             cn470 = new RegionCN470();
                         }

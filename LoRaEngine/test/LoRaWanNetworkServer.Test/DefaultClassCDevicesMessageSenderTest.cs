@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer.Test
             this.frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(this.serverConfiguration.GatewayID, this.deviceApi.Object);
         }
 
-        private void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
+        private static void EnsureDownlinkIsCorrect(DownlinkPktFwdMessage downlink, SimulatedDevice simDevice, ReceivedLoRaCloudToDeviceMessage sentMessage)
         {
             Assert.NotNull(downlink);
             Assert.NotNull(downlink.Txpk);
@@ -60,7 +60,7 @@ namespace LoRaWan.NetworkServer.Test
 
             var downstreamPayloadBytes = Convert.FromBase64String(downlink.Txpk.Data);
             var downstreamPayload = new LoRaPayloadData(downstreamPayloadBytes);
-            Assert.Equal(sentMessage.Fport, downstreamPayload.GetFPort());
+            Assert.Equal(sentMessage.Fport, downstreamPayload.FPortValue);
             Assert.Equal(downstreamPayload.DevAddr.ToArray(), ConversionHelper.StringToByteArray(simDevice.DevAddr));
             var decryptedPayload = downstreamPayload.GetDecryptedPayload(simDevice.AppSKey);
             Assert.Equal(sentMessage.Payload, Encoding.UTF8.GetString(decryptedPayload));
@@ -104,7 +104,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Returns(Task.CompletedTask)
                 .Callback<DownlinkPktFwdMessage>(d =>
                 {
-                    this.EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
+                    EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
                 });
 
             var target = new DefaultClassCDevicesMessageSender(
@@ -350,7 +350,7 @@ namespace LoRaWan.NetworkServer.Test
                 .Returns(Task.CompletedTask)
                 .Callback<DownlinkPktFwdMessage>(d =>
                 {
-                    this.EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
+                    EnsureDownlinkIsCorrect(d, simDevice, c2dToDeviceMessage);
                     Assert.Equal("SF10BW500", d.Txpk.Datr);
                     Assert.Equal(0L, d.Txpk.Tmst);
                     Assert.Equal(923.3, d.Txpk.Freq);

@@ -8,9 +8,8 @@ namespace LoraKeysManagerFacade.Test
     using System.Linq;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.FunctionBundler;
-    using LoRaWan.Shared;
+    using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Http.Internal;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -31,12 +30,12 @@ namespace LoraKeysManagerFacade.Test
             {
                 (req) => new DeviceGetter(null, null).GetDevice(req, NullLogger.Instance),
                 (req) => Task.Run(() => new FCntCacheCheck(null).NextFCntDownInvoke(req, NullLogger.Instance)),
-                (req) => Task.Run(() => new FunctionBundlerFunction(new IFunctionBundlerExecutionItem[0]).FunctionBundlerImpl(req, NullLogger.Instance, string.Empty))
+                (req) => Task.Run(() => new FunctionBundlerFunction(Array.Empty<IFunctionBundlerExecutionItem>()).FunctionBundler(req, NullLogger.Instance, string.Empty))
             };
 
             foreach (var apiCall in apiCalls)
             {
-                var request = new DefaultHttpRequest(new DefaultHttpContext());
+                var request = new DefaultHttpContext().Request;
 
                 if (!string.IsNullOrEmpty(requestVersion))
                 {
@@ -150,7 +149,7 @@ namespace LoraKeysManagerFacade.Test
         public void LatestVersion_Should_Be_Newer_As_All()
         {
             var latest = ApiVersion.LatestVersion;
-            Assert.All(ApiVersion.GetApiVersions(), v =>
+            Assert.All(ApiVersion.ApiVersions, v =>
             {
                 if (v != latest)
                 {

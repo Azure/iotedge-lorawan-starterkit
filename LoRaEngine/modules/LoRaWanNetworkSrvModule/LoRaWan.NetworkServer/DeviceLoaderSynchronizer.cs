@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
@@ -47,7 +48,7 @@ namespace LoRaWan.NetworkServer
         private readonly Task loading;
         private volatile LoaderState state;
         private volatile bool loadingDevicesFailed;
-        private object queueLock;
+        private readonly object queueLock;
         private volatile List<LoRaRequest> queuedRequests;
 
         internal DeviceLoaderSynchronizer(
@@ -71,7 +72,10 @@ namespace LoRaWan.NetworkServer
             this.loadingDevicesFailed = false;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
-            this.loading = Task.Run(() => this.Load().ContinueWith((t) => continuationAction(t, this), TaskContinuationOptions.ExecuteSynchronously));
+            this.loading = Task.Run(() => Load().ContinueWith((t) => continuationAction(t, this),
+                                                                   CancellationToken.None,
+                                                                   TaskContinuationOptions.ExecuteSynchronously,
+                                                                   TaskScheduler.Default));
         }
 
         async Task Load()
@@ -95,36 +99,36 @@ namespace LoRaWan.NetworkServer
                     throw;
                 }
 
-                this.SetState(LoaderState.CreatingDeviceInstances);
-                var createdDevices = await this.CreateDevicesAsync(searchDeviceResult.Devices);
+                SetState(LoaderState.CreatingDeviceInstances);
+                var createdDevices = await CreateDevicesAsync(searchDeviceResult.Devices);
 
                 // Dispatch queued requests to created devices
                 // those without a matching device will receive "failed" notification
                 lock (this.queueLock)
                 {
-                    this.SetState(LoaderState.DispatchingQueuedItems);
+                    SetState(LoaderState.DispatchingQueuedItems);
 
-                    this.DispatchQueuedItems(createdDevices);
+                    DispatchQueuedItems(createdDevices);
 
                     foreach (var device in createdDevices)
                     {
                         this.registerDeviceAction(device);
                     }
 
-                    this.CreatedDevicesCount = createdDevices.Count;
+                    CreatedDevicesCount = createdDevices.Count;
 
-                    this.SetState(LoaderState.Finished);
+                    SetState(LoaderState.Finished);
                 }
             }
             catch (Exception ex)
             {
                 Logger.Log(this.devAddr, $"failed to create one or more devices. {ex.Message}", LogLevel.Error);
-                this.NotifyQueueItemsDueToError();
+                NotifyQueueItemsDueToError();
                 throw;
             }
             finally
             {
-                this.SetState(LoaderState.Finished);
+                SetState(LoaderState.Finished);
             }
         }
 
@@ -139,13 +143,13 @@ namespace LoRaWan.NetworkServer
                     if (!this.existingDevices.ContainsKey(foundDevice.DevEUI))
                     {
                         var loRaDevice = this.deviceFactory.Create(foundDevice);
-                        initTasks.Add(this.InitializeDeviceAsync(loRaDevice));
+                        initTasks.Add(InitializeDeviceAsync(loRaDevice));
                     }
                 }
 
                 try
                 {
-                    await Task.WhenAll(initTasks);
+                    _ = await Task.WhenAll(initTasks);
                 }
                 catch (Exception ex)
                 {
@@ -169,12 +173,12 @@ namespace LoRaWan.NetworkServer
                         else
                         {
                             // if device twin load fails, error will be logged and device will be null
-                            this.HasLoadingDeviceError = true;
+                            HasLoadingDeviceError = true;
                         }
                     }
                     else
                     {
-                        this.HasLoadingDeviceError = true;
+                        HasLoadingDeviceError = true;
                     }
                 }
             }
@@ -211,7 +215,7 @@ namespace LoRaWan.NetworkServer
                         {
                             if (device.ValidateMic(request.Payload))
                             {
-                                this.AddToDeviceQueue(device, request);
+                                AddToDeviceQueue(device, request);
                                 requestHandled = true;
                                 break;
                             }
@@ -227,7 +231,7 @@ namespace LoRaWan.NetworkServer
                 {
                     var failedReason = hasDeviceFromAnotherGateway ? LoRaDeviceRequestFailedReason.BelongsToAnotherGateway :
                         (hasDevicesMatchingDevAddr ? LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck : LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr);
-                    this.LogRequestFailed(request, failedReason);
+                    LogRequestFailed(request, failedReason);
                     request.NotifyFailed(failedReason);
                 }
             }
@@ -260,7 +264,7 @@ namespace LoRaWan.NetworkServer
                     {
                         if (device.ValidateMic(request.Payload))
                         {
-                            this.AddToDeviceQueue(device, request);
+                            AddToDeviceQueue(device, request);
                             return;
                         }
                     }
@@ -276,13 +280,13 @@ namespace LoRaWan.NetworkServer
                     this.loadingDevicesFailed ? LoRaDeviceRequestFailedReason.ApplicationError :
                     this.existingDevices.Count > 0 ? LoRaDeviceRequestFailedReason.NotMatchingDeviceByMicCheck : LoRaDeviceRequestFailedReason.NotMatchingDeviceByDevAddr;
 
-                this.LogRequestFailed(request, failedReason);
+                LogRequestFailed(request, failedReason);
 
                 request.NotifyFailed(failedReason);
             }
         }
 
-        private void AddToDeviceQueue(LoRaDevice device, LoRaRequest request)
+        private static void AddToDeviceQueue(LoRaDevice device, LoRaRequest request)
         {
             if (device.IsOurDevice)
             {
@@ -303,7 +307,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        private void LogRequestFailed(LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
+        private static void LogRequestFailed(LoRaRequest request, LoRaDeviceRequestFailedReason failedReason)
         {
             var deviceId = ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
 
@@ -323,6 +327,23 @@ namespace LoRaWan.NetworkServer
 
                 case LoRaDeviceRequestFailedReason.BelongsToAnotherGateway:
                     Logger.Log(deviceId, "device is not our device, ignore message", LogLevel.Debug);
+                    break;
+                case LoRaDeviceRequestFailedReason.InvalidNetId:
+                case LoRaDeviceRequestFailedReason.InvalidRxpk:
+                case LoRaDeviceRequestFailedReason.InvalidRegion:
+                case LoRaDeviceRequestFailedReason.UnknownDevice:
+                case LoRaDeviceRequestFailedReason.InvalidJoinRequest:
+                case LoRaDeviceRequestFailedReason.HandledByAnotherGateway:
+                case LoRaDeviceRequestFailedReason.JoinDevNonceAlreadyUsed:
+                case LoRaDeviceRequestFailedReason.JoinMicCheckFailed:
+                case LoRaDeviceRequestFailedReason.ReceiveWindowMissed:
+                case LoRaDeviceRequestFailedReason.ConfirmationResubmitThresholdExceeded:
+                case LoRaDeviceRequestFailedReason.InvalidFrameCounter:
+                case LoRaDeviceRequestFailedReason.IoTHubProblem:
+                case LoRaDeviceRequestFailedReason.DeduplicationDrop:
+                case LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed:
+                default:
+                    Logger.Log(deviceId, "device request failed", LogLevel.Debug);
                     break;
             }
         }

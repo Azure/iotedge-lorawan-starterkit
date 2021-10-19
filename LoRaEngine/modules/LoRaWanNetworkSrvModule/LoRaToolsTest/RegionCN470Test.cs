@@ -7,7 +7,7 @@ namespace LoRaWanTest
     {
         public RegionCN470Test()
         {
-            _region = RegionManager.CN470;
+            Region = RegionManager.CN470;
         }
 
         [Theory]
@@ -42,7 +42,7 @@ namespace LoRaWanTest
         [InlineData("SF10BW125", "SF11BW125", 1)]
         [InlineData("SF8BW125", "SF10BW125", 2)]
         [InlineData("SF7BW500", "SF9BW125", 3)]
-        public void TestDataRate(string inputDr, string outputDr, uint rx1DrOffset)
+        public void TestDataRate(string inputDr, string outputDr, int rx1DrOffset)
         {
             var rxpk = GenerateRxpk(inputDr, 470.3);
             TestRegionDataRate(rxpk, outputDr, rx1DrOffset);

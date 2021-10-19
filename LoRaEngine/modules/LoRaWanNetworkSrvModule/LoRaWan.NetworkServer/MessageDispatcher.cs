@@ -18,7 +18,7 @@ namespace LoRaWan.NetworkServer
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private volatile Region loraRegion;
-        private JoinRequestMessageHandler joinRequestHandler;
+        private readonly JoinRequestMessageHandler joinRequestHandler;
 
         public MessageDispatcher(
             NetworkServerConfiguration configuration,
@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             JoinRequestMessageHandler joinRequestHandler = null)
         {
-            this.configuration = configuration;
+            this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.deviceRegistry = deviceRegistry;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
 
@@ -42,6 +42,8 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public void DispatchRequest(LoRaRequest request)
         {
+            if (request is null) throw new ArgumentNullException(nameof(request));
+
             if (!LoRaPayload.TryCreateLoRaPayload(request.Rxpk, out var loRaPayload))
             {
                 Logger.Log("There was a problem in decoding the Rxpk", LogLevel.Error);
@@ -69,11 +71,11 @@ namespace LoRaWan.NetworkServer
 
             if (loRaPayload.LoRaMessageType == LoRaMessageType.JoinRequest)
             {
-                this.DispatchLoRaJoinRequest(loggingRequest);
+                DispatchLoRaJoinRequest(loggingRequest);
             }
-            else if (loRaPayload.LoRaMessageType == LoRaMessageType.UnconfirmedDataUp || loRaPayload.LoRaMessageType == LoRaMessageType.ConfirmedDataUp)
+            else if (loRaPayload.LoRaMessageType is LoRaMessageType.UnconfirmedDataUp or LoRaMessageType.ConfirmedDataUp)
             {
-                this.DispatchLoRaDataMessage(loggingRequest);
+                DispatchLoRaDataMessage(loggingRequest);
             }
             else
             {
@@ -86,9 +88,9 @@ namespace LoRaWan.NetworkServer
         void DispatchLoRaDataMessage(LoRaRequest request)
         {
             var loRaPayload = (LoRaPayloadData)request.Payload;
-            if (!this.IsValidNetId(loRaPayload))
+            if (!IsValidNetId(loRaPayload))
             {
-                Logger.Log(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr), $"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.GetDevAddrNetID()})", LogLevel.Debug);
+                Logger.Log(ConversionHelper.ByteArrayToString(loRaPayload.DevAddr), $"device is using another network id, ignoring this message (network: {this.configuration.NetId}, devAddr: {loRaPayload.DevAddrNetID})", LogLevel.Debug);
                 request.NotifyFailed(LoRaDeviceRequestFailedReason.InvalidNetId);
                 return;
             }
@@ -99,7 +101,7 @@ namespace LoRaWan.NetworkServer
         bool IsValidNetId(LoRaPayloadData loRaPayload)
         {
             // Check if the current dev addr is in our network id
-            var devAddrNwkid = loRaPayload.GetDevAddrNetID();
+            var devAddrNwkid = loRaPayload.DevAddrNetID;
             var netIdBytes = BitConverter.GetBytes(this.configuration.NetId);
             devAddrNwkid = (byte)(devAddrNwkid >> 1);
             if (devAddrNwkid == (netIdBytes[0] & 0b01111111))

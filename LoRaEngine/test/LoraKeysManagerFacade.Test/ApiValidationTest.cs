@@ -7,9 +7,8 @@ namespace LoraKeysManagerFacade.Test
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.FunctionBundler;
-    using LoRaWan.Shared;
+    using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
-    using Microsoft.AspNetCore.Http.Internal;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging.Abstractions;
@@ -30,19 +29,17 @@ namespace LoraKeysManagerFacade.Test
             {
                 (req) => new DeviceGetter(null, null).GetDevice(req, NullLogger.Instance),
                 (req) => Task.Run(() => new FCntCacheCheck(null).NextFCntDownInvoke(req, NullLogger.Instance)),
-                (req) => Task.Run(() => new FunctionBundlerFunction(new IFunctionBundlerExecutionItem[0]).FunctionBundlerImpl(req, NullLogger.Instance, string.Empty))
+                (req) => Task.Run(() => new FunctionBundlerFunction(Array.Empty<IFunctionBundlerExecutionItem>()).FunctionBundler(req, NullLogger.Instance, string.Empty))
             };
 
             foreach (var apiCall in apiCalls)
             {
-                var request = new DefaultHttpRequest(new DefaultHttpContext())
-                {
-                    Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
-                                                        {
-                                                            { ApiVersion.QueryStringParamName, ApiVersion.LatestVersion.Name },
-                                                            { "DevEUI", devEUI }
-                                                        })
-                };
+                var request = new DefaultHttpContext().Request;
+                request.Query = new QueryCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
+                    {
+                        { ApiVersion.QueryStringParamName, ApiVersion.LatestVersion.Name },
+                        { "DevEUI", devEUI }
+                    });
 
                 await Assert.ThrowsAsync<ArgumentException>(async () => await apiCall(request));
             }

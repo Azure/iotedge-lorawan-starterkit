@@ -29,17 +29,17 @@ namespace LoRaTools.LoRaMessage
         /// <summary>
         /// Gets the value of DevEUI as <see cref="string"/>.
         /// </summary>
-        public string GetDevEUIAsString() => ConversionHelper.ReverseByteArrayToString(this.DevEUI);
+        public string GetDevEUIAsString() => ConversionHelper.ReverseByteArrayToString(DevEUI);
 
         /// <summary>
         /// Gets the value of AppEUI as <see cref="string"/>.
         /// </summary>
-        public string GetAppEUIAsString() => ConversionHelper.ReverseByteArrayToString(this.AppEUI);
+        public string GetAppEUIAsString() => ConversionHelper.ReverseByteArrayToString(AppEUI);
 
         /// <summary>
         /// Gets the value <see cref="DevNonce"/> as <see cref="string"/>.
         /// </summary>
-        public string GetDevNonceAsString() => ConversionHelper.ByteArrayToString(this.DevNonce);
+        public string GetDevNonceAsString() => ConversionHelper.ByteArrayToString(DevNonce);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoRaPayloadJoinRequest"/> class.
@@ -52,19 +52,19 @@ namespace LoRaTools.LoRaMessage
         public LoRaPayloadJoinRequest(byte[] inputMessage)
             : base(inputMessage)
         {
-            this.Mhdr = new Memory<byte>(inputMessage, 0, 1);
+            Mhdr = new Memory<byte>(inputMessage, 0, 1);
             // get the joinEUI field
-            this.AppEUI = new Memory<byte>(inputMessage, 1, 8);
+            AppEUI = new Memory<byte>(inputMessage, 1, 8);
             // get the DevEUI
-            this.DevEUI = new Memory<byte>(inputMessage, 9, 8);
+            DevEUI = new Memory<byte>(inputMessage, 9, 8);
             // get the DevNonce
-            this.DevNonce = new Memory<byte>(inputMessage, 17, 2);
+            DevNonce = new Memory<byte>(inputMessage, 17, 2);
         }
 
         public LoRaPayloadJoinRequest(string appEUI, string devEUI, byte[] devNonce)
         {
             // Mhdr is always 0 in case of a join request
-            this.Mhdr = new byte[1] { 0x00 };
+            Mhdr = new byte[1] { 0x00 };
 
             var appEUIBytes = ConversionHelper.StringToByteArray(appEUI);
             var devEUIBytes = ConversionHelper.StringToByteArray(devEUI);
@@ -74,20 +74,20 @@ namespace LoRaTools.LoRaMessage
             // message processor reverses both values before getting it
             Array.Reverse(appEUIBytes);
             Array.Reverse(devEUIBytes);
-            this.AppEUI = new Memory<byte>(appEUIBytes);
-            this.DevEUI = new Memory<byte>(devEUIBytes);
-            this.DevNonce = new Memory<byte>(devNonce);
-            this.Mic = default(Memory<byte>);
+            AppEUI = new Memory<byte>(appEUIBytes);
+            DevEUI = new Memory<byte>(devEUIBytes);
+            DevNonce = new Memory<byte>(devNonce);
+            Mic = default;
         }
 
-        public override bool CheckMic(string appKey, uint? server32BitFcnt = null)
+        public override bool CheckMic(string nwskey, uint? server32BitFcnt = null)
         {
-            return this.Mic.ToArray().SequenceEqual(this.PerformMic(appKey));
+            return Mic.ToArray().SequenceEqual(PerformMic(nwskey));
         }
 
         public void SetMic(string appKey)
         {
-            this.Mic = this.PerformMic(appKey);
+            Mic = PerformMic(appKey);
         }
 
         private byte[] PerformMic(string appKey)
@@ -100,13 +100,13 @@ namespace LoRaTools.LoRaMessage
             var algoInput = new Memory<byte>(algoInputBytes);
 
             var offset = 0;
-            this.Mhdr.CopyTo(algoInput);
-            offset += this.Mhdr.Length;
-            this.AppEUI.CopyTo(algoInput.Slice(offset));
-            offset += this.AppEUI.Length;
-            this.DevEUI.CopyTo(algoInput.Slice(offset));
-            offset += this.DevEUI.Length;
-            this.DevNonce.CopyTo(algoInput.Slice(offset));
+            Mhdr.CopyTo(algoInput);
+            offset += Mhdr.Length;
+            AppEUI.CopyTo(algoInput[offset..]);
+            offset += AppEUI.Length;
+            DevEUI.CopyTo(algoInput[offset..]);
+            offset += DevEUI.Length;
+            DevNonce.CopyTo(algoInput[offset..]);
 
             mac.BlockUpdate(algoInputBytes, 0, algoInputBytes.Length);
 
@@ -119,13 +119,13 @@ namespace LoRaTools.LoRaMessage
         public override byte[] GetByteMessage()
         {
             var messageArray = new List<byte>(23);
-            messageArray.AddRange(this.Mhdr.ToArray());
-            messageArray.AddRange(this.AppEUI.ToArray());
-            messageArray.AddRange(this.DevEUI.ToArray());
-            messageArray.AddRange(this.DevNonce.ToArray());
-            if (!this.Mic.Span.IsEmpty)
+            messageArray.AddRange(Mhdr.ToArray());
+            messageArray.AddRange(AppEUI.ToArray());
+            messageArray.AddRange(DevEUI.ToArray());
+            messageArray.AddRange(DevNonce.ToArray());
+            if (!Mic.Span.IsEmpty)
             {
-                messageArray.AddRange(this.Mic.ToArray());
+                messageArray.AddRange(Mic.ToArray());
             }
 
             return messageArray.ToArray();
@@ -136,8 +136,8 @@ namespace LoRaTools.LoRaMessage
         /// </summary>
         public UplinkPktFwdMessage SerializeUplink(string appKey, string datr = "SF10BW125", double freq = 868.3, uint tmst = 0)
         {
-            this.SetMic(appKey);
-            return new UplinkPktFwdMessage(this.GetByteMessage(), datr, freq, tmst);
+            SetMic(appKey);
+            return new UplinkPktFwdMessage(GetByteMessage(), datr, freq, tmst);
         }
     }
 }

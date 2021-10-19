@@ -42,7 +42,7 @@ namespace LoRaWanTest
             var netId = ConversionHelper.ByteArrayToString(netId1);
             var appkey = "00112233445566778899AABBCCDDEEFF";
             var joinAccept = new LoRaPayloadJoinAccept(netId, devAddr, appNonce, new byte[] { 0 }, 0, null);
-            var joinacceptbyte = joinAccept.Serialize(appkey, "SF10BW125", 866.349812, 10000, "test");
+            var joinacceptbyte = joinAccept.Serialize(appkey, "SF10BW125", 866.349812, 10000);
             var decodedJoinAccept = new LoRaPayloadJoinAccept(Convert.FromBase64String(joinacceptbyte.Txpk.Data), appkey);
             var joinAcceptMic = new byte[4]
             {
@@ -61,10 +61,7 @@ namespace LoRaWanTest
         public void JoinRequest_Should_Succeed_Mic_Check()
         {
             var appEUIText = "0005100000000004";
-            var appEUIBytes = ConversionHelper.StringToByteArray(appEUIText);
-
             var devEUIText = "0005100000000004";
-            var devEUIBytes = ConversionHelper.StringToByteArray(devEUIText);
 
             var devNonceText = "ABCD";
             var devNonceBytes = ConversionHelper.StringToByteArray(devNonceText);
@@ -244,14 +241,14 @@ namespace LoRaWanTest
             var appkey = new byte[16] { 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
 
             var lora = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fctrl, fcnt, null, fport, frmPayload, 0);
-            lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
+            _ = lora.PerformEncryption(ConversionHelper.ByteArrayToString(appkey));
             var testEncrypt = new byte[4]
             {
                 226, 100, 212, 247,
             };
             Assert.Equal(testEncrypt, lora.Frmpayload.ToArray());
             lora.SetMic(ConversionHelper.ByteArrayToString(nwkkey));
-            lora.CheckMic(ConversionHelper.ByteArrayToString(nwkkey));
+            _ = lora.CheckMic(ConversionHelper.ByteArrayToString(nwkkey));
             var testMic = new byte[4]
             {
                 181, 106, 14, 117,
@@ -321,10 +318,21 @@ namespace LoRaWanTest
             {
                 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
             };
-            var key = joinReq.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netId, joinReq.DevNonce.ToArray(), appKey);
+            var key = LoRaPayload.CalculateKey(LoRaPayloadKeyType.NwkSkey, appNonce, netId, joinReq.DevNonce.ToArray(), appKey);
             Assert.Equal(
                 key,
                 new byte[16] { 223, 83, 195, 95, 48, 52, 204, 206, 208, 255, 53, 76, 112, 222, 4, 223, });
+        }
+
+        [Fact]
+        public void CalculateKey_Throws_When_Key_Type_Is_None()
+        {
+            var result = Assert.Throws<InvalidOperationException>(() => LoRaPayload.CalculateKey(LoRaPayloadKeyType.None,
+                                                                                                 Array.Empty<byte>(),
+                                                                                                 Array.Empty<byte>(),
+                                                                                                 Array.Empty<byte>(),
+                                                                                                 Array.Empty<byte>()));
+            Assert.Equal("No key type selected.", result.Message);
         }
 
         /// <summary>
@@ -358,7 +366,7 @@ namespace LoRaWanTest
 
             Assert.Equal(12, devicePayloadData.GetFcnt());
             Assert.Equal(0, devicePayloadData.Direction);
-            Assert.Equal(1, devicePayloadData.GetFPort());
+            Assert.Equal(1, devicePayloadData.FPortValue);
 
             var datr = "SF10BW125";
             var freq = 868.3;
@@ -368,11 +376,11 @@ namespace LoRaWanTest
             // Now try to recreate LoRaPayloadData from rxpk
             Assert.True(LoRaPayload.TryCreateLoRaPayload(uplinkMsg.Rxpk[0], out var parsedLoRaPayload));
             Assert.Equal(loRaMessageType, parsedLoRaPayload.LoRaMessageType);
-            Assert.IsType<LoRaPayloadData>(parsedLoRaPayload);
+            _ = Assert.IsType<LoRaPayloadData>(parsedLoRaPayload);
             var parsedLoRaPayloadData = (LoRaPayloadData)parsedLoRaPayload;
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPortValue);
 
             // Ensure that mic check and getting payload back works
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
@@ -382,7 +390,7 @@ namespace LoRaWanTest
             // checking mic and getting payload should not change the payload properties
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPortValue);
 
             // checking mic should not break getting the payload
             Assert.True(parsedLoRaPayloadData.CheckMic(nwkSKeyText)); // does not matter where the check mic happen, should always work!
@@ -392,7 +400,7 @@ namespace LoRaWanTest
             // checking mic and getting payload should not change the payload properties
             Assert.Equal(12, parsedLoRaPayloadData.GetFcnt());
             Assert.Equal(0, parsedLoRaPayloadData.Direction);
-            Assert.Equal(1, parsedLoRaPayloadData.GetFPort());
+            Assert.Equal(1, parsedLoRaPayloadData.FPortValue);
         }
 
         /// <summary>
@@ -442,7 +450,7 @@ namespace LoRaWanTest
             var rxpk = uplinkMessage.Rxpk[0];
 
             Assert.True(LoRaPayload.TryCreateLoRaPayload(rxpk, out var parsedLoRaPayload));
-            Assert.IsType<LoRaPayloadJoinRequest>(parsedLoRaPayload);
+            _ = Assert.IsType<LoRaPayloadJoinRequest>(parsedLoRaPayload);
             var parsedLoRaJoinRequest = (LoRaPayloadJoinRequest)parsedLoRaPayload;
 
             Assert.True(parsedLoRaPayload.CheckMic(appKeyText), "Parsed join request should pass mic check with correct appKey");

@@ -17,20 +17,23 @@ namespace LoRaTools
 
         public override int Length => 2;
 
-        public bool GetPowerAck() => ((this.Status >> 2) & 0b00000001) == 1;
+        [JsonIgnore]
+        public bool PowerAck => ((Status >> 2) & 0b00000001) == 1;
 
-        public bool GetDRAck() => ((this.Status >> 1) & 0b00000001) == 1;
+        [JsonIgnore]
+        public bool DRAck => ((Status >> 1) & 0b00000001) == 1;
 
-        public bool GetCHMaskAck() => ((this.Status >> 0) & 0b00000001) == 1;
+        [JsonIgnore]
+        public bool CHMaskAck => ((Status >> 0) & 0b00000001) == 1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkADRAnswer"/> class.
         /// </summary>
         public LinkADRAnswer(byte powerAck, bool dataRateAck, bool channelMaskAck)
         {
-            this.Cid = CidEnum.LinkADRCmd;
-            this.Status |= (byte)((byte)(powerAck & 0b00000011) << 2);
-            this.Status |= (byte)((byte)(dataRateAck ? 1 << 1 : 0 << 1) | (byte)(channelMaskAck ? 1 : 0));
+            Cid = Cid.LinkADRCmd;
+            Status |= (byte)((byte)(powerAck & 0b00000011) << 2);
+            Status |= (byte)((byte)(dataRateAck ? 1 << 1 : 0 << 1) | (byte)(channelMaskAck ? 1 : 0));
         }
 
         /// <summary>
@@ -39,19 +42,19 @@ namespace LoRaTools
         public LinkADRAnswer(ReadOnlySpan<byte> readOnlySpan)
             : base(readOnlySpan)
         {
-            this.Cid = (CidEnum)readOnlySpan[0];
-            this.Status = readOnlySpan[1];
+            Cid = (Cid)readOnlySpan[0];
+            Status = readOnlySpan[1];
         }
 
         public override IEnumerable<byte> ToBytes()
         {
-            yield return this.Status;
-            yield return (byte)this.Cid;
+            yield return Status;
+            yield return (byte)Cid;
         }
 
         public override string ToString()
         {
-            return $"Type: {this.Cid} Answer, power: {(this.GetPowerAck() ? "changed" : "not changed")}, data rate: {(this.GetDRAck() ? "changed" : "not changed")}, channels: {(this.GetCHMaskAck() ? "changed" : "not changed")}";
+            return $"Type: {Cid} Answer, power: {(PowerAck ? "changed" : "not changed")}, data rate: {(DRAck ? "changed" : "not changed")}, channels: {(CHMaskAck ? "changed" : "not changed")}";
         }
     }
 }

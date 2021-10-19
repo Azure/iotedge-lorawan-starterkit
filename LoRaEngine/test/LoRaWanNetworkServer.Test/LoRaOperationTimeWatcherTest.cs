@@ -60,10 +60,10 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice("31312", "312321321", ConnectionManager)
             {
-                PreferredWindow = Constants.RECEIVE_WINDOW_2,
+                PreferredWindow = Constants.ReceiveWindow2,
             };
 
-            Assert.Equal(Constants.RECEIVE_WINDOW_2, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.ReceiveWindow2, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -74,7 +74,7 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice("31312", "312321321", ConnectionManager);
 
-            Assert.Equal(Constants.RECEIVE_WINDOW_1, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.ReceiveWindow1, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -86,7 +86,7 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice("31312", "312321321", ConnectionManager);
 
-            Assert.Equal(Constants.RECEIVE_WINDOW_2, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.ReceiveWindow2, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -98,7 +98,7 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice("31312", "312321321", ConnectionManager);
 
-            Assert.Equal(Constants.INVALID_RECEIVE_WINDOW, target.ResolveReceiveWindowToUse(loRaDevice));
+            Assert.Equal(Constants.InvalidReceiveWindow, target.ResolveReceiveWindowToUse(loRaDevice));
         }
 
         [Theory]
@@ -113,7 +113,7 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice("31312", "312321321", ConnectionManager);
 
-            Assert.Equal(1, target.ResolveJoinAcceptWindowToUse(loRaDevice));
+            Assert.Equal(1, target.ResolveJoinAcceptWindowToUse());
         }
 
         [Theory]
@@ -125,7 +125,7 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice("31312", "312321321", ConnectionManager);
 
-            Assert.Equal(2, target.ResolveJoinAcceptWindowToUse(loRaDevice));
+            Assert.Equal(2, target.ResolveJoinAcceptWindowToUse());
         }
 
         [Theory]
@@ -137,7 +137,7 @@ namespace LoRaWan.NetworkServer.Test
             var target = new LoRaOperationTimeWatcher(RegionManager.EU868, DateTimeOffset.UtcNow.Subtract(TimeSpan.FromMilliseconds(delayInMs)));
             using var loRaDevice = new LoRaDevice("31312", "312321321", ConnectionManager);
 
-            Assert.Equal(0, target.ResolveJoinAcceptWindowToUse(loRaDevice));
+            Assert.Equal(0, target.ResolveJoinAcceptWindowToUse());
         }
 
         [Theory]

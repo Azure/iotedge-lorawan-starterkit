@@ -47,298 +47,188 @@ namespace LoRaWan.NetworkServer
 
         public async Task<LoRaDeviceRequestProcessResult> ProcessRequestAsync(LoRaRequest request, LoRaDevice loRaDevice)
         {
+            if (request is null) throw new ArgumentNullException(nameof(request));
+            if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
+
             var timeWatcher = request.GetTimeWatcher();
-            using (var deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity())
+            using var deviceConnectionActivity = loRaDevice.BeginDeviceClientConnectionActivity();
+            if (deviceConnectionActivity == null)
             {
-                if (deviceConnectionActivity == null)
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
+            }
+
+            var loraPayload = (LoRaPayloadData)request.Payload;
+
+            var payloadFcnt = loraPayload.GetFcnt();
+
+            var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
+            Logger.Log(loRaDevice.DevEUI, $"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}", LogLevel.Debug);
+
+            var payloadPort = loraPayload.FPortValue;
+            var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
+
+            LoRaADRResult loRaADRResult = null;
+
+            var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
+            if (frameCounterStrategy == null)
+            {
+                Logger.Log(loRaDevice.DevEUI, $"failed to resolve frame count update strategy, device gateway: {loRaDevice.GatewayID}, message ignored", LogLevel.Error);
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.ApplicationError);
+            }
+
+            // Contains the Cloud to message we need to send
+            IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage = null;
+
+            // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
+            // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
+            var isFrameCounterFromNewlyStartedDevice = await DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
+
+            // Reply attack or confirmed reply
+            // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
+            // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
+            if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, requiresConfirmation, out var isConfirmedResubmit, out var result))
+            {
+                return result;
+            }
+
+            var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
+
+            try
+            {
+                var bundlerResult = await TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
+
+                loRaADRResult = bundlerResult?.AdrResult;
+
+                if (bundlerResult?.PreferredGatewayResult != null)
                 {
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeviceClientConnectionFailed);
+                    HandlePreferredGatewayChanges(request, loRaDevice, bundlerResult);
                 }
 
-                var loraPayload = (LoRaPayloadData)request.Payload;
-
-                var payloadFcnt = loraPayload.GetFcnt();
-
-                var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
-                Logger.Log(loRaDevice.DevEUI, $"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}", LogLevel.Debug);
-
-                var payloadPort = loraPayload.GetFPort();
-                var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
-
-                LoRaADRResult loRaADRResult = null;
-
-                var frameCounterStrategy = this.frameCounterUpdateStrategyProvider.GetStrategy(loRaDevice.GatewayID);
-                if (frameCounterStrategy == null)
+                if (loraPayload.IsAdrReq)
                 {
-                    Logger.Log(loRaDevice.DevEUI, $"failed to resolve frame count update strategy, device gateway: {loRaDevice.GatewayID}, message ignored", LogLevel.Error);
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.ApplicationError);
+                    Logger.Log(loRaDevice.DevEUI, $"ADR ack request received", LogLevel.Debug);
                 }
 
-                // Contains the Cloud to message we need to send
-                IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage = null;
-
-                // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
-                // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
-                var isFrameCounterFromNewlyStartedDevice = await this.DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
-
-                // Reply attack or confirmed reply
-                // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
-                // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
-                if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, requiresConfirmation, out var isConfirmedResubmit, out var result))
+                // ADR should be performed before the deduplication
+                // as we still want to collect the signal info, even if we drop
+                // it in the next step
+                if (loRaADRResult == null && loraPayload.IsAdrEnabled)
                 {
-                    return result;
+                    loRaADRResult = await PerformADR(request, loRaDevice, loraPayload, payloadFcntAdjusted, loRaADRResult, frameCounterStrategy);
                 }
 
-                var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
-
-                try
+                if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrReq)
                 {
-                    var bundlerResult = await this.TryUseBundler(request, loRaDevice, loraPayload, useMultipleGateways);
+                    // if we got an ADR result or request, we have to send the update to the device
+                    requiresConfirmation = true;
+                }
 
-                    loRaADRResult = bundlerResult?.AdrResult;
-
-                    if (bundlerResult?.PreferredGatewayResult != null)
+                if (useMultipleGateways)
+                {
+                    // applying the correct deduplication
+                    if (bundlerResult?.DeduplicationResult != null && !bundlerResult.DeduplicationResult.CanProcess)
                     {
-                        this.HandlePreferredGatewayChanges(request, loRaDevice, bundlerResult);
+                        // duplication strategy is indicating that we do not need to continue processing this message
+                        Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: {payloadFcnt}", LogLevel.Debug);
+                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
+                    }
+                }
+                else
+                {
+                    // we must save class C devices regions in order to send c2d messages
+                    if (loRaDevice.ClassType == LoRaDeviceClassType.C && request.Region.LoRaRegion != loRaDevice.LoRaRegion)
+                        loRaDevice.UpdateRegion(request.Region.LoRaRegion, acceptChanges: false);
+                }
+
+                // if deduplication already processed the next framecounter down, use that
+                var fcntDown = loRaADRResult?.FCntDown != null ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
+
+                if (fcntDown.HasValue)
+                {
+                    LogFrameCounterDownState(loRaDevice, fcntDown.Value);
+                }
+
+                // If it is confirmed it require us to update the frame counter down
+                // Multiple gateways: in redis, otherwise in device twin
+                if (requiresConfirmation)
+                {
+                    fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+
+                    // Failed to update the fcnt down
+                    // In multi gateway scenarios it means the another gateway was faster than using, can stop now
+                    if (fcntDown <= 0)
+                    {
+                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                    }
+                }
+
+                var validFcntUp = isFrameCounterFromNewlyStartedDevice || (payloadFcntAdjusted > loRaDevice.FCntUp);
+                if (validFcntUp || isConfirmedResubmit)
+                {
+                    if (!isConfirmedResubmit)
+                    {
+                        Logger.Log(loRaDevice.DevEUI, $"valid frame counter, msg: {payloadFcntAdjusted} server: {loRaDevice.FCntUp}", LogLevel.Debug);
                     }
 
-                    if (loraPayload.IsAdrReq)
-                    {
-                        Logger.Log(loRaDevice.DevEUI, $"ADR ack request received", LogLevel.Debug);
-                    }
+                    object payloadData = null;
+                    byte[] decryptedPayloadData = null;
 
-                    // ADR should be performed before the deduplication
-                    // as we still want to collect the signal info, even if we drop
-                    // it in the next step
-                    if (loRaADRResult == null && loraPayload.IsAdrEnabled)
+                    if (loraPayload.Frmpayload.Length > 0)
                     {
-                        loRaADRResult = await this.PerformADR(request, loRaDevice, loraPayload, payloadFcntAdjusted, loRaADRResult, frameCounterStrategy);
-                    }
-
-                    if (loRaADRResult?.CanConfirmToDevice == true || loraPayload.IsAdrReq)
-                    {
-                        // if we got an ADR result or request, we have to send the update to the device
-                        requiresConfirmation = true;
-                    }
-
-                    if (useMultipleGateways)
-                    {
-                        // applying the correct deduplication
-                        if (bundlerResult?.DeduplicationResult != null && !bundlerResult.DeduplicationResult.CanProcess)
+                        try
                         {
-                            // duplication strategy is indicating that we do not need to continue processing this message
-                            Logger.Log(loRaDevice.DevEUI, $"duplication strategy indicated to not process message: {payloadFcnt}", LogLevel.Debug);
-                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
+                            decryptedPayloadData = loraPayload.GetDecryptedPayload(loRaDevice.AppSKey);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Log(loRaDevice.DevEUI, $"failed to decrypt message: {ex.Message}", LogLevel.Error);
+                        }
+                    }
+
+                    if (payloadPort == LoRaFPort.MacCommand)
+                    {
+                        if (decryptedPayloadData?.Length > 0)
+                        {
+                            loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(loRaDevice.DevEUI, decryptedPayloadData);
+                        }
+
+                        if (loraPayload.IsMacAnswerRequired)
+                        {
+                            fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+                            if (!fcntDown.HasValue || fcntDown <= 0)
+                            {
+                                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
+                            }
+
+                            requiresConfirmation = true;
                         }
                     }
                     else
                     {
-                        // we must save class C devices regions in order to send c2d messages
-                        if (loRaDevice.ClassType == LoRaDeviceClassType.C && request.Region.LoRaRegion != loRaDevice.LoRaRegion)
-                            loRaDevice.UpdateRegion(request.Region.LoRaRegion, acceptChanges: false);
-                    }
-
-                    // if deduplication already processed the next framecounter down, use that
-                    var fcntDown = loRaADRResult?.FCntDown != null ? loRaADRResult.FCntDown : bundlerResult?.NextFCntDown;
-
-                    if (fcntDown.HasValue)
-                    {
-                        LogFrameCounterDownState(loRaDevice, fcntDown.Value);
-                    }
-
-                    // If it is confirmed it require us to update the frame counter down
-                    // Multiple gateways: in redis, otherwise in device twin
-                    if (requiresConfirmation)
-                    {
-                        fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
-
-                        // Failed to update the fcnt down
-                        // In multi gateway scenarios it means the another gateway was faster than using, can stop now
-                        if (fcntDown <= 0)
+                        if (string.IsNullOrEmpty(loRaDevice.SensorDecoder))
                         {
-                            return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
-                        }
-                    }
-
-                    var validFcntUp = isFrameCounterFromNewlyStartedDevice || (payloadFcntAdjusted > loRaDevice.FCntUp);
-                    if (validFcntUp || isConfirmedResubmit)
-                    {
-                        if (!isConfirmedResubmit)
-                        {
-                            Logger.Log(loRaDevice.DevEUI, $"valid frame counter, msg: {payloadFcntAdjusted} server: {loRaDevice.FCntUp}", LogLevel.Debug);
-                        }
-
-                        object payloadData = null;
-                        byte[] decryptedPayloadData = null;
-
-                        if (loraPayload.Frmpayload.Length > 0)
-                        {
-                            try
-                            {
-                                decryptedPayloadData = loraPayload.GetDecryptedPayload(loRaDevice.AppSKey);
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.Log(loRaDevice.DevEUI, $"failed to decrypt message: {ex.Message}", LogLevel.Error);
-                            }
-                        }
-
-                        if (payloadPort == LoRaFPort.MacCommand)
-                        {
-                            if (decryptedPayloadData?.Length > 0)
-                            {
-                                loraPayload.MacCommands = MacCommand.CreateMacCommandFromBytes(loRaDevice.DevEUI, decryptedPayloadData);
-                            }
-
-                            if (loraPayload.IsMacAnswerRequired)
-                            {
-                                fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
-                                if (!fcntDown.HasValue || fcntDown <= 0)
-                                {
-                                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.HandledByAnotherGateway);
-                                }
-
-                                requiresConfirmation = true;
-                            }
+                            Logger.Log(loRaDevice.DevEUI, $"no decoder set in device twin. port: {payloadPort}", LogLevel.Debug);
+                            payloadData = new UndecodedPayload(decryptedPayloadData);
                         }
                         else
                         {
-                            if (string.IsNullOrEmpty(loRaDevice.SensorDecoder))
-                            {
-                                Logger.Log(loRaDevice.DevEUI, $"no decoder set in device twin. port: {payloadPort}", LogLevel.Debug);
-                                payloadData = new UndecodedPayload(decryptedPayloadData);
-                            }
-                            else
-                            {
-                                Logger.Log(loRaDevice.DevEUI, $"decoding with: {loRaDevice.SensorDecoder} port: {payloadPort}", LogLevel.Debug);
-                                var decodePayloadResult = await this.payloadDecoder.DecodeMessageAsync(loRaDevice.DevEUI, decryptedPayloadData, payloadPort, loRaDevice.SensorDecoder);
-                                payloadData = decodePayloadResult.GetDecodedPayload();
+                            Logger.Log(loRaDevice.DevEUI, $"decoding with: {loRaDevice.SensorDecoder} port: {payloadPort}", LogLevel.Debug);
+                            var decodePayloadResult = await this.payloadDecoder.DecodeMessageAsync(loRaDevice.DevEUI, decryptedPayloadData, payloadPort, loRaDevice.SensorDecoder);
+                            payloadData = decodePayloadResult.GetDecodedPayload();
 
-                                if (decodePayloadResult.CloudToDeviceMessage != null)
+                            if (decodePayloadResult.CloudToDeviceMessage != null)
+                            {
+                                if (string.IsNullOrEmpty(decodePayloadResult.CloudToDeviceMessage.DevEUI) || string.Equals(loRaDevice.DevEUI, decodePayloadResult.CloudToDeviceMessage.DevEUI, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    if (string.IsNullOrEmpty(decodePayloadResult.CloudToDeviceMessage.DevEUI) || string.Equals(loRaDevice.DevEUI, decodePayloadResult.CloudToDeviceMessage.DevEUI, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        // sending c2d to same device
-                                        cloudToDeviceMessage = decodePayloadResult.CloudToDeviceMessage;
-                                        fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
-
-                                        if (!fcntDown.HasValue || fcntDown <= 0)
-                                        {
-                                            // We did not get a valid frame count down, therefore we should not process the message
-                                            _ = cloudToDeviceMessage.AbandonAsync();
-
-                                            cloudToDeviceMessage = null;
-                                        }
-                                        else
-                                        {
-                                            requiresConfirmation = true;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        this.SendClassCDeviceMessage(decodePayloadResult.CloudToDeviceMessage);
-                                    }
-                                }
-                            }
-                        }
-
-                        if (!isConfirmedResubmit)
-                        {
-                            // In case it is a Mac Command only we don't want to send it to the IoT Hub
-                            if (payloadPort != LoRaFPort.MacCommand)
-                            {
-                                if (!await this.SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, bundlerResult?.DeduplicationResult, decryptedPayloadData))
-                                {
-                                    // failed to send event to IoT Hub, stop now
-                                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.IoTHubProblem);
-                                }
-                            }
-
-                            loRaDevice.SetFcntUp(payloadFcntAdjusted);
-                        }
-                    }
-
-                    // We check if we have time to futher progress or not
-                    // C2D checks are quite expensive so if we are really late we just stop here
-                    var timeToSecondWindow = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice);
-                    if (timeToSecondWindow < LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage)
-                    {
-                        if (requiresConfirmation)
-                        {
-                            Logger.Log(loRaDevice.DevEUI, $"too late for down message ({timeWatcher.GetElapsedTime()})", LogLevel.Information);
-                        }
-
-                        return new LoRaDeviceRequestProcessResult(loRaDevice, request);
-                    }
-
-                    // If it is confirmed and
-                    // - Downlink is disabled for the device or
-                    // - we don't have time to check c2d and send to device we return now
-                    if (requiresConfirmation && (!loRaDevice.DownlinkEnabled || timeToSecondWindow.Subtract(LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage) <= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage))
-                    {
-                        var downlinkMessageBuilderResp = DownlinkMessageBuilder.CreateDownlinkMessage(
-                            this.configuration,
-                            loRaDevice,
-                            request,
-                            timeWatcher,
-                            cloudToDeviceMessage,
-                            false, // fpending
-                            fcntDown.GetValueOrDefault(),
-                            loRaADRResult);
-
-                        if (downlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
-                        {
-                            _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkPktFwdMessage);
-
-                            if (cloudToDeviceMessage != null)
-                            {
-                                if (downlinkMessageBuilderResp.IsMessageTooLong)
-                                {
-                                    await cloudToDeviceMessage.AbandonAsync();
-                                }
-                                else
-                                {
-                                    await cloudToDeviceMessage.CompleteAsync();
-                                }
-                            }
-                        }
-
-                        return new LoRaDeviceRequestProcessResult(loRaDevice, request, downlinkMessageBuilderResp.DownlinkPktFwdMessage);
-                    }
-
-                    // Flag indicating if there is another C2D message waiting
-                    var fpending = false;
-
-                    // If downlink is enabled and we did not get a cloud to device message from decoder
-                    // try to get one from IoT Hub C2D
-                    if (loRaDevice.DownlinkEnabled && cloudToDeviceMessage == null)
-                    {
-                        // ReceiveAsync has a longer timeout
-                        // But we wait less that the timeout (available time before 2nd window)
-                        // if message is received after timeout, keep it in loraDeviceInfo and return the next call
-                        var timeAvailableToCheckCloudToDeviceMessages = timeWatcher.GetAvailableTimeToCheckCloudToDeviceMessage(loRaDevice);
-                        if (timeAvailableToCheckCloudToDeviceMessages >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
-                        {
-                            cloudToDeviceMessage = await this.ReceiveCloudToDeviceAsync(loRaDevice, timeAvailableToCheckCloudToDeviceMessages);
-                            if (cloudToDeviceMessage != null && !this.ValidateCloudToDeviceMessage(loRaDevice, request, cloudToDeviceMessage))
-                            {
-                                // Reject cloud to device message based on result from ValidateCloudToDeviceMessage
-                                _ = cloudToDeviceMessage.RejectAsync();
-                                cloudToDeviceMessage = null;
-                            }
-
-                            if (cloudToDeviceMessage != null)
-                            {
-                                if (!requiresConfirmation)
-                                {
-                                    // The message coming from the device was not confirmed, therefore we did not computed the frame count down
-                                    // Now we need to increment because there is a C2D message to be sent
-                                    fcntDown = await this.EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+                                    // sending c2d to same device
+                                    cloudToDeviceMessage = decodePayloadResult.CloudToDeviceMessage;
+                                    fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
 
                                     if (!fcntDown.HasValue || fcntDown <= 0)
                                     {
                                         // We did not get a valid frame count down, therefore we should not process the message
                                         _ = cloudToDeviceMessage.AbandonAsync();
+
                                         cloudToDeviceMessage = null;
                                     }
                                     else
@@ -346,78 +236,189 @@ namespace LoRaWan.NetworkServer
                                         requiresConfirmation = true;
                                     }
                                 }
-
-                                // Checking again if cloudToDeviceMessage is valid because the fcntDown resolution could have failed,
-                                // causing us to drop the message
-                                if (cloudToDeviceMessage != null)
+                                else
                                 {
-                                    var remainingTimeForFPendingCheck = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice) - (LoRaOperationTimeWatcher.CheckForCloudMessageCallEstimatedOverhead + LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage);
-                                    if (remainingTimeForFPendingCheck >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
-                                    {
-                                        var additionalMsg = await this.ReceiveCloudToDeviceAsync(loRaDevice, LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage);
-                                        if (additionalMsg != null)
-                                        {
-                                            fpending = true;
-                                            Logger.Log(loRaDevice.DevEUI, $"found cloud to device message, setting fpending flag, message id: {additionalMsg.MessageId ?? "undefined"}", LogLevel.Information);
-                                            _ = additionalMsg.AbandonAsync();
-                                        }
-                                    }
+                                    SendClassCDeviceMessage(decodePayloadResult.CloudToDeviceMessage);
                                 }
                             }
                         }
                     }
 
-                    // No C2D message and request was not confirmed, return nothing
-                    if (!requiresConfirmation)
+                    if (!isConfirmedResubmit)
                     {
-                        return new LoRaDeviceRequestProcessResult(loRaDevice, request);
+                        // In case it is a Mac Command only we don't want to send it to the IoT Hub
+                        if (payloadPort != LoRaFPort.MacCommand)
+                        {
+                            if (!await SendDeviceEventAsync(request, loRaDevice, timeWatcher, payloadData, bundlerResult?.DeduplicationResult, decryptedPayloadData))
+                            {
+                                // failed to send event to IoT Hub, stop now
+                                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.IoTHubProblem);
+                            }
+                        }
+
+                        loRaDevice.SetFcntUp(payloadFcntAdjusted);
+                    }
+                }
+
+                // We check if we have time to futher progress or not
+                // C2D checks are quite expensive so if we are really late we just stop here
+                var timeToSecondWindow = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice);
+                if (timeToSecondWindow < LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage)
+                {
+                    if (requiresConfirmation)
+                    {
+                        Logger.Log(loRaDevice.DevEUI, $"too late for down message ({timeWatcher.GetElapsedTime()})", LogLevel.Information);
                     }
 
-                    var confirmDownlinkMessageBuilderResp = DownlinkMessageBuilder.CreateDownlinkMessage(
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request);
+                }
+
+                // If it is confirmed and
+                // - Downlink is disabled for the device or
+                // - we don't have time to check c2d and send to device we return now
+                if (requiresConfirmation && (!loRaDevice.DownlinkEnabled || timeToSecondWindow.Subtract(LoRaOperationTimeWatcher.ExpectedTimeToPackageAndSendMessage) <= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage))
+                {
+                    var downlinkMessageBuilderResp = DownlinkMessageBuilder.CreateDownlinkMessage(
                         this.configuration,
                         loRaDevice,
                         request,
                         timeWatcher,
                         cloudToDeviceMessage,
-                        fpending,
+                        false, // fpending
                         fcntDown.GetValueOrDefault(),
                         loRaADRResult);
 
-                    if (cloudToDeviceMessage != null)
+                    if (downlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
                     {
-                        if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage == null)
+                        _ = request.PacketForwarder.SendDownstreamAsync(downlinkMessageBuilderResp.DownlinkPktFwdMessage);
+
+                        if (cloudToDeviceMessage != null)
                         {
-                            Logger.Log(loRaDevice.DevEUI, $"out of time for downstream message, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Information);
-                            _ = cloudToDeviceMessage.AbandonAsync();
-                        }
-                        else if (confirmDownlinkMessageBuilderResp.IsMessageTooLong)
-                        {
-                            Logger.Log(loRaDevice.DevEUI, $"payload will not fit in current receive window, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Error);
-                            _ = cloudToDeviceMessage.AbandonAsync();
-                        }
-                        else
-                        {
-                            _ = cloudToDeviceMessage.CompleteAsync();
+                            if (downlinkMessageBuilderResp.IsMessageTooLong)
+                            {
+                                _ = await cloudToDeviceMessage.AbandonAsync();
+                            }
+                            else
+                            {
+                                _ = await cloudToDeviceMessage.CompleteAsync();
+                            }
                         }
                     }
 
-                    if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
-                    {
-                        _ = request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
-                    }
-
-                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request, downlinkMessageBuilderResp.DownlinkPktFwdMessage);
                 }
-                finally
+
+                // Flag indicating if there is another C2D message waiting
+                var fpending = false;
+
+                // If downlink is enabled and we did not get a cloud to device message from decoder
+                // try to get one from IoT Hub C2D
+                if (loRaDevice.DownlinkEnabled && cloudToDeviceMessage == null)
                 {
-                    try
+                    // ReceiveAsync has a longer timeout
+                    // But we wait less that the timeout (available time before 2nd window)
+                    // if message is received after timeout, keep it in loraDeviceInfo and return the next call
+                    var timeAvailableToCheckCloudToDeviceMessages = timeWatcher.GetAvailableTimeToCheckCloudToDeviceMessage(loRaDevice);
+                    if (timeAvailableToCheckCloudToDeviceMessages >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
                     {
-                        await loRaDevice.SaveChangesAsync();
+                        cloudToDeviceMessage = await ReceiveCloudToDeviceAsync(loRaDevice, timeAvailableToCheckCloudToDeviceMessages);
+                        if (cloudToDeviceMessage != null && !ValidateCloudToDeviceMessage(loRaDevice, request, cloudToDeviceMessage))
+                        {
+                            // Reject cloud to device message based on result from ValidateCloudToDeviceMessage
+                            _ = cloudToDeviceMessage.RejectAsync();
+                            cloudToDeviceMessage = null;
+                        }
+
+                        if (cloudToDeviceMessage != null)
+                        {
+                            if (!requiresConfirmation)
+                            {
+                                // The message coming from the device was not confirmed, therefore we did not computed the frame count down
+                                // Now we need to increment because there is a C2D message to be sent
+                                fcntDown = await EnsureHasFcntDownAsync(loRaDevice, fcntDown, payloadFcntAdjusted, frameCounterStrategy);
+
+                                if (!fcntDown.HasValue || fcntDown <= 0)
+                                {
+                                    // We did not get a valid frame count down, therefore we should not process the message
+                                    _ = cloudToDeviceMessage.AbandonAsync();
+                                    cloudToDeviceMessage = null;
+                                }
+                                else
+                                {
+                                    requiresConfirmation = true;
+                                }
+                            }
+
+                            // Checking again if cloudToDeviceMessage is valid because the fcntDown resolution could have failed,
+                            // causing us to drop the message
+                            if (cloudToDeviceMessage != null)
+                            {
+                                var remainingTimeForFPendingCheck = timeWatcher.GetRemainingTimeToReceiveSecondWindow(loRaDevice) - (LoRaOperationTimeWatcher.CheckForCloudMessageCallEstimatedOverhead + LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage);
+                                if (remainingTimeForFPendingCheck >= LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage)
+                                {
+                                    var additionalMsg = await ReceiveCloudToDeviceAsync(loRaDevice, LoRaOperationTimeWatcher.MinimumAvailableTimeToCheckForCloudMessage);
+                                    if (additionalMsg != null)
+                                    {
+                                        fpending = true;
+                                        Logger.Log(loRaDevice.DevEUI, $"found cloud to device message, setting fpending flag, message id: {additionalMsg.MessageId ?? "undefined"}", LogLevel.Information);
+                                        _ = additionalMsg.AbandonAsync();
+                                    }
+                                }
+                            }
+                        }
                     }
-                    catch (Exception saveChangesException)
+                }
+
+                // No C2D message and request was not confirmed, return nothing
+                if (!requiresConfirmation)
+                {
+                    return new LoRaDeviceRequestProcessResult(loRaDevice, request);
+                }
+
+                var confirmDownlinkMessageBuilderResp = DownlinkMessageBuilder.CreateDownlinkMessage(
+                    this.configuration,
+                    loRaDevice,
+                    request,
+                    timeWatcher,
+                    cloudToDeviceMessage,
+                    fpending,
+                    fcntDown.GetValueOrDefault(),
+                    loRaADRResult);
+
+                if (cloudToDeviceMessage != null)
+                {
+                    if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage == null)
                     {
-                        Logger.Log(loRaDevice.DevEUI, $"error updating reported properties. {saveChangesException.Message}", LogLevel.Error);
+                        Logger.Log(loRaDevice.DevEUI, $"out of time for downstream message, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Information);
+                        _ = cloudToDeviceMessage.AbandonAsync();
                     }
+                    else if (confirmDownlinkMessageBuilderResp.IsMessageTooLong)
+                    {
+                        Logger.Log(loRaDevice.DevEUI, $"payload will not fit in current receive window, will abandon cloud to device message id: {cloudToDeviceMessage.MessageId ?? "undefined"}", LogLevel.Error);
+                        _ = cloudToDeviceMessage.AbandonAsync();
+                    }
+                    else
+                    {
+                        _ = cloudToDeviceMessage.CompleteAsync();
+                    }
+                }
+
+                if (confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage != null)
+                {
+                    _ = request.PacketForwarder.SendDownstreamAsync(confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
+                }
+
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, confirmDownlinkMessageBuilderResp.DownlinkPktFwdMessage);
+            }
+            finally
+            {
+                try
+                {
+                    _ = await loRaDevice.SaveChangesAsync();
+                }
+                catch (Exception saveChangesException)
+                {
+                    Logger.Log(loRaDevice.DevEUI, $"error updating reported properties. {saveChangesException.Message}", LogLevel.Error);
                 }
             }
         }
@@ -459,11 +460,11 @@ namespace LoRaWan.NetworkServer
         {
             if (this.classCDeviceMessageSender != null)
             {
-                Task.Run(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage));
+                _ = Task.Run(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage));
             }
         }
 
-        private async Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
+        private static async Task<IReceivedLoRaCloudToDeviceMessage> ReceiveCloudToDeviceAsync(LoRaDevice loRaDevice, TimeSpan timeAvailableToCheckCloudToDeviceMessages)
         {
             var actualMessage = await loRaDevice.ReceiveCloudToDeviceAsync(timeAvailableToCheckCloudToDeviceMessages);
             return (actualMessage != null) ? new LoRaCloudToDeviceMessageWrapper(loRaDevice, actualMessage) : null;
@@ -482,7 +483,7 @@ namespace LoRaWan.NetworkServer
             uint maxPayload;
 
             // If preferred Window is RX2, this is the max. payload
-            if (loRaDevice.PreferredWindow == Constants.RECEIVE_WINDOW_2)
+            if (loRaDevice.PreferredWindow == Constants.ReceiveWindow2)
             {
                 // Get max. payload size for RX2, considering possilbe user provided Rx2DataRate
                 if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
@@ -498,7 +499,7 @@ namespace LoRaWan.NetworkServer
             }
 
             // Deduct 8 bytes from max payload size.
-            maxPayload -= Constants.LORA_PROTOCOL_OVERHEAD_SIZE;
+            maxPayload -= Constants.LoraProtocolOverheadSize;
 
             // Calculate total C2D message size based on optional C2D Mac commands.
             var totalPayload = cloudToDeviceMsg.GetPayload()?.Length ?? 0;
@@ -546,7 +547,7 @@ namespace LoRaWan.NetworkServer
                 loRaDevice.LastConfirmedC2DMessageID = null;
             }
 
-            this.ProcessAndSendMacCommands(loRaPayloadData, ref eventProperties);
+            ProcessAndSendMacCommands(loRaPayloadData, ref eventProperties);
 
             if (await loRaDevice.SendEventAsync(deviceTelemetry, eventProperties))
             {
@@ -566,11 +567,11 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Send detected MAC commands as message properties.
         /// </summary>
-        void ProcessAndSendMacCommands(LoRaPayloadData payloadData, ref Dictionary<string, string> eventProperties)
+        static void ProcessAndSendMacCommands(LoRaPayloadData payloadData, ref Dictionary<string, string> eventProperties)
         {
             if (payloadData.MacCommands?.Count > 0)
             {
-                eventProperties = eventProperties ?? new Dictionary<string, string>(payloadData.MacCommands.Count);
+                eventProperties ??= new Dictionary<string, string>(payloadData.MacCommands.Count);
 
                 for (var i = 0; i < payloadData.MacCommands.Count; i++)
                 {
@@ -583,7 +584,7 @@ namespace LoRaWan.NetworkServer
         /// Helper method to resolve FcntDown in case one was not yet acquired.
         /// </summary>
         /// <returns>0 if the resolution failed or > 0 if a valid frame count was acquired.</returns>
-        async ValueTask<uint> EnsureHasFcntDownAsync(
+        static async ValueTask<uint> EnsureHasFcntDownAsync(
             LoRaDevice loRaDevice,
             uint? fcntDown,
             uint payloadFcnt,
@@ -702,7 +703,7 @@ namespace LoRaWan.NetworkServer
             // ensuring the framecount difference between the node and the server
             // is <= MAX_FCNT_GAP
             var diff = payloadFcnt > loRaDevice.FCntUp ? payloadFcnt - loRaDevice.FCntUp : loRaDevice.FCntUp - payloadFcnt;
-            var valid = diff <= Constants.MAX_FCNT_GAP;
+            var valid = diff <= Constants.MaxFcntGap;
 
             if (!valid)
             {
@@ -725,7 +726,7 @@ namespace LoRaWan.NetworkServer
                         // known problem when device restarts, starts fcnt from zero
                         // We need to await this reset to avoid races on the server with deduplication and
                         // fcnt down calculations
-                        await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
+                        _ = await frameCounterStrategy.ResetAsync(loRaDevice, payloadFcnt, this.configuration.GatewayID);
                         isFrameCounterFromNewlyStartedDevice = true;
                     }
                 }

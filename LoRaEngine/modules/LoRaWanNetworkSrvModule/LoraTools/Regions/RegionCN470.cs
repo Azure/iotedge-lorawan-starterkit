@@ -42,16 +42,16 @@ namespace LoRaTools.Regions
             TXPowertoMaxEIRP.Add(6, 7);
             TXPowertoMaxEIRP.Add(7, 5);
 
-            RX1DROffsetTable = new int[8, 6]
+            RX1DROffsetTable = new int[8][]
             {
-                { 0, 0, 0, 0, 0, 0 },
-                { 1, 1, 1, 1, 1, 1 },
-                { 2, 1, 1, 1, 1, 1 },
-                { 3, 2, 1, 1, 1, 1 },
-                { 4, 3, 2, 1, 1, 1 },
-                { 5, 4, 3, 2, 1, 1 },
-                { 6, 5, 4, 3, 2, 1 },
-                { 7, 6, 5, 4, 3, 2 },
+                new int[] { 0, 0, 0, 0, 0, 0 },
+                new int[] { 1, 1, 1, 1, 1, 1 },
+                new int[] { 2, 1, 1, 1, 1, 1 },
+                new int[] { 3, 2, 1, 1, 1, 1 },
+                new int[] { 4, 3, 2, 1, 1, 1 },
+                new int[] { 5, 4, 3, 2, 1, 1 },
+                new int[] { 6, 5, 4, 3, 2, 1 },
+                new int[] { 7, 6, 5, 4, 3, 2 },
             };
 
             var validDataranges = new HashSet<string>()
@@ -69,7 +69,7 @@ namespace LoRaTools.Regions
             MaxADRDataRate = 7; // needs to be clarified
             RegionLimits = new RegionLimits((min: 470.3, max: 509.7), validDataranges, validDataranges, 0, 0);
 
-            DownstreamFrequenciesByPlanType = new List<List<double>>
+            this.DownstreamFrequenciesByPlanType = new List<List<double>>
             {
                 BuildFrequencyPlanList(483.9, 0, 31).Concat(BuildFrequencyPlanList(490.3, 32, 63)).ToList(),
                 BuildFrequencyPlanList(476.9, 0, 31).Concat(BuildFrequencyPlanList(496.9, 32, 63)).ToList(),
@@ -77,7 +77,7 @@ namespace LoRaTools.Regions
                 BuildFrequencyPlanList(500.1, 0, 23)
             };
 
-            JoinFrequencies = new List<double>
+            this.JoinFrequencies = new List<double>
             {
                 470.9, 472.5, 474.1, 475.7, 504.1, 505.7, 507.3, 508.9, 479.9, 499.9,
                 470.3, 472.3, 474.3, 476.3, 478.3, 480.3, 482.3, 484.3, 486.3, 488.3
@@ -92,9 +92,9 @@ namespace LoRaTools.Regions
         {
             if (joinChannel is null) throw new ArgumentNullException(nameof(joinChannel));
 
-            for (var index = 0; index < JoinFrequencies.Count; ++index)
+            for (var index = 0; index < this.JoinFrequencies.Count; ++index)
             {
-                if (JoinFrequencies[index] == joinChannel.Freq)
+                if (this.JoinFrequencies[index] == joinChannel.Freq)
                 {
                     channelIndex = index;
                     return true;
@@ -125,28 +125,28 @@ namespace LoRaTools.Regions
             if (joinChannelIndex <= 7)
             {
                 channelNumber = upstreamChannel.Freq < 500 ? GetChannelNumber(upstreamChannel, 470.3) : GetChannelNumber(upstreamChannel, 503.5, 32);
-                frequency = DownstreamFrequenciesByPlanType[0][channelNumber];
+                frequency = this.DownstreamFrequenciesByPlanType[0][channelNumber];
                 return true;
             }
             // 20 MHz plan B
             if (joinChannelIndex <= 9)
             {
                 channelNumber = upstreamChannel.Freq < 490 ? GetChannelNumber(upstreamChannel, 476.9) : GetChannelNumber(upstreamChannel, 496.9, 32);
-                frequency = DownstreamFrequenciesByPlanType[1][channelNumber];
+                frequency = this.DownstreamFrequenciesByPlanType[1][channelNumber];
                 return true;
             }
             // 26 MHz plan A
             if (joinChannelIndex <= 14)
             {
                 channelNumber = GetChannelNumber(upstreamChannel, 470.3);
-                frequency = DownstreamFrequenciesByPlanType[2][channelNumber % 24];
+                frequency = this.DownstreamFrequenciesByPlanType[2][channelNumber % 24];
                 return true;
             }
             // 26 MHz plan B
             if (joinChannelIndex <= 19)
             {
                 channelNumber = GetChannelNumber(upstreamChannel, 480.3);
-                frequency = DownstreamFrequenciesByPlanType[3][channelNumber % 24];
+                frequency = this.DownstreamFrequenciesByPlanType[3][channelNumber % 24];
                 return true;
             }
 

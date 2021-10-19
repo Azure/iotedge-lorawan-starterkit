@@ -22,20 +22,23 @@ namespace LoRaWan.NetworkServer
 
         public LoRaDevice Create(IoTHubDeviceInfo deviceInfo)
         {
+            if (deviceInfo is null) throw new ArgumentNullException(nameof(deviceInfo));
+
             var loRaDevice = new LoRaDevice(
                 deviceInfo.DevAddr,
                 deviceInfo.DevEUI,
-                this.connectionManager);
-
-            loRaDevice.GatewayID = deviceInfo.GatewayId;
-            loRaDevice.NwkSKey = deviceInfo.NwkSKey;
+                this.connectionManager)
+            {
+                GatewayID = deviceInfo.GatewayId,
+                NwkSKey = deviceInfo.NwkSKey
+            };
 
             var isOurDevice = string.IsNullOrEmpty(deviceInfo.GatewayId) || string.Equals(deviceInfo.GatewayId, this.configuration.GatewayID, StringComparison.OrdinalIgnoreCase);
             if (isOurDevice)
             {
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 // Ownership is transferred to connection manager.
-                this.connectionManager.Register(loRaDevice, this.CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey));
+                this.connectionManager.Register(loRaDevice, CreateDeviceClient(deviceInfo.DevEUI, deviceInfo.PrimaryKey));
 #pragma warning restore CA2000 // Dispose objects before losing scope
             }
 
@@ -44,7 +47,7 @@ namespace LoRaWan.NetworkServer
             return loRaDevice;
         }
 
-        private string CreateIoTHubConnectionString(string devEUI, string primaryKey)
+        private string CreateIoTHubConnectionString(string devEUI)
         {
             var connectionString = string.Empty;
 
@@ -72,7 +75,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                var partConnection = this.CreateIoTHubConnectionString(devEUI, primaryKey);
+                var partConnection = CreateIoTHubConnectionString(devEUI);
                 var deviceConnectionStr = $"{partConnection}DeviceId={devEUI};SharedAccessKey={primaryKey}";
 
                 // Enabling AMQP multiplexing

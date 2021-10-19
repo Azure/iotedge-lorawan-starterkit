@@ -8,10 +8,7 @@ namespace LoRaWan.SimulatedTest
 
     public class IntegrationTestBaseSim : IntegrationTestBase, IClassFixture<IntegrationTestFixtureSim>
     {
-        protected IntegrationTestFixtureSim TestFixtureSim
-        {
-            get { return (IntegrationTestFixtureSim)this.TestFixture; }
-        }
+        protected IntegrationTestFixtureSim TestFixtureSim => (IntegrationTestFixtureSim)TestFixture;
 
         public IntegrationTestBaseSim(IntegrationTestFixtureSim testFixture)
             : base(testFixture)
