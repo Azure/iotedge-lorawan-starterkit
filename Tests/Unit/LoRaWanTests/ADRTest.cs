@@ -3,7 +3,7 @@
 
 #pragma warning disable CA1062 // Validate arguments of public methods
 
-namespace LoRaWan.Tests.Unit
+namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using System.Collections.Generic;
     using LoRaTools.ADR;

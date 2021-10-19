@@ -1,4 +1,4 @@
-namespace LoRaWanNetworkServer.Test
+namespace LoRaWan.Tests.Unit.NetworkServerTests
 {
     using System;
     using System.Linq;

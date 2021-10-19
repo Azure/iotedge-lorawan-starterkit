@@ -1,4 +1,4 @@
-namespace LoRaWan.Tests.Unit
+namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using System.Collections.Generic;
     using System.Linq;

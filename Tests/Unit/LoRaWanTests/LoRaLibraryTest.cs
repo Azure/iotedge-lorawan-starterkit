@@ -3,7 +3,7 @@
 
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
 
-namespace LoRaWan.Tests.Unit
+namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using System;
     using System.Collections.Generic;
