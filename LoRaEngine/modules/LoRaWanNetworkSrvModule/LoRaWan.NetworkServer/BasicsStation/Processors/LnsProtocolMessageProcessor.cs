@@ -70,10 +70,55 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
+        internal async Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
         {
-            this.logger.LogInformation($"Received message: {json}");
-            return Task.FromResult(false);
+            LnsData.ReadMessageType(json, out var messageType);
+
+            switch (messageType)
+            {
+                case LnsMessageType.version:
+                    LnsData.ReadVersionMessage(json, out var stationVersion);
+                    this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
+                    // A future implementation should retrieve dynamically a SX1301CONF for 'regional' configurations based on the 'stationEui'
+                    // Current implementation is statically returning a SX1301CONF for EU863
+                    var response = LnsData.WriteRouterConfig(new NetId[] { new NetId(1) },
+                                                             new (JoinEui, JoinEui)[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
+                                                             "EU863",
+                                                             "sx1301/1",
+                                                             (new Hertz(863000000), new Hertz(870000000)),
+                                                             new (DataRate, Hertz, bool)[]
+                                                             {
+                                                                 // The following is actually a tuple of SF, Bandwidth and DownlinkOnly.
+                                                                 // TODO let's consider the idea of bringing primitives for SF and BW ?
+                                                                 (new DataRate(11), new Hertz(125), false),
+                                                                 (new DataRate(10), new Hertz(125), false),
+                                                                 (new DataRate(9), new Hertz(125), false),
+                                                                 (new DataRate(8), new Hertz(125), false),
+                                                                 (new DataRate(7), new Hertz(125), false),
+                                                                 (new DataRate(7), new Hertz(250), false),
+                                                             },
+                                                             true,
+                                                             true,
+                                                             true);
+                    await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, token);
+                    break;
+                case LnsMessageType.jreq:
+                    this.logger.LogInformation($"Received 'jreq' message: {json}.");
+                    break;
+                case LnsMessageType.updf:
+                    this.logger.LogInformation($"Received 'updf' message: {json}.");
+                    break;
+                case LnsMessageType.dntxed:
+                    this.logger.LogInformation($"Received 'dntxed' message: {json}.");
+                    break;
+                case LnsMessageType.dnmsg:
+                case LnsMessageType.router_config:
+                    throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint. This message type is 'downstream' only.");
+                default:
+                    throw new SwitchExpressionException();
+            }
+
+            return true;
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
