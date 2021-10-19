@@ -11,10 +11,24 @@ namespace LoRaWanTest
         }
 
         [Theory]
+        // 20 MHz plan A
         [InlineData(470.3, 483.9, 0)]
         [InlineData(476.5, 490.1, 1)]
-        [InlineData(503.5, 490.3, 7)]
-        public void TestFrequency_Plan20A(double inputFreq, double outputFreq, int joinChannel)
+        [InlineData(503.5, 490.3, 4)]
+        [InlineData(504.5, 491.3, 5)]
+        [InlineData(509.7, 496.5, 7)]
+        // 20 MHz plan B
+        [InlineData(476.9, 476.9, 8)]
+        [InlineData(503.1, 503.1, 9)]
+        // 26 MHz plan A
+        [InlineData(470.3, 490.1, 10)]
+        [InlineData(475.1, 490.1, 12)]
+        [InlineData(471.1, 490.9, 14)]
+        // 26 MHz plan B
+        [InlineData(480.3, 500.1, 15)]
+        [InlineData(489.7, 504.7, 17)]
+        [InlineData(488.9, 503.9, 19)]
+        public void TestFrequency(double inputFreq, double outputFreq, int joinChannel)
         {
             var rxpk = GenerateRxpk("SF12BW125", inputFreq);
             TestRegionFrequency(rxpk, outputFreq, joinChannel);

@@ -26,7 +26,7 @@ namespace LoRaTools.Regions
             DownstreamFrequenciesByPlanType = new List<List<double>>
             {
                 BuildFrequencyPlanList(483.9, 0, 31).Concat(BuildFrequencyPlanList(490.3, 32, 63)).ToList(),
-                BuildFrequencyPlanList(476.9, 0, 32).Concat(BuildFrequencyPlanList(496.9, 32, 63)).ToList(),
+                BuildFrequencyPlanList(476.9, 0, 31).Concat(BuildFrequencyPlanList(496.9, 32, 63)).ToList(),
                 BuildFrequencyPlanList(490.1, 0, 23),
                 BuildFrequencyPlanList(500.1, 0, 23)
             };
