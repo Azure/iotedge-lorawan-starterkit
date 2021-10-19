@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit
 {
     using System.Collections.Generic;
+    using LoraKeysManagerFacade;
     using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Primitives;

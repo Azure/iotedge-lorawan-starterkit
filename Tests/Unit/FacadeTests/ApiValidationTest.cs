@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using LoraKeysManagerFacade;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;

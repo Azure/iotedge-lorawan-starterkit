@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Unit
 {
+    using LoraKeysManagerFacade;
     using LoRaWan.Tests.Shared;
     using System.Threading.Tasks;
     using Xunit;

@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit
     using System.Net;
     using System.Text;
     using System.Threading.Tasks;
+    using LoraKeysManagerFacade;
     using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;

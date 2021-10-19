@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit
 {
     using System;
     using System.Threading.Tasks;
+    using LoraKeysManagerFacade;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
     using LoRaWan.Tests.Shared;

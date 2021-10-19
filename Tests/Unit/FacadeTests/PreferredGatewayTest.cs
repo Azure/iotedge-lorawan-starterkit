@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit
 {
     using System;
     using System.Threading.Tasks;
+    using LoraKeysManagerFacade;
     using LoraKeysManagerFacade.FunctionBundler;
     using Microsoft.Extensions.Logging.Abstractions;
     using Xunit;

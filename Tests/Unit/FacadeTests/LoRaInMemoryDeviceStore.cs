@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoraKeysManagerFacade;
     using Newtonsoft.Json;
     using StackExchange.Redis;
 

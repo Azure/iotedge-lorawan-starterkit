@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using LoraKeysManagerFacade;
     using LoRaWan.Tests.Shared;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
