@@ -100,9 +100,10 @@ jobs:
     # Run unit tests
     - name: Run unit tests
       run: |
-        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Unit \
-          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura \
-          --filter 'FullyQualifiedName~LoRaWanTest|FullyQualifiedName~LoRaWan.NetworkServer.Test|FullyQualifiedName~LoraKeysManagerFacade.Test'
+        dotnet test --configuration ${{ env.buildConfiguration }} --no-build \
+          --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Unit \
+          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/${{ env.TESTS_FOLDER }}/" \
+          ${{ env.TESTS_FOLDER }}/Unit/LoRaWan.Tests.Unit.csproj
 
     # Upload test results as artifact
     - uses: actions/upload-artifact@v1
@@ -118,8 +119,9 @@ jobs:
     # Run integration tests
     - name: Run integration tests
       run: |
-        dotnet test --configuration ${{ env.buildConfiguration }} --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Integration \
-          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/Tests/" \
+        dotnet test --configuration ${{ env.buildConfiguration }} --no-build \
+          --logger trx -r ${{ env.TESTS_RESULTS_FOLDER }}/Integration \
+          /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/${{ env.TESTS_FOLDER }}/" \
           ${{ env.TESTS_FOLDER }}/Integration/LoRaWan.Tests.Integration.csproj
 
     - name: Upload to Codecov test reports

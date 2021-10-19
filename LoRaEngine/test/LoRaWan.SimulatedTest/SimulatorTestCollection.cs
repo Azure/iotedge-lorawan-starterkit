@@ -322,7 +322,7 @@ namespace LoRaWan.SimulatedTest
                 {
                     // Find "<all Device ID>: message '{"value":<seed+0 to number of msg/device>}' sent to hub" in network server logs
                     expectedPayload = $"{device.LoRaDevice.DeviceID}: message '{{\"value\":{seed + messageId.ToString(CultureInfo.InvariantCulture).PadLeft(3, '0')}}}' sent to hub";
-                    await TestFixture.AssertNetworkServerModuleLogStartsWithAsync(expectedPayload);
+                    _ = await TestFixture.AssertNetworkServerModuleLogStartsWithAsync(expectedPayload);
                 }
             }
 
