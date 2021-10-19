@@ -6,27 +6,34 @@ Authors: Maggie Salak, Mikhail Chatillon
 
 ## Overview / Problem Statement
 
-In order to support CN470 frequency we need to make several decisions.
+The specification of region CN470 has significant differences compared to regions already supported by the Starterkit. Specifically, there are 4 different frequency channel plans involved and calculation of downstream frequencies requires knowing which channel plan should be used for a given device:
+- Plan A for 20 MHz antennas
+- Plan B for 20 MHz antennas
+- Plan A for 26 MHz antennas
+- Plan B for 26 MHz antennas 
+
+This document summarizes decisions taken for the purpose of implementing support for region CN470.
 
 ## In-Scope
 
-* support for OTAA and ABP devices 
-
+* support for OTAA and ABP devices
+* correct handling of join requests
+* calculation of downstream frequencies and data rates
+* calculation of RX2 default frequency
 
 ## Out-of-scope
 
 
 ## Choices
 
-OTAA join channel is needed to decide which channel plan should be activated for a given device.
-We plan to save the join channel in a reported property named `CN470JoinChannel` of the device twin in IoT Hub 
-(it will be an int with value in the range 0 - 19). 
-The join channel is also needed for computing the RX2 default frequency.
+OTAA join channel is needed to determine which channel plan should be activated for a given device and used when calculating downstream frequency.
+We plan to save the join channel index in the device twin inside reported properties in IoT Hub. The property would be named `CN470JoinChannel` and the value would be an int in range 0 - 19, corresponding to the 20 possible join channels. 
 
-In case of ABP devices the channel plan will need to be provisioned on the IoT Hub by the operator in the desired 
-properties of the device twin, since there is no device join in this scenario.
-The channel plan will be saved as a join channel number (named `CN470JoinChannel` as above) using the following method 
-for determining the correct value:
+>According to the [specification](https://lora-alliance.org/wp-content/uploads/2021/05/RP002-1.0.3-FINAL-1.pdf), multiple join channels map to the same channel plan, e.g. join channels 0 - 7 are all mapped to Plan A for 20 MHz devices, where each of them has a different frequency. In total there are 20 possible join channels mapped to 4 channel plans as described in Overview.
+
+The join channel is also needed for computing the RX2 default frequency. In this case the join channel index directly determines the correct RX2 default frequency.
+
+In case of ABP devices the channel plan will need to be provisioned on the IoT Hub by the operator in the desired properties of the device twin, since there is no device join in this scenario. For simplicity of the implementation, the channel plan will be stored in the same way as in case of OTAA devices; it would be saved as a join channel index (named `CN470JoinChannel` as in case of OTAA) using the following table for determining the correct value:
 
 | Channel plan | `CN470JoinChannel` |
 | ------------ | ----|
@@ -35,4 +42,6 @@ for determining the correct value:
 | 26 MHz Plan A | 10 | 
 | 26 MHz Plan B | 15 | 
 
-The region will first check if a join channel is set in the reported properties and, if not, it will retrieve it from desired properties.
+Since there are no join channels in case of ABP devices, we will define a convention as to which channel index should be used for each channel plan. The suggested way would be to use the lowest index for each of the 4 channel plans, as in the table above.
+
+In the implementation of the region, we will first check if a join channel is set in the reported properties and, if not, we will retrieve it from desired properties. This will also give us the information whether a given device is an OTAA or ABP device. This is needed when calculating the RX2 default frequency. In case of OTAA devices we need to calculated it using the join channel index but in case of ABP it's a constant value.
