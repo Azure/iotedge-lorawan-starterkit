@@ -189,24 +189,24 @@ namespace LoRaWan.Tests.Shared
         /// </summary>
         public static LoraDeviceClientConnectionManagerWrapper CreateConnectionManager() =>
             new LoraDeviceClientConnectionManagerWrapper();
+    }
 
-        public sealed class LoraDeviceClientConnectionManagerWrapper : IDisposable
+    public sealed class LoraDeviceClientConnectionManagerWrapper : IDisposable
+    {
+        private readonly IMemoryCache memoryCache;
+
+        public LoraDeviceClientConnectionManagerWrapper()
         {
-            private readonly IMemoryCache memoryCache;
+            this.memoryCache = new MemoryCache(new MemoryCacheOptions());
+            Value = new LoRaDeviceClientConnectionManager(this.memoryCache);
+        }
 
-            public LoraDeviceClientConnectionManagerWrapper()
-            {
-                this.memoryCache = new MemoryCache(new MemoryCacheOptions());
-                Value = new LoRaDeviceClientConnectionManager(this.memoryCache);
-            }
+        public LoRaDeviceClientConnectionManager Value { get; }
 
-            public LoRaDeviceClientConnectionManager Value { get; }
-
-            public void Dispose()
-            {
-                this.memoryCache.Dispose();
-                Value.Dispose();
-            }
+        public void Dispose()
+        {
+            this.memoryCache.Dispose();
+            Value.Dispose();
         }
     }
 }

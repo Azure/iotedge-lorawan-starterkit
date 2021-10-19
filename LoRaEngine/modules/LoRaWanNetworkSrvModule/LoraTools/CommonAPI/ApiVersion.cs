@@ -254,16 +254,33 @@ namespace LoRaTools.CommonAPI
             Name == version.Name &&
             IsKnown == version.IsKnown;
 
-        public static bool operator <(ApiVersion value1, ApiVersion value2) =>
-            value1.CompareTo(value2) < 0;
+        public static bool operator <(ApiVersion value1, ApiVersion value2)
+        {
+            if (value1 is null) throw new ArgumentNullException(nameof(value1));
+            return value1.CompareTo(value2) < 0;
+        }
 
-        public static bool operator <=(ApiVersion value1, ApiVersion value2) =>
-            value1.CompareTo(value2) <= 0;
+        public static bool operator <=(ApiVersion value1, ApiVersion value2)
+        {
+            if (value1 is null) throw new ArgumentNullException(nameof(value1));
+            return value1.CompareTo(value2) <= 0;
+        }
 
-        public static bool operator >=(ApiVersion value1, ApiVersion value2) =>
-            value1.CompareTo(value2) >= 0;
+        public static bool operator >=(ApiVersion value1, ApiVersion value2)
+        {
+            if (value1 is null) throw new ArgumentNullException(nameof(value1));
+            return value1.CompareTo(value2) >= 0;
+        }
 
-        public static bool operator >(ApiVersion value1, ApiVersion value2) =>
-            value1.CompareTo(value2) > 0;
+        public static bool operator >(ApiVersion value1, ApiVersion value2)
+        {
+            if (value1 is null) throw new ArgumentNullException(nameof(value1));
+            return value1.CompareTo(value2) > 0;
+        }
+
+        public static bool operator ==(ApiVersion left, ApiVersion right) =>
+            left is null ? right is null : left.Equals(right);
+
+        public static bool operator !=(ApiVersion left, ApiVersion right) => !(left == right);
     }
 }

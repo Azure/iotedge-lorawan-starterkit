@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System.Net;
-using CayenneDecoderModule.Classes;
-using System.Reflection;
-using System.Text;
-
 namespace CayenneDecoderModule.Controllers
 {
+    using System;
+    using Microsoft.AspNetCore.Mvc;
+    using System.Net;
+    using CayenneDecoderModule.Classes;
+    using System.Reflection;
+    using System.Globalization;
+
     [Route("api")]
     [ApiController]
     public class DecoderController : ControllerBase
@@ -24,16 +20,16 @@ namespace CayenneDecoderModule.Controllers
             // Validate that fport and payload URL parameters are present.
             Validator.ValidateParameters(fport, payload);
 
-            Type decoderType = typeof(LoraDecoders);
-            MethodInfo toInvoke = decoderType.GetMethod(decoder, BindingFlags.Static | BindingFlags.NonPublic);
+            var decoderType = typeof(LoraDecoders);
+            var toInvoke = decoderType.GetMethod(decoder, BindingFlags.Static | BindingFlags.NonPublic);
 
             if (toInvoke != null)
             {
-                return (string)toInvoke.Invoke(null, new object[] { Convert.FromBase64String(payload), Convert.ToUInt16(fport) });
+                return (string)toInvoke.Invoke(null, new object[] { Convert.FromBase64String(payload), Convert.ToUInt16(fport, CultureInfo.InvariantCulture) });
             }
             else
             {
-                throw new WebException( $"Decoder {decoder} not found.");
+                throw new WebException($"Decoder {decoder} not found.");
             }
         }
     }

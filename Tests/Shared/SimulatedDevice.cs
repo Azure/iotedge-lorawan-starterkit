@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Security.Cryptography;
     using System.Text;
     using System.Threading;
@@ -47,31 +48,25 @@ namespace LoRaWan.Tests.Shared
 
         public string DevAddr
         {
-            get { return LoRaDevice.DevAddr; }
-            set { LoRaDevice.DevAddr = value; }
+            get => LoRaDevice.DevAddr;
+            set => LoRaDevice.DevAddr = value;
         }
 
         public string DevEUI => LoRaDevice.DeviceID;
 
         public bool Supports32BitFCnt
         {
-            get { return LoRaDevice.Supports32BitFCnt; }
-            set { LoRaDevice.Supports32BitFCnt = value; }
+            get => LoRaDevice.Supports32BitFCnt;
+            set => LoRaDevice.Supports32BitFCnt = value;
         }
-
-        SemaphoreSlim joinFinished;
 
         private bool isFirstJoinRequest = true;
 
         public SimulatedDevice(TestDeviceInfo testDeviceInfo, uint frmCntDown = 0, uint frmCntUp = 0)
         {
             LoRaDevice = testDeviceInfo;
-
             FrmCntDown = frmCntDown;
             FrmCntUp = frmCntUp;
-
-            if (!IsJoined)
-                this.joinFinished = new SemaphoreSlim(0);
         }
 
         public LoRaPayloadJoinRequest CreateJoinRequest()
@@ -82,7 +77,7 @@ namespace LoRaWan.Tests.Shared
                 using var random = new RNGCryptoServiceProvider();
                 // DevNonce[0] = 0xC8; DevNonce[1] = 0x86;
                 random.GetBytes(devNonce);
-                DevNonce = BitConverter.ToString(devNonce).Replace("-", string.Empty);
+                DevNonce = BitConverter.ToString(devNonce).Replace("-", string.Empty, StringComparison.Ordinal);
                 Array.Reverse(devNonce);
                 this.isFirstJoinRequest = false;
             }
@@ -92,7 +87,7 @@ namespace LoRaWan.Tests.Shared
                 Array.Reverse(devNonce);
             }
 
-            TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {BitConverter.ToString(devNonce).Replace("-", string.Empty)} / {DevNonce}");
+            TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request sent DevNonce: {BitConverter.ToString(devNonce).Replace("-", string.Empty, StringComparison.Ordinal)} / {DevNonce}");
             var joinRequest = new LoRaPayloadJoinRequest(LoRaDevice.AppEUI, LoRaDevice.DeviceID, devNonce);
             joinRequest.SetMic(LoRaDevice.AppKey);
 
@@ -104,12 +99,12 @@ namespace LoRaWan.Tests.Shared
         /// <summary>
         /// Creates request to send unconfirmed data message.
         /// </summary>
-        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, byte fctrl = 0, bool isHexPayload = false, List<MacCommand> macCommands = null)
+        public LoRaPayloadData CreateUnconfirmedDataUpMessage(string data, uint? fcnt = null, byte fport = 1, byte fctrl = 0, bool isHexPayload = false, IList<MacCommand> macCommands = null)
         {
             var devAddr = ConversionHelper.StringToByteArray(LoRaDevice.DevAddr);
             Array.Reverse(devAddr);
             var fCtrl = new byte[] { fctrl };
-            fcnt = fcnt ?? FrmCntUp + 1;
+            fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
 
             var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
@@ -143,7 +138,7 @@ namespace LoRaWan.Tests.Shared
                 fPort,
                 payload,
                 direction,
-                Supports32BitFCnt ? fcnt : (uint?)null);
+                Supports32BitFCnt ? fcnt : null);
 
             return payloadData;
         }
@@ -159,7 +154,7 @@ namespace LoRaWan.Tests.Shared
             Array.Reverse(devAddr);
             var fCtrl = new byte[] { 0x80 };
 
-            fcnt = fcnt ?? FrmCntUp + 1;
+            fcnt ??= FrmCntUp + 1;
             FrmCntUp = fcnt.GetValueOrDefault();
 
             var fcntBytes = BitConverter.GetBytes((ushort)fcnt.Value);
@@ -184,7 +179,7 @@ namespace LoRaWan.Tests.Shared
 
             // 0 = uplink, 1 = downlink
             var direction = 0;
-            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, null, fPort, payload, direction, Supports32BitFCnt ? fcnt : (uint?)null);
+            var payloadData = new LoRaPayloadData(LoRaMessageType.ConfirmedDataUp, devAddr, fCtrl, fcntBytes, null, fPort, payload, direction, Supports32BitFCnt ? fcnt : null);
 
             return payloadData;
         }
@@ -195,13 +190,13 @@ namespace LoRaWan.Tests.Shared
             var token = await RandomTokenGenerator.GetTokenAsync();
             if (LastPayload == null)
                 LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
-            var header = LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress);
+            var header = LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress.ToArray());
 
             var unconfirmedMessage = CreateUnconfirmedDataUpMessage(payload);
             unconfirmedMessage.SerializeUplink(AppSKey, NwkSKey);
             LastPayload = await simulatedPacketForwarder.SendAsync(header, unconfirmedMessage.GetByteMessage());
 
-            TestLogger.Log($"[{LoRaDevice.DeviceID}] Unconfirmed data: {BitConverter.ToString(header).Replace("-", string.Empty)} {payload}");
+            TestLogger.Log($"[{LoRaDevice.DeviceID}] Unconfirmed data: {BitConverter.ToString(header).Replace("-", string.Empty, StringComparison.Ordinal)} {payload}");
 
             // TestLogger.Log($"[{LoRaDevice.DevAddr}] Sending data: {BitConverter.ToString(header).Replace("-", "")}{Encoding.UTF8.GetString(gatewayInfo)}");
         }
@@ -212,13 +207,13 @@ namespace LoRaWan.Tests.Shared
             var token = await RandomTokenGenerator.GetTokenAsync();
             if (LastPayload == null)
                 LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
-            var header = LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress);
+            var header = LastPayload.GetSyncHeader(simulatedPacketForwarder.MacAddress.ToArray());
 
             var confirmedMessage = CreateConfirmedDataUpMessage(payload);
             confirmedMessage.SerializeUplink(AppSKey, NwkSKey);
             LastPayload = await simulatedPacketForwarder.SendAsync(header, confirmedMessage.GetByteMessage());
 
-            TestLogger.Log($"[{LoRaDevice.DeviceID}] Confirmed data: {BitConverter.ToString(header).Replace("-", string.Empty)} {payload}");
+            TestLogger.Log($"[{LoRaDevice.DeviceID}] Confirmed data: {BitConverter.ToString(header).Replace("-", string.Empty, StringComparison.Ordinal)} {payload}");
 
             // TestLogger.Log($"[{LoRaDevice.DevAddr}] Sending data: {BitConverter.ToString(header).Replace("-", "")}{Encoding.UTF8.GetString(gatewayInfo)}");
         }
@@ -231,10 +226,10 @@ namespace LoRaWan.Tests.Shared
 
             var token = await RandomTokenGenerator.GetTokenAsync();
             LastPayload = new PhysicalPayload(token, PhysicalIdentifier.PushData, null);
-            var header = LastPayload.GetSyncHeader(packetForwarder.MacAddress);
+            var header = LastPayload.GetSyncHeader(packetForwarder.MacAddress.ToArray());
 
             var joinRequest = CreateJoinRequest();
-            var joinCompleted = new SemaphoreSlim(0);
+            using var joinCompleted = new SemaphoreSlim(0);
 
             var joinRequestUplinkMessage = joinRequest.SerializeUplink(AppKey);
 
@@ -254,7 +249,7 @@ namespace LoRaWan.Tests.Shared
 
             await packetForwarder.SendAsync(header, joinRequest.GetByteMessage());
 
-            TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request: {BitConverter.ToString(header).Replace("-", string.Empty)}");
+            TestLogger.Log($"[{LoRaDevice.DeviceID}] Join request: {BitConverter.ToString(header).Replace("-", string.Empty, StringComparison.Ordinal)}");
 
 #if DEBUG
             if (System.Diagnostics.Debugger.IsAttached)
@@ -290,11 +285,11 @@ namespace LoRaWan.Tests.Shared
                 }
                 */
 
-                LoRaDevice.AppSKey = BitConverter.ToString(appSKey).Replace("-", string.Empty);
-                LoRaDevice.NwkSKey = BitConverter.ToString(nwkSKey).Replace("-", string.Empty);
-                NetId = BitConverter.ToString(netid).Replace("-", string.Empty);
-                AppNonce = BitConverter.ToString(appNonce).Replace("-", string.Empty);
-                LoRaDevice.DevAddr = BitConverter.ToString(devAddr.ToArray()).Replace("-", string.Empty);
+                LoRaDevice.AppSKey = BitConverter.ToString(appSKey).Replace("-", string.Empty, StringComparison.Ordinal);
+                LoRaDevice.NwkSKey = BitConverter.ToString(nwkSKey).Replace("-", string.Empty, StringComparison.Ordinal);
+                NetId = BitConverter.ToString(netid).Replace("-", string.Empty, StringComparison.Ordinal);
+                AppNonce = BitConverter.ToString(appNonce).Replace("-", string.Empty, StringComparison.Ordinal);
+                LoRaDevice.DevAddr = BitConverter.ToString(devAddr.ToArray()).Replace("-", string.Empty, StringComparison.Ordinal);
 
                 return true;
             }

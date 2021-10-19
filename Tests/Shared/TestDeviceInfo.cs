@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Shared
 {
     using System.Collections.Generic;
+    using System.Globalization;
     using LoRaTools.Utils;
 
     public class TestDeviceInfo
@@ -49,15 +50,15 @@ namespace LoRaWan.Tests.Shared
 
         public char ClassType { get; set; } = 'A';
 
-        public int RX2DataRate { get; set; } = 0;
+        public int RX2DataRate { get; set; }
 
-        public uint RX1DROffset { get; set; } = 0;
+        public uint RX1DROffset { get; set; }
 
         public bool Supports32BitFCnt { get; set; }
 
         public string Deduplication { get; set; }
 
-        public ushort RXDelay { get; set; } = 0;
+        public ushort RXDelay { get; set; }
 
         public int KeepAliveTimeout { get; set; }
 
@@ -92,7 +93,7 @@ namespace LoRaWan.Tests.Shared
 
             desiredProperties[nameof(PreferredWindow)] = PreferredWindow;
 
-            if (char.ToLower(ClassType) != 'a')
+            if (char.ToLower(ClassType, CultureInfo.InvariantCulture) != 'a')
                 desiredProperties[nameof(ClassType)] = ClassType.ToString();
 
             desiredProperties[nameof(RX1DROffset)] = RX1DROffset;
@@ -115,15 +116,15 @@ namespace LoRaWan.Tests.Shared
         /// </summary>
         public static TestDeviceInfo CreateABPDevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", uint netId = 1, char deviceClassType = 'A', bool supports32BitFcnt = false)
         {
-            var value8 = deviceID.ToString("00000000");
-            var value16 = deviceID.ToString("0000000000000000");
-            var value32 = deviceID.ToString("00000000000000000000000000000000");
+            var value8 = deviceID.ToString("00000000", CultureInfo.InvariantCulture);
+            var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
+            var value32 = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture);
 
             if (!string.IsNullOrEmpty(prefix))
             {
-                value8 = string.Concat(prefix, value8.Substring(prefix.Length));
-                value16 = string.Concat(prefix, value16.Substring(prefix.Length));
-                value32 = string.Concat(prefix, value32.Substring(prefix.Length));
+                value8 = string.Concat(prefix, value8[prefix.Length..]);
+                value16 = string.Concat(prefix, value16[prefix.Length..]);
+                value32 = string.Concat(prefix, value32[prefix.Length..]);
             }
 
             var devAddrValue = NetIdHelper.SetNwkIdPart(value8, netId);
@@ -148,13 +149,13 @@ namespace LoRaWan.Tests.Shared
         /// <param name="deviceID">Device identifier. It will padded with 0's.</param>
         public static TestDeviceInfo CreateOTAADevice(uint deviceID, string prefix = null, string gatewayID = null, string sensorDecoder = "DecoderValueSensor", char deviceClassType = 'A')
         {
-            var value16 = deviceID.ToString("0000000000000000");
-            var value32 = deviceID.ToString("00000000000000000000000000000000");
+            var value16 = deviceID.ToString("0000000000000000", CultureInfo.InvariantCulture);
+            var value32 = deviceID.ToString("00000000000000000000000000000000", CultureInfo.InvariantCulture);
 
             if (!string.IsNullOrEmpty(prefix))
             {
-                value16 = string.Concat(prefix, value16.Substring(prefix.Length));
-                value32 = string.Concat(prefix, value32.Substring(prefix.Length));
+                value16 = string.Concat(prefix, value16[prefix.Length..]);
+                value32 = string.Concat(prefix, value32[prefix.Length..]);
             }
 
             var result = new TestDeviceInfo

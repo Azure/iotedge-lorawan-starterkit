@@ -46,10 +46,8 @@ namespace LoRaWan.Tests.E2E
             TestLogger.Log($"[INFO] Using service client to call direct method to {TestFixture.Configuration.LeafDeviceGatewayID}/{TestFixture.Configuration.NetworkServerModuleID}");
             TestLogger.Log($"[INFO] {JsonConvert.SerializeObject(c2d, Formatting.None)}");
 
-            for (var i = 0; i < MAX_MODULE_DIRECT_METHOD_CALL_TRIES;)
+            for (var i = 0; i < MAX_MODULE_DIRECT_METHOD_CALL_TRIES; ++i)
             {
-                i++;
-
                 try
                 {
                     await TestFixtureCi.InvokeModuleDirectMethodAsync(TestFixture.Configuration.LeafDeviceGatewayID, TestFixture.Configuration.NetworkServerModuleID, "cloudtodevicemessage", c2d);
@@ -57,9 +55,9 @@ namespace LoRaWan.Tests.E2E
                 }
                 catch (Exception ex)
                 {
-                    if (i == MAX_MODULE_DIRECT_METHOD_CALL_TRIES)
-                        throw;
-
+#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
+                    if (i == MAX_MODULE_DIRECT_METHOD_CALL_TRIES - 1) throw;
+#pragma warning restore CA1508 // Avoid dead conditional code
                     TestLogger.Log($"[ERR] Failed to call module direct method: {ex.Message}");
                     await Task.Delay(TimeSpan.FromSeconds(5));
                 }

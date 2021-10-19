@@ -7,7 +7,7 @@ namespace XunitRetryHelper
     using Xunit.Sdk;
 
     [XunitTestCaseDiscoverer("XunitRetryHelper.RetryTheoryTestDiscoverer", "LoRaWan.Tests.E2E")]
-    public class RetryTheoryAttribute : TheoryAttribute
+    public sealed class RetryTheoryAttribute : TheoryAttribute
     {
         public RetryTheoryAttribute()
         {

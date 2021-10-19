@@ -48,7 +48,7 @@ namespace LoraKeysManagerFacade.Test
             var queryMock = new Mock<IQuery>(MockBehavior.Loose);
             queryMock
                 .Setup(x => x.HasMoreResults)
-                .Returns(() => (deviceCount < numberOfDevices));
+                .Returns(() => deviceCount < numberOfDevices);
 
             var deviceIds = new string[numberOfDevices] { devEui1, devEui2 };
 

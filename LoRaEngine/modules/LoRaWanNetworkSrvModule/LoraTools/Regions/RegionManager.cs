@@ -110,16 +110,16 @@ namespace LoRaTools.Regions
             eu868.TXPowertoMaxEIRP.Add(6, 4);
             eu868.TXPowertoMaxEIRP.Add(7, 2);
 
-            eu868.RX1DROffsetTable = new int[8, 6]
+            eu868.RX1DROffsetTable = new int[8][]
             {
-            { 0, 0, 0, 0, 0, 0 },
-            { 1, 0, 0, 0, 0, 0 },
-            { 2, 1, 0, 0, 0, 0 },
-            { 3, 2, 1, 0, 0, 0 },
-            { 4, 3, 2, 1, 0, 0 },
-            { 5, 4, 3, 2, 1, 0 },
-            { 6, 5, 4, 3, 2, 1 },
-            { 7, 6, 5, 4, 3, 2 }
+                new int[] { 0, 0, 0, 0, 0, 0 },
+                new int[] { 1, 0, 0, 0, 0, 0 },
+                new int[] { 2, 1, 0, 0, 0, 0 },
+                new int[] { 3, 2, 1, 0, 0, 0 },
+                new int[] { 4, 3, 2, 1, 0, 0 },
+                new int[] { 5, 4, 3, 2, 1, 0 },
+                new int[] { 6, 5, 4, 3, 2, 1 },
+                new int[] { 7, 6, 5, 4, 3, 2 }
             };
             var validDataRangeUpAndDownstream = new HashSet<string>()
             {
@@ -181,13 +181,13 @@ namespace LoRaTools.Regions
                 us915.TXPowertoMaxEIRP.Add(i, 30 - i);
             }
 
-            us915.RX1DROffsetTable = new int[5, 4]
+            us915.RX1DROffsetTable = new int[5][]
             {
-            { 10, 9, 8, 8 },
-            { 11, 10, 9, 8 },
-            { 12, 11, 10, 9 },
-            { 13, 12, 11, 10 },
-            { 13, 13, 12, 11 },
+                new int[] { 10, 9, 8, 8 },
+                new int[] { 11, 10, 9, 8 },
+                new int[] { 12, 11, 10, 9 },
+                new int[] { 13, 12, 11, 10 },
+                new int[] { 13, 13, 12, 11 },
             };
 
             var upstreamValidDataranges = new HashSet<string>()

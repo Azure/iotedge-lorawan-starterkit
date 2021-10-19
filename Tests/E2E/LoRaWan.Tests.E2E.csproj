@@ -39,8 +39,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoRaWan.NetworkServer\ServiceFacadeHttpClientHandler.cs" Link="ServiceFacadeHttpClientHandler.cs" />
-  </ItemGroup>
-
 </Project>

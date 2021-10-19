@@ -1,11 +1,9 @@
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace CayenneDecoderModule.Classes
 {
+    using Newtonsoft.Json;
+    using System;
+    using System.Collections.Generic;
+
     public class DigitalInput
     {
         public byte Channel { get; set; }
@@ -87,28 +85,28 @@ namespace CayenneDecoderModule.Classes
     public class CayenneDevice
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<DigitalInput> DigitalInput { get; set; }
+        public IList<DigitalInput> DigitalInput { get; } = new List<DigitalInput>();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<DigitalOutput> DigitaOutput { get; set; }
+        public IList<DigitalOutput> DigitaOutput { get; } = new List<DigitalOutput>();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<AnalogInput> AnalogInput { get; set; }
+        public IList<AnalogInput> AnalogInput { get; } = new List<AnalogInput>();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<AnalogOutput> AnalogOutput { get; set; }
+        public IList<AnalogOutput> AnalogOutput { get; } = new List<AnalogOutput>();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<IlluminanceSensor> IlluminanceSensor { get; set; }
+        public IList<IlluminanceSensor> IlluminanceSensor { get; } = new List<IlluminanceSensor>();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<PresenceSensor> PresenceSensor { get; set; }
+        public IList<PresenceSensor> PresenceSensor { get; } = new List<PresenceSensor>();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<TemperatureSensor> TemperatureSensor { get; set; }
+        public IList<TemperatureSensor> TemperatureSensor { get; } = new List<TemperatureSensor>();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<HumiditySensor> HumiditySensor { get; set; }
+        public IList<HumiditySensor> HumiditySensor { get; } = new List<HumiditySensor>();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<Accelerator> Accelerator { get; set; }
+        public IList<Accelerator> Accelerator { get; } = new List<Accelerator>();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<Barometer> Barometer { get; set; }
+        public IList<Barometer> Barometer { get; }  = new List<Barometer>();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<Gyrometer> Gyrometer { get; set; }
+        public IList<Gyrometer> Gyrometer { get; } = new List<Gyrometer>();
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public List<GPSLocation> GPSLocation { get; set; }
+        public IList<GPSLocation> GPSLocation { get; } = new List<GPSLocation>();
     }
 }

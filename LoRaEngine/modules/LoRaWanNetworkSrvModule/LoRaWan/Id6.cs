@@ -44,7 +44,7 @@ namespace LoRaWan
         }
 
         public static string Format(ulong value, FormatOptions options = FormatOptions.None) =>
-            new(Format(value, stackalloc char[sizeof(ulong) * 2 + 3 /* colons */], options));
+            new(Format(value, stackalloc char[(sizeof(ulong) * 2) + 3 /* colons */], options));
 
         public static Span<char> Format(ulong value, Span<char> output, FormatOptions options = FormatOptions.None)
         {
@@ -61,7 +61,7 @@ namespace LoRaWan
             var casing = (options & FormatOptions.Lowercase) != 0 ? LetterCase.Lower : LetterCase.Upper;
 
             Span<byte> bytes = stackalloc byte[sizeof(ulong)];
-            Span<char> chars = stackalloc char[bytes.Length * 2 + 3 /* colons */];
+            Span<char> chars = stackalloc char[(bytes.Length * 2) + 3 /* colons */];
             BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
 
             Span<char> word = stackalloc char[sizeof(ushort) * 2];
@@ -71,7 +71,9 @@ namespace LoRaWan
             for (; !bytes.IsEmpty; bytes = bytes[sizeof(ushort)..])
             {
                 bool colon;
+#pragma warning disable IDE0072 // Add missing cases (false positive)
                 (colon, state) = state switch
+#pragma warning restore IDE0072 // Add missing cases
                 {
                     var s and (FormatterState.Word or FormatterState.Blank or FormatterState.ColonColonWord)  => (true, s),
                     FormatterState.WordColonBlank or FormatterState.BlankColonBlank => (true, FormatterState.ColonColon),
@@ -88,7 +90,9 @@ namespace LoRaWan
                 {
                     tw.CopyTo(chars[i..]);
                     i += tw.Length;
+#pragma warning disable IDE0072 // Add missing cases (false positive)
                     state = (state, colon) switch
+#pragma warning restore IDE0072 // Add missing cases
                     {
                         (FormatterState.Init, _) or (FormatterState.Word or FormatterState.Blank, true) => FormatterState.Word,
                         (FormatterState.ColonColon, _) or (FormatterState.ColonColonWord, true) => FormatterState.ColonColonWord,
@@ -97,7 +101,9 @@ namespace LoRaWan
                 }
                 else
                 {
+#pragma warning disable IDE0072 // Add missing cases (false positive)
                     state = (state, colon) switch
+#pragma warning restore IDE0072 // Add missing cases
                     {
                         (FormatterState.Init, _) => FormatterState.Blank,
                         (FormatterState.Word, true) => FormatterState.WordColonBlank,
@@ -240,9 +246,10 @@ namespace LoRaWan
                 case (1, 1): (d, b) = (b, 0); break;
                 case (1, 2): (d, c, b) = (c, b, 0); break;
                 case (2, 2): (d, c) = (c, 0); break;
+                default: break;
             }
 
-            result = (ulong)a << 48 | (ulong)b << 32 | (ulong)c << 16 | d;
+            result = ((ulong)a << 48) | ((ulong)b << 32) | ((ulong)c << 16) | d;
 
             return true;
         }

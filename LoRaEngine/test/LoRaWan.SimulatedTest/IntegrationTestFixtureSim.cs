@@ -21,24 +21,15 @@ namespace LoRaWan.SimulatedTest
 
         readonly List<TestDeviceInfo> deviceRange1000_ABP = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP
-        {
-            get { return this.deviceRange1000_ABP; }
-        }
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange1000_ABP => this.deviceRange1000_ABP;
 
         readonly List<TestDeviceInfo> deviceRange2000_1000_ABP = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange2000_1000_ABP
-        {
-            get { return this.deviceRange2000_1000_ABP; }
-        }
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange2000_1000_ABP => this.deviceRange2000_1000_ABP;
 
         readonly List<TestDeviceInfo> deviceRange3000_10_OTAA = new List<TestDeviceInfo>();
 
-        public IReadOnlyCollection<TestDeviceInfo> DeviceRange3000_10_OTAA
-        {
-            get { return this.deviceRange3000_10_OTAA; }
-        }
+        public IReadOnlyCollection<TestDeviceInfo> DeviceRange3000_10_OTAA => this.deviceRange3000_10_OTAA;
 
         public override void SetupTestDevices()
         {

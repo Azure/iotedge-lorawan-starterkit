@@ -85,20 +85,14 @@ namespace LoRaWan.Tests.Shared
             return req;
         }
 
-        private static LoRaADRRequest StandardADRRequest
+        private static LoRaADRRequest StandardADRRequest => new LoRaADRRequest
         {
-            get
-            {
-                return new LoRaADRRequest
-                {
-                    DataRate = 1,
-                    FCntUp = 1,
-                    RequiredSnr = -10,
-                    FCntDown = 1,
-                    MinTxPowerIndex = 4,
-                    PerformADRCalculation = true
-                };
-            }
-        }
+            DataRate = 1,
+            FCntUp = 1,
+            RequiredSnr = -10,
+            FCntDown = 1,
+            MinTxPowerIndex = 4,
+            PerformADRCalculation = true
+        };
     }
 }
