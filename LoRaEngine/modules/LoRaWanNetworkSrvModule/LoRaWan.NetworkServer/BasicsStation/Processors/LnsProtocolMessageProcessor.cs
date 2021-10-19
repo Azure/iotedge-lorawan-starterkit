@@ -48,7 +48,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
         internal async Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
         {
-            Discovery.ReadQuery(json, out var stationEui);
+            LnsDiscovery.ReadQuery(json, out var stationEui);
             this.logger.LogInformation($"Received discovery request from: {stationEui}");
 
             var httpContext = this.httpContextAccessor.HttpContext;
@@ -59,10 +59,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                                         .Any(unicastInfo => unicastInfo.Address.Equals(httpContext.Connection.LocalIpAddress)))
                                                    .SingleOrDefault();
 
-            var response = Discovery.SerializeResponse(stationEui,
-                                                       Discovery.GetMacAddressAsID6(networkInterface),
-                                                       new Uri($"{schema}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}"),
-                                                       string.Empty);
+            var response = LnsDiscovery.SerializeResponse(stationEui,
+                                                          LnsDiscovery.GetMacAddressAsID6(networkInterface),
+                                                          new Uri($"{schema}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}"),
+                                                          string.Empty);
             await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, token);
 
             return false;

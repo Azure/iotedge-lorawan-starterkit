@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
     using System.Text;
     using System.Text.Json;
 
-    public static class Discovery
+    public static class LnsDiscovery
     {
         /// <summary>
         /// Reads out a StationEui value from a Discovery Query JSON string.
