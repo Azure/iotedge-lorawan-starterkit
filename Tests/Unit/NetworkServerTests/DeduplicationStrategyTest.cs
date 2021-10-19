@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 {
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Moq;
     using Xunit;
 

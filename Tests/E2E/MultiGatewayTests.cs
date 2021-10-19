@@ -7,7 +7,7 @@ namespace LoRaWan.Tests.E2E
     using System.Globalization;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Xunit;
     using XunitRetryHelper;
 

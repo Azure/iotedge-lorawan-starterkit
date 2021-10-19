@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 {
     using System;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class LoRaDeviceTelemetryTest

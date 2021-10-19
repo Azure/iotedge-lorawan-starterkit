@@ -18,7 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\modules\LoRaWanNetworkSrvModule\Logger\Logger.csproj" />
     <ProjectReference Include="..\..\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
-    <ProjectReference Include="..\..\..\Tests\Shared\LoRaWan.Tests.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Tests\Common\LoRaWan.Tests.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

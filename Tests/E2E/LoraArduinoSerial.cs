@@ -48,7 +48,7 @@ namespace LoRaWan.Tests.E2E
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
 
     /// <summary>
     /// Arduino driver for the LoRaWAN device.

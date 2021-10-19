@@ -9,7 +9,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using System.Text;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Newtonsoft.Json;
     using Xunit;
 
