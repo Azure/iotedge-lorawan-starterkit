@@ -229,6 +229,7 @@ namespace LoRaTools.Regions
             cn470 = new RegionCN470();
 
             // Values assuming FOpts param is not used
+            cn470.DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 31));
             cn470.DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 31));
             cn470.DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 94));
             cn470.DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 192));

@@ -11,11 +11,21 @@ namespace LoRaWanTest
     {
         protected Region _region;
 
-        protected void TestRegionFrequencyAndDataRate(string inputDr, double inputFreq, string outputDr, double outputFreq)
+        protected void TestRegionFrequencyAndDataRate(string inputDr, double inputFreq, string outputDr, double outputFreq, int? joinChannelIndex = null)
         {
             var rxpk = GenerateRxpk(inputDr, inputFreq);
-            Assert.True(_region.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency));
+            TestRegionFrequency(rxpk, outputFreq, joinChannelIndex);
+            TestRegionDataRate(rxpk, outputDr);
+        }
+
+        protected void TestRegionFrequency(List<Rxpk> rxpk, double outputFreq, int? joinChannelIndex = null)
+        {
+            Assert.True(_region.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency, joinChannelIndex));
             Assert.Equal(frequency, outputFreq);
+        }
+
+        protected void TestRegionDataRate(List<Rxpk> rxpk, string outputDr)
+        {
             Assert.Equal(_region.GetDownstreamDR(rxpk[0]), outputDr);
         }
 

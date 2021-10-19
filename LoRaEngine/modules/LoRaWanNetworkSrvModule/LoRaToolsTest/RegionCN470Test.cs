@@ -11,6 +11,25 @@ namespace LoRaWanTest
         }
 
         [Theory]
+        [InlineData(470.3, 483.9, 0)]
+        [InlineData(476.5, 490.1, 1)]
+        [InlineData(503.5, 490.3, 7)]
+        public void TestFrequency_Plan20A(double inputFreq, double outputFreq, int joinChannel)
+        {
+            var rxpk = GenerateRxpk("SF12BW125", inputFreq);
+            TestRegionFrequency(rxpk, outputFreq, joinChannel);
+        }
+
+        [Theory]
+        [InlineData("SF12BW125", "SF12BW125")]
+        [InlineData("SF11BW125", "SF11BW125")]
+        public void TestDataRate(string inputDr, string outputDr)
+        {
+            var rxpk = GenerateRxpk(inputDr, 470.3);
+            TestRegionDataRate(rxpk, outputDr);
+        }
+
+        [Theory]
         [InlineData(470, "SF12BW125")]
         [InlineData(510, "SF11BW125")]
         [InlineData(509, "SF2BW125")]

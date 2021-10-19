@@ -114,7 +114,7 @@ namespace LoRaTools.Regions
 
             for (var channel = startChannel; channel <= endChannel; ++channel)
             {
-                frequencies.Add(currentFreq);
+                frequencies.Add(Math.Round(currentFreq, 1, MidpointRounding.AwayFromZero));
                 currentFreq += FrequencyIncrement;
             }
 
