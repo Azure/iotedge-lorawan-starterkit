@@ -29,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tests.Integration",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tests.E2E", "Tests\E2E\LoRaWan.Tests.E2E.csproj", "{A871D30D-2634-4321-A0EB-B116A1BA1CD3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.SimulatedTest", "LoRaEngine\test\LoRaWan.SimulatedTest\LoRaWan.SimulatedTest.csproj", "{4FA0718D-15A2-4D4E-9310-7FB17B285757}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tests.Simulation", "Tests\Simulation\LoRaWan.Tests.Simulation.csproj", "{4FA0718D-15A2-4D4E-9310-7FB17B285757}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A3AF6806-947C-426F-8063-7229B71A4472}"
 	ProjectSection(SolutionItems) = preProject
