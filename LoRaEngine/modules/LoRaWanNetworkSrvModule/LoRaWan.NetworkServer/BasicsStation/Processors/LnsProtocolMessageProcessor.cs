@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
             switch (messageType)
             {
-                case LnsMessageType.version:
+                case LnsMessageType.Version:
                     LnsData.ReadVersionMessage(json, out var stationVersion);
                     this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
                     // A future implementation should retrieve dynamically a SX1301CONF for 'regional' configurations based on the 'stationEui'
@@ -104,17 +104,17 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                              true);
                     await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, token);
                     break;
-                case LnsMessageType.jreq:
+                case LnsMessageType.JoinRequest:
                     this.logger.LogInformation($"Received 'jreq' message: {json}.");
                     break;
-                case LnsMessageType.updf:
+                case LnsMessageType.UplinkDataFrame:
                     this.logger.LogInformation($"Received 'updf' message: {json}.");
                     break;
-                case LnsMessageType.dntxed:
+                case LnsMessageType.TransmitConfirmation:
                     this.logger.LogInformation($"Received 'dntxed' message: {json}.");
                     break;
-                case LnsMessageType.dnmsg:
-                case LnsMessageType.router_config:
+                case LnsMessageType.DownlinkMessage:
+                case LnsMessageType.RouterConfig:
                     throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint. This message type is 'downstream' only.");
                 default:
                     throw new SwitchExpressionException();

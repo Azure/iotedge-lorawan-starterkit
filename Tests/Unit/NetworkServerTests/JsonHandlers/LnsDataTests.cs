@@ -17,14 +17,14 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
     public class LnsDataTests
     {
         [Theory]
-        [InlineData(@"{ ""msgtype"": ""router_config"" }", LnsMessageType.router_config)]
-        [InlineData(@"{ ""msgtype"": ""dnmsg"" }", LnsMessageType.dnmsg)]
-        [InlineData(@"{ ""msgtype"": ""dntxed"" }", LnsMessageType.dntxed)]
-        [InlineData(@"{ ""msgtype"": ""jreq"" }", LnsMessageType.jreq)]
-        [InlineData(@"{ ""msgtype"": ""updf"" }", LnsMessageType.updf)]
-        [InlineData(@"{ ""msgtype"": ""version"" }", LnsMessageType.version)]
-        [InlineData(@"{ ""onePropBefore"": { ""value"": 123 }, ""msgtype"": ""version"" }", LnsMessageType.version)]
-        [InlineData(@"{ ""msgtype"": ""version"" }, ""onePropAfter"": { ""value"": 123 }", LnsMessageType.version)]
+        [InlineData(@"{ ""msgtype"": ""router_config"" }", LnsMessageType.RouterConfig)]
+        [InlineData(@"{ ""msgtype"": ""dnmsg"" }", LnsMessageType.DownlinkMessage)]
+        [InlineData(@"{ ""msgtype"": ""dntxed"" }", LnsMessageType.TransmitConfirmation)]
+        [InlineData(@"{ ""msgtype"": ""jreq"" }", LnsMessageType.JoinRequest)]
+        [InlineData(@"{ ""msgtype"": ""updf"" }", LnsMessageType.UplinkDataFrame)]
+        [InlineData(@"{ ""msgtype"": ""version"" }", LnsMessageType.Version)]
+        [InlineData(@"{ ""onePropBefore"": { ""value"": 123 }, ""msgtype"": ""version"" }", LnsMessageType.Version)]
+        [InlineData(@"{ ""msgtype"": ""version"" }, ""onePropAfter"": { ""value"": 123 }", LnsMessageType.Version)]
         internal void ReadMessageType_Succeeds(string json, LnsMessageType expectedMessageType)
         {
             LnsData.ReadMessageType(json, out var messageType);

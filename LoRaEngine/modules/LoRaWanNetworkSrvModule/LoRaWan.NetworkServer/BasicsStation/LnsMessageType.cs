@@ -5,11 +5,21 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     internal enum LnsMessageType
     {
-        version,
-        router_config,
-        jreq,
-        updf,
-        dntxed,
-        dnmsg,
+        Version,                // version
+        RouterConfig,           // router_config
+        JoinRequest,            // jreq
+        UplinkDataFrame,        // updf
+        TransmitConfirmation,   // dntxed
+        DownlinkMessage,        // dnmsg
+
+        /* Following are not implemented:
+
+        ProprietaryDataFrame,   // propdf
+        MulticastSchedule,      // dnsched
+        TimeSync,               // timesync
+        RunCommand,             // runcmd
+        RemoteShell,            // rmtsh
+
+        */
     }
 }

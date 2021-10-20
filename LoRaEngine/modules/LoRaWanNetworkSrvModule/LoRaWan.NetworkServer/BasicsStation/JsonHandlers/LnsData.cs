@@ -26,8 +26,17 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 if (reader.ValueTextEquals("msgtype"))
                 {
                     _ = reader.Read();
-                    var msgtypestring = reader.GetString();
-                    readMsgType = Enum.TryParse(msgtypestring, false, out msgtype);
+                    msgtype = reader.GetString() switch
+                    {
+                        "version"       => LnsMessageType.Version,
+                        "router_config" => LnsMessageType.RouterConfig,
+                        "jreq"          => LnsMessageType.JoinRequest,
+                        "updf"          => LnsMessageType.UplinkDataFrame,
+                        "dntxed"        => LnsMessageType.TransmitConfirmation,
+                        "dnmsg"         => LnsMessageType.DownlinkMessage,
+                        var type => throw new JsonException("Invalid or unsupported message type: " + type)
+                    };
+                    readMsgType = true;
                     _ = reader.Read();
                 }
                 else
@@ -126,7 +135,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             writer.WriteStartObject();
 
             #region msgtype
-            writer.WriteString("msgtype", nameof(LnsMessageType.router_config));
+            writer.WriteString("msgtype", "router_config");
             #endregion
             #region NetID
             writer.WritePropertyName("NetID");
