@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
 
@@ -197,7 +198,21 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public async Task<bool> InitializeAsync()
         {
-            var twin = await this.connectionManager.GetClient(this)?.GetTwinAsync();
+            Twin twin;
+            try
+            {
+                twin = await this.connectionManager.GetClient(this)?.GetTwinAsync();
+            }
+            catch (IotHubCommunicationException ex)
+            {
+                Logger.Log(this.DevEUI, $"Error while communication with IoT Hub during device initialization. {ex.Message}", LogLevel.Error);
+                throw;
+            }
+            catch (IotHubException ex)
+            {
+                Logger.Log(this.DevEUI, $"An error occured in IoT Hub during device initialization. {ex.Message}", LogLevel.Error);
+                throw;
+        }
 
             if (twin != null)
             {
@@ -371,9 +386,9 @@ namespace LoRaWan.NetworkServer
 
                     return true;
                 }
-                catch (Exception ex)
+                catch (InvalidLoRaDeviceException ex)
                 {
-                    Logger.Log(DevEUI, $"failed to initialize device from twin: {ex.Message}", LogLevel.Debug);
+                    Logger.Log(this.DevEUI, $"A required property was not present in the twin during device initialization. {ex.Message}", LogLevel.Error);
                     throw;
                 }
             }
@@ -479,7 +494,10 @@ namespace LoRaWan.NetworkServer
             {
                 return System.Convert.ToInt32(value);
             }
-            catch
+            catch(FormatException)
+            {
+            }
+            catch (OverflowException)
             {
             }
 
@@ -505,8 +523,13 @@ namespace LoRaWan.NetworkServer
             {
                 return System.Convert.ToUInt32(value);
             }
-            catch
+            catch (OverflowException)
             {
+                Logger.Log("value represents a number that is less than MinValue or greater than MaxValue." ,LogLevel.Error);
+            }
+            catch (FormatException)
+            {
+                Logger.Log("value does not consist of an optional sign followed by a sequence of digits (0 through 9).", LogLevel.Error);
             }
 
             return 0;
@@ -1040,7 +1063,9 @@ namespace LoRaWan.NetworkServer
             {
                 result = await this.dataRequestHandler.ProcessRequestAsync(request, this);
             }
+#pragma warning disable CA1031 // Do not catch general exception types. TODO revisit during refactor
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error);
                 processingError = ex;

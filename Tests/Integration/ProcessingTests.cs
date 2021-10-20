@@ -597,6 +597,11 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.ReceiveAsync(It.IsNotNull<TimeSpan>()))
                 .ReturnsAsync((Message)null);
 
+            // In this case we expect a call to update the reported properties of the framecounter.
+            if (expectedFcntDown % 10 == 0)
+            {
+                this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
+            }
             // Lora device api
 
             // in multigateway scenario the device api will be called to resolve fcntDown
@@ -657,7 +662,14 @@ namespace LoRaWan.Tests.Integration
             // FcntDown => expectedFcntDown
             Assert.Equal(initialFcntUp, loRaDevice.FCntUp);
             Assert.Equal(expectedFcntDown, loRaDevice.FCntDown);
-            Assert.True(loRaDevice.HasFrameCountChanges);
+            if (expectedFcntDown % 10 != 0)
+            {
+                Assert.True(loRaDevice.HasFrameCountChanges);
+            }
+            else
+            {
+                Assert.False(loRaDevice.HasFrameCountChanges);
+            }
 
             // message should not be sent to iot hub
             LoRaDeviceClient.Verify(x => x.SendEventAsync(It.IsAny<LoRaDeviceTelemetry>(), It.IsAny<Dictionary<string, string>>()), Times.Never);
@@ -1080,7 +1092,7 @@ namespace LoRaWan.Tests.Integration
             twin.Properties.Desired[missingProperty] = null;
             LoRaDeviceClient.Setup(x => x.GetTwinAsync())
                     .ReturnsAsync(twin);
-
+            LoRaDeviceClient.Setup(x => x.Dispose());
             // Lora device api
 
             // will search for the device twice
@@ -1106,7 +1118,7 @@ namespace LoRaWan.Tests.Integration
             Assert.Empty(devicesByDevAddr);
 
             LoRaDeviceApi.VerifyAll();
-            LoRaDeviceClient.VerifyAll();
+            LoRaDeviceClient.Verify(x => x.GetTwinAsync(), Times.Once);
         }
 
         [Theory]
@@ -1506,11 +1518,16 @@ namespace LoRaWan.Tests.Integration
 
             deviceClient1.Setup(x => x.GetTwinAsync()).ReturnsAsync(simulatedDevice1.CreateABPTwin());
 
+            // If the framecounter is higher than 10 it will trigger an update of the framcounter in the reported properties.
+            if (payloadFcntUp > 10)
+            {
+                deviceClient1.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
+            }
+
             // Device client 2
             // - Get Twin -> throws TimeoutException
             var deviceClient2 = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             deviceClient2.Setup(x => x.GetTwinAsync()).ThrowsAsync(new TimeoutException(), TimeSpan.FromMilliseconds(100));
-
             // device api will be searched for payload
             var searchDevicesResult = new SearchDevicesResult(new[]
             {

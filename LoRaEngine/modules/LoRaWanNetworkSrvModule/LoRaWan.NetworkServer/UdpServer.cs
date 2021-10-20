@@ -187,7 +187,9 @@ namespace LoRaWan.NetworkServer
                     }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types. Revisit in #565
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log("UDP", $"failed to dispatch messages: {ex.Message}", LogLevel.Error);
             }
@@ -360,7 +362,9 @@ namespace LoRaWan.NetworkServer
                     Logger.Log($"Error when receiving desired property: {exception}", LogLevel.Error);
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types. Recommended by doc.
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log($"Error when receiving desired property: {ex.Message}", LogLevel.Error);
             }
@@ -393,7 +397,9 @@ namespace LoRaWan.NetworkServer
                     }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types. Packet forwarder is going away
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log("UDP", $"error processing the message {ex.Message}, {ex.StackTrace}", LogLevel.Error);
             }

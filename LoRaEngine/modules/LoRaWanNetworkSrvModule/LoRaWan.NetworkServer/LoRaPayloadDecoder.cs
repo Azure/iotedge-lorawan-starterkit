@@ -152,7 +152,7 @@ namespace LoRaWan.NetworkServer
                     }
                 }
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
                 Logger.Log(devEUI, $"error in decoder handling: {ex.Message}", LogLevel.Error);
 

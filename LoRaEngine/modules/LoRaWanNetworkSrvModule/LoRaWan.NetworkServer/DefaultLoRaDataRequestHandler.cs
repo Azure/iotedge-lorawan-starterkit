@@ -412,13 +412,18 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
+
                 try
                 {
                     _ = await loRaDevice.SaveChangesAsync();
                 }
-                catch (Exception saveChangesException)
+                catch (OperationCanceledException saveChangesException)
                 {
                     Logger.Log(loRaDevice.DevEUI, $"error updating reported properties. {saveChangesException.Message}", LogLevel.Error);
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    Logger.Log(loRaDevice.DevEUI, $"The device properties are out of range. {ex.Message}", LogLevel.Error);
                 }
             }
         }

@@ -76,7 +76,9 @@ namespace LoRaWan.Tests.E2E
                 await this.setJoinDutyCycleAsync(false);
                 await this.setPowerAsync(power);
             }
+#pragma warning disable CA1031 // Do not catch general exception types.
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 TestLogger.Log($"Error during {nameof(SetupLora)}. {ex}");
             }
