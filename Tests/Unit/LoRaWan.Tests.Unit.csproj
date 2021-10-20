@@ -24,5 +24,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoRaWan\LoRaWan.csproj" />
     <ProjectReference Include="..\Common\LoRaWan.Tests.Common.csproj" />
+    <Compile Include="..\Common\MessageProcessorMultipleGatewayTest.cs" Link="MessageProcessorMultipleGatewayTest.cs" />
   </ItemGroup>
 </Project>
