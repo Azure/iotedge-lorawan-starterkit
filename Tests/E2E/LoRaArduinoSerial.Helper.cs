@@ -7,7 +7,7 @@ namespace LoRaWan.Tests.E2E
     using System.IO.Ports;
     using System.Runtime.InteropServices;
     using System.Threading.Tasks;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
 
     /// <summary>
     /// Lora Arduino Serial Class.

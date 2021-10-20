@@ -8,17 +8,17 @@ namespace LoRaWan.Tests.Integration
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;
 
-    public class DeduplicationStrategyIntegrationTests : MessageProcessorMultipleGatewayTest
+    public class DeduplicationStrategyIntegrationTests : MessageProcessorMultipleGatewayBase
     {
         private readonly DeduplicationStrategyFactory factory;
         private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
 
-        public DeduplicationStrategyIntegrationTests()
+        public DeduplicationStrategyIntegrationTests() : base()
         {
             this.factory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object);
             this.loRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
@@ -39,7 +39,7 @@ namespace LoRaWan.Tests.Integration
                 {
                     var isDup = messageProcessed;
                     messageProcessed = true;
-                    return Task.FromResult<FunctionBundlerResult>(new FunctionBundlerResult()
+                    return Task.FromResult(new FunctionBundlerResult()
                     {
                         DeduplicationResult = new DeduplicationResult
                         {
@@ -131,7 +131,7 @@ namespace LoRaWan.Tests.Integration
                 case DeduplicationMode.Drop:
                     Assert.True(request1.ProcessingSucceeded);
                     Assert.True(request2.ProcessingFailed);
-                    Assert.Equal<LoRaDeviceRequestFailedReason>(LoRaDeviceRequestFailedReason.DeduplicationDrop, request2.ProcessingFailedReason);
+                    Assert.Equal(LoRaDeviceRequestFailedReason.DeduplicationDrop, request2.ProcessingFailedReason);
                     break;
                 case DeduplicationMode.Mark:
                     Assert.True(request1.ProcessingSucceeded);

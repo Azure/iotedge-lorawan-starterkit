@@ -9,7 +9,7 @@ namespace LoRaWan.Tests.Simulation
     using System.Linq;
     using System.Net;
     using System.Threading.Tasks;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     // Tests ABP requests

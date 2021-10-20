@@ -3,7 +3,7 @@
 
 namespace LoRaWan.Tests.Simulation
 {
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class IntegrationTestBaseSim : IntegrationTestBase, IClassFixture<IntegrationTestFixtureSim>

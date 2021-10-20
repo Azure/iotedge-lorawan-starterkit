@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
@@ -9,7 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\Logger\Logger.csproj" />
     <ProjectReference Include="..\..\LoRaEngine\modules\LoRaWanNetworkSrvModule\LoraTools\LoRaTools.csproj" />
-    <ProjectReference Include="..\Shared\LoRaWan.Tests.Shared.csproj" />
+    <ProjectReference Include="..\Common\LoRaWan.Tests.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
