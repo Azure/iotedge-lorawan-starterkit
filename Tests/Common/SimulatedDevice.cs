@@ -261,7 +261,7 @@ namespace LoRaWan.Tests.Common
             return await joinCompleted.WaitAsync(timeoutInMs);
         }
 
-        bool HandleJoinAccept(LoRaPayloadJoinAccept payload)
+        private bool HandleJoinAccept(LoRaPayloadJoinAccept payload)
         {
             try
             {

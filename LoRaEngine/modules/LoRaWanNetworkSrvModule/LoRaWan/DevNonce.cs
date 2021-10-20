@@ -21,7 +21,7 @@ namespace LoRaWan
         public const int Size = sizeof(ushort);
 
 #pragma warning disable IDE0032 // Use auto property (explicit name)
-        readonly ushort value;
+        private readonly ushort value;
 
         public DevNonce(ushort value) => this.value = value;
 

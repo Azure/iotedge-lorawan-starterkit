@@ -3,7 +3,7 @@
 
 namespace XunitRetryHelper
 {
-    class Constants
+    internal class Constants
     {
         internal const int DefaultMaxRetries = 3;
     }

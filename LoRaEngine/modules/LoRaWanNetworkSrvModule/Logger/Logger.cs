@@ -16,14 +16,14 @@ namespace LoRaWan
     public static class Logger
     {
         // Interval where we try to estabilish connection to udp logger
-        const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
+        private const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
 
         public static LogLevel LoggerLevel => configuration.LogLevel;
 
-        static LoggerConfiguration configuration = new LoggerConfiguration();
-        static volatile UdpClient udpClient;
-        static IPEndPoint udpEndpoint;
-        static volatile bool isInitializeUdpLoggerRunning;
+        private static LoggerConfiguration configuration = new LoggerConfiguration();
+        private static volatile UdpClient udpClient;
+        private static IPEndPoint udpEndpoint;
+        private static volatile bool isInitializeUdpLoggerRunning;
         private static Timer retryUdpLogInitializationTimer;
 
         public static void Init(LoggerConfiguration loggerConfiguration)
@@ -122,7 +122,7 @@ namespace LoRaWan
             }
         }
 
-        static void LogToConsole(string message, LogLevel logLevel = LogLevel.Information)
+        private static void LogToConsole(string message, LogLevel logLevel = LogLevel.Information)
         {
             var loggedMessage = FormattableString.Invariant($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}");
 
@@ -136,7 +136,7 @@ namespace LoRaWan
             }
         }
 
-        static void LogToUdp(string message)
+        private static void LogToUdp(string message)
         {
             try
             {
@@ -158,7 +158,7 @@ namespace LoRaWan
         // Might be called from a timer while it does not work
         // Need to make this retries because NetworkServer might become alive
         // before listening container is started
-        static void InitializeUdpLogger(bool isRetry = false)
+        private static void InitializeUdpLogger(bool isRetry = false)
         {
             if (isInitializeUdpLoggerRunning)
             {

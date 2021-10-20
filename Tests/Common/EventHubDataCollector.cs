@@ -15,8 +15,8 @@ namespace LoRaWan.Tests.Common
         private readonly ConcurrentQueue<EventData> events;
         private readonly string connectionString;
         private EventHubClient eventHubClient;
-        readonly List<PartitionReceiver> receivers;
-        readonly HashSet<Action<IEnumerable<EventData>>> subscribers;
+        private readonly List<PartitionReceiver> receivers;
+        private readonly HashSet<Action<IEnumerable<EventData>>> subscribers;
 
         public bool LogToConsole { get; set; } = true;
 

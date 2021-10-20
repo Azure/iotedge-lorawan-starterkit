@@ -10,8 +10,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public class FrameControlTests
     {
-        readonly FrameControl subject = new(FCtrlFlags.FPending, 5);
-        readonly FrameControl other = new(FCtrlFlags.Ack, 0);
+        private readonly FrameControl subject = new(FCtrlFlags.FPending, 5);
+        private readonly FrameControl other = new(FCtrlFlags.Ack, 0);
 
         [Fact]
         public void Size()
@@ -22,7 +22,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         // The following two types are purely for the purpose of making the in-line theory data for
         // the properties test more readable.
 
-        static class True
+        private static class True
         {
             public const bool Adr = true;
             public const bool AdrAckRequested = true;
@@ -30,7 +30,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             public const bool DownlinkFramePending = true;
         }
 
-        static class False
+        private static class False
         {
             public const bool Adr = false;
             public const bool AdrAckRequested = false;
@@ -38,7 +38,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             public const bool DownlinkFramePending = false;
         }
 
-        const FCtrlFlags AllFCtrlFlags = FCtrlFlags.Adr | FCtrlFlags.AdrAckReq | FCtrlFlags.Ack | FCtrlFlags.FPending;
+        private const FCtrlFlags AllFCtrlFlags = FCtrlFlags.Adr | FCtrlFlags.AdrAckReq | FCtrlFlags.Ack | FCtrlFlags.FPending;
 
         [Theory]
         [InlineData(FCtrlFlags.None         , 0, False.Adr, False.AdrAckRequested, False.Ack, False.DownlinkFramePending, 0)]

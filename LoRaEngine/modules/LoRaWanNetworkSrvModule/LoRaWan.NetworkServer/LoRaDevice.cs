@@ -76,23 +76,22 @@ namespace LoRaWan.NetworkServer
 
         public bool Supports32BitFCnt { get; set; }
 
-        readonly ChangeTrackingProperty<int> dataRate = new ChangeTrackingProperty<int>(TwinProperty.DataRate);
+        private readonly ChangeTrackingProperty<int> dataRate = new ChangeTrackingProperty<int>(TwinProperty.DataRate);
 
         public int DataRate => this.dataRate.Get();
 
-        readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
-
-        readonly ILoRaDeviceClientConnectionManager connectionManager;
+        private readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
+        private readonly ILoRaDeviceClientConnectionManager connectionManager;
 
         public int TxPower => this.txPower.Get();
 
-        readonly ChangeTrackingProperty<int> nbRep = new ChangeTrackingProperty<int>(TwinProperty.NbRep);
+        private readonly ChangeTrackingProperty<int> nbRep = new ChangeTrackingProperty<int>(TwinProperty.NbRep);
 
         public int NbRep => this.nbRep.Get();
 
         public DeduplicationMode Deduplication { get; set; }
 
-        int preferredWindow;
+        private int preferredWindow;
 
         /// <summary>
         /// Gets or sets value indicating the preferred receive window for the device.
@@ -115,7 +114,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public LoRaDeviceClassType ClassType { get; set; }
 
-        ChangeTrackingProperty<LoRaRegionType> region = new ChangeTrackingProperty<LoRaRegionType>(TwinProperty.Region, LoRaRegionType.NotSet);
+        private ChangeTrackingProperty<LoRaRegionType> region = new ChangeTrackingProperty<LoRaRegionType>(TwinProperty.Region, LoRaRegionType.NotSet);
 
         /// <summary>
         /// Gets or sets the <see cref="LoRaTools.Regions.LoRaRegionType"/> of the device
@@ -127,7 +126,7 @@ namespace LoRaWan.NetworkServer
             set => this.region.Set(value);
         }
 
-        ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
+        private ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
 
         /// <summary>
         /// Gets the device preferred gateway identifier
@@ -451,7 +450,7 @@ namespace LoRaWan.NetworkServer
             return newfCnt;
         }
 
-        static uint? GetUintFromTwin(TwinCollection collection, string propertyName)
+        private static uint? GetUintFromTwin(TwinCollection collection, string propertyName)
         {
             if (!collection.Contains(propertyName))
             {
@@ -461,7 +460,7 @@ namespace LoRaWan.NetworkServer
             return GetTwinPropertyUIntValue(collection[propertyName].Value);
         }
 
-        static int GetTwinPropertyIntValue(dynamic value)
+        private static int GetTwinPropertyIntValue(dynamic value)
         {
             if (value is string valueString)
             {
@@ -487,7 +486,7 @@ namespace LoRaWan.NetworkServer
             return 0;
         }
 
-        static uint GetTwinPropertyUIntValue(dynamic value)
+        private static uint GetTwinPropertyUIntValue(dynamic value)
         {
             if (value is string valueString)
             {
@@ -513,7 +512,7 @@ namespace LoRaWan.NetworkServer
             return 0;
         }
 
-        static bool GetTwinPropertyBoolValue(dynamic value)
+        private static bool GetTwinPropertyBoolValue(dynamic value)
         {
             if (value is string valueString)
             {
@@ -641,7 +640,7 @@ namespace LoRaWan.NetworkServer
         /// Accept changes to the frame count
         /// This method is not protected by locks.
         /// </summary>
-        void InternalAcceptFrameCountChanges(uint savedFcntUp, uint savedFcntDown)
+        private void InternalAcceptFrameCountChanges(uint savedFcntUp, uint savedFcntDown)
         {
             this.lastSavedFcntUp = savedFcntUp;
             this.lastSavedFcntDown = savedFcntDown;
@@ -1032,7 +1031,7 @@ namespace LoRaWan.NetworkServer
             return ++val;
         }
 
-        async Task RunAndQueueNext(LoRaRequest request)
+        private async Task RunAndQueueNext(LoRaRequest request)
         {
             LoRaDeviceRequestProcessResult result = null;
             Exception processingError = null;
@@ -1085,7 +1084,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets the properties that are trackable.
         /// </summary>
-        IEnumerable<IChangeTrackingProperty> GetTrackableProperties()
+        private IEnumerable<IChangeTrackingProperty> GetTrackableProperties()
         {
             yield return this.preferredGatewayID;
             yield return this.region;

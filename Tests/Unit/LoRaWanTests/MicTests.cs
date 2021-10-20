@@ -8,8 +8,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public class MicTests
     {
-        readonly Mic subject = new(0x12345678);
-        readonly Mic other = new(0x87654321);
+        private readonly Mic subject = new(0x12345678);
+        private readonly Mic other = new(0x87654321);
 
         [Fact]
         public void Size()

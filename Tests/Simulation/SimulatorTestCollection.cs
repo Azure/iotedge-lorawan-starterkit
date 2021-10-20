@@ -33,7 +33,7 @@ namespace LoRaWan.Tests.Simulation
 
         // check if we need to parametrize address
         // IPEndPoint CreateNetworkServerEndpoint() => new IPEndPoint(IPAddress.Broadcast, 1680);
-        IPEndPoint CreateNetworkServerEndpoint() => new IPEndPoint(IPAddress.Parse(Configuration.NetworkServerIP), 1680);
+        private IPEndPoint CreateNetworkServerEndpoint() => new IPEndPoint(IPAddress.Parse(Configuration.NetworkServerIP), 1680);
 
         // [Fact]
         // public async Task Ten_Devices_Sending_Messages_Each_Second()

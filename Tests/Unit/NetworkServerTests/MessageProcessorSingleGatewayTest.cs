@@ -355,7 +355,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.False(loraDevice.HasFrameCountChanges);
         }
 
-        static bool IsTwinFcntZero(TwinCollection t) => (int)t[TwinProperty.FCntDown] == 0 && (int)t[TwinProperty.FCntUp] == 0;
+        private static bool IsTwinFcntZero(TwinCollection t) => (int)t[TwinProperty.FCntDown] == 0 && (int)t[TwinProperty.FCntUp] == 0;
 
         [Theory]
         [InlineData(0)]

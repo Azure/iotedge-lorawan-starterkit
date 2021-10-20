@@ -8,8 +8,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public class MacHeaderTest
     {
-        readonly MacHeader confirmedDataDown = new(128);
-        readonly MacHeader unconfirmedDataUp = new(64);
+        private readonly MacHeader confirmedDataDown = new(128);
+        private readonly MacHeader unconfirmedDataUp = new(64);
 
         [Theory]
         [InlineData(  0, MacMessageType.JoinRequest        , 0)]

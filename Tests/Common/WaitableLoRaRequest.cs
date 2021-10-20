@@ -12,7 +12,7 @@ namespace LoRaWan.Tests.Common
 
     public sealed class WaitableLoRaRequest : LoRaRequest, IDisposable
     {
-        readonly SemaphoreSlim complete;
+        private readonly SemaphoreSlim complete;
 
         public bool ProcessingFailed { get; private set; }
 
@@ -74,7 +74,7 @@ namespace LoRaWan.Tests.Common
             return this.complete.WaitAsync(timeout);
         }
 
-        LoRaOperationTimeWatcher fixTimeWacher;
+        private LoRaOperationTimeWatcher fixTimeWacher;
 
         internal void UseTimeWatcher(LoRaOperationTimeWatcher timeWatcher) => this.fixTimeWacher = timeWatcher;
 

@@ -27,10 +27,8 @@ namespace LoRaWan.Tests.Integration
         private ConnectionMultiplexer redis;
 
         private int redisPort;
-
-        string containerId;
-
-        static int uniqueRedisPort = 6000;
+        private string containerId;
+        private static int uniqueRedisPort = 6000;
 
         public IDatabase Database { get; set; }
 

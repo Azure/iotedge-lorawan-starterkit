@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
 
-    sealed class BasicsStationNetworkServerStartup
+    internal sealed class BasicsStationNetworkServerStartup
     {
         public IConfiguration Configuration { get; }
         public NetworkServerConfiguration NetworkServerConfiguration { get; }

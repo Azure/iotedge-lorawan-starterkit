@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Azure.Devices.Client;
     using Newtonsoft.Json;
 
-    class LoRaCloudToDeviceMessageWrapper : IReceivedLoRaCloudToDeviceMessage
+    internal class LoRaCloudToDeviceMessageWrapper : IReceivedLoRaCloudToDeviceMessage
     {
         private readonly LoRaDevice loRaDevice;
         private readonly Message message;

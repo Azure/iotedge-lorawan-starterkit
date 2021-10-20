@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Common
             return actualMessageIdentifier?.ToString();
         }
 
-        static bool IsDeviceMessage(string expectedDeviceID, string jsonPropertyToValidate, string expectedValue, string eventDeviceID, string eventDataMessageBody)
+        private static bool IsDeviceMessage(string expectedDeviceID, string jsonPropertyToValidate, string expectedValue, string eventDeviceID, string eventDataMessageBody)
         {
             if (eventDeviceID != null && eventDeviceID == expectedDeviceID)
             {
@@ -282,7 +282,7 @@ namespace LoRaWan.Tests.Common
         /// <summary>
         /// Helper method to find the time of the message that contain the message argument.
         /// </summary>
-        async Task<FindTimeResult> TryFindMessageTimeAsync(string message, string sourceIdFilter, bool isUpstream = false)
+        private async Task<FindTimeResult> TryFindMessageTimeAsync(string message, string sourceIdFilter, bool isUpstream = false)
         {
             const string token = @"""tmst"":";
             SearchLogResult log;
@@ -314,7 +314,7 @@ namespace LoRaWan.Tests.Common
             };
         }
 
-        async Task<SearchLogResult> SearchUdpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchUdpLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
         {
             var maxAttempts = options?.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
@@ -359,12 +359,12 @@ namespace LoRaWan.Tests.Common
             return new SearchLogResult(false, processedEvents);
         }
 
-        async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchUdpLogs(Func<string, bool> predicate, SearchLogOptions options = null)
         {
             return await SearchUdpLogs(evt => predicate(evt.Message), options);
         }
 
-        async Task<SearchLogResult> SearchIoTHubLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchIoTHubLogs(Func<SearchLogEvent, bool> predicate, SearchLogOptions options = null)
         {
             var maxAttempts = options?.MaxAttempts ?? Configuration.EnsureHasEventMaximumTries;
             var processedEvents = new HashSet<SearchLogEvent>();
@@ -409,7 +409,7 @@ namespace LoRaWan.Tests.Common
         }
 
         // Searches IoT Hub for messages
-        async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options = null)
+        private async Task<SearchLogResult> SearchIoTHubLogs(Func<string, bool> predicate, SearchLogOptions options = null)
         {
             return await SearchIoTHubLogs(evt => predicate(evt.Message), options);
         }

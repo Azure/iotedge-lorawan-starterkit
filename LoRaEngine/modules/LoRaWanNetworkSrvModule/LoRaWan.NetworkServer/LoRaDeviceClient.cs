@@ -23,8 +23,8 @@ namespace LoRaWan.NetworkServer
         private DeviceClient deviceClient;
 
         // TODO: verify if those are thread safe and can be static
-        readonly NoRetry noRetryPolicy;
-        readonly ExponentialBackoff exponentialBackoff;
+        private readonly NoRetry noRetryPolicy;
+        private readonly ExponentialBackoff exponentialBackoff;
 
         public LoRaDeviceClient(string devEUI, string connectionString, ITransportSettings[] transportSettings)
         {

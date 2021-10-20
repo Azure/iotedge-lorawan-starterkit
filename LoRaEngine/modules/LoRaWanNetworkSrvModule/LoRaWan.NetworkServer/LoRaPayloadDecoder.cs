@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer
 
         // Http client used by decoders
         // Decoder calls don't need proxy since they will never leave the IoT Edge device
-        readonly Lazy<HttpClient> decodersHttpClient;
+        private readonly Lazy<HttpClient> decodersHttpClient;
 
         public LoRaPayloadDecoder()
         {
@@ -98,7 +98,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        async Task<DecodePayloadResult> CallSensorDecoderModule(string devEUI, Uri sensorDecoderModuleUrl)
+        private async Task<DecodePayloadResult> CallSensorDecoderModule(string devEUI, Uri sensorDecoderModuleUrl)
         {
             try
             {

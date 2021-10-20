@@ -9,15 +9,16 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public abstract class EuiTests<T> where T : struct, IEquatable<T>
     {
-        T Subject => Parse("01-23-45-67-89-AB-CD-EF");
-        T Other => Parse("FE-DC-BA-98-76-54-32-10");
+        private T Subject => Parse("01-23-45-67-89-AB-CD-EF");
+
+        private T Other => Parse("FE-DC-BA-98-76-54-32-10");
 
         protected abstract int Size { get; }
         protected abstract T Parse(string input);
         protected abstract bool TryParse(string input, out T result);
 
-        static readonly Func<T, T, bool> Equal = Operators<T>.Equality;
-        static readonly Func<T, T, bool> NotEqual = Operators<T>.Inequality;
+        private static readonly Func<T, T, bool> Equal = Operators<T>.Equality;
+        private static readonly Func<T, T, bool> NotEqual = Operators<T>.Inequality;
 
         [Fact]
         public void Size_Returns_Width_In_Bytes()

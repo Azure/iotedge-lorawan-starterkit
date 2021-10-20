@@ -12,7 +12,7 @@ namespace LoRaWan
     /// </summary>
     public readonly struct DataRate : IEquatable<DataRate>
     {
-        readonly byte value;
+        private readonly byte value;
 
         public DataRate(int value) =>
             this.value = value is var v and >= 0 and <= 15

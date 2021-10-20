@@ -8,8 +8,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public class DevAddrTests
     {
-        readonly DevAddr subject = new(0xeb6f7bde);
-        readonly DevAddr other = new(0x12345678);
+        private readonly DevAddr subject = new(0xeb6f7bde);
+        private readonly DevAddr other = new(0x12345678);
 
         [Fact]
         public void Size()

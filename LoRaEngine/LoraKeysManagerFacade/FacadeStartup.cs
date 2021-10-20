@@ -57,7 +57,7 @@ namespace LoraKeysManagerFacade
                     .AddSingleton<LoRaDevAddrCache>();
         }
 
-        abstract class ConfigHandler
+        private abstract class ConfigHandler
         {
             internal const string IoTHubConnectionStringKey = "IoTHubConnectionString";
             internal const string RedisConnectionStringKey = "RedisConnectionString";
@@ -80,7 +80,7 @@ namespace LoraKeysManagerFacade
 
             internal abstract string IoTHubConnectionString { get; }
 
-            class ProductionConfigHandler : ConfigHandler
+            private class ProductionConfigHandler : ConfigHandler
             {
                 private readonly IConfiguration config;
 
@@ -94,7 +94,7 @@ namespace LoraKeysManagerFacade
                 internal override string IoTHubConnectionString => this.config.GetConnectionString(IoTHubConnectionStringKey);
             }
 
-            class LocalConfigHandler : ConfigHandler
+            private class LocalConfigHandler : ConfigHandler
             {
                 private readonly IConfiguration config;
 

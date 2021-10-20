@@ -20,7 +20,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
     public sealed class DefaultClassCDevicesMessageSenderTest : IDisposable
     {
-        const string ServerGatewayID = "test-gateway";
+        private const string ServerGatewayID = "test-gateway";
 
         private readonly NetworkServerConfiguration serverConfiguration;
         private readonly Region loRaRegion;
