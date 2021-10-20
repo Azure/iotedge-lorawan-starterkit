@@ -9,24 +9,24 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
     public static class LnsData
     {
-        internal static void ReadMessageType(string input, out LnsMessageType msgtype)
+        /// <remarks>
+        /// This method returns as soon as it has the read the message type from the JSON object
+        /// without validating the rest of the input.
+        /// </remarks>
+        internal static LnsMessageType ReadMessageType(string input)
         {
-            msgtype = default;
-
             var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(input));
             _ = reader.Read();
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException();
             _ = reader.Read();
 
-            var readMsgType = false;
-
             while (reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.ValueTextEquals("msgtype"))
                 {
                     _ = reader.Read();
-                    msgtype = reader.GetString() switch
+                    return reader.GetString() switch
                     {
                         "version"       => LnsMessageType.Version,
                         "router_config" => LnsMessageType.RouterConfig,
@@ -36,8 +36,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                         "dnmsg"         => LnsMessageType.DownlinkMessage,
                         var type => throw new JsonException("Invalid or unsupported message type: " + type)
                     };
-                    readMsgType = true;
-                    _ = reader.Read();
                 }
                 else
                 {
@@ -47,8 +45,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 }
             }
 
-            if (!readMsgType)
-                throw new JsonException("Could not parse 'msgtype' field.");
+            throw new JsonException("Could not parse 'msgtype' field.");
         }
 
         /*

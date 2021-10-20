@@ -74,9 +74,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
         internal async Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
         {
-            LnsData.ReadMessageType(json, out var messageType);
-
-            switch (messageType)
+            switch (LnsData.ReadMessageType(json))
             {
                 case LnsMessageType.Version:
                     LnsData.ReadVersionMessage(json, out var stationVersion);
@@ -113,8 +111,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 case LnsMessageType.TransmitConfirmation:
                     this.logger.LogInformation($"Received 'dntxed' message: {json}.");
                     break;
-                case LnsMessageType.DownlinkMessage:
-                case LnsMessageType.RouterConfig:
+                case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
                     throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint. This message type is 'downstream' only.");
                 default:
                     throw new SwitchExpressionException();
