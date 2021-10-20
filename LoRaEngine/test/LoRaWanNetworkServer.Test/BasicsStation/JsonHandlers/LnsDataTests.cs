@@ -280,10 +280,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
                                                                 region,
                                                                 hwspec,
                                                                 (new Hertz(863000000), new Hertz(870000000)),
-                                                                new[]
-                                                                {
-                                                                    (SF11, BW125, false)
-                                                                }));
+                                                                new[] { (SF11, BW125, false) }));
         }
 
         [Fact]
@@ -294,10 +291,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
                                                                              "region",
                                                                              "hwspec",
                                                                              (new Hertz(0), new Hertz(0)),
-                                                                             new[]
-                                                                             {
-                                                                                 (SF11, BW125, false)
-                                                                             }));
+                                                                             new[] { (SF11, BW125, false) }));
         }
 
         [Theory]
