@@ -842,14 +842,7 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
-            if (updateProperties.CN470JoinChannel != null)
-            {
-                reportedProperties[TwinProperty.CN470JoinChannel] = updateProperties.CN470JoinChannel;
-            }
-            else
-            {
-                reportedProperties[TwinProperty.CN470JoinChannel] = null;
-            }
+            reportedProperties[TwinProperty.CN470JoinChannel] = updateProperties.CN470JoinChannel;
 
             if (RegionManager.TryTranslateToRegion(updateProperties.Region, out var currentRegion))
             {
