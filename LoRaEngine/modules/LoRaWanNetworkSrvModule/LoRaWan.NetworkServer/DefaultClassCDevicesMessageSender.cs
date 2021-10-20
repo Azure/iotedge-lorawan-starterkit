@@ -120,7 +120,9 @@ namespace LoRaWan.NetworkServer
 
                 return true;
             }
+#pragma warning disable CA1031 // Do not catch general exception types. To be revisited as part of #565
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log(message.DevEUI, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error);
                 return false;

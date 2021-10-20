@@ -9,6 +9,7 @@ namespace LoraKeysManagerFacade
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Common.Exceptions;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
     using Newtonsoft.Json;
@@ -138,7 +139,7 @@ namespace LoraKeysManagerFacade
                         this.logger.LogDebug("A full reload was needed but failed to acquire global update lock");
                     }
                 }
-                catch (Exception ex)
+                catch (RedisException ex)
                 {
                     this.logger.LogError($"Exception occured during dev addresses full reload {ex}");
                 }
@@ -170,9 +171,17 @@ namespace LoraKeysManagerFacade
                     await PerformDeltaReload(registryManager);
                     this.logger.LogDebug("A delta reload was completed");
                 }
-                catch (Exception ex)
+                catch (RedisException ex)
                 {
-                    this.logger.LogError($"Exception occured during dev addresses delta reload {ex}");
+                    this.logger.LogError($"Exception occured during dev addresses delta reload while interacting with Redis {ex}");
+                }
+                catch (IotHubCommunicationException ex)
+                {
+                    this.logger.LogError($"Exception occured during dev addresses delta reload during communication with the iot hub {ex}");
+                }
+                catch (IotHubException ex)
+                {
+                    this.logger.LogError($"An unknown IoT Hub exception occured during dev addresses delta reload  {ex}");
                 }
                 finally
                 {

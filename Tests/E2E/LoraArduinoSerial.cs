@@ -154,7 +154,9 @@ namespace LoRaWan.Tests.E2E
                 // var dataread = System.Text.Encoding.UTF8.GetString(this.serialPortBuffer, 0, readCount);
                 OnSerialDataReceived(input);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 TestLogger.Log($"Error in serial data rx. {ex}");
             }
@@ -188,7 +190,9 @@ namespace LoRaWan.Tests.E2E
                     }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 TestLogger.Log($"Error processing serial data. {ex}");
             }
@@ -274,7 +278,9 @@ namespace LoRaWan.Tests.E2E
             {
                 throw;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 TestLogger.Log($"Error during {nameof(this.setIdAsync)}. {ex}");
             }
@@ -339,7 +345,9 @@ namespace LoRaWan.Tests.E2E
             {
                 throw;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 TestLogger.Log($"Error during {nameof(this.setKeyAsync)}. {ex}");
             }
@@ -544,7 +552,9 @@ namespace LoRaWan.Tests.E2E
                     await Task.Delay(100);
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 TestLogger.Log($"Error during {nameof(this.transferPacketAsync)}. {ex}");
                 return false;
@@ -573,7 +583,9 @@ namespace LoRaWan.Tests.E2E
                     await Task.Delay(100);
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 TestLogger.Log($"Error during {nameof(this.transferHexPacketAsync)}. {ex}");
                 return false;
@@ -651,7 +663,9 @@ namespace LoRaWan.Tests.E2E
 
                 // if (_buffer.Contains("+CMSG: ACK Received")) return true;
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 TestLogger.Log($"Error during {nameof(this.transferPacketWithConfirmedAsync)}. {ex}");
                 return false;
@@ -863,7 +877,9 @@ namespace LoRaWan.Tests.E2E
                 else if (mode == _device_mode_t.LWOTAA)
                     this.sendCommand("AT+MODE=LWOTAA\r\n");
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex}");
             }
@@ -972,7 +988,9 @@ namespace LoRaWan.Tests.E2E
             {
                 this.sendCommand("AT+FDEFAULT=RISINGHF\r\n");
             }
+#pragma warning disable CA1031 // Do not catch general exception types.
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 TestLogger.Log($"Error during {nameof(this.setDeviceModeAsync)}. {ex}");
             }

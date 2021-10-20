@@ -91,7 +91,9 @@ namespace LoRaWan.Tests.Integration
 
                 System.Console.WriteLine("Finish booting sequence container...");
             }
+#pragma warning disable CA1031 // Do not catch general exception types. This is for tests
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 System.Console.WriteLine(ex.ToString());
             }

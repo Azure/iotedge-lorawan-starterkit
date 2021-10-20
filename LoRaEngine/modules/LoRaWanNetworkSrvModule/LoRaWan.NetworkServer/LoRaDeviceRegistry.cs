@@ -295,7 +295,9 @@ namespace LoRaWan.NetworkServer
 
                 return loRaDevice;
             }
+#pragma warning disable CA1031 // Do not catch general exception types. TODO revisit as part of #565
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log(devEUI, $"failed to get join devices from api. {ex.Message}", LogLevel.Error);
                 return null;

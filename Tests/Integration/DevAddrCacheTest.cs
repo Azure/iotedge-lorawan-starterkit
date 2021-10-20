@@ -14,6 +14,7 @@ namespace LoRaWan.Tests.Integration
     using Microsoft.Azure.Devices.Shared;
     using Moq;
     using Newtonsoft.Json;
+    using StackExchange.Redis;
     using Xunit;
 
     public class DevAddrCacheTest : FunctionTestBase, IClassFixture<RedisFixture>
@@ -141,7 +142,7 @@ namespace LoRaWan.Tests.Integration
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake == null ? null : new[] { lockToTake });
             var managerInput = new List<DevAddrCacheInfo> { new DevAddrCacheInfo() { DevEUI = NewUniqueEUI64(), DevAddr = NewUniqueEUI32() } };
             var registryManagerMock = InitRegistryManager(managerInput);
-            registryManagerMock.Setup(x => x.CreateQuery(It.IsAny<string>())).Throws<Exception>();
+            registryManagerMock.Setup(x => x.CreateQuery(It.IsAny<string>())).Throws(new RedisException(string.Empty));
             await devAddrcache.PerformNeededSyncs(registryManagerMock.Object);
 
             // When doing a full update, the FullUpdateKey lock should be reset to 1min, the GlobalDevAddrUpdateKey should be gone
