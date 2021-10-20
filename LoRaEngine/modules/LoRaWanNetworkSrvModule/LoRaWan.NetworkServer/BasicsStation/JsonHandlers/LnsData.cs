@@ -7,7 +7,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
     using System.Text;
     using System.Text.Json;
 
-    static class LnsData
+    public static class LnsData
     {
         internal static void ReadMessageType(string input, out LnsMessageType msgtype)
         {
