@@ -11,6 +11,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
     using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
@@ -149,7 +150,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
             LoRaDevicePreferredGateway.SaveToCache(this.cacheStore, devEUI, preferredGateway);
 
             this.serviceClient.Setup(x => x.InvokeDeviceMethodAsync("gateway1", LoraKeysManagerFacadeConstants.NetworkServerModuleId, It.IsNotNull<CloudToDeviceMethod>()))
-                .ThrowsAsync(new TimeoutException());
+                .ThrowsAsync(new IotHubCommunicationException(string.Empty));
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
                 devEUI,
@@ -200,7 +201,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
             var query = new Mock<IQuery>(MockBehavior.Strict);
             query.Setup(x => x.HasMoreResults).Returns(true);
             query.Setup(x => x.GetNextAsTwinAsync())
-                .ThrowsAsync(new TimeoutException());
+                .ThrowsAsync(new IotHubCommunicationException(string.Empty));
 
             this.registryManager.Setup(x => x.CreateQuery(It.IsNotNull<string>(), It.IsAny<int?>()))
                 .Returns(query.Object);
@@ -446,7 +447,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
             };
 
             this.serviceClient.Setup(x => x.SendAsync(devEUI, It.IsNotNull<Message>()))
-                .ThrowsAsync(new TimeoutException());
+                .ThrowsAsync(new IotHubCommunicationException(string.Empty));
 
             var actual = await this.sendCloudToDeviceMessage.SendCloudToDeviceMessageImplementationAsync(
                 devEUI,

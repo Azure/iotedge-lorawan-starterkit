@@ -224,4 +224,3 @@ namespace LoraKeysManagerFacade
         private static bool IsSuccessStatusCode(int statusCode) => statusCode is >= 200 and <= 299;
     }
 }
-}

@@ -212,7 +212,7 @@ namespace LoRaWan.NetworkServer
             {
                 Logger.Log(this.DevEUI, $"An error occured in IoT Hub during device initialization. {ex.Message}", LogLevel.Error);
                 throw;
-        }
+            }
 
             if (twin != null)
             {
@@ -1063,7 +1063,7 @@ namespace LoRaWan.NetworkServer
             {
                 result = await this.dataRequestHandler.ProcessRequestAsync(request, this);
             }
-#pragma warning disable CA1031 // Do not catch general exception types. TODO revisit during refactor
+#pragma warning disable CA1031 // Do not catch general exception types. revisit in #565
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {

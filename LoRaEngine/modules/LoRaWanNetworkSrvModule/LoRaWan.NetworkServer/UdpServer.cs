@@ -187,7 +187,7 @@ namespace LoRaWan.NetworkServer
                     }
                 }
             }
-#pragma warning disable CA1031 // Do not catch general exception types. Revisit in #565
+#pragma warning disable CA1031 // Do not catch general exception types.
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
