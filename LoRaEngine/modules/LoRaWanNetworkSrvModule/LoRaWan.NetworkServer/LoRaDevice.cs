@@ -368,6 +368,8 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
+                    //  We are prioritizing the choice of the join channel from reported properties (set for OTAA devices)
+                    //  over the manually provisioned channel (set in desired properties for ABP devices).
                     if (twin.Properties.Reported.Contains(TwinProperty.CN470JoinChannel))
                     {
                         ReportedCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.CN470JoinChannel].Value);
