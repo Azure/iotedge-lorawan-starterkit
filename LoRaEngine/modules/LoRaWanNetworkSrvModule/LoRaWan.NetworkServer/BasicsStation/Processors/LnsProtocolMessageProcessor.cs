@@ -19,6 +19,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging;
+    using static SpreadingFactor;
+    using static Bandwidth;
 
     public class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
@@ -90,12 +92,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                              {
                                                                  // The following is actually a tuple of SF, Bandwidth and DownlinkOnly.
                                                                  // TODO let's consider the idea of bringing primitives for SF and BW ?
-                                                                 (new DataRate(11), new Hertz(125), false),
-                                                                 (new DataRate(10), new Hertz(125), false),
-                                                                 (new DataRate(9), new Hertz(125), false),
-                                                                 (new DataRate(8), new Hertz(125), false),
-                                                                 (new DataRate(7), new Hertz(125), false),
-                                                                 (new DataRate(7), new Hertz(250), false),
+                                                                 (SF11, BW125, false),
+                                                                 (SF10, BW125, false),
+                                                                 (SF9, BW125, false),
+                                                                 (SF8, BW125, false),
+                                                                 (SF7, BW125, false),
+                                                                 (SF7, BW250, false),
                                                              },
                                                              true,
                                                              true,

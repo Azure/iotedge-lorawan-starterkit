@@ -107,7 +107,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                                  string region,
                                                  string hwspec,
                                                  (Hertz Min, Hertz Max) freqRange,
-                                                 IEnumerable<(DataRate SpreadingFactor, Hertz Bandwidth, bool DnOnly)> dataRates,
+                                                 IEnumerable<(SpreadingFactor SpreadingFactor, Bandwidth Bandwidth, bool DnOnly)> dataRates,
                                                  bool nocca = false,
                                                  bool nodc = false,
                                                  bool nodwell = false)
@@ -171,12 +171,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             #region DRs
             writer.WritePropertyName("DRs");
             writer.WriteStartArray();
-            foreach (var (SpreadingFactor, Bandwidth, DnOnly) in dataRates)
+            foreach (var (sf, bw, dnOnly) in dataRates)
             {
                 writer.WriteStartArray();
-                writer.WriteNumberValue(SpreadingFactor.AsInt32);
-                writer.WriteNumberValue(Bandwidth.AsUInt64);
-                writer.WriteNumberValue(DnOnly ? 1 : 0);
+                writer.WriteNumberValue((int)sf);
+                writer.WriteNumberValue((int)bw);
+                writer.WriteNumberValue(dnOnly ? 1 : 0);
                 writer.WriteEndArray();
             }
             writer.WriteEndArray();

@@ -11,6 +11,8 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
     using System.Text;
     using System.Text.Json;
     using Xunit;
+    using static SpreadingFactor;
+    using static Bandwidth;
 
     public class LnsDataTests
     {
@@ -133,14 +135,14 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
                                                    "EU863",
                                                    "sx1301/1",
                                                    (new Hertz(863000000), new Hertz(870000000)),
-                                                   new (DataRate, Hertz, bool)[]
+                                                   new[]
                                                    {
-                                                       (new DataRate(11), new Hertz(125), false),
-                                                       (new DataRate(10), new Hertz(125), false),
-                                                       (new DataRate(9), new Hertz(125), false),
-                                                       (new DataRate(8), new Hertz(125), false),
-                                                       (new DataRate(7), new Hertz(125), false),
-                                                       (new DataRate(7), new Hertz(250), false),
+                                                       (SF11, BW125, false),
+                                                       (SF10, BW125, false),
+                                                       (SF9 , BW125, false),
+                                                       (SF8 , BW125, false),
+                                                       (SF7 , BW125, false),
+                                                       (SF7 , BW250, false),
                                                    },
                                                    true,
                                                    true,
@@ -241,14 +243,14 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
                                                    "EU863",
                                                    "sx1301/1",
                                                    (new Hertz(863000000), new Hertz(870000000)),
-                                                   new (DataRate, Hertz, bool)[]
+                                                   new[]
                                                    {
-                                                       (new DataRate(11), new Hertz(125), false),
-                                                       (new DataRate(10), new Hertz(125), false),
-                                                       (new DataRate(9), new Hertz(125), false),
-                                                       (new DataRate(8), new Hertz(125), false),
-                                                       (new DataRate(7), new Hertz(125), false),
-                                                       (new DataRate(7), new Hertz(250), false),
+                                                       (SF11, BW125, false),
+                                                       (SF10, BW125, false),
+                                                       (SF9 , BW125, false),
+                                                       (SF8 , BW125, false),
+                                                       (SF7 , BW125, false),
+                                                       (SF7 , BW250, false),
                                                    },
                                                    true,
                                                    true,
@@ -278,9 +280,9 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
                                                                 region,
                                                                 hwspec,
                                                                 (new Hertz(863000000), new Hertz(870000000)),
-                                                                new (DataRate, Hertz, bool)[]
+                                                                new[]
                                                                 {
-                                                                    (new DataRate(11), new Hertz(125), false)
+                                                                    (SF11, BW125, false)
                                                                 }));
         }
 
@@ -292,9 +294,9 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
                                                                              "region",
                                                                              "hwspec",
                                                                              (new Hertz(0), new Hertz(0)),
-                                                                             new (DataRate, Hertz, bool)[]
+                                                                             new[]
                                                                              {
-                                                                                 (new DataRate(11), new Hertz(125), false)
+                                                                                 (SF11, BW125, false)
                                                                              }));
         }
 
@@ -308,7 +310,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
                                                                 "region",
                                                                 "hwspec",
                                                                 (new Hertz(863000000), new Hertz(870000000)),
-                                                                dataRates.HasValue ? Array.Empty<(DataRate, Hertz, bool)>() : null));
+                                                                dataRates.HasValue ? Array.Empty<(SpreadingFactor, Bandwidth, bool)>() : null));
         }
     }
 }
