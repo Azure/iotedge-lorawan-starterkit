@@ -34,6 +34,12 @@ csharp_style_var_when_type_is_apparent = true:suggestion
 csharp_style_var_elsewhere = true:suggestion
 csharp_prefer_braces = when_multiline:suggestion
 
+# This or Me qualifier
+dotnet_style_qualification_for_field=true
+dotnet_style_qualification_for_property=false
+dotnet_style_qualification_for_method=false
+dotnet_style_qualification_for_event=false
+
 csharp_indent_case_contents_when_block = false
 
 # CA2007: Consider calling ConfigureAwait on the awaited task
@@ -88,12 +94,6 @@ dotnet_diagnostic.IDE0052.severity=suggestion
 # xUnit1004: Do not skip tests
 dotnet_diagnostic.xUnit1004.severity=suggestion
 
-[*.cs]
-dotnet_style_qualification_for_field=true:error
-dotnet_style_qualification_for_property=false:error
-dotnet_style_qualification_for_method=false:error
-dotnet_style_qualification_for_event=false:error
-
 # CA1814: Prefer jagged arrays over multidimensional arrays
 dotnet_diagnostic.CA1814.severity=suggestion
 dotnet_diagnostic.IDE0047.severity=suggestion
@@ -105,3 +105,21 @@ dotnet_diagnostic.CA1716.severity=suggestion
 # CA1031: Do not catch general exception types
 # Will be reenabled with https://github.com/Azure/iotedge-lorawan-starterkit/pull/549.
 dotnet_diagnostic.CA1031.severity=suggestion
+
+# These rules cannot be enforced during build time and are hence set to suggestion.
+# https://github.com/dotnet/roslyn/blob/9f87b444da9c48a4d492b19f8337339056bf2b95/src/Analyzers/Core/Analyzers/EnforceOnBuildValues.cs#L95
+# https://github.com/dotnet/roslyn/issues/53215
+dotnet_diagnostic.IDE0001.severity=suggestion
+dotnet_diagnostic.IDE0002.severity=suggestion
+dotnet_diagnostic.IDE0003.severity=suggestion
+dotnet_diagnostic.IDE0006.severity=suggestion
+dotnet_diagnostic.IDE0009.severity=suggestion
+dotnet_diagnostic.IDE0035.severity=suggestion
+dotnet_diagnostic.IDE0049.severity=suggestion
+dotnet_diagnostic.IDE0079.severity=suggestion
+dotnet_diagnostic.IDE1001.severity=suggestion
+dotnet_diagnostic.IDE1002.severity=suggestion
+dotnet_diagnostic.IDE1003.severity=suggestion
+dotnet_diagnostic.IDE1004.severity=suggestion
+dotnet_diagnostic.IDE1007.severity=suggestion
+dotnet_diagnostic.IDE1008.severity=suggestion
