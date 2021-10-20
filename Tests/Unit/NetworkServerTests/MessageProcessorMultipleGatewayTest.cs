@@ -4,64 +4,16 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
-    using System.Globalization;
     using System.Threading.Tasks;
-    using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
-    using LoRaWan.NetworkServer.ADR;
     using Microsoft.Azure.Devices.Client;
-    using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
 
-    /// <summary>
-    /// Multiple gateway message processor tests.
-    /// </summary>
-    public class MessageProcessorMultipleGatewayTest : MessageProcessorTestBase
+    public class MessageProcessorMultipleGatewayTest : MessageProcessorMultipleGatewayBase
     {
-        const string SecondServerGatewayID = "second-gateway";
-
-        private readonly MemoryCache cache;
-
-        public NetworkServerConfiguration SecondServerConfiguration { get; }
-
-        public TestPacketForwarder SecondPacketForwarder { get; }
-
-        public Mock<LoRaDeviceAPIServiceBase> SecondLoRaDeviceApi { get; }
-
-        public LoRaDeviceFrameCounterUpdateStrategyProvider SecondFrameCounterUpdateStrategyProvider { get; }
-
-        private readonly DefaultLoRaDataRequestHandler secondRequestHandlerImplementation;
-
-        public Mock<ILoRaDeviceClient> SecondLoRaDeviceClient { get; }
-
-        public LoRaDeviceClientConnectionManager SecondConnectionManager { get; }
-
-        internal TestLoRaDeviceFactory SecondLoRaDeviceFactory { get; }
-
-        public MessageProcessorMultipleGatewayTest()
-        {
-            SecondServerConfiguration = new NetworkServerConfiguration
-            {
-                GatewayID = SecondServerGatewayID,
-                LogToConsole = true,
-                LogLevel = ((int)LogLevel.Debug).ToString(CultureInfo.InvariantCulture),
-            };
-
-            SecondPacketForwarder = new TestPacketForwarder();
-            SecondLoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            SecondFrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(SecondServerGatewayID, SecondLoRaDeviceApi.Object);
-            var deduplicationStrategyFactory = new DeduplicationStrategyFactory(SecondLoRaDeviceApi.Object);
-            var loRaAdrManagerFactory = new LoRAADRManagerFactory(SecondLoRaDeviceApi.Object);
-            var adrStrategyProvider = new LoRaADRStrategyProvider();
-            var functionBundlerProvider = new FunctionBundlerProvider(SecondLoRaDeviceApi.Object);
-            this.secondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(SecondServerConfiguration, SecondFrameCounterUpdateStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider);
-            SecondLoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
-            this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
-            SecondConnectionManager = new LoRaDeviceClientConnectionManager(this.cache);
-            SecondLoRaDeviceFactory = new TestLoRaDeviceFactory(SecondServerConfiguration, SecondFrameCounterUpdateStrategyProvider, SecondLoRaDeviceClient.Object, deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider, SecondConnectionManager);
-        }
+        public MessageProcessorMultipleGatewayTest() : base()
+        { }
 
         [Fact(Skip = "Fails locally - will be addressed with #587")]
         public async Task Multi_OTAA_Unconfirmed_Message_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_Null()
@@ -90,7 +42,7 @@ namespace LoRaWan.Tests.Common
 
             using var loRaDevice1 = CreateLoRaDevice(simulatedDevice);
             using var connectionManager2 = new SingleDeviceConnectionManager(SecondLoRaDeviceClient.Object);
-            using var loRaDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, connectionManager2, this.secondRequestHandlerImplementation);
+            using var loRaDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice, connectionManager2, SecondRequestHandlerImplementation);
 
             using var cache1 = NewNonEmptyCache(loRaDevice1);
             using var loRaDeviceRegistry1 = new LoRaDeviceRegistry(ServerConfiguration, cache1, LoRaDeviceApi.Object, LoRaDeviceFactory);
@@ -141,16 +93,6 @@ namespace LoRaWan.Tests.Common
             Assert.Equal(1U, loRaDevice2.FCntUp);
 
             SecondLoRaDeviceClient.Setup(ldc => ldc.Dispose());
-        }
-
-        // Protected implementation of Dispose pattern.
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            if (disposing)
-            {
-                this.cache.Dispose();
-            }
         }
     }
 }
