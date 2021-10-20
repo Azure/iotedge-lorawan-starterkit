@@ -6,7 +6,7 @@ namespace LoRaWan.Tests.E2E
     using System;
     using System.Globalization;
     using System.Text;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Xunit;
 
     public class IntegrationTestBaseCi : IntegrationTestBase, IClassFixture<IntegrationTestFixtureCi>, IDisposable

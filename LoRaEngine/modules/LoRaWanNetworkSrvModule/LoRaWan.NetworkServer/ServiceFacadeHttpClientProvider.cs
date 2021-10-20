@@ -27,7 +27,7 @@ namespace LoRaWan.NetworkServer
 
         public HttpClient GetHttpClient() => this.httpClient.Value;
 
-        HttpClient CreateHttpClient()
+        private HttpClient CreateHttpClient()
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope
             // Will be handled once we migrate to DI.

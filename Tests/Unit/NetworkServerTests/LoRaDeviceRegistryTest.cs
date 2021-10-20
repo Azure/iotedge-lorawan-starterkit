@@ -8,19 +8,18 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using System.Linq;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
 
     public sealed class LoRaDeviceRegistryTest : IDisposable
     {
-        const string ServerGatewayID = "test-gateway";
-
-        readonly Mock<ILoRaDeviceFactory> loraDeviceFactoryMock;
-        readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
-        readonly NetworkServerConfiguration serverConfiguration;
-        readonly MemoryCache cache;
+        private const string ServerGatewayID = "test-gateway";
+        private readonly Mock<ILoRaDeviceFactory> loraDeviceFactoryMock;
+        private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
+        private readonly NetworkServerConfiguration serverConfiguration;
+        private readonly MemoryCache cache;
 
         public LoRaDeviceRegistryTest()
         {

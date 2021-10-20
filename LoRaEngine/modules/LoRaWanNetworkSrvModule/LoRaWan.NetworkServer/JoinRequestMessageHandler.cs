@@ -31,7 +31,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Process OTAA join request.
         /// </summary>
-        async Task ProcessJoinRequestAsync(LoRaRequest request)
+        private async Task ProcessJoinRequestAsync(LoRaRequest request)
         {
             LoRaDevice loRaDevice = null;
             string devEUI = null;

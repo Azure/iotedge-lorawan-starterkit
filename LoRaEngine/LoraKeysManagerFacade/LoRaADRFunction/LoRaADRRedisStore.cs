@@ -13,11 +13,11 @@ namespace LoraKeysManagerFacade
 
     public class LoRaADRRedisStore : LoRaADRStoreBase, ILoRaADRStore
     {
-        const string CacheToken = ":ADR";
-        const string LockToken = ":lock";
-        readonly IDatabase redisCache;
+        private const string CacheToken = ":ADR";
+        private const string LockToken = ":lock";
+        private readonly IDatabase redisCache;
 
-        sealed class RedisLockWrapper : IDisposable
+        private sealed class RedisLockWrapper : IDisposable
         {
             private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(10);
             private static readonly TimeSpan LockDuration = TimeSpan.FromSeconds(15);

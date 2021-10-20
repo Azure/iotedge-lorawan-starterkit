@@ -8,8 +8,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public class NetIdTests
     {
-        readonly NetId subject = new(0x1a2b3c);
-        readonly NetId other = new(0x4d5e6f);
+        private readonly NetId subject = new(0x1a2b3c);
+        private readonly NetId other = new(0x4d5e6f);
 
         [Fact]
         public void Size()

@@ -135,7 +135,7 @@ namespace LoraKeysManagerFacade
             return new NotFoundObjectResult($"Device '{devEUI}' was not found");
         }
 
-        async Task<IActionResult> SendMessageViaCloudToDeviceMessageAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        private async Task<IActionResult> SendMessageViaCloudToDeviceMessageAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
             try
             {
@@ -159,7 +159,7 @@ namespace LoraKeysManagerFacade
             }
         }
 
-        async Task<IActionResult> SendMessageViaDirectMethodAsync(
+        private async Task<IActionResult> SendMessageViaDirectMethodAsync(
             string preferredGatewayID,
             string devEUI,
             LoRaCloudToDeviceMessage c2dMessage)
@@ -202,6 +202,6 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// Gets if the http status code indicates success.
         /// </summary>
-        static bool IsSuccessStatusCode(int statusCode) => statusCode is >= 200 and <= 299;
+        private static bool IsSuccessStatusCode(int statusCode) => statusCode is >= 200 and <= 299;
     }
 }

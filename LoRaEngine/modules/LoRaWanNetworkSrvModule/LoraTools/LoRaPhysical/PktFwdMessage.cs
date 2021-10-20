@@ -15,7 +15,7 @@ namespace LoRaTools.LoRaPhysical
         [JsonIgnore]
         public abstract PktFwdMessageAdapter PktFwdMessageAdapter { get; }
 
-        enum PktFwdType
+        private enum PktFwdType
         {
             Downlink,
             Uplink

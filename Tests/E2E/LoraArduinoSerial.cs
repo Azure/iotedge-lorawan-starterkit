@@ -31,8 +31,6 @@
   THE SOFTWARE.1  USA
 */
 
-#pragma warning disable SA1300 // Elements should begin with an uppercase letter
-#pragma warning disable SA1313 // Parameters should begin with a lowercase letter
 #pragma warning disable CA1008 // Enums should have zero value
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable CA1822 // Mark members as static
@@ -48,7 +46,7 @@ namespace LoRaWan.Tests.E2E
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
 
     /// <summary>
     /// Arduino driver for the LoRaWAN device.
@@ -137,9 +135,9 @@ namespace LoRaWan.Tests.E2E
             DR15
         }
 
-        readonly byte[] serialPortBuffer;
+        private readonly byte[] serialPortBuffer;
 
-        LoRaArduinoSerial(SerialPort sp)
+        private LoRaArduinoSerial(SerialPort sp)
         {
             this.serialPort = sp;
             this.serialPortBuffer = new byte[this.serialPort.ReadBufferSize];
@@ -162,7 +160,7 @@ namespace LoRaWan.Tests.E2E
             }
         }
 
-        void OnSerialDataReceived(string rawData)
+        private void OnSerialDataReceived(string rawData)
         {
             try
             {
@@ -196,10 +194,10 @@ namespace LoRaWan.Tests.E2E
             }
         }
 
-        readonly ConcurrentQueue<string> serialLogs = new ConcurrentQueue<string>();
-        string buff = string.Empty;
+        private readonly ConcurrentQueue<string> serialLogs = new ConcurrentQueue<string>();
+        private string buff = string.Empty;
 
-        void AppendSerialLog(string message)
+        private void AppendSerialLog(string message)
         {
             TestLogger.Log($"[SERIAL] {message}");
             this.serialLogs.Enqueue(message);
@@ -982,7 +980,7 @@ namespace LoRaWan.Tests.E2E
             await EnsureSerialAnswerAsync("+FDEFAULT:", 10);
         }
 
-        short getBatteryVoltage()
+        private short getBatteryVoltage()
         {
             short battery = 0;
 
@@ -1018,7 +1016,7 @@ namespace LoRaWan.Tests.E2E
             GC.SuppressFinalize(this);
         }
 
-        async Task EnsureSerialAnswerAsync(string expectedSerialStartText, int retries = 10, [CallerMemberName] string memberName = "")
+        private async Task EnsureSerialAnswerAsync(string expectedSerialStartText, int retries = 10, [CallerMemberName] string memberName = "")
         {
             for (var i = 0; i < retries; i++)
             {

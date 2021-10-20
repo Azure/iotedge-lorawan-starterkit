@@ -9,7 +9,7 @@ namespace LoRaWan.Tests.Integration
     using System.Text;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Moq;

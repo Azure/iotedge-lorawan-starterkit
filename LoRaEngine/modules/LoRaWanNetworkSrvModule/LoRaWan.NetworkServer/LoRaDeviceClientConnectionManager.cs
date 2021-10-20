@@ -37,8 +37,8 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        readonly IMemoryCache cache;
-        readonly ConcurrentDictionary<string, ManagedConnection> managedConnections = new ConcurrentDictionary<string, ManagedConnection>();
+        private readonly IMemoryCache cache;
+        private readonly ConcurrentDictionary<string, ManagedConnection> managedConnections = new ConcurrentDictionary<string, ManagedConnection>();
 
         public LoRaDeviceClientConnectionManager(IMemoryCache cache)
         {
@@ -86,7 +86,7 @@ namespace LoRaWan.NetworkServer
                     });
         }
 
-        void OnScheduledDisconnect(object key, object value, EvictionReason reason, object state)
+        private void OnScheduledDisconnect(object key, object value, EvictionReason reason, object state)
         {
             var managedConnection = (ManagedConnection)value;
 

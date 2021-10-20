@@ -8,7 +8,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using System.Threading.Tasks;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     /// </summary>
     public class LoRaDeviceTest
     {
-        readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
+        private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
 
         public LoRaDeviceTest()
         {

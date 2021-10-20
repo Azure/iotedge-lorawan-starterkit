@@ -8,7 +8,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
     using LoraKeysManagerFacade;
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Moq;
     using Xunit;
 

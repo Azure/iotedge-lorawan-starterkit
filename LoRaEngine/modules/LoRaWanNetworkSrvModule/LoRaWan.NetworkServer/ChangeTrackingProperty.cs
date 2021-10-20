@@ -12,8 +12,8 @@ namespace LoRaWan.NetworkServer
     /// <typeparam name="T">The underlying type that we keep track of. Must implement <see cref="IEqualityComparer{T}"/>.</typeparam>
     public sealed class ChangeTrackingProperty<T> : IChangeTrackingProperty
     {
-        T current;
-        T original;
+        private T current;
+        private T original;
 
         public ChangeTrackingProperty(string propertyName)
         {

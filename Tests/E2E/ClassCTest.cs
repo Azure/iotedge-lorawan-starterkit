@@ -6,7 +6,7 @@ namespace LoRaWan.Tests.E2E
     using System;
     using System.Threading.Tasks;
     using LoRaTools.CommonAPI;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Newtonsoft.Json;
     using Xunit;
 

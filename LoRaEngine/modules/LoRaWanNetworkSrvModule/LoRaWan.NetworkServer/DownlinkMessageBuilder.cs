@@ -316,7 +316,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Prepare the Mac Commands to be sent in the downstream message.
         /// </summary>
-        static ICollection<MacCommand> PrepareMacCommandAnswer(
+        private static ICollection<MacCommand> PrepareMacCommandAnswer(
             string devEUI,
             IEnumerable<MacCommand> requestedMacCommands,
             IEnumerable<MacCommand> serverMacCommands,

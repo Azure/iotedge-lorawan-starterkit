@@ -11,7 +11,7 @@ namespace LoRaWan
     /// </summary>
     public readonly struct Hertz : IEquatable<Hertz>
     {
-        readonly ulong value;
+        private readonly ulong value;
 
         public Hertz(ulong value) => this.value = value;
 

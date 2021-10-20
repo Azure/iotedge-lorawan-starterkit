@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tests.Shared", "Tests\Shared\LoRaWan.Tests.Shared.csproj", "{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tests.Common", "Tests\Common\LoRaWan.Tests.Common.csproj", "{0A3CCF9E-46E8-4901-8C9A-BCFC0EBD213B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoRaWan.Tests.Unit", "Tests\Unit\LoRaWan.Tests.Unit.csproj", "{D4595D27-2318-4C8F-AD64-D42C6CD70626}"
 EndProject

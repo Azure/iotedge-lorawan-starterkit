@@ -15,7 +15,7 @@ namespace LoRaWan.NetworkServer
     /// - Prevents querying the registry and loading twins multiple times
     /// - Ensure that requests are queued by <see cref="LoRaDevice"/> in the order they come.
     /// </summary>
-    class DeviceLoaderSynchronizer : ILoRaDeviceRequestQueue
+    internal class DeviceLoaderSynchronizer : ILoRaDeviceRequestQueue
     {
         internal enum LoaderState
         {
@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer
                                                                    TaskScheduler.Default));
         }
 
-        async Task Load()
+        private async Task Load()
         {
             try
             {
@@ -299,7 +299,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        void SetState(LoaderState newState)
+        private void SetState(LoaderState newState)
         {
             if (this.state != newState)
             {

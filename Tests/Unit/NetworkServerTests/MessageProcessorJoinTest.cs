@@ -9,7 +9,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
@@ -128,7 +128,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             return array;
         }
 
-        static Memory<byte> ByteArray(string value) => ConversionHelper.StringToByteArray(value);
+        private static Memory<byte> ByteArray(string value) => ConversionHelper.StringToByteArray(value);
 
         [Fact]
         public async Task When_Api_Takes_Too_Long_Should_Return_Null()
