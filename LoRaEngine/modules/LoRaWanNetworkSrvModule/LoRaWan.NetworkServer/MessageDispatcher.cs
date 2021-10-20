@@ -85,7 +85,7 @@ namespace LoRaWan.NetworkServer
 
         private void DispatchLoRaJoinRequest(LoggingLoRaRequest request) => this.joinRequestHandler.DispatchRequest(request);
 
-        void DispatchLoRaDataMessage(LoRaRequest request)
+        private void DispatchLoRaDataMessage(LoRaRequest request)
         {
             var loRaPayload = (LoRaPayloadData)request.Payload;
             if (!IsValidNetId(loRaPayload))
@@ -98,7 +98,7 @@ namespace LoRaWan.NetworkServer
             this.deviceRegistry.GetLoRaRequestQueue(request).Queue(request);
         }
 
-        bool IsValidNetId(LoRaPayloadData loRaPayload)
+        private bool IsValidNetId(LoRaPayloadData loRaPayload)
         {
             // Check if the current dev addr is in our network id
             var devAddrNwkid = loRaPayload.DevAddrNetID;

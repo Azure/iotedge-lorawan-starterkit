@@ -44,7 +44,7 @@ namespace LoRaWan.NetworkServer
         // Gets start time
         public DateTimeOffset Start { get; }
 
-        readonly Region loraRegion;
+        private readonly Region loraRegion;
 
         public LoRaOperationTimeWatcher(Region loraRegion)
             : this(loraRegion, DateTimeOffset.UtcNow)
@@ -84,7 +84,7 @@ namespace LoRaWan.NetworkServer
             return loRaDevice.ReceiveDelay1 ?? (int)this.loraRegion.ReceiveDelay1;
         }
 
-        bool InTimeForReceiveFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow1Delay(loRaDevice);
+        private bool InTimeForReceiveFirstWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow1Delay(loRaDevice);
 
         /// <summary>
         /// Gets the receive window 2 (RX2) delay in seconds
@@ -97,7 +97,7 @@ namespace LoRaWan.NetworkServer
             return loRaDevice.ReceiveDelay2 ?? (int)this.loraRegion.ReceiveDelay2;
         }
 
-        bool InTimeForReceiveSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow2Delay(loRaDevice);
+        private bool InTimeForReceiveSecondWindow(LoRaDevice loRaDevice, TimeSpan elapsed) => elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= GetReceiveWindow2Delay(loRaDevice);
 
         /// <summary>
         /// Calculate if there is still time to send join accept response.
@@ -158,12 +158,12 @@ namespace LoRaWan.NetworkServer
             return Constants.InvalidReceiveWindow;
         }
 
-        bool InTimeForJoinAcceptFirstWindow(TimeSpan elapsed)
+        private bool InTimeForJoinAcceptFirstWindow(TimeSpan elapsed)
         {
             return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay1;
         }
 
-        bool InTimeForJoinAcceptSecondWindow(TimeSpan elapsed)
+        private bool InTimeForJoinAcceptSecondWindow(TimeSpan elapsed)
         {
             return elapsed.Add(ExpectedTimeToPackageAndSendMessage).TotalSeconds <= this.loraRegion.JoinAcceptDelay2;
         }

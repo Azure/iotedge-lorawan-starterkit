@@ -10,7 +10,7 @@ namespace XunitRetryHelper
 
     public class RetryTheoryTestDiscoverer : IXunitTestCaseDiscoverer
     {
-        readonly IMessageSink diagnosticMessageSink;
+        private readonly IMessageSink diagnosticMessageSink;
 
         public RetryTheoryTestDiscoverer(IMessageSink diagnosticMessageSink)
         {

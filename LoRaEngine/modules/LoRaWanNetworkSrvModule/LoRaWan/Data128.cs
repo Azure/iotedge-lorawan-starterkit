@@ -9,12 +9,11 @@ namespace LoRaWan
     /// <summary>
     /// Represents byte data of 128 bits as a single unit.
     /// </summary>
-    readonly struct Data128 : IEquatable<Data128>
+    internal readonly struct Data128 : IEquatable<Data128>
     {
         public const int Size = sizeof(ulong) * 2;
-
-        readonly ulong lo;
-        readonly ulong hi;
+        private readonly ulong lo;
+        private readonly ulong hi;
 
         public Data128(ulong hi, ulong lo) => (this.hi, this.lo) = (hi, lo);
 

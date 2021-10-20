@@ -266,7 +266,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceApi.VerifyAll();
         }
 
-        async Task<List<WaitableLoRaRequest>> SendMessages(SimulatedDevice device, MessageDispatcher dispatcher, uint payloadInitialFcnt, int delayBetweenMessages = 1000, int messagePerDeviceCount = 5)
+        private async Task<List<WaitableLoRaRequest>> SendMessages(SimulatedDevice device, MessageDispatcher dispatcher, uint payloadInitialFcnt, int delayBetweenMessages = 1000, int messagePerDeviceCount = 5)
         {
             var requests = new List<WaitableLoRaRequest>();
             for (uint i = 0; i < messagePerDeviceCount; ++i)

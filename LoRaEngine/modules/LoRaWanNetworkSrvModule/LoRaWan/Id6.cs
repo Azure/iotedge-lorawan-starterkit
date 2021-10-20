@@ -32,7 +32,7 @@ namespace LoRaWan
             FixedWidth = 2,
         }
 
-        enum FormatterState
+        private enum FormatterState
         {
             Init,
             Word,
@@ -120,10 +120,10 @@ namespace LoRaWan
             return output[..i];
         }
 
-        struct WordAccumulator
+        private struct WordAccumulator
         {
-            byte digits;
-            ushort value;
+            private byte digits;
+            private ushort value;
 
             public static implicit operator ushort(WordAccumulator acc) => acc.value;
 
@@ -147,7 +147,7 @@ namespace LoRaWan
             }
         }
 
-        enum ParserState
+        private enum ParserState
         {
             BeforeColonColon,
             ColonBeforeColonColon,

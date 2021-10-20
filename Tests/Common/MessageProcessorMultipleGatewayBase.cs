@@ -17,7 +17,7 @@ namespace LoRaWan.Tests.Common
 
     public class MessageProcessorMultipleGatewayBase : MessageProcessorTestBase
     {
-        const string SecondServerGatewayID = "second-gateway";
+        private const string SecondServerGatewayID = "second-gateway";
 
         private readonly MemoryCache cache;
 

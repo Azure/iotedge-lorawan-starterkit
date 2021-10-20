@@ -7,7 +7,7 @@ namespace LoRaWan.Tests.Integration
     using System;
     using System.Threading.Tasks;
 
-    static class LockDevAddrHelper
+    internal static class LockDevAddrHelper
     {
         private const string FullUpdateKey = "fullUpdateKey";
         private const string GlobalDevAddrUpdateKey = "globalUpdateKey";

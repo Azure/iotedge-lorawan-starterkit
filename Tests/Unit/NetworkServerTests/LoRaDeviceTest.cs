@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     /// </summary>
     public class LoRaDeviceTest
     {
-        readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
+        private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
 
         public LoRaDeviceTest()
         {

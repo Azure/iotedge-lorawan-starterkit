@@ -3,7 +3,7 @@
 
 namespace LoRaWan.Tests.Common
 {
-    class FindTimeResult
+    internal class FindTimeResult
     {
         public bool Success { get; set; }
 

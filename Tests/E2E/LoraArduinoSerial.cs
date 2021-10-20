@@ -135,9 +135,9 @@ namespace LoRaWan.Tests.E2E
             DR15
         }
 
-        readonly byte[] serialPortBuffer;
+        private readonly byte[] serialPortBuffer;
 
-        LoRaArduinoSerial(SerialPort sp)
+        private LoRaArduinoSerial(SerialPort sp)
         {
             this.serialPort = sp;
             this.serialPortBuffer = new byte[this.serialPort.ReadBufferSize];
@@ -160,7 +160,7 @@ namespace LoRaWan.Tests.E2E
             }
         }
 
-        void OnSerialDataReceived(string rawData)
+        private void OnSerialDataReceived(string rawData)
         {
             try
             {
@@ -194,10 +194,10 @@ namespace LoRaWan.Tests.E2E
             }
         }
 
-        readonly ConcurrentQueue<string> serialLogs = new ConcurrentQueue<string>();
-        string buff = string.Empty;
+        private readonly ConcurrentQueue<string> serialLogs = new ConcurrentQueue<string>();
+        private string buff = string.Empty;
 
-        void AppendSerialLog(string message)
+        private void AppendSerialLog(string message)
         {
             TestLogger.Log($"[SERIAL] {message}");
             this.serialLogs.Enqueue(message);
@@ -980,7 +980,7 @@ namespace LoRaWan.Tests.E2E
             await EnsureSerialAnswerAsync("+FDEFAULT:", 10);
         }
 
-        short getBatteryVoltage()
+        private short getBatteryVoltage()
         {
             short battery = 0;
 
@@ -1016,7 +1016,7 @@ namespace LoRaWan.Tests.E2E
             GC.SuppressFinalize(this);
         }
 
-        async Task EnsureSerialAnswerAsync(string expectedSerialStartText, int retries = 10, [CallerMemberName] string memberName = "")
+        private async Task EnsureSerialAnswerAsync(string expectedSerialStartText, int retries = 10, [CallerMemberName] string memberName = "")
         {
             for (var i = 0; i < retries; i++)
             {

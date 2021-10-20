@@ -10,7 +10,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
 #pragma warning disable CA1812 // Unused class
     // Used as Theory Data
-    class ADRTestData : TheoryData<string, string, List<LoRaADRTableEntry>, Rxpk, LoRaADRResult>
+    internal class ADRTestData : TheoryData<string, string, List<LoRaADRTableEntry>, Rxpk, LoRaADRResult>
 #pragma warning restore CA1812 // Unused class
     {
         public ADRTestData()

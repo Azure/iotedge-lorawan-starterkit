@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"*** UDP Log Listener created: {ip}:{port} ***");
         }
 
-        void OnMessageReceived(string msg)
+        private void OnMessageReceived(string msg)
         {
             this.events.Enqueue(msg);
 

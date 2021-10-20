@@ -15,8 +15,7 @@ namespace LoRaWan
     public readonly struct Mic : IEquatable<Mic>
     {
         public const int Size = sizeof(uint);
-
-        readonly uint value;
+        private readonly uint value;
 
         public Mic(uint value) => this.value = value;
 

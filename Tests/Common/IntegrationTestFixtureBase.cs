@@ -25,16 +25,15 @@ namespace LoRaWan.Tests.Common
         private const int C2dExpiryTime = 5;
 
         public const string MESSAGE_IDENTIFIER_PROPERTY_NAME = "messageIdentifier";
-
-        RegistryManager registryManager;
+        private RegistryManager registryManager;
         private UdpLogListener udpLogListener;
 
         public TestConfiguration Configuration { get; }
 
         public EventHubDataCollector IoTHubMessages { get; private set; }
 
-        readonly Lazy<ServiceClient> serviceClient;
-        Microsoft.Azure.Devices.Client.ModuleClient moduleClient;
+        private readonly Lazy<ServiceClient> serviceClient;
+        private Microsoft.Azure.Devices.Client.ModuleClient moduleClient;
 
         protected IntegrationTestFixtureBase()
         {
@@ -54,7 +53,7 @@ namespace LoRaWan.Tests.Common
         }
 
         // Helper method to return all devices
-        IEnumerable<TestDeviceInfo> GetAllDevices()
+        private IEnumerable<TestDeviceInfo> GetAllDevices()
         {
             var types = GetType();
             foreach (var prop in types.GetProperties())
@@ -84,7 +83,7 @@ namespace LoRaWan.Tests.Common
 
         public Task DisposeAsync() => Task.FromResult(0);
 
-        RegistryManager GetRegistryManager()
+        private RegistryManager GetRegistryManager()
         {
             return this.registryManager ??= RegistryManager.CreateFromConnectionString(Configuration.IoTHubConnectionString);
         }
@@ -157,7 +156,7 @@ namespace LoRaWan.Tests.Common
             await SendCloudToDeviceMessageAsync(deviceId, msg);
         }
 
-        ServiceClient GetServiceClient() => this.serviceClient.Value;
+        private ServiceClient GetServiceClient() => this.serviceClient.Value;
 
         public async Task SendCloudToDeviceMessageAsync(string deviceId, Message message)
         {

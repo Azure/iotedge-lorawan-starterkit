@@ -52,7 +52,7 @@ namespace LoRaWan.Tests.Common
             TestLogger.Log($"*** Simulated Packed Forwarder created: {ip}:{port} ***");
         }
 
-        string CreateMessagePacket(byte[] data)
+        private string CreateMessagePacket(byte[] data)
         {
             Rxpk.Data = Convert.ToBase64String(data);
             Rxpk.Size = (uint)data.Length;
@@ -78,7 +78,7 @@ namespace LoRaWan.Tests.Common
         private Task pullDataTask;
         private Task listenerTask;
 
-        static byte[] GetRandomToken()
+        private static byte[] GetRandomToken()
         {
             // random is not thread safe
             var token = new byte[2];
@@ -94,7 +94,7 @@ namespace LoRaWan.Tests.Common
             this.listenerTask = Task.Run(async () => await ListenAsync(this.cancellationTokenSource.Token));
         }
 
-        async Task ListenAsync(CancellationToken cts)
+        private async Task ListenAsync(CancellationToken cts)
         {
             try
             {
@@ -140,14 +140,14 @@ namespace LoRaWan.Tests.Common
             }
         }
 
-        readonly HashSet<Func<byte[], bool>> subscribers = new HashSet<Func<byte[], bool>>();
+        private readonly HashSet<Func<byte[], bool>> subscribers = new HashSet<Func<byte[], bool>>();
 
         internal void SubscribeOnce(Func<byte[], bool> value)
         {
             this.subscribers.Add(value);
         }
 
-        async Task PullDataAsync(CancellationToken cts)
+        private async Task PullDataAsync(CancellationToken cts)
         {
             try
             {
@@ -168,7 +168,7 @@ namespace LoRaWan.Tests.Common
             }
         }
 
-        async Task PushDataAsync(CancellationToken cts)
+        private async Task PushDataAsync(CancellationToken cts)
         {
             try
             {

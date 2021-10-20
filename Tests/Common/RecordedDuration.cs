@@ -8,11 +8,11 @@ namespace LoRaWan.Tests.Common
 
     public class RecordedDuration
     {
-        int Duration { get; set; }
+        private int Duration { get; set; }
 
-        IReadOnlyList<int> Sequence { get; set; }
+        private IReadOnlyList<int> Sequence { get; set; }
 
-        int sequenceIndex;
+        private int sequenceIndex;
 
         public RecordedDuration(int duration)
         {

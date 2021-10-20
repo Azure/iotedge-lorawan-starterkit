@@ -14,8 +14,7 @@ namespace LoRaWan
     public readonly struct MacHeader : IEquatable<MacHeader>
     {
         public const int Size = sizeof(byte);
-
-        readonly byte value;
+        private readonly byte value;
 
         public MacHeader(byte value) => this.value = value;
 
