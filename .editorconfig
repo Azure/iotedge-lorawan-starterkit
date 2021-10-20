@@ -85,9 +85,6 @@ dotnet_diagnostic.IDE0055.severity=suggestion
 # IDE0052: Unused private member
 dotnet_diagnostic.IDE0052.severity=suggestion
 
-# xUnit1004: Do not skip tests
-dotnet_diagnostic.xUnit1004.severity=suggestion
-
 # This or Me qualifier
 dotnet_style_qualification_for_field=true
 dotnet_style_qualification_for_property=false

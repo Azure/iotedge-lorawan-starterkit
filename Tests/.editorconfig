@@ -17,3 +17,6 @@ dotnet_diagnostic.CA5399.severity = none
 
 # CA1062: Validate arguments of public methods
 dotnet_diagnostic.CA1062.severity = suggestion
+
+# xUnit1004: Do not skip tests
+dotnet_diagnostic.xUnit1004.severity=suggestion
