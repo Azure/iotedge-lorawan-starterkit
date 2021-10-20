@@ -31,8 +31,6 @@
   THE SOFTWARE.1  USA
 */
 
-#pragma warning disable SA1300 // Elements should begin with an uppercase letter
-#pragma warning disable SA1313 // Parameters should begin with a lowercase letter
 #pragma warning disable CA1008 // Enums should have zero value
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable CA1822 // Mark members as static

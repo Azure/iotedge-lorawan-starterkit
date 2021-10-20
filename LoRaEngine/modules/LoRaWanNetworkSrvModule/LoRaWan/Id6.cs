@@ -168,9 +168,7 @@ namespace LoRaWan
 
             var si = 0;
             var cci = -1;
-#pragma warning disable SA1129 // Do not use default value type constructor
             var wa = new WordAccumulator();
-#pragma warning restore SA1129 // Do not use default value type constructor
 
             for (; !chars.IsEmpty; chars = chars[1..])
             {
