@@ -154,6 +154,10 @@ namespace LoRaWan.NetworkServer
                     {
                         updatedProperties.CN470JoinChannel = channelIndex;
                     }
+                    else
+                    {
+                        Logger.Log(loRaDevice.DevEUI, $"failed to retrieve the join channel index for device", LogLevel.Error);
+                    }
                 }
 
                 var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties);
