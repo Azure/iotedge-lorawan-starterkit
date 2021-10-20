@@ -3,10 +3,10 @@
 
 namespace LoRaTools.Regions
 {
-    using LoRaTools.LoRaPhysical;
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using LoRaTools.LoRaPhysical;
 
     public class RegionCN470 : Region
     {
@@ -54,7 +54,7 @@ namespace LoRaTools.Regions
                 new int[] { 7, 6, 5, 4, 3, 2 },
             };
 
-            var validDataranges = new HashSet<string>()
+            var validDatarates = new HashSet<string>()
             {
                 "SF12BW125", // 0
                 "SF11BW125", // 1
@@ -67,7 +67,7 @@ namespace LoRaTools.Regions
             };
 
             MaxADRDataRate = 7; // needs to be clarified
-            RegionLimits = new RegionLimits((min: 470.3, max: 509.7), validDataranges, validDataranges, 0, 0);
+            RegionLimits = new RegionLimits((min: 470.3, max: 509.7), validDatarates, validDatarates, 0, 0);
 
             this.DownstreamFrequenciesByPlanType = new List<List<double>>
             {
@@ -92,16 +92,8 @@ namespace LoRaTools.Regions
         {
             if (joinChannel is null) throw new ArgumentNullException(nameof(joinChannel));
 
-            for (var index = 0; index < this.JoinFrequencies.Count; ++index)
-            {
-                if (this.JoinFrequencies[index] == joinChannel.Freq)
-                {
-                    channelIndex = index;
-                    return true;
-                }
-            }
-            channelIndex = -1;
-            return false;
+            channelIndex = this.JoinFrequencies.IndexOf(joinChannel.Freq);
+            return channelIndex != -1;
         }
 
         /// <summary>
@@ -109,7 +101,7 @@ namespace LoRaTools.Regions
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         /// <param name="joinChannelIndex">index of the join channel.</param>
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex = null)
+        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex)
         {
             frequency = 0;
 
