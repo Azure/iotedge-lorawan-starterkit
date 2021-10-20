@@ -130,8 +130,8 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
                     ""nodc"": true,
                     ""nodwell"": true}";
 
-            var actual = LnsData.WriteRouterConfig(new NetId[] { new NetId(1) },
-                                                   new (JoinEui, JoinEui)[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
+            var actual = LnsData.WriteRouterConfig(new[] { new NetId(1) },
+                                                   new[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
                                                    "EU863",
                                                    "sx1301/1",
                                                    (new Hertz(863000000), new Hertz(870000000)),
@@ -238,7 +238,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
                     ""nodc"": true,
                     ""nodwell"": true}";
 
-            var actual = LnsData.WriteRouterConfig(new NetId[] { new NetId(1) },
+            var actual = LnsData.WriteRouterConfig(new[] { new NetId(1) },
                                                    JoinEuiCount.HasValue ? Array.Empty<(JoinEui, JoinEui)>() : null,
                                                    "EU863",
                                                    "sx1301/1",
