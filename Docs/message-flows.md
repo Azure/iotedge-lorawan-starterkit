@@ -65,10 +65,10 @@ MessageDispatcher->>DeviceLoaderSynchronizer: Queue
 DeviceLoaderSynchronizer->>API: SearchByDevAddrAsync
 DeviceLoaderSynchronizer->>DeviceLoaderSynchronizer: CreateDevicesAsync
 loop For each Device
-	DeviceLoaderSynchronizer->>LoRaDeviceFactory: Create
-	LoRaDeviceFactory->>LoRaDeviceFactory: CreateDeviceClient
-	DeviceLoaderSynchronizer->>LoRaDevice: InitializeAsync
-	LoRaDevice->>LoRaDeviceClient: GetTwinAsync
+DeviceLoaderSynchronizer->>LoRaDeviceFactory: Create
+LoRaDeviceFactory->>LoRaDeviceFactory: CreateDeviceClient
+DeviceLoaderSynchronizer->>LoRaDevice: InitializeAsync
+LoRaDevice->>LoRaDeviceClient: GetTwinAsync
 end
 
 DeviceLoaderSynchronizer->>DeviceLoaderSynchronizer: DispatchQueuedItems
@@ -79,15 +79,15 @@ LoRaDevice->>DefaultLoRaDataRequestHandler: ProcessRequestAsync
 1. The message dispatcher requests the `ILoRaDeviceRequestQueue` from the `LoRaDeviceRegistry` where the `LoRaRequest` can be sent to. The `LoRaDeviceRegistry` maintains an in memory cache per `DevAddr` and checks, if it has a cache and if it contains a valid device matching the `NwkSKey`.  If it does not, the `LoRaDeviceRegistry` initializes a `DeviceLoaderSynchronizer` as `ILoRaDeviceRequestQueue`, and adds it to its cache under the prefix `devloader`.
 2. The `DeviceLoaderSynchronizer` ctor does trigger an async initialization
 3. Load of the devices matching the `DevAddr` is triggered
-4. The `MessageDispatcher` receives the `DeviceLoaderSynchronizer` 
+4. The `MessageDispatcher` receives the `DeviceLoaderSynchronizer`
 5. The original `LoRaRequest` is put onto the queue where it will wait for the device to be loaded.
 6. The `SearchByDevAddrAsync`  is calling the function and tries to get a list for that particular `DevAddr` . The result is a list of `IoTHubDeviceInfo` which contains everything required to connect the device to IoT Hub as well as the `NwkSKey`.
 7. The `DeviceLoaderSynchronizer` iterates over the result and asks for each of the result item to be materialized into a `LoRaDevice`.
-8. The `LoRaDeviceFactory` creates a `LoRaDevice` from the `IoTHubDeviceInfo` 
+8. The `LoRaDeviceFactory` creates a `LoRaDevice` from the `IoTHubDeviceInfo`
 9. The `LoRaDeviceFactory` also maintains the connections per device to IoT Hub. It does that through the `LoRaDeviceClientConnectionManager` where `LoRaDeviceClient` are registered per `DevEUI`.
 10. Each device is initialized to get ready for processing messages
 11. The initialization is triggering the load of the twins through the `LoRaDeviceClient`
-12. Once the device is initialized, the messages for the device are dispatched 
+12. Once the device is initialized, the messages for the device are dispatched
 13. The dispatch is putting them on the `LoRaDevice` Queue
 14. The `LoRaDevice` will process the messages in sequence to avoid contention on the device connection and delegate the processing to the `ILoRaDataRequestHandler`.
 
@@ -102,9 +102,9 @@ sequenceDiagram
 autonumber
 MessageDispatcher->>LoRaDeviceRegistry: GetLoRaRequestQueue
 alt in cache but not our device
-	LoRaDeviceRegistry->>MessageDispatcher:ExternalGatewayLoRaRequestQueue:ctor
+LoRaDeviceRegistry->>MessageDispatcher:ExternalGatewayLoRaRequestQueue:ctor
 else
-	LoRaDeviceRegistry->>MessageDispatcher:cached LoRaDevice
+LoRaDeviceRegistry->>MessageDispatcher:cached LoRaDevice
 end
 MessageDispatcher->>LoRaDevice: Queue
 LoRaDevice->>DefaultLoRaDataRequestHandler: ProcessRequestAsync
@@ -128,15 +128,15 @@ JoinRequestMessageHandler->>LoRaDeviceRegistry: GetDeviceForJoinRequestAsync
 LoRaDeviceRegistry->>API: SearchAndLockForJoinAsync
 LoRaDeviceRegistry->>JoinDeviceLoader: ctor
 activate LoRaDevice
-	par 
-		JoinDeviceLoader->>JoinDeviceLoader:LoadAsync
-		JoinDeviceLoader->>ILoRaDeviceFactory: Create
-		ILoRaDeviceFactory-->>JoinDeviceLoader: LoRaDevice
-		JoinDeviceLoader->>LoRaDevice: InitializeAsync
-		LoRaDevice->>ILoRaDeviceClient: GetTwinAsync
-	and
-		LoRaDeviceRegistry->>JoinDeviceLoader: WaitCompleteAsync
-	end
+  par 
+   JoinDeviceLoader->>JoinDeviceLoader:LoadAsync
+   JoinDeviceLoader->>ILoRaDeviceFactory: Create
+   ILoRaDeviceFactory-->>JoinDeviceLoader: LoRaDevice
+   JoinDeviceLoader->>LoRaDevice: InitializeAsync
+   LoRaDevice->>ILoRaDeviceClient: GetTwinAsync
+  and
+   LoRaDeviceRegistry->>JoinDeviceLoader: WaitCompleteAsync
+  end
 JoinDeviceLoader-->>LoRaDeviceRegistry: LoRaDevice
 LoRaDeviceRegistry-->>JoinRequestMessageHandler: LoRaDevice
 JoinRequestMessageHandler-->>JoinRequestMessageHandler: Validation
@@ -206,17 +206,17 @@ end
 DeviceGetter->>Redis:StringSet
 Note over DeviceGetter,Redis: Only if it does not exist, valid: 5min
 alt if it did exist
-	DeviceGetter-->>LNS: JoinRefused
+   DeviceGetter-->>LNS: JoinRefused
 else
-	DeviceGetter->>DeviceCache: TryToAcquireLock
-	Note over DeviceGetter,DeviceCache: This tries to aquire a lock on the DevEUI
-		alt if lock acquired
-			DeviceGetter->>DeviceCache: KeyDelete
-			Note over DeviceGetter,DeviceCache: Delete DevEUI key from Redis
-		else
-			DeviceGetter->>DeviceGetter: log warning
-		end
-	DeviceGetter->>LNS: IoTHubDeviceInfo
+   DeviceGetter->>DeviceCache: TryToAcquireLock
+   Note over DeviceGetter,DeviceCache: This tries to aquire a lock on the DevEUI
+      alt if lock acquired
+        DeviceGetter->>DeviceCache: KeyDelete
+          Note over DeviceGetter,DeviceCache: Delete DevEUI key from Redis
+      else
+        DeviceGetter->>DeviceGetter: log warning
+      end
+    DeviceGetter->>LNS: IoTHubDeviceInfo
 end
 ```
 
