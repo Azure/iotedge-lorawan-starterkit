@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer
     using System.Collections.Generic;
     using System.Linq;
     using System.Security.Cryptography;
-    using System.Text;
     using LoRaTools;
     using LoRaTools.ADR;
     using LoRaTools.LoRaMessage;
@@ -83,8 +82,8 @@ namespace LoRaWan.NetworkServer
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the data rate in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
-
-                if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq))
+                // The logic for passing CN470 join channel will change as part of #561
+                if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq, loRaDevice.ReportedCN470JoinChannel ?? loRaDevice.DesiredCN470JoinChannel))
                 {
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the frequency in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);

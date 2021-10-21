@@ -6,7 +6,6 @@ namespace LoRaTools.Regions
     using System;
     using System.Collections.Generic;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Utils;
 
     public static class RegionManager
     {
@@ -32,6 +31,11 @@ namespace LoRaTools.Regions
                 case LoRaRegionType.US915:
                     region = US915;
                     return true;
+
+                case LoRaRegionType.CN470:
+                    region = CN470;
+                    return true;
+
                 case LoRaRegionType.NotSet:
                 default:
                     return false;
@@ -59,6 +63,11 @@ namespace LoRaTools.Regions
             else if (rxpk.Freq is <= 915 and >= 902)
             {
                 region = US915;
+                return true;
+            }
+            else if (rxpk.Freq is <= 510 and >= 470)
+            {
+                region = CN470;
                 return true;
             }
 
@@ -211,6 +220,30 @@ namespace LoRaTools.Regions
 
             us915.MaxADRDataRate = 3;
             us915.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), upstreamValidDataranges, downstreamValidDataranges, 0, 8);
+        }
+
+        private static Region cn470;
+
+        public static Region CN470
+        {
+            get
+            {
+                if (cn470 == null)
+                {
+                    lock (RegionLock)
+                    {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                        // False positive
+                        if (cn470 == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
+                        {
+                            cn470 = new RegionCN470();
+                        }
+                    }
+                }
+
+                return cn470;
+            }
         }
     }
 }

@@ -55,5 +55,17 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
         }
+
+        [Fact]
+        public void TestTranslateRegionType()
+        {
+            TestTranslateToRegion(LoRaRegionType.EU868);
+        }
+
+        [Fact]
+        public void TestResolveRegion()
+        {
+            TestTryResolveRegion("SF9BW125", 868.1);
+        }
     }
 }

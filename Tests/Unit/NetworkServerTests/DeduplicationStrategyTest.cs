@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             this.loRaDeviceApi.Setup(x => x.CheckDuplicateMsgAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<string>(), It.IsAny<uint>()))
                 .Returns(() =>
                 {
-                    return Task.FromResult<DeduplicationResult>(new DeduplicationResult
+                    return Task.FromResult(new DeduplicationResult
                     {
                         IsDuplicate = true
                     });
