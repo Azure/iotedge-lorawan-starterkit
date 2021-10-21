@@ -16,8 +16,6 @@ namespace LoRaTools.Regions
         public RegionUS915()
             : base(
                   LoRaRegionType.US915,
-                  0x34,
-                  null, // no GFSK in US Band
                   (frequency: 923.3, datr: 8),
                   1,
                   2,

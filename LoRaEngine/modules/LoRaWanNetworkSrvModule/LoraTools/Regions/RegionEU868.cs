@@ -4,7 +4,6 @@
 namespace LoRaTools.Regions
 {
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Utils;
     using System;
 
     public class RegionEU868 : Region
@@ -12,8 +11,6 @@ namespace LoRaTools.Regions
         public RegionEU868()
             : base(
                   LoRaRegionType.EU868,
-                  0x34,
-                  ConversionHelper.StringToByteArray("C194C1"),
                   (frequency: 869.525, datr: 0),
                   1,
                   2,
