@@ -3,16 +3,16 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
 {
-    using LoRaWan;
-    using LoRaWan.NetworkServer.BasicsStation;
-    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using System;
     using System.IO;
     using System.Text;
     using System.Text.Json;
+    using LoRaWan;
+    using LoRaWan.NetworkServer.BasicsStation;
+    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Xunit;
-    using static SpreadingFactor;
     using static Bandwidth;
+    using static SpreadingFactor;
 
     public class LnsDataTests
     {

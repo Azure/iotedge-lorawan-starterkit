@@ -3,12 +3,12 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
 {
-    using LoRaWan;
-    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
-    using Moq;
     using System;
     using System.Net.NetworkInformation;
     using System.Text.Json;
+    using LoRaWan;
+    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
+    using Moq;
     using Xunit;
 
     public class LnsDiscoveryTests
