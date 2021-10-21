@@ -118,7 +118,7 @@ jobs:
           ${{ env.TESTS_FOLDER }}/Integration/LoRaWan.Tests.Integration.csproj
 
     # Upload test results as artifact
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       if: success() || failure()
       with:
         name: test-results
