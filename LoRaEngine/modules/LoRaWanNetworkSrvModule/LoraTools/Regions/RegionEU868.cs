@@ -9,9 +9,8 @@ namespace LoRaTools.Regions
     public class RegionEU868 : Region
     {
         public RegionEU868()
-            : base(
-                  LoRaRegionType.EU868,
-                  (frequency: 869.525, datr: 0))
+            : base(LoRaRegionType.EU868,
+                   (frequency: 869.525, datr: 0))
         {
         }
 

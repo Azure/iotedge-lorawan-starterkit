@@ -14,9 +14,8 @@ namespace LoRaTools.Regions
         private static readonly double[] DownstreamChannelFrequencies = new double[] { 923.3, 923.9, 924.5, 925.1, 925.7, 926.3, 926.9, 927.5 };
 
         public RegionUS915()
-            : base(
-                  LoRaRegionType.US915,
-                  (frequency: 923.3, datr: 8))
+            : base(LoRaRegionType.US915,
+                   (frequency: 923.3, datr: 8))
         {
         }
 
