@@ -83,7 +83,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                                Uri uri,
                                                string error)
         {
-            if (!Id6.TryParse(muxs, out var _)) throw new ArgumentException("Argument should be a valid string in ID6 format.", nameof(muxs));
+            if (!Id6.TryParse(muxs, out _)) throw new ArgumentException("Argument should be a valid string in ID6 format.", nameof(muxs));
             if (uri is null) throw new ArgumentNullException(nameof(uri));
 
             using var ms = new MemoryStream();

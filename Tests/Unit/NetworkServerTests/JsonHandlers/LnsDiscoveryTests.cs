@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
         [InlineData(@"{}")]
         public void ReadQuery_Throws_OnMissingProperty(string json)
         {
-            Assert.Throws<JsonException>(() => LnsDiscovery.ReadQuery(json, out var _));
+            Assert.Throws<JsonException>(() => LnsDiscovery.ReadQuery(json, out _));
         }
 
         [Theory]
@@ -39,7 +39,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
         [InlineData(@"{ ""router"": true }")]
         public void ReadQuery_Throws_OnInvalidPropertyType(string json)
         {
-            Assert.Throws<NotSupportedException>(() => LnsDiscovery.ReadQuery(json, out var _));
+            Assert.Throws<NotSupportedException>(() => LnsDiscovery.ReadQuery(json, out _));
         }
 
         private const string ValidMuxs = "0000:00FF:FE00:0000";
