@@ -42,12 +42,12 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
             Assert.Throws<NotSupportedException>(() => LnsDiscovery.ReadQuery(json, out var _));
         }
 
-        private const string validMuxs = "0000:00FF:FE00:0000";
-        private const string validUriString = "ws://localhost:5000/router-data";
+        private const string ValidMuxs = "0000:00FF:FE00:0000";
+        private const string ValidUrlString = "ws://localhost:5000/router-data";
 
         [Theory]
-        [InlineData("b8-27-eb-ff-fe-e1-e3-9a", validMuxs, validUriString, "", @"{""router"":""b827:ebff:fee1:e39a"",""muxs"":""0000:00FF:FE00:0000"",""uri"":""ws://localhost:5000/router-data""}")]
-        [InlineData("b827:ebff:fee1:e39a", validMuxs, validUriString, "", @"{""router"":""b827:ebff:fee1:e39a"",""muxs"":""0000:00FF:FE00:0000"",""uri"":""ws://localhost:5000/router-data""}")]
+        [InlineData("b8-27-eb-ff-fe-e1-e3-9a", ValidMuxs, ValidUrlString, "", @"{""router"":""b827:ebff:fee1:e39a"",""muxs"":""0000:00FF:FE00:0000"",""uri"":""ws://localhost:5000/router-data""}")]
+        [InlineData("b827:ebff:fee1:e39a", ValidMuxs, ValidUrlString, "", @"{""router"":""b827:ebff:fee1:e39a"",""muxs"":""0000:00FF:FE00:0000"",""uri"":""ws://localhost:5000/router-data""}")]
         public void Serialize_Succeeds(string stationId6, string muxs, string routerDataEndpoint, string error, string expected)
         {
             var stationEui = stationId6.Contains(':', StringComparison.Ordinal)
@@ -66,7 +66,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
             _ = Id6.TryParse("b827:ebff:fee1:e39a", out var stationId6);
             var stationEui = new StationEui(stationId6);
 
-            Assert.Throws<ArgumentException>(() => LnsDiscovery.SerializeResponse(stationEui, muxs, new Uri(validUriString), string.Empty));
+            Assert.Throws<ArgumentException>(() => LnsDiscovery.SerializeResponse(stationEui, muxs, new Uri(ValidUrlString), string.Empty));
         }
 
         [Fact]
@@ -75,7 +75,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
             _ = Id6.TryParse("b827:ebff:fee1:e39a", out var stationId6);
             var stationEui = new StationEui(stationId6);
 
-            Assert.Throws<ArgumentNullException>(() => LnsDiscovery.SerializeResponse(stationEui, validMuxs, null, string.Empty));
+            Assert.Throws<ArgumentNullException>(() => LnsDiscovery.SerializeResponse(stationEui, ValidMuxs, null, string.Empty));
         }
 
         [Fact]
