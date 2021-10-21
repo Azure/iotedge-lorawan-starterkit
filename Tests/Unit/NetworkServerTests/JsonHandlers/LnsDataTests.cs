@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
     using LoRaWan;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
+    using NetworkServer;
     using Xunit;
     using static Bandwidth;
     using static SpreadingFactor;
@@ -27,7 +28,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         [InlineData(@"{ ""msgtype"": ""version"" }, ""onePropAfter"": { ""value"": 123 }", LnsMessageType.Version)]
         internal void ReadMessageType_Succeeds(string json, LnsMessageType expectedMessageType)
         {
-            var messageType = LnsData.ReadMessageType(json);
+            var messageType = Json.Read(json, LnsData.ReadMessageType);
             Assert.Equal(expectedMessageType, messageType);
         }
 
@@ -43,7 +44,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         [InlineData(@"{ ""msgtype"": ""NOTversion"" }, ""onePropAfter"": { ""value"": 123 }")]
         internal void ReadMessageType_Fails(string json)
         {
-            Assert.Throws<JsonException>(() => _ = LnsData.ReadMessageType(json));
+            Assert.Throws<JsonException>(() => _ = Json.Read(json, LnsData.ReadMessageType));
         }
 
         [Fact]

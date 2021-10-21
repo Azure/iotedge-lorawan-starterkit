@@ -74,7 +74,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
         internal async Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
         {
-            switch (LnsData.ReadMessageType(json))
+            var bytes = Encoding.UTF8.GetBytes(json);
+
+            switch (Json.Read(bytes, LnsData.ReadMessageType))
             {
                 case LnsMessageType.Version:
                     LnsData.ReadVersionMessage(json, out var stationVersion);

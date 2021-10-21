@@ -13,10 +13,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         /// This method returns as soon as it has the read the message type from the JSON object
         /// without validating the rest of the input.
         /// </remarks>
-        internal static LnsMessageType ReadMessageType(string input)
+        internal static LnsMessageType ReadMessageType(Utf8JsonReader reader)
         {
-            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(input));
-            _ = reader.Read();
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException();
             _ = reader.Read();
