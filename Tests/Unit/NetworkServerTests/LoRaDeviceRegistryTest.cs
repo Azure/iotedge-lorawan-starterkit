@@ -148,7 +148,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             loraDevice1.IsOurDevice = false;
 
             var existingCache = new DevEUIToLoRaDeviceDictionary();
-            this.cache.Set<DevEUIToLoRaDeviceDictionary>(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
+            this.cache.Set(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
             existingCache.TryAdd(loraDevice1.DevEUI, loraDevice1);
 
             var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
@@ -186,7 +186,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice2, null);
 
             var existingCache = new DevEUIToLoRaDeviceDictionary();
-            this.cache.Set<DevEUIToLoRaDeviceDictionary>(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
+            this.cache.Set(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
             existingCache.TryAdd(loraDevice1.DevEUI, loraDevice1);
             existingCache.TryAdd(loraDevice2.DevEUI, loraDevice2);
 

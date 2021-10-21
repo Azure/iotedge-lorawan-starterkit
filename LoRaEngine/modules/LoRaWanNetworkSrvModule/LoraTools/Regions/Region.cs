@@ -82,7 +82,7 @@ namespace LoRaTools.Regions
         /// Gets or sets timeout for ack transmissiont, tuple with (min,max). Value should be a delay between min and max. [sec, sec].
         /// If  an  end-­device  does  not  receive  a  frame  with  the  ACK  bit  set  in  one  of  the  two  receive  19   windows  immediately  following  the  uplink  transmission  it  may  resend  the  same  frame  with  20   the  same  payload  and  frame  counter  again  at  least  ACK_TIMEOUT  seconds  after  the  21   second  reception  window.
         /// </summary>
-        public (uint min, uint max) AckTimeout { get; set; }
+        public (uint min, uint max) RetransmitTimeout { get; set; }
 
         /// <summary>
         /// Gets or sets the limits on the region to ensure valid properties.
@@ -94,28 +94,37 @@ namespace LoRaTools.Regions
         /// </summary>
         public int MaxADRDataRate { get; set; }
 
-        protected Region(LoRaRegionType regionEnum, (double frequency, ushort datr) rx2DefaultReceiveWindows,
-                         uint receiveDelay1, uint receiveDelay2, uint joinAcceptDelay1, uint joinAcceptDelay2, int maxFcntGap, uint adrAckLimit,
-                         uint adrAdrDelay, (uint min, uint max) ackTimeout)
+        protected Region(LoRaRegionType regionEnum, (double frequency, ushort datr) rx2DefaultReceiveWindows)
         {
             LoRaRegion = regionEnum;
-            AckTimeout = ackTimeout;
+            RetransmitTimeout = (min: 1, max: 3);
 
             RX2DefaultReceiveWindows = rx2DefaultReceiveWindows;
-            ReceiveDelay1 = receiveDelay1;
-            ReceiveDelay2 = receiveDelay2;
-            JoinAcceptDelay1 = joinAcceptDelay1;
-            JoinAcceptDelay2 = joinAcceptDelay2;
-            MaxFcntGap = maxFcntGap;
-            AdrAckLimit = adrAckLimit;
-            AdrAdrDelay = adrAdrDelay;
+            ReceiveDelay1 = 1;
+            ReceiveDelay2 = 2;
+            JoinAcceptDelay1 = 5;
+            JoinAcceptDelay2 = 6;
+            MaxFcntGap = 16384;
+            AdrAckLimit = 64;
+            AdrAdrDelay = 32;
         }
 
         /// <summary>
         /// Implements logic to get the correct downstream transmission frequency for the given region based on the upstream channel frequency.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the upstream message was transmitted.</param>
-        public abstract bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency);
+        /// <param name="joinChannelIndex">index of the join channel, if applicable.</param>
+        public abstract bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex = null);
+
+        /// <summary>
+        /// Returns join channel index matching the frequency of the join request.
+        /// </summary>
+        /// <param name="joinChannel">Channel on which the join request was received.</param>
+        public virtual bool TryGetJoinChannelIndex(Rxpk joinChannel, out int channelIndex)
+        {
+            channelIndex = -1;
+            return false;
+        }
 
         /// <summary>
         /// Get the downstream RX2 frequency.
@@ -190,9 +199,9 @@ namespace LoRaTools.Regions
             if (IsValidUpstreamRxpk(upstreamChannel))
             {
                 // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
-                if (rx1DrOffset <= this.RX1DROffsetTable[0].Count - 1)
+                if (rx1DrOffset <= RX1DROffsetTable[0].Count - 1)
                 {
-                    return this.DRtoConfiguration[(ushort)RX1DROffsetTable[GetDRFromFreqAndChan(upstreamChannel.Datr)][rx1DrOffset]].configuration;
+                    return DRtoConfiguration[(ushort)RX1DROffsetTable[GetDRFromFreqAndChan(upstreamChannel.Datr)][rx1DrOffset]].configuration;
                 }
                 else
                 {

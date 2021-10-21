@@ -118,7 +118,7 @@ namespace LoRaWan.NetworkServer
         private ChangeTrackingProperty<LoRaRegionType> region = new ChangeTrackingProperty<LoRaRegionType>(TwinProperty.Region, LoRaRegionType.NotSet);
 
         /// <summary>
-        /// Gets or sets the <see cref="LoRaTools.Regions.LoRaRegionType"/> of the device
+        /// Gets or sets the <see cref="LoRaRegionType"/> of the device
         /// Relevant only for <see cref="LoRaDeviceClassType.C"/>.
         /// </summary>
         public LoRaRegionType LoRaRegion
@@ -126,6 +126,18 @@ namespace LoRaWan.NetworkServer
             get => this.region.Get();
             set => this.region.Set(value);
         }
+
+        /// <summary>
+        /// Gets or sets the join channel for the device based on reported properties.
+        /// Relevant only for region CN470.
+        /// </summary>
+        public int? ReportedCN470JoinChannel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the join channel for the device based on desired properties.
+        /// Relevant only for region CN470.
+        /// </summary>
+        public int? DesiredCN470JoinChannel { get; set; }
 
         private ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
 
@@ -370,6 +382,17 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
+                    //  We are prioritizing the choice of the join channel from reported properties (set for OTAA devices)
+                    //  over the manually provisioned channel (set in desired properties for ABP devices).
+                    if (twin.Properties.Reported.Contains(TwinProperty.CN470JoinChannel))
+                    {
+                        ReportedCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.CN470JoinChannel].Value);
+                    }
+                    else if (twin.Properties.Desired.Contains(TwinProperty.CN470JoinChannel))
+                    {
+                        DesiredCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.CN470JoinChannel].Value);
+                    }
+
                     if (twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt))
                     {
                         Supports32BitFCnt = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.Supports32BitFCnt].Value);
@@ -492,7 +515,7 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                return System.Convert.ToInt32(value);
+                return Convert.ToInt32(value);
             }
             catch(FormatException)
             {
@@ -521,7 +544,7 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                return System.Convert.ToUInt32(value);
+                return Convert.ToUInt32(value);
             }
             catch (OverflowException)
             {
@@ -841,6 +864,8 @@ namespace LoRaWan.NetworkServer
                 }
             }
 
+            reportedProperties[TwinProperty.CN470JoinChannel] = updateProperties.CN470JoinChannel;
+
             if (RegionManager.TryTranslateToRegion(updateProperties.Region, out var currentRegion))
             {
                 // Additional Join Property Saved
@@ -1028,7 +1053,7 @@ namespace LoRaWan.NetworkServer
                 serverValue = IncrementUpper16bit(serverValue);
             }
 
-            return LoRaPayloadData.InferUpper32BitsForClientFcnt(payload.GetFcnt(), serverValue);
+            return LoRaPayload.InferUpper32BitsForClientFcnt(payload.GetFcnt(), serverValue);
         }
 
         internal bool CanRolloverToNext16Bits(ushort payloadFcntUp)

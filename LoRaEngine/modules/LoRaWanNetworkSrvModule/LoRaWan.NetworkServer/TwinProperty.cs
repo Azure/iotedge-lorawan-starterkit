@@ -45,5 +45,10 @@ namespace LoRaWan.NetworkServer
         /// Defines the connection keep alive timeout.
         /// </summary>
         public const string KeepAliveTimeout = "KeepAliveTimeout";
+
+        /// <summary>
+        /// Defines the join channel index; applicable to CN470 region.
+        /// </summary>
+        public const string CN470JoinChannel = "CN470JoinChannel";
     }
 }
