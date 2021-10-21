@@ -6,7 +6,6 @@ namespace LoRaTools.Regions
     using System;
     using System.Collections.Generic;
     using LoRaTools.LoRaPhysical;
-    using LoRaTools.Utils;
 
     public static class RegionManager
     {

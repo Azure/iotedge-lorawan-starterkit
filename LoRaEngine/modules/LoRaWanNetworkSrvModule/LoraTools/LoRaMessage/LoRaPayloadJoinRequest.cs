@@ -8,7 +8,6 @@ namespace LoRaTools.LoRaMessage
     using System.Linq;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
-    using Org.BouncyCastle.Crypto;
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;
 
