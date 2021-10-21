@@ -16,10 +16,6 @@ namespace LoRaTools.Regions
 
         public LoRaRegionType LoRaRegion { get; set; }
 
-        public byte LoRaSyncWord { get; private set; }
-
-        public IReadOnlyList<byte> GFSKSyncWord { get; private set; }
-
         /// <summary>
         /// Gets or sets datarate to configuration and max payload size (M)
         /// max application payload size N should be N= M-8 bytes.
@@ -98,13 +94,10 @@ namespace LoRaTools.Regions
         /// </summary>
         public int MaxADRDataRate { get; set; }
 
-        protected Region(LoRaRegionType regionEnum, byte loRaSyncWord, byte[] gFSKSyncWord, (double frequency, ushort datr) rx2DefaultReceiveWindows)
+        protected Region(LoRaRegionType regionEnum, (double frequency, ushort datr) rx2DefaultReceiveWindows)
         {
             LoRaRegion = regionEnum;
             RetransmitTimeout = (min: 1, max: 3);
-
-            LoRaSyncWord = loRaSyncWord;
-            GFSKSyncWord = gFSKSyncWord;
 
             RX2DefaultReceiveWindows = rx2DefaultReceiveWindows;
             ReceiveDelay1 = 1;
