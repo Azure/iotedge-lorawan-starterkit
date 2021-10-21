@@ -17,10 +17,7 @@ namespace LoRaTools.Regions
         private readonly List<List<double>> DownstreamFrequenciesByPlanType;
 
         public RegionCN470()
-            : base(
-                  LoRaRegionType.CN470,
-                  0x34,
-                  null,
+            : base(LoRaRegionType.CN470,
                   (frequency: 485.3, datr: 1)) // TODO: support multiple RX2 receive windows, see #561
         {
             // Values assuming FOpts param is not used
