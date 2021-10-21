@@ -42,8 +42,8 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
             Assert.Throws<NotSupportedException>(() => LnsDiscovery.ReadQuery(json, out var _));
         }
 
-        const string validMuxs = "0000:00FF:FE00:0000";
-        const string validUriString = "ws://localhost:5000/router-data";
+        private const string validMuxs = "0000:00FF:FE00:0000";
+        private const string validUriString = "ws://localhost:5000/router-data";
 
         [Theory]
         [InlineData("b8-27-eb-ff-fe-e1-e3-9a", validMuxs, validUriString, "", @"{""router"":""b827:ebff:fee1:e39a"",""muxs"":""0000:00FF:FE00:0000"",""uri"":""ws://localhost:5000/router-data""}")]

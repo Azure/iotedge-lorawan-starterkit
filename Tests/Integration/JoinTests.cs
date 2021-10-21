@@ -10,7 +10,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
@@ -61,15 +61,15 @@ namespace LoRaWan.Tests.Integration
             string afterJoinDevAddr = null;
             uint afterJoinFcntDown = 0;
             uint afterJoinFcntUp = 0;
+
             LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
                 .Callback<TwinCollection>((updatedTwin) =>
                 {
-                    afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey];
-                    afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey];
-                    afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
+                    if(updatedTwin.Contains(TwinProperty.AppSKey)) afterJoinAppSKey = updatedTwin[TwinProperty.AppSKey];
+                    if (updatedTwin.Contains(TwinProperty.NwkSKey)) afterJoinNwkSKey = updatedTwin[TwinProperty.NwkSKey];
+                    if (updatedTwin.Contains(TwinProperty.DevAddr))  afterJoinDevAddr = updatedTwin[TwinProperty.DevAddr];
                     afterJoinFcntDown = updatedTwin[TwinProperty.FCntDown];
                     afterJoinFcntUp = updatedTwin[TwinProperty.FCntUp];
-
                     // should not save class C device properties
                     Assert.False(updatedTwin.Contains(TwinProperty.Region));
                     Assert.False(updatedTwin.Contains(TwinProperty.PreferredGatewayID));
@@ -120,6 +120,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
+            // Create a join request and join with the device.
             using var joinRequest = CreateWaitableRequest(joinRxpk, constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
@@ -144,7 +145,7 @@ namespace LoRaWan.Tests.Integration
             else
                 Assert.Equal(deviceGatewayID, loRaDevice.GatewayID);
 
-            // fcnt is restarted
+            // Assert that after a join the fcnt is restarted
             Assert.Equal(0U, afterJoinFcntDown);
             Assert.Equal(0U, afterJoinFcntUp);
             Assert.Equal(0U, loRaDevice.FCntUp);
@@ -155,7 +156,7 @@ namespace LoRaWan.Tests.Integration
             simulatedDevice.LoRaDevice.NwkSKey = afterJoinNwkSKey;
             simulatedDevice.LoRaDevice.DevAddr = afterJoinDevAddr;
 
-            // sends unconfirmed message
+            // sends unconfirmed message with a given starting frame counter
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("100", fcnt: startingPayloadFcnt);
             using var unconfirmedRequest = CreateWaitableRequest(unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0], constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(unconfirmedRequest);
@@ -167,11 +168,14 @@ namespace LoRaWan.Tests.Integration
             Assert.Equal(startingPayloadFcnt, loRaDevice.FCntUp);
             Assert.Equal(0U, loRaDevice.FCntDown);
 
-            if (startingPayloadFcnt != 0)
-            {
-                // Frame change flag will be set, only saving every 10 messages
-                Assert.True(loRaDevice.HasFrameCountChanges);
-            }
+            // If the starting payload was not 0, it is expected that it updates the framecounter char
+            // The device will perform the frame counter update and at this point in time it will have the same frame counter as the desired
+            // Therefore savechangesasync will set the hasframcounter change to false
+            // if (startingPayloadFcnt != 0)
+            // {
+            //    // Frame change flag will be set, only saving every 10 messages
+            //    Assert.True(loRaDevice.HasFrameCountChanges);
+            // }
 
             Assert.Single(sentTelemetry);
 

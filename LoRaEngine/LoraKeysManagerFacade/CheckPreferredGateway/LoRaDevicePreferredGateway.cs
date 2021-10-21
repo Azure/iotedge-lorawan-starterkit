@@ -32,13 +32,13 @@ namespace LoraKeysManagerFacade
         /// Creates a string representation of the object for caching.
         /// </summary>
         /// <returns>A string containing {GatewayID};{FcntUp};{UpdateTime}.</returns>
-        string ToCachedString() => string.Concat(GatewayID, ";", FcntUp, ";", UpdateTime);
+        private string ToCachedString() => string.Concat(GatewayID, ";", FcntUp, ";", UpdateTime);
 
         /// <summary>
         /// Creates a <see cref="LoRaDevicePreferredGateway"/> from a string
         /// String format should be: {GatewayID};{FcntUp};{UpdateTime}.
         /// </summary>
-        static LoRaDevicePreferredGateway CreateFromCachedString(string cachedString)
+        private static LoRaDevicePreferredGateway CreateFromCachedString(string cachedString)
         {
             if (string.IsNullOrEmpty(cachedString))
                 return null;

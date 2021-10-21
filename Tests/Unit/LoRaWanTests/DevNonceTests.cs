@@ -9,8 +9,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public class DevNonceTests
     {
-        readonly DevNonce subject = new(0x1234);
-        readonly DevNonce other = new(0x5678);
+        private readonly DevNonce subject = new(0x1234);
+        private readonly DevNonce other = new(0x5678);
 
         [Fact]
         public void Size()

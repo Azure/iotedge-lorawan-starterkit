@@ -11,7 +11,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Moq;
     using Xunit;
 

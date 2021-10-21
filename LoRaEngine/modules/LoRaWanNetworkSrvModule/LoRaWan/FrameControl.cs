@@ -25,11 +25,10 @@ namespace LoRaWan
     /// </summary>
     public readonly struct FrameControl : IEquatable<FrameControl>
     {
-        const byte FOptsLenMask = 0xf;
+        private const byte FOptsLenMask = 0xf;
 
         public const int Size = sizeof(byte);
-
-        readonly byte value;
+        private readonly byte value;
 
         public FrameControl(byte value) => this.value = value;
 
@@ -37,7 +36,7 @@ namespace LoRaWan
             this(unchecked((byte)((byte)(((byte)flags & FOptsLenMask) == 0 ? flags : throw new ArgumentException(null, nameof(flags)))
                                          | (optionsLength is >= 0 and <= 15 ? optionsLength : throw new ArgumentOutOfRangeException(nameof(optionsLength), optionsLength, null))))) { }
 
-        bool HasFlags(FCtrlFlags flags) => ((FCtrlFlags)this.value & flags) == flags;
+        private bool HasFlags(FCtrlFlags flags) => ((FCtrlFlags)this.value & flags) == flags;
 
         /// <summary>
         /// Indicates whether the network will control the data rate of the end-device.

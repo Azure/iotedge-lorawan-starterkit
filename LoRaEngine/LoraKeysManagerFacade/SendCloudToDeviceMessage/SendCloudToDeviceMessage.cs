@@ -13,6 +13,7 @@ namespace LoraKeysManagerFacade
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.Devices;
+    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -90,7 +91,7 @@ namespace LoraKeysManagerFacade
                 {
                     deviceTwins = await query.GetNextAsTwinAsync();
                 }
-                catch (Exception ex)
+                catch (IotHubException ex)
                 {
                     this.log.LogError(ex, "Failed to query devices with {query}", queryText);
                     return new ObjectResult("Failed to query devices") { StatusCode = (int)HttpStatusCode.InternalServerError };
@@ -135,13 +136,22 @@ namespace LoraKeysManagerFacade
             return new NotFoundObjectResult($"Device '{devEUI}' was not found");
         }
 
-        async Task<IActionResult> SendMessageViaCloudToDeviceMessageAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
+        private async Task<IActionResult> SendMessageViaCloudToDeviceMessageAsync(string devEUI, LoRaCloudToDeviceMessage c2dMessage)
         {
             try
             {
                 using var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(c2dMessage)));
                 message.MessageId = string.IsNullOrEmpty(c2dMessage.MessageId) ? Guid.NewGuid().ToString() : c2dMessage.MessageId;
-                await this.serviceClient.SendAsync(devEUI, message);
+
+                try
+                {
+                    await this.serviceClient.SendAsync(devEUI, message);
+                }
+                catch (IotHubException ex)
+                {
+                    this.log.LogError(ex, "Failed to send message to {devEUI} to IoT Hub", devEUI);
+                    return new ObjectResult("Failed to send message to device to IoT Hub") { StatusCode = (int)HttpStatusCode.InternalServerError };
+                }
 
                 this.log.LogInformation("Sending cloud to device message to {devEUI} succeeded", devEUI);
 
@@ -152,14 +162,14 @@ namespace LoraKeysManagerFacade
                     ClassType = "A",
                 });
             }
-            catch (Exception ex)
+            catch (JsonSerializationException ex)
             {
-                this.log.LogError(ex, "Failed to send message to {devEUI}", devEUI);
-                return new ObjectResult("Failed to send message to device") { StatusCode = (int)HttpStatusCode.InternalServerError };
+                this.log.LogError(ex, "Failed to serialize message {c2dmessage} for device {devEUI} to IoT Hub", c2dMessage, devEUI);
+                return new ObjectResult("Failed to serialize c2d message to device to IoT Hub") { StatusCode = (int)HttpStatusCode.InternalServerError };
             }
         }
 
-        async Task<IActionResult> SendMessageViaDirectMethodAsync(
+        private async Task<IActionResult> SendMessageViaDirectMethodAsync(
             string preferredGatewayID,
             string devEUI,
             LoRaCloudToDeviceMessage c2dMessage)
@@ -189,10 +199,19 @@ namespace LoraKeysManagerFacade
                     StatusCode = res.Status,
                 };
             }
-            catch (Exception ex)
+            catch (JsonSerializationException ex)
             {
-                this.log.LogError(ex, "Failed to send message to {devEUI}", devEUI);
-                return new ObjectResult("Failed to send message to device")
+
+                this.log.LogError(ex, "Failed to serialize C2D message {c2dmessage} to {devEUI}", devEUI);
+                return new ObjectResult("Failed serialize C2D Message")
+                {
+                    StatusCode = (int)HttpStatusCode.InternalServerError
+                };
+            }
+            catch (IotHubException ex)
+            {
+                this.log.LogError(ex, "Failed to send message for {devEUI} to the IoT Hub", devEUI);
+                return new ObjectResult("Failed to send message for device to the iot Hub")
                 {
                     StatusCode = (int)HttpStatusCode.InternalServerError
                 };
@@ -202,6 +221,6 @@ namespace LoraKeysManagerFacade
         /// <summary>
         /// Gets if the http status code indicates success.
         /// </summary>
-        static bool IsSuccessStatusCode(int statusCode) => statusCode is >= 200 and <= 299;
+        private static bool IsSuccessStatusCode(int statusCode) => statusCode is >= 200 and <= 299;
     }
 }

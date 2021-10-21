@@ -412,18 +412,23 @@ namespace LoRaWan.NetworkServer
             }
             finally
             {
+
                 try
                 {
                     _ = await loRaDevice.SaveChangesAsync();
                 }
-                catch (Exception saveChangesException)
+                catch (OperationCanceledException saveChangesException)
                 {
                     Logger.Log(loRaDevice.DevEUI, $"error updating reported properties. {saveChangesException.Message}", LogLevel.Error);
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    Logger.Log(loRaDevice.DevEUI, $"The device properties are out of range. {ex.Message}", LogLevel.Error);
                 }
             }
         }
 
-        void HandlePreferredGatewayChanges(
+        private void HandlePreferredGatewayChanges(
             LoRaRequest request,
             LoRaDevice loRaDevice,
             FunctionBundlerResult bundlerResult)
@@ -456,7 +461,7 @@ namespace LoRaWan.NetworkServer
 
         internal void SetClassCMessageSender(IClassCDeviceMessageSender classCMessageSender) => this.classCDeviceMessageSender = classCMessageSender;
 
-        void SendClassCDeviceMessage(IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage)
+        private void SendClassCDeviceMessage(IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage)
         {
             if (this.classCDeviceMessageSender != null)
             {
@@ -567,7 +572,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Send detected MAC commands as message properties.
         /// </summary>
-        static void ProcessAndSendMacCommands(LoRaPayloadData payloadData, ref Dictionary<string, string> eventProperties)
+        private static void ProcessAndSendMacCommands(LoRaPayloadData payloadData, ref Dictionary<string, string> eventProperties)
         {
             if (payloadData.MacCommands?.Count > 0)
             {
@@ -584,7 +589,7 @@ namespace LoRaWan.NetworkServer
         /// Helper method to resolve FcntDown in case one was not yet acquired.
         /// </summary>
         /// <returns>0 if the resolution failed or > 0 if a valid frame count was acquired.</returns>
-        static async ValueTask<uint> EnsureHasFcntDownAsync(
+        private static async ValueTask<uint> EnsureHasFcntDownAsync(
             LoRaDevice loRaDevice,
             uint? fcntDown,
             uint payloadFcnt,

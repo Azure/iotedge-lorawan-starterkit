@@ -6,7 +6,7 @@ namespace LoRaWan.Tests.Integration
     using System;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Moq;
     using Xunit;

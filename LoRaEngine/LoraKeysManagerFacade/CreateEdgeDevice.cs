@@ -127,7 +127,9 @@ namespace LoraKeysManagerFacade
                     _ = await this.registryManager.UpdateTwinAsync(AbpDeviceId, abpTwin, abpRemoteTwin.ETag);
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types. This will go away when we implement #242
             catch (Exception)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 // In case of an exception in device provisioning we want to make sure that we return a proper template if our devices are successfullycreated
                 var edgeGateway = await this.registryManager.GetDeviceAsync(deviceName);

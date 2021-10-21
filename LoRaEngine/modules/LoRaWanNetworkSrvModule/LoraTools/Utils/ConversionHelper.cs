@@ -8,7 +8,7 @@ namespace LoRaTools.Utils
 
     public static class ConversionHelper
     {
-        const string HexAlphabet = "0123456789ABCDEF";
+        private const string HexAlphabet = "0123456789ABCDEF";
 
         /// <summary>
         /// Method enabling to convert a hex string to a byte array.

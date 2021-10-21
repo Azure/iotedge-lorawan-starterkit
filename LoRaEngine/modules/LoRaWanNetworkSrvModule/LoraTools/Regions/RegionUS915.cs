@@ -18,15 +18,7 @@ namespace LoRaTools.Regions
                   LoRaRegionType.US915,
                   0x34,
                   null, // no GFSK in US Band
-                  (frequency: 923.3, datr: 8),
-                  1,
-                  2,
-                  5,
-                  6,
-                  16384,
-                  64,
-                  32,
-                  (min: 1, max: 3))
+                  (frequency: 923.3, datr: 8))
         {
         }
 
@@ -34,7 +26,8 @@ namespace LoRaTools.Regions
         /// Logic to get the correct downstream transmission frequency for region US915.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency)
+        /// <param name="joinChannelIndex">index of the join channel, if applicable.</param>
+        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex = null)
         {
             if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
 

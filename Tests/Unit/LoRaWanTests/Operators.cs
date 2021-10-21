@@ -6,13 +6,13 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     using System;
     using System.Runtime.CompilerServices;
 
-    static class Operators<T>
+    internal static class Operators<T>
     {
-        static Func<T, T, bool> LogicalBinary([CallerMemberName] string name = null) =>
+        private static Func<T, T, bool> LogicalBinary([CallerMemberName] string name = null) =>
             (Func<T, T, bool>)Delegate.CreateDelegate(typeof(Func<T, T, bool>), typeof(T), $"op_{name}");
 
-        static Func<T, T, bool> equality;
-        static Func<T, T, bool> inequality;
+        private static Func<T, T, bool> equality;
+        private static Func<T, T, bool> inequality;
 
         public static Func<T, T, bool> Equality => equality ??= LogicalBinary();
         public static Func<T, T, bool> Inequality => inequality ??= LogicalBinary();

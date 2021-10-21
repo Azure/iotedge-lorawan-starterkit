@@ -32,7 +32,7 @@ namespace LoRaWan
             FixedWidth = 2,
         }
 
-        enum FormatterState
+        private enum FormatterState
         {
             Init,
             Word,
@@ -120,10 +120,10 @@ namespace LoRaWan
             return output[..i];
         }
 
-        struct WordAccumulator
+        private struct WordAccumulator
         {
-            byte digits;
-            ushort value;
+            private byte digits;
+            private ushort value;
 
             public static implicit operator ushort(WordAccumulator acc) => acc.value;
 
@@ -147,7 +147,7 @@ namespace LoRaWan
             }
         }
 
-        enum ParserState
+        private enum ParserState
         {
             BeforeColonColon,
             ColonBeforeColonColon,
@@ -168,9 +168,7 @@ namespace LoRaWan
 
             var si = 0;
             var cci = -1;
-#pragma warning disable SA1129 // Do not use default value type constructor
             var wa = new WordAccumulator();
-#pragma warning restore SA1129 // Do not use default value type constructor
 
             for (; !chars.IsEmpty; chars = chars[1..])
             {

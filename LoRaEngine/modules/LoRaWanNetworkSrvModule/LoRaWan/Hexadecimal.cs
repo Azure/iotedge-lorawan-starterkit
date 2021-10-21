@@ -9,12 +9,11 @@ namespace LoRaWan
 
     public static class Hexadecimal
     {
-        const string UpperCaseDigits = "0123456789ABCDEF";
-        const string LowerCaseDigits = "0123456789abcdef";
+        private const string UpperCaseDigits = "0123456789ABCDEF";
+        private const string LowerCaseDigits = "0123456789abcdef";
+        private const string InsufficientBufferSizeErrorMessage = "Insufficient buffer size to encode hexadecimal.";
 
-        const string InsufficientBufferSizeErrorMessage = "Insufficient buffer size to encode hexadecimal.";
-
-        static void ValidateSufficientlySizedBuffer(int targetCharsLength, int expectedByteSize, string paramName)
+        private static void ValidateSufficientlySizedBuffer(int targetCharsLength, int expectedByteSize, string paramName)
         {
             if (targetCharsLength < expectedByteSize * 2)
                 throw new ArgumentException(InsufficientBufferSizeErrorMessage, paramName);

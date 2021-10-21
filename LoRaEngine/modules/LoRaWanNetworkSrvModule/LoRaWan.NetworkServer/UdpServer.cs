@@ -30,7 +30,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     public sealed class UdpServer : IPacketForwarder, IDisposable
     {
-        const int PORT = 1680;
+        private const int PORT = 1680;
         private readonly NetworkServerConfiguration configuration;
         private readonly MessageDispatcher messageDispatcher;
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
@@ -41,7 +41,7 @@ namespace LoRaWan.NetworkServer
         private ModuleClient ioTHubModuleClient;
         private volatile int pullAckRemoteLoRaAggregatorPort;
         private volatile string pullAckRemoteLoRaAddress;
-        UdpClient udpClient;
+        private UdpClient udpClient;
 
         private Task<byte[]> GetTokenAsync()
         {
@@ -99,7 +99,7 @@ namespace LoRaWan.NetworkServer
             await udpServer.RunUdpListener();
         }
 
-        async Task UdpSendMessageAsync(byte[] messageToSend, string remoteLoRaAggregatorIp, int remoteLoRaAggregatorPort)
+        private async Task UdpSendMessageAsync(byte[] messageToSend, string remoteLoRaAggregatorIp, int remoteLoRaAggregatorPort)
         {
             if (messageToSend != null && messageToSend.Length != 0)
             {
@@ -111,7 +111,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        async Task RunUdpListener()
+        private async Task RunUdpListener()
         {
             var endPoint = new IPEndPoint(IPAddress.Any, PORT);
             this.udpClient = new UdpClient(endPoint);
@@ -187,7 +187,9 @@ namespace LoRaWan.NetworkServer
                     }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types.
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log("UDP", $"failed to dispatch messages: {ex.Message}", LogLevel.Error);
             }
@@ -205,7 +207,7 @@ namespace LoRaWan.NetworkServer
             _ = UdpSendMessageAsync(response, remoteEndpoint.Address.ToString(), remoteEndpoint.Port);
         }
 
-        async Task InitCallBack()
+        private async Task InitCallBack()
         {
             try
             {
@@ -292,7 +294,7 @@ namespace LoRaWan.NetworkServer
             Logger.LogAlways($"Log Level: {Logger.LoggerLevel}");
         }
 
-        async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
+        private async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
         {
             if (string.Equals("clearcache", methodRequest.Name, StringComparison.OrdinalIgnoreCase))
             {
@@ -337,7 +339,7 @@ namespace LoRaWan.NetworkServer
             return Task.FromResult(new MethodResponse(200));
         }
 
-        Task OnDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
+        private Task OnDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
             try
             {
@@ -360,7 +362,9 @@ namespace LoRaWan.NetworkServer
                     Logger.Log($"Error when receiving desired property: {exception}", LogLevel.Error);
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types. Recommended by doc.
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log($"Error when receiving desired property: {ex.Message}", LogLevel.Error);
             }
@@ -393,7 +397,9 @@ namespace LoRaWan.NetworkServer
                     }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types. Packet forwarder is going away
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log("UDP", $"error processing the message {ex.Message}, {ex.StackTrace}", LogLevel.Error);
             }

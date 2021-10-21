@@ -8,7 +8,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.LoRaMessage;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;

@@ -16,14 +16,14 @@ namespace LoRaWan
     public static class Logger
     {
         // Interval where we try to estabilish connection to udp logger
-        const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
+        private const int RETRY_UDP_LOG_CONNECTION_INTERVAL_IN_MS = 1000 * 10;
 
         public static LogLevel LoggerLevel => configuration.LogLevel;
 
-        static LoggerConfiguration configuration = new LoggerConfiguration();
-        static volatile UdpClient udpClient;
-        static IPEndPoint udpEndpoint;
-        static volatile bool isInitializeUdpLoggerRunning;
+        private static LoggerConfiguration configuration = new LoggerConfiguration();
+        private static volatile UdpClient udpClient;
+        private static IPEndPoint udpEndpoint;
+        private static volatile bool isInitializeUdpLoggerRunning;
         private static Timer retryUdpLogInitializationTimer;
 
         public static void Init(LoggerConfiguration loggerConfiguration)
@@ -122,7 +122,7 @@ namespace LoRaWan
             }
         }
 
-        static void LogToConsole(string message, LogLevel logLevel = LogLevel.Information)
+        private static void LogToConsole(string message, LogLevel logLevel = LogLevel.Information)
         {
             var loggedMessage = FormattableString.Invariant($"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {message}");
 
@@ -136,7 +136,7 @@ namespace LoRaWan
             }
         }
 
-        static void LogToUdp(string message)
+        private static void LogToUdp(string message)
         {
             try
             {
@@ -148,9 +148,21 @@ namespace LoRaWan
                 var messageInBytes = Encoding.UTF8.GetBytes(message);
                 _ = udpClient.Send(messageInBytes, messageInBytes.Length, udpEndpoint);
             }
-            catch (Exception ex)
+            catch (ObjectDisposedException ex)
             {
-                LogToConsole(string.Concat(" Error logging to UDP: ", ex.ToString()), LogLevel.Error);
+                LogToConsole(string.Concat(" The UdpClient is closed. Error logging to UDP: ", ex.ToString()), LogLevel.Error);
+            }
+            catch (ArgumentNullException ex)
+            {
+                LogToConsole(string.Concat(" The byte array is null. Error logging to UDP: ", ex.ToString()), LogLevel.Error);
+            }
+            catch (InvalidOperationException ex)
+            {
+                LogToConsole(string.Concat(" The UdpClient has already established a default remote host. Error logging to UDP: ", ex.ToString()), LogLevel.Error);
+            }
+            catch (SocketException ex)
+            {
+                LogToConsole(string.Concat(" An error occurred when accessing the socket. Error logging to UDP: ", ex.ToString()), LogLevel.Error);
             }
         }
 
@@ -158,7 +170,7 @@ namespace LoRaWan
         // Might be called from a timer while it does not work
         // Need to make this retries because NetworkServer might become alive
         // before listening container is started
-        static void InitializeUdpLogger(bool isRetry = false)
+        private static void InitializeUdpLogger(bool isRetry = false)
         {
             if (isInitializeUdpLoggerRunning)
             {
@@ -196,9 +208,21 @@ namespace LoRaWan
                                 udpEndpoint = new IPEndPoint(addresses[0], configuration.LogToUdpPort);
                             }
                         }
-                        catch (Exception ex)
+                        catch (ArgumentNullException ex)
                         {
-                            LogToConsole($"Could not resolve ip address from '{configuration.LogToUdpAddress}'. {ex.Message}", LogLevel.Error);
+                            LogToConsole($"'{configuration.LogToUdpAddress}' is null. {ex.Message}", LogLevel.Error);
+                        }
+                        catch (ArgumentOutOfRangeException ex)
+                        {
+                            LogToConsole($"The length of '{configuration.LogToUdpAddress}'  is greater than 255 characters. {ex.Message}", LogLevel.Error);
+                        }
+                        catch (SocketException ex)
+                        {
+                            LogToConsole($"An error is encountered when resolving '{configuration.LogToUdpAddress}'. {ex.Message}", LogLevel.Error);
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            LogToConsole($"'{configuration.LogToUdpAddress}' is an invalid IP address. {ex.Message}", LogLevel.Error);
                         }
                     }
                 }
@@ -219,7 +243,9 @@ namespace LoRaWan
                     }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 LogToConsole(string.Concat("Error starting UDP logging: ", ex.ToString()), LogLevel.Error);
             }

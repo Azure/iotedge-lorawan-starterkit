@@ -7,7 +7,7 @@ namespace LoraKeysManagerFacade
 
     internal static class EUIValidator
     {
-        const string InvalidZero = "0000000000000000";
+        private const string InvalidZero = "0000000000000000";
 
         /// <summary>
         /// DevEUI are required to be IEEE EUI-64.

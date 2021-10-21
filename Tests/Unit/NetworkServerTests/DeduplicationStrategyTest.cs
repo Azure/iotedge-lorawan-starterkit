@@ -5,7 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 {
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Moq;
     using Xunit;
 
@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             this.loRaDeviceApi.Setup(x => x.CheckDuplicateMsgAsync(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<string>(), It.IsAny<uint>()))
                 .Returns(() =>
                 {
-                    return Task.FromResult<DeduplicationResult>(new DeduplicationResult
+                    return Task.FromResult(new DeduplicationResult
                     {
                         IsDuplicate = true
                     });

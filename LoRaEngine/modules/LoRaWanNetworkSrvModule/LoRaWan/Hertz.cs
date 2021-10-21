@@ -12,7 +12,7 @@ namespace LoRaWan
     public readonly struct Hertz : IEquatable<Hertz>
     {
 #pragma warning disable IDE0032 // Use auto property
-        readonly ulong value;
+        private readonly ulong value;
 #pragma warning restore IDE0032 // Use auto property
 
         public Hertz(ulong value) => this.value = value;

@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
+    using LoRaTools.Regions;
     using LoRaTools.Utils;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -30,7 +31,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Process OTAA join request.
         /// </summary>
-        async Task ProcessJoinRequestAsync(LoRaRequest request)
+        private async Task ProcessJoinRequestAsync(LoRaRequest request)
         {
             LoRaDevice loRaDevice = null;
             string devEUI = null;
@@ -113,8 +114,8 @@ namespace LoRaWan.NetworkServer
                 };
 
                 var appNonce = OTAAKeysGenerator.GetAppNonce();
-                var appNonceBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(appNonce);
-                var appKeyBytes = LoRaTools.Utils.ConversionHelper.StringToByteArray(loRaDevice.AppKey);
+                var appNonceBytes = ConversionHelper.StringToByteArray(appNonce);
+                var appKeyBytes = ConversionHelper.StringToByteArray(loRaDevice.AppKey);
                 var appSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x02 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
                 var nwkSKey = OTAAKeysGenerator.CalculateKey(new byte[1] { 0x01 }, appNonceBytes, netId, joinReq.DevNonce, appKeyBytes);
                 var devAddr = OTAAKeysGenerator.GetNwkId(netId);
@@ -145,6 +146,18 @@ namespace LoRaWan.NetworkServer
                 {
                     updatedProperties.SavePreferredGateway = true;
                     updatedProperties.SaveRegion = true;
+                }
+
+                if (request.Region.LoRaRegion == LoRaRegionType.CN470)
+                {
+                    if (request.Region.TryGetJoinChannelIndex(request.Rxpk, out var channelIndex))
+                    {
+                        updatedProperties.CN470JoinChannel = channelIndex;
+                    }
+                    else
+                    {
+                        Logger.Log(loRaDevice.DevEUI, $"failed to retrieve the join channel index for device", LogLevel.Error);
+                    }
                 }
 
                 var deviceUpdateSucceeded = await loRaDevice.UpdateAfterJoinAsync(updatedProperties);
@@ -223,7 +236,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 ushort rxDelay = 0;
-                if (LoRaTools.Regions.Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                if (Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
                 {
                     rxDelay = loRaDevice.DesiredRXDelay;
                 }
@@ -233,7 +246,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 var loRaPayloadJoinAccept = new LoRaPayloadJoinAccept(
-                    LoRaTools.Utils.ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
+                    ConversionHelper.ByteArrayToString(netId), // NETID 0 / 1 is default test
                     ConversionHelper.StringToByteArray(devAddr), // todo add device address management
                     appNonceBytes,
                     dlSettings,
@@ -257,7 +270,9 @@ namespace LoRaWan.NetworkServer
                     }
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types. To be revisited as part of #565
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 var deviceId = devEUI ?? ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
                 Logger.Log(deviceId, $"failed to handle join request. {ex.Message}", LogLevel.Error);

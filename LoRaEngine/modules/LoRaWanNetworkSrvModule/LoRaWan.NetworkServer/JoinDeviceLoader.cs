@@ -15,8 +15,8 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IoTHubDeviceInfo ioTHubDevice;
         private readonly ILoRaDeviceFactory deviceFactory;
-        readonly Task<LoRaDevice> loading;
-        volatile bool canCache;
+        private readonly Task<LoRaDevice> loading;
+        private volatile bool canCache;
 
         internal bool CanCache => this.canCache;
 
@@ -34,32 +34,24 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         internal Task<LoRaDevice> WaitCompleteAsync() => this.loading;
 
-        async Task<LoRaDevice> LoadAsync()
+        private async Task<LoRaDevice> LoadAsync()
         {
             var loRaDevice = this.deviceFactory.Create(this.ioTHubDevice);
 
-            try
+            if (await loRaDevice.InitializeAsync())
             {
-                if (await loRaDevice.InitializeAsync())
-                {
-                    return loRaDevice;
-                }
-                else
-                {
-                    // will reach here if getting twins threw an exception
-                    // object is non usable, must try to read twin again
-                    // for the future we could retry here
-                    this.canCache = false;
-                    Logger.Log(loRaDevice.DevEUI, "join refused: error initializing OTAA device, getting twin failed", LogLevel.Error);
-                }
+                return loRaDevice;
             }
-            catch (Exception ex)
+            else
             {
-                // will reach here if the device does not have required properties in the twin
-                Logger.Log(loRaDevice.DevEUI, $"join refused: error initializing OTAA device. {ex.Message}", LogLevel.Error);
+                // will reach here if getting twins threw an exception
+                // object is non usable, must try to read twin again
+                // for the future we could retry here
+                this.canCache = false;
+                Logger.Log(loRaDevice.DevEUI, "join refused: error initializing OTAA device, getting twin failed", LogLevel.Error);
             }
 
             return null;
         }
-    }
+}
 }

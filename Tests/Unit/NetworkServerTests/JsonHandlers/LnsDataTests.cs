@@ -259,7 +259,7 @@ namespace LoRaWan.NetworkServer.Test.BasicsStation.JsonHandlers
             Assert.Equal(TrimJson(expected), actual);
         }
 
-        static string TrimJson(string json)
+        private static string TrimJson(string json)
         {
             using var ms = new MemoryStream();
             using var writer = new Utf8JsonWriter(ms);

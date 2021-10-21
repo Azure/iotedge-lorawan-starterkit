@@ -8,7 +8,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using System.Threading.Tasks;
     using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     /// </summary>
     public class LoRaDeviceTest
     {
-        readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
+        private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
 
         public LoRaDeviceTest()
         {
@@ -424,6 +424,33 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
             await loRaDevice.InitializeAsync();
             Assert.Equal(1, loRaDevice.PreferredWindow);
+        }
+
+        [Fact]
+        public async Task When_CN470JoinChannel_Is_In_Twin_Should_Have_JoinChannel_Set()
+        {
+            var twin = TestUtils.CreateTwin(
+                desired: new Dictionary<string, object>
+                {
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                },
+                reported: new Dictionary<string, object>
+                {
+                    { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
+                    { "DevAddr", "0000AABB" },
+                    { "CN470JoinChannel", 2 }
+                });
+
+            this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
+                .ReturnsAsync(twin);
+
+            using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
+            using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
+            await loRaDevice.InitializeAsync();
+            Assert.Equal(2, loRaDevice.ReportedCN470JoinChannel);
         }
 
         [Fact]

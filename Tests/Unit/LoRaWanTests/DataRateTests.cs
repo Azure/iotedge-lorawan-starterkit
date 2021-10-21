@@ -9,8 +9,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public class DataRateTests
     {
-        readonly DataRate subject = new(5);
-        readonly DataRate other = new(10);
+        private readonly DataRate subject = new(5);
+        private readonly DataRate other = new(10);
 
         [Fact]
         public void Initialization_Succeeds_For_Valid_Values()

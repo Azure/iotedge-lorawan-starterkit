@@ -13,14 +13,14 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
 
     public sealed class DefaultClassCDevicesMessageSenderTest : IDisposable
     {
-        const string ServerGatewayID = "test-gateway";
+        private const string ServerGatewayID = "test-gateway";
 
         private readonly NetworkServerConfiguration serverConfiguration;
         private readonly Region loRaRegion;

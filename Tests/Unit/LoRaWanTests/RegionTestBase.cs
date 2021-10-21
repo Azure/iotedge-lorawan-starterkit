@@ -11,18 +11,28 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     {
         protected Region Region { get; set; }
 
-        protected void TestRegionFrequencyAndDataRate(string inputDr, double inputFreq, string outputDr, double outputFreq)
+        protected void TestRegionFrequencyAndDataRate(string inputDr, double inputFreq, string outputDr, double outputFreq, int? joinChannelIndex = null)
         {
             var rxpk = GenerateRxpk(inputDr, inputFreq);
-            Assert.True(Region.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency));
-            Assert.Equal(frequency, outputFreq);
-            Assert.Equal(Region.GetDownstreamDR(rxpk[0]), outputDr);
+            TestRegionFrequency(rxpk, outputFreq, joinChannelIndex);
+            TestRegionDataRate(rxpk, outputDr);
         }
 
-        protected void TestRegionLimit(double freq, string datarate)
+        protected void TestRegionFrequency(IList<Rxpk> rxpk, double outputFreq, int? joinChannelIndex = null)
+        {
+            Assert.True(Region.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency, joinChannelIndex));
+            Assert.Equal(frequency, outputFreq);
+        }
+
+        protected void TestRegionDataRate(IList<Rxpk> rxpk, string outputDr, int rx1DrOffset = 0)
+        {
+            Assert.Equal(Region.GetDownstreamDR(rxpk[0], rx1DrOffset), outputDr);
+        }
+
+        protected void TestRegionLimit(double freq, string datarate, int? joinChannelIndex = null)
         {
             var rxpk = GenerateRxpk(datarate, freq);
-            Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _));
+            Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _, joinChannelIndex));
             Assert.Null(Region.GetDownstreamDR(rxpk[0]));
         }
 
@@ -64,6 +74,19 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             var freq = Region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq);
             Assert.Equal(expectedFreq, freq);
             Assert.Equal(expectedDr, datr);
+        }
+
+        protected void TestTranslateToRegion(LoRaRegionType loRaRegion)
+        {
+            Assert.True(RegionManager.TryTranslateToRegion(loRaRegion, out var region));
+            Assert.IsType(Region.GetType(), region);
+        }
+
+        protected void TestTryResolveRegion(string dr, double freq)
+        {
+            var rxpk = GenerateRxpk(dr, freq);
+            Assert.True(RegionManager.TryResolveRegion(rxpk[0], out var region));
+            Assert.IsType(Region.GetType(), region);
         }
     }
 }

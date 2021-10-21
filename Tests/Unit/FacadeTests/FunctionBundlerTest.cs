@@ -11,7 +11,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
     using LoraKeysManagerFacade.FunctionBundler;
     using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;

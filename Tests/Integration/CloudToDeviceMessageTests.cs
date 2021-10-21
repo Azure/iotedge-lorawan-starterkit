@@ -13,7 +13,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
@@ -87,6 +87,8 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);
 
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
+
             // multi gateway will ask for next fcnt down
             var isMultigateway = string.IsNullOrEmpty(deviceGatewayID);
             if (isMultigateway)
@@ -111,6 +113,7 @@ namespace LoRaWan.Tests.Integration
                             NextFCntDown = simulatedDevice.FrmCntDown + 1
                         });
             }
+
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
             var cachedDevice = CreateLoRaDevice(simulatedDevice);
@@ -956,7 +959,8 @@ namespace LoRaWan.Tests.Integration
 
             // Will get twin to initialize LoRaDevice
             var deviceTwin = TestUtils.CreateABPTwin(simulatedDevice);
-            LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(deviceTwin);
+            this.LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(deviceTwin);
+            this.LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsAny<TwinCollection>())).ReturnsAsync(true);
 
             LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
                 .ReturnsAsync(true);

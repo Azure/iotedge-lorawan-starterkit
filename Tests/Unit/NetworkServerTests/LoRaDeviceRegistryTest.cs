@@ -8,19 +8,18 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using System.Linq;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
 
     public sealed class LoRaDeviceRegistryTest : IDisposable
     {
-        const string ServerGatewayID = "test-gateway";
-
-        readonly Mock<ILoRaDeviceFactory> loraDeviceFactoryMock;
-        readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
-        readonly NetworkServerConfiguration serverConfiguration;
-        readonly MemoryCache cache;
+        private const string ServerGatewayID = "test-gateway";
+        private readonly Mock<ILoRaDeviceFactory> loraDeviceFactoryMock;
+        private readonly Mock<ILoRaDeviceClient> loRaDeviceClient;
+        private readonly NetworkServerConfiguration serverConfiguration;
+        private readonly MemoryCache cache;
 
         public LoRaDeviceRegistryTest()
         {
@@ -149,7 +148,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             loraDevice1.IsOurDevice = false;
 
             var existingCache = new DevEUIToLoRaDeviceDictionary();
-            this.cache.Set<DevEUIToLoRaDeviceDictionary>(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
+            this.cache.Set(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
             existingCache.TryAdd(loraDevice1.DevEUI, loraDevice1);
 
             var payload = simulatedDevice1.CreateUnconfirmedDataUpMessage("1234");
@@ -187,7 +186,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var loraDevice2 = TestUtils.CreateFromSimulatedDevice(simulatedDevice2, null);
 
             var existingCache = new DevEUIToLoRaDeviceDictionary();
-            this.cache.Set<DevEUIToLoRaDeviceDictionary>(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
+            this.cache.Set(simulatedDevice1.LoRaDevice.DevAddr, existingCache);
             existingCache.TryAdd(loraDevice1.DevEUI, loraDevice1);
             existingCache.TryAdd(loraDevice2.DevEUI, loraDevice2);
 

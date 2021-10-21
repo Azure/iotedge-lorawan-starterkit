@@ -10,7 +10,7 @@ namespace LoRaWan.NetworkServer
     /// </summary>
     internal class NullDisposable : IDisposable
     {
-        static readonly NullDisposable instance = new NullDisposable();
+        private static readonly NullDisposable instance = new NullDisposable();
 
         internal static IDisposable Instance => instance;
 

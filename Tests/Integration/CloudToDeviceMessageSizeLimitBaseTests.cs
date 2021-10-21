@@ -4,7 +4,7 @@
 namespace LoRaWan.Tests.Integration
 {
     using LoRaTools.LoRaPhysical;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
 
     public class CloudToDeviceMessageSizeLimitBaseTests : MessageProcessorTestBase
     {

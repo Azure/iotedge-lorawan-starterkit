@@ -15,7 +15,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public class ADRTest
     {
-        readonly ITestOutputHelper output;
+        private readonly ITestOutputHelper output;
 
         public ADRTest(ITestOutputHelper output)
         {

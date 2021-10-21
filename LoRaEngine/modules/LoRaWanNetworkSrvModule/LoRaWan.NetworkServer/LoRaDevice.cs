@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaMessage;
     using LoRaTools.Regions;
     using Microsoft.Azure.Devices.Client;
+    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
 
@@ -76,23 +77,22 @@ namespace LoRaWan.NetworkServer
 
         public bool Supports32BitFCnt { get; set; }
 
-        readonly ChangeTrackingProperty<int> dataRate = new ChangeTrackingProperty<int>(TwinProperty.DataRate);
+        private readonly ChangeTrackingProperty<int> dataRate = new ChangeTrackingProperty<int>(TwinProperty.DataRate);
 
         public int DataRate => this.dataRate.Get();
 
-        readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
-
-        readonly ILoRaDeviceClientConnectionManager connectionManager;
+        private readonly ChangeTrackingProperty<int> txPower = new ChangeTrackingProperty<int>(TwinProperty.TxPower);
+        private readonly ILoRaDeviceClientConnectionManager connectionManager;
 
         public int TxPower => this.txPower.Get();
 
-        readonly ChangeTrackingProperty<int> nbRep = new ChangeTrackingProperty<int>(TwinProperty.NbRep);
+        private readonly ChangeTrackingProperty<int> nbRep = new ChangeTrackingProperty<int>(TwinProperty.NbRep);
 
         public int NbRep => this.nbRep.Get();
 
         public DeduplicationMode Deduplication { get; set; }
 
-        int preferredWindow;
+        private int preferredWindow;
 
         /// <summary>
         /// Gets or sets value indicating the preferred receive window for the device.
@@ -115,10 +115,10 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public LoRaDeviceClassType ClassType { get; set; }
 
-        ChangeTrackingProperty<LoRaRegionType> region = new ChangeTrackingProperty<LoRaRegionType>(TwinProperty.Region, LoRaRegionType.NotSet);
+        private ChangeTrackingProperty<LoRaRegionType> region = new ChangeTrackingProperty<LoRaRegionType>(TwinProperty.Region, LoRaRegionType.NotSet);
 
         /// <summary>
-        /// Gets or sets the <see cref="LoRaTools.Regions.LoRaRegionType"/> of the device
+        /// Gets or sets the <see cref="LoRaRegionType"/> of the device
         /// Relevant only for <see cref="LoRaDeviceClassType.C"/>.
         /// </summary>
         public LoRaRegionType LoRaRegion
@@ -127,7 +127,19 @@ namespace LoRaWan.NetworkServer
             set => this.region.Set(value);
         }
 
-        ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
+        /// <summary>
+        /// Gets or sets the join channel for the device based on reported properties.
+        /// Relevant only for region CN470.
+        /// </summary>
+        public int? ReportedCN470JoinChannel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the join channel for the device based on desired properties.
+        /// Relevant only for region CN470.
+        /// </summary>
+        public int? DesiredCN470JoinChannel { get; set; }
+
+        private ChangeTrackingProperty<string> preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, string.Empty);
 
         /// <summary>
         /// Gets the device preferred gateway identifier
@@ -198,7 +210,21 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public async Task<bool> InitializeAsync()
         {
-            var twin = await this.connectionManager.GetClient(this)?.GetTwinAsync();
+            Twin twin;
+            try
+            {
+                twin = await this.connectionManager.GetClient(this)?.GetTwinAsync();
+            }
+            catch (IotHubCommunicationException ex)
+            {
+                Logger.Log(this.DevEUI, $"Error while communication with IoT Hub during device initialization. {ex.Message}", LogLevel.Error);
+                throw;
+            }
+            catch (IotHubException ex)
+            {
+                Logger.Log(this.DevEUI, $"An error occured in IoT Hub during device initialization. {ex.Message}", LogLevel.Error);
+                throw;
+            }
 
             if (twin != null)
             {
@@ -356,6 +382,17 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
+                    //  We are prioritizing the choice of the join channel from reported properties (set for OTAA devices)
+                    //  over the manually provisioned channel (set in desired properties for ABP devices).
+                    if (twin.Properties.Reported.Contains(TwinProperty.CN470JoinChannel))
+                    {
+                        ReportedCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.CN470JoinChannel].Value);
+                    }
+                    else if (twin.Properties.Desired.Contains(TwinProperty.CN470JoinChannel))
+                    {
+                        DesiredCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.CN470JoinChannel].Value);
+                    }
+
                     if (twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt))
                     {
                         Supports32BitFCnt = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.Supports32BitFCnt].Value);
@@ -372,9 +409,9 @@ namespace LoRaWan.NetworkServer
 
                     return true;
                 }
-                catch (Exception ex)
+                catch (InvalidLoRaDeviceException ex)
                 {
-                    Logger.Log(DevEUI, $"failed to initialize device from twin: {ex.Message}", LogLevel.Debug);
+                    Logger.Log(this.DevEUI, $"A required property was not present in the twin during device initialization. {ex.Message}", LogLevel.Error);
                     throw;
                 }
             }
@@ -451,7 +488,7 @@ namespace LoRaWan.NetworkServer
             return newfCnt;
         }
 
-        static uint? GetUintFromTwin(TwinCollection collection, string propertyName)
+        private static uint? GetUintFromTwin(TwinCollection collection, string propertyName)
         {
             if (!collection.Contains(propertyName))
             {
@@ -461,7 +498,7 @@ namespace LoRaWan.NetworkServer
             return GetTwinPropertyUIntValue(collection[propertyName].Value);
         }
 
-        static int GetTwinPropertyIntValue(dynamic value)
+        private static int GetTwinPropertyIntValue(dynamic value)
         {
             if (value is string valueString)
             {
@@ -478,16 +515,19 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                return System.Convert.ToInt32(value);
+                return Convert.ToInt32(value);
             }
-            catch
+            catch(FormatException)
+            {
+            }
+            catch (OverflowException)
             {
             }
 
             return 0;
         }
 
-        static uint GetTwinPropertyUIntValue(dynamic value)
+        private static uint GetTwinPropertyUIntValue(dynamic value)
         {
             if (value is string valueString)
             {
@@ -504,16 +544,21 @@ namespace LoRaWan.NetworkServer
 
             try
             {
-                return System.Convert.ToUInt32(value);
+                return Convert.ToUInt32(value);
             }
-            catch
+            catch (OverflowException)
             {
+                Logger.Log("value represents a number that is less than MinValue or greater than MaxValue." ,LogLevel.Error);
+            }
+            catch (FormatException)
+            {
+                Logger.Log("value does not consist of an optional sign followed by a sequence of digits (0 through 9).", LogLevel.Error);
             }
 
             return 0;
         }
 
-        static bool GetTwinPropertyBoolValue(dynamic value)
+        private static bool GetTwinPropertyBoolValue(dynamic value)
         {
             if (value is string valueString)
             {
@@ -641,7 +686,7 @@ namespace LoRaWan.NetworkServer
         /// Accept changes to the frame count
         /// This method is not protected by locks.
         /// </summary>
-        void InternalAcceptFrameCountChanges(uint savedFcntUp, uint savedFcntDown)
+        private void InternalAcceptFrameCountChanges(uint savedFcntUp, uint savedFcntDown)
         {
             this.lastSavedFcntUp = savedFcntUp;
             this.lastSavedFcntDown = savedFcntDown;
@@ -818,6 +863,8 @@ namespace LoRaWan.NetworkServer
                     reportedProperties[this.region.PropertyName] = updateProperties.Region.ToString();
                 }
             }
+
+            reportedProperties[TwinProperty.CN470JoinChannel] = updateProperties.CN470JoinChannel;
 
             if (RegionManager.TryTranslateToRegion(updateProperties.Region, out var currentRegion))
             {
@@ -1006,7 +1053,7 @@ namespace LoRaWan.NetworkServer
                 serverValue = IncrementUpper16bit(serverValue);
             }
 
-            return LoRaPayloadData.InferUpper32BitsForClientFcnt(payload.GetFcnt(), serverValue);
+            return LoRaPayload.InferUpper32BitsForClientFcnt(payload.GetFcnt(), serverValue);
         }
 
         internal bool CanRolloverToNext16Bits(ushort payloadFcntUp)
@@ -1032,7 +1079,7 @@ namespace LoRaWan.NetworkServer
             return ++val;
         }
 
-        async Task RunAndQueueNext(LoRaRequest request)
+        private async Task RunAndQueueNext(LoRaRequest request)
         {
             LoRaDeviceRequestProcessResult result = null;
             Exception processingError = null;
@@ -1041,7 +1088,9 @@ namespace LoRaWan.NetworkServer
             {
                 result = await this.dataRequestHandler.ProcessRequestAsync(request, this);
             }
+#pragma warning disable CA1031 // Do not catch general exception types. revisit in #565
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error);
                 processingError = ex;
@@ -1085,7 +1134,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Gets the properties that are trackable.
         /// </summary>
-        IEnumerable<IChangeTrackingProperty> GetTrackableProperties()
+        private IEnumerable<IChangeTrackingProperty> GetTrackableProperties()
         {
             yield return this.preferredGatewayID;
             yield return this.region;

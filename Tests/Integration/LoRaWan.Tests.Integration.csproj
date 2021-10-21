@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsTestProject>true</IsTestProject>
@@ -24,8 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\LoRaEngine\LoraKeysManagerFacade\LoraKeysManagerFacade.csproj" />
-    <ProjectReference Include="..\Shared\LoRaWan.Tests.Shared.csproj" />
+    <ProjectReference Include="..\Common\LoRaWan.Tests.Common.csproj" />
   </ItemGroup>
   
 </Project>

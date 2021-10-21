@@ -17,7 +17,7 @@ namespace LoRaTools.LoRaMessage
     /// </summary>
     public class LoRaPayloadJoinAccept : LoRaPayload
     {
-        const ushort MaxRxDelayValue = 16;
+        private const ushort MaxRxDelayValue = 16;
 
         /// <summary>
         /// Gets or sets server Nonce aka JoinNonce.

@@ -14,7 +14,7 @@ namespace LoRaWan.Tests.Integration
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using Xunit;
@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Integration
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
     public sealed class ClassCCloudToDeviceMessageSizeLimitTests : IDisposable
     {
-        const string ServerGatewayID = "test-gateway";
+        private const string ServerGatewayID = "test-gateway";
 
         private TestPacketForwarder PacketForwarder { get; }
 

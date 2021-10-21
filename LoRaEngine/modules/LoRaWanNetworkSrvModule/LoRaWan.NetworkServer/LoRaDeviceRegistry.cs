@@ -20,16 +20,15 @@ namespace LoRaWan.NetworkServer
     public sealed class LoRaDeviceRegistry : ILoRaDeviceRegistry
     {
         // Caches a device making join for 30 minutes
-        const int INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES = 30;
+        private const int INTERVAL_TO_CACHE_DEVICE_IN_JOIN_PROCESS_IN_MINUTES = 30;
 
         private readonly LoRaDeviceAPIServiceBase loRaDeviceAPIService;
         private readonly ILoRaDeviceFactory deviceFactory;
         private readonly HashSet<ILoRaDeviceInitializer> initializers;
         private readonly NetworkServerConfiguration configuration;
-        readonly object getOrCreateLoadingDevicesRequestQueueLock;
-        readonly object getOrCreateJoinDeviceLoaderLock;
-
-        readonly object devEUIToLoRaDeviceDictionaryLock;
+        private readonly object getOrCreateLoadingDevicesRequestQueueLock;
+        private readonly object getOrCreateJoinDeviceLoaderLock;
+        private readonly object devEUIToLoRaDeviceDictionaryLock;
 
         private readonly IMemoryCache cache;
 
@@ -93,7 +92,7 @@ namespace LoRaWan.NetworkServer
             return cachedValue;
         }
 
-        DeviceLoaderSynchronizer GetOrCreateLoadingDevicesRequestQueue(string devAddr)
+        private DeviceLoaderSynchronizer GetOrCreateLoadingDevicesRequestQueue(string devAddr)
         {
             // Need to get and ensure it has started since the GetOrAdd can create multiple objects
             // https://github.com/aspnet/Extensions/issues/708
@@ -167,7 +166,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Called to sync up list of devices kept by device registry.
         /// </summary>
-        void UpdateDeviceRegistration(LoRaDevice loRaDevice, string oldDevAddr = null)
+        private void UpdateDeviceRegistration(LoRaDevice loRaDevice, string oldDevAddr = null)
         {
             var dictionary = InternalGetCachedDevicesForDevAddr(loRaDevice.DevAddr);
             dictionary[loRaDevice.DevEUI] = loRaDevice;
@@ -234,13 +233,13 @@ namespace LoRaWan.NetworkServer
         }
 
         // Creates cache key for join device loader: "joinloader:{devEUI}"
-        static string GetJoinDeviceLoaderCacheKey(string devEUI) => string.Concat("joinloader:", devEUI);
+        private static string GetJoinDeviceLoaderCacheKey(string devEUI) => string.Concat("joinloader:", devEUI);
 
         // Removes join device loader from cache
-        void RemoveJoinDeviceLoader(string devEUI) => this.cache.Remove(GetJoinDeviceLoaderCacheKey(devEUI));
+        private void RemoveJoinDeviceLoader(string devEUI) => this.cache.Remove(GetJoinDeviceLoaderCacheKey(devEUI));
 
         // Gets or adds a join device loader to the memory cache
-        JoinDeviceLoader GetOrCreateJoinDeviceLoader(IoTHubDeviceInfo ioTHubDeviceInfo)
+        private JoinDeviceLoader GetOrCreateJoinDeviceLoader(IoTHubDeviceInfo ioTHubDeviceInfo)
         {
             // Need to get and ensure it has started since the GetOrAdd can create multiple objects
             // https://github.com/aspnet/Extensions/issues/708
@@ -296,7 +295,9 @@ namespace LoRaWan.NetworkServer
 
                 return loRaDevice;
             }
+#pragma warning disable CA1031 // Do not catch general exception types. TODO revisit as part of #565
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log(devEUI, $"failed to get join devices from api. {ex.Message}", LogLevel.Error);
                 return null;

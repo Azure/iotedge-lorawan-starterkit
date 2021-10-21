@@ -27,10 +27,8 @@ namespace LoRaWan.Tests.Integration
         private ConnectionMultiplexer redis;
 
         private int redisPort;
-
-        string containerId;
-
-        static int uniqueRedisPort = 6000;
+        private string containerId;
+        private static int uniqueRedisPort = 6000;
 
         public IDatabase Database { get; set; }
 
@@ -93,7 +91,9 @@ namespace LoRaWan.Tests.Integration
 
                 System.Console.WriteLine("Finish booting sequence container...");
             }
+#pragma warning disable CA1031 // Do not catch general exception types. This is for tests
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 System.Console.WriteLine(ex.ToString());
             }

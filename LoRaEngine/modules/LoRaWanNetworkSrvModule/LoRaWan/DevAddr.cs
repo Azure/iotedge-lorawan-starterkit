@@ -20,10 +20,8 @@ namespace LoRaWan
            +--------|---------+ */
 
         public const int Size = sizeof(uint);
-
-        const uint NetworkAddressMask = 0x01ff_ffff;
-
-        readonly uint value;
+        private const uint NetworkAddressMask = 0x01ff_ffff;
+        private readonly uint value;
 
         public DevAddr(uint value) => this.value = value;
 

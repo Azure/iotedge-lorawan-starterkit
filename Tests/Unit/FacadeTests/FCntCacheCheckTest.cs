@@ -4,7 +4,7 @@
 namespace LoRaWan.Tests.Unit.FacadeTests
 {
     using LoraKeysManagerFacade;
-    using LoRaWan.Tests.Shared;
+    using LoRaWan.Tests.Common;
     using System.Threading.Tasks;
     using Xunit;
 
