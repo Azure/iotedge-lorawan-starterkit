@@ -15,5 +15,5 @@ jobs:
       with:
         artifact: /(.*)results/
         name: '$1 Results'
-        path: '**.trx'
+        path: '**/*.trx'
         reporter: dotnet-trx
