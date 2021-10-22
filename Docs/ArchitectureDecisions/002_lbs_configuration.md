@@ -1,4 +1,4 @@
-# LoRa Basic Station configuration endpoint implementation
+# 002. LoRa Basic Station configuration endpoint implementation
 
 Milestone / Epic: [#388](https://github.com/Azure/iotedge-lorawan-starterkit/issues/388)
 
@@ -13,4 +13,12 @@ The [LNS protocol][lns-protocol] specifies an endpoint that the LoRa Basic Stati
 As part of this ADR we describe how the LNS can provide the LBS with the necessary configuration.
 
 [lns-protocol]: https://lora-developers.semtech.com/build/software/lora-basics/lora-basics-for-gateways/?url=tcproto.html
+
+## Possible solutions
+
+### Mounted Docker volumes
+
+### Send configuration as part of LNS module twin
+
+### Track each LBS as separate IoT Hub device and make devices child device of LNS
 
