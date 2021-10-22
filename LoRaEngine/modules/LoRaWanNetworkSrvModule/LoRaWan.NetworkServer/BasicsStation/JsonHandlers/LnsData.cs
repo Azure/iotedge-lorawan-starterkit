@@ -9,22 +9,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
     public static class LnsData
     {
-        /// <remarks>
-        /// This method returns as soon as it has the read the message type from the JSON object
-        /// without validating the rest of the input.
-        /// </remarks>
-        internal static LnsMessageType ReadMessageType(Utf8JsonReader reader)
-        {
-            if (reader.TokenType != JsonTokenType.StartObject)
-                throw new JsonException();
-            _ = reader.Read();
-
-            while (reader.TokenType != JsonTokenType.EndObject)
-            {
-                if (reader.ValueTextEquals("msgtype"))
-                {
-                    _ = reader.Read();
-                    return reader.GetString() switch
+        internal static readonly IJsonReader<LnsMessageType> MessageTypeReader =
+            JsonReader.Object(
+                JsonReader.Property("msgtype",
+                    from s in JsonReader.String()
+                    select s switch
                     {
                         "version"       => LnsMessageType.Version,
                         "router_config" => LnsMessageType.RouterConfig,
@@ -33,18 +22,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                         "dntxed"        => LnsMessageType.TransmitConfirmation,
                         "dnmsg"         => LnsMessageType.DownlinkMessage,
                         var type => throw new JsonException("Invalid or unsupported message type: " + type)
-                    };
-                }
-                else
-                {
-                    _ = reader.Read();
-                    reader.Skip();
-                    _ = reader.Read();
-                }
-            }
-
-            throw new JsonException("Could not parse 'msgtype' field.");
-        }
+                    }));
 
         /*
             {
@@ -57,39 +35,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 "features"  : STRING
             }
          */
-        internal static void ReadVersionMessage(string input, out string stationVersion)
-        {
-            // We are deliberately ignoring firmware/package/model/protocol/features as these are not strictly needed at this stage of implementation
-            // TODO Tests for this method are missing (waiting for more usefulness of it)
-            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(input));
-            _ = reader.Read();
-            if (reader.TokenType != JsonTokenType.StartObject)
-                throw new JsonException();
-            _ = reader.Read();
 
-            stationVersion = default;
-            var readStationVersion = false;
+        // We are deliberately ignoring firmware/package/model/protocol/features as these are not strictly needed at this stage of implementation
+        // TODO Tests for this method are missing (waiting for more usefulness of it)
 
-            while (reader.TokenType != JsonTokenType.EndObject)
-            {
-                if (reader.ValueTextEquals("station"))
-                {
-                    _ = reader.Read();
-                    stationVersion = reader.GetString();
-                    readStationVersion = true;
-                    _ = reader.Read();
-                }
-                else
-                {
-                    _ = reader.Read();
-                    reader.Skip();
-                    _ = reader.Read();
-                }
-            }
-
-            if (!readStationVersion)
-                throw new JsonException("Missing required property 'station' in input JSON.");
-        }
+        internal static readonly IJsonReader<string> VersionMessageReader =
+            JsonReader.Object(JsonReader.Property("station", JsonReader.String()));
 
         /*
             {

@@ -5,101 +5,40 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 {
     using System;
     using System.Buffers.Binary;
-    using System.IO;
     using System.Net.NetworkInformation;
-    using System.Text;
     using System.Text.Json;
 
     public static class LnsDiscovery
     {
-        /// <summary>
-        /// Reads out a StationEui value from a Discovery Query JSON string.
-        /// </summary>
-        /// <param name="input">The input JSON string.</param>
-        /// <param name="stationEui">The StationEui parsed value.</param>
-        public static void ReadQuery(string input,
-                                     out StationEui stationEui)
-        {
-            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(input));
-            _ = reader.Read();
-            if (reader.TokenType != JsonTokenType.StartObject)
-                throw new JsonException();
-            _ = reader.Read();
-
-            stationEui = default;
-            var readStationEui = false;
-
-            while (reader.TokenType != JsonTokenType.EndObject)
-            {
-                if (reader.ValueTextEquals("router"))
-                {
-                    _ = reader.Read();
-#pragma warning disable IDE0010 // All missing cases are handled with NotSupportedException
-                    switch (reader.TokenType)
-#pragma warning restore IDE0010 // All missing cases are handled with NotSupportedException
-                    {
-                        case JsonTokenType.Number:
-                        {
-                            var v = reader.GetUInt64();
-                            stationEui = new StationEui(v);
-                            break;
-                        }
-                        case JsonTokenType.String:
-                        {
-                            var s = reader.GetString();
-                            stationEui = s.Contains(':', StringComparison.Ordinal)
-                                       ? Id6.TryParse(s, out var id6) ? new StationEui(id6) : throw new JsonException()
-                                       : Hexadecimal.TryParse(s, out var hhd, '-') ? new StationEui(hhd) : throw new JsonException();
-                            break;
-                        }
-                        default:
-                            throw new NotSupportedException("'router' field should be either a number or a string.");
-                    }
-                    readStationEui = true;
-                    _ = reader.Read();
-                }
-                else
-                {
-                    _ = reader.Read();
-                    reader.Skip();
-                    _ = reader.Read();
-                }
-            }
-
-            if (!readStationEui)
-                throw new JsonException("Missing required property 'router' in input JSON.");
-        }
+        internal static readonly IJsonReader<StationEui> QueryReader =
+            JsonReader.Object(
+                JsonReader.Property("router",
+                    JsonReader.Either(from n in JsonReader.UInt64()
+                                      select new StationEui(n),
+                                      from s in JsonReader.String()
+                                      select s.Contains(':', StringComparison.Ordinal)
+                                           ? Id6.TryParse(s, out var id6) ? new StationEui(id6) : throw new JsonException()
+                                           : Hexadecimal.TryParse(s, out var hhd, '-') ? new StationEui(hhd) : throw new JsonException())));
 
         /// <summary>
         /// Serializes the response for Discovery endpoint as a JSON string.
         /// </summary>
-        /// <param name="station">The <see cref="StationEui"/> of the querying basic station.</param>
+        /// <param name="writer">The write to use for serialization.</param>
+        /// <param name="router">The <see cref="StationEui"/> of the querying basic station.</param>
         /// <param name="muxs">The identity of the LNS Data endpoint (<see cref="Id6"/> formatted).</param>
-        /// <param name="uri">The URI of the LNS Data endpoint.</param>
+        /// <param name="url">The URI of the LNS Data endpoint.</param>
         /// <param name="error">The error message. If not <see langword="null"/>, the Basic Station will retry discovery.</param>
-        /// <returns>The JSON string to be sent as Discovery endpoint response.</returns>
-        public static string SerializeResponse(StationEui station,
-                                               string muxs,
-                                               Uri uri,
-                                               string error)
+        public static void SerializeResponse(Utf8JsonWriter writer, StationEui router, string muxs, Uri url, string error)
         {
-            if (!Id6.TryParse(muxs, out _)) throw new ArgumentException("Argument should be a valid string in ID6 format.", nameof(muxs));
-            if (uri is null) throw new ArgumentNullException(nameof(uri));
+            if (writer == null) throw new ArgumentNullException(nameof(writer));
+            if (!Id6.TryParse(muxs, out _)) throw new ArgumentException("Argument should be a string in ID6 format.", nameof(muxs));
+            if (url is null) throw new ArgumentNullException(nameof(url));
 
-            using var ms = new MemoryStream();
-            using var writer = new Utf8JsonWriter(ms);
-            InternalWriteResponse(writer, station, muxs, uri, error);
-            writer.Flush();
-            return Encoding.UTF8.GetString(ms.ToArray());
-        }
-
-        private static void InternalWriteResponse(Utf8JsonWriter writer, StationEui station, string lnsEndpoint, Uri lnsUri, string error)
-        {
             writer.WriteStartObject();
 
-            writer.WriteString("router", Id6.Format(station.AsUInt64, Id6.FormatOptions.Lowercase));
-            writer.WriteString("muxs", lnsEndpoint);
-            writer.WriteString("uri", lnsUri.ToString());
+            writer.WriteString("router", Id6.Format(router.AsUInt64, Id6.FormatOptions.Lowercase));
+            writer.WriteString("muxs", muxs);
+            writer.WriteString("uri", url.ToString());
             if (!string.IsNullOrEmpty(error))
                 writer.WriteString("error", error);
 

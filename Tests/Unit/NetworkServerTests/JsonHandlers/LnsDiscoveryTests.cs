@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
     using System.Net.NetworkInformation;
     using System.Text.Json;
     using LoRaWan;
+    using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Moq;
     using Xunit;
@@ -18,10 +19,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         [InlineData(@"{ ""router"": ""b8-27-eb-ff-fe-e1-e3-9a"" }")]
         [InlineData(@"{ ""router"": 13269834311795860378 }")]
         [InlineData(@"{ ""onePropBefore"": { ""value"": 123 }, ""router"": 13269834311795860378 }")]
-        [InlineData(@"{ ""router"": 13269834311795860378 }, ""onePropAfter"": { ""value"": 123 }")]
+        [InlineData(@"{ ""router"": 13269834311795860378, ""onePropAfter"": { ""value"": 123 } }")]
         public void ReadQuery(string json)
         {
-            LnsDiscovery.ReadQuery(json, out var stationEui);
+            var stationEui = LnsDiscovery.QueryReader.Read(json);
             Assert.Equal(new StationEui(0xb827_ebff_fee1_e39aUL), stationEui);
         }
 
@@ -30,7 +31,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         [InlineData(@"{}")]
         public void ReadQuery_Throws_OnMissingProperty(string json)
         {
-            Assert.Throws<JsonException>(() => LnsDiscovery.ReadQuery(json, out _));
+            Assert.Throws<JsonException>(() => _ = LnsDiscovery.QueryReader.Read(json));
         }
 
         [Theory]
@@ -39,7 +40,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         [InlineData(@"{ ""router"": true }")]
         public void ReadQuery_Throws_OnInvalidPropertyType(string json)
         {
-            Assert.Throws<NotSupportedException>(() => LnsDiscovery.ReadQuery(json, out _));
+            Assert.Throws<NotSupportedException>(() => _ = LnsDiscovery.QueryReader.Read(json));
         }
 
         private const string ValidMuxs = "0000:00FF:FE00:0000";
@@ -54,7 +55,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                              ? Id6.TryParse(stationId6, out var id6) ? new StationEui(id6) : throw new JsonException()
                              : Hexadecimal.TryParse(stationId6, out var hhd, '-') ? new StationEui(hhd) : throw new JsonException();
 
-            var computed = LnsDiscovery.SerializeResponse(stationEui, muxs, new Uri(routerDataEndpoint), error);
+            var computed = Json.Stringify(w => LnsDiscovery.SerializeResponse(w, stationEui, muxs, new Uri(routerDataEndpoint), error));
             Assert.Equal(expected, computed);
         }
 
@@ -66,7 +67,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
             _ = Id6.TryParse("b827:ebff:fee1:e39a", out var stationId6);
             var stationEui = new StationEui(stationId6);
 
-            Assert.Throws<ArgumentException>(() => LnsDiscovery.SerializeResponse(stationEui, muxs, new Uri(ValidUrlString), string.Empty));
+            Assert.Throws<ArgumentException>(() =>
+                _ = Json.Write(w => LnsDiscovery.SerializeResponse(w, stationEui, muxs, new Uri(ValidUrlString), string.Empty)));
         }
 
         [Fact]
@@ -75,7 +77,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
             _ = Id6.TryParse("b827:ebff:fee1:e39a", out var stationId6);
             var stationEui = new StationEui(stationId6);
 
-            Assert.Throws<ArgumentNullException>(() => LnsDiscovery.SerializeResponse(stationEui, ValidMuxs, null, string.Empty));
+            Assert.Throws<ArgumentNullException>(() =>
+                Json.Write(w => LnsDiscovery.SerializeResponse(w, stationEui, ValidMuxs, null, string.Empty)));
         }
 
         [Fact]

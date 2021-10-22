@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
         internal async Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
         {
-            LnsDiscovery.ReadQuery(json, out var stationEui);
+            var stationEui = LnsDiscovery.QueryReader.Read(json);
             this.logger.LogInformation($"Received discovery request from: {stationEui}");
 
             var httpContext = this.httpContextAccessor.HttpContext;
@@ -61,11 +61,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                                         .Any(unicastInfo => unicastInfo.Address.Equals(httpContext.Connection.LocalIpAddress)))
                                                    .SingleOrDefault();
 
-            var response = LnsDiscovery.SerializeResponse(stationEui,
-                                                          LnsDiscovery.GetMacAddressAsID6(networkInterface),
-                                                          new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}"),
-                                                          string.Empty);
-            await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, token);
+            var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}");
+            var muxs = LnsDiscovery.GetMacAddressAsID6(networkInterface);
+            var response = Json.Write(w => LnsDiscovery.SerializeResponse(w, stationEui, muxs, url, string.Empty));
+
+            await socket.SendAsync(response, WebSocketMessageType.Text, true, token);
 
             return false;
         }
@@ -74,12 +74,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
         internal async Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
         {
-            var bytes = Encoding.UTF8.GetBytes(json);
-
-            switch (Json.Read(bytes, LnsData.ReadMessageType))
+            switch (LnsData.MessageTypeReader.Read(json))
             {
                 case LnsMessageType.Version:
-                    LnsData.ReadVersionMessage(json, out var stationVersion);
+                    var stationVersion = LnsData.VersionMessageReader.Read(json);
                     this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
                     // A future implementation should retrieve dynamically a SX1301CONF for 'regional' configurations based on the 'stationEui'
                     // Current implementation is statically returning a SX1301CONF for EU863

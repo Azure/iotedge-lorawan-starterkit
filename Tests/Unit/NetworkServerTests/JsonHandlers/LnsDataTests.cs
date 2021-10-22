@@ -25,10 +25,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         [InlineData(@"{ ""msgtype"": ""updf"" }", LnsMessageType.UplinkDataFrame)]
         [InlineData(@"{ ""msgtype"": ""version"" }", LnsMessageType.Version)]
         [InlineData(@"{ ""onePropBefore"": { ""value"": 123 }, ""msgtype"": ""version"" }", LnsMessageType.Version)]
-        [InlineData(@"{ ""msgtype"": ""version"" }, ""onePropAfter"": { ""value"": 123 }", LnsMessageType.Version)]
+        [InlineData(@"{ ""msgtype"": ""version"", ""onePropAfter"": { ""value"": 123 } }", LnsMessageType.Version)]
         internal void ReadMessageType_Succeeds(string json, LnsMessageType expectedMessageType)
         {
-            var messageType = Json.Read(json, LnsData.ReadMessageType);
+            var messageType = LnsData.MessageTypeReader.Read(json);
             Assert.Equal(expectedMessageType, messageType);
         }
 
@@ -44,7 +44,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         [InlineData(@"{ ""msgtype"": ""NOTversion"" }, ""onePropAfter"": { ""value"": 123 }")]
         internal void ReadMessageType_Fails(string json)
         {
-            Assert.Throws<JsonException>(() => _ = Json.Read(json, LnsData.ReadMessageType));
+            Assert.Throws<JsonException>(() => _ = LnsData.MessageTypeReader.Read(json));
         }
 
         [Fact]
