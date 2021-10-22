@@ -105,13 +105,6 @@ jobs:
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/${{ env.TESTS_FOLDER }}/" \
           ${{ env.TESTS_FOLDER }}/Unit/LoRaWan.Tests.Unit.csproj
 
-    # Upload test results as artifact
-    - uses: actions/upload-artifact@v1
-      if: success() || failure()
-      with:
-        name: unit-test-results
-        path: ${{ env.TESTS_RESULTS_FOLDER }}/Unit
-
     # Pull Redis Cache docker image
     - name: Pulling Redis Cache image
       run: docker pull redis:5.0.4-alpine
@@ -124,11 +117,20 @@ jobs:
           /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:ExcludeByFile="**/${{ env.TESTS_FOLDER }}/" \
           ${{ env.TESTS_FOLDER }}/Integration/LoRaWan.Tests.Integration.csproj
 
+    # Upload test results as artifact
+    - uses: actions/upload-artifact@v2
+      if: success() || failure()
+      with:
+        name: test-results
+        path: |
+          ${{ env.TESTS_RESULTS_FOLDER }}/Unit
+          ${{ env.TESTS_RESULTS_FOLDER }}/Integration
+
     - name: Upload to Codecov test reports
       uses: codecov/codecov-action@v2
       with:
         directory: Tests/
-  
+
   check_if_deploy:
     needs:
       - env_var
