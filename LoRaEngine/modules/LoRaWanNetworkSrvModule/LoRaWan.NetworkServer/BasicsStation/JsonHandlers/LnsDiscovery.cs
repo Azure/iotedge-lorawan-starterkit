@@ -54,7 +54,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         /// Gets an ID6 compatible representation of the provided network interface MAC Address.
         /// </summary>
         /// <param name="networkInterface">The network interface for which the ID6 MAC Address representation should be extracted.</param>
-        /// <returns></returns>
         internal static string GetMacAddressAsId6(NetworkInterface networkInterface)
         {
             var physicalAddress = 0UL;
