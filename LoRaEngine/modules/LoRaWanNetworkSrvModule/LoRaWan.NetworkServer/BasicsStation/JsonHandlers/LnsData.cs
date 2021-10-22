@@ -63,9 +63,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                                  string hwspec,
                                                  (Hertz Min, Hertz Max) freqRange,
                                                  IEnumerable<(SpreadingFactor SpreadingFactor, Bandwidth Bandwidth, bool DnOnly)> dataRates,
-                                                 bool nocca = false,
-                                                 bool nodc = false,
-                                                 bool nodwell = false)
+                                                 bool noClearChannelAssessment = false,
+                                                 bool noDutyCycle = false,
+                                                 bool noDwellTimeLimitations = false)
         {
             if (region is null) throw new ArgumentNullException(nameof(region));
             if (region.Length == 0) throw new ArgumentException("Region should not be empty.", nameof(region));
@@ -148,9 +148,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
             writer.WriteEndArray(); // sx1301_conf: [...]
 
-            writer.WriteBoolean("nocca", nocca);
-            writer.WriteBoolean("nodc", nodc);
-            writer.WriteBoolean("nodwell", nodwell);
+            writer.WriteBoolean("nocca", noClearChannelAssessment);
+            writer.WriteBoolean("nodc", noDutyCycle);
+            writer.WriteBoolean("nodwell", noDwellTimeLimitations);
 
             writer.WriteEndObject();
 
