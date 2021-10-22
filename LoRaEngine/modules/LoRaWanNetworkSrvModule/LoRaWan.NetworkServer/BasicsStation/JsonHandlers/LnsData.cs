@@ -80,10 +80,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
             writer.WriteStartObject();
 
-            #region msgtype
             writer.WriteString("msgtype", "router_config");
-            #endregion
-            #region NetID
+
             writer.WritePropertyName("NetID");
             writer.WriteStartArray();
             if (allowedNetIds is not null)
@@ -94,8 +92,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 }
             }
             writer.WriteEndArray();
-            #endregion
-            #region JoinEui
+
             writer.WritePropertyName("JoinEui");
             writer.WriteStartArray();
             if (joinEuiRanges is not null)
@@ -109,21 +106,16 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 }
             }
             writer.WriteEndArray();
-            #endregion
-            #region region
+
             writer.WriteString("region", region);
-            #endregion
-            #region hwspec
             writer.WriteString("hwspec", hwspec);
-            #endregion
-            #region freq_range
+
             writer.WritePropertyName("freq_range");
             writer.WriteStartArray();
             writer.WriteNumberValue(freqRange.Min.AsUInt64);
             writer.WriteNumberValue(freqRange.Max.AsUInt64);
             writer.WriteEndArray();
-            #endregion
-            #region DRs
+
             writer.WritePropertyName("DRs");
             writer.WriteStartArray();
             foreach (var (sf, bw, dnOnly) in dataRates)
@@ -135,114 +127,58 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 writer.WriteEndArray();
             }
             writer.WriteEndArray();
-            #endregion
-            #region sx1301_conf
+
             writer.WritePropertyName("sx1301_conf");
             writer.WriteStartArray();
 
             writer.WriteStartObject();
-            #region radio_0
-            writer.WriteStartObject("radio_0");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("freq", 867500000);
-            writer.WriteEndObject();
-            #endregion
-            #region radio_1
-            writer.WriteStartObject("radio_1");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("freq", 868500000);
-            writer.WriteEndObject();
-            #endregion
-            #region chan_FSK
-            writer.WriteStartObject("chan_FSK");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("radio", 1);
-            writer.WriteNumber("if", 300000);
-            writer.WriteEndObject();
-            #endregion
-            #region chan_Lora_std
-            writer.WriteStartObject("chan_Lora_std");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("radio", 1);
-            writer.WriteNumber("if", -200000);
-            writer.WriteNumber("bandwidth", 250_000);
-            writer.WriteNumber("spread_factor", 7);
-            writer.WriteEndObject();
-            #endregion
-            #region chan_multiSF_0
-            writer.WriteStartObject("chan_multiSF_0");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("radio", 1);
-            writer.WriteNumber("if", -400000);
-            writer.WriteEndObject();
-            #endregion
-            #region chan_multiSF_1
-            writer.WriteStartObject("chan_multiSF_1");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("radio", 1);
-            writer.WriteNumber("if", -200000);
-            writer.WriteEndObject();
-            #endregion
-            #region chan_multiSF_2
-            writer.WriteStartObject("chan_multiSF_2");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("radio", 1);
-            writer.WriteNumber("if", 0);
-            writer.WriteEndObject();
-            #endregion
-            #region chan_multiSF_3
-            writer.WriteStartObject("chan_multiSF_3");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("radio", 0);
-            writer.WriteNumber("if", -400000);
-            writer.WriteEndObject();
-            #endregion
-            #region chan_multiSF_4
-            writer.WriteStartObject("chan_multiSF_4");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("radio", 0);
-            writer.WriteNumber("if", -200000);
-            writer.WriteEndObject();
-            #endregion
-            #region chan_multiSF_5
-            writer.WriteStartObject("chan_multiSF_5");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("radio", 0);
-            writer.WriteNumber("if", 0);
-            writer.WriteEndObject();
-            #endregion
-            #region chan_multiSF_6
-            writer.WriteStartObject("chan_multiSF_6");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("radio", 0);
-            writer.WriteNumber("if", 200000);
-            writer.WriteEndObject();
-            #endregion
-            #region chan_multiSF_7
-            writer.WriteStartObject("chan_multiSF_7");
-            writer.WriteBoolean("enable", true);
-            writer.WriteNumber("radio", 0);
-            writer.WriteNumber("if", 400000);
-            writer.WriteEndObject();
-            #endregion
+            WriteRadio("radio_0", enable: true, new Hertz(867500000));
+            WriteRadio("radio_1", enable: true, new Hertz(868500000));
+            WriteChan("chan_FSK", enable: true, radio: 1, @if: 300000);
+            WriteChan("chan_Lora_std", enable: true, radio: 1, @if: -200000, (Bandwidth.BW250, SpreadingFactor.SF7));
+            WriteChan("chan_multiSF_0", enable: true, radio: 1, @if: -400000);
+            WriteChan("chan_multiSF_1", enable: true, radio: 1, @if: -200000);
+            WriteChan("chan_multiSF_2", enable: true, radio: 1, @if: 0);
+            WriteChan("chan_multiSF_3", enable: true, radio: 0, @if: -400000);
+            WriteChan("chan_multiSF_4", enable: true, radio: 0, @if: -200000);
+            WriteChan("chan_multiSF_5", enable: true, radio: 0, @if: 0);
+            WriteChan("chan_multiSF_6", enable: true, radio: 0, @if: 200000);
+            WriteChan("chan_multiSF_7", enable: true, radio: 0, @if: 400000);
             writer.WriteEndObject();
 
-            writer.WriteEndArray();
-            #endregion
-            #region nocca
+            writer.WriteEndArray(); // sx1301_conf: [...]
+
             writer.WriteBoolean("nocca", nocca);
-            #endregion
-            #region nodc
             writer.WriteBoolean("nodc", nodc);
-            #endregion
-            #region nodwell
             writer.WriteBoolean("nodwell", nodwell);
-            #endregion
 
             writer.WriteEndObject();
 
             writer.Flush();
             return Encoding.UTF8.GetString(ms.ToArray());
+
+            void WriteRadio(string property, bool enable, Hertz frequency)
+            {
+                writer.WriteStartObject(property);
+                writer.WriteBoolean("enable", enable);
+                writer.WriteNumber("freq", frequency.AsUInt64);
+                writer.WriteEndObject();
+            }
+
+            void WriteChan(string property, bool enable, int radio, int @if,
+                (Bandwidth, SpreadingFactor) bwsf = default)
+            {
+                writer.WriteStartObject(property);
+                writer.WriteBoolean("enable", enable);
+                writer.WriteNumber("radio", radio);
+                writer.WriteNumber("if", @if);
+                var (bw, sf) = bwsf;
+                if (bw != Bandwidth.Undefined)
+                    writer.WriteNumber("bandwidth", (int)bw * 1000);
+                if (sf != SpreadingFactor.Undefined)
+                    writer.WriteNumber("spread_factor", (int)sf);
+                writer.WriteEndObject();
+            }
         }
     }
 }
