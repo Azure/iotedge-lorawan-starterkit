@@ -88,18 +88,16 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
             var physicalAddress48 = new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66 };
             var physicalAddress = new PhysicalAddress(physicalAddress48);
             networkInterface.Setup(x => x.GetPhysicalAddress()).Returns(physicalAddress);
-            var expected = "1122:33FF:FE44:5566";
 
             var id6Mac = LnsDiscovery.GetMacAddressAsId6(networkInterface.Object);
-            Assert.Equal(expected, id6Mac);
+            Assert.Equal("1122:33FF:FE44:5566", id6Mac);
         }
 
         [Fact]
         public void GetMacAddressAsId6_Returns_ZeroFilledId6_WithNoInterface()
         {
-            var expected = "0000:0000:0000:0000";
             var id6Mac = LnsDiscovery.GetMacAddressAsId6(null);
-            Assert.Equal(expected, id6Mac);
+            Assert.Equal("0000:0000:0000:0000", id6Mac);
         }
     }
 }
