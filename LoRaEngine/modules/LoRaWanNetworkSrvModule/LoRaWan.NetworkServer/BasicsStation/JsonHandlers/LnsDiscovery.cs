@@ -27,21 +27,26 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         /// <param name="router">The <see cref="StationEui"/> of the querying basic station.</param>
         /// <param name="muxs">The identity of the LNS Data endpoint (<see cref="Id6"/> formatted).</param>
         /// <param name="url">The URI of the LNS Data endpoint.</param>
-        /// <param name="error">The error message. If not <see langword="null"/>, the Basic Station will retry discovery.</param>
-        public static void SerializeResponse(Utf8JsonWriter writer, StationEui router, string muxs, Uri url, string error)
+        public static void SerializeResponse(Utf8JsonWriter writer, StationEui router, string muxs, Uri url)
         {
             if (writer == null) throw new ArgumentNullException(nameof(writer));
             if (!Id6.TryParse(muxs, out _)) throw new ArgumentException("Argument should be a string in ID6 format.", nameof(muxs));
             if (url is null) throw new ArgumentNullException(nameof(url));
 
             writer.WriteStartObject();
-
             writer.WriteString("router", Id6.Format(router.AsUInt64, Id6.FormatOptions.Lowercase));
             writer.WriteString("muxs", muxs);
             writer.WriteString("uri", url.ToString());
-            if (!string.IsNullOrEmpty(error))
-                writer.WriteString("error", error);
+            writer.WriteEndObject();
+        }
 
+        public static void SerializeResponse(Utf8JsonWriter writer, StationEui router, string error)
+        {
+            if (writer == null) throw new ArgumentNullException(nameof(writer));
+
+            writer.WriteStartObject();
+            writer.WriteString("router", Id6.Format(router.AsUInt64, Id6.FormatOptions.Lowercase));
+            writer.WriteString("error", error);
             writer.WriteEndObject();
         }
 
