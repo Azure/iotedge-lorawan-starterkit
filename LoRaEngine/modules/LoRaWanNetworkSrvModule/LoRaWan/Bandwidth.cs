@@ -10,9 +10,9 @@ namespace LoRaWan
     public enum Bandwidth
     {
         Undefined = 0,
-        BW125 = 125, // KHz (uplink channel)
-        BW250 = 250, // KHz (uplink channel)
-        BW500 = 500, // KHz (downlink channel)
+        BW125 = 125, // KHz
+        BW250 = 250, // KHz
+        BW500 = 500, // KHz
     }
 
     public static class BandwidthExtensions
