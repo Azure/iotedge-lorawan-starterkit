@@ -91,7 +91,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.FromSeconds(0));
             messageProcessor.DispatchRequest(request);
 
             // Expectations
