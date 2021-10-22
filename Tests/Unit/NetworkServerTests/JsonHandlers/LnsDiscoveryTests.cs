@@ -49,18 +49,18 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         [Theory]
         [InlineData("b8-27-eb-ff-fe-e1-e3-9a", ValidMuxs, ValidUrlString, @"{""router"":""b827:ebff:fee1:e39a"",""muxs"":""0000:00FF:FE00:0000"",""uri"":""ws://localhost:5000/router-data""}")]
         [InlineData("b827:ebff:fee1:e39a", ValidMuxs, ValidUrlString, @"{""router"":""b827:ebff:fee1:e39a"",""muxs"":""0000:00FF:FE00:0000"",""uri"":""ws://localhost:5000/router-data""}")]
-        public void Serialize_Succeeds(string stationId6, string muxs, string routerDataEndpoint, string expected)
+        public void Write_Succeeds(string stationId6, string muxs, string routerDataEndpoint, string expected)
         {
             var stationEui = stationId6.Contains(':', StringComparison.Ordinal)
                              ? Id6.TryParse(stationId6, out var id6) ? new StationEui(id6) : throw new JsonException()
                              : Hexadecimal.TryParse(stationId6, out var hhd, '-') ? new StationEui(hhd) : throw new JsonException();
 
-            var computed = Json.Stringify(w => LnsDiscovery.SerializeResponse(w, stationEui, muxs, new Uri(routerDataEndpoint)));
+            var computed = Json.Stringify(w => LnsDiscovery.WriteResponse(w, stationEui, muxs, new Uri(routerDataEndpoint)));
             Assert.Equal(expected, computed);
         }
 
         [Fact]
-        public void Serialize_Fails_BecauseOfNonId6Muxs()
+        public void Write_Fails_BecauseOfNonId6Muxs()
         {
             var muxs = "000000FFFE000000";
 
@@ -68,17 +68,17 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
             var stationEui = new StationEui(stationId6);
 
             Assert.Throws<ArgumentException>(() =>
-                _ = Json.Write(w => LnsDiscovery.SerializeResponse(w, stationEui, muxs, new Uri(ValidUrlString))));
+                _ = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, muxs, new Uri(ValidUrlString))));
         }
 
         [Fact]
-        public void Serialize_Fails_BecauseNullUri()
+        public void Write_Fails_BecauseNullUri()
         {
             _ = Id6.TryParse("b827:ebff:fee1:e39a", out var stationId6);
             var stationEui = new StationEui(stationId6);
 
             Assert.Throws<ArgumentNullException>(() =>
-                Json.Write(w => LnsDiscovery.SerializeResponse(w, stationEui, ValidMuxs, null)));
+                Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, ValidMuxs, null)));
         }
 
         [Fact]

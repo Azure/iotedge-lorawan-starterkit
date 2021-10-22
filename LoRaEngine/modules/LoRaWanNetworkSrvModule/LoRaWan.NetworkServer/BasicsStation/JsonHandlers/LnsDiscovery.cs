@@ -21,13 +21,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                            : Hexadecimal.TryParse(s, out var hhd, '-') ? new StationEui(hhd) : throw new JsonException())));
 
         /// <summary>
-        /// Serializes the response for Discovery endpoint as a JSON string.
+        /// Writes the response for Discovery endpoint as a JSON string.
         /// </summary>
         /// <param name="writer">The write to use for serialization.</param>
         /// <param name="router">The <see cref="StationEui"/> of the querying basic station.</param>
         /// <param name="muxs">The identity of the LNS Data endpoint (<see cref="Id6"/> formatted).</param>
         /// <param name="url">The URI of the LNS Data endpoint.</param>
-        public static void SerializeResponse(Utf8JsonWriter writer, StationEui router, string muxs, Uri url)
+        public static void WriteResponse(Utf8JsonWriter writer, StationEui router, string muxs, Uri url)
         {
             if (writer == null) throw new ArgumentNullException(nameof(writer));
             if (!Id6.TryParse(muxs, out _)) throw new ArgumentException("Argument should be a string in ID6 format.", nameof(muxs));
@@ -40,7 +40,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             writer.WriteEndObject();
         }
 
-        public static void SerializeResponse(Utf8JsonWriter writer, StationEui router, string error)
+        public static void WriteResponse(Utf8JsonWriter writer, StationEui router, string error)
         {
             if (writer == null) throw new ArgumentNullException(nameof(writer));
 
