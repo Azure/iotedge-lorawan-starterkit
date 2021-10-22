@@ -12,7 +12,6 @@ namespace LoRaTools.LoRaMessage
     using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
-    using Org.BouncyCastle.Crypto;
     using Org.BouncyCastle.Crypto.Engines;
     using Org.BouncyCastle.Crypto.Parameters;
     using Org.BouncyCastle.Security;

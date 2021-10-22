@@ -5,7 +5,6 @@ namespace LoRaWan.Tests.E2E
 {
     using System;
     using System.IO.Ports;
-    using System.Runtime.InteropServices;
     using System.Threading.Tasks;
     using LoRaWan.Tests.Common;
 

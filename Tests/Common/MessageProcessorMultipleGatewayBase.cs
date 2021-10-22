@@ -5,15 +5,12 @@ namespace LoRaWan.Tests.Common
 {
     using System;
     using System.Globalization;
-    using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
-    using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Moq;
-    using Xunit;
 
     public class MessageProcessorMultipleGatewayBase : MessageProcessorTestBase
     {
