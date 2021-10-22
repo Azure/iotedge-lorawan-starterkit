@@ -19,8 +19,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging;
-    using static SpreadingFactor;
     using static Bandwidth;
+    using static RouterConfigStationFlags;
+    using static SpreadingFactor;
 
     public class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
@@ -97,9 +98,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                                  (SF7, BW125, false),
                                                                  (SF7, BW250, false),
                                                              },
-                                                             true,
-                                                             true,
-                                                             true);
+                                                             NoClearChannelAssessment | NoDutyCycle | NoDwellTimeLimitations);
                     await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, token);
                     break;
                 case LnsMessageType.JoinRequest:

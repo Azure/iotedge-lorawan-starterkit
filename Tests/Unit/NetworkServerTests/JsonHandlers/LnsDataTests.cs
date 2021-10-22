@@ -13,6 +13,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
     using NetworkServer;
     using Xunit;
     using static Bandwidth;
+    using static NetworkServer.BasicsStation.RouterConfigStationFlags;
     using static SpreadingFactor;
 
     public class LnsDataTests
@@ -145,9 +146,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                                                        (SF7 , BW125, false),
                                                        (SF7 , BW250, false),
                                                    },
-                                                   true,
-                                                   true,
-                                                   true);
+                                                   NoClearChannelAssessment | NoDutyCycle | NoDwellTimeLimitations);
 
             Assert.Equal(TrimJson(expected), actual);
         }
@@ -253,9 +252,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                                                        (SF7 , BW125, false),
                                                        (SF7 , BW250, false),
                                                    },
-                                                   true,
-                                                   true,
-                                                   true);
+                                                   NoClearChannelAssessment | NoDutyCycle | NoDwellTimeLimitations);
 
             Assert.Equal(TrimJson(expected), actual);
         }

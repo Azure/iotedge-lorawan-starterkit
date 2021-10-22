@@ -6,6 +6,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
     using System.Linq;
     using System.Text;
     using System.Text.Json;
+    using static RouterConfigStationFlags;
 
     public static class LnsData
     {
@@ -57,15 +58,14 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
               "nodwell"    : BOOL
             }
          */
+
         internal static string WriteRouterConfig(IEnumerable<NetId> allowedNetIds,
                                                  IEnumerable<(JoinEui Min, JoinEui Max)> joinEuiRanges,
                                                  string region,
                                                  string hwspec,
                                                  (Hertz Min, Hertz Max) freqRange,
                                                  IEnumerable<(SpreadingFactor SpreadingFactor, Bandwidth Bandwidth, bool DnOnly)> dataRates,
-                                                 bool noClearChannelAssessment = false,
-                                                 bool noDutyCycle = false,
-                                                 bool noDwellTimeLimitations = false)
+                                                 RouterConfigStationFlags flags = None)
         {
             if (region is null) throw new ArgumentNullException(nameof(region));
             if (region.Length == 0) throw new ArgumentException("Region should not be empty.", nameof(region));
@@ -148,9 +148,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
             writer.WriteEndArray(); // sx1301_conf: [...]
 
-            writer.WriteBoolean("nocca", noClearChannelAssessment);
-            writer.WriteBoolean("nodc", noDutyCycle);
-            writer.WriteBoolean("nodwell", noDwellTimeLimitations);
+            writer.WriteBoolean("nocca", (flags & NoClearChannelAssessment) == NoClearChannelAssessment);
+            writer.WriteBoolean("nodc", (flags & NoDutyCycle) == NoDutyCycle);
+            writer.WriteBoolean("nodwell", (flags & NoDwellTimeLimitations) == NoDwellTimeLimitations);
 
             writer.WriteEndObject();
 
