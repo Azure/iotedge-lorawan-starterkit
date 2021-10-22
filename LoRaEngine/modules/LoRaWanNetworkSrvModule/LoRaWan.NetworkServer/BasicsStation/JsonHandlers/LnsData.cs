@@ -71,7 +71,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             if (region.Length == 0) throw new ArgumentException("Region should not be empty.", nameof(region));
             if (hwspec is null) throw new ArgumentNullException(nameof(hwspec));
             if (hwspec.Length == 0) throw new ArgumentException("hwspec should not be empty.", nameof(hwspec));
-            if (freqRange is var (min, max) && min.Equals(max)) throw new ArgumentException("Expecting a range, therefore minimum and maximum frequencies should differ.");
+            if (freqRange is var (minFreq, maxFreq) && minFreq == maxFreq) throw new ArgumentException("Expecting a range, therefore minimum and maximum frequencies should differ.");
             if (dataRates is null) throw new ArgumentNullException(nameof(dataRates));
             if (dataRates.Count() is 0) throw new ArgumentException($"Datarates list should not be empty.", nameof(dataRates));
 
@@ -97,11 +97,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             writer.WriteStartArray();
             if (joinEuiRanges is not null)
             {
-                foreach (var (Min, Max) in joinEuiRanges)
+                foreach (var (minJoinEui, maxJoinEui) in joinEuiRanges)
                 {
                     writer.WriteStartArray();
-                    writer.WriteNumberValue(Min.AsUInt64);
-                    writer.WriteNumberValue(Max.AsUInt64);
+                    writer.WriteNumberValue(minJoinEui.AsUInt64);
+                    writer.WriteNumberValue(maxJoinEui.AsUInt64);
                     writer.WriteEndArray();
                 }
             }
