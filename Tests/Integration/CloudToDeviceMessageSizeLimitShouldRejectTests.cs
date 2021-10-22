@@ -46,20 +46,11 @@ namespace LoRaWan.Tests.Integration
             var euRegion = RegionManager.EU868;
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
-            var upstreamMessageMacCommandSize = 0;
-            string expectedDownlinkDatr;
 
-            if (hasMacInUpstream)
-            {
-                upstreamMessageMacCommandSize = new LinkCheckAnswer(1, 1).Length;
-            }
-
-            expectedDownlinkDatr = datr;
-
-            var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
-                - c2dMessageMacCommandSize
-                + 1 // make message too long on purpose
-                - Constants.LoraProtocolOverheadSize;
+            var c2dPayloadSize = euRegion.GetMaxPayloadSize(datr)
+                 - c2dMessageMacCommandSize
+                 + 1 // make message too long on purpose
+                 - Constants.LoraProtocolOverheadSize;
 
             var c2dMessagePayload = TestUtils.GeneratePayload("123457890", (int)c2dPayloadSize);
 
@@ -106,7 +97,7 @@ namespace LoRaWan.Tests.Integration
             if (shouldHaveADownlink)
             {
                 Assert.NotNull(request.ResponseDownlink);
-                Assert.Equal(expectedDownlinkDatr, request.ResponseDownlink.Txpk.Datr);
+                Assert.Equal(datr, request.ResponseDownlink.Txpk.Datr);
 
                 var downlinkMessage = PacketForwarder.DownlinkMessages[0];
                 var payloadDataDown = new LoRaPayloadData(Convert.FromBase64String(downlinkMessage.Txpk.Data));
