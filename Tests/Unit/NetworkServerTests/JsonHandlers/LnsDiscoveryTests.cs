@@ -84,12 +84,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         [Fact]
         public void GetMacAddressAsId6_Succeeds_WithValidPhysicalAddress()
         {
-            var networkInterface = new Mock<NetworkInterface>();
             var physicalAddress48 = new byte[] { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66 };
             var physicalAddress = new PhysicalAddress(physicalAddress48);
-            networkInterface.Setup(x => x.GetPhysicalAddress()).Returns(physicalAddress);
 
-            var id6Mac = LnsDiscovery.GetMacAddressAsId6(networkInterface.Object);
+            var id6Mac = LnsDiscovery.GetMacAddressAsId6(physicalAddress);
             Assert.Equal("1122:33FF:FE44:5566", id6Mac);
         }
 

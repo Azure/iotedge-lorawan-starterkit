@@ -53,16 +53,18 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         /// <summary>
         /// Gets an ID6 compatible representation of the provided network interface MAC Address.
         /// </summary>
-        /// <param name="networkInterface">The network interface for which the ID6 MAC Address representation should be extracted.</param>
-        internal static string GetMacAddressAsId6(NetworkInterface networkInterface)
+        /// <param name="address">
+        /// The 48-bit physical address for which the ID6 MAC address representation should be
+        /// computed.</param>
+        internal static string GetMacAddressAsId6(PhysicalAddress address)
         {
             var physicalAddress = 0UL;
 
-            if (networkInterface is not null)
+            if (address is not null)
             {
                 // As per specification (https://doc.sm.tc/station/glossary.html#term-mac)
                 // for an ID6 based on a MAC Address we expect FFFE in the middle
-                var physicalAddress48 = networkInterface.GetPhysicalAddress().GetAddressBytes();
+                var physicalAddress48 = address.GetAddressBytes();
 
                 Span<byte> physicalAddress64 = stackalloc byte[8];
                 physicalAddress48[..3].CopyTo(physicalAddress64);

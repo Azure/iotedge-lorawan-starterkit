@@ -322,7 +322,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                                Assert.True(end);
                            });
 
-            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{LnsDiscovery.GetMacAddressAsId6(firstNic)}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}""}}";
+            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{LnsDiscovery.GetMacAddressAsId6(firstNic?.GetPhysicalAddress())}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}""}}";
 
             // act
             await this.lnsMessageProcessorMock.InternalHandleDiscoveryAsync(inputJsonString, this.socketMock.Object, CancellationToken.None);
