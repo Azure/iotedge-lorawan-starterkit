@@ -46,15 +46,7 @@ namespace LoRaWan.Tests.Integration
             var euRegion = RegionManager.EU868;
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
-            var upstreamMessageMacCommandSize = 0;
-            string expectedDownlinkDatr;
-
-            if (hasMacInUpstream)
-            {
-                upstreamMessageMacCommandSize = new LinkCheckAnswer(1, 1).Length;
-            }
-
-            expectedDownlinkDatr = datr;
+            var expectedDownlinkDatr = datr;
 
             var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
                 - c2dMessageMacCommandSize
