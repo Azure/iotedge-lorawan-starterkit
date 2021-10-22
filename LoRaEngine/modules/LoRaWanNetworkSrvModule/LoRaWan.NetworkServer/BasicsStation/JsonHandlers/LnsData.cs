@@ -174,7 +174,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 writer.WriteNumber("if", @if);
                 var (bw, sf) = bwsf;
                 if (bw != Bandwidth.Undefined)
-                    writer.WriteNumber("bandwidth", (int)bw * 1000);
+                    writer.WriteNumber("bandwidth", bw.ToHertz().AsUInt64);
                 if (sf != SpreadingFactor.Undefined)
                     writer.WriteNumber("spread_factor", (int)sf);
                 writer.WriteEndObject();
