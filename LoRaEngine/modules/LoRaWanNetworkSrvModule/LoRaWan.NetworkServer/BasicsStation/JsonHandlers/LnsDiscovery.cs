@@ -60,7 +60,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
             if (networkInterface is not null)
             {
-                // As per specification (https://doc.sm.tc/station/glossary.html?highlight=id6)
+                // As per specification (https://doc.sm.tc/station/glossary.html#term-mac)
                 // for an ID6 based on a MAC Address we expect FFFE in the middle
                 var physicalAddress48 = networkInterface.GetPhysicalAddress().GetAddressBytes();
 
