@@ -24,8 +24,8 @@ namespace LoRaWan.Tests.Integration
     [Collection(TestConstants.C2D_Size_Limit_TestCollectionName)]
     public sealed class ClassCCloudToDeviceMessageSizeLimitTests : IDisposable
     {
-        const string ServerGatewayID = "test-gateway";
-        const string IotHubHostName = "fake.azure-devices.net";
+        private const string ServerGatewayID = "test-gateway";
+        private const string IotHubHostName = "fake.azure-devices.net";
 
         private TestPacketForwarder PacketForwarder { get; }
 

@@ -8,7 +8,6 @@ namespace LoraKeysManagerFacade
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.Devices;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
@@ -163,7 +162,7 @@ namespace LoraKeysManagerFacade
                                 {
                                     var query = await this.registryManager.FindDeviceByAddrAsync(devAddr);
 
-                                    int resultCount = 0;
+                                    var resultCount = 0;
 
                                     while (query.HasMoreResults)
                                     {

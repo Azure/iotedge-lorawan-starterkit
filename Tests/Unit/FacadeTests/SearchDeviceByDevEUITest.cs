@@ -11,7 +11,6 @@ namespace LoRaWan.Tests.Unit.FacadeTests
     using LoRaTools.CommonAPI;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
-    using Microsoft.Azure.Devices;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using Xunit;

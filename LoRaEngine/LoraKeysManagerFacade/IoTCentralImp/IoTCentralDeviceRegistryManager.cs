@@ -1,14 +1,13 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.IoTCentralImp
 {
     using System;
+    using System.Globalization;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Formatting;
-    using System.Security;
-    using System.Security.Cryptography;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.IoTCentralImp.Definitions;
     using Newtonsoft.Json.Serialization;
@@ -36,7 +35,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
 
         public async Task<IDevice> GetDeviceAsync(string deviceId)
         {
-            var deviceRequest = await this.client.GetAsync($"/api/devices/{deviceId}?{API_VERSION}");
+            var deviceRequest = await this.client.GetAsync(new Uri(this.client.BaseAddress, $"/api/devices/{deviceId}?{API_VERSION}"));
 
             if (deviceRequest.StatusCode == HttpStatusCode.NotFound)
             {
@@ -45,23 +44,23 @@ namespace LoraKeysManagerFacade.IoTCentralImp
 
             var deviceResponse = await deviceRequest.Content.ReadAsAsync<Device>();
 
-            var attestation = this.provisioningHelper.ProvisionDevice(deviceId, out string assignedIoTHubHostname);
+            var attestation = this.provisioningHelper.ProvisionDevice(deviceId, out var assignedIoTHubHostname);
 
             return new IoTCentralDevice(deviceResponse, attestation, assignedIoTHubHostname);
         }
 
         public async Task<IDeviceTwin> GetTwinAsync(string deviceId)
         {
-            var deviceRequest = await this.client.GetAsync($"/api/devices/{deviceId}/properties?{API_VERSION}");
+            var deviceRequest = await this.client.GetAsync(new Uri(this.client.BaseAddress, $"/api/devices/{deviceId}/properties?{API_VERSION}"));
 
-            deviceRequest.EnsureSuccessStatusCode();
+            _ = deviceRequest.EnsureSuccessStatusCode();
 
             var properties = await deviceRequest.Content.ReadAsAsync<DesiredProperties>();
 
             return new DeviceTwin(deviceId, properties);
         }
 
-        public Task CreateEdgeDeviceAsync(string edgeDeviceName, bool deployEndDevice, string facadeUrl, string facadeKey, string region, string resetPin, string spiSpeed, string spiDev)
+        public Task CreateEdgeDeviceAsync(string edgeDeviceName, bool deployEndDevice, Uri facadeUrl, string facadeKey, string region, string resetPin, string spiSpeed, string spiDev)
         {
             throw new NotImplementedException();
         }
@@ -74,7 +73,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
 
         public Task<IRegistryPageResult<IDeviceTwin>> FindDevicesByLastUpdateDate(string updatedSince)
         {
-            var referenceDate = DateTime.Parse(updatedSince);
+            var referenceDate = DateTime.Parse(updatedSince, CultureInfo.GetCultureInfo("en-US"));
             var pageResult = new DeviceTwinPageResult(this.client, API_VERSION, c => c.GetLastUpdated() >= referenceDate);
 
             return Task.FromResult<IRegistryPageResult<IDeviceTwin>>(pageResult);

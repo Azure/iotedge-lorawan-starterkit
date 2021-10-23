@@ -50,11 +50,11 @@ namespace LoRaWan.NetworkServer
             return loRaDevice;
         }
 
-        private string CreateIoTHubConnectionString(string devEUI, string primaryKey, string assignedIoTHubHostname)
+        private string CreateIoTHubConnectionString(string devEUI, string assignedIoTHubHostname)
         {
             var connectionString = string.Empty;
 
-            string effectiveIoTHubHostName = !string.IsNullOrEmpty(assignedIoTHubHostname) ? assignedIoTHubHostname : this.configuration.IoTHubHostName;
+            var effectiveIoTHubHostName = !string.IsNullOrEmpty(assignedIoTHubHostname) ? assignedIoTHubHostname : this.configuration.IoTHubHostName;
 
             if (string.IsNullOrEmpty(effectiveIoTHubHostName))
             {
@@ -80,7 +80,7 @@ namespace LoRaWan.NetworkServer
         {
             try
             {
-                var partConnection = this.CreateIoTHubConnectionString(devEUI, primaryKey, assignedIoTHubHostName);
+                var partConnection = this.CreateIoTHubConnectionString(devEUI, assignedIoTHubHostName);
                 var deviceConnectionStr = $"{partConnection}DeviceId={devEUI};SharedAccessKey={primaryKey}";
 
                 // Enabling AMQP multiplexing

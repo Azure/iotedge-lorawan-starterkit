@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoraKeysManagerFacade.Test
+namespace LoRaWan.Tests.Unit.FacadeTests
 {
     using System;
     using System.Linq;
     using System.Net;
     using System.Net.Http;
-    using System.Security.Cryptography;
     using System.Text;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.IoTCentralImp;
     using LoraKeysManagerFacade.IoTCentralImp.Definitions;
+    using LoRaWan.Tests.Common;
     using Moq;
     using Moq.Protected;
     using Xunit;
@@ -22,7 +22,7 @@ namespace LoraKeysManagerFacade.Test
     {
         private delegate SymmetricKeyAttestation ServiceProcessValue(string inputValue, out string outputValue);
 
-        private HttpClient InitHttpClient(Mock<HttpMessageHandler> handlerMock)
+        private static HttpClient InitHttpClient(Mock<HttpMessageHandler> handlerMock)
         {
             return new HttpClient(handlerMock.Object)
             {
@@ -38,14 +38,16 @@ namespace LoraKeysManagerFacade.Test
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
             var expectedPrimaryKey = string.Empty;
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
             var deviceResponseMock = new HttpResponseMessage();
+#pragma warning restore CA2000 // Dispose objects before losing scope
             var device = new Device
             {
                 Id = NewUniqueEUI32(),
                 Provisioned = true
             };
 
-            SymmetricKeyAttestation attestation = new SymmetricKeyAttestation
+            var attestation = new SymmetricKeyAttestation
             {
                 Type = "symmetricKey",
                 SymmetricKey = new SymmetricKey
@@ -72,7 +74,7 @@ namespace LoraKeysManagerFacade.Test
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync((HttpRequestMessage req, CancellationToken token) =>
                 {
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{device.Id}"))
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{device.Id}", StringComparison.OrdinalIgnoreCase))
                     {
                         return deviceResponseMock;
                     }
@@ -81,9 +83,11 @@ namespace LoraKeysManagerFacade.Test
                 })
                 .Verifiable();
 
-            var mockHttpClient = this.InitHttpClient(handlerMock);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var mockHttpClient = InitHttpClient(handlerMock);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
+            var instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
 
             var response = await instance.GetDeviceAsync(device.Id);
 
@@ -103,7 +107,9 @@ namespace LoraKeysManagerFacade.Test
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
             var expectedPrimaryKey = string.Empty;
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
             var deviceResponseMock = new HttpResponseMessage();
+#pragma warning restore CA2000 // Dispose objects before losing scope
             var device = new Device
             {
                 Id = NewUniqueEUI32(),
@@ -112,14 +118,16 @@ namespace LoraKeysManagerFacade.Test
 
             deviceResponseMock.Content = new StringContent(JsonSerializer.Serialize(device), Encoding.UTF8, "application/json");
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
             var notFoundResponseMock = new HttpResponseMessage(HttpStatusCode.NotFound);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             handlerMock
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync((HttpRequestMessage req, CancellationToken token) =>
                 {
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{device.Id}"))
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{device.Id}", StringComparison.OrdinalIgnoreCase))
                     {
                         return deviceResponseMock;
                     }
@@ -135,9 +143,11 @@ namespace LoraKeysManagerFacade.Test
                                return new SymmetricKeyAttestation();
                            }));
 
-            var mockHttpClient = this.InitHttpClient(handlerMock);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var mockHttpClient = InitHttpClient(handlerMock);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
+            var instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
 
             var response = await instance.GetDeviceAsync(device.Id);
 
@@ -160,6 +170,7 @@ namespace LoraKeysManagerFacade.Test
                 Provisioned = false
             };
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
             var devicePropertiesContent = new StringContent(
                     "{" +
                     "    \"AppEUI\": \"trsr\"," +
@@ -192,13 +203,14 @@ namespace LoraKeysManagerFacade.Test
                     "}",
                     Encoding.UTF8,
                     "application/json");
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
             handlerMock
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync((HttpRequestMessage req, CancellationToken token) =>
                 {
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{device.Id}/properties"))
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{device.Id}/properties", StringComparison.OrdinalIgnoreCase))
                     {
                         return new HttpResponseMessage(HttpStatusCode.OK)
                         {
@@ -210,8 +222,11 @@ namespace LoraKeysManagerFacade.Test
                 })
                 .Verifiable();
 
-            var mockHttpClient = this.InitHttpClient(handlerMock);
-            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
+
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var mockHttpClient = InitHttpClient(handlerMock);
+#pragma warning restore CA2000 // Dispose objects before losing scope
+            var instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
 
             var properties = await instance.GetTwinAsync(device.Id);
 
@@ -227,7 +242,7 @@ namespace LoraKeysManagerFacade.Test
             var provisioningHelperMock = new Mock<IDeviceProvisioningHelper>(MockBehavior.Strict);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-            var data = new DeviceCollection
+            var data = new DeviceCollectionResult
             {
                 Value = Enumerable.Union(
                     new[]
@@ -246,7 +261,7 @@ namespace LoraKeysManagerFacade.Test
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync((HttpRequestMessage req, CancellationToken token) =>
                 {
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices"))
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices", StringComparison.OrdinalIgnoreCase))
                     {
                         return new HttpResponseMessage(HttpStatusCode.OK)
                         {
@@ -254,7 +269,7 @@ namespace LoraKeysManagerFacade.Test
                         };
                     }
 
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices/not-lora/properties"))
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices/not-lora/properties", StringComparison.OrdinalIgnoreCase))
                     {
                         return new HttpResponseMessage(HttpStatusCode.OK)
                         {
@@ -265,8 +280,8 @@ namespace LoraKeysManagerFacade.Test
                         };
                     }
 
-                    if (req.RequestUri.LocalPath.StartsWith($"/api/devices") &&
-                        req.RequestUri.LocalPath.EndsWith($"/properties"))
+                    if (req.RequestUri.LocalPath.StartsWith($"/api/devices", StringComparison.OrdinalIgnoreCase) &&
+                        req.RequestUri.LocalPath.EndsWith($"/properties", StringComparison.OrdinalIgnoreCase))
                     {
                         return new HttpResponseMessage(HttpStatusCode.OK)
                         {
@@ -284,9 +299,11 @@ namespace LoraKeysManagerFacade.Test
                 })
                 .Verifiable();
 
-            var mockHttpClient = this.InitHttpClient(handlerMock);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var mockHttpClient = InitHttpClient(handlerMock);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
+            var instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
 
             var results = await instance.FindConfiguredLoRaDevices();
 
@@ -303,7 +320,7 @@ namespace LoraKeysManagerFacade.Test
             handlerMock.Protected().Verify("SendAsync", Times.Exactly(1), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices"), ItExpr.IsAny<CancellationToken>());
             handlerMock.Protected().Verify("SendAsync", Times.Never(), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/simulated/properties"), ItExpr.IsAny<CancellationToken>());
             handlerMock.Protected().Verify("SendAsync", Times.Once(), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/not-lora/properties"), ItExpr.IsAny<CancellationToken>());
-            handlerMock.Protected().Verify("SendAsync", Times.Exactly(4), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath.StartsWith($"/api/devices") && c.RequestUri.LocalPath.EndsWith("/properties")), ItExpr.IsAny<CancellationToken>());
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(4), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath.StartsWith($"/api/devices", StringComparison.OrdinalIgnoreCase) && c.RequestUri.LocalPath.EndsWith("/properties", StringComparison.OrdinalIgnoreCase)), ItExpr.IsAny<CancellationToken>());
         }
 
         [Fact]
@@ -314,7 +331,7 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddr = NewUniqueEUI32();
 
-            var data = new DeviceCollection
+            var data = new DeviceCollectionResult
             {
                 Value = Enumerable.Union(
                     new[]
@@ -334,7 +351,7 @@ namespace LoraKeysManagerFacade.Test
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync((HttpRequestMessage req, CancellationToken token) =>
                 {
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices"))
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices", StringComparison.OrdinalIgnoreCase))
                     {
                         return new HttpResponseMessage(HttpStatusCode.OK)
                         {
@@ -342,7 +359,7 @@ namespace LoraKeysManagerFacade.Test
                         };
                     }
 
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices/not-lora/properties"))
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices/not-lora/properties", StringComparison.OrdinalIgnoreCase))
                     {
                         return new HttpResponseMessage(HttpStatusCode.OK)
                         {
@@ -353,7 +370,7 @@ namespace LoraKeysManagerFacade.Test
                         };
                     }
 
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{devAddr}/properties"))
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{devAddr}/properties", StringComparison.OrdinalIgnoreCase))
                     {
                         return new HttpResponseMessage(HttpStatusCode.OK)
                         {
@@ -367,8 +384,8 @@ namespace LoraKeysManagerFacade.Test
                         };
                     }
 
-                    if (req.RequestUri.LocalPath.StartsWith($"/api/devices") &&
-                        req.RequestUri.LocalPath.EndsWith($"/properties"))
+                    if (req.RequestUri.LocalPath.StartsWith($"/api/devices", StringComparison.OrdinalIgnoreCase) &&
+                        req.RequestUri.LocalPath.EndsWith($"/properties", StringComparison.OrdinalIgnoreCase))
                     {
                         return new HttpResponseMessage(HttpStatusCode.OK)
                         {
@@ -386,9 +403,11 @@ namespace LoraKeysManagerFacade.Test
                 })
                 .Verifiable();
 
-            var mockHttpClient = this.InitHttpClient(handlerMock);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var mockHttpClient = InitHttpClient(handlerMock);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
+            var instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
 
             var results = await instance.FindDeviceByAddrAsync(devAddr);
 
@@ -406,7 +425,7 @@ namespace LoraKeysManagerFacade.Test
             handlerMock.Protected().Verify("SendAsync", Times.Exactly(1), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/{devAddr}/properties"), ItExpr.IsAny<CancellationToken>());
             handlerMock.Protected().Verify("SendAsync", Times.Never(), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/simulated/properties"), ItExpr.IsAny<CancellationToken>());
             handlerMock.Protected().Verify("SendAsync", Times.Once(), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/not-lora/properties"), ItExpr.IsAny<CancellationToken>());
-            handlerMock.Protected().Verify("SendAsync", Times.Exactly(5), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath.StartsWith($"/api/devices") && c.RequestUri.LocalPath.EndsWith("/properties")), ItExpr.IsAny<CancellationToken>());
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(5), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath.StartsWith($"/api/devices", StringComparison.OrdinalIgnoreCase) && c.RequestUri.LocalPath.EndsWith("/properties", StringComparison.OrdinalIgnoreCase)), ItExpr.IsAny<CancellationToken>());
         }
 
         [Fact]
@@ -417,7 +436,7 @@ namespace LoraKeysManagerFacade.Test
 
             var devAddr = NewUniqueEUI32();
 
-            var data = new DeviceCollection
+            var data = new DeviceCollectionResult
             {
                 Value = Enumerable.Union(
                     new[]
@@ -437,7 +456,7 @@ namespace LoraKeysManagerFacade.Test
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync((HttpRequestMessage req, CancellationToken token) =>
                 {
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices"))
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices", StringComparison.OrdinalIgnoreCase))
                     {
                         return new HttpResponseMessage(HttpStatusCode.OK)
                         {
@@ -445,7 +464,7 @@ namespace LoraKeysManagerFacade.Test
                         };
                     }
 
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices/not-lora/properties"))
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices/not-lora/properties", StringComparison.OrdinalIgnoreCase))
                     {
                         return new HttpResponseMessage(HttpStatusCode.OK)
                         {
@@ -456,7 +475,7 @@ namespace LoraKeysManagerFacade.Test
                         };
                     }
 
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{devAddr}/properties"))
+                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{devAddr}/properties", StringComparison.OrdinalIgnoreCase))
                     {
                         var devicePropertiesContent = new StringContent(
                             $"{{" +
@@ -465,7 +484,7 @@ namespace LoraKeysManagerFacade.Test
                             $"        \"GatewayID\": {{" +
                             $"            \"desiredValue\": \"\"," +
                             $"            \"desiredVersion\": 2," +
-                            $"            \"lastUpdateTime\": \"{DateTime.Now.AddMinutes(-2).ToString("o")}\"," +
+                            $"            \"lastUpdateTime\": \"{DateTime.Now.AddMinutes(-2):o}\"," +
                             $"            \"ackVersion\": 2," +
                             $"            \"ackDescription\": \"completed\"," +
                             $"            \"ackCode\": 200" +
@@ -473,7 +492,7 @@ namespace LoraKeysManagerFacade.Test
                             $"        \"DevAddr\": {{" +
                             $"            \"desiredValue\": \"{devAddr}\"," +
                             $"            \"desiredVersion\": 2," +
-                            $"            \"lastUpdateTime\": \"{DateTime.Now.AddMinutes(-2).ToString("o")}\"," +
+                            $"            \"lastUpdateTime\": \"{DateTime.Now.AddMinutes(-2):o}\"," +
                             $"            \"ackVersion\": 2," +
                             $"            \"ackDescription\": \"completed\"," +
                             $"            \"ackCode\": 200" +
@@ -481,7 +500,7 @@ namespace LoraKeysManagerFacade.Test
                             $"        \"NwkSKey\": {{" +
                             $"            \"desiredValue\": \"SF11BW500\"," +
                             $"            \"desiredVersion\": 2," +
-                            $"            \"lastUpdateTime\": \"{DateTime.Now.AddMinutes(-2).ToString("o")}\"," +
+                            $"            \"lastUpdateTime\": \"{DateTime.Now.AddMinutes(-2):o}\"," +
                             $"            \"ackVersion\": 2," +
                             $"            \"ackDescription\": \"completed\"," +
                             $"            \"ackCode\": 200" +
@@ -497,8 +516,8 @@ namespace LoraKeysManagerFacade.Test
                         };
                     }
 
-                    if (req.RequestUri.LocalPath.StartsWith($"/api/devices") &&
-                        req.RequestUri.LocalPath.EndsWith($"/properties"))
+                    if (req.RequestUri.LocalPath.StartsWith($"/api/devices", StringComparison.OrdinalIgnoreCase) &&
+                        req.RequestUri.LocalPath.EndsWith($"/properties", StringComparison.OrdinalIgnoreCase))
                     {
                         return new HttpResponseMessage(HttpStatusCode.OK)
                         {
@@ -516,9 +535,11 @@ namespace LoraKeysManagerFacade.Test
                 })
                 .Verifiable();
 
-            var mockHttpClient = this.InitHttpClient(handlerMock);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var mockHttpClient = InitHttpClient(handlerMock);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
+            var instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
 
             var results = await instance.FindDevicesByLastUpdateDate(DateTime.Now.AddMinutes(-5).ToString("o"));
 
@@ -536,7 +557,7 @@ namespace LoraKeysManagerFacade.Test
             handlerMock.Protected().Verify("SendAsync", Times.Exactly(1), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/{devAddr}/properties"), ItExpr.IsAny<CancellationToken>());
             handlerMock.Protected().Verify("SendAsync", Times.Never(), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/simulated/properties"), ItExpr.IsAny<CancellationToken>());
             handlerMock.Protected().Verify("SendAsync", Times.Once(), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath == $"/api/devices/not-lora/properties"), ItExpr.IsAny<CancellationToken>());
-            handlerMock.Protected().Verify("SendAsync", Times.Exactly(5), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath.StartsWith($"/api/devices") && c.RequestUri.LocalPath.EndsWith("/properties")), ItExpr.IsAny<CancellationToken>());
+            handlerMock.Protected().Verify("SendAsync", Times.Exactly(5), ItExpr.Is<HttpRequestMessage>(c => c.Method == HttpMethod.Get && c.RequestUri.LocalPath.StartsWith($"/api/devices", StringComparison.OrdinalIgnoreCase) && c.RequestUri.LocalPath.EndsWith("/properties", StringComparison.OrdinalIgnoreCase)), ItExpr.IsAny<CancellationToken>());
         }
 
 
@@ -547,7 +568,9 @@ namespace LoraKeysManagerFacade.Test
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
             var expectedPrimaryKey = string.Empty;
 
+#pragma warning disable CA2000 // Dispose objects before losing scope
             var deviceResponseMock = new HttpResponseMessage();
+#pragma warning restore CA2000 // Dispose objects before losing scope
             var device = new Device
             {
                 Id = NewUniqueEUI32(),
@@ -556,25 +579,28 @@ namespace LoraKeysManagerFacade.Test
 
             deviceResponseMock.Content = new StringContent(JsonSerializer.Serialize(device), Encoding.UTF8, "application/json");
 
-            var notFoundResponseMock = new HttpResponseMessage(HttpStatusCode.NotFound);
-
-            handlerMock
-                .Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync((HttpRequestMessage req, CancellationToken token) =>
-                {
-                    if (req.RequestUri.LocalPath.Equals($"/api/devices/{device.Id}"))
+            using (var notFoundResponseMock = new HttpResponseMessage(HttpStatusCode.NotFound))
+            {
+                handlerMock
+                    .Protected()
+                    .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                    .ReturnsAsync((HttpRequestMessage req, CancellationToken token) =>
                     {
-                        return notFoundResponseMock;
-                    }
+                        if (req.RequestUri.LocalPath.Equals($"/api/devices/{device.Id}", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return notFoundResponseMock;
+                        }
 
-                    return null;
-                })
-                .Verifiable();
+                        return null;
+                    })
+                    .Verifiable();
+            }
 
-            var mockHttpClient = this.InitHttpClient(handlerMock);
+#pragma warning disable CA2000 // Dispose objects before losing scope
+            var mockHttpClient = InitHttpClient(handlerMock);
+#pragma warning restore CA2000 // Dispose objects before losing scope
 
-            IoTCentralDeviceRegistryManager instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
+            var instance = new IoTCentralDeviceRegistryManager(mockHttpClient, provisioningHelperMock.Object);
 
             var response = await instance.GetDeviceAsync(device.Id);
 

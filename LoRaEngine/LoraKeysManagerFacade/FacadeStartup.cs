@@ -6,7 +6,6 @@
 namespace LoraKeysManagerFacade
 {
     using System;
-    using System.Net.Http.Formatting;
     using System.Net.Http.Headers;
     using System.Text.RegularExpressions;
     using LoraKeysManagerFacade.FunctionBundler;
@@ -33,14 +32,14 @@ namespace LoraKeysManagerFacade
             {
                 if (iotHubConnectionString == null)
                 {
-                    throw new Exception($"Missing {ConfigHandler.IoTHubConnectionStringKey} in settings");
+                    throw new InvalidOperationException($"Missing {ConfigHandler.IoTHubConnectionStringKey} in settings");
                 }
             }
             else if (configHandler.DeviceRegistryMode == DeviceRegistryMode.IoTCentral)
             {
                 if (iotCentralEndpoint == null)
                 {
-                    throw new Exception($"Missing {ConfigHandler.IoTCentralEndpointKey} in settings");
+                    throw new InvalidOperationException($"Missing {ConfigHandler.IoTCentralEndpointKey} in settings");
                 }
             }
 
@@ -80,9 +79,9 @@ namespace LoraKeysManagerFacade
                 }
 #pragma warning disable CA2000 // Dispose objects before losing scope
                 // Object is handled by DI container.
-                builder.Services.AddSingleton<IDeviceRegistryManager>(sp => new IoTHubDeviceRegistryManager(RegistryManager.CreateFromConnectionString(iotHubConnectionString), match.Groups[0].Value));
+                _ = builder.Services.AddSingleton<IDeviceRegistryManager>(sp => new IoTHubDeviceRegistryManager(RegistryManager.CreateFromConnectionString(iotHubConnectionString), match.Groups[0].Value));
 #pragma warning restore CA2000 // Dispose objects before losing scope
-                builder.Services.AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)));
+                _ = builder.Services.AddSingleton<IServiceClient>(new ServiceClientAdapter(ServiceClient.CreateFromConnectionString(iotHubConnectionString)));
             }
             else if (configHandler.DeviceRegistryMode == DeviceRegistryMode.IoTCentral)
             {
@@ -142,7 +141,7 @@ namespace LoraKeysManagerFacade
 
             internal abstract DeviceRegistryMode DeviceRegistryMode { get; }
 
-            class ProductionConfigHandler : ConfigHandler
+            private class ProductionConfigHandler : ConfigHandler
             {
                 private readonly IConfiguration config;
 

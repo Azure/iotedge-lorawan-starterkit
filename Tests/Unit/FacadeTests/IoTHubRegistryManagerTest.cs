@@ -1,14 +1,15 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoraKeysManagerFacade.Test
+namespace LoRaWan.Tests.Unit.FacadeTests
 {
     using System;
-    using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
     using LoraKeysManagerFacade.IoTHubImp;
+    using LoRaWan.Tests.Common;
     using Microsoft.Azure.Devices;
     using Microsoft.Azure.Devices.Shared;
     using Moq;
@@ -27,8 +28,8 @@ namespace LoraKeysManagerFacade.Test
             var twins = Enumerable.Range(0, 7)
                                 .Select(c => new Twin(NewUniqueEUI64()));
 
-            int pageIndex = 0;
-            int pageSize = 5;
+            var pageIndex = 0;
+            var pageSize = 5;
 
             var queryMock = new Mock<IQuery>(MockBehavior.Strict);
             queryMock.SetupGet(c => c.HasMoreResults)
@@ -175,7 +176,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.Equal(twins.Count(), page.Count());
 
             queryMock.Verify(c => c.GetNextAsTwinAsync(), Times.Once());
-            iotHubMock.Verify(x => x.CreateQuery(It.Is<string>(c => c.StartsWith("SELECT * FROM devices WHERE properties.desired.DevAddr"))), Times.Once());
+            iotHubMock.Verify(x => x.CreateQuery(It.Is<string>(c => c.StartsWith("SELECT * FROM devices WHERE properties.desired.DevAddr", StringComparison.OrdinalIgnoreCase))), Times.Once());
         }
 
         [Fact]
@@ -197,7 +198,7 @@ namespace LoraKeysManagerFacade.Test
 
             var deviceRegistry = new IoTHubDeviceRegistryManager(iotHubMock.Object, this.iotHubHostName);
 
-            var result = await deviceRegistry.FindDevicesByLastUpdateDate(DateTime.UtcNow.AddMinutes(-5).ToString());
+            var result = await deviceRegistry.FindDevicesByLastUpdateDate(DateTime.UtcNow.AddMinutes(-5).ToString(CultureInfo.GetCultureInfo("en-US")));
 
             Assert.NotNull(result);
             Assert.True(result.HasMoreResults);
@@ -206,7 +207,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.Equal(twins.Count(), page.Count());
 
             queryMock.Verify(c => c.GetNextAsTwinAsync(), Times.Once());
-            iotHubMock.Verify(x => x.CreateQuery(It.Is<string>(c => c.StartsWith("SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= "))), Times.Once());
+            iotHubMock.Verify(x => x.CreateQuery(It.Is<string>(c => c.StartsWith("SELECT * FROM devices where properties.desired.$metadata.$lastUpdated >= ", StringComparison.OrdinalIgnoreCase))), Times.Once());
         }
 
         [Fact]
@@ -237,7 +238,7 @@ namespace LoraKeysManagerFacade.Test
             Assert.Equal(twins.Count(), page.Count());
 
             queryMock.Verify(c => c.GetNextAsTwinAsync(), Times.Once());
-            iotHubMock.Verify(x => x.CreateQuery(It.Is<string>(c => c.StartsWith("SELECT * FROM devices WHERE is_defined(properties.desired.AppKey)"))), Times.Once());
+            iotHubMock.Verify(x => x.CreateQuery(It.Is<string>(c => c.StartsWith("SELECT * FROM devices WHERE is_defined(properties.desired.AppKey)", StringComparison.OrdinalIgnoreCase))), Times.Once());
         }
 
         [Fact]
