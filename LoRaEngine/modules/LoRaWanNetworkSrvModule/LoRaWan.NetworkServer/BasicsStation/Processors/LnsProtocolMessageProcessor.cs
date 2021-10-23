@@ -63,7 +63,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                    .SingleOrDefault();
 
             var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}");
-            var muxs = LnsDiscovery.GetMacAddressAsId6(networkInterface?.GetPhysicalAddress());
+            var muxs = Id6.Format(networkInterface is { } someNetworkInterface
+                                  ? someNetworkInterface.GetPhysicalAddress().Convert48To64() : 0,
+                                  Id6.FormatOptions.FixedWidth);
             var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, muxs, url));
 
             await socket.SendAsync(response, WebSocketMessageType.Text, true, token);

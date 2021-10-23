@@ -3,12 +3,6 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServerTests
 {
-    using LoRaWan.NetworkServer.BasicsStation;
-    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
-    using LoRaWan.NetworkServer.BasicsStation.Processors;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Logging;
-    using Moq;
     using System;
     using System.Linq;
     using System.Net.NetworkInformation;
@@ -16,6 +10,12 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaWan.NetworkServer;
+    using LoRaWan.NetworkServer.BasicsStation;
+    using LoRaWan.NetworkServer.BasicsStation.Processors;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Extensions.Logging;
+    using Moq;
     using Xunit;
 
     public class LnsProtocolMessageProcessorTests
@@ -293,10 +293,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                                       : null;
             if (firstNic is not null)
             {
-                var firstNicIp = firstNic.GetIPProperties()
-                                     .UnicastAddresses
-                                     .FirstOrDefault()
-                                     .Address;
+                var firstNicIp = firstNic.GetIPProperties().UnicastAddresses.First().Address;
                 connectionInfoMock.SetupGet(ci => ci.LocalIpAddress).Returns(firstNicIp);
                 this.httpContextMock.Setup(h => h.Connection).Returns(connectionInfoMock.Object);
             }
@@ -322,7 +319,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                                Assert.True(end);
                            });
 
-            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{LnsDiscovery.GetMacAddressAsId6(firstNic?.GetPhysicalAddress())}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}""}}";
+            var muxs = Id6.Format(firstNic?.GetPhysicalAddress().Convert48To64() ?? 0, Id6.FormatOptions.FixedWidth);
+            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}""}}";
 
             // act
             await this.lnsMessageProcessorMock.InternalHandleDiscoveryAsync(inputJsonString, this.socketMock.Object, CancellationToken.None);

@@ -4,8 +4,6 @@
 namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 {
     using System;
-    using System.Buffers.Binary;
-    using System.Net.NetworkInformation;
     using System.Text.Json;
 
     public static class LnsDiscovery
@@ -48,33 +46,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             writer.WriteString("router", Id6.Format(router.AsUInt64, Id6.FormatOptions.Lowercase));
             writer.WriteString("error", error);
             writer.WriteEndObject();
-        }
-
-        /// <summary>
-        /// Gets an ID6 compatible representation of the provided network interface MAC Address.
-        /// </summary>
-        /// <param name="address">
-        /// The 48-bit physical address for which the ID6 MAC address representation should be
-        /// computed.</param>
-        internal static string GetMacAddressAsId6(PhysicalAddress address)
-        {
-            var physicalAddress = 0UL;
-
-            if (address is not null)
-            {
-                // As per specification (https://doc.sm.tc/station/glossary.html#term-mac)
-                // for an ID6 based on a MAC Address we expect FFFE in the middle
-                var physicalAddress48 = address.GetAddressBytes();
-
-                Span<byte> physicalAddress64 = stackalloc byte[8];
-                physicalAddress48[..3].CopyTo(physicalAddress64);
-                physicalAddress64[3] = 0xFF;
-                physicalAddress64[4] = 0xFE;
-                physicalAddress48[3..].CopyTo(physicalAddress64[5..]);
-                physicalAddress = BinaryPrimitives.ReadUInt64BigEndian(physicalAddress64);
-            }
-
-            return Id6.Format(physicalAddress, Id6.FormatOptions.FixedWidth);
         }
     }
 }
