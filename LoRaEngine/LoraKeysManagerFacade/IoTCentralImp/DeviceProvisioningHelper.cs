@@ -1,13 +1,11 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.IoTCentralImp
 {
     using System;
-    using System.Security;
     using System.Security.Cryptography;
     using System.Text;
-    using System.Threading.Tasks;
     using LoraKeysManagerFacade.IoTCentralImp.Definitions;
     using Microsoft.Azure.Devices.Provisioning.Client;
     using Microsoft.Azure.Devices.Provisioning.Client.Transport;
@@ -32,11 +30,13 @@ namespace LoraKeysManagerFacade.IoTCentralImp
         {
             var attestation = this.ComputeAttestation(deviceId);
 
-            ProvisioningDeviceClient provisioningClient = ProvisioningDeviceClient.Create(
-                this.deviceProvisioningEndpoint,
-                this.provisioningScopeId,
-                new SecurityProviderSymmetricKey(deviceId, attestation.SymmetricKey.PrimaryKey, attestation.SymmetricKey.SecondaryKey),
-                new ProvisioningTransportHandlerHttp());
+            using var transportHandler = new ProvisioningTransportHandlerHttp();
+            using var securityProvider = new SecurityProviderSymmetricKey(deviceId, primaryKey: attestation.SymmetricKey.PrimaryKey, secondaryKey: attestation.SymmetricKey.SecondaryKey);
+            var provisioningClient = ProvisioningDeviceClient.Create(
+              this.deviceProvisioningEndpoint,
+              this.provisioningScopeId,
+              securityProvider,
+              transportHandler);
 
             var registerResult = provisioningClient.RegisterAsync().Result;
 

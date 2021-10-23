@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.IoTCentralImp
@@ -16,7 +16,7 @@ namespace LoraKeysManagerFacade.IoTCentralImp
         private readonly Func<IDeviceTwin, bool> predicate;
         private readonly string apiVersion;
 
-        private DeviceCollection currentResults;
+        private DeviceCollectionResult currentResults;
 
         public DeviceTwinPageResult(HttpClient client, string apiVersion, Func<IDeviceTwin, bool> predicate)
         {
@@ -39,22 +39,22 @@ namespace LoraKeysManagerFacade.IoTCentralImp
 
             if (this.currentResults == null)
             {
-                result = await this.client.GetAsync($"/api/devices?{this.apiVersion}");
+                result = await this.client.GetAsync(new Uri(this.client.BaseAddress, $"/api/devices?{this.apiVersion}"));
             }
             else
             {
-                result = await this.client.GetAsync(this.currentResults.NextLink);
+                result = await this.client.GetAsync(new Uri(this.client.BaseAddress, this.currentResults.NextLink));
             }
 
-            result.EnsureSuccessStatusCode();
+            _ = result.EnsureSuccessStatusCode();
 
-            this.currentResults = await result.Content.ReadAsAsync<DeviceCollection>();
+            this.currentResults = await result.Content.ReadAsAsync<DeviceCollectionResult>();
 
             foreach (var item in this.currentResults.Value.Where(c => !c.Simulated))
             {
-                var propertiesRequest = await this.client.GetAsync($"/api/devices/{item.Id}/properties?{this.apiVersion}");
+                var propertiesRequest = await this.client.GetAsync(new Uri(this.client.BaseAddress, $"/api/devices/{item.Id}/properties?{this.apiVersion}"));
 
-                propertiesRequest.EnsureSuccessStatusCode();
+                _ = propertiesRequest.EnsureSuccessStatusCode();
                 var propertiesResponse = await propertiesRequest.Content.ReadAsAsync<DesiredProperties>();
 
                 var deviceItem = new DeviceTwin(item.Id, propertiesResponse);

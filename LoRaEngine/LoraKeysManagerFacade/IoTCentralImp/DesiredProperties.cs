@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.IoTCentralImp
@@ -16,6 +16,6 @@ namespace LoraKeysManagerFacade.IoTCentralImp
         public string NwkSKey { get; set; }
 
         [JsonExtensionData]
-        public Dictionary<string, JToken> AdditionalData { get; set; } = new Dictionary<string, JToken>();
+        public Dictionary<string, JToken> AdditionalData { get; } = new Dictionary<string, JToken>();
     }
 }

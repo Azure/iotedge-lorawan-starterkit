@@ -14,7 +14,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
     public class DeviceLoaderSynchronizerTest
     {
-        const string IotHubHostName = "fake.azure-devices.net";
+        private const string IotHubHostName = "fake.azure-devices.net";
 
         private readonly NetworkServerConfiguration serverConfiguration;
 

@@ -15,8 +15,6 @@ namespace LoraKeysManagerFacade
 
     public class CreateEdgeDevice
     {
-        private const string AbpDeviceId = "46AAC86800430028";
-        private const string OtaaDeviceId = "47AAC86800430028";
         private readonly IDeviceRegistryManager registryManager;
 
         public CreateEdgeDevice(IDeviceRegistryManager registryManager)
@@ -75,7 +73,7 @@ namespace LoraKeysManagerFacade
                 await this.registryManager.CreateEdgeDeviceAsync(
                     deviceName,
                     deployEndDevice,
-                    $"{siteUrl}/api/",
+                    new Uri($"{siteUrl}/api/"),
                     facadeKey,
                     region,
                     resetPin,

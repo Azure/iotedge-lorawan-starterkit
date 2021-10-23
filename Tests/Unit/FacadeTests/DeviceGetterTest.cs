@@ -8,8 +8,6 @@ namespace LoRaWan.Tests.Unit.FacadeTests
     using System.Text;
     using LoraKeysManagerFacade;
     using LoRaWan.Tests.Common;
-    using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Shared;
     using Moq;
     using Xunit;
 
@@ -32,7 +30,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
             Assert.Equal(devEUI, items[0].DevEUI);
         }
 
-        private IDeviceRegistryManager InitRegistryManager(string devEui1, string devEui2)
+        private static IDeviceRegistryManager InitRegistryManager(string devEui1, string devEui2)
         {
             var mockRegistryManager = new Mock<IDeviceRegistryManager>(MockBehavior.Strict);
             var primaryKey = Convert.ToBase64String(Encoding.UTF8.GetBytes(PrimaryKey));

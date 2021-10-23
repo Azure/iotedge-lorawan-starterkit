@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoraKeysManagerFacade.IoTCentralImp
@@ -9,19 +9,18 @@ namespace LoraKeysManagerFacade.IoTCentralImp
     {
         private readonly Device deviceObject;
         private readonly SymmetricKeyAttestation attestationObject;
-        private readonly string assignedIoTHubHostname;
 
         public IoTCentralDevice(Device deviceObject, SymmetricKeyAttestation attestationObject, string assignedIoTHubHostname)
         {
             this.deviceObject = deviceObject;
             this.attestationObject = attestationObject;
-            this.assignedIoTHubHostname = assignedIoTHubHostname;
+            this.AssignedIoTHub = assignedIoTHubHostname;
         }
 
         public string PrimaryKey => this.attestationObject.SymmetricKey.PrimaryKey;
 
         public string DeviceId => this.deviceObject.Id;
 
-        public string AssignedIoTHub => this.assignedIoTHubHostname;
+        public string AssignedIoTHub { get; }
     }
 }

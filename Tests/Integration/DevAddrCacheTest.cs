@@ -10,8 +10,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoraKeysManagerFacade;
     using LoRaWan.Tests.Common;
-    using Microsoft.Azure.Devices;
-    using Microsoft.Azure.Devices.Shared;
     using Moq;
     using Newtonsoft.Json;
     using StackExchange.Redis;
@@ -33,7 +31,7 @@ namespace LoRaWan.Tests.Integration
             this.cache = new LoRaDeviceCacheRedisStore(redis.Database);
         }
 
-        private Mock<IDeviceRegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds, int numberOfDeviceDeltaUpdates = 2)
+        private static Mock<IDeviceRegistryManager> InitRegistryManager(List<DevAddrCacheInfo> deviceIds, int numberOfDeviceDeltaUpdates = 2)
         {
             var currentDevAddrContext = new List<DevAddrCacheInfo>();
             var currentDevices = deviceIds;
@@ -162,7 +160,7 @@ namespace LoRaWan.Tests.Integration
         {
             await LockDevAddrHelper.PrepareLocksForTests(this.cache, lockToTake == null ? null : new[] { lockToTake });
             var managerInput = new List<DevAddrCacheInfo> { new DevAddrCacheInfo() { DevEUI = NewUniqueEUI64(), DevAddr = NewUniqueEUI32() } };
-            var registryManagerMock = this.InitRegistryManager(managerInput);
+            var registryManagerMock = InitRegistryManager(managerInput);
             var devAddrcache = new LoRaDevAddrCache(this.cache, registryManagerMock.Object, null, null);
 
             registryManagerMock.Setup(x => x.FindDeviceByAddrAsync(It.IsAny<string>())).Throws(new RedisException(string.Empty));
