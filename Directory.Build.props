@@ -22,6 +22,7 @@
       <SystemDynamicRuntimeVersion>4.3.0</SystemDynamicRuntimeVersion>
       <StackExchangeRedisVersion>2.1.58</StackExchangeRedisVersion>
       <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
+      <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
     </PropertyGroup>
     <PropertyGroup> <!-- this group is meant for packages required from test projects -->
       <DockerDotnetVersion>3.125.5</DockerDotnetVersion>
