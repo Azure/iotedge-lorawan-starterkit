@@ -75,27 +75,6 @@ namespace LoRaWan.NetworkServer
                 }
             });
 
-        public static IJsonReader<(T1, T2, T3)>
-            Tuple<T1, T2, T3>(IJsonReader<T1> item1Reader,
-                              IJsonReader<T2> item2Reader,
-                              IJsonReader<T3> item3Reader) =>
-            Create((ref Utf8JsonReader reader) =>
-            {
-                if (reader.TokenType != JsonTokenType.StartArray)
-                    throw new JsonException();
-
-                _ = reader.Read(); // "["
-
-                var result = (item1Reader.Read(ref reader), item2Reader.Read(ref reader), item3Reader.Read(ref reader));
-
-                if (reader.TokenType != JsonTokenType.EndArray)
-                    throw new JsonException();
-
-                _ = reader.Read(); // "]"
-
-                return result;
-            });
-
         public static JsonProperty<T> Property<T>(string name, IJsonReader<T> reader, (bool, T) @default = default) =>
             new(name, reader, @default);
 
