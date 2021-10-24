@@ -9,9 +9,9 @@ namespace LoRaWan.NetworkServer
     using System.Text.Json;
     using Unit = System.ValueTuple;
 
-    internal interface IJsonReader<T>
+    internal interface IJsonReader<out T>
     {
-        (bool, T) TryRead(ref Utf8JsonReader reader);
+        T Read(ref Utf8JsonReader reader);
     }
 
     internal sealed class JsonProperty<T>
@@ -30,9 +30,6 @@ namespace LoRaWan.NetworkServer
 
     internal static class JsonReader
     {
-        public static T Read<T>(this IJsonReader<T> reader, ref Utf8JsonReader utf8Reader) =>
-            reader.TryRead(ref utf8Reader) is (true, var result) ? result : throw new JsonException();
-
         public static T Read<T>(this IJsonReader<T> reader, string json) =>
             reader.Read(Encoding.UTF8.GetBytes(json));
 
@@ -43,38 +40,39 @@ namespace LoRaWan.NetworkServer
             return reader.Read(ref utf8Reader);
         }
 
-        public static IJsonReader<string> String() => Create((ref Utf8JsonReader reader) =>
-        {
-            if (reader.TokenType != JsonTokenType.String)
-                return default;
+        public static IJsonReader<string> String() =>
+            Create((ref Utf8JsonReader reader) =>
+            {
+                var result = reader.TokenType == JsonTokenType.String ? reader.GetString() : throw new JsonException();
+                _ = reader.Read();
+                return result;
+            });
 
-            var v = reader.GetString();
-            _ = reader.Read();
-            return (true, v);
-        });
+        public static IJsonReader<ulong> UInt64() =>
+            Create((ref Utf8JsonReader reader) =>
+            {
+                var result = reader.TokenType == JsonTokenType.Number ? reader.GetUInt64() : throw new JsonException();
+                _ = reader.Read();
+                return result;
+            });
 
-        public static IJsonReader<ulong> UInt64() => Create((ref Utf8JsonReader reader) =>
-        {
-            if (reader.TokenType != JsonTokenType.Number)
-                return default;
-
-            var v = reader.GetUInt64();
-            _ = reader.Read();
-            return (true, v);
-        });
+        public static IJsonReader<object> AsObject<T>(this IJsonReader<T> reader) =>
+            from v in reader select (object)v;
 
         public static IJsonReader<T> Either<T>(IJsonReader<T> reader1, IJsonReader<T> reader2) =>
             Create((ref Utf8JsonReader reader) =>
             {
-                var tempReader = reader;
-                var result = reader1.TryRead(ref tempReader) is (true, var a) ? (true, a)
-                           : reader2.TryRead(ref tempReader) is (true, var b) ? (true, b)
-                           : throw new NotSupportedException();
-
-                if (result is (true, _))
+                try
+                {
+                    var tempReader = reader;
+                    var result = reader1.Read(ref tempReader);
                     reader = tempReader;
-
-                return result;
+                    return result;
+                }
+                catch (Exception ex) when (ex is JsonException or NotSupportedException or FormatException or OverflowException)
+                {
+                    return reader2.Read(ref reader);
+                }
             });
 
         public static IJsonReader<(T1, T2, T3)>
@@ -84,38 +82,25 @@ namespace LoRaWan.NetworkServer
             Create((ref Utf8JsonReader reader) =>
             {
                 if (reader.TokenType != JsonTokenType.StartArray)
-                    return default;
+                    throw new JsonException();
 
-                var tempReader = reader;
-                _ = tempReader.Read();
+                _ = reader.Read(); // "["
 
-                (T1, T2, T3) result;
-                if (item1Reader.TryRead(ref tempReader) is (true, var item1) &&
-                    item2Reader.TryRead(ref tempReader) is (true, var item2) &&
-                    item3Reader.TryRead(ref tempReader) is (true, var item3))
-                {
-                    result = (item1, item2, item3);
-                }
-                else
-                {
-                    return default;
-                }
+                var result = (item1Reader.Read(ref reader), item2Reader.Read(ref reader), item3Reader.Read(ref reader));
 
-                if (tempReader.TokenType != JsonTokenType.EndArray)
-                    return default;
+                if (reader.TokenType != JsonTokenType.EndArray)
+                    throw new JsonException();
 
-                _ = tempReader.Read();
-                reader = tempReader;
+                _ = reader.Read(); // "]"
 
-                return (true, result);
+                return result;
             });
 
         public static JsonProperty<T> Property<T>(string name, IJsonReader<T> reader, (bool, T) @default = default) =>
             new(name, reader, @default);
 
-        public static readonly JsonProperty<Unit> UnitProperty =
+        private static readonly JsonProperty<Unit> UnitProperty =
             Property(string.Empty, Create<Unit>(delegate { throw new NotImplementedException(); }), (true, default));
-
 
         public static IJsonReader<T> Object<T>(JsonProperty<T> property) =>
             Object(property, UnitProperty, (v, _) => v);
@@ -129,37 +114,32 @@ namespace LoRaWan.NetworkServer
                 if (reader.TokenType != JsonTokenType.StartObject)
                     throw new JsonException();
 
-                var tempReader = reader;
-                _ = tempReader.Read();
+                _ = reader.Read(); // "{"
 
                 (bool, T1) value1 = default;
                 (bool, T2) value2 = default;
 
-                while (tempReader.TokenType != JsonTokenType.EndObject)
+                while (reader.TokenType != JsonTokenType.EndObject)
                 {
-                    if (tempReader.ValueTextEquals(property1.Name))
+                    if (reader.ValueTextEquals(property1.Name))
                     {
-                        _ = tempReader.Read();
-                        value1 = property1.Reader.TryRead(ref tempReader);
-                        if (value1 is (false, _))
-                            return default;
+                        _ = reader.Read();
+                        value1 = (true, property1.Reader.Read(ref reader));
                     }
-                    else if (tempReader.ValueTextEquals(property2.Name))
+                    else if (reader.ValueTextEquals(property2.Name))
                     {
-                        _ = tempReader.Read();
-                        value2 = property2.Reader.TryRead(ref tempReader);
-                        if (value2 is (false, _))
-                            return default;
+                        _ = reader.Read();
+                        value2 = (true, property2.Reader.Read(ref reader));
                     }
                     else
                     {
-                        _ = tempReader.Read();
-                        tempReader.Skip();
-                        _ = tempReader.Read();
+                        _ = reader.Read();
+                        reader.Skip();
+                        _ = reader.Read();
                     }
                 }
 
-                _ = tempReader.Read(); // "}"
+                _ = reader.Read(); // "}"
 
                 if (value1 is (false, _) && property1.Default is (true, _))
                     value1 = property1.Default;
@@ -167,53 +147,32 @@ namespace LoRaWan.NetworkServer
                 if (value2 is (false, _) && property2.Default is (true, _))
                     value2 = property2.Default;
 
-                if ((a: value1, b: value2) is ((true, var aa), (true, var bb)))
-                {
-                    reader = tempReader;
-                    return (true, projector(aa, bb));
-                }
-
-                return default;
+                return (value1, value2) is ((true, var v1), (true, var v2))
+                     ? projector(v1, v2)
+                     : throw new JsonException();
             });
 
         public static IJsonReader<T[]> Array<T>(IJsonReader<T> itemReader) =>
             Create((ref Utf8JsonReader reader) =>
             {
                 if (reader.TokenType != JsonTokenType.StartArray)
-                    return default;
+                    throw new JsonException();
 
-                var tempReader = reader;
-                _ = tempReader.Read();
+                _ = reader.Read(); // "["
 
                 var list = new List<T>();
-                while (tempReader.TokenType != JsonTokenType.EndArray)
-                {
-                    if (itemReader.TryRead(ref tempReader) is (true, var item))
-                        list.Add(item);
-                    else
-                        return default;
-                }
+                while (reader.TokenType != JsonTokenType.EndArray)
+                    list.Add(itemReader.Read(ref reader));
 
-                _ = tempReader.Read();
+                _ = reader.Read(); // "]"
 
-                reader = tempReader;
-
-                return (true, list.ToArray());
+                return list.ToArray();
             });
 
         public static IJsonReader<TResult> Select<T, TResult>(this IJsonReader<T> reader, Func<T, TResult> selector) =>
-            Create((ref Utf8JsonReader rdr) =>
-            {
-                var tempReader = rdr;
-                if (reader.TryRead(ref tempReader) is (true, var a))
-                {
-                    rdr = tempReader;
-                    return (true, selector(a));
-                }
-                return default;
-            });
+            Create((ref Utf8JsonReader rdr) => selector(reader.Read(ref rdr)));
 
-        internal delegate ValueTuple<bool, T> ReadHandler<T>(ref Utf8JsonReader reader);
+        internal delegate T ReadHandler<out T>(ref Utf8JsonReader reader);
 
         private static IJsonReader<T> Create<T>(ReadHandler<T> func) => new DelegatingJsonReader<T>(func);
 
@@ -222,7 +181,7 @@ namespace LoRaWan.NetworkServer
             private readonly ReadHandler<T> _func;
 
             public DelegatingJsonReader(ReadHandler<T> func) => _func = func;
-            public (bool, T) TryRead(ref Utf8JsonReader reader) => _func(ref reader);
+            public T Read(ref Utf8JsonReader reader) => _func(ref reader);
         }
     }
 }

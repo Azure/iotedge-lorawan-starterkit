@@ -38,7 +38,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         [InlineData(@"{ ""router"": true }")]
         public void ReadQuery_Throws_OnInvalidPropertyType(string json)
         {
-            Assert.Throws<NotSupportedException>(() => _ = LnsDiscovery.QueryReader.Read(json));
+            Assert.Throws<JsonException>(() => _ = LnsDiscovery.QueryReader.Read(json));
         }
 
         private const string ValidMuxs = "0000:00FF:FE00:0000";
