@@ -74,6 +74,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("null")]
         [InlineData("false")]
         [InlineData("true")]
+        [InlineData("-42")]
+        [InlineData("-4.2")]
         [InlineData("'foobar'")]
         [InlineData("[]")]
         [InlineData("{}")]
@@ -208,14 +210,14 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.Equal(expected, result);
         }
         [Theory]
-        [InlineData(typeof(JsonException), "null")]
-        [InlineData(typeof(JsonException), "false")]
-        [InlineData(typeof(JsonException), "true")]
-        [InlineData(typeof(FormatException), "[12.3, 45.6, 78.9]")]
-        [InlineData(typeof(JsonException), "{}")]
-        public void Either_With_Invalid_Input(Type expectedExceptionType, string json)
+        [InlineData("null")]
+        [InlineData("false")]
+        [InlineData("true")]
+        [InlineData("[12.3, 45.6, 78.9]")]
+        [InlineData("{}")]
+        public void Either_With_Invalid_Input(string json)
         {
-            Assert.Throws(expectedExceptionType, () => _ = EitherReader.Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = EitherReader.Read(Strictify(json)));
         }
     }
 }

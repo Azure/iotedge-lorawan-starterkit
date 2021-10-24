@@ -51,7 +51,7 @@ namespace LoRaWan.NetworkServer
         public static IJsonReader<ulong> UInt64() =>
             Create((ref Utf8JsonReader reader) =>
             {
-                var result = reader.TokenType == JsonTokenType.Number ? reader.GetUInt64() : throw new JsonException();
+                var result = reader.TokenType == JsonTokenType.Number && reader.TryGetUInt64(out var n) ? n : throw new JsonException();
                 _ = reader.Read();
                 return result;
             });
