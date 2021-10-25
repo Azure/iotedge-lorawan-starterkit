@@ -212,7 +212,8 @@ namespace LoRaWan.Tests.Integration
         // This test simulate a call received by multiple server. It ensures IoT Hub is only queried once.
         public async Task Multi_Gateway_When_DevAddr_Is_Not_In_Cache_Query_Iot_Hub_Only_Once_And_Save_In_Cache()
         {
-            var gatewayId = NewUniqueEUI64();
+            var gateway1 = NewUniqueEUI64();
+            var gateway2 = NewUniqueEUI64();
             var dateTime = DateTime.UtcNow;
             var managerInput = new List<DevAddrCacheInfo>();
 
@@ -235,11 +236,12 @@ namespace LoRaWan.Tests.Integration
 
             var deviceGetter = new DeviceGetter(registryManagerMock.Object, this.cache);
             // Simulate three queries
-            var tasks = new Task[3]
+            var tasks = new Task[4]
               {
-                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
-                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
-                deviceGetter.GetDeviceList(null, gatewayId, "ABCD", devAddrJoining),
+                deviceGetter.GetDeviceList(null, gateway1, "ABCD", devAddrJoining),
+                deviceGetter.GetDeviceList(null, gateway1, "ABCD", devAddrJoining),
+                deviceGetter.GetDeviceList(null, gateway2, "ABCD", devAddrJoining),
+                deviceGetter.GetDeviceList(null, gateway2, "ABCD", devAddrJoining)
               };
 
             await Task.WhenAll(tasks);
