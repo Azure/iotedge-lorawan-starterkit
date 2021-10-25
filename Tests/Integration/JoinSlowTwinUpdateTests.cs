@@ -34,7 +34,6 @@ namespace LoRaWan.Tests.Integration
             var joinRequestDevNonce2 = joinRequestPayload2.GetDevNonceAsString();
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var appEUI = simulatedDevice.LoRaDevice.AppEUI;
 
             // Device twin will be queried
             var twin = new Twin();
@@ -74,10 +73,10 @@ namespace LoRaWan.Tests.Integration
                 });
 
             // Lora device api will be search by devices with matching deveui,
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce1))
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequestDevNonce1))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce2))
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequestDevNonce2))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
             using var cache = NewMemoryCache();

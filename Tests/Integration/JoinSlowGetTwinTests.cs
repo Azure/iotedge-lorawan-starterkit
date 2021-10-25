@@ -31,7 +31,6 @@ namespace LoRaWan.Tests.Integration
             var joinRequestDevNonce1 = ConversionHelper.ByteArrayToString(joinRequestPayload1.DevNonce);
             var devAddr = string.Empty;
             var devEUI = simulatedDevice.LoRaDevice.DeviceID;
-            var appEUI = simulatedDevice.LoRaDevice.AppEUI;
 
             // Device twin will be queried twice, 1st time will take 7 seconds, 2nd time 0.1 second
             var twin = new Twin();
@@ -57,7 +56,7 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(true);
 
             // Lora device api will be search by devices with matching deveui,
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce1))
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequestDevNonce1))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
             using var memoryCache = new MemoryCache(new MemoryCacheOptions());
@@ -83,7 +82,7 @@ namespace LoRaWan.Tests.Integration
             var joinRequestDevNonce2 = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequestPayload2.DevNonce);
 
             // setup response to this device search
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, appEUI, joinRequestDevNonce2))
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequestDevNonce2))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
             using var joinRequest2 = CreateWaitableRequest(joinRequestRxpk2);
@@ -116,7 +115,7 @@ namespace LoRaWan.Tests.Integration
             Assert.False(loRaDevice.HasFrameCountChanges);
 
             // searching the device should happen twice
-            LoRaDeviceApi.Verify(x => x.SearchAndLockForJoinAsync(ServerGatewayID, devEUI, appEUI, It.IsNotNull<string>()), Times.Exactly(2));
+            LoRaDeviceApi.Verify(x => x.SearchAndLockForJoinAsync(ServerGatewayID, devEUI, It.IsNotNull<string>()), Times.Exactly(2));
 
             // getting the device twin should happens once
             LoRaDeviceClient.Verify(x => x.GetTwinAsync(), Times.Once());

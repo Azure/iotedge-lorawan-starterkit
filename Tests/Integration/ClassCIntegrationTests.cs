@@ -165,7 +165,7 @@ namespace LoRaWan.Tests.Integration
                     .ReturnsAsync(new FunctionBundlerResult());
             }
 
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, simDevice.DevEUI, simDevice.AppEUI, It.IsNotNull<string>()))
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, simDevice.DevEUI, It.IsNotNull<string>()))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
 
             using var cache = NewMemoryCache();
@@ -364,7 +364,7 @@ namespace LoRaWan.Tests.Integration
                         Assert.False(t.Contains(TwinProperty.PreferredGatewayID));
                 });
 
-            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, simDevice.DevEUI, simDevice.AppEUI, It.IsNotNull<string>()))
+            LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, simDevice.DevEUI, It.IsNotNull<string>()))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(simDevice.DevAddr, simDevice.DevEUI, "123").AsList()));
 
             using var cache = NewMemoryCache();
@@ -479,7 +479,7 @@ namespace LoRaWan.Tests.Integration
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.Zero);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 

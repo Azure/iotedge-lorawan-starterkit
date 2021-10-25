@@ -826,7 +826,6 @@ namespace LoRaWan.Tests.Integration
                 .ReturnsAsync(true);
 
             var c2dJson = $"{{\"fport\":{fport}, \"payload\":\"asd\", \"macCommands\": [ {{ \"cid\": \"{mac}\" }}] }}";
-
             using var cloudToDeviceMessage = new Message(Encoding.UTF8.GetBytes(c2dJson));
 
             LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
@@ -847,7 +846,7 @@ namespace LoRaWan.Tests.Integration
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.Zero);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
