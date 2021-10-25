@@ -30,6 +30,7 @@ namespace LoRaWan.NetworkServer
 
         public static T Read<T>(this IJsonReader<T> reader, ReadOnlySpan<byte> utf8JsonTextBytes)
         {
+            if (reader == null) throw new ArgumentNullException(nameof(reader));
             var utf8Reader = new Utf8JsonReader(utf8JsonTextBytes);
             _ = utf8Reader.Read();
             return reader.Read(ref utf8Reader);
