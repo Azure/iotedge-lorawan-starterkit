@@ -50,6 +50,10 @@ for (var c = 2; c < maxArity; c++) {
     var vs = string.Join(", ", from n in ns select "v" + n);
 #>
 
+        /// <remarks>
+        /// Properties without a default value that are missing from the read JSON object will cause
+        /// <see cref="JsonException"/> to be thrown.
+        /// </remarks>
         public static IJsonReader<TResult>
             Object<<#= ts #>, TResult>(
                 <#= string.Join(", ", from n in ns select "IJsonProperty<T" + n + "> property" + n) #>,

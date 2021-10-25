@@ -100,6 +100,10 @@ namespace LoRaWan.NetworkServer
 
 #pragma warning disable CA1720 // Identifier contains type name (represent JSON object)
 
+        /// <remarks>
+        /// Properties without a default value that are missing from the read JSON object will cause
+        /// <see cref="JsonException"/> to be thrown.
+        /// </remarks>
         public static IJsonReader<T> Object<T>(IJsonProperty<T> property) =>
             Object(property, NonProperty.Instance, NonProperty.Instance,
                    NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
@@ -109,6 +113,10 @@ namespace LoRaWan.NetworkServer
                    NonProperty.Instance,
                    (v, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _) => v);
 
+        /// <remarks>
+        /// Properties without a default value that are missing from the read JSON object will cause
+        /// <see cref="JsonException"/> to be thrown.
+        /// </remarks>
         public static IJsonReader<TResult>
             Object<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult>(
                 IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3,
