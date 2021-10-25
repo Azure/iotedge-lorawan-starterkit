@@ -188,22 +188,28 @@ namespace LoRaWan.NetworkServer
 
                 _ = reader.Read(); // "}"
 
-                if (value1 is (false, _) && property1.HasDefaultValue) value1 = (true, property1.DefaultValue);
-                if (value2 is (false, _) && property2.HasDefaultValue) value2 = (true, property2.DefaultValue);
-                if (value3 is (false, _) && property3.HasDefaultValue) value3 = (true, property3.DefaultValue);
-                if (value4 is (false, _) && property4.HasDefaultValue) value4 = (true, property4.DefaultValue);
-                if (value5 is (false, _) && property5.HasDefaultValue) value5 = (true, property5.DefaultValue);
-                if (value6 is (false, _) && property6.HasDefaultValue) value6 = (true, property6.DefaultValue);
-                if (value7 is (false, _) && property7.HasDefaultValue) value7 = (true, property7.DefaultValue);
-                if (value8 is (false, _) && property8.HasDefaultValue) value8 = (true, property8.DefaultValue);
-                if (value9 is (false, _) && property9.HasDefaultValue) value9 = (true, property9.DefaultValue);
-                if (value10 is (false, _) && property10.HasDefaultValue) value10 = (true, property10.DefaultValue);
-                if (value11 is (false, _) && property11.HasDefaultValue) value11 = (true, property11.DefaultValue);
-                if (value12 is (false, _) && property12.HasDefaultValue) value12 = (true, property12.DefaultValue);
-                if (value13 is (false, _) && property13.HasDefaultValue) value13 = (true, property13.DefaultValue);
-                if (value14 is (false, _) && property14.HasDefaultValue) value14 = (true, property14.DefaultValue);
-                if (value15 is (false, _) && property15.HasDefaultValue) value15 = (true, property15.DefaultValue);
-                if (value16 is (false, _) && property16.HasDefaultValue) value16 = (true, property16.DefaultValue);
+                static void DefaultUnassigned<T>(IJsonProperty<T> property, ref (bool, T) v)
+                {
+                    if (v is (false, _) && property.HasDefaultValue)
+                        v = (true, property.DefaultValue);
+                }
+
+                DefaultUnassigned(property1, ref value1);
+                DefaultUnassigned(property2, ref value2);
+                DefaultUnassigned(property3, ref value3);
+                DefaultUnassigned(property4, ref value4);
+                DefaultUnassigned(property5, ref value5);
+                DefaultUnassigned(property6, ref value6);
+                DefaultUnassigned(property7, ref value7);
+                DefaultUnassigned(property8, ref value8);
+                DefaultUnassigned(property9, ref value9);
+                DefaultUnassigned(property10, ref value10);
+                DefaultUnassigned(property11, ref value11);
+                DefaultUnassigned(property12, ref value12);
+                DefaultUnassigned(property13, ref value13);
+                DefaultUnassigned(property14, ref value14);
+                DefaultUnassigned(property15, ref value15);
+                DefaultUnassigned(property16, ref value16);
 
                 return (value1, value2, value3,
                         value4, value5, value6,
