@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer
                 var devNonce = joinReq.GetDevNonceAsString();
                 Logger.Log(devEUI, $"join request received", LogLevel.Information);
 
-                loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEUI, appEUI, devNonce);
+                loRaDevice = await this.deviceRegistry.GetDeviceForJoinRequestAsync(devEUI, devNonce);
                 if (loRaDevice == null)
                 {
                     request.NotifyFailed(devEUI, LoRaDeviceRequestFailedReason.UnknownDevice);

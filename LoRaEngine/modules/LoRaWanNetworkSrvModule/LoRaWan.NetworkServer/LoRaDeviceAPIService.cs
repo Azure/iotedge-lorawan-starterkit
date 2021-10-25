@@ -96,8 +96,8 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <inheritdoc />
-        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string appEUI, string devNonce)
-            => SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, appEUI: appEUI, devNonce: devNonce);
+        public sealed override Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string devNonce)
+            => SearchDevicesAsync(gatewayID: gatewayID, devEUI: devEUI, devNonce: devNonce);
 
         /// <inheritdoc />
         public sealed override Task<SearchDevicesResult> SearchByDevAddrAsync(string devAddr)
