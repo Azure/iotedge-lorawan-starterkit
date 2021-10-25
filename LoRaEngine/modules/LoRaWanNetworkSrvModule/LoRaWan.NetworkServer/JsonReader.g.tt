@@ -50,9 +50,9 @@ for (var c = 2; c < maxArity; c++) {
     var vs = string.Join(", ", from n in ns select "v" + n);
 #>
 
-        public static IJsonReader<T>
-            Object<<#= ts #>, T>(
-                <#= string.Join(", ", from n in ns select "IJsonProperty<T" + n + "> property" + n) #>, Func<<#= ts #>, T> projector) =>
+        public static IJsonReader<TResult>
+            Object<<#= ts #>, TResult>(
+                <#= string.Join(", ", from n in ns select "IJsonProperty<T" + n + "> property" + n) #>, Func<<#= ts #>, TResult> projector) =>
             Object(<#= string.Join(", ", from n in ns select "property" + n) #>,
                    <#= string.Join(", ", Enumerable.Repeat("NonProperty.Instance", maxArity - c)) #>,
                    (<#= vs #>, <#= string.Join(", ", Enumerable.Repeat("_", maxArity - c)) #>) =>

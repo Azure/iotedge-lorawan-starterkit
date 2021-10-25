@@ -95,15 +95,15 @@ namespace LoRaWan.NetworkServer
             public Unit Default => default;
         }
 
-        public static IJsonReader<T>
-            Object<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T>(
+        public static IJsonReader<TResult>
+            Object<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult>(
                 IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3,
                 IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6,
                 IJsonProperty<T7> property7, IJsonProperty<T8> property8, IJsonProperty<T9> property9,
                 IJsonProperty<T10> property10, IJsonProperty<T11> property11, IJsonProperty<T12> property12,
                 IJsonProperty<T13> property13, IJsonProperty<T14> property14, IJsonProperty<T15> property15,
                 IJsonProperty<T16> property16,
-                Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T> projector) =>
+                Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, TResult> projector) =>
             Create((ref Utf8JsonReader reader) =>
             {
                 if (reader.TokenType != JsonTokenType.StartObject)
