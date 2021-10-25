@@ -38,6 +38,7 @@ Taking as an example the configuration message from [PR #569](https://github.com
 
 - We can observe the module twin without needing to fetch the LNS device key.
 - Keeping track of configuration changes is equivalent to keep track of changes to the desired properties by using `ModuleClient.SetDesiredPropertyUpdateCallbackAsync` (TODO: describe implementation and performance implications here - connection pooling etc)
+- In case the specification requires us to send 64-bit numbers in the future, we would need to split up such a number into two 32-bit numbers. Device twins encode numbers as 32-bit values.
 
 ### Track each LBS as separate IoT Hub device and make devices child device of LNS
 
