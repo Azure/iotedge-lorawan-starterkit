@@ -129,6 +129,8 @@ namespace LoRaWan.NetworkServer
             config.Rx2DataRate = envVars.GetEnvVar("RX2_DATR", string.Empty);
             config.Rx2Frequency = envVars.GetEnvVar("RX2_FREQ");
             config.IoTEdgeTimeout = envVars.GetEnvVar("IOTEDGE_TIMEOUT", config.IoTEdgeTimeout);
+
+            // facadeurl is allowed to be null as the value is coming from the twin in production.
             var facadeUrl = envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty);
             config.FacadeServerUrl = string.IsNullOrEmpty(facadeUrl) ? null : new Uri(envVars.GetEnvVar("FACADE_SERVER_URL", string.Empty));
             config.FacadeAuthCode = envVars.GetEnvVar("FACADE_AUTH_CODE", string.Empty);
