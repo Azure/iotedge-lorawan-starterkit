@@ -43,6 +43,14 @@ namespace LoRaWan.NetworkServer
                 return result;
             });
 
+        public static IJsonReader<byte> Byte() =>
+            Create((ref Utf8JsonReader reader) =>
+            {
+                var result = reader.TokenType == JsonTokenType.Number && reader.TryGetByte(out var n) ? n : throw new JsonException();
+                _ = reader.Read();
+                return result;
+            });
+
         public static IJsonReader<ulong> UInt64() =>
             Create((ref Utf8JsonReader reader) =>
             {

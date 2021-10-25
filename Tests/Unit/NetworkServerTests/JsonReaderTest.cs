@@ -57,6 +57,35 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
+        public void Byte_Moves_Reader()
+        {
+            TestMovesReaderPastReadValue(JsonReader.Byte(), "42");
+        }
+
+        [Theory]
+        [InlineData(42, "42")]
+        public void Byte_With_Valid_Input(ulong expected, string json)
+        {
+            var result = JsonReader.Byte().Read(Strictify(json));
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("null")]
+        [InlineData("false")]
+        [InlineData("true")]
+        [InlineData("-42")]
+        [InlineData("-4.2")]
+        [InlineData("256")]
+        [InlineData("'foobar'")]
+        [InlineData("[]")]
+        [InlineData("{}")]
+        public void Byte_With_Invalid_Input(string json)
+        {
+            Assert.Throws<JsonException>(() => _ = JsonReader.Byte().Read(Strictify(json)));
+        }
+
+        [Fact]
         public void UInt64_Moves_Reader()
         {
             TestMovesReaderPastReadValue(JsonReader.UInt64(), "42");
