@@ -160,27 +160,51 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public void Property_With_No_Default_Initializes_Property_As_Expected()
         {
             const string name = "foobar";
-            var reader = JsonReader.String();
+            var valueReader = JsonReader.String();
+            var property = JsonReader.Property(name, valueReader);
 
-            var property = JsonReader.Property(name, reader);
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(Strictify("{ foobar: 42 }")));
+            _ = reader.Read(); // "{"
+            _ = reader.Read(); // property
 
-            Assert.Equal(name, property.Name);
-            Assert.Same(reader, property.Reader);
-            Assert.Equal((false, null), property.Default);
+            Assert.True(property.IsMatch(reader));
+            Assert.Same(valueReader, property.Reader);
+            Assert.False(property.HasDefault);
+            Assert.Null(property.Default);
         }
 
         [Fact]
         public void Property_With_Default_Initializes_Property_As_Expected()
         {
             const string name = "foobar";
-            var reader = JsonReader.String();
-            var @default = (true, "baz");
+            var valueReader = JsonReader.String();
+            const string defaultValue = "baz";
+            var property = JsonReader.Property(name, valueReader, (true, defaultValue));
 
-            var property = JsonReader.Property(name, reader, @default);
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(Strictify("{ foobar: 42 }")));
+            _ = reader.Read(); // "{"
+            _ = reader.Read(); // property
 
-            Assert.Equal(name, property.Name);
-            Assert.Same(reader, property.Reader);
-            Assert.Equal(@default, property.Default);
+            Assert.True(property.IsMatch(reader));
+            Assert.True(property.HasDefault);
+            Assert.Same(defaultValue, property.Default);
+            Assert.Same(valueReader, property.Reader);
+        }
+
+        [Fact]
+        public void Property_IsMatch_Throws_When_Reader_Is_On_Wrong_Token()
+        {
+            const string name = "foobar";
+            var property = JsonReader.Property(name, JsonReader.String());
+
+            var ex = Assert.Throws<ArgumentException>(() =>
+            {
+                var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(Strictify("{ foobar: 42 }")));
+                _ = reader.Read(); // "{"
+                return _ = property.IsMatch(reader);
+            });
+
+            Assert.Equal("reader", ex.ParamName);
         }
 
         private static readonly IJsonReader<(ulong, string)> Object2Reader =

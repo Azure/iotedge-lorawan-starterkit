@@ -14,113 +14,113 @@ namespace LoRaWan.NetworkServer
     {
         public static IJsonReader<T>
             Object<T1, T2, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, Func<T1, T2, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, Func<T1, T2, T> projector) =>
             Object(property1, property2,
-                   UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, _, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
                 projector(v1, v2));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, Func<T1, T2, T3, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, Func<T1, T2, T3, T> projector) =>
             Object(property1, property2, property3,
-                   UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, _, _, _, _, _, _, _, _, _, _, _, _, _) =>
                 projector(v1, v2, v3));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, Func<T1, T2, T3, T4, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, Func<T1, T2, T3, T4, T> projector) =>
             Object(property1, property2, property3, property4,
-                   UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, v4, _, _, _, _, _, _, _, _, _, _, _, _) =>
                 projector(v1, v2, v3, v4));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, JsonProperty<T5> property5, Func<T1, T2, T3, T4, T5, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, IJsonProperty<T5> property5, Func<T1, T2, T3, T4, T5, T> projector) =>
             Object(property1, property2, property3, property4, property5,
-                   UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, v4, v5, _, _, _, _, _, _, _, _, _, _, _) =>
                 projector(v1, v2, v3, v4, v5));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T6, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, JsonProperty<T5> property5, JsonProperty<T6> property6, Func<T1, T2, T3, T4, T5, T6, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6, Func<T1, T2, T3, T4, T5, T6, T> projector) =>
             Object(property1, property2, property3, property4, property5, property6,
-                   UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, v4, v5, v6, _, _, _, _, _, _, _, _, _, _) =>
                 projector(v1, v2, v3, v4, v5, v6));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T6, T7, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, JsonProperty<T5> property5, JsonProperty<T6> property6, JsonProperty<T7> property7, Func<T1, T2, T3, T4, T5, T6, T7, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6, IJsonProperty<T7> property7, Func<T1, T2, T3, T4, T5, T6, T7, T> projector) =>
             Object(property1, property2, property3, property4, property5, property6, property7,
-                   UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, v4, v5, v6, v7, _, _, _, _, _, _, _, _, _) =>
                 projector(v1, v2, v3, v4, v5, v6, v7));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T6, T7, T8, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, JsonProperty<T5> property5, JsonProperty<T6> property6, JsonProperty<T7> property7, JsonProperty<T8> property8, Func<T1, T2, T3, T4, T5, T6, T7, T8, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6, IJsonProperty<T7> property7, IJsonProperty<T8> property8, Func<T1, T2, T3, T4, T5, T6, T7, T8, T> projector) =>
             Object(property1, property2, property3, property4, property5, property6, property7, property8,
-                   UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, v4, v5, v6, v7, v8, _, _, _, _, _, _, _, _) =>
                 projector(v1, v2, v3, v4, v5, v6, v7, v8));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T6, T7, T8, T9, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, JsonProperty<T5> property5, JsonProperty<T6> property6, JsonProperty<T7> property7, JsonProperty<T8> property8, JsonProperty<T9> property9, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6, IJsonProperty<T7> property7, IJsonProperty<T8> property8, IJsonProperty<T9> property9, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T> projector) =>
             Object(property1, property2, property3, property4, property5, property6, property7, property8, property9,
-                   UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, v4, v5, v6, v7, v8, v9, _, _, _, _, _, _, _) =>
                 projector(v1, v2, v3, v4, v5, v6, v7, v8, v9));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, JsonProperty<T5> property5, JsonProperty<T6> property6, JsonProperty<T7> property7, JsonProperty<T8> property8, JsonProperty<T9> property9, JsonProperty<T10> property10, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6, IJsonProperty<T7> property7, IJsonProperty<T8> property8, IJsonProperty<T9> property9, IJsonProperty<T10> property10, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T> projector) =>
             Object(property1, property2, property3, property4, property5, property6, property7, property8, property9, property10,
-                   UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, _, _, _, _, _, _) =>
                 projector(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, JsonProperty<T5> property5, JsonProperty<T6> property6, JsonProperty<T7> property7, JsonProperty<T8> property8, JsonProperty<T9> property9, JsonProperty<T10> property10, JsonProperty<T11> property11, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6, IJsonProperty<T7> property7, IJsonProperty<T8> property8, IJsonProperty<T9> property9, IJsonProperty<T10> property10, IJsonProperty<T11> property11, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T> projector) =>
             Object(property1, property2, property3, property4, property5, property6, property7, property8, property9, property10, property11,
-                   UnitProperty, UnitProperty, UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, _, _, _, _, _) =>
                 projector(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, JsonProperty<T5> property5, JsonProperty<T6> property6, JsonProperty<T7> property7, JsonProperty<T8> property8, JsonProperty<T9> property9, JsonProperty<T10> property10, JsonProperty<T11> property11, JsonProperty<T12> property12, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6, IJsonProperty<T7> property7, IJsonProperty<T8> property8, IJsonProperty<T9> property9, IJsonProperty<T10> property10, IJsonProperty<T11> property11, IJsonProperty<T12> property12, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T> projector) =>
             Object(property1, property2, property3, property4, property5, property6, property7, property8, property9, property10, property11, property12,
-                   UnitProperty, UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, _, _, _, _) =>
                 projector(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, JsonProperty<T5> property5, JsonProperty<T6> property6, JsonProperty<T7> property7, JsonProperty<T8> property8, JsonProperty<T9> property9, JsonProperty<T10> property10, JsonProperty<T11> property11, JsonProperty<T12> property12, JsonProperty<T13> property13, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6, IJsonProperty<T7> property7, IJsonProperty<T8> property8, IJsonProperty<T9> property9, IJsonProperty<T10> property10, IJsonProperty<T11> property11, IJsonProperty<T12> property12, IJsonProperty<T13> property13, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T> projector) =>
             Object(property1, property2, property3, property4, property5, property6, property7, property8, property9, property10, property11, property12, property13,
-                   UnitProperty, UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, _, _, _) =>
                 projector(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, JsonProperty<T5> property5, JsonProperty<T6> property6, JsonProperty<T7> property7, JsonProperty<T8> property8, JsonProperty<T9> property9, JsonProperty<T10> property10, JsonProperty<T11> property11, JsonProperty<T12> property12, JsonProperty<T13> property13, JsonProperty<T14> property14, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6, IJsonProperty<T7> property7, IJsonProperty<T8> property8, IJsonProperty<T9> property9, IJsonProperty<T10> property10, IJsonProperty<T11> property11, IJsonProperty<T12> property12, IJsonProperty<T13> property13, IJsonProperty<T14> property14, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T> projector) =>
             Object(property1, property2, property3, property4, property5, property6, property7, property8, property9, property10, property11, property12, property13, property14,
-                   UnitProperty, UnitProperty,
+                   NonProperty.Instance, NonProperty.Instance,
                    (v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, _, _) =>
                 projector(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14));
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3, JsonProperty<T4> property4, JsonProperty<T5> property5, JsonProperty<T6> property6, JsonProperty<T7> property7, JsonProperty<T8> property8, JsonProperty<T9> property9, JsonProperty<T10> property10, JsonProperty<T11> property11, JsonProperty<T12> property12, JsonProperty<T13> property13, JsonProperty<T14> property14, JsonProperty<T15> property15, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T> projector) =>
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3, IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6, IJsonProperty<T7> property7, IJsonProperty<T8> property8, IJsonProperty<T9> property9, IJsonProperty<T10> property10, IJsonProperty<T11> property11, IJsonProperty<T12> property12, IJsonProperty<T13> property13, IJsonProperty<T14> property14, IJsonProperty<T15> property15, Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T> projector) =>
             Object(property1, property2, property3, property4, property5, property6, property7, property8, property9, property10, property11, property12, property13, property14, property15,
-                   UnitProperty,
+                   NonProperty.Instance,
                    (v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, _) =>
                 projector(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15));
     }

@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Text;
     using System.Text.Json;
     using Unit = System.ValueTuple;
@@ -14,18 +15,12 @@ namespace LoRaWan.NetworkServer
         T Read(ref Utf8JsonReader reader);
     }
 
-    internal sealed class JsonProperty<T>
+    internal interface IJsonProperty<out T>
     {
-        public JsonProperty(string name, IJsonReader<T> reader, (bool, T) @default = default)
-        {
-            Name = name;
-            Reader = reader;
-            Default = @default;
-        }
-
-        public string Name { get; }
-        public IJsonReader<T> Reader { get; }
-        public (bool, T) Default { get; }
+        bool IsMatch(Utf8JsonReader reader);
+        IJsonReader<T> Reader { get; }
+        bool HasDefault { get; }
+        T Default { get; }
     }
 
     internal static partial class JsonReader
@@ -83,20 +78,47 @@ namespace LoRaWan.NetworkServer
                 }
             });
 
-        public static JsonProperty<T> Property<T>(string name, IJsonReader<T> reader, (bool, T) @default = default) =>
-            new(name, reader, @default);
+        [DebuggerDisplay("{" + nameof(name) + "}")]
+        private sealed class JsonProperty<T> : IJsonProperty<T>
+        {
+            private readonly string name;
 
-        private static readonly JsonProperty<Unit> UnitProperty =
-            Property(string.Empty, Create<Unit>(delegate { throw new NotImplementedException(); }), (true, default));
+            public JsonProperty(string name, IJsonReader<T> reader, (bool, T) @default = default) =>
+                (this.name, Reader, (HasDefault, Default)) = (name, reader, @default);
+
+            public bool IsMatch(Utf8JsonReader reader) =>
+                reader.TokenType != JsonTokenType.PropertyName
+                    ? throw new ArgumentException(null, nameof(reader))
+                    : reader.ValueTextEquals(this.name);
+
+            public IJsonReader<T> Reader { get; }
+            public bool HasDefault { get; }
+            public T Default { get; }
+        }
+
+        public static IJsonProperty<T> Property<T>(string name, IJsonReader<T> reader, (bool, T) @default = default) =>
+            new JsonProperty<T>(name, reader, @default);
+
+        private sealed class NonProperty : IJsonProperty<Unit>
+        {
+            public static readonly NonProperty Instance = new();
+
+            private NonProperty() { }
+
+            public bool IsMatch(Utf8JsonReader reader) => false;
+            public IJsonReader<Unit> Reader => throw new NotSupportedException();
+            public bool HasDefault => true;
+            public Unit Default => default;
+        }
 
         public static IJsonReader<T>
             Object<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T>(
-                JsonProperty<T1> property1, JsonProperty<T2> property2, JsonProperty<T3> property3,
-                JsonProperty<T4> property4, JsonProperty<T5> property5, JsonProperty<T6> property6,
-                JsonProperty<T7> property7, JsonProperty<T8> property8, JsonProperty<T9> property9,
-                JsonProperty<T10> property10, JsonProperty<T11> property11, JsonProperty<T12> property12,
-                JsonProperty<T13> property13, JsonProperty<T14> property14, JsonProperty<T15> property15,
-                JsonProperty<T16> property16,
+                IJsonProperty<T1> property1, IJsonProperty<T2> property2, IJsonProperty<T3> property3,
+                IJsonProperty<T4> property4, IJsonProperty<T5> property5, IJsonProperty<T6> property6,
+                IJsonProperty<T7> property7, IJsonProperty<T8> property8, IJsonProperty<T9> property9,
+                IJsonProperty<T10> property10, IJsonProperty<T11> property11, IJsonProperty<T12> property12,
+                IJsonProperty<T13> property13, IJsonProperty<T14> property14, IJsonProperty<T15> property15,
+                IJsonProperty<T16> property16,
                 Func<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16, T> projector) =>
             Create((ref Utf8JsonReader reader) =>
             {
@@ -145,11 +167,11 @@ namespace LoRaWan.NetworkServer
                     reader.Skip();
                     _ = reader.Read();
 
-                    static bool ReadPropertyValue<TValue>(JsonProperty<TValue> property,
+                    static bool ReadPropertyValue<TValue>(IJsonProperty<TValue> property,
                         ref Utf8JsonReader reader,
                         ref (bool, TValue) value)
                     {
-                        if (value is (true, _) || !reader.ValueTextEquals(property.Name))
+                        if (value is (true, _) || !property.IsMatch(reader))
                             return false;
 
                         _ = reader.Read();
@@ -160,22 +182,22 @@ namespace LoRaWan.NetworkServer
 
                 _ = reader.Read(); // "}"
 
-                if (value1 is (false, _) && property1.Default is (true, _)) value1 = property1.Default;
-                if (value2 is (false, _) && property2.Default is (true, _)) value2 = property2.Default;
-                if (value3 is (false, _) && property3.Default is (true, _)) value3 = property3.Default;
-                if (value4 is (false, _) && property4.Default is (true, _)) value4 = property4.Default;
-                if (value5 is (false, _) && property5.Default is (true, _)) value5 = property5.Default;
-                if (value6 is (false, _) && property6.Default is (true, _)) value6 = property6.Default;
-                if (value7 is (false, _) && property7.Default is (true, _)) value7 = property7.Default;
-                if (value8 is (false, _) && property8.Default is (true, _)) value8 = property8.Default;
-                if (value9 is (false, _) && property9.Default is (true, _)) value9 = property9.Default;
-                if (value10 is (false, _) && property10.Default is (true, _)) value10 = property10.Default;
-                if (value11 is (false, _) && property11.Default is (true, _)) value11 = property11.Default;
-                if (value12 is (false, _) && property12.Default is (true, _)) value12 = property12.Default;
-                if (value13 is (false, _) && property13.Default is (true, _)) value13 = property13.Default;
-                if (value14 is (false, _) && property14.Default is (true, _)) value14 = property14.Default;
-                if (value15 is (false, _) && property15.Default is (true, _)) value15 = property15.Default;
-                if (value16 is (false, _) && property16.Default is (true, _)) value16 = property16.Default;
+                if (value1 is (false, _) && property1.HasDefault) value1 = (true, property1.Default);
+                if (value2 is (false, _) && property2.HasDefault) value2 = (true, property2.Default);
+                if (value3 is (false, _) && property3.HasDefault) value3 = (true, property3.Default);
+                if (value4 is (false, _) && property4.HasDefault) value4 = (true, property4.Default);
+                if (value5 is (false, _) && property5.HasDefault) value5 = (true, property5.Default);
+                if (value6 is (false, _) && property6.HasDefault) value6 = (true, property6.Default);
+                if (value7 is (false, _) && property7.HasDefault) value7 = (true, property7.Default);
+                if (value8 is (false, _) && property8.HasDefault) value8 = (true, property8.Default);
+                if (value9 is (false, _) && property9.HasDefault) value9 = (true, property9.Default);
+                if (value10 is (false, _) && property10.HasDefault) value10 = (true, property10.Default);
+                if (value11 is (false, _) && property11.HasDefault) value11 = (true, property11.Default);
+                if (value12 is (false, _) && property12.HasDefault) value12 = (true, property12.Default);
+                if (value13 is (false, _) && property13.HasDefault) value13 = (true, property13.Default);
+                if (value14 is (false, _) && property14.HasDefault) value14 = (true, property14.Default);
+                if (value15 is (false, _) && property15.HasDefault) value15 = (true, property15.Default);
+                if (value16 is (false, _) && property16.HasDefault) value16 = (true, property16.Default);
 
                 return (value1, value2, value3,
                         value4, value5, value6,
