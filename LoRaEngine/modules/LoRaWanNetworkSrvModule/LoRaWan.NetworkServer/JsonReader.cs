@@ -10,12 +10,12 @@ namespace LoRaWan.NetworkServer
     using System.Text.Json;
     using Unit = System.ValueTuple;
 
-    internal interface IJsonReader<out T>
+    public interface IJsonReader<out T>
     {
         T Read(ref Utf8JsonReader reader);
     }
 
-    internal interface IJsonProperty<out T>
+    public interface IJsonProperty<out T>
     {
         bool IsMatch(Utf8JsonReader reader);
         IJsonReader<T> Reader { get; }
@@ -23,7 +23,7 @@ namespace LoRaWan.NetworkServer
         T DefaultValue { get; }
     }
 
-    internal static partial class JsonReader
+    public static partial class JsonReader
     {
         public static T Read<T>(this IJsonReader<T> reader, string json) =>
             reader.Read(Encoding.UTF8.GetBytes(json));
@@ -36,7 +36,9 @@ namespace LoRaWan.NetworkServer
             return reader.Read(ref utf8Reader);
         }
 
+#pragma warning disable CA1720 // Identifier contains type name (represents JSON string)
         public static IJsonReader<string> String() =>
+#pragma warning restore CA1720 // Identifier contains type name
             Create((ref Utf8JsonReader reader) =>
             {
                 var result = reader.TokenType == JsonTokenType.String ? reader.GetString() : throw new JsonException();
@@ -95,6 +97,8 @@ namespace LoRaWan.NetworkServer
             public bool HasDefaultValue => true;
             public Unit DefaultValue => default;
         }
+
+#pragma warning disable CA1720 // Identifier contains type name (represent JSON object)
 
         public static IJsonReader<T> Object<T>(IJsonProperty<T> property) =>
             Object(property, NonProperty.Instance, NonProperty.Instance,
@@ -207,6 +211,8 @@ namespace LoRaWan.NetworkServer
                      ? projector(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16)
                      : throw new JsonException();
             });
+
+#pragma warning restore CA1720 // Identifier contains type name
 
         public static IJsonReader<T[]> Array<T>(IJsonReader<T> itemReader) =>
             Create((ref Utf8JsonReader reader) =>
