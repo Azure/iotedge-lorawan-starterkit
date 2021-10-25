@@ -1,9 +1,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build-env
 
 WORKDIR /build
-COPY Directory.Build.props ./
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/
+COPY Directory.Build.props ./
+COPY AssemblyInfo.cs ./
+COPY .editorconfig ./
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger ./Logger
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools ./LoraTools
 COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer ./LoRaWan.NetworkServer

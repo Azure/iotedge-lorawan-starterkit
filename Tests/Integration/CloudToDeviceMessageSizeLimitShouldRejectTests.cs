@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Integration
     using System.Threading.Tasks;
     using LoRaTools;
     using LoRaTools.LoRaMessage;
-    using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
     using LoRaWan.NetworkServer;
@@ -47,15 +46,7 @@ namespace LoRaWan.Tests.Integration
             var euRegion = RegionManager.EU868;
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
-            var upstreamMessageMacCommandSize = 0;
-            string expectedDownlinkDatr;
-
-            if (hasMacInUpstream)
-            {
-                upstreamMessageMacCommandSize = new LinkCheckAnswer(1, 1).Length;
-            }
-
-            expectedDownlinkDatr = datr;
+            var expectedDownlinkDatr = datr;
 
             var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
                 - c2dMessageMacCommandSize
@@ -92,7 +83,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.Zero);
             messageProcessor.DispatchRequest(request);
 
             // Expectations

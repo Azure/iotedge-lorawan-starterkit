@@ -4,7 +4,6 @@
 namespace LoRaWan
 {
     using System;
-    using System.Globalization;
     using System.Net;
     using System.Net.Sockets;
     using System.Text;

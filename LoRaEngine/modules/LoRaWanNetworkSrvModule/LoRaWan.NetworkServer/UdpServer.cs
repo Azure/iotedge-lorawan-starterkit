@@ -4,7 +4,6 @@
 namespace LoRaWan.NetworkServer
 {
     using System;
-    using System.Collections.Generic;
     using System.Globalization;
     using System.Net;
     using System.Net.Sockets;
@@ -17,7 +16,6 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.CommonAPI;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
-    using LoRaWan.Core;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
