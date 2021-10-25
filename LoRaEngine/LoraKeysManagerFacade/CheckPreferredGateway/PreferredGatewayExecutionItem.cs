@@ -94,7 +94,6 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 _ = await this.cacheStore.LockTakeAsync(listCacheKey, computationId, TimeSpan.FromMilliseconds(200), true);
                 _ = this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(RequestListCacheDurationInMinutes));
                 this.log.LogInformation("Preferred gateway {devEUI}/{fcnt}: added {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
-
             }
             finally
             {
