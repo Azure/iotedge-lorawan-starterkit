@@ -256,8 +256,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             Assert.True(property.IsMatch(reader));
             Assert.Same(valueReader, property.Reader);
-            Assert.False(property.HasDefault);
-            Assert.Null(property.Default);
+            Assert.False(property.HasDefaultValue);
+            Assert.Null(property.DefaultValue);
         }
 
         [Fact]
@@ -273,8 +273,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             _ = reader.Read(); // property
 
             Assert.True(property.IsMatch(reader));
-            Assert.True(property.HasDefault);
-            Assert.Same(defaultValue, property.Default);
+            Assert.True(property.HasDefaultValue);
+            Assert.Same(defaultValue, property.DefaultValue);
             Assert.Same(valueReader, property.Reader);
         }
 

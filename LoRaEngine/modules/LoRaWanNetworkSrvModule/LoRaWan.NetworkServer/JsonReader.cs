@@ -19,8 +19,8 @@ namespace LoRaWan.NetworkServer
     {
         bool IsMatch(Utf8JsonReader reader);
         IJsonReader<T> Reader { get; }
-        bool HasDefault { get; }
-        T Default { get; }
+        bool HasDefaultValue { get; }
+        T DefaultValue { get; }
     }
 
     internal static partial class JsonReader
@@ -68,7 +68,7 @@ namespace LoRaWan.NetworkServer
             private readonly string name;
 
             public JsonProperty(string name, IJsonReader<T> reader, (bool, T) @default = default) =>
-                (this.name, Reader, (HasDefault, Default)) = (name, reader, @default);
+                (this.name, Reader, (HasDefaultValue, DefaultValue)) = (name, reader, @default);
 
             public bool IsMatch(Utf8JsonReader reader) =>
                 reader.TokenType != JsonTokenType.PropertyName
@@ -76,8 +76,8 @@ namespace LoRaWan.NetworkServer
                     : reader.ValueTextEquals(this.name);
 
             public IJsonReader<T> Reader { get; }
-            public bool HasDefault { get; }
-            public T Default { get; }
+            public bool HasDefaultValue { get; }
+            public T DefaultValue { get; }
         }
 
         public static IJsonProperty<T> Property<T>(string name, IJsonReader<T> reader, (bool, T) @default = default) =>
@@ -91,8 +91,8 @@ namespace LoRaWan.NetworkServer
 
             public bool IsMatch(Utf8JsonReader reader) => false;
             public IJsonReader<Unit> Reader => throw new NotSupportedException();
-            public bool HasDefault => true;
-            public Unit Default => default;
+            public bool HasDefaultValue => true;
+            public Unit DefaultValue => default;
         }
 
         public static IJsonReader<T> Object<T>(IJsonProperty<T> property) =>
@@ -175,22 +175,22 @@ namespace LoRaWan.NetworkServer
 
                 _ = reader.Read(); // "}"
 
-                if (value1 is (false, _) && property1.HasDefault) value1 = (true, property1.Default);
-                if (value2 is (false, _) && property2.HasDefault) value2 = (true, property2.Default);
-                if (value3 is (false, _) && property3.HasDefault) value3 = (true, property3.Default);
-                if (value4 is (false, _) && property4.HasDefault) value4 = (true, property4.Default);
-                if (value5 is (false, _) && property5.HasDefault) value5 = (true, property5.Default);
-                if (value6 is (false, _) && property6.HasDefault) value6 = (true, property6.Default);
-                if (value7 is (false, _) && property7.HasDefault) value7 = (true, property7.Default);
-                if (value8 is (false, _) && property8.HasDefault) value8 = (true, property8.Default);
-                if (value9 is (false, _) && property9.HasDefault) value9 = (true, property9.Default);
-                if (value10 is (false, _) && property10.HasDefault) value10 = (true, property10.Default);
-                if (value11 is (false, _) && property11.HasDefault) value11 = (true, property11.Default);
-                if (value12 is (false, _) && property12.HasDefault) value12 = (true, property12.Default);
-                if (value13 is (false, _) && property13.HasDefault) value13 = (true, property13.Default);
-                if (value14 is (false, _) && property14.HasDefault) value14 = (true, property14.Default);
-                if (value15 is (false, _) && property15.HasDefault) value15 = (true, property15.Default);
-                if (value16 is (false, _) && property16.HasDefault) value16 = (true, property16.Default);
+                if (value1 is (false, _) && property1.HasDefaultValue) value1 = (true, property1.DefaultValue);
+                if (value2 is (false, _) && property2.HasDefaultValue) value2 = (true, property2.DefaultValue);
+                if (value3 is (false, _) && property3.HasDefaultValue) value3 = (true, property3.DefaultValue);
+                if (value4 is (false, _) && property4.HasDefaultValue) value4 = (true, property4.DefaultValue);
+                if (value5 is (false, _) && property5.HasDefaultValue) value5 = (true, property5.DefaultValue);
+                if (value6 is (false, _) && property6.HasDefaultValue) value6 = (true, property6.DefaultValue);
+                if (value7 is (false, _) && property7.HasDefaultValue) value7 = (true, property7.DefaultValue);
+                if (value8 is (false, _) && property8.HasDefaultValue) value8 = (true, property8.DefaultValue);
+                if (value9 is (false, _) && property9.HasDefaultValue) value9 = (true, property9.DefaultValue);
+                if (value10 is (false, _) && property10.HasDefaultValue) value10 = (true, property10.DefaultValue);
+                if (value11 is (false, _) && property11.HasDefaultValue) value11 = (true, property11.DefaultValue);
+                if (value12 is (false, _) && property12.HasDefaultValue) value12 = (true, property12.DefaultValue);
+                if (value13 is (false, _) && property13.HasDefaultValue) value13 = (true, property13.DefaultValue);
+                if (value14 is (false, _) && property14.HasDefaultValue) value14 = (true, property14.DefaultValue);
+                if (value15 is (false, _) && property15.HasDefaultValue) value15 = (true, property15.DefaultValue);
+                if (value16 is (false, _) && property16.HasDefaultValue) value16 = (true, property16.DefaultValue);
 
                 return (value1, value2, value3,
                         value4, value5, value6,
