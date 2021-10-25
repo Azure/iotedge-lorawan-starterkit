@@ -987,7 +987,7 @@ namespace LoRaWan.Tests.Integration
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(rxpk, useNonDeterministicTiming: true);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -1055,7 +1055,7 @@ namespace LoRaWan.Tests.Integration
 
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(rxpk, useNonDeterministicTiming: true);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
