@@ -89,9 +89,10 @@ namespace LoraKeysManagerFacade.FunctionBundler
             //    List item: gatewayid, rssi, insertTime
             var item = new PreferredGatewayTableItem(context.Request.GatewayId, rssi);
             var listCacheKey = LoRaDevicePreferredGateway.PreferredGatewayFcntUpItemListCacheKey(devEUI, fcntUp);
+            var preferredGatewayLockKey = $"preferredGateway:{devEUI}:lock";
             try
             {
-                _ = await this.cacheStore.LockTakeAsync(listCacheKey, computationId, TimeSpan.FromMilliseconds(200), true);
+                _ = await this.cacheStore.LockTakeAsync(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200), true);
                 _ = this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(RequestListCacheDurationInMinutes));
                 this.log.LogInformation("Preferred gateway {devEUI}/{fcnt}: added {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
             }
@@ -113,9 +114,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 }
             }
 
-            // 4. To calculated need to adquire a lock
-            var preferredGatewayLockKey = $"preferredGateway:{devEUI}:lock";
-
+            // 4. To calculate, we need to acquire a lock
             for (var i = 0; i < MaxAttemptsToResolvePreferredGateway; i++)
             {
                 if (await this.cacheStore.LockTakeAsync(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200), block: false))
