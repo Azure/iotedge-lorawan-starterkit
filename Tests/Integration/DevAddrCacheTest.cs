@@ -210,7 +210,7 @@ namespace LoRaWan.Tests.Integration
 
         [Fact]
         // This test simulate a call received by multiple server. It ensures IoT Hub is only queried once.
-        public async Task Multi_Gateway_When_DevAddr_Is_Not_In_Cache_Query_Iot_Hub_Only_Once_And_Save_In_Cache()
+        public async Task Single_Gateway_When_DevAddr_Is_Not_In_Cache_Query_Iot_Hub_Only_Once_And_Save_In_Cache()
         {
             var gatewayId = NewUniqueEUI64();
             var dateTime = DateTime.UtcNow;
