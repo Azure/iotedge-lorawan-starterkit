@@ -90,15 +90,17 @@ namespace LoraKeysManagerFacade.FunctionBundler
             var item = new PreferredGatewayTableItem(context.Request.GatewayId, rssi);
             var listCacheKey = LoRaDevicePreferredGateway.PreferredGatewayFcntUpItemListCacheKey(devEUI, fcntUp);
             var preferredGatewayLockKey = $"preferredGateway:{devEUI}:lock";
-            try
+            if (await this.cacheStore.LockTakeAsync(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200), true))
             {
-                _ = await this.cacheStore.LockTakeAsync(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200), true);
-                _ = this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(RequestListCacheDurationInMinutes));
-                this.log.LogInformation("Preferred gateway {devEUI}/{fcnt}: added {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
-            }
-            finally
-            {
-                _ = this.cacheStore.LockRelease(listCacheKey, computationId);
+                try
+                {
+                    _ = this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(RequestListCacheDurationInMinutes));
+                    this.log.LogInformation("Preferred gateway {devEUI}/{fcnt}: added {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
+                }
+                finally
+                {
+                    _ = this.cacheStore.LockRelease(preferredGatewayLockKey, computationId);
+                }
             }
 
             // 2. Wait for the time specified in receiveInterval (default 200ms). Optional: wait less if another requests already started
