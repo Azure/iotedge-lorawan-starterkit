@@ -36,7 +36,7 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Search and locks device for join request.
         /// </summary>
-        public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string appEUI, string devNonce);
+        public abstract Task<SearchDevicesResult> SearchAndLockForJoinAsync(string gatewayID, string devEUI, string devNonce);
 
         public abstract Task<SearchDevicesResult> SearchByDevEUIAsync(string devEUI);
 

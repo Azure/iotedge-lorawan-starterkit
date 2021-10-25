@@ -256,9 +256,9 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Searchs for devices that match the join request.
         /// </summary>
-        public async Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, string appEUI, string devNonce)
+        public async Task<LoRaDevice> GetDeviceForJoinRequestAsync(string devEUI, string devNonce)
         {
-            if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(appEUI) || string.IsNullOrEmpty(devNonce))
+            if (string.IsNullOrEmpty(devEUI) || string.IsNullOrEmpty(devNonce))
             {
                 Logger.Log(devEUI, "join refused: missing devEUI/AppEUI/DevNonce in request", LogLevel.Error);
                 return null;
@@ -271,7 +271,6 @@ namespace LoRaWan.NetworkServer
                 var searchDeviceResult = await this.loRaDeviceAPIService.SearchAndLockForJoinAsync(
                     gatewayID: this.configuration.GatewayID,
                     devEUI: devEUI,
-                    appEUI: appEUI,
                     devNonce: devNonce);
 
                 if (searchDeviceResult.IsDevNonceAlreadyUsed)
