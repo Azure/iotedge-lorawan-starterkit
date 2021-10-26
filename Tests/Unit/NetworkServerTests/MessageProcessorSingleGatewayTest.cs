@@ -146,7 +146,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk);
+            using var request = CreateWaitableRequest(rxpk, useRealTimer: true);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
 
