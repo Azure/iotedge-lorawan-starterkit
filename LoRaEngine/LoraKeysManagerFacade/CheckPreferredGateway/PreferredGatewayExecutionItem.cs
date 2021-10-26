@@ -97,7 +97,6 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
             // 3. Check if value was already calculated
             var preferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEUI);
-
             if (preferredGateway != null)
             {
                 if (preferredGateway.FcntUp >= fcntUp)
@@ -108,6 +107,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
 
             // 4. To calculate, we need to acquire a lock
             var preferredGatewayLockKey = $"preferredGateway:{devEUI}:lock";
+
             for (var i = 0; i < MaxAttemptsToResolvePreferredGateway; i++)
             {
                 if (await this.cacheStore.LockTakeAsync(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200), block: false))
