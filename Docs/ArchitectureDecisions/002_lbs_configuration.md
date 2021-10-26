@@ -62,7 +62,7 @@ desired properties:
 - Nested object size is based on their content
 
 Taking as an example the configuration message from [PR
-#569](https://github.com/Azure/iotedge-lorawan-starterkit/pull/569), we are able to add **37** times
+569](https://github.com/Azure/iotedge-lorawan-starterkit/pull/569), we are able to add **37** times
 the following LBS configuration to the device twins desired properties until we get an error:
 ```{"msgtype":"router_config","NetID":[1],"JoinEui":["9223372036854775807","9223372036854775807"],"region":"EU863","hwspec":"sx1301/1","freq_range":[863000000,870000000],"DRs":[[11,125,0],[10,125,0],[9,125,0],[8,125,0],[7,125,0],[7,250,0]],"sx1301_conf":[{"radio_0":{"enable":true,"freq":867500000},"radio_1":{"enable":true,"freq":868500000},"chan_FSK":{"enable":true,"radio":1,"if":300000},"chan_Lora_std":{"enable":true,"radio":1,"if":-200000,"bandwidth":250000,"spread_factor":7},"chan_multiSF_0":{"enable":true,"radio":1,"if":-400000},"chan_multiSF_1":{"enable":true,"radio":1,"if":-200000},"chan_multiSF_2":{"enable":true,"radio":1,"if":0},"chan_multiSF_3":{"enable":true,"radio":0,"if":-400000},"chan_multiSF_4":{"enable":true,"radio":0,"if":-200000},"chan_multiSF_5":{"enable":true,"radio":0,"if":0},"chan_multiSF_6":{"enable":true,"radio":0,"if":200000},"chan_multiSF_7":{"enable":true,"radio":0,"if":400000}}],"nocca":true,"nodc":true,"nodwell":true}```.
 Assuming that we do not choose a different representation (e.g. compression, sharing of duplicated
@@ -125,7 +125,7 @@ By establishing a [child-parent
 relationship](https://docs.microsoft.com/en-us/azure/iot-edge/iot-edge-as-gateway?view=iotedge-2020-11#parent-and-child-relationships)
 between LBSs and LNS, messages from and to LBS are passed transparently through the LNS. The idea
 here would be that LNS as the parent, has access to the LBS device twin __without__ the need to use
-the LBS device key. 
+the LBS device key.
 
 Reason for disqualifying: There seems that there is no API in either the
 [DeviceClient](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.devices.client.deviceclient?view=azure-dotnet)
