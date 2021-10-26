@@ -55,23 +55,30 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             var stationEui = LnsDiscovery.QueryReader.Read(json);
             this.logger.LogInformation($"Received discovery request from: {stationEui}");
 
-            var httpContext = this.httpContextAccessor.HttpContext;
+            try
+            {
+                var httpContext = this.httpContextAccessor.HttpContext;
+                var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
+                var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}");
 
-            var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
-            var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}");
+                var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
+                                                       .SingleOrDefault(ni => ni.GetIPProperties()
+                                                                                .UnicastAddresses
+                                                                                .Any(info => info.Address.Equals(httpContext.Connection.LocalIpAddress)));
 
-            var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
-                                                   .SingleOrDefault(ni => ni.GetIPProperties()
-                                                                            .UnicastAddresses
-                                                                            .Any(info => info.Address.Equals(httpContext.Connection.LocalIpAddress)));
+                var muxs = Id6.Format(networkInterface is { } someNetworkInterface
+                                      ? someNetworkInterface.GetPhysicalAddress().Convert48To64() : 0,
+                                      Id6.FormatOptions.FixedWidth);
 
-            var muxs = Id6.Format(networkInterface is { } someNetworkInterface
-                                  ? someNetworkInterface.GetPhysicalAddress().Convert48To64() : 0,
-                                  Id6.FormatOptions.FixedWidth);
-
-            var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, muxs, url));
-
-            await socket.SendAsync(response, WebSocketMessageType.Text, true, token);
+                var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, muxs, url));
+                await socket.SendAsync(response, WebSocketMessageType.Text, true, token);
+            }
+            catch (Exception ex)
+            {
+                var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, ex.Message));
+                await socket.SendAsync(response, WebSocketMessageType.Text, true, token);
+                throw;
+            }
 
             return false;
         }
