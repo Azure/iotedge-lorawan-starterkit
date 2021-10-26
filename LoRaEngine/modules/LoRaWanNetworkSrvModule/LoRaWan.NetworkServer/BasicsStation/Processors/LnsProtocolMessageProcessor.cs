@@ -167,11 +167,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         }
                     }
                 }
-                catch (OperationCanceledException operationCanceled) when (operationCanceled.InnerException is WebSocketException wsException
-                                                                           && wsException.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+                catch (OperationCanceledException ex)
+#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
+                    when (ex is { InnerException: WebSocketException { WebSocketErrorCode: WebSocketError.ConnectionClosedPrematurely } })
+#pragma warning restore CA1508 // Avoid dead conditional code
                 {
                     // This can happen if the basic station client is losing connectivity
-                    this.logger.LogDebug(wsException, wsException.Message);
+                    this.logger.LogDebug(ex, ex.Message);
                 }
             }
             else
