@@ -14,7 +14,7 @@ namespace LoRaWan.Tests.Common
 
     public sealed class WaitableLoRaRequest : LoRaRequest, IDisposable
     {
-        private readonly SemaphoreSlim complete;
+        private readonly SemaphoreSlim complete = new SemaphoreSlim(0);
 
         public bool ProcessingFailed { get; private set; }
 
@@ -26,20 +26,15 @@ namespace LoRaWan.Tests.Common
 
         public WaitableLoRaRequest(LoRaPayloadData payload)
             : base(payload)
-        {
-            this.complete = new SemaphoreSlim(0);
-        }
+        { }
 
         public WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder)
             : this(rxpk, packetForwarder, DateTime.UtcNow)
-        {
-        }
+        { }
 
         private WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder, DateTime startTime)
             : base(rxpk, packetForwarder, startTime)
-        {
-            this.complete = new SemaphoreSlim(0);
-        }
+        { }
 
         public static WaitableLoRaRequest Create(Rxpk rxpk,
                                                  IPacketForwarder packetForwarder = null,
