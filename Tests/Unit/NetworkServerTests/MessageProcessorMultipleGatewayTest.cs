@@ -68,8 +68,8 @@ namespace LoRaWan.Tests.Common
 
             // Create Rxpk
             var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request1 = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
-            using var request2 = WaitableLoRaRequest.Create(rxpk, SecondPacketForwarder);
+            using var request1 = CreateWaitableRequest(rxpk, PacketForwarder);
+            using var request2 = CreateWaitableRequest(rxpk, SecondPacketForwarder);
             messageProcessor1.DispatchRequest(request1);
             messageProcessor2.DispatchRequest(request2);
 

@@ -107,7 +107,7 @@ namespace LoRaWan.Tests.Integration
 
             var startTimeOffset = isSendingInRx2 ? TestUtils.GetStartTimeOffsetForSecondWindow() : TimeSpan.Zero;
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder, startTimeOffset: startTimeOffset);
+            using var request = CreateWaitableRequest(rxpk, startTimeOffset: startTimeOffset);
             messageProcessor.DispatchRequest(request);
 
             // Expectations

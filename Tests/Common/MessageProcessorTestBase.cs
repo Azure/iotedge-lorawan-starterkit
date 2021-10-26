@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Common
     using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
+    using LoRaTools.LoRaPhysical;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Azure.Devices.Client;
@@ -102,6 +103,17 @@ namespace LoRaWan.Tests.Common
             ConnectionManager.Register(device, LoRaDeviceClient.Object);
             return device;
         }
+
+        protected WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk,
+                                                            IPacketForwarder packetForwarder = null,
+                                                            TimeSpan? startTimeOffset = null,
+                                                            TimeSpan? constantElapsedTime = null,
+                                                            bool useRealTimer = false) =>
+            WaitableLoRaRequest.Create(rxpk,
+                                       packetForwarder ?? PacketForwarder,
+                                       startTimeOffset,
+                                       constantElapsedTime,
+                                       useRealTimer);
 
         protected virtual void Dispose(bool disposing)
         {

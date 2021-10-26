@@ -208,15 +208,15 @@ namespace LoRaWan.Tests.Integration
             var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedMessageUplink("2", fcnt: 2).Rxpk[0];
             var unconfirmedMessage3 = simulatedDevice.CreateUnconfirmedMessageUplink("3", fcnt: 3).Rxpk[0];
 
-            var req1 = WaitableLoRaRequest.Create(unconfirmedMessage1, this.packetForwarder);
+            var req1 = CreateWaitableRequest(unconfirmedMessage1, this.packetForwarder);
             messageDispatcher.DispatchRequest(req1);
             await Task.Delay(parallelTestConfiguration.BetweenMessageDuration.Next());
 
-            var req2 = WaitableLoRaRequest.Create(unconfirmedMessage2, this.packetForwarder);
+            var req2 = CreateWaitableRequest(unconfirmedMessage2, this.packetForwarder);
             messageDispatcher.DispatchRequest(req2);
             await Task.Delay(parallelTestConfiguration.BetweenMessageDuration.Next());
 
-            var req3 = WaitableLoRaRequest.Create(unconfirmedMessage3, this.packetForwarder);
+            var req3 = CreateWaitableRequest(unconfirmedMessage3, this.packetForwarder);
             messageDispatcher.DispatchRequest(req3);
             await Task.Delay(parallelTestConfiguration.BetweenMessageDuration.Next());
 
@@ -272,7 +272,7 @@ namespace LoRaWan.Tests.Integration
             for (uint i = 0; i < messagePerDeviceCount; ++i)
             {
                 var rxpk = device.CreateUnconfirmedMessageUplink((i + 1).ToString(CultureInfo.InvariantCulture), fcnt: payloadInitialFcnt + i).Rxpk[0];
-                var req = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+                var req = CreateWaitableRequest(rxpk);
                 dispatcher.DispatchRequest(req);
                 requests.Add(req);
 

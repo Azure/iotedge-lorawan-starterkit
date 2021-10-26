@@ -121,9 +121,7 @@ namespace LoRaWan.Tests.Integration
 
             // Create a join request and join with the device.
             using var joinRequest =
-                WaitableLoRaRequest.Create(joinRxpk,
-                                           PacketForwarder,
-                                           constantElapsedTime: TimeSpan.FromMilliseconds(300));
+                CreateWaitableRequest(joinRxpk, constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
@@ -161,9 +159,8 @@ namespace LoRaWan.Tests.Integration
             // sends unconfirmed message with a given starting frame counter
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("100", fcnt: startingPayloadFcnt);
             using var unconfirmedRequest =
-                WaitableLoRaRequest.Create(unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0],
-                                           PacketForwarder,
-                                           constantElapsedTime: TimeSpan.FromMilliseconds(300));
+                CreateWaitableRequest(unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0],
+                                      constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(unconfirmedRequest);
             Assert.True(await unconfirmedRequest.WaitCompleteAsync());
             Assert.Null(unconfirmedRequest.ResponseDownlink);
@@ -187,7 +184,7 @@ namespace LoRaWan.Tests.Integration
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
             var confirmedMessageRxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var confirmedRequest = WaitableLoRaRequest.Create(confirmedMessageRxpk, PacketForwarder, constantElapsedTime: TimeSpan.FromMilliseconds(300));
+            using var confirmedRequest = CreateWaitableRequest(confirmedMessageRxpk, constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(confirmedRequest);
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
@@ -276,7 +273,7 @@ namespace LoRaWan.Tests.Integration
 
             // 1st join request
             // Should fail
-            using var joinRequest1 = WaitableLoRaRequest.Create(joinRequestRxpk1, PacketForwarder);
+            using var joinRequest1 = CreateWaitableRequest(joinRequestRxpk1);
             messageProcessor.DispatchRequest(joinRequest1);
             Assert.True(await joinRequest1.WaitCompleteAsync());
             Assert.True(joinRequest1.ProcessingFailed);
@@ -291,7 +288,7 @@ namespace LoRaWan.Tests.Integration
 
             var joinRequestRxpk2 = joinRequestPayload2.SerializeUplink(simulatedDevice.LoRaDevice.AppKey).Rxpk[0];
             var joinRequestDevNonce2 = LoRaTools.Utils.ConversionHelper.ByteArrayToString(joinRequestPayload2.DevNonce);
-            using var joinRequest2 = WaitableLoRaRequest.Create(joinRequestRxpk2, PacketForwarder);
+            using var joinRequest2 = CreateWaitableRequest(joinRequestRxpk2);
             messageProcessor.DispatchRequest(joinRequest2);
             Assert.True(await joinRequest2.WaitCompleteAsync());
             Assert.NotNull(joinRequest2.ResponseDownlink);
@@ -368,7 +365,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             // join request should fail
-            using var joinRequest = WaitableLoRaRequest.Create(joinRequestRxpk, PacketForwarder);
+            using var joinRequest = CreateWaitableRequest(joinRequestRxpk);
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.Null(joinRequest.ResponseDownlink);
@@ -417,7 +414,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             // join request should fail
-            using var joinRequest = WaitableLoRaRequest.Create(joinRequestRxpk, PacketForwarder);
+            using var joinRequest = CreateWaitableRequest(joinRequestRxpk);
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingFailed);
@@ -477,7 +474,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var joinRequest = WaitableLoRaRequest.Create(joinRxpk, PacketForwarder);
+            using var joinRequest = CreateWaitableRequest(joinRxpk);
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
@@ -536,16 +533,14 @@ namespace LoRaWan.Tests.Integration
 
             // 1st join request
             using var joinRequest1 =
-                WaitableLoRaRequest.Create(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0],
-                                           PacketForwarder);
+                CreateWaitableRequest(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
             messageProcessor.DispatchRequest(joinRequest1);
 
             await Task.Delay(100);
 
             // 2nd join request
             using var joinRequest2 =
-                WaitableLoRaRequest.Create(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0],
-                                           PacketForwarder);
+                CreateWaitableRequest(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
             messageProcessor.DispatchRequest(joinRequest2);
 
             await Task.WhenAll(joinRequest1.WaitCompleteAsync(), joinRequest2.WaitCompleteAsync());

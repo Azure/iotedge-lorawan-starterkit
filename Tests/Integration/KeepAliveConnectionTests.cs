@@ -91,7 +91,7 @@ namespace LoRaWan.Tests.Integration
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello");
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
@@ -160,7 +160,7 @@ namespace LoRaWan.Tests.Integration
             {
                 var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage(msg.ToString(CultureInfo.InvariantCulture));
                 var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-                using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+                using var request = CreateWaitableRequest(rxpk);
                 messageDispatcher.DispatchRequest(request);
                 Assert.True(await request.WaitCompleteAsync());
                 Assert.True(request.ProcessingSucceeded);
@@ -229,7 +229,7 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             // sends unconfirmed message #1
-            using var request1 = WaitableLoRaRequest.Create(simulatedDevice.CreateUnconfirmedMessageUplink("1").Rxpk[0], PacketForwarder);
+            using var request1 = CreateWaitableRequest(simulatedDevice.CreateUnconfirmedMessageUplink("1").Rxpk[0]);
             messageDispatcher.DispatchRequest(request1);
             Assert.True(await request1.WaitCompleteAsync());
             Assert.True(request1.ProcessingSucceeded);
@@ -237,7 +237,7 @@ namespace LoRaWan.Tests.Integration
             await EnsureDisconnectedAsync(disconnectedEvent);
 
             // sends unconfirmed message #2
-            using var request2 = WaitableLoRaRequest.Create(simulatedDevice.CreateUnconfirmedMessageUplink("2").Rxpk[0], PacketForwarder);
+            using var request2 = CreateWaitableRequest(simulatedDevice.CreateUnconfirmedMessageUplink("2").Rxpk[0]);
             messageDispatcher.DispatchRequest(request2);
             Assert.True(await request2.WaitCompleteAsync());
             Assert.True(request2.ProcessingSucceeded);
@@ -300,7 +300,7 @@ namespace LoRaWan.Tests.Integration
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello");
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);

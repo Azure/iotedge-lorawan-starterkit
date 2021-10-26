@@ -41,7 +41,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -86,7 +86,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -155,7 +155,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -203,7 +203,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -251,7 +251,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -295,7 +295,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 loRaDeviceRegistryMock.Object,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -362,7 +362,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -414,7 +414,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
@@ -470,7 +470,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -559,7 +559,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -584,7 +584,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
             var confirmedMessageRxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var confirmedRequest = WaitableLoRaRequest.Create(confirmedMessageRxpk, PacketForwarder);
+            using var confirmedRequest = CreateWaitableRequest(confirmedMessageRxpk);
             messageProcessor.DispatchRequest(confirmedRequest);
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
@@ -688,7 +688,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // Lora device api will be search by devices with matching deveui,
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, devNonce))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -783,7 +783,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -808,7 +808,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
             var confirmedMessageRxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var confirmedRequest = WaitableLoRaRequest.Create(confirmedMessageRxpk, PacketForwarder);
+            using var confirmedRequest = CreateWaitableRequest(confirmedMessageRxpk);
             messageProcessor.DispatchRequest(confirmedRequest);
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
@@ -906,7 +906,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
+            using var request = CreateWaitableRequest(rxpk);
             messageProcessor.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.NotNull(request.ResponseDownlink);
@@ -931,7 +931,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // sends confirmed message
             var confirmedMessagePayload = simulatedDevice.CreateConfirmedDataUpMessage("200", fcnt: startingPayloadFcnt + 1);
             var confirmedMessageRxpk = confirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var confirmedRequest = WaitableLoRaRequest.Create(confirmedMessageRxpk, PacketForwarder);
+            using var confirmedRequest = CreateWaitableRequest(confirmedMessageRxpk);
             messageProcessor.DispatchRequest(confirmedRequest);
             Assert.True(await confirmedRequest.WaitCompleteAsync());
             Assert.True(confirmedRequest.ProcessingSucceeded);
