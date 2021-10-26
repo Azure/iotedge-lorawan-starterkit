@@ -115,7 +115,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     this.logger.LogInformation($"Received 'dntxed' message: {json}.");
                     break;
                 case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
-                    throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint. This message type is 'downstream' only.");
+                    throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
                 default:
                     throw new SwitchExpressionException();
             }
