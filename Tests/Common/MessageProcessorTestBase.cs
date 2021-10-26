@@ -106,13 +106,18 @@ namespace LoRaWan.Tests.Common
             return device;
         }
 
-        public WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk, IPacketForwarder packetForwarder = null, TimeSpan? startTimeOffset = null, TimeSpan? constantElapsedTime = null)
+        public WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk,
+                                                         IPacketForwarder packetForwarder = null,
+                                                         TimeSpan? startTimeOffset = null,
+                                                         TimeSpan? constantElapsedTime = null,
+                                                         bool useRealTimer = false)
         {
             var requestStartTime = startTimeOffset.HasValue ? DateTime.UtcNow.Subtract(startTimeOffset.Value) : DateTime.UtcNow;
             var request = new WaitableLoRaRequest(rxpk, packetForwarder ?? PacketForwarder, requestStartTime);
 
-            if (constantElapsedTime.HasValue)
+            if (!useRealTimer)
             {
+                constantElapsedTime ??= TimeSpan.Zero;
                 Assert.True(RegionManager.TryResolveRegion(rxpk, out var region));
                 var timeWatcher = new TestLoRaOperationTimeWatcher(region, constantElapsedTime.Value);
                 request.UseTimeWatcher(timeWatcher);
