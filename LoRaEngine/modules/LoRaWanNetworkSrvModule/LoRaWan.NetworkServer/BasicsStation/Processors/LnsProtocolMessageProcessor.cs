@@ -165,7 +165,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                             await CloseSocketAsync(webSocket, cancellationToken);
                             break;
                         }
-                    };
+                    }
                 }
                 catch (OperationCanceledException operationCanceled) when (operationCanceled.InnerException is WebSocketException wsException
                                                                            && wsException.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
