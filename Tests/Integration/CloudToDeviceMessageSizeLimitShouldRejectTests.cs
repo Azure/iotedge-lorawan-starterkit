@@ -83,7 +83,7 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var request = CreateWaitableRequest(rxpk, constantElapsedTime: TimeSpan.Zero);
+            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder, constantElapsedTime: TimeSpan.Zero);
             messageProcessor.DispatchRequest(request);
 
             // Expectations

@@ -103,8 +103,9 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 FrameCounterUpdateStrategyProvider);
 
             using var req = confirmed
-                ? CreateWaitableRequest(simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: payloadFcntUp)
-                                                            .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0])
+                ? WaitableLoRaRequest.Create(simulatedDevice.CreateConfirmedDataUpMessage("1234", fcnt: payloadFcntUp)
+                                                            .SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0],
+                                             PacketForwarder)
                 : new WaitableLoRaRequest(simulatedDevice.CreateUnconfirmedMessageUplink("1234", fcnt: payloadFcntUp).Rxpk[0],
                                           PacketForwarder);
 

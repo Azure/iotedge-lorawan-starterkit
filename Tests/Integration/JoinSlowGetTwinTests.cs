@@ -69,7 +69,7 @@ namespace LoRaWan.Tests.Integration
 
             // 1st join request
             // Should fail
-            using var joinRequest1 = CreateWaitableRequest(joinRequestRxpk1);
+            using var joinRequest1 = WaitableLoRaRequest.Create(joinRequestRxpk1, PacketForwarder);
             messageProcessor.DispatchRequest(joinRequest1);
             Assert.True(await joinRequest1.WaitCompleteAsync());
             Assert.True(joinRequest1.ProcessingFailed);
@@ -85,7 +85,7 @@ namespace LoRaWan.Tests.Integration
             LoRaDeviceApi.Setup(x => x.SearchAndLockForJoinAsync(ServerConfiguration.GatewayID, devEUI, joinRequestDevNonce2))
                 .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "aabb").AsList()));
 
-            using var joinRequest2 = CreateWaitableRequest(joinRequestRxpk2);
+            using var joinRequest2 = WaitableLoRaRequest.Create(joinRequestRxpk2, PacketForwarder);
             messageProcessor.DispatchRequest(joinRequest2);
             Assert.True(await joinRequest2.WaitCompleteAsync());
             Assert.True(joinRequest2.ProcessingSucceeded);

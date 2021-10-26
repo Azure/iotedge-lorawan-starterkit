@@ -4,10 +4,12 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
 
     public sealed class WaitableLoRaRequest : LoRaRequest, IDisposable
@@ -37,6 +39,28 @@ namespace LoRaWan.Tests.Common
             : base(rxpk, packetForwarder, startTime)
         {
             this.complete = new SemaphoreSlim(0);
+        }
+
+        public static WaitableLoRaRequest Create(Rxpk rxpk,
+                                                 IPacketForwarder packetForwarder = null,
+                                                 TimeSpan? startTimeOffset = null,
+                                                 TimeSpan? constantElapsedTime = null,
+                                                 bool useRealTimer = false)
+        {
+            var requestStartTime = startTimeOffset.HasValue ? DateTime.UtcNow.Subtract(startTimeOffset.Value) : DateTime.UtcNow;
+            var request = new WaitableLoRaRequest(rxpk,
+                                                  packetForwarder ?? new TestPacketForwarder(),
+                                                  requestStartTime);
+
+            if (!useRealTimer)
+            {
+                constantElapsedTime ??= TimeSpan.Zero;
+                Debug.Assert(RegionManager.TryResolveRegion(rxpk, out var region));
+                var timeWatcher = new TestLoRaOperationTimeWatcher(region, constantElapsedTime.Value);
+                request.UseTimeWatcher(timeWatcher);
+            }
+
+            return request;
         }
 
         public override void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)

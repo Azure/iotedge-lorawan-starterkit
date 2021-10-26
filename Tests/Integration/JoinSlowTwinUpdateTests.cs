@@ -87,11 +87,11 @@ namespace LoRaWan.Tests.Integration
                 deviceRegistry,
                 FrameCounterUpdateStrategyProvider);
 
-            using var joinRequest1 = CreateWaitableRequest(joinRequestRxpk1);
+            using var joinRequest1 = WaitableLoRaRequest.Create(joinRequestRxpk1, PacketForwarder);
             messageProcessor.DispatchRequest(joinRequest1);
             await Task.Delay(TimeSpan.FromSeconds(7));
 
-            using var joinRequest2 = CreateWaitableRequest(joinRequestRxpk2);
+            using var joinRequest2 = WaitableLoRaRequest.Create(joinRequestRxpk2, PacketForwarder);
             messageProcessor.DispatchRequest(joinRequest2);
 
             await Task.WhenAll(joinRequest1.WaitCompleteAsync(), joinRequest2.WaitCompleteAsync());

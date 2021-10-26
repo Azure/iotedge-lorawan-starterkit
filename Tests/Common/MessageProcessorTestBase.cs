@@ -7,15 +7,12 @@ namespace LoRaWan.Tests.Common
     using System.Globalization;
     using System.Threading.Tasks;
     using LoRaTools.ADR;
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using Moq;
-    using Xunit;
 
     public class MessageProcessorTestBase : IDisposable
     {
@@ -104,26 +101,6 @@ namespace LoRaWan.Tests.Common
             var device = TestUtils.CreateFromSimulatedDevice(simulatedDevice, ConnectionManager, RequestHandlerImplementation);
             ConnectionManager.Register(device, LoRaDeviceClient.Object);
             return device;
-        }
-
-        public WaitableLoRaRequest CreateWaitableRequest(Rxpk rxpk,
-                                                         IPacketForwarder packetForwarder = null,
-                                                         TimeSpan? startTimeOffset = null,
-                                                         TimeSpan? constantElapsedTime = null,
-                                                         bool useRealTimer = false)
-        {
-            var requestStartTime = startTimeOffset.HasValue ? DateTime.UtcNow.Subtract(startTimeOffset.Value) : DateTime.UtcNow;
-            var request = new WaitableLoRaRequest(rxpk, packetForwarder ?? PacketForwarder, requestStartTime);
-
-            if (!useRealTimer)
-            {
-                constantElapsedTime ??= TimeSpan.Zero;
-                Assert.True(RegionManager.TryResolveRegion(rxpk, out var region));
-                var timeWatcher = new TestLoRaOperationTimeWatcher(region, constantElapsedTime.Value);
-                request.UseTimeWatcher(timeWatcher);
-            }
-
-            return request;
         }
 
         protected virtual void Dispose(bool disposing)
