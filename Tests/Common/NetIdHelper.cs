@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace LoRaTools.Utils
+namespace LoRaWan.Tests.Common
 {
     using System;
+    using LoRaTools.Utils;
 
     public static class NetIdHelper
     {
