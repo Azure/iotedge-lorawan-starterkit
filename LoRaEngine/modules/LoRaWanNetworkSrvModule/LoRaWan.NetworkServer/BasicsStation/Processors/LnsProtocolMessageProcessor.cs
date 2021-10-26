@@ -56,17 +56,19 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             this.logger.LogInformation($"Received discovery request from: {stationEui}");
 
             var httpContext = this.httpContextAccessor.HttpContext;
-            var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
-            var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
-                                                   .Where(iface => iface.GetIPProperties()
-                                                                        .UnicastAddresses
-                                                                        .Any(unicastInfo => unicastInfo.Address.Equals(httpContext.Connection.LocalIpAddress)))
-                                                   .SingleOrDefault();
 
+            var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
             var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}");
+
+            var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
+                                                   .SingleOrDefault(ni => ni.GetIPProperties()
+                                                                            .UnicastAddresses
+                                                                            .Any(info => info.Address.Equals(httpContext.Connection.LocalIpAddress)));
+
             var muxs = Id6.Format(networkInterface is { } someNetworkInterface
                                   ? someNetworkInterface.GetPhysicalAddress().Convert48To64() : 0,
                                   Id6.FormatOptions.FixedWidth);
+
             var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, muxs, url));
 
             await socket.SendAsync(response, WebSocketMessageType.Text, true, token);
