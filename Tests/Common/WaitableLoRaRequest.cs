@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.Common
         {
         }
 
-        public WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder, DateTime startTime)
+        private WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder, DateTime startTime)
             : base(rxpk, packetForwarder, startTime)
         {
             this.complete = new SemaphoreSlim(0);
