@@ -33,11 +33,19 @@ namespace LoRaWan.Tests.Common
         { }
 
         /// <summary>
-        /// Creates a Waitable LoRa request using a real time watcher.
+        /// Creates a WaitableLoRaRequest using a real time watcher.
         /// </summary>
         public static WaitableLoRaRequest Create(LoRaPayloadData payload) =>
             new WaitableLoRaRequest(payload);
 
+        /// <summary>
+        /// Creates a WaitableLoRaRequest that uses a deterministic time handler.
+        /// </summary>
+        /// <param name="rxpk">Rxpk instance.</param>
+        /// <param name="packetForwarder">PacketForwarder instance.</param>
+        /// <param name="startTimeOffset">Is subtracted from the current time to determine the start time for the deterministic time watcher. Default is TimeSpan.Zero.</param>
+        /// <param name="constantElapsedTime">Controls how much time is elapsed when querying the time watcher. Default is TimeSpan.Zero.</param>
+        /// <param name="useRealTimer">Allows you to opt-in to use a real, non-deterministic time watcher.</param>
         public static WaitableLoRaRequest Create(Rxpk rxpk,
                                                  IPacketForwarder packetForwarder = null,
                                                  TimeSpan? startTimeOffset = null,
