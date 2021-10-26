@@ -44,10 +44,9 @@ namespace LoRaWan.Tests.Common
                                                  TimeSpan? constantElapsedTime = null,
                                                  bool useRealTimer = false)
         {
-            var requestStartTime = startTimeOffset.HasValue ? DateTime.UtcNow.Subtract(startTimeOffset.Value) : DateTime.UtcNow;
             var request = new WaitableLoRaRequest(rxpk,
                                                   packetForwarder ?? new TestPacketForwarder(),
-                                                  requestStartTime);
+                                                  DateTime.UtcNow.Subtract(startTimeOffset ?? TimeSpan.Zero));
 
             if (!useRealTimer)
             {
