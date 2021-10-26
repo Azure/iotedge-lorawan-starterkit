@@ -31,13 +31,15 @@ and how to detect updates to the configuration.
 
 Since the LNS runs as an IoT edge module, we can [use IoT Edge device local storage from a
 module](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-access-host-storage-from-module?view=iotedge-2020-11).
-We would store the configuration of all LBSs in the file system of the LNS. 
+We would store the configuration of all LBSs in the file system of the LNS.
 
 *Advantages*:
+
 - Implementation effort is low.
 - No limitation in terms of how many LBSs can connect to an LNS.
 
 *Disadvantages*:
+
 - An additional configuration mechanism besides the IoT Hub is introduced to the system. This would
   complicate the provisioning flow and potentially require the involvement of a separate infra team.
 - Deployment of updated configuration is not straightforward, since for configuration updates we
@@ -68,6 +70,7 @@ parts of the document) we can safely guarantee that we support 30 gateways per n
 this approach.
 
 *NB*:
+
 - Keeping track of configuration changes is equivalent to keep track of changes to the desired
   properties by using `ModuleClient.SetDesiredPropertyUpdateCallbackAsync`
 - In case the specification requires us to transfer 64-bit numbers (e.g. for EUIs), we either need
@@ -75,12 +78,14 @@ this approach.
   numbers as 32-bit values.
 
 *Advantages*:
+
 - We can observe configuration changes without needing to fetch the contentrator device key (as in
   Option 3).
 - No need to create additional IoT devices for each LBS.
 - Configuration of all LBSs is centralized in one place which would make it easier to find.
 
 *Disadvantages*:
+
 - The centralization of configuration complicates the changes needed to connect to other or multiple
   LNSs (for dynamic discovery or resiliency purposes)
 - The limit of ~30 LBSs per LNS is considered enough for now (initially we considered 4-5 LBSs per
@@ -93,6 +98,7 @@ In this option, we create IoT Hub devices (not edge-enabled) for every LBS. The 
 is held in the device twin.
 
 *Open question*:
+
 - Do we allow an LNS to get info for any LBS or only for the ones that are connected to it?
 
 #### LNS uses the Azure Function to retrieve the device key
@@ -106,10 +112,12 @@ is held in the device twin.
 Notes: Code changes are not extensive, as most of the code change is already there
 
 *Advantages*:
+
 - LBSs are self-contained and therefore can be moved more easily for example to a different LNS (discovery
   phase) or connect to more than one LNS (resiliency).
 
 *Disadvantages*:
+
 - We would need to provision and manage IoT devices for LBSs.
 - More complex LNS flow since it involves the Function.
 - Possible delay, though there is no timeout window within which we need to respond.
