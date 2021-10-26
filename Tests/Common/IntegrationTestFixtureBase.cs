@@ -250,14 +250,14 @@ namespace LoRaWan.Tests.Common
 
                     if (!string.IsNullOrEmpty(d.DevAddr))
                     {
-                        d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(string.Concat(Configuration.DevicePrefix, d.DevAddr[Configuration.DevicePrefix.Length..]), Configuration.NetId);
+                        d.DevAddr = NetIdHelper.SetNwkIdPart(string.Concat(Configuration.DevicePrefix, d.DevAddr[Configuration.DevicePrefix.Length..]), Configuration.NetId);
                     }
                 }
                 else
                 {
                     if (!string.IsNullOrEmpty(d.DevAddr))
                     {
-                        d.DevAddr = LoRaTools.Utils.NetIdHelper.SetNwkIdPart(d.DevAddr, Configuration.NetId);
+                        d.DevAddr = NetIdHelper.SetNwkIdPart(d.DevAddr, Configuration.NetId);
                     }
                 }
             }
