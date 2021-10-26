@@ -92,7 +92,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                              new[]
                                                              {
                                                                  // The following is actually a tuple of SF, Bandwidth and DownlinkOnly.
-                                                                 // TODO let's consider the idea of bringing primitives for SF and BW ?
                                                                  (SF11, BW125, false),
                                                                  (SF10, BW125, false),
                                                                  (SF9, BW125, false),
