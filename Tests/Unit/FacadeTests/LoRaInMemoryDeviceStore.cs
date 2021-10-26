@@ -4,6 +4,7 @@
 namespace LoRaWan.Tests.Unit.FacadeTests
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -14,18 +15,18 @@ namespace LoRaWan.Tests.Unit.FacadeTests
     internal class LoRaInMemoryDeviceStore : ILoRaDeviceCacheStore
     {
         private static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(60);
-        private readonly Dictionary<string, object> cache;
-        private readonly Dictionary<string, SemaphoreSlim> locks;
+        private readonly ConcurrentDictionary<string, object> cache;
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> locks;
 
         public LoRaInMemoryDeviceStore()
         {
-            this.cache = new Dictionary<string, object>();
-            this.locks = new Dictionary<string, SemaphoreSlim>();
+            this.cache = new ConcurrentDictionary<string, object>();
+            this.locks = new ConcurrentDictionary<string, SemaphoreSlim>();
         }
 
         public bool KeyDelete(string key)
         {
-            return this.cache.Remove(key);
+            return this.cache.Remove(key, out _);
         }
 
         public bool LockRelease(string key, string value)
@@ -104,18 +105,20 @@ namespace LoRaWan.Tests.Unit.FacadeTests
 
         public long ListAdd(string key, string value, TimeSpan? expiry = null)
         {
-            this.cache.TryAdd(key, new List<string>());
-            var list = this.cache[key] as List<string>;
-            list.Add(value);
+            this.cache.TryAdd(key, new ConcurrentBag<string>());
+            object list;
+            while (!this.cache.TryGetValue(key, out list)) ;
+            var stringList = list as ConcurrentBag<string>;
+            stringList.Add(value);
 
-            return list.Count;
+            return stringList.Count;
         }
 
         public IReadOnlyList<string> ListGet(string key)
         {
             if (this.cache.TryGetValue(key, out var cachedValue))
             {
-                return cachedValue as List<string>;
+                return (cachedValue as ConcurrentBag<string>).ToArray();
             }
 
             return null;
