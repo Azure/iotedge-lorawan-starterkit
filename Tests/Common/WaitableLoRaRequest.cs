@@ -28,10 +28,6 @@ namespace LoRaWan.Tests.Common
             : base(payload)
         { }
 
-        public WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder)
-            : this(rxpk, packetForwarder, DateTime.UtcNow)
-        { }
-
         private WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder, DateTime startTime)
             : base(rxpk, packetForwarder, startTime)
         { }

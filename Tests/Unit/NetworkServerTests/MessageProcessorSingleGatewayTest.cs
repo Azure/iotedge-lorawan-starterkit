@@ -607,7 +607,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // sends unconfirmed message
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("hello", fcnt: payloadFcntUp);
             var rxpk = unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0];
-            using var request = new WaitableLoRaRequest(rxpk, PacketForwarder);
+            using var request = WaitableLoRaRequest.Create(rxpk, PacketForwarder);
             messageDispatcher.DispatchRequest(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.Null(request.ResponseDownlink);
