@@ -10,18 +10,28 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System;
     using System.Buffers;
     using System.IO;
+    using System.Linq;
+    using System.Net.NetworkInformation;
     using System.Net.WebSockets;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging;
+    using static Bandwidth;
+    using static RouterConfigStationFlags;
+    using static SpreadingFactor;
 
     public class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
+        private readonly IHttpContextAccessor httpContextAccessor;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
 
-        public LnsProtocolMessageProcessor(ILogger<LnsProtocolMessageProcessor> logger)
+        public LnsProtocolMessageProcessor(IHttpContextAccessor httpContextAccessor,
+                                           ILogger<LnsProtocolMessageProcessor> logger)
         {
+            this.httpContextAccessor = httpContextAccessor;
             this.logger = logger;
         }
 
@@ -40,17 +50,84 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         }
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
+        internal async Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
         {
-            this.logger.LogInformation($"Received message: {json}");
-            return Task.FromResult(false);
+            var stationEui = LnsDiscovery.QueryReader.Read(json);
+            this.logger.LogInformation($"Received discovery request from: {stationEui}");
+
+            try
+            {
+                var httpContext = this.httpContextAccessor.HttpContext;
+                var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
+                var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}");
+
+                var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
+                                                       .SingleOrDefault(ni => ni.GetIPProperties()
+                                                                                .UnicastAddresses
+                                                                                .Any(info => info.Address.Equals(httpContext.Connection.LocalIpAddress)));
+
+                var muxs = Id6.Format(networkInterface is { } someNetworkInterface
+                                      ? someNetworkInterface.GetPhysicalAddress().Convert48To64() : 0,
+                                      Id6.FormatOptions.FixedWidth);
+
+                var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, muxs, url));
+                await socket.SendAsync(response, WebSocketMessageType.Text, true, token);
+            }
+            catch (Exception ex)
+            {
+                var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, ex.Message));
+                await socket.SendAsync(response, WebSocketMessageType.Text, true, token);
+                throw;
+            }
+
+            return false;
         }
 
+
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
+        internal async Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
         {
-            this.logger.LogInformation($"Received message: {json}");
-            return Task.FromResult(false);
+            switch (LnsData.MessageTypeReader.Read(json))
+            {
+                case LnsMessageType.Version:
+                    var stationVersion = LnsData.VersionMessageReader.Read(json);
+                    this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
+                    // A future implementation should retrieve dynamically a SX1301CONF for 'regional' configurations based on the 'stationEui'
+                    // Current implementation is statically returning a SX1301CONF for EU863
+                    var response = LnsData.WriteRouterConfig(new[] { new NetId(1) },
+                                                             new[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
+                                                             "EU863",
+                                                             "sx1301/1",
+                                                             (new Hertz(863000000), new Hertz(870000000)),
+                                                             new[]
+                                                             {
+                                                                 // The following is actually a tuple of SF, Bandwidth and DownlinkOnly.
+                                                                 (SF11, BW125, false),
+                                                                 (SF10, BW125, false),
+                                                                 (SF9, BW125, false),
+                                                                 (SF8, BW125, false),
+                                                                 (SF7, BW125, false),
+                                                                 (SF7, BW250, false),
+                                                             },
+                                                             NoClearChannelAssessment | NoDutyCycle | NoDwellTimeLimitations);
+                    await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, token);
+                    break;
+                case LnsMessageType.JoinRequest:
+                    this.logger.LogInformation($"Received 'jreq' message: {json}.");
+                    break;
+                case LnsMessageType.UplinkDataFrame:
+                    this.logger.LogInformation($"Received 'updf' message: {json}.");
+                    break;
+                case LnsMessageType.TransmitConfirmation:
+                    this.logger.LogInformation($"Received 'dntxed' message: {json}.");
+                    break;
+                case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
+                    throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
+                default:
+                    throw new SwitchExpressionException();
+            }
+
+            return true;
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
@@ -97,11 +174,15 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                             await CloseSocketAsync(webSocket, cancellationToken);
                             break;
                         }
-                    };
+                    }
                 }
-                catch (WebSocketException wsException)
+                catch (OperationCanceledException ex)
+#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
+                    when (ex is { InnerException: WebSocketException { WebSocketErrorCode: WebSocketError.ConnectionClosedPrematurely } })
+#pragma warning restore CA1508 // Avoid dead conditional code
                 {
-                    this.logger.LogError(wsException, wsException.Message);
+                    // This can happen if the basic station client is losing connectivity
+                    this.logger.LogDebug(ex, ex.Message);
                 }
             }
             else

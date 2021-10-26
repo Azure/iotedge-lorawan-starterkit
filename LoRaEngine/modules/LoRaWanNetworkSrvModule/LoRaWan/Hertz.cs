@@ -11,16 +11,22 @@ namespace LoRaWan
     /// </summary>
     public readonly struct Hertz : IEquatable<Hertz>
     {
+#pragma warning disable IDE0032 // Use auto property
         private readonly ulong value;
+#pragma warning restore IDE0032 // Use auto property
 
         public Hertz(ulong value) => this.value = value;
+
+#pragma warning disable IDE0032 // Use auto property
+        public ulong AsUInt64 => this.value;
+#pragma warning restore IDE0032 // Use auto property
 
         public double Kilo => this.value / 1e3;
         public double Mega => this.value / 1e6;
         public double Giga => this.value / 1e9;
 
         public bool Equals(Hertz other) => this.value == other.value;
-        public override bool Equals(object? obj) => obj is Hertz other && this.Equals(other);
+        public override bool Equals(object? obj) => obj is Hertz other && Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
         public override string ToString() => this.value.ToString(CultureInfo.InvariantCulture);

@@ -29,6 +29,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         {
                             _ = loggingBuilder.SetMinimumLevel((LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture));
                         })
+                        .AddHttpContextAccessor()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
         }
 
@@ -49,12 +50,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
                    .UseWebSockets()
                    .UseEndpoints(endpoints =>
                    {
-                       _ = endpoints.MapGet("/router-info", async context =>
+                       _ = endpoints.MapGet(BasicsStationNetworkServer.DiscoveryEndpoint, async context =>
                            {
                                var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
                                await lnsProtocolMessageProcessor.HandleDiscoveryAsync(context, context.RequestAborted);
                            });
-                       _ = endpoints.MapGet("/router-data", async context =>
+                       _ = endpoints.MapGet(BasicsStationNetworkServer.DataEndpoint, async context =>
                            {
                                var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
                                await lnsProtocolMessageProcessor.HandleDataAsync(context, context.RequestAborted);
