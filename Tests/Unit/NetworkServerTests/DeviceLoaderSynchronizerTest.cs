@@ -100,7 +100,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 (_, l) => { finished.Release(); },
                 (d) => destinationDictionary.TryAdd(d.DevEUI, d));
 
-            using var req1 = new WaitableLoRaRequest(payload1);
+            using var req1 = WaitableLoRaRequest.Create(payload1);
             target.Queue(req1);
 
             await finished.WaitAsync();
@@ -110,7 +110,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             var payload2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2");
             payload2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
-            using var req2 = new WaitableLoRaRequest(payload2);
+            using var req2 = WaitableLoRaRequest.Create(payload2);
             target.Queue(req2);
 
             Assert.True(await req2.WaitCompleteAsync());
@@ -154,7 +154,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 (_, l) => { finished.Release(); },
                 (d) => destinationDictionary.TryAdd(d.DevEUI, d));
 
-            using var request = new WaitableLoRaRequest(payload);
+            using var request = WaitableLoRaRequest.Create(payload);
             target.Queue(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingFailed);
@@ -197,7 +197,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 (_, l) => { finished.Release(); },
                 (d) => destinationDictionary.TryAdd(d.DevEUI, d));
 
-            using var request = new WaitableLoRaRequest(payload);
+            using var request = WaitableLoRaRequest.Create(payload);
             target.Queue(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingFailed);
@@ -250,7 +250,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234");
             payload.SerializeUplink(simulatedDevice.AppSKey, "00000000000000000000000000EEAAFF");
 
-            using var request = new WaitableLoRaRequest(payload);
+            using var request = WaitableLoRaRequest.Create(payload);
             target.Queue(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingFailed);

@@ -24,13 +24,19 @@ namespace LoRaWan.Tests.Common
 
         public bool ProcessingSucceeded { get; private set; }
 
-        public WaitableLoRaRequest(LoRaPayloadData payload)
+        private WaitableLoRaRequest(LoRaPayloadData payload)
             : base(payload)
         { }
 
         private WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder, DateTime startTime)
             : base(rxpk, packetForwarder, startTime)
         { }
+
+        /// <summary>
+        /// Creates a Waitable LoRa request using a real time watcher.
+        /// </summary>
+        public static WaitableLoRaRequest Create(LoRaPayloadData payload) =>
+            new WaitableLoRaRequest(payload);
 
         public static WaitableLoRaRequest Create(Rxpk rxpk,
                                                  IPacketForwarder packetForwarder = null,

@@ -68,7 +68,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             this.loRaDeviceClient.Setup(x => x.GetTwinAsync())
                 .ReturnsAsync(simulatedDevice.CreateABPTwin());
 
-            using var request = new WaitableLoRaRequest(payload);
+            using var request = WaitableLoRaRequest.Create(payload);
             var requestHandler = new Mock<ILoRaDataRequestHandler>(MockBehavior.Strict);
             requestHandler.Setup(x => x.ProcessRequestAsync(request, It.IsNotNull<LoRaDevice>()))
                 .ReturnsAsync(new LoRaDeviceRequestProcessResult(null, request));
@@ -125,7 +125,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             target.RegisterDeviceInitializer(initializer.Object);
 
-            using var request = new WaitableLoRaRequest(payload);
+            using var request = WaitableLoRaRequest.Create(payload);
             target.GetLoRaRequestQueue(request).Queue(request);
             Assert.True(await request.WaitCompleteAsync());
 
@@ -156,7 +156,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var apiService = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
 
             using var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, this.loraDeviceFactoryMock.Object);
-            using var request = new WaitableLoRaRequest(payload);
+            using var request = WaitableLoRaRequest.Create(payload);
             var queue = target.GetLoRaRequestQueue(request);
             queue.Queue(request);
             Assert.IsType<ExternalGatewayLoRaRequestQueue>(queue);
@@ -194,7 +194,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             var apiService = new Mock<LoRaDeviceAPIServiceBase>();
 
-            using var request = new WaitableLoRaRequest(payload);
+            using var request = WaitableLoRaRequest.Create(payload);
             var requestHandler = new Mock<ILoRaDataRequestHandler>(MockBehavior.Strict);
             requestHandler.Setup(x => x.ProcessRequestAsync(request, loraDevice1))
                 .ReturnsAsync(new LoRaDeviceRequestProcessResult(loraDevice1, request));
@@ -262,7 +262,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             this.loraDeviceFactoryMock.Setup(x => x.Create(iotHubDeviceInfo2)).Returns(loraDevice2);
 
             using var target = new LoRaDeviceRegistry(this.serverConfiguration, this.cache, apiService.Object, this.loraDeviceFactoryMock.Object);
-            using var request = new WaitableLoRaRequest(payload);
+            using var request = WaitableLoRaRequest.Create(payload);
             target.GetLoRaRequestQueue(request).Queue(request);
             Assert.True(await request.WaitCompleteAsync());
             Assert.True(request.ProcessingSucceeded);
@@ -316,7 +316,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // request #1
             var payload1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 11);
             payload1.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
-            using var request1 = new WaitableLoRaRequest(payload1);
+            using var request1 = WaitableLoRaRequest.Create(payload1);
             target.GetLoRaRequestQueue(request1).Queue(request1);
             Assert.True(await request1.WaitCompleteAsync());
             Assert.True(request1.ProcessingFailed);
@@ -325,7 +325,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // request #2
             var payload2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 12);
             payload2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
-            using var request2 = new WaitableLoRaRequest(payload2);
+            using var request2 = WaitableLoRaRequest.Create(payload2);
             target.GetLoRaRequestQueue(request2).Queue(request2);
             Assert.True(await request2.WaitCompleteAsync());
             Assert.True(request2.ProcessingFailed);
@@ -369,7 +369,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // request #1
             var payload1 = simulatedDevice.CreateUnconfirmedDataUpMessage("1", fcnt: 11);
             payload1.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
-            using var request1 = new WaitableLoRaRequest(payload1);
+            using var request1 = WaitableLoRaRequest.Create(payload1);
             target.GetLoRaRequestQueue(request1).Queue(request1);
             Assert.True(await request1.WaitCompleteAsync());
             Assert.True(request1.ProcessingFailed);
@@ -378,7 +378,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // request #2
             var payload2 = simulatedDevice.CreateUnconfirmedDataUpMessage("2", fcnt: 12);
             payload2.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey);
-            using var request2 = new WaitableLoRaRequest(payload2);
+            using var request2 = WaitableLoRaRequest.Create(payload2);
             target.GetLoRaRequestQueue(request2).Queue(request2);
             Assert.True(await request2.WaitCompleteAsync());
             Assert.True(request2.ProcessingFailed);
@@ -462,7 +462,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             var payload = simDevice.CreateUnconfirmedDataUpMessage("1");
             payload.SerializeUplink(simDevice.AppSKey, simDevice.NwkSKey);
-            using var request = new WaitableLoRaRequest(payload);
+            using var request = WaitableLoRaRequest.Create(payload);
 
             deviceRegistry.GetLoRaRequestQueue(request).Queue(request);
             Assert.True(await request.WaitCompleteAsync());
@@ -507,7 +507,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             var payload = simDevice.CreateUnconfirmedDataUpMessage("1");
             payload.SerializeUplink(simDevice.AppSKey, simDevice.NwkSKey);
-            using var request = new WaitableLoRaRequest(payload);
+            using var request = WaitableLoRaRequest.Create(payload);
 
             deviceRegistry.GetLoRaRequestQueue(request).Queue(request);
             Assert.True(await request.WaitCompleteAsync());
