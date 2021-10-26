@@ -89,25 +89,15 @@ namespace LoraKeysManagerFacade.FunctionBundler
             //    List item: gatewayid, rssi, insertTime
             var item = new PreferredGatewayTableItem(context.Request.GatewayId, rssi);
             var listCacheKey = LoRaDevicePreferredGateway.PreferredGatewayFcntUpItemListCacheKey(devEUI, fcntUp);
-            var preferredGatewayLockKey = $"preferredGateway:{devEUI}:lock";
-            if (await this.cacheStore.LockTakeAsync(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200), true))
-            {
-                try
-                {
-                    _ = this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(RequestListCacheDurationInMinutes));
-                    this.log.LogInformation("Preferred gateway {devEUI}/{fcnt}: added {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
-                }
-                finally
-                {
-                    _ = this.cacheStore.LockRelease(preferredGatewayLockKey, computationId);
-                }
-            }
+            _ = this.cacheStore.ListAdd(listCacheKey, item.ToCachedString(), TimeSpan.FromMinutes(RequestListCacheDurationInMinutes));
+            this.log.LogInformation("Preferred gateway {devEUI}/{fcnt}: added {gateway} with {rssi}", devEUI, fcntUp, context.Request.GatewayId, rssi);
 
             // 2. Wait for the time specified in receiveInterval (default 200ms). Optional: wait less if another requests already started
             await Task.Delay(this.receiveInterval);
 
             // 3. Check if value was already calculated
             var preferredGateway = LoRaDevicePreferredGateway.LoadFromCache(this.cacheStore, devEUI);
+
             if (preferredGateway != null)
             {
                 if (preferredGateway.FcntUp >= fcntUp)
@@ -117,6 +107,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
             }
 
             // 4. To calculate, we need to acquire a lock
+            var preferredGatewayLockKey = $"preferredGateway:{devEUI}:lock";
             for (var i = 0; i < MaxAttemptsToResolvePreferredGateway; i++)
             {
                 if (await this.cacheStore.LockTakeAsync(preferredGatewayLockKey, computationId, TimeSpan.FromMilliseconds(200), block: false))
