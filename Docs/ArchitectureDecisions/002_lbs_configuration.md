@@ -70,16 +70,12 @@ parts of the document) we can safely guarantee that we support 30 gateways per n
 this approach.
 
 *NB*:
-
-- Keeping track of configuration changes is equivalent to keep track of changes to the desired
-  properties by using `ModuleClient.SetDesiredPropertyUpdateCallbackAsync`
 - In case the specification requires us to transfer 64-bit numbers (e.g. for EUIs), we either need
   to split up such a number into two 32-bit numbers or represent it as a string. Device twins encode
   numbers as 32-bit values.
 
 *Advantages*:
-
-- We can observe configuration changes without needing to fetch the contentrator device key (as in
+- We can fetch the LBS configuration needing to have access to the contentrator device key (as in
   Option 3).
 - No need to create additional IoT devices for each LBS.
 - Configuration of all LBSs is centralized in one place which would make it easier to find.
@@ -105,9 +101,9 @@ is held in the device twin.
 
 - LBS requests its configuration passing its device id.
 - LNS invokes the existing Azure Function to get the Device key passing the LBS id.
-- The Function returns the Device Key (via a cache or by querring IoT Hub).
-- LNS uses the Device Key to impersonate LBS, get its twin that holds the configuration and any
-  future updates to it by `DeviceClient.SetDesiredPropertyUpdateCallbackAsync`.
+- The Function returns the Device Key (via a cache or by querying IoT Hub).
+- LNS uses the Device Key to impersonate LBS, get its twin that holds the configuration (optionally: listens to
+  future updates to it by `DeviceClient.SetDesiredPropertyUpdateCallbackAsync`).
 
 Notes: Code changes are not extensive, as most of the code change is already there
 
@@ -135,7 +131,7 @@ Reason for disqualifying: There seems that there is no API in either the
 [DeviceClient](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.devices.client.deviceclient?view=azure-dotnet)
 nor the
 [ModuleClient](https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.devices.client.moduleclient?view=azure-dotnet)
-to retrieve the device twin of a child.
+to retrieve the device twin of a child without having the device key.
 
 #### Alternative 2: edge-enabled LBS sends upstream its twin to LNS
 
@@ -146,7 +142,7 @@ a module id or not to get a hold of this configuration.
 
 Reason for disqualifying: Given that LBS needs to run on low powered devices, we can not change them to IoT Edge enabled devices.
 
-## Outcome
+## Decision
 
 Based on this investigation and the team discussion, [Option
 3](#option-3-track-each-lbs-as-separate-iot-hub-device) was chosen due to the flexibility it offers
