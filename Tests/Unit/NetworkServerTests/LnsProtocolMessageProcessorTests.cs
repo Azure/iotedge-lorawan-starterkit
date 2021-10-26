@@ -372,5 +372,40 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // assert
             Assert.Equal(expectedString, sentString);
         }
+
+        [Fact]
+        public async Task InternalHandleDataAsync_ShouldSendExpectedJsonResponseType_ForVersionMessage()
+        {
+            // arrange
+            var inputJsonString = @"{""msgtype"": ""version"", ""station"": ""stationName"" }";
+            var expectedSubstring = @"""msgtype"":""router_config""";
+
+            // intercepting the SendAsync to verify that what we sent is actually what we expected
+            var sentString = string.Empty;
+            this.socketMock.Setup(x => x.SendAsync(It.IsAny<ArraySegment<byte>>(), It.IsAny<WebSocketMessageType>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                           .Callback<ArraySegment<byte>, WebSocketMessageType, bool, CancellationToken>((message, type, end, _) =>
+                           {
+                               sentString = Encoding.UTF8.GetString(message);
+                               Assert.Equal(WebSocketMessageType.Text, type);
+                               Assert.True(end);
+                           });
+
+            // act
+            await this.lnsMessageProcessorMock.InternalHandleDataAsync(inputJsonString, this.socketMock.Object, CancellationToken.None);
+
+            // assert
+            Assert.Contains(expectedSubstring, sentString, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData("dnmsg")]
+        [InlineData("router_config")]
+        public async Task InternalHandleDataAsync_ShouldThrow_OnNotExpectedMessageTypes(string msgtype)
+        {
+            // arrange
+            var inputJsonString = $@"{{""msgtype"":""{msgtype}""}}";
+            // act
+            await Assert.ThrowsAsync<NotSupportedException>(() => this.lnsMessageProcessorMock.InternalHandleDataAsync(inputJsonString, this.socketMock.Object, CancellationToken.None));
+        }
     }
 }
