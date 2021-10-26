@@ -123,15 +123,59 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // act and assert
             await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(httpContextMock.Object,
                                                                            (string input, WebSocket _, CancellationToken _) =>
-                                                                               {
-                                                                                   Assert.Equal(input, testString);
-                                                                                   return Task.FromResult(false);
-                                                                               },
+                                                                           {
+                                                                               Assert.Equal(input, testString);
+                                                                               return Task.FromResult(false);
+                                                                           },
                                                                            CancellationToken.None);
 
             // assert that websocket is closed, as the input string was verified through local function handler
             Assert.Equal(WebSocketState.Closed, this.socketMock.Object.State);
             Assert.Equal(WebSocketCloseStatus.NormalClosure, this.socketMock.Object.CloseStatus);
+        }
+
+
+
+        [Fact]
+        public async Task ProcessIncomingRequestAsync_ShouldNotExecuteHandler_WhenConnectionClosedPrematurelyException()
+        {
+            // arrange
+            var testString = "test";
+            var testbytes = Encoding.UTF8.GetBytes(testString);
+            var httpContextMock = new Mock<HttpContext>();
+
+            // mocking a websocket request
+            var webSocketsManager = new Mock<WebSocketManager>();
+            // setting up the mock so that WebSocketRequests are "acceptable"
+            webSocketsManager.Setup(x => x.IsWebSocketRequest).Returns(true);
+            webSocketsManager.Setup(x => x.AcceptWebSocketAsync()).ReturnsAsync(this.socketMock.Object);
+            // initially the WebSocketState is Open
+            this.socketMock.Setup(x => x.State).Returns(WebSocketState.Open);
+            // setting up the mock so that when ReceiveAsync is invoked the "testbytes" are written to the Memory portion
+            this.socketMock.Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                         .Callback<Memory<byte>, CancellationToken>((m, c) =>
+                         {
+                             var innerException = new WebSocketException(WebSocketError.ConnectionClosedPrematurely);
+                             throw new OperationCanceledException("Mocked exception", innerException);
+                         })
+                         .ReturnsAsync(new ValueWebSocketReceiveResult(testbytes.Length, WebSocketMessageType.Text, true));
+            httpContextMock.Setup(m => m.WebSockets).Returns(webSocketsManager.Object);
+
+            // this is needed for logging the Basic Station (caller) remote ip address
+            var connectionInfo = new Mock<ConnectionInfo>();
+            connectionInfo.Setup(c => c.RemoteIpAddress).Returns(System.Net.IPAddress.Loopback);
+            httpContextMock.Setup(m => m.Connection).Returns(connectionInfo.Object);
+
+            // act and assert
+            await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(httpContextMock.Object,
+                                                                           (string _, WebSocket _, CancellationToken _) =>
+                                                                           {
+                                                                               // this assertion will fail only if we reach the handler
+                                                                               // which should not be the case for prematurely ended connections
+                                                                               Assert.True(false);
+                                                                               return Task.FromResult(false);
+                                                                           },
+                                                                           CancellationToken.None);
         }
 
         [Fact]
