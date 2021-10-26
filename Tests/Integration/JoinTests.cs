@@ -120,7 +120,8 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             // Create a join request and join with the device.
-            using var joinRequest = CreateWaitableRequest(joinRxpk, constantElapsedTime: TimeSpan.FromMilliseconds(300));
+            using var joinRequest =
+                CreateWaitableRequest(joinRxpk, constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(joinRequest);
             Assert.True(await joinRequest.WaitCompleteAsync());
             Assert.True(joinRequest.ProcessingSucceeded);
@@ -157,7 +158,9 @@ namespace LoRaWan.Tests.Integration
 
             // sends unconfirmed message with a given starting frame counter
             var unconfirmedMessagePayload = simulatedDevice.CreateUnconfirmedDataUpMessage("100", fcnt: startingPayloadFcnt);
-            using var unconfirmedRequest = CreateWaitableRequest(unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0], constantElapsedTime: TimeSpan.FromMilliseconds(300));
+            using var unconfirmedRequest =
+                CreateWaitableRequest(unconfirmedMessagePayload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey).Rxpk[0],
+                                      constantElapsedTime: TimeSpan.FromMilliseconds(300));
             messageProcessor.DispatchRequest(unconfirmedRequest);
             Assert.True(await unconfirmedRequest.WaitCompleteAsync());
             Assert.Null(unconfirmedRequest.ResponseDownlink);
@@ -529,13 +532,15 @@ namespace LoRaWan.Tests.Integration
                 FrameCounterUpdateStrategyProvider);
 
             // 1st join request
-            using var joinRequest1 = CreateWaitableRequest(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
+            using var joinRequest1 =
+                CreateWaitableRequest(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
             messageProcessor.DispatchRequest(joinRequest1);
 
             await Task.Delay(100);
 
             // 2nd join request
-            using var joinRequest2 = CreateWaitableRequest(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
+            using var joinRequest2 =
+                CreateWaitableRequest(simulatedDevice.CreateJoinRequest().SerializeUplink(simulatedDevice.AppKey).Rxpk[0]);
             messageProcessor.DispatchRequest(joinRequest2);
 
             await Task.WhenAll(joinRequest1.WaitCompleteAsync(), joinRequest2.WaitCompleteAsync());

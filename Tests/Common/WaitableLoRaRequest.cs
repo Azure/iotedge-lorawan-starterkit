@@ -4,15 +4,17 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
+    using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
     using LoRaTools.LoRaPhysical;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
 
     public sealed class WaitableLoRaRequest : LoRaRequest, IDisposable
     {
-        private readonly SemaphoreSlim complete;
+        private readonly SemaphoreSlim complete = new SemaphoreSlim(0);
 
         public bool ProcessingFailed { get; private set; }
 
@@ -22,21 +24,48 @@ namespace LoRaWan.Tests.Common
 
         public bool ProcessingSucceeded { get; private set; }
 
-        public WaitableLoRaRequest(LoRaPayloadData payload)
+        private WaitableLoRaRequest(LoRaPayloadData payload)
             : base(payload)
-        {
-            this.complete = new SemaphoreSlim(0);
-        }
+        { }
 
-        public WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder)
-            : this(rxpk, packetForwarder, DateTime.UtcNow)
-        {
-        }
-
-        public WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder, DateTime startTime)
+        private WaitableLoRaRequest(Rxpk rxpk, IPacketForwarder packetForwarder, DateTime startTime)
             : base(rxpk, packetForwarder, startTime)
+        { }
+
+        /// <summary>
+        /// Creates a WaitableLoRaRequest using a real time watcher.
+        /// </summary>
+        public static WaitableLoRaRequest Create(LoRaPayloadData payload) =>
+            new WaitableLoRaRequest(payload);
+
+        /// <summary>
+        /// Creates a WaitableLoRaRequest that uses a deterministic time handler.
+        /// </summary>
+        /// <param name="rxpk">Rxpk instance.</param>
+        /// <param name="packetForwarder">PacketForwarder instance.</param>
+        /// <param name="startTimeOffset">Is subtracted from the current time to determine the start time for the deterministic time watcher. Default is TimeSpan.Zero.</param>
+        /// <param name="constantElapsedTime">Controls how much time is elapsed when querying the time watcher. Default is TimeSpan.Zero.</param>
+        /// <param name="useRealTimer">Allows you to opt-in to use a real, non-deterministic time watcher.</param>
+        public static WaitableLoRaRequest Create(Rxpk rxpk,
+                                                 IPacketForwarder packetForwarder = null,
+                                                 TimeSpan? startTimeOffset = null,
+                                                 TimeSpan? constantElapsedTime = null,
+                                                 bool useRealTimer = false)
         {
-            this.complete = new SemaphoreSlim(0);
+            var request = new WaitableLoRaRequest(rxpk,
+                                                  packetForwarder ?? new TestPacketForwarder(),
+                                                  DateTime.UtcNow.Subtract(startTimeOffset ?? TimeSpan.Zero));
+
+            if (!useRealTimer)
+            {
+                constantElapsedTime ??= TimeSpan.Zero;
+                if (!RegionManager.TryResolveRegion(rxpk, out var region))
+                    throw new InvalidOperationException("Could not resolve region.");
+                var timeWatcher = new TestLoRaOperationTimeWatcher(region, constantElapsedTime.Value);
+                request.UseTimeWatcher(timeWatcher);
+            }
+
+            return request;
         }
 
         public override void NotifyFailed(string deviceId, LoRaDeviceRequestFailedReason reason, Exception exception = null)

@@ -208,15 +208,15 @@ namespace LoRaWan.Tests.Integration
             var unconfirmedMessage2 = simulatedDevice.CreateUnconfirmedMessageUplink("2", fcnt: 2).Rxpk[0];
             var unconfirmedMessage3 = simulatedDevice.CreateUnconfirmedMessageUplink("3", fcnt: 3).Rxpk[0];
 
-            var req1 = new WaitableLoRaRequest(unconfirmedMessage1, this.packetForwarder);
+            var req1 = CreateWaitableRequest(unconfirmedMessage1, this.packetForwarder);
             messageDispatcher.DispatchRequest(req1);
             await Task.Delay(parallelTestConfiguration.BetweenMessageDuration.Next());
 
-            var req2 = new WaitableLoRaRequest(unconfirmedMessage2, this.packetForwarder);
+            var req2 = CreateWaitableRequest(unconfirmedMessage2, this.packetForwarder);
             messageDispatcher.DispatchRequest(req2);
             await Task.Delay(parallelTestConfiguration.BetweenMessageDuration.Next());
 
-            var req3 = new WaitableLoRaRequest(unconfirmedMessage3, this.packetForwarder);
+            var req3 = CreateWaitableRequest(unconfirmedMessage3, this.packetForwarder);
             messageDispatcher.DispatchRequest(req3);
             await Task.Delay(parallelTestConfiguration.BetweenMessageDuration.Next());
 
