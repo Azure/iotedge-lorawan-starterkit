@@ -59,7 +59,8 @@ namespace LoRaWan.Tests.Common
             if (!useRealTimer)
             {
                 constantElapsedTime ??= TimeSpan.Zero;
-                Debug.Assert(RegionManager.TryResolveRegion(rxpk, out var region));
+                if (!RegionManager.TryResolveRegion(rxpk, out var region))
+                    throw new InvalidOperationException("Could not resolve region.");
                 var timeWatcher = new TestLoRaOperationTimeWatcher(region, constantElapsedTime.Value);
                 request.UseTimeWatcher(timeWatcher);
             }
