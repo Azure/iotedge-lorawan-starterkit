@@ -25,13 +25,14 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
     public class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
-        private readonly ILogger<LnsProtocolMessageProcessor> logger;
         private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly ILogger<LnsProtocolMessageProcessor> logger;
 
-        public LnsProtocolMessageProcessor(ILogger<LnsProtocolMessageProcessor> logger, IHttpContextAccessor httpContextAccessor)
+        public LnsProtocolMessageProcessor(IHttpContextAccessor httpContextAccessor,
+                                           ILogger<LnsProtocolMessageProcessor> logger)
         {
-            this.logger = logger;
             this.httpContextAccessor = httpContextAccessor;
+            this.logger = logger;
         }
 
         public async Task HandleDiscoveryAsync(HttpContext httpContext, CancellationToken token)

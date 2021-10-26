@@ -32,7 +32,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
             httpContextAccessorMock.Setup(x => x.HttpContext).Returns(this.httpContextMock.Object);
 
-            this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(loggerMock, httpContextAccessorMock.Object);
+            this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(httpContextAccessorMock.Object, loggerMock);
         }
 
         [Fact]
