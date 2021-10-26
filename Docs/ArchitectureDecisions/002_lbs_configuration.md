@@ -65,7 +65,7 @@ Taking as an example the configuration message from [PR
 569](https://github.com/Azure/iotedge-lorawan-starterkit/pull/569), we are able to add **37** times
 the following LBS configuration to the device twins desired properties until we get an error:
 
-```
+```json
 {"msgtype":"router_config","NetID":[1],"JoinEui":["9223372036854775807","9223372036854775807"],"region":"EU863","hwspec":"sx1301/1","freq_range":[863000000,870000000],"DRs":[[11,125,0],[10,125,0],[9,125,0],[8,125,0],[7,125,0],[7,250,0]],"sx1301_conf":[{"radio_0":{"enable":true,"freq":867500000},"radio_1":{"enable":true,"freq":868500000},"chan_FSK":{"enable":true,"radio":1,"if":300000},"chan_Lora_std":{"enable":true,"radio":1,"if":-200000,"bandwidth":250000,"spread_factor":7},"chan_multiSF_0":{"enable":true,"radio":1,"if":-400000},"chan_multiSF_1":{"enable":true,"radio":1,"if":-200000},"chan_multiSF_2":{"enable":true,"radio":1,"if":0},"chan_multiSF_3":{"enable":true,"radio":0,"if":-400000},"chan_multiSF_4":{"enable":true,"radio":0,"if":-200000},"chan_multiSF_5":{"enable":true,"radio":0,"if":0},"chan_multiSF_6":{"enable":true,"radio":0,"if":200000},"chan_multiSF_7":{"enable":true,"radio":0,"if":400000}}],"nocca":true,"nodc":true,"nodwell":true}
 ```
 
