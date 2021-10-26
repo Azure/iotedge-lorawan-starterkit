@@ -74,11 +74,13 @@ parts of the document) we can safely guarantee that we support 30 gateways per n
 this approach.
 
 *NB*:
+
 - In case the specification requires us to transfer 64-bit numbers (e.g. for EUIs), we either need
   to split up such a number into two 32-bit numbers or represent it as a string. Device twins encode
   numbers as 32-bit values.
 
 *Advantages*:
+
 - We can fetch the LBS configuration needing to have access to the contentrator device key (as in
   Option 3).
 - No need to create additional IoT devices for each LBS.
