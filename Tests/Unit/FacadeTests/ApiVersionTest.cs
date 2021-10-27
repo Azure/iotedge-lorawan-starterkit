@@ -110,6 +110,15 @@ namespace LoRaWan.Tests.Unit.FacadeTests
         }
 
         [Fact]
+        public void Parse_Version_2021_12_31_Preview_Should_Return_Version()
+        {
+            var actual = ApiVersion.Parse("2021-12-31-preview");
+            Assert.True(actual.IsKnown);
+            Assert.Equal(actual, ApiVersion.Version_2021_12_31_Preview);
+            Assert.Same(actual, ApiVersion.Version_2021_12_31_Preview);
+        }
+
+        [Fact]
         public void Version_0_2_Is_Not_Compatible_With_Newer_Versions()
         {
             Assert.False(ApiVersion.Version_0_2_Or_Earlier.SupportsVersion(ApiVersion.Version_2018_12_16_Preview));
@@ -144,6 +153,12 @@ namespace LoRaWan.Tests.Unit.FacadeTests
         public void Version_2019_02_12_Preview_Is_Not_Compatible_With_2019_03_08_Preview()
         {
             Assert.False(ApiVersion.Version_2019_03_26.SupportsVersion(ApiVersion.Version_2019_03_08_Preview));
+        }
+
+        [Fact]
+        public void Version_2021_12_31_Preview_Is_Not_Compatible_With_Version_2020_08_11()
+        {
+            Assert.False(ApiVersion.Version_2021_12_31_Preview.SupportsVersion(ApiVersion.Version_2020_08_11));
         }
 
         [Fact]

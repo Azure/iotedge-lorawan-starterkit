@@ -28,7 +28,7 @@ namespace LoRaTools.CommonAPI
         /// Gets the latest version released.
         /// Update this once a new API version is released.
         /// </summary>
-        public static ApiVersion LatestVersion => Version_2020_10_09;
+        public static ApiVersion LatestVersion => Version_2021_12_31_Preview;
 
         /// <summary>
         /// Gets the Version from 0.1 and 0.2 had not versioning information.
@@ -110,6 +110,12 @@ namespace LoRaTools.CommonAPI
         public static ApiVersion Version_2020_10_09 { get; }
 
         /// <summary>
+        /// Gets 2021_12_31 version
+        /// Support LoRa Basics Station
+        /// </summary>
+        public static ApiVersion Version_2021_12_31_Preview { get; }
+
+        /// <summary>
         /// Gets the version that is assumed in case none is specified.
         /// </summary>
         public static ApiVersion DefaultVersion => Version_0_2_Or_Earlier;
@@ -133,6 +139,7 @@ namespace LoRaTools.CommonAPI
                 yield return Version_2019_07_16;
                 yield return Version_2020_08_11;
                 yield return Version_2020_10_09;
+                yield return Version_2021_12_31_Preview;
             }
         }
 
@@ -199,6 +206,11 @@ namespace LoRaTools.CommonAPI
 
             Version_2020_10_09 = new ApiVersion("2020-10-09");
             Version_2020_10_09.MinCompatibleVersion = Version_2020_10_09;
+
+            Version_2021_12_31_Preview = new ApiVersion("2021-12-31-preview")
+            {
+                MinCompatibleVersion = Version_2020_10_09
+            };
         }
 
         /// <summary>
