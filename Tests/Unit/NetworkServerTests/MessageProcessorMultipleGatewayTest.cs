@@ -16,7 +16,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public MessageProcessorMultipleGatewayTest() : base()
         { }
 
-        [Fact(Skip = "Fails locally - will be addressed with #587")]
+        [Fact]
         public async Task Multi_OTAA_Unconfirmed_Message_Should_Send_Data_To_IotHub_Update_FcntUp_And_Return_Null()
         {
             var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1));
@@ -93,6 +93,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.Equal(1U, loRaDevice1.FCntUp);
             Assert.Equal(1U, loRaDevice2.FCntUp);
 
+            // the following setup is required after VerifyAll() is called
+            LoRaDeviceClient.Setup(ldc => ldc.Dispose());
             SecondLoRaDeviceClient.Setup(ldc => ldc.Dispose());
         }
     }
