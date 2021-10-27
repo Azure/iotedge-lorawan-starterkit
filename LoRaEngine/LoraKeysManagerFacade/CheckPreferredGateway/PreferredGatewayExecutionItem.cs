@@ -105,7 +105,7 @@ namespace LoraKeysManagerFacade.FunctionBundler
                 }
             }
 
-            // 4. To calculated need to adquire a lock
+            // 4. To calculate, we need to acquire a lock
             var preferredGatewayLockKey = $"preferredGateway:{devEUI}:lock";
 
             for (var i = 0; i < MaxAttemptsToResolvePreferredGateway; i++)
