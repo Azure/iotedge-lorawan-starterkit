@@ -51,6 +51,8 @@ namespace LoraKeysManagerFacade
             var devEUI = req.Query["DevEUI"];
             var devNonce = req.Query["DevNonce"];
             var gatewayId = req.Query["GatewayId"];
+            // For fetching by device ID
+            var deviceId = req.Query["DeviceId"];
 
             if (devEUI != StringValues.Empty)
             {
@@ -59,9 +61,24 @@ namespace LoraKeysManagerFacade
 
             try
             {
-                var results = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
-                var json = JsonConvert.SerializeObject(results);
-                return new OkObjectResult(json);
+                object result;
+                if (StringValues.IsNullOrEmpty(deviceId))
+                {
+                    result = await GetDeviceList(devEUI, gatewayId, devNonce, devAddr, log);
+                }
+                else
+                {
+                    result = new[]
+                    {
+                        new IoTHubDeviceInfo
+                        {
+                            DevEUI = deviceId,
+                            PrimaryKey = await LoadPrimaryKeyAsync(deviceId)
+                        }
+                    };
+                }
+
+                return new OkObjectResult(result);
             }
             catch (DeviceNonceUsedException)
             {
@@ -210,9 +227,15 @@ namespace LoraKeysManagerFacade
             return results;
         }
 
-        private async Task<string> LoadPrimaryKeyAsync(string devEUI)
+        public async Task<IoTHubDeviceInfo> GetDeviceById(string id)
         {
-            var device = await this.registryManager.GetDeviceAsync(devEUI);
+            var pk = await LoadPrimaryKeyAsync(id);
+            return new IoTHubDeviceInfo { DevEUI = id, PrimaryKey = pk };
+        }
+
+        private async Task<string> LoadPrimaryKeyAsync(string deviceId)
+        {
+            var device = await this.registryManager.GetDeviceAsync(deviceId);
             if (device == null)
             {
                 return null;
