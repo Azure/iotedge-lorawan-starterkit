@@ -105,7 +105,11 @@ namespace LoRaWan.Tests.Unit.FacadeTests
 
         public long ListAdd(string key, string value, TimeSpan? expiry = null)
         {
+            // We need to execute the TryAdd first here as we want to make sure that
+            // only one ConcurrentBag is created and shared across multiple threads
             this.cache.TryAdd(key, new ConcurrentBag<string>());
+            // The following TryGetValue is making sure that we are always getting the
+            // unique instance of ConcurrentBag for that key.
             this.cache.TryGetValue(key, out var list);
             var stringList = list as ConcurrentBag<string>;
             stringList.Add(value);
