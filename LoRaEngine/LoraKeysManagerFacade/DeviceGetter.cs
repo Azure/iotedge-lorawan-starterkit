@@ -76,12 +76,17 @@ namespace LoraKeysManagerFacade
                 }
                 else
                 {
+                    var key = await LoadPrimaryKeyAsync(deviceId);
+
+                    if (key is null) return new NotFoundResult();
+
                     result = new[]
                     {
                         new IoTHubDeviceInfo
                         {
+                            
                             DevEUI = deviceId,
-                            PrimaryKey = await LoadPrimaryKeyAsync(deviceId)
+                            PrimaryKey = key
                         }
                     };
                 }

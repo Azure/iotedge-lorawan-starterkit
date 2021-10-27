@@ -63,6 +63,21 @@ namespace LoRaWan.Tests.Unit.FacadeTests
         }
 
         [Fact]
+        public async Task DeviceGetter_DeviceId_Not_Found()
+        {
+            var deviceId = NewUniqueEUI64();
+            _ = this._registryManagerMock.Setup(rm => rm.GetDeviceAsync(It.IsAny<string>()))
+                                         .Returns(Task.FromResult((Device)null));
+
+            var httpRequest = HttpRequestHelper.CreateRequest(headers: new Dictionary<string, StringValues> { [ApiVersion.HttpHeaderName] = ApiVersion.LatestVersion.Name },
+                                                              queryParameters: new Dictionary<string, StringValues> { ["DeviceId"] = deviceId });
+
+            var result = await this._sut.GetDevice(httpRequest, NullLogger.Instance);
+
+            _ = Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
         public async Task DeviceGetter_Returns_Bad_Request_When_No_Query_Params_Are_Set()
         {
             var httpRequest = HttpRequestHelper.CreateRequest(headers: new Dictionary<string, StringValues> { [ApiVersion.HttpHeaderName] = ApiVersion.LatestVersion.Name });
