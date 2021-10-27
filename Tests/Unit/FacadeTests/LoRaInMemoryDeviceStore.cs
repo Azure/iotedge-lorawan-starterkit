@@ -106,8 +106,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
         public long ListAdd(string key, string value, TimeSpan? expiry = null)
         {
             this.cache.TryAdd(key, new ConcurrentBag<string>());
-            object list;
-            while (!this.cache.TryGetValue(key, out list)) ;
+            this.cache.TryGetValue(key, out var list);
             var stringList = list as ConcurrentBag<string>;
             stringList.Add(value);
 
