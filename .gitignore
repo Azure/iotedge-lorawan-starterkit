@@ -296,6 +296,8 @@ Doc
 appsettings.local.json
 Docs/.DS_Store
 .DS_Store
+.env
+config
 
 Tools/Cli-LoRa-Device-Provisioning/settings\.local\.json
 
