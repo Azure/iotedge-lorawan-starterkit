@@ -13,7 +13,6 @@ namespace LoraKeysManagerFacade
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Primitives;
-    using Newtonsoft.Json;
 
     public class DeviceGetter
     {
@@ -45,14 +44,23 @@ namespace LoraKeysManagerFacade
                 return new BadRequestObjectResult(ex.Message);
             }
 
+            const string devAddrParamName = "DevAddr";
+            const string devEuiParamName = "DevEUI";
+            const string deviceIdParamName = "DeviceId";
+
+            if (req.Query.Count == 0)
+            {
+                return new BadRequestObjectResult($"No query parameters set. Specify either {devAddrParamName}, {devEuiParamName} or {deviceIdParamName}.");
+            }
+
             // ABP parameters
-            var devAddr = req.Query["DevAddr"];
+            var devAddr = req.Query[devAddrParamName];
             // OTAA parameters
-            var devEUI = req.Query["DevEUI"];
+            var devEUI = req.Query[devEuiParamName];
             var devNonce = req.Query["DevNonce"];
             var gatewayId = req.Query["GatewayId"];
             // For fetching by device ID
-            var deviceId = req.Query["DeviceId"];
+            var deviceId = req.Query[deviceIdParamName];
 
             if (devEUI != StringValues.Empty)
             {
