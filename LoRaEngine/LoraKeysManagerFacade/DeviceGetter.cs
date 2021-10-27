@@ -240,12 +240,6 @@ namespace LoraKeysManagerFacade
             return results;
         }
 
-        public async Task<IoTHubDeviceInfo> GetDeviceById(string id)
-        {
-            var pk = await LoadPrimaryKeyAsync(id);
-            return new IoTHubDeviceInfo { DevEUI = id, PrimaryKey = pk };
-        }
-
         private async Task<string> LoadPrimaryKeyAsync(string deviceId)
         {
             var device = await this.registryManager.GetDeviceAsync(deviceId);
