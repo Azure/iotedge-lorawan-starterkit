@@ -74,7 +74,7 @@ namespace LoRaWan.Tests.Unit.FacadeTests
 
             var result = await this._sut.GetDevice(httpRequest, NullLogger.Instance);
 
-            _ = Assert.IsType<NotFoundResult>(result);
+            _ = Assert.IsType<NotFoundObjectResult>(result);
         }
 
         [Fact]

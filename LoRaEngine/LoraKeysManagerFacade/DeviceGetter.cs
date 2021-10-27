@@ -78,7 +78,7 @@ namespace LoraKeysManagerFacade
                 {
                     var key = await LoadPrimaryKeyAsync(deviceId);
 
-                    if (key is null) return new NotFoundResult();
+                    if (key is null) return new NotFoundObjectResult(new { Id = deviceId.ToString(), Error = "No device was found." });
 
                     result = new[]
                     {
