@@ -73,7 +73,7 @@ namespace LoRaWan.NetworkServer
             return connectionString;
         }
 
-        private LoRaDeviceClient CreateDeviceClient(string devEUI, string primaryKey)
+        public ILoRaDeviceClient CreateDeviceClient(string devEUI, string primaryKey)
         {
             try
             {

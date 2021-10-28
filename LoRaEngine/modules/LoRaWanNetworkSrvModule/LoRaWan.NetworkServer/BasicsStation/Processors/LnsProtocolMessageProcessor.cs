@@ -19,19 +19,19 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Logging;
-    using static Bandwidth;
-    using static RouterConfigStationFlags;
-    using static SpreadingFactor;
 
-    public class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
+    internal class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
         private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
 
         public LnsProtocolMessageProcessor(IHttpContextAccessor httpContextAccessor,
+                                           IBasicsStationConfigurationService basicsStationConfigurationService,
                                            ILogger<LnsProtocolMessageProcessor> logger)
         {
             this.httpContextAccessor = httpContextAccessor;
+            this.basicsStationConfigurationService = basicsStationConfigurationService;
             this.logger = logger;
         }
 
@@ -46,7 +46,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         {
             if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
 
-            _ = await ProcessIncomingRequestAsync(httpContext, InternalHandleDataAsync, token);
+            var routerId = StationEui.Parse(httpContext.Request.RouteValues[BasicsStationNetworkServer.RouterIdPathParameterName].ToString());
+            _ = await ProcessIncomingRequestAsync(httpContext,
+                                                  (str, sock, tok) => InternalHandleDataAsync(routerId, str, sock, tok),
+                                                  token);
         }
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
@@ -59,7 +62,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             {
                 var httpContext = this.httpContextAccessor.HttpContext;
                 var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
-                var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}");
+                var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}/{stationEui}");
 
                 var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
                                                        .SingleOrDefault(ni => ni.GetIPProperties()
@@ -85,31 +88,14 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal async Task<bool> InternalHandleDataAsync(string json, WebSocket socket, CancellationToken token)
+        internal async Task<bool> InternalHandleDataAsync(StationEui stationEui, string json, WebSocket socket, CancellationToken token)
         {
             switch (LnsData.MessageTypeReader.Read(json))
             {
                 case LnsMessageType.Version:
                     var stationVersion = LnsData.VersionMessageReader.Read(json);
                     this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
-                    // A future implementation should retrieve dynamically a SX1301CONF for 'regional' configurations based on the 'stationEui'
-                    // Current implementation is statically returning a SX1301CONF for EU863
-                    var response = LnsData.WriteRouterConfig(new[] { new NetId(1) },
-                                                             new[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
-                                                             "EU863",
-                                                             "sx1301/1",
-                                                             (new Hertz(863000000), new Hertz(870000000)),
-                                                             new[]
-                                                             {
-                                                                 // The following is actually a tuple of SF, Bandwidth and DownlinkOnly.
-                                                                 (SF11, BW125, false),
-                                                                 (SF10, BW125, false),
-                                                                 (SF9, BW125, false),
-                                                                 (SF8, BW125, false),
-                                                                 (SF7, BW125, false),
-                                                                 (SF7, BW250, false),
-                                                             },
-                                                             NoClearChannelAssessment | NoDutyCycle | NoDwellTimeLimitations);
+                    var response = await basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, token);
                     await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, token);
                     break;
                 case LnsMessageType.JoinRequest:

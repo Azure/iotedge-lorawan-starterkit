@@ -20,6 +20,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
     public class LnsProtocolMessageProcessorTests
     {
+        private readonly Mock<IBasicsStationConfigurationService> basicsStationConfigurationMock;
         private readonly LnsProtocolMessageProcessor lnsMessageProcessorMock;
         private readonly Mock<WebSocket> socketMock;
         private readonly Mock<HttpContext> httpContextMock;
@@ -31,8 +32,11 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             this.httpContextMock = new Mock<HttpContext>();
             var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
             httpContextAccessorMock.Setup(x => x.HttpContext).Returns(this.httpContextMock.Object);
+            this.basicsStationConfigurationMock = new Mock<IBasicsStationConfigurationService>();
 
-            this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(httpContextAccessorMock.Object, loggerMock);
+            this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(httpContextAccessorMock.Object,
+                                                                           basicsStationConfigurationMock.Object,
+                                                                           loggerMock);
         }
 
         [Fact]
@@ -329,6 +333,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             var inputJsonString = @"{ ""router"": ""b827:ebff:fee1:e39a"" }";
+            InitializeConfigurationServiceMock();
 
             // mocking localIpAddress
             var connectionInfoMock = new Mock<ConnectionInfo>();
@@ -364,7 +369,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                            });
 
             var muxs = Id6.Format(firstNic?.GetPhysicalAddress().Convert48To64() ?? 0, Id6.FormatOptions.FixedWidth);
-            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}""}}";
+            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}/B8-27-EB-FF-FE-E1-E3-9A""}}";
 
             // act
             await this.lnsMessageProcessorMock.InternalHandleDiscoveryAsync(inputJsonString, this.socketMock.Object, CancellationToken.None);
@@ -379,6 +384,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // arrange
             var inputJsonString = @"{""msgtype"": ""version"", ""station"": ""stationName"" }";
             var expectedSubstring = @"""msgtype"":""router_config""";
+            InitializeConfigurationServiceMock();
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;
@@ -391,7 +397,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                            });
 
             // act
-            await this.lnsMessageProcessorMock.InternalHandleDataAsync(inputJsonString, this.socketMock.Object, CancellationToken.None);
+            await this.lnsMessageProcessorMock.InternalHandleDataAsync(new StationEui(0xb827_ebff_fee1_e39aUL),
+                                                                       inputJsonString,
+                                                                       this.socketMock.Object,
+                                                                       CancellationToken.None);
 
             // assert
             Assert.Contains(expectedSubstring, sentString, StringComparison.Ordinal);
@@ -405,7 +414,14 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // arrange
             var inputJsonString = $@"{{""msgtype"":""{msgtype}""}}";
             // act
-            await Assert.ThrowsAsync<NotSupportedException>(() => this.lnsMessageProcessorMock.InternalHandleDataAsync(inputJsonString, this.socketMock.Object, CancellationToken.None));
+            await Assert.ThrowsAsync<NotSupportedException>(() => this.lnsMessageProcessorMock.InternalHandleDataAsync(new StationEui(0xb827_ebff_fee1_e39aUL),
+                                                                                                                       inputJsonString,
+                                                                                                                       this.socketMock.Object,
+                                                                                                                       CancellationToken.None));
         }
+
+        private void InitializeConfigurationServiceMock() =>
+            this.basicsStationConfigurationMock.Setup(bcs => bcs.GetRouterConfigMessageAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
+                                               .Returns(Task.FromResult(@"{""msgtype"":""router_config"",...}"));
     }
 }

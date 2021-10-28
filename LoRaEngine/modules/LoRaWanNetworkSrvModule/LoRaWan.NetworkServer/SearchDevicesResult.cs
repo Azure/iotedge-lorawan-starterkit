@@ -3,7 +3,9 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// Results of a <see cref="LoRaDeviceAPIServiceBase.SearchDevicesAsync"/> call.
@@ -29,6 +31,18 @@ namespace LoRaWan.NetworkServer
         public SearchDevicesResult(IReadOnlyList<IoTHubDeviceInfo> devices)
         {
             Devices = devices;
+        }
+    }
+
+    internal static class SearchDevicesResultExtensions
+    {
+        public static IoTHubDeviceInfo FirstOrDefault(this SearchDevicesResult searchDevicesResult) =>
+            searchDevicesResult?.Devices is null || searchDevicesResult.Devices.Count == 0 ? null : searchDevicesResult.Devices[0];
+
+        public static IoTHubDeviceInfo Single(this SearchDevicesResult searchDevicesResult)
+        {
+            _ = FirstOrDefault(searchDevicesResult) ?? throw new InvalidOperationException("Sequence contains no elements.");
+            return searchDevicesResult.Devices.Single();
         }
     }
 }
