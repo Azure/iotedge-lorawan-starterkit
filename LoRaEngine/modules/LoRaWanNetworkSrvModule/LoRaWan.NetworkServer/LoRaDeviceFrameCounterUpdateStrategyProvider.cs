@@ -11,6 +11,16 @@ namespace LoRaWan.NetworkServer
         private readonly MultiGatewayFrameCounterUpdateStrategy multiGateway;
         private readonly SingleGatewayFrameCounterUpdateStrategy singleGateway;
 
+        public LoRaDeviceFrameCounterUpdateStrategyProvider(NetworkServerConfiguration networkServerConfiguration,
+                                                            LoRaDeviceAPIServiceBase loRaDeviceAPIService)
+        {
+            if (networkServerConfiguration is null) throw new ArgumentNullException(nameof(networkServerConfiguration));
+
+            this.gatewayID = networkServerConfiguration.GatewayID;
+            this.multiGateway = new MultiGatewayFrameCounterUpdateStrategy(gatewayID, loRaDeviceAPIService);
+            this.singleGateway = new SingleGatewayFrameCounterUpdateStrategy();
+        }
+
         public LoRaDeviceFrameCounterUpdateStrategyProvider(string gatewayID, LoRaDeviceAPIServiceBase loRaDeviceAPIService)
         {
             this.gatewayID = gatewayID;
