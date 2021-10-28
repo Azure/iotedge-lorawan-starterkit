@@ -65,7 +65,7 @@ namespace LoRaWan.Tests.Common
             PayloadDecoder = new TestLoRaPayloadDecoder(new LoRaPayloadDecoder());
             PacketForwarder = new TestPacketForwarder();
             LoRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>(MockBehavior.Strict);
-            FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerGatewayID, LoRaDeviceApi.Object);
+            FrameCounterUpdateStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(ServerConfiguration, LoRaDeviceApi.Object);
             var deduplicationFactory = new DeduplicationStrategyFactory(LoRaDeviceApi.Object);
             var adrStrategyProvider = new LoRaADRStrategyProvider();
             var adrManagerFactory = new LoRAADRManagerFactory(LoRaDeviceApi.Object);

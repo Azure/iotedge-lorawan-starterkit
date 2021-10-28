@@ -21,13 +21,6 @@ namespace LoRaWan.NetworkServer
             this.singleGateway = new SingleGatewayFrameCounterUpdateStrategy();
         }
 
-        public LoRaDeviceFrameCounterUpdateStrategyProvider(string gatewayID, LoRaDeviceAPIServiceBase loRaDeviceAPIService)
-        {
-            this.gatewayID = gatewayID;
-            this.multiGateway = new MultiGatewayFrameCounterUpdateStrategy(gatewayID, loRaDeviceAPIService);
-            this.singleGateway = new SingleGatewayFrameCounterUpdateStrategy();
-        }
-
         public ILoRaDeviceFrameCounterUpdateStrategy GetStrategy(string deviceGatewayID)
         {
             if (string.IsNullOrEmpty(deviceGatewayID))

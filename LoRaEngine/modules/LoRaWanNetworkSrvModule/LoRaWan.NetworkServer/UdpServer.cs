@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer
             var configuration = NetworkServerConfiguration.CreateFromEnvironmentVariables();
 
             var loRaDeviceAPIService = new LoRaDeviceAPIService(configuration, new ServiceFacadeHttpClientProvider(configuration, ApiVersion.LatestVersion));
-            var frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(configuration.GatewayID, loRaDeviceAPIService);
+            var frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(configuration, loRaDeviceAPIService);
             var deduplicationStrategyFactory = new DeduplicationStrategyFactory(loRaDeviceAPIService);
             var adrStrategyProvider = new LoRaADRStrategyProvider();
             var cache = new MemoryCache(new MemoryCacheOptions());
