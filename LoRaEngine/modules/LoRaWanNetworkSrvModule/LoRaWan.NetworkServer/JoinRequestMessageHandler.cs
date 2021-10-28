@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
-    public class JoinRequestMessageHandler
+    public class JoinRequestMessageHandler : IJoinRequestMessageHandler
     {
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly NetworkServerConfiguration configuration;

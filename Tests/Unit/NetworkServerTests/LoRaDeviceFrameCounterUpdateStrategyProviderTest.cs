@@ -10,10 +10,15 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     public class LoRaDeviceFrameCounterUpdateStrategyProviderTest
     {
         private readonly Mock<LoRaDeviceAPIServiceBase> loRaDeviceApi;
+        private readonly NetworkServerConfiguration networkServerConfiguration;
 
         public LoRaDeviceFrameCounterUpdateStrategyProviderTest()
         {
             this.loRaDeviceApi = new Mock<LoRaDeviceAPIServiceBase>();
+            networkServerConfiguration = new NetworkServerConfiguration
+            {
+                GatewayID = "test-gateway"
+            };
         }
 
         [Theory]
@@ -21,7 +26,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(null)]
         public void When_Device_Has_No_GatewayID_Should_Return_MultiGateway(string deviceGatewayID)
         {
-            var target = new LoRaDeviceFrameCounterUpdateStrategyProvider("test-gateway", this.loRaDeviceApi.Object);
+            var target = new LoRaDeviceFrameCounterUpdateStrategyProvider(networkServerConfiguration, this.loRaDeviceApi.Object);
             var actual = target.GetStrategy(deviceGatewayID);
             Assert.NotNull(actual);
             Assert.IsType<MultiGatewayFrameCounterUpdateStrategy>(actual);
@@ -32,7 +37,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("TEST-GATEWAY")]
         public void When_Device_Has_Matching_GatewayID_Should_Return_SingleGateway(string deviceGatewayID)
         {
-            var target = new LoRaDeviceFrameCounterUpdateStrategyProvider("test-gateway", this.loRaDeviceApi.Object);
+            var target = new LoRaDeviceFrameCounterUpdateStrategyProvider(networkServerConfiguration, this.loRaDeviceApi.Object);
             var actual = target.GetStrategy(deviceGatewayID);
             Assert.NotNull(actual);
             Assert.IsType<SingleGatewayFrameCounterUpdateStrategy>(actual);
@@ -43,7 +48,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("TEST-GATEWAY2")]
         public void When_Device_Has_No_Matching_GatewayID_Should_Return_Null(string deviceGatewayID)
         {
-            var target = new LoRaDeviceFrameCounterUpdateStrategyProvider("test-gateway", this.loRaDeviceApi.Object);
+            var target = new LoRaDeviceFrameCounterUpdateStrategyProvider(networkServerConfiguration, this.loRaDeviceApi.Object);
             var actual = target.GetStrategy(deviceGatewayID);
             Assert.Null(actual);
         }

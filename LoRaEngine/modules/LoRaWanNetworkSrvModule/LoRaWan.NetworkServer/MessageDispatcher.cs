@@ -12,19 +12,19 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// Message dispatcher.
     /// </summary>
-    public sealed class MessageDispatcher : IDisposable
+    public sealed class MessageDispatcher : IDisposable, IMessageDispatcher
     {
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceRegistry deviceRegistry;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
         private volatile Region loraRegion;
-        private readonly JoinRequestMessageHandler joinRequestHandler;
+        private readonly IJoinRequestMessageHandler joinRequestHandler;
 
         public MessageDispatcher(
             NetworkServerConfiguration configuration,
             ILoRaDeviceRegistry deviceRegistry,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
-            JoinRequestMessageHandler joinRequestHandler = null)
+            IJoinRequestMessageHandler joinRequestHandler = null)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             this.deviceRegistry = deviceRegistry;

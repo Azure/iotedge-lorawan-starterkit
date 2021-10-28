@@ -18,7 +18,8 @@ namespace LoRaWan.NetworkServer
     {
         private readonly IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider;
 
-        public LoRaDeviceAPIService(NetworkServerConfiguration configuration, IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider)
+        public LoRaDeviceAPIService(NetworkServerConfiguration configuration,
+                                    IServiceFacadeHttpClientProvider serviceFacadeHttpClientProvider)
             : base(configuration)
         {
             this.serviceFacadeHttpClientProvider = serviceFacadeHttpClientProvider;
