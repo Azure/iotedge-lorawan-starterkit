@@ -4,6 +4,8 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System.Globalization;
+    using LoRaTools.ADR;
+    using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -29,7 +31,24 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         {
                             _ = loggingBuilder.SetMinimumLevel((LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture));
                         })
+                        .AddMemoryCache()
                         .AddHttpContextAccessor()
+                        .AddSingleton(NetworkServerConfiguration)
+                        .AddSingleton(LoRaTools.CommonAPI.ApiVersion.LatestVersion)
+                        .AddSingleton<IServiceFacadeHttpClientProvider, ServiceFacadeHttpClientProvider>()
+                        .AddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
+                        .AddSingleton<ILoRaDeviceFrameCounterUpdateStrategyProvider, LoRaDeviceFrameCounterUpdateStrategyProvider>()
+                        .AddSingleton<IDeduplicationStrategyFactory, DeduplicationStrategyFactory>()
+                        .AddSingleton<ILoRaADRStrategyProvider, LoRaADRStrategyProvider>()
+                        .AddSingleton<ILoRAADRManagerFactory, LoRAADRManagerFactory>()
+                        .AddSingleton<ILoRaDeviceClientConnectionManager, LoRaDeviceClientConnectionManager>()
+                        .AddSingleton<ILoRaPayloadDecoder, LoRaPayloadDecoder>()
+                        .AddSingleton<IFunctionBundlerProvider, FunctionBundlerProvider>()
+                        .AddSingleton<ILoRaDataRequestHandler, DefaultLoRaDataRequestHandler>()
+                        .AddSingleton<ILoRaDeviceFactory, LoRaDeviceFactory>()
+                        .AddSingleton<ILoRaDeviceRegistry, LoRaDeviceRegistry>()
+                        .AddSingleton<IJoinRequestMessageHandler, JoinRequestMessageHandler>()
+                        .AddSingleton<IMessageDispatcher, MessageDispatcher>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
         }
 
