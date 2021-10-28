@@ -99,11 +99,5 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             TestTranslateToRegion(LoRaRegionType.CN470);
         }
-
-        [Fact]
-        public void TestResolveRegion()
-        {
-            TestTryResolveRegion(470.3);
-        }
     }
 }

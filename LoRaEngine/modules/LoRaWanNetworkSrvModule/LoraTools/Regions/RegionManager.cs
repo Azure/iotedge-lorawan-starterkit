@@ -75,34 +75,6 @@ namespace LoRaTools.Regions
             return false;
         }
 
-        /// <summary>
-        /// Tries the resolve region.
-        /// </summary>
-        /// <returns><c>true</c>, if a region was resolved, <c>false</c> otherwise.</returns>
-        public static bool TryResolveRegion(double frequency, out Region region)
-        {
-            region = null;
-
-            // EU863-870
-            if (frequency is < 870 and > 863)
-            {
-                region = EU868;
-                return true;
-            }// US902-928 frequency band, upstream messages are between 902 and 915.
-            else if (frequency is <= 915 and >= 902)
-            {
-                region = US915;
-                return true;
-            }
-            else if (frequency is <= 510 and >= 470)
-            {
-                region = CN470;
-                return true;
-            }
-
-            return false;
-        }
-
         private static Region eu868;
 
         public static Region EU868

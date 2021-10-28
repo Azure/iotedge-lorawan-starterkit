@@ -61,11 +61,5 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             TestTranslateToRegion(LoRaRegionType.EU868);
         }
-
-        [Fact]
-        public void TestResolveRegion()
-        {
-            TestTryResolveRegion(868.1);
-        }
     }
 }

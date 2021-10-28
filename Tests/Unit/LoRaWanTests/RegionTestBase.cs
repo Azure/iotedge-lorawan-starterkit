@@ -137,11 +137,5 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.True(RegionManager.TryResolveRegion(rxpk[0], out var region));
             Assert.IsType(Region.GetType(), region);
         }
-
-        protected void TestTryResolveRegion(double freq)
-        {
-            Assert.True(RegionManager.TryResolveRegion(freq, out var region));
-            Assert.IsType(Region.GetType(), region);
-        }
     }
 }
