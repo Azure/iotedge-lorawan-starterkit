@@ -7,6 +7,7 @@ namespace LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using LoRaTools.LoRaPhysical;
+    using LoRaTools.Utils;
     using LoRaWan;
     using Microsoft.Extensions.Logging;
 
@@ -127,6 +128,12 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
+        /// Returns the default RX2 receive window.
+        /// </summary>
+        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
+        public abstract bool TryGetDefaultRX2ReceiveWindow(out RX2ReceiveWindow rx2Window, DeviceJoinInfo deviceJoinInfo = null);
+
+        /// <summary>
         /// Get the downstream RX2 frequency.
         /// </summary>
         /// <param name="devEUI">the device id.</param>
@@ -134,7 +141,7 @@ namespace LoRaTools.Regions
         /// <returns>rx2 freq.</returns>
         public double GetDownstreamRX2Freq(string devEUI, double? nwkSrvRx2Freq)
         {
-            // resolve frequency to gateway if setted to region's default
+            // resolve frequency to gateway if set to region's default
             if (nwkSrvRx2Freq.HasValue)
             {
                 Logger.Log(devEUI, $"using custom gateway RX2 frequency {nwkSrvRx2Freq}", LogLevel.Debug);

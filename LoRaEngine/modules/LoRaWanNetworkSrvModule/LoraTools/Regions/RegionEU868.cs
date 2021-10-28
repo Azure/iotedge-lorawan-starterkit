@@ -4,6 +4,7 @@
 namespace LoRaTools.Regions
 {
     using LoRaTools.LoRaPhysical;
+    using LoRaTools.Utils;
     using System;
 
     public class RegionEU868 : Region
@@ -33,6 +34,16 @@ namespace LoRaTools.Regions
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Returns the default RX2 receive window.
+        /// </summary>
+        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
+        public override bool TryGetDefaultRX2ReceiveWindow(out RX2ReceiveWindow rx2Window, DeviceJoinInfo deviceJoinInfo = null)
+        {
+            rx2Window = new RX2ReceiveWindow { Frequency = 869.525, DataRate = 0 };
+            return true;
         }
     }
 }

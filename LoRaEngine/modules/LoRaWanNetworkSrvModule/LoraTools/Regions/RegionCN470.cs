@@ -7,12 +7,15 @@ namespace LoRaTools.Regions
     using System.Collections.Generic;
     using System.Linq;
     using LoRaTools.LoRaPhysical;
+    using LoRaTools.Utils;
 
     public class RegionCN470 : Region
     {
         private const double FrequencyIncrement = 0.2;
 
         private readonly List<double> JoinFrequencies;
+
+        private readonly List<double> RX2OTAADefaultFrequencies;
 
         private readonly List<List<double>> DownstreamFrequenciesByPlanType;
 
@@ -79,6 +82,12 @@ namespace LoRaTools.Regions
                 470.9, 472.5, 474.1, 475.7, 504.1, 505.7, 507.3, 508.9, 479.9, 499.9,
                 470.3, 472.3, 474.3, 476.3, 478.3, 480.3, 482.3, 484.3, 486.3, 488.3
             };
+
+            this.RX2OTAADefaultFrequencies = new List<double>
+            {
+                485.3, 486.9, 488.5, 490.1, 491.7, 493.3, 494.9, 496.5, // 20 MHz plan A devices
+                478.3, 498.3                                            // 20 MHz plan B devices
+            };
         }
 
         /// <summary>
@@ -137,6 +146,72 @@ namespace LoRaTools.Regions
                 channelNumber = GetChannelNumber(upstreamChannel, 480.3);
                 frequency = this.DownstreamFrequenciesByPlanType[3][channelNumber % 24];
                 return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the default RX2 receive window.
+        /// </summary>
+        /// <param name="deviceJoinInfo">Join info for the device.</param>
+        public override bool TryGetDefaultRX2ReceiveWindow(out RX2ReceiveWindow rx2Window, DeviceJoinInfo deviceJoinInfo)
+        {
+            rx2Window = new RX2ReceiveWindow { Frequency = 0, DataRate = 1 };
+
+            if (deviceJoinInfo is null)
+                return false;
+
+            // OTAA device
+            if (deviceJoinInfo.ReportedCN470JoinChannel != null)
+            {
+                // 20 MHz plan A or B
+                if (deviceJoinInfo.ReportedCN470JoinChannel < this.RX2OTAADefaultFrequencies.Count)
+                {
+                    rx2Window.Frequency = this.RX2OTAADefaultFrequencies[(int)deviceJoinInfo.ReportedCN470JoinChannel];
+                    return true;
+                }
+                // 26 MHz plan A
+                if (deviceJoinInfo.ReportedCN470JoinChannel <= 14)
+                {
+                    rx2Window.Frequency = 492.5;
+                    return true;
+                }
+                // 26 MHz plan B
+                if (deviceJoinInfo.ReportedCN470JoinChannel <= 19)
+                {
+                    rx2Window.Frequency = 502.5;
+                    return true;
+                }
+            }
+
+            // ABP device
+            if (deviceJoinInfo.DesiredCN470JoinChannel != null)
+            {
+                // 20 MHz plan A
+                if (deviceJoinInfo.DesiredCN470JoinChannel <= 7)
+                {
+                    rx2Window.Frequency = 486.9;
+                    return true;
+                }
+                // 20 MHz plan B
+                if (deviceJoinInfo.DesiredCN470JoinChannel <= 9)
+                {
+                    rx2Window.Frequency = 498.3;
+                    return true;
+                }
+                // 26 MHz plan A
+                if (deviceJoinInfo.DesiredCN470JoinChannel <= 14)
+                {
+                    rx2Window.Frequency = 492.5;
+                    return true;
+                }
+                // 26 MHz plan B
+                if (deviceJoinInfo.DesiredCN470JoinChannel <= 19)
+                {
+                    rx2Window.Frequency = 502.5;
+                    return true;
+                }
             }
 
             return false;
