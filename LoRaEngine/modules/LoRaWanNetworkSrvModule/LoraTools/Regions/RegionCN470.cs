@@ -13,11 +13,11 @@ namespace LoRaTools.Regions
     {
         private const double FrequencyIncrement = 0.2;
 
-        private readonly List<double> JoinFrequencies;
+        private readonly List<double> joinFrequencies;
 
-        private readonly List<double> RX2OTAADefaultFrequencies;
+        private readonly List<double> rx2OTAADefaultFrequencies;
 
-        private readonly List<List<double>> DownstreamFrequenciesByPlanType;
+        private readonly List<List<double>> downstreamFrequenciesByPlanType;
 
         public RegionCN470()
             : base(LoRaRegionType.CN470)
@@ -68,7 +68,7 @@ namespace LoRaTools.Regions
             MaxADRDataRate = 7;
             RegionLimits = new RegionLimits((min: 470.3, max: 509.7), validDatarates, validDatarates, 0, 0);
 
-            this.DownstreamFrequenciesByPlanType = new List<List<double>>
+            this.downstreamFrequenciesByPlanType = new List<List<double>>
             {
                 BuildFrequencyPlanList(483.9, 0, 31).Concat(BuildFrequencyPlanList(490.3, 32, 63)).ToList(),
                 BuildFrequencyPlanList(476.9, 0, 31).Concat(BuildFrequencyPlanList(496.9, 32, 63)).ToList(),
@@ -76,13 +76,13 @@ namespace LoRaTools.Regions
                 BuildFrequencyPlanList(500.1, 0, 23)
             };
 
-            this.JoinFrequencies = new List<double>
+            this.joinFrequencies = new List<double>
             {
                 470.9, 472.5, 474.1, 475.7, 504.1, 505.7, 507.3, 508.9, 479.9, 499.9,
                 470.3, 472.3, 474.3, 476.3, 478.3, 480.3, 482.3, 484.3, 486.3, 488.3
             };
 
-            this.RX2OTAADefaultFrequencies = new List<double>
+            this.rx2OTAADefaultFrequencies = new List<double>
             {
                 485.3, 486.9, 488.5, 490.1, 491.7, 493.3, 494.9, 496.5, // 20 MHz plan A devices
                 478.3, 498.3                                            // 20 MHz plan B devices
@@ -97,7 +97,7 @@ namespace LoRaTools.Regions
         {
             if (joinChannel is null) throw new ArgumentNullException(nameof(joinChannel));
 
-            channelIndex = this.JoinFrequencies.IndexOf(joinChannel.Freq);
+            channelIndex = this.joinFrequencies.IndexOf(joinChannel.Freq);
             return channelIndex != -1;
         }
 
@@ -129,28 +129,28 @@ namespace LoRaTools.Regions
             if (joinChannelIndex <= 7)
             {
                 channelNumber = upstreamChannel.Freq < 500 ? GetChannelNumber(upstreamChannel, 470.3) : GetChannelNumber(upstreamChannel, 503.5, 32);
-                frequency = this.DownstreamFrequenciesByPlanType[0][channelNumber];
+                frequency = this.downstreamFrequenciesByPlanType[0][channelNumber];
                 return true;
             }
             // 20 MHz plan B
             if (joinChannelIndex <= 9)
             {
                 channelNumber = upstreamChannel.Freq < 490 ? GetChannelNumber(upstreamChannel, 476.9) : GetChannelNumber(upstreamChannel, 496.9, 32);
-                frequency = this.DownstreamFrequenciesByPlanType[1][channelNumber];
+                frequency = this.downstreamFrequenciesByPlanType[1][channelNumber];
                 return true;
             }
             // 26 MHz plan A
             if (joinChannelIndex <= 14)
             {
                 channelNumber = GetChannelNumber(upstreamChannel, 470.3);
-                frequency = this.DownstreamFrequenciesByPlanType[2][channelNumber % 24];
+                frequency = this.downstreamFrequenciesByPlanType[2][channelNumber % 24];
                 return true;
             }
             // 26 MHz plan B
             if (joinChannelIndex <= 19)
             {
                 channelNumber = GetChannelNumber(upstreamChannel, 480.3);
-                frequency = this.DownstreamFrequenciesByPlanType[3][channelNumber % 24];
+                frequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24];
                 return true;
             }
 
@@ -171,9 +171,9 @@ namespace LoRaTools.Regions
             if (deviceJoinInfo.ReportedCN470JoinChannel != null)
             {
                 // 20 MHz plan A or B
-                if (deviceJoinInfo.ReportedCN470JoinChannel < this.RX2OTAADefaultFrequencies.Count)
+                if (deviceJoinInfo.ReportedCN470JoinChannel < this.rx2OTAADefaultFrequencies.Count)
                 {
-                    rx2Window.Frequency = this.RX2OTAADefaultFrequencies[(int)deviceJoinInfo.ReportedCN470JoinChannel];
+                    rx2Window.Frequency = this.rx2OTAADefaultFrequencies[(int)deviceJoinInfo.ReportedCN470JoinChannel];
                 }
                 // 26 MHz plan A
                 else if (deviceJoinInfo.ReportedCN470JoinChannel <= 14)
