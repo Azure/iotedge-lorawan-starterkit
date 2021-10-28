@@ -176,19 +176,19 @@ namespace LoRaTools.Regions
                     rx2Window.Frequency = this.RX2OTAADefaultFrequencies[(int)deviceJoinInfo.ReportedCN470JoinChannel];
                 }
                 // 26 MHz plan A
-                if (deviceJoinInfo.ReportedCN470JoinChannel <= 14)
+                else if (deviceJoinInfo.ReportedCN470JoinChannel <= 14)
                 {
                     rx2Window.Frequency = 492.5;
                 }
                 // 26 MHz plan B
-                if (deviceJoinInfo.ReportedCN470JoinChannel <= 19)
+                else if (deviceJoinInfo.ReportedCN470JoinChannel <= 19)
                 {
                     rx2Window.Frequency = 502.5;
                 }
             }
 
             // ABP device
-            if (deviceJoinInfo.DesiredCN470JoinChannel != null)
+            else if (deviceJoinInfo.DesiredCN470JoinChannel != null)
             {
                 // 20 MHz plan A
                 if (deviceJoinInfo.DesiredCN470JoinChannel <= 7)
@@ -196,17 +196,17 @@ namespace LoRaTools.Regions
                     rx2Window.Frequency = 486.9;
                 }
                 // 20 MHz plan B
-                if (deviceJoinInfo.DesiredCN470JoinChannel <= 9)
+                else if (deviceJoinInfo.DesiredCN470JoinChannel <= 9)
                 {
                     rx2Window.Frequency = 498.3;
                 }
                 // 26 MHz plan A
-                if (deviceJoinInfo.DesiredCN470JoinChannel <= 14)
+                else if (deviceJoinInfo.DesiredCN470JoinChannel <= 14)
                 {
                     rx2Window.Frequency = 492.5;
                 }
                 // 26 MHz plan B
-                if (deviceJoinInfo.DesiredCN470JoinChannel <= 19)
+                else if (deviceJoinInfo.DesiredCN470JoinChannel <= 19)
                 {
                     rx2Window.Frequency = 502.5;
                 }

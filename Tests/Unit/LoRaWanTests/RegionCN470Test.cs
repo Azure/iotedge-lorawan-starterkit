@@ -87,13 +87,29 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             TestRegionMaxPayloadLength(datr, maxPyldSize);
         }
 
-        // TODO: expand test cases as part of #561
         [Theory]
-        [InlineData("", null, null, 485.3, "SF11BW125")]
-        [InlineData("SF11BW125", null, null, 485.3, "SF11BW125")]
-        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        // OTAA devices - join channel set in reported twin properties
+        [InlineData(null, 0, null, 485.3)]
+        [InlineData(null, 1, 9, 486.9)]
+        [InlineData(null, 7, null, 496.5)]
+        [InlineData(null, 9, 8, 498.3)]
+        [InlineData(null, 10, null, 492.5)]
+        [InlineData(null, 14, 14, 492.5)]
+        [InlineData(null, 19, 18, 502.5)]
+        [InlineData(498.3, 7, null, 498.3)]
+        [InlineData(485.3, 15, null, 485.3)]
+        // ABP devices
+        [InlineData(null, null, 0, 486.9)]
+        [InlineData(null, null, 7, 486.9)]
+        [InlineData(null, null, 9, 498.3)]
+        [InlineData(null, null, 14, 492.5)]
+        [InlineData(null, null, 19, 502.5)]
+        [InlineData(486.9, null, 12, 486.9)]
+        [InlineData(502.5, null, 17, 502.5)]
+        public void TestRX2Frequency(double? nwksrvrx2freq, int? reportedJoinChannel, int? desiredJoinChannel, double expectedFreq)
         {
-            TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
+            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
+            TestDownstreamRX2Frequency(nwksrvrx2freq, expectedFreq, deviceJoinInfo);
         }
 
         [Fact]

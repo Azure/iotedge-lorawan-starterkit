@@ -67,12 +67,24 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.Equal(Region.GetMaxPayloadSize(datr), maxPyldSize);
         }
 
-        protected void TestDownstreamRX2FrequencyAndDataRate(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        protected void TestDownstreamRX2FrequencyAndDataRate(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins,
+            double expectedFreq, string expectedDr, DeviceJoinInfo deviceJoinInfo = null)
+        {
+            TestDownstreamRX2Frequency(nwksrvrx2freq, expectedFreq, deviceJoinInfo);
+            TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr);
+        }
+
+        protected void TestDownstreamRX2Frequency(double? nwksrvrx2freq, double expectedFreq, DeviceJoinInfo deviceJoinInfo = null)
         {
             var devEui = "testDevice";
-            var datr = Region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins);
-            var freq = Region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq);
+            var freq = Region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq, deviceJoinInfo);
             Assert.Equal(expectedFreq, freq);
+        }
+
+        protected void TestDownstreamRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, string expectedDr, DeviceJoinInfo deviceJoinInfo = null)
+        {
+            var devEui = "testDevice";
+            var datr = Region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins, deviceJoinInfo);
             Assert.Equal(expectedDr, datr);
         }
 
