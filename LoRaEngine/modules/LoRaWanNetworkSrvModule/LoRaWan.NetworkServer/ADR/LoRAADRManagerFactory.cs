@@ -17,7 +17,9 @@ namespace LoRaWan.NetworkServer.ADR
             this.loRaDeviceAPIService = loRaDeviceAPIService;
         }
 
-        public ILoRaADRManager Create(ILoRaADRStrategyProvider strategyProvider, ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy, LoRaDevice loRaDevice)
+        public ILoRaADRManager Create(ILoRaADRStrategyProvider strategyProvider,
+                                      ILoRaDeviceFrameCounterUpdateStrategy frameCounterStrategy,
+                                      LoRaDevice loRaDevice)
         {
             if (loRaDevice is null) throw new ArgumentNullException(nameof(loRaDevice));
 
