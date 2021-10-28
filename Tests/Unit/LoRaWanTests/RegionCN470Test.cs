@@ -1,6 +1,5 @@
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
-    using System;
     using LoRaTools.Regions;
     using Xunit;
 
@@ -112,19 +111,18 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Theory]
-        [InlineData("", null, 0, null, "SF11BW125")]
-        [InlineData("", null, 8, null, "SF11BW125")]
-        [InlineData("", null, 10, null, "SF11BW125")]
-        [InlineData("", null, 19, null, "SF11BW125")]
-        [InlineData("", null, null, 5, "SF11BW125")]
-        [InlineData("", null, null, 12, "SF11BW125")]
-        [InlineData("", null, 10, 14, "SF11BW125")]
-        [InlineData("", (ushort)2, 0, null, "SF10BW125")]
-        [InlineData("SF9BW125", null, 0, null, "SF9BW125")]
-        [InlineData("SF9BW125", (ushort)2, 0, null, "SF10BW125")]
-        [InlineData("SF8BW125", (ushort)3, 0, 8, "SF9BW125")]
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        public void TestRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, string expectedDr)
+        [InlineData(null, null, 0, null, 1)]
+        [InlineData(null, null, 8, null, 1)]
+        [InlineData(null, null, 10, null, 1)]
+        [InlineData(null, null, 19, null, 1)]
+        [InlineData(null, null, null, 5, 1)]
+        [InlineData(null, null, null, 12, 1)]
+        [InlineData(null, null, 10, 14, 1)]
+        [InlineData(null, (ushort)2, 0, null, 2)]
+        [InlineData((ushort)3, null, 0, null, 3)]
+        [InlineData((ushort)3, (ushort)2, 0, null, 2)]
+        [InlineData((ushort)4, (ushort)3, 0, 8, 3)]
+        public void TestRX2DataRate(ushort? nwksrvrx2dr, ushort? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, ushort expectedDr)
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
             TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr, deviceJoinInfo);
