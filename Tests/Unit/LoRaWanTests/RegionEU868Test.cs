@@ -13,7 +13,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [Theory]
         [CombinatorialData]
         public void TestFrequencyAndDataRate(
-            [CombinatorialValues("SF12BW125", "SF11BW125", "SF10BW125", "SF9BW125", "SF8BW125", "SF7BW125", "SF7BW250")] string inputDr,
+            [CombinatorialValues(0, 1, 2, 3, 4, 5, 6)] ushort inputDr,
             [CombinatorialValues(868.1, 868.3, 868.5)] double inputFreq)
         {
             var expectedDr = inputDr;
@@ -23,35 +23,35 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Theory]
-        [InlineData(800, "SF12BW125")]
-        [InlineData(1023, "SF8BW125")]
-        [InlineData(868.1, "SF0BW125")]
-        [InlineData(869.3, "SF32BW543")]
-        [InlineData(800, "SF0BW125")]
-        public void TestLimit(double freq, string datarate)
+        [InlineData(800, 0)]
+        [InlineData(1023, 4)]
+        [InlineData(868.1, 90)]
+        [InlineData(869.3, 100)]
+        [InlineData(800, 110)]
+        public void TestLimit(double freq, ushort datarate)
         {
             TestRegionLimit(freq, datarate);
         }
 
         [Theory]
-        [InlineData("SF12BW125", 59)]
-        [InlineData("SF11BW125", 59)]
-        [InlineData("SF10BW125", 59)]
-        [InlineData("SF9BW125", 123)]
-        [InlineData("SF8BW125", 230)]
-        [InlineData("SF7BW125", 230)]
-        [InlineData("SF7BW250", 230)]
-        [InlineData("50", 230)]
-        public void TestMaxPayloadLength(string datr, uint maxPyldSize)
+        [InlineData(0, 59)]
+        [InlineData(1, 59)]
+        [InlineData(2, 59)]
+        [InlineData(3, 123)]
+        [InlineData(4, 230)]
+        [InlineData(5, 230)]
+        [InlineData(6, 230)]
+        [InlineData(7, 230)]
+        public void TestMaxPayloadLength(ushort datr, uint maxPyldSize)
         {
             TestRegionMaxPayloadLength(datr, maxPyldSize);
         }
 
         [Theory]
-        [InlineData("", null, null, 869.525, "SF12BW125")] // Standard EU.
-        [InlineData("SF9BW125", null, null, 869.525, "SF9BW125")] // nwksrvDR is correctly applied if no device twins.
-        [InlineData("SF9BW125", 868.250, (ushort)6, 868.250, "SF7BW250")] // device twins are applied in priority.
-        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        [InlineData(null, null, null, 869.525, (ushort)0)] // Standard EU.
+        [InlineData((ushort)3, null, null, 869.525, (ushort)3)] // nwksrvDR is correctly applied if no device twins.
+        [InlineData((ushort)3, 868.250, (ushort)6, 868.250, (ushort)6)] // device twins are applied in priority.
+        public void TestDownstreamRX2(ushort? nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, ushort expectedDr)
         {
             TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
         }
@@ -65,7 +65,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [Fact]
         public void TestResolveRegion()
         {
-            TestTryResolveRegion("SF9BW125", 868.1);
+            TestTryResolveRegion(868.1);
         }
     }
 }
