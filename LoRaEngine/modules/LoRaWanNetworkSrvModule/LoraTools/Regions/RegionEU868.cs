@@ -18,8 +18,8 @@ namespace LoRaTools.Regions
         /// Logic to get the correct downstream transmission frequency for region EU868.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        /// <param name="joinChannelIndex">index of the join channel, if applicable.</param>
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex = null)
+        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
+        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo = null)
         {
             if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
 

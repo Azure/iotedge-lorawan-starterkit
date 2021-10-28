@@ -2,7 +2,7 @@ namespace LoRaTools.Regions
 {
     public class DeviceJoinInfo
     {
-        public DeviceJoinInfo(int? reportedCN470JoinChannel, int? desiredCN470JoinChannel)
+        public DeviceJoinInfo(int? reportedCN470JoinChannel = null, int? desiredCN470JoinChannel = null)
         {
             ReportedCN470JoinChannel = reportedCN470JoinChannel;
             DesiredCN470JoinChannel = desiredCN470JoinChannel;

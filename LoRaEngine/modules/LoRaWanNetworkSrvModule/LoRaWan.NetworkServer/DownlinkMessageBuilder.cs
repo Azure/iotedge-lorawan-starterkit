@@ -86,7 +86,7 @@ namespace LoRaWan.NetworkServer
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the data rate in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
-                if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq, loRaDevice.ReportedCN470JoinChannel ?? loRaDevice.DesiredCN470JoinChannel))
+                if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq, deviceJoinInfo))
                 {
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the frequency in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);

@@ -11,16 +11,16 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     {
         protected Region Region { get; set; }
 
-        protected void TestRegionFrequencyAndDataRate(string inputDr, double inputFreq, string outputDr, double outputFreq, int? joinChannelIndex = null)
+        protected void TestRegionFrequencyAndDataRate(string inputDr, double inputFreq, string outputDr, double outputFreq, DeviceJoinInfo deviceJoinInfo = null)
         {
             var rxpk = GenerateRxpk(inputDr, inputFreq);
-            TestRegionFrequency(rxpk, outputFreq, joinChannelIndex);
+            TestRegionFrequency(rxpk, outputFreq, deviceJoinInfo);
             TestRegionDataRate(rxpk, outputDr);
         }
 
-        protected void TestRegionFrequency(IList<Rxpk> rxpk, double outputFreq, int? joinChannelIndex = null)
+        protected void TestRegionFrequency(IList<Rxpk> rxpk, double outputFreq, DeviceJoinInfo deviceJoinInfo = null)
         {
-            Assert.True(Region.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency, joinChannelIndex));
+            Assert.True(Region.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency, deviceJoinInfo));
             Assert.Equal(frequency, outputFreq);
         }
 
@@ -29,10 +29,10 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.Equal(Region.GetDownstreamDR(rxpk[0], rx1DrOffset), outputDr);
         }
 
-        protected void TestRegionLimit(double freq, string datarate, int? joinChannelIndex = null)
+        protected void TestRegionLimit(double freq, string datarate, DeviceJoinInfo deviceJoinInfo = null)
         {
             var rxpk = GenerateRxpk(datarate, freq);
-            Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _, joinChannelIndex));
+            Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _, deviceJoinInfo));
             Assert.Null(Region.GetDownstreamDR(rxpk[0]));
         }
 

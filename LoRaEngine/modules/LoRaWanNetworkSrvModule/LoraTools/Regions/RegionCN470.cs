@@ -105,13 +105,20 @@ namespace LoRaTools.Regions
         /// Logic to get the correct downstream transmission frequency for region CN470.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
-        /// <param name="joinChannelIndex">index of the join channel.</param>
-        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex)
+        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
+        public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo)
         {
             frequency = 0;
 
-            if (joinChannelIndex == null)
+            if (deviceJoinInfo == null)
                 return false;
+
+            if (deviceJoinInfo.ReportedCN470JoinChannel == null && deviceJoinInfo.DesiredCN470JoinChannel == null)
+                return false;
+
+            // We prioritize the selection of join channel index from reported twin properties (set for OTAA devices)
+            // over desired twin properties (set for APB devices).
+            var joinChannelIndex = deviceJoinInfo.ReportedCN470JoinChannel ?? deviceJoinInfo.DesiredCN470JoinChannel;
 
             if (!IsValidUpstreamRxpk(upstreamChannel))
                 return false;

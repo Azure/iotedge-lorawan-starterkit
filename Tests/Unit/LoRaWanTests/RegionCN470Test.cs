@@ -46,7 +46,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public void TestFrequency(double inputFreq, double outputFreq, int joinChannel)
         {
             var rxpk = GenerateRxpk("SF12BW125", inputFreq);
-            TestRegionFrequency(rxpk, outputFreq, joinChannel);
+            TestRegionFrequency(rxpk, outputFreq, new DeviceJoinInfo(joinChannel));
         }
 
         [Theory]
@@ -71,7 +71,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(490, "SF30BW125")]
         public void TestLimit(double freq, string datarate)
         {
-            TestRegionLimit(freq, datarate, 0);
+            TestRegionLimit(freq, datarate, new DeviceJoinInfo(0));
         }
 
         [Theory]
