@@ -208,7 +208,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
         [Theory]
         [InlineData(ServerGatewayID)]
-        // [InlineData(null)]
+        [InlineData(null)]
         public async Task When_Queueing_To_Multiple_Devices_With_Same_DevAddr_Should_Queue_To_Device_Matching_Mic(string deviceGatewayID)
         {
             var simulatedDevice1 = new SimulatedDevice(TestDeviceInfo.CreateABPDevice(1, gatewayID: deviceGatewayID));
