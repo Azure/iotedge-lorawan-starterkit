@@ -20,11 +20,10 @@ namespace LoRaTools.Regions
         private readonly List<List<double>> DownstreamFrequenciesByPlanType;
 
         public RegionCN470()
-            : base(LoRaRegionType.CN470,
-                  (frequency: 485.3, datr: 1)) // TODO: support multiple RX2 receive windows, see #561
+            : base(LoRaRegionType.CN470)
         {
             // Values assuming FOpts param is not used
-            DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 31)); // documentation has no max payload size for DR 0
+            DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
             DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 31));
             DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 94));
             DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 192));
@@ -66,7 +65,7 @@ namespace LoRaTools.Regions
                 "50"         // 7 FSK 50
             };
 
-            MaxADRDataRate = 7; // needs to be clarified
+            MaxADRDataRate = 7;
             RegionLimits = new RegionLimits((min: 470.3, max: 509.7), validDatarates, validDatarates, 0, 0);
 
             this.DownstreamFrequenciesByPlanType = new List<List<double>>
@@ -152,15 +151,14 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Returns the default RX2 receive window.
+        /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device.</param>
-        public override bool TryGetDefaultRX2ReceiveWindow(out RX2ReceiveWindow rx2Window, DeviceJoinInfo deviceJoinInfo)
+        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo)
         {
-            rx2Window = new RX2ReceiveWindow { Frequency = 0, DataRate = 1 };
+            if (deviceJoinInfo is null) throw new ArgumentNullException(nameof(deviceJoinInfo));
 
-            if (deviceJoinInfo is null)
-                return false;
+            var rx2Window = new RX2ReceiveWindow { Frequency = 0, DataRate = 1 };
 
             // OTAA device
             if (deviceJoinInfo.ReportedCN470JoinChannel != null)
@@ -169,19 +167,16 @@ namespace LoRaTools.Regions
                 if (deviceJoinInfo.ReportedCN470JoinChannel < this.RX2OTAADefaultFrequencies.Count)
                 {
                     rx2Window.Frequency = this.RX2OTAADefaultFrequencies[(int)deviceJoinInfo.ReportedCN470JoinChannel];
-                    return true;
                 }
                 // 26 MHz plan A
                 if (deviceJoinInfo.ReportedCN470JoinChannel <= 14)
                 {
                     rx2Window.Frequency = 492.5;
-                    return true;
                 }
                 // 26 MHz plan B
                 if (deviceJoinInfo.ReportedCN470JoinChannel <= 19)
                 {
                     rx2Window.Frequency = 502.5;
-                    return true;
                 }
             }
 
@@ -192,29 +187,25 @@ namespace LoRaTools.Regions
                 if (deviceJoinInfo.DesiredCN470JoinChannel <= 7)
                 {
                     rx2Window.Frequency = 486.9;
-                    return true;
                 }
                 // 20 MHz plan B
                 if (deviceJoinInfo.DesiredCN470JoinChannel <= 9)
                 {
                     rx2Window.Frequency = 498.3;
-                    return true;
                 }
                 // 26 MHz plan A
                 if (deviceJoinInfo.DesiredCN470JoinChannel <= 14)
                 {
                     rx2Window.Frequency = 492.5;
-                    return true;
                 }
                 // 26 MHz plan B
                 if (deviceJoinInfo.DesiredCN470JoinChannel <= 19)
                 {
                     rx2Window.Frequency = 502.5;
-                    return true;
                 }
             }
 
-            return false;
+            return rx2Window;
         }
 
         private static List<double> BuildFrequencyPlanList(double startFrequency, int startChannel, int endChannel)

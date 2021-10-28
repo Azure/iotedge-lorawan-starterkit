@@ -38,11 +38,6 @@ namespace LoRaTools.Regions
         public IReadOnlyList<IReadOnlyList<int>> RX1DROffsetTable { get; set; }
 
         /// <summary>
-        /// Gets or sets default parameters for the RX2 receive Windows, This windows use a fix frequency and Data rate.
-        /// </summary>
-        public (double frequency, ushort dr) RX2DefaultReceiveWindows { get; set; }
-
-        /// <summary>
         /// Gets or sets default first receive windows. [sec].
         /// </summary>
         public uint ReceiveDelay1 { get; set; }
@@ -95,12 +90,11 @@ namespace LoRaTools.Regions
         /// </summary>
         public int MaxADRDataRate { get; set; }
 
-        protected Region(LoRaRegionType regionEnum, (double frequency, ushort datr) rx2DefaultReceiveWindows)
+        protected Region(LoRaRegionType regionEnum)
         {
             LoRaRegion = regionEnum;
             RetransmitTimeout = (min: 1, max: 3);
 
-            RX2DefaultReceiveWindows = rx2DefaultReceiveWindows;
             ReceiveDelay1 = 1;
             ReceiveDelay2 = 2;
             JoinAcceptDelay1 = 5;
@@ -128,18 +122,19 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Returns the default RX2 receive window.
+        /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public abstract bool TryGetDefaultRX2ReceiveWindow(out RX2ReceiveWindow rx2Window, DeviceJoinInfo deviceJoinInfo = null);
+        public abstract RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null);
 
         /// <summary>
         /// Get the downstream RX2 frequency.
         /// </summary>
         /// <param name="devEUI">the device id.</param>
         /// <param name="nwkSrvRx2Freq">the value of the rx2freq env var on the nwk srv.</param>
+        /// <param name="deviceJoinInfo">join info for the device, if applicable.</param>
         /// <returns>rx2 freq.</returns>
-        public double GetDownstreamRX2Freq(string devEUI, double? nwkSrvRx2Freq)
+        public double GetDownstreamRX2Freq(string devEUI, double? nwkSrvRx2Freq, DeviceJoinInfo deviceJoinInfo = null)
         {
             // resolve frequency to gateway if set to region's default
             if (nwkSrvRx2Freq.HasValue)
@@ -150,8 +145,9 @@ namespace LoRaTools.Regions
             else
             {
                 // default frequency
-                Logger.Log(devEUI, $"using standard region RX2 frequency {RX2DefaultReceiveWindows.frequency}", LogLevel.Debug);
-                return RX2DefaultReceiveWindows.frequency;
+                var rx2ReceiveWindow = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
+                Logger.Log(devEUI, $"using standard region RX2 frequency {rx2ReceiveWindow.Frequency}", LogLevel.Debug);
+                return rx2ReceiveWindow.Frequency;
             }
         }
 
@@ -161,8 +157,9 @@ namespace LoRaTools.Regions
         /// <param name="devEUI">the device id.</param>
         /// <param name="nwkSrvRx2Dr">the network server rx2 datarate.</param>
         /// <param name="rx2DrFromTwins">rx2 datarate value from twins.</param>
+        /// <param name="deviceJoinInfo">join info for the device, if applicable.</param>
         /// <returns>the rx2 datarate.</returns>
-        public string GetDownstreamRX2Datarate(string devEUI, string nwkSrvRx2Dr, ushort? rx2DrFromTwins)
+        public string GetDownstreamRX2Datarate(string devEUI, string nwkSrvRx2Dr, ushort? rx2DrFromTwins, DeviceJoinInfo deviceJoinInfo = null)
         {
             // If the rx2 datarate property is in twins, we take it from there
             if (rx2DrFromTwins.HasValue)
@@ -190,7 +187,8 @@ namespace LoRaTools.Regions
             }
 
             // if no settings was set we use region default.
-            var defaultDatr = DRtoConfiguration[RX2DefaultReceiveWindows.dr].configuration;
+            var rx2ReceiveWindow = GetDefaultRX2ReceiveWindow(deviceJoinInfo);
+            var defaultDatr = DRtoConfiguration[rx2ReceiveWindow.DataRate].configuration;
             Logger.Log(devEUI, $"using standard region RX2 datarate {defaultDatr}", LogLevel.Debug);
             return defaultDatr;
         }

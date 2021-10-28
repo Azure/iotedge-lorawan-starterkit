@@ -15,8 +15,7 @@ namespace LoRaTools.Regions
         private static readonly double[] DownstreamChannelFrequencies = new double[] { 923.3, 923.9, 924.5, 925.1, 925.7, 926.3, 926.9, 927.5 };
 
         public RegionUS915()
-            : base(LoRaRegionType.US915,
-                   (frequency: 923.3, datr: 8))
+            : base(LoRaRegionType.US915)
         {
         }
 
@@ -54,13 +53,10 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Returns the default RX2 receive window.
+        /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDefaultRX2ReceiveWindow(out RX2ReceiveWindow rx2Window, DeviceJoinInfo deviceJoinInfo = null)
-        {
-            rx2Window = new RX2ReceiveWindow { Frequency = 923.3, DataRate = 8 };
-            return true;
-        }
+        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
+            new RX2ReceiveWindow { Frequency = 923.3, DataRate = 8 };
     }
 }

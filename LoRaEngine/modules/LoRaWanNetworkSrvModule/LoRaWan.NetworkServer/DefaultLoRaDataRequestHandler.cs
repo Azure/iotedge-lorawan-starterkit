@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
     using LoRaTools.LoRaMessage;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -492,9 +493,17 @@ namespace LoRaWan.NetworkServer
             {
                 // Get max. payload size for RX2, considering possilbe user provided Rx2DataRate
                 if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
-                    maxPayload = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].maxPyldSize;
+                {
+                    var deviceJoinInfo = loRaRegion.LoRaRegion == LoRaRegionType.CN470
+                        ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
+                        : null;
+                    var rx2ReceiveWindow = loRaRegion.GetDefaultRX2ReceiveWindow(deviceJoinInfo);
+                    maxPayload = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate].maxPyldSize;
+                }
                 else
+                {
                     maxPayload = loRaRegion.GetMaxPayloadSize(this.configuration.Rx2DataRate);
+                }
             }
 
             // Otherwise, it is RX1.

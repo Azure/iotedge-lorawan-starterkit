@@ -10,8 +10,7 @@ namespace LoRaTools.Regions
     public class RegionEU868 : Region
     {
         public RegionEU868()
-            : base(LoRaRegionType.EU868,
-                   (frequency: 869.525, datr: 0))
+            : base(LoRaRegionType.EU868)
         {
         }
 
@@ -37,13 +36,10 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
-        /// Returns the default RX2 receive window.
+        /// Returns the default RX2 receive window parameters - frequency and data rate.
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        public override bool TryGetDefaultRX2ReceiveWindow(out RX2ReceiveWindow rx2Window, DeviceJoinInfo deviceJoinInfo = null)
-        {
-            rx2Window = new RX2ReceiveWindow { Frequency = 869.525, DataRate = 0 };
-            return true;
-        }
+        public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
+            new RX2ReceiveWindow { Frequency = 869.525, DataRate = 0 };
     }
 }

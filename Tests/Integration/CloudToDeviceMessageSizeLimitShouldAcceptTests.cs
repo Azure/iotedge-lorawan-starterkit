@@ -65,7 +65,7 @@ namespace LoRaWan.Tests.Integration
             }
 
             if (isSendingInRx2)
-                expectedDownlinkDatr = euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].configuration;
+                expectedDownlinkDatr = euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].configuration;
             else
                 expectedDownlinkDatr = datr;
 
