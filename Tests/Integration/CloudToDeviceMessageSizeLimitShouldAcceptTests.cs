@@ -69,10 +69,12 @@ namespace LoRaWan.Tests.Integration
             else
                 expectedDownlinkDatr = datr;
 
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
                 - c2dMessageMacCommandSize
                 - upstreamMessageMacCommandSize
                 - Constants.LoraProtocolOverheadSize;
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             var c2dMessagePayload = TestUtils.GeneratePayload("123457890", (int)c2dPayloadSize);
 

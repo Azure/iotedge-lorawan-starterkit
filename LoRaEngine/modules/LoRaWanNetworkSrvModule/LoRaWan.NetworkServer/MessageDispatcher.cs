@@ -53,7 +53,9 @@ namespace LoRaWan.NetworkServer
 
             if (this.loraRegion == null)
             {
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 if (!RegionManager.TryResolveRegion(request.Rxpk, out var currentRegion))
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 {
                     // log is generated in Region factory
                     // move here once V2 goes GA

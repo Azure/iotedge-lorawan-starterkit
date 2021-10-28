@@ -150,7 +150,9 @@ namespace LoRaWan.NetworkServer
 
                 if (request.Region.LoRaRegion == LoRaRegionType.CN470)
                 {
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     if (request.Region.TryGetJoinChannelIndex(request.Rxpk, out var channelIndex))
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     {
                         updatedProperties.CN470JoinChannel = channelIndex;
                     }
@@ -182,8 +184,10 @@ namespace LoRaWan.NetworkServer
                 uint tmst = 0;
                 if (windowToUse == Constants.ReceiveWindow1)
                 {
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     datr = loraRegion.GetDownstreamDR(request.Rxpk);
                     if (!loraRegion.TryGetDownstreamChannelFrequency(request.Rxpk, out freq) || datr == null)
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     {
                         Logger.Log(loRaDevice.DevEUI, "could not resolve DR and/or frequency for downstream", LogLevel.Error);
                         request.NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.InvalidRxpk);
@@ -199,7 +203,9 @@ namespace LoRaWan.NetworkServer
                     tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay2 * 1000000);
 
                     freq = loraRegion.GetDownstreamRX2Freq(devEUI, this.configuration.Rx2Frequency);
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     datr = loraRegion.GetDownstreamRX2Datarate(devEUI, this.configuration.Rx2DataRate, null);
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 }
 
                 loRaDevice.IsOurDevice = true;

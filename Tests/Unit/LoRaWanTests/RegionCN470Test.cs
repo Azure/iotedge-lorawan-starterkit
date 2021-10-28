@@ -1,6 +1,7 @@
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using LoRaTools.Regions;
+    using System;
     using Xunit;
 
     public class RegionCN470Test : RegionTestBase
@@ -20,8 +21,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(488.3, 19)]
         public void TestTryGetJoinChannelIndex(double freq, int expectedIndex)
         {
-            var rxpk = GenerateRxpk("SF12BW125", freq);
-            Assert.True(Region.TryGetJoinChannelIndex(rxpk[0], out var channelIndex));
+            Assert.True(Region.TryGetJoinChannelIndex(freq, out var channelIndex));
             Assert.Equal(expectedIndex, channelIndex);
         }
 
@@ -45,44 +45,43 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(488.9, 503.9, 19)]
         public void TestFrequency(double inputFreq, double outputFreq, int joinChannel)
         {
-            var rxpk = GenerateRxpk("SF12BW125", inputFreq);
-            TestRegionFrequency(rxpk, outputFreq, new DeviceJoinInfo(joinChannel));
+            TestRegionFrequency(inputFreq, 0, outputFreq, new DeviceJoinInfo(joinChannel));
         }
 
         [Theory]
-        [InlineData("SF12BW125", "SF12BW125", 0)]
-        [InlineData("SF11BW125", "SF11BW125", 0)]
-        [InlineData("SF10BW125", "SF10BW125", 0)]
-        [InlineData("SF7BW500", "SF7BW500", 0)]
-        [InlineData("SF10BW125", "SF11BW125", 1)]
-        [InlineData("SF8BW125", "SF10BW125", 2)]
-        [InlineData("SF7BW500", "SF9BW125", 3)]
-        [InlineData("SF7BW500", "SF7BW500", 10)]
-        public void TestDataRate(string inputDr, string outputDr, int rx1DrOffset)
+        [InlineData(0, 0, 0)]
+        [InlineData(1, 1, 0)]
+        [InlineData(2, 2, 0)]
+        [InlineData(6, 6, 0)]
+        [InlineData(2, 1, 1)]
+        [InlineData(4, 2, 2)]
+        [InlineData(6, 3, 3)]
+        [InlineData(6, 6, 10)]
+        public void TestDataRate(ushort inputDr, ushort outputDr, int rx1DrOffset)
         {
-            var rxpk = GenerateRxpk(inputDr, 470.3);
-            TestRegionDataRate(rxpk, outputDr, rx1DrOffset);
+            var freq = 470.3;
+            TestRegionDataRate(freq, inputDr, outputDr, rx1DrOffset);
         }
 
         [Theory]
-        [InlineData(470, "SF12BW125")]
-        [InlineData(510, "SF11BW125")]
-        [InlineData(509, "SF2BW125")]
-        [InlineData(490, "SF30BW125")]
-        public void TestLimit(double freq, string datarate)
+        [InlineData(470, 0)]
+        [InlineData(510, 1)]
+        [InlineData(509, 100)]
+        [InlineData(490, 110)]
+        public void TestNotAllowedDataRates(double freq, ushort datarate)
         {
             TestRegionLimit(freq, datarate, new DeviceJoinInfo(0));
         }
 
         [Theory]
-        [InlineData("SF11BW125", 31)]
-        [InlineData("SF10BW125", 94)]
-        [InlineData("SF9BW125", 192)]
-        [InlineData("SF8BW125", 250)]
-        [InlineData("SF7BW125", 250)]
-        [InlineData("SF7BW500", 250)]
-        [InlineData("50", 250)]
-        public void TestMaxPayloadLength(string datr, uint maxPyldSize)
+        [InlineData(1, 31)]
+        [InlineData(2, 94)]
+        [InlineData(3, 192)]
+        [InlineData(4, 250)]
+        [InlineData(5, 250)]
+        [InlineData(6, 250)]
+        [InlineData(7, 250)]
+        public void TestMaxPayloadLength(ushort datr, uint maxPyldSize)
         {
             TestRegionMaxPayloadLength(datr, maxPyldSize);
         }
@@ -124,6 +123,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData("SF9BW125", null, 0, null, "SF9BW125")]
         [InlineData("SF9BW125", (ushort)2, 0, null, "SF10BW125")]
         [InlineData("SF8BW125", (ushort)3, 0, 8, "SF9BW125")]
+        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
         public void TestRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, string expectedDr)
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
@@ -134,12 +134,6 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public void TestTranslateRegionType()
         {
             TestTranslateToRegion(LoRaRegionType.CN470);
-        }
-
-        [Fact]
-        public void TestResolveRegion()
-        {
-            TestTryResolveRegion("SF11BW125", 470.3);
         }
     }
 }

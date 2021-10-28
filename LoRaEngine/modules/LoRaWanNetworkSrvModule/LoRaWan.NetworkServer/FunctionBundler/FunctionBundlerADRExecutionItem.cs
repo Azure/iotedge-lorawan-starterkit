@@ -16,7 +16,9 @@ namespace LoRaWan.NetworkServer
 
             request.AdrRequest = new LoRaADRRequest
             {
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 DataRate = context.Request.Region.GetDRFromFreqAndChan(context.Request.Rxpk.Datr),
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 FCntDown = context.FCntDown,
                 FCntUp = context.FCntUp,
                 GatewayId = context.GatewayId,

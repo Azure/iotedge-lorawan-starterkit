@@ -376,12 +376,16 @@ namespace LoRaWan.Tests.Integration
             var downlinkMessage = PacketForwarder.DownlinkMessages[0];
             var txpk = downlinkMessage.Txpk;
             var euRegion = RegionManager.EU868;
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             Assert.True(euRegion.TryGetDownstreamChannelFrequency(rxpk, out var frequency));
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             // Ensure we are using second window frequency
             Assert.Equal(frequency, txpk.Freq);
 
             // Ensure we are using second window datr
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             Assert.Equal(euRegion.GetDownstreamDR(rxpk), txpk.Datr);
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             // Ensure tmst was computed to 1 second
             Assert.Equal(1000000, txpk.Tmst);

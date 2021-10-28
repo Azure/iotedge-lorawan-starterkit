@@ -48,6 +48,7 @@ namespace LoRaTools.Regions
         /// <returns><c>true</c>, if a region was resolved, <c>false</c> otherwise.</returns>
         /// <param name="rxpk">Rxpk.</param>
         /// <param name="region">Region.</param>
+        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
         public static bool TryResolveRegion(Rxpk rxpk, out Region region)
         {
             if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));

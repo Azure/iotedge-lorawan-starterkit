@@ -19,6 +19,7 @@ namespace LoRaTools.Regions
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
+        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
         public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo = null)
         {
             if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
@@ -41,5 +42,22 @@ namespace LoRaTools.Regions
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
             new RX2ReceiveWindow { Frequency = 869.525, DataRate = 0 };
+
+        /// <summary>
+        /// Logic to get the correct downstream transmission frequency for region EU868.
+        /// </summary>
+        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo = null)
+        {
+            downstreamFrequency = 0;
+
+            if (IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
+            {
+                // in case of EU, you respond on same frequency as you sent data.
+                downstreamFrequency = upstreamFrequency;
+                return true;
+            }
+
+            return false;
+        }
     }
 }

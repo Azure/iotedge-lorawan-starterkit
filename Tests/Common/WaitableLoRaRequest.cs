@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Common
 {
     using System;
-    using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaTools.LoRaMessage;
@@ -59,7 +58,9 @@ namespace LoRaWan.Tests.Common
             if (!useRealTimer)
             {
                 constantElapsedTime ??= TimeSpan.Zero;
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 if (!RegionManager.TryResolveRegion(rxpk, out var region))
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     throw new InvalidOperationException("Could not resolve region.");
                 var timeWatcher = new TestLoRaOperationTimeWatcher(region, constantElapsedTime.Value);
                 request.UseTimeWatcher(timeWatcher);
