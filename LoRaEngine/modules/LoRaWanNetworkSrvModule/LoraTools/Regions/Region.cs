@@ -280,7 +280,7 @@ namespace LoRaTools.Regions
         {
             if (IsValidUpstreamFrequencyAndDataRate(frequency, dataRate))
             {
-                // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datar
+                // If the rx1 offset is a valid value we use it, otherwise we keep answering on normal datarate
                 if (rx1DrOffset <= RX1DROffsetTable[0].Count - 1)
                 {
                     return (ushort)RX1DROffsetTable[dataRate][rx1DrOffset];
