@@ -24,6 +24,7 @@ namespace LoRaTools.Regions
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         /// <param name="joinChannelIndex">index of the join channel, if applicable.</param>
+        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
         public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex = null)
         {
             if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
@@ -46,6 +47,25 @@ namespace LoRaTools.Regions
                 }
 
                 frequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Logic to get the correct downstream transmission frequency for region US915.
+        /// </summary>
+        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, int? joinChannelIndex = null)
+        {
+            downstreamFrequency = 0;
+
+            if (IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
+            {
+                int upstreamChannelNumber;
+                upstreamChannelNumber = dataRate == 4 ? 64 + (int)Math.Round((upstreamFrequency - 903) / 1.6, 0, MidpointRounding.AwayFromZero)
+                                                      : (int)Math.Round((upstreamFrequency - 902.3) / 0.2, 0, MidpointRounding.AwayFromZero);
+                downstreamFrequency = DownstreamChannelFrequencies[upstreamChannelNumber % 8];
                 return true;
             }
 

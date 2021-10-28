@@ -48,6 +48,7 @@ namespace LoRaTools.Regions
         /// <returns><c>true</c>, if a region was resolved, <c>false</c> otherwise.</returns>
         /// <param name="rxpk">Rxpk.</param>
         /// <param name="region">Region.</param>
+        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
         public static bool TryResolveRegion(Rxpk rxpk, out Region region)
         {
             if (rxpk is null) throw new ArgumentNullException(nameof(rxpk));
@@ -66,6 +67,34 @@ namespace LoRaTools.Regions
                 return true;
             }
             else if (rxpk.Freq is <= 510 and >= 470)
+            {
+                region = CN470;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Tries the resolve region.
+        /// </summary>
+        /// <returns><c>true</c>, if a region was resolved, <c>false</c> otherwise.</returns>
+        public static bool TryResolveRegion(double frequency, out Region region)
+        {
+            region = null;
+
+            // EU863-870
+            if (frequency is < 870 and > 863)
+            {
+                region = EU868;
+                return true;
+            }// US902-928 frequency band, upstream messages are between 902 and 915.
+            else if (frequency is <= 915 and >= 902)
+            {
+                region = US915;
+                return true;
+            }
+            else if (frequency is <= 510 and >= 470)
             {
                 region = CN470;
                 return true;
