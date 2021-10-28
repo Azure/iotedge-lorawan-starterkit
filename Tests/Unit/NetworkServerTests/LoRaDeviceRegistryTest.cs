@@ -404,8 +404,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             using var target = new LoRaDeviceRegistry(ServerConfiguration, this.cache, apiService.Object, deviceFactory);
             using var connectionManager = new SingleDeviceConnectionManager(LoRaDeviceClient.Object);
 
-            var getTwinMockSequence = LoRaDeviceClient.SetupSequence(x => x.GetTwinAsync());
-
             for (var deviceID = 1; deviceID <= deviceCount; ++deviceID)
             {
                 var simulatedDevice = new SimulatedDevice(TestDeviceInfo.CreateABPDevice((uint)deviceID, gatewayID: deviceGatewayID));
