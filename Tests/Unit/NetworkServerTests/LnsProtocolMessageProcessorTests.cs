@@ -332,7 +332,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // mocking localIpAddress
             var connectionInfoMock = new Mock<ConnectionInfo>();
+            // this is going to select the network interface with most bytes received / sent
+            // this should correspond to the real ethernet/wifi interface on the machine
             var firstNic = isValidNic ? NetworkInterface.GetAllNetworkInterfaces()
+                                                        .OrderByDescending(x => x.GetIPv4Statistics().BytesReceived + x.GetIPv4Statistics().BytesSent)
                                                         .FirstOrDefault()
                                       : null;
             if (firstNic is not null)
