@@ -18,7 +18,8 @@ namespace LoRaWan.NetworkServer
         private readonly ApiVersion expectedFunctionVersion;
         private readonly Lazy<HttpClient> httpClient;
 
-        public ServiceFacadeHttpClientProvider(NetworkServerConfiguration configuration, ApiVersion expectedFunctionVersion)
+        public ServiceFacadeHttpClientProvider(NetworkServerConfiguration configuration,
+                                               ApiVersion expectedFunctionVersion)
         {
             this.configuration = configuration;
             this.expectedFunctionVersion = expectedFunctionVersion;
