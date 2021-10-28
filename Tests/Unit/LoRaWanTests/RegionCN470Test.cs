@@ -1,7 +1,7 @@
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
-    using LoRaTools.Regions;
     using System;
+    using LoRaTools.Regions;
     using Xunit;
 
     public class RegionCN470Test : RegionTestBase

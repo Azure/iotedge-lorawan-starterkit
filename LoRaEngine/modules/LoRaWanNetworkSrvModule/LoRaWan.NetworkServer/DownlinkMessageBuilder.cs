@@ -76,7 +76,6 @@ namespace LoRaWan.NetworkServer
             {
                 tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow2Delay(loRaDevice), loRaDevice.ReportedRXDelay);
                 freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency, deviceJoinInfo);
-                freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency, deviceJoinInfo);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 datr = loRaRegion.GetDownstreamRX2Datarate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate, deviceJoinInfo);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
