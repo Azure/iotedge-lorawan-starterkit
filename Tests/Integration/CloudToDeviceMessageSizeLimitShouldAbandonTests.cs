@@ -58,7 +58,7 @@ namespace LoRaWan.Tests.Integration
 
             expectedDownlinkDatr = euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].configuration;
 
-            var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
+            var c2dPayloadSize = euRegion.GetMaxPayloadSize(euRegion.RX2DefaultReceiveWindows.dr)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
                 - Constants.LoraProtocolOverheadSize;
