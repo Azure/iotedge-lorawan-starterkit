@@ -72,18 +72,24 @@ namespace LoRaWan.NetworkServer
             {
                 tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow2Delay(loRaDevice), loRaDevice.ReportedRXDelay);
                 freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency);
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 datr = loRaRegion.GetDownstreamRX2Datarate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate);
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
             else
             {
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 datr = loRaRegion.GetDownstreamDR(rxpk, loRaDevice.ReportedRX1DROffset);
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 if (datr == null)
                 {
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the data rate in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);
                 }
                 // The logic for passing CN470 join channel will change as part of #561
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 if (!loRaRegion.TryGetDownstreamChannelFrequency(rxpk, out freq, loRaDevice.ReportedCN470JoinChannel ?? loRaDevice.DesiredCN470JoinChannel))
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 {
                     Logger.Log(loRaDevice.DevEUI, "there was a problem in setting the frequency in the downstream message packet forwarder settings", LogLevel.Error);
                     return new DownlinkMessageBuilderResponse(null, false);
@@ -93,7 +99,9 @@ namespace LoRaWan.NetworkServer
             }
 
             // get max. payload size based on data rate from LoRaRegion
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             // Deduct 8 bytes from max payload size.
             maxPayloadSize -= Constants.LoraProtocolOverheadSize;
@@ -246,10 +254,14 @@ namespace LoRaWan.NetworkServer
 
             // Class C always use RX2
             freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency);
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             datr = loRaRegion.GetDownstreamRX2Datarate(loRaDevice.DevEUI, configuration.Rx2DataRate, loRaDevice.ReportedRX2DataRate);
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             // get max. payload size based on data rate from LoRaRegion
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             var maxPayloadSize = loRaRegion.GetMaxPayloadSize(datr);
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
 
             // Deduct 8 bytes from max payload size.
             maxPayloadSize -= Constants.LoraProtocolOverheadSize;

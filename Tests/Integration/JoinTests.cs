@@ -195,7 +195,9 @@ namespace LoRaWan.Tests.Integration
             var downstreamMessage = PacketForwarder.DownlinkMessages[1];
 
             // validates txpk according to eu region
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(confirmedMessageRxpk, out var frequency));
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             Assert.Equal(frequency, downstreamMessage.Txpk.Freq);
             Assert.Equal("4/5", downstreamMessage.Txpk.Codr);
             Assert.False(downstreamMessage.Txpk.Imme);
@@ -483,7 +485,9 @@ namespace LoRaWan.Tests.Integration
             var downlinkJoinAcceptMessage = PacketForwarder.DownlinkMessages[0];
             // validates txpk according to eu region
             Assert.Equal(0U, downlinkJoinAcceptMessage.Txpk.Rfch);
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             Assert.True(RegionManager.EU868.TryGetDownstreamChannelFrequency(joinRxpk, out var receivedFrequency));
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             Assert.Equal(receivedFrequency, downlinkJoinAcceptMessage.Txpk.Freq);
             Assert.Equal("4/5", downlinkJoinAcceptMessage.Txpk.Codr);
             Assert.False(downlinkJoinAcceptMessage.Txpk.Imme);

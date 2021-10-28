@@ -95,8 +95,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
 
-            var datr = this.loRaRegion.DRtoConfiguration[this.loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
-            var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(datr)
+            var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(this.loRaRegion.RX2DefaultReceiveWindows.dr)
                 - c2dMessageMacCommandSize
                 - Constants.LoraProtocolOverheadSize;
 
@@ -179,8 +178,7 @@ namespace LoRaWan.Tests.Integration
             var c2dMessageMacCommand = new DevStatusRequest();
             var c2dMessageMacCommandSize = hasMacInC2D ? c2dMessageMacCommand.Length : 0;
 
-            var datr = this.loRaRegion.DRtoConfiguration[this.loRaRegion.RX2DefaultReceiveWindows.dr].configuration;
-            var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(datr)
+            var c2dPayloadSize = this.loRaRegion.GetMaxPayloadSize(this.loRaRegion.RX2DefaultReceiveWindows.dr)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
                 - Constants.LoraProtocolOverheadSize;

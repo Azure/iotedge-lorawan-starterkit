@@ -494,13 +494,17 @@ namespace LoRaWan.NetworkServer
                 if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
                     maxPayload = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].maxPyldSize;
                 else
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     maxPayload = loRaRegion.GetMaxPayloadSize(this.configuration.Rx2DataRate);
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
 
             // Otherwise, it is RX1.
             else
             {
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 maxPayload = loRaRegion.GetMaxPayloadSize(loRaRegion.GetDownstreamDR(rxpk));
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
 
             // Deduct 8 bytes from max payload size.
@@ -667,7 +671,9 @@ namespace LoRaWan.NetworkServer
                     payloadFcnt,
                     loRaDevice.FCntDown,
                     (float)request.Rxpk.RequiredSnr,
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     request.Region.GetDRFromFreqAndChan(request.Rxpk.Datr),
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     request.Region.TXPowertoMaxEIRP.Count - 1,
                     request.Region.MaxADRDataRate,
                     loRaADRTableEntry);

@@ -597,11 +597,15 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.Equal(2000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
             if (rx2datarate is > 0 and < 8)
             {
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 Assert.Equal(rx2datarate, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
             else
             {
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 Assert.Equal(0, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
         }
 
@@ -821,11 +825,15 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.Equal(1000000, downstreamMessage.Txpk.Tmst - confirmedMessageRxpk.Tmst);
             if (rx1offset is > 0 and < 5)
             {
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 Assert.Equal(expectedDR, confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
             else
             {
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                 Assert.Equal(confirmedRequest.Region.GetDRFromFreqAndChan(confirmedMessageRxpk.Datr), confirmedRequest.Region.GetDRFromFreqAndChan(downstreamMessage.Txpk.Datr));
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
             }
         }
 

@@ -85,6 +85,7 @@ namespace LoRaTools.Regions
         /// Returns join channel indexfor region CN470 matching the frequency of the join request.
         /// </summary>
         /// <param name="joinChannel">Channel on which the join request was received.</param>
+        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
         public override bool TryGetJoinChannelIndex(Rxpk joinChannel, out int channelIndex)
         {
             if (joinChannel is null) throw new ArgumentNullException(nameof(joinChannel));
@@ -94,10 +95,20 @@ namespace LoRaTools.Regions
         }
 
         /// <summary>
+        /// Returns join channel indexfor region CN470 matching the frequency of the join request.
+        /// </summary>
+        public override bool TryGetJoinChannelIndex(double frequency, out int channelIndex)
+        {
+            channelIndex = this.JoinFrequencies.IndexOf(frequency);
+            return channelIndex != -1;
+        }
+
+        /// <summary>
         /// Logic to get the correct downstream transmission frequency for region CN470.
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         /// <param name="joinChannelIndex">index of the join channel.</param>
+        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
         public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, int? joinChannelIndex)
         {
             frequency = 0;
@@ -142,6 +153,54 @@ namespace LoRaTools.Regions
             return false;
         }
 
+
+        /// <summary>
+        /// Logic to get the correct downstream transmission frequency for region CN470.
+        /// </summary>
+        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, int? joinChannelIndex)
+        {
+            downstreamFrequency = 0;
+
+            if (joinChannelIndex == null)
+                return false;
+
+            if (!IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
+                return false;
+
+            int channelNumber;
+
+            // 20 MHz plan A
+            if (joinChannelIndex <= 7)
+            {
+                channelNumber = upstreamFrequency < 500 ? GetChannelNumber(upstreamFrequency, 470.3) : GetChannelNumber(upstreamFrequency, 503.5, 32);
+                downstreamFrequency = this.DownstreamFrequenciesByPlanType[0][channelNumber];
+                return true;
+            }
+            // 20 MHz plan B
+            if (joinChannelIndex <= 9)
+            {
+                channelNumber = upstreamFrequency < 490 ? GetChannelNumber(upstreamFrequency, 476.9) : GetChannelNumber(upstreamFrequency, 496.9, 32);
+                downstreamFrequency = this.DownstreamFrequenciesByPlanType[1][channelNumber];
+                return true;
+            }
+            // 26 MHz plan A
+            if (joinChannelIndex <= 14)
+            {
+                channelNumber = GetChannelNumber(upstreamFrequency, 470.3);
+                downstreamFrequency = this.DownstreamFrequenciesByPlanType[2][channelNumber % 24];
+                return true;
+            }
+            // 26 MHz plan B
+            if (joinChannelIndex <= 19)
+            {
+                channelNumber = GetChannelNumber(upstreamFrequency, 480.3);
+                downstreamFrequency = this.DownstreamFrequenciesByPlanType[3][channelNumber % 24];
+                return true;
+            }
+
+            return false;
+        }
+
         private static List<double> BuildFrequencyPlanList(double startFrequency, int startChannel, int endChannel)
         {
             var frequencies = new List<double>();
@@ -156,7 +215,10 @@ namespace LoRaTools.Regions
             return frequencies;
         }
 
+        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
         private static int GetChannelNumber(Rxpk upstreamChannel, double startUpstreamFreq, int startChannelNumber = 0) =>
             startChannelNumber + (int)Math.Round((upstreamChannel.Freq - startUpstreamFreq) / FrequencyIncrement, 0, MidpointRounding.AwayFromZero);
+        private static int GetChannelNumber(double upstreamChannelFrequency, double startUpstreamFreq, int startChannelNumber = 0) =>
+            startChannelNumber + (int)Math.Round((upstreamChannelFrequency - startUpstreamFreq) / FrequencyIncrement, 0, MidpointRounding.AwayFromZero);
     }
 }
