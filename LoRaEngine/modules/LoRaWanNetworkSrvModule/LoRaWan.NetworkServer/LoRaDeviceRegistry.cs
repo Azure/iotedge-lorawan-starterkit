@@ -195,7 +195,7 @@ namespace LoRaWan.NetworkServer
                 return cachedDevice;
 
             var searchResult = await this.loRaDeviceAPIService.SearchByDevEUIAsync(devEUI);
-            if (searchResult.Count == 0)
+            if (searchResult == null || searchResult.Count == 0)
                 return null;
 
             var loRaDevice = this.deviceFactory.Create(searchResult[0]);
