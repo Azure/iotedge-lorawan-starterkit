@@ -155,7 +155,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("nodwell", JsonReader.Boolean()),
                               (netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell) =>
                                     WriteRouterConfig(netId, joinEui, region, hwspec, freqRange, drs,
-                                                      sx1301conf, nocca: nocca, nodc: nodc, nodwell: nodwell));
+                                                      sx1301conf, nocca, nodc, nodwell));
 
         /*
             {
