@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             public int Radio { get; set; }
             public int If { get; set; }
             public Bandwidth Bandwidth { get; set; }
-            public SpreadingFactor SpreadingFactor { get; set; }
+            public SpreadingFactor SpreadFactor { get; set; }
         }
 
         private struct RadioConfig
@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("if", JsonReader.Int32()),
                               JsonReader.Property("bandwidth", JsonReader.UInt32()),
                               JsonReader.Property("spread_factor", JsonReader.UInt32()),
-                              (e, r, i, b, sf) => new StandardConfig { Enable = e, Radio = r, If = i, Bandwidth = (Bandwidth)(b / 1000), SpreadingFactor = (SpreadingFactor)sf });
+                              (e, r, i, b, sf) => new StandardConfig { Enable = e, Radio = r, If = i, Bandwidth = (Bandwidth)(b / 1000), SpreadFactor = (SpreadingFactor)sf });
 
         private static readonly IJsonReader<RadioConfig> RadioConfReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
@@ -102,9 +102,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             JsonReader.Object(JsonReader.Property("NetID", JsonReader.Array(from id in JsonReader.UInt32()
                                                                             select new NetId((int)id))),
                               JsonReader.Property("JoinEui",
-                                                  JsonReader.Array(from arr in JsonReader.Array(from eui in JsonReader.String()
-                                                                                                select JoinEui.Parse(eui))
-                                                                   select (arr[0], arr[1])),
+                                                  JsonReader.Either(JsonReader.Array(from arr in JsonReader.Array(from eui in JsonReader.String()
+                                                                                                                  select JoinEui.Parse(eui))
+                                                                                     select (arr[0], arr[1])),
+                                                                    JsonReader.Null<(JoinEui, JoinEui)[]>()),
                                                   (true, Array.Empty<(JoinEui, JoinEui)>())),
                               JsonReader.Property("region", JsonReader.String()),
                               JsonReader.Property("hwspec", JsonReader.String()),
@@ -263,8 +264,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 writer.WriteNumber("if", chanConf.If);
                 if (chanConf.Bandwidth != Bandwidth.Undefined)
                     writer.WriteNumber("bandwidth", chanConf.Bandwidth.ToHertz().AsUInt64);
-                if (chanConf.SpreadingFactor != SpreadingFactor.Undefined)
-                    writer.WriteNumber("spread_factor", (int)chanConf.SpreadingFactor);
+                if (chanConf.SpreadFactor != SpreadingFactor.Undefined)
+                    writer.WriteNumber("spread_factor", (int)chanConf.SpreadFactor);
                 writer.WriteEndObject();
             }
         }

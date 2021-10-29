@@ -95,6 +95,30 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
+        public void Null_Moves_Reader()
+        {
+            TestMovesReaderPastReadValue(JsonReader.Null<object>(), "null");
+        }
+
+        [Fact]
+        public void Null_With_Valid_Input()
+        {
+            var result = JsonReader.Null<object>().Read("null");
+            Assert.Null(result);
+        }
+
+        [Theory]
+        [InlineData("42")]
+        [InlineData("-4.2")]
+        [InlineData("'foobar'")]
+        [InlineData("[]")]
+        [InlineData("{}")]
+        public void Null_With_Invalid_Input(string json)
+        {
+            Assert.Throws<JsonException>(() => _ = JsonReader.Null<object>().Read(Strictify(json)));
+        }
+
+        [Fact]
         public void Boolean_Moves_Reader()
         {
             TestMovesReaderPastReadValue(JsonReader.Boolean(), "true");
@@ -339,19 +363,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.True(property.HasDefaultValue);
             Assert.Same(defaultValue, property.DefaultValue);
             Assert.Same(valueReader, property.Reader);
-        }
-
-        [Fact]
-        public void Property_With_Default_Initializes_Property_As_Expected_In_Object()
-        {
-            var valueReader = JsonReader.Object(JsonReader.Property("foo", JsonReader.Array(JsonReader.String()), (true, Array.Empty<string>())),
-                                                JsonReader.Property("bar", JsonReader.String()),
-                                                (foo, bar) => (Foo: foo, Bar: bar));
-
-            var (foo, bar) = valueReader.Read(Strictify(@"{ ""foo"": null, bar: ""baz"" }"));
-
-            Assert.Equal(Array.Empty<string>(), foo);
-            Assert.Equal("baz", bar);
         }
 
         [Fact]
