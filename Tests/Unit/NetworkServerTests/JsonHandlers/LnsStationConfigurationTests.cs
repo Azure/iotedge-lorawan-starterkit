@@ -14,9 +14,108 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
     using LoRaWan.NetworkServer.BasicsStation;
     using System.Text.RegularExpressions;
     using System.Linq;
+    using LoRaWan.Tests.Common;
 
     public class LnsStationConfigurationTests
     {
+        internal static string ValidStationConfiguration =
+            GetTwinConfigurationJson(new[] { new NetId(1) },
+                                     new[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
+                                     "EU863",
+                                     "sx1301/1",
+                                     (new Hertz(863000000), new Hertz(870000000)),
+                                     new[]
+                                     {
+                                         (SF11, BW125, false),
+                                         (SF10, BW125, false),
+                                         (SF9 , BW125, false),
+                                         (SF8 , BW125, false),
+                                         (SF7 , BW125, false),
+                                         (SF7 , BW250, false),
+                                     },
+                                     flags: NoClearChannelAssessment | NoDutyCycle | NoDwellTimeLimitations);
+
+        internal static string ValidRouterConfigMessage = @"{
+            ""msgtype"": ""router_config"",
+            ""NetID"": [1],
+            ""JoinEui"": [[0, 18446744073709551615]],
+	        ""region"": ""EU863"",
+	        ""hwspec"": ""sx1301/1"",
+	        ""freq_range"": [ 863000000, 870000000 ],
+            ""DRs"": [ [ 11, 125, 0 ],
+                       [ 10, 125, 0 ],
+                       [ 9, 125, 0 ],
+                       [ 8, 125, 0 ],
+                       [ 7, 125, 0 ],
+                       [ 7, 250, 0 ] ],
+            ""sx1301_conf"": [
+                        {
+                            ""radio_0"": {
+                                ""enable"": true,
+                                ""freq"": 867500000
+                            },
+                            ""radio_1"": {
+                                ""enable"": true,
+                                ""freq"": 868500000
+                            },
+                            ""chan_FSK"": {
+                                ""enable"": true,
+                                ""radio"": 1,
+                                ""if"": 300000
+                            },
+                            ""chan_Lora_std"": {
+                                ""enable"": true,
+                                ""radio"": 1,
+                                ""if"": -200000,
+                                ""bandwidth"": 250000,
+                                ""spread_factor"": 7
+                            },
+                            ""chan_multiSF_0"": {
+                                ""enable"": true,
+                                ""radio"": 1,
+                                ""if"": -400000
+                            },
+                            ""chan_multiSF_1"": {
+                                ""enable"": true,
+                                ""radio"": 1,
+                                ""if"": -200000
+                            },
+                            ""chan_multiSF_2"": {
+                                ""enable"": true,
+                                ""radio"": 1,
+                                ""if"": 0
+                            },
+                            ""chan_multiSF_3"": {
+                                ""enable"": true,
+                                ""radio"": 0,
+                                ""if"": -400000
+                            },
+                            ""chan_multiSF_4"": {
+                                ""enable"": true,
+                                ""radio"": 0,
+                                ""if"": -200000
+                            },
+                            ""chan_multiSF_5"": {
+                                ""enable"": true,
+                                ""radio"": 0,
+                                ""if"": 0
+                            },
+                            ""chan_multiSF_6"": {
+                                ""enable"": true,
+                                ""radio"": 0,
+                                ""if"": 200000
+                            },
+                            ""chan_multiSF_7"": {
+                                ""enable"": true,
+                                ""radio"": 0,
+                                ""if"": 400000
+                            }
+                        }
+                    ],
+            ""nocca"": true,
+            ""nodc"": true,
+            ""nodwell"": true}";
+
         [Theory]
         [InlineData(null)]
         [InlineData(0)]
@@ -124,7 +223,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
             var actual = LnsStationConfiguration.GetConfiguration(input);
 
             // assert
-            Assert.Equal(TrimJson(expected), actual);
+            Assert.Equal(JsonUtil.Trim(expected), actual);
         }
 
         [Theory]
@@ -149,109 +248,11 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         [Fact]
         public void WriteRouterConfig()
         {
-            // arrange
-            const string expected = @"{
-                    ""msgtype"": ""router_config"",
-                    ""NetID"": [1],
-                    ""JoinEui"": [[0, 18446744073709551615]],
-	                ""region"": ""EU863"",
-	                ""hwspec"": ""sx1301/1"",
-	                ""freq_range"": [ 863000000, 870000000 ],
-                    ""DRs"": [ [ 11, 125, 0 ],
-                               [ 10, 125, 0 ],
-                               [ 9, 125, 0 ],
-                               [ 8, 125, 0 ],
-                               [ 7, 125, 0 ],
-                               [ 7, 250, 0 ] ],
-                    ""sx1301_conf"": [
-                                {
-                                    ""radio_0"": {
-                                        ""enable"": true,
-                                        ""freq"": 867500000
-                                    },
-                                    ""radio_1"": {
-                                        ""enable"": true,
-                                        ""freq"": 868500000
-                                    },
-                                    ""chan_FSK"": {
-                                        ""enable"": true,
-                                        ""radio"": 1,
-                                        ""if"": 300000
-                                    },
-                                    ""chan_Lora_std"": {
-                                        ""enable"": true,
-                                        ""radio"": 1,
-                                        ""if"": -200000,
-                                        ""bandwidth"": 250000,
-                                        ""spread_factor"": 7
-                                    },
-                                    ""chan_multiSF_0"": {
-                                        ""enable"": true,
-                                        ""radio"": 1,
-                                        ""if"": -400000
-                                    },
-                                    ""chan_multiSF_1"": {
-                                        ""enable"": true,
-                                        ""radio"": 1,
-                                        ""if"": -200000
-                                    },
-                                    ""chan_multiSF_2"": {
-                                        ""enable"": true,
-                                        ""radio"": 1,
-                                        ""if"": 0
-                                    },
-                                    ""chan_multiSF_3"": {
-                                        ""enable"": true,
-                                        ""radio"": 0,
-                                        ""if"": -400000
-                                    },
-                                    ""chan_multiSF_4"": {
-                                        ""enable"": true,
-                                        ""radio"": 0,
-                                        ""if"": -200000
-                                    },
-                                    ""chan_multiSF_5"": {
-                                        ""enable"": true,
-                                        ""radio"": 0,
-                                        ""if"": 0
-                                    },
-                                    ""chan_multiSF_6"": {
-                                        ""enable"": true,
-                                        ""radio"": 0,
-                                        ""if"": 200000
-                                    },
-                                    ""chan_multiSF_7"": {
-                                        ""enable"": true,
-                                        ""radio"": 0,
-                                        ""if"": 400000
-                                    }
-                                }
-                            ],
-                    ""nocca"": true,
-                    ""nodc"": true,
-                    ""nodwell"": true}";
-
-            var input = GetTwinConfigurationJson(new[] { new NetId(1) },
-                                                 new[] { (new JoinEui(ulong.MinValue), new JoinEui(ulong.MaxValue)) },
-                                                 "EU863",
-                                                 "sx1301/1",
-                                                 (new Hertz(863000000), new Hertz(870000000)),
-                                                 new[]
-                                                 {
-                                                     (SF11, BW125, false),
-                                                     (SF10, BW125, false),
-                                                     (SF9 , BW125, false),
-                                                     (SF8 , BW125, false),
-                                                     (SF7 , BW125, false),
-                                                     (SF7 , BW250, false),
-                                                 },
-                                                 flags: NoClearChannelAssessment | NoDutyCycle | NoDwellTimeLimitations);
-
             // act
-            var actual = LnsStationConfiguration.GetConfiguration(input);
+            var actual = LnsStationConfiguration.GetConfiguration(ValidStationConfiguration);
 
             // assert
-            Assert.Equal(TrimJson(expected), actual);
+            Assert.Equal(JsonUtil.Trim(ValidRouterConfigMessage), actual);
         }
 
         [Fact]
@@ -303,15 +304,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
 
             // act + assert
             Assert.Throws<JsonException>(() => LnsStationConfiguration.GetConfiguration(input));
-        }
-
-        private static string TrimJson(string json)
-        {
-            using var ms = new MemoryStream();
-            using var writer = new Utf8JsonWriter(ms);
-            JsonDocument.Parse(json).WriteTo(writer);
-            writer.Flush();
-            return Encoding.UTF8.GetString(ms.ToArray());
         }
 
         private static string GetTwinConfigurationJson(IEnumerable<NetId> allowedNetIds,

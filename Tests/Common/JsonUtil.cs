@@ -1,0 +1,18 @@
+namespace LoRaWan.Tests.Common
+{
+    using System.IO;
+    using System.Text;
+    using System.Text.Json;
+
+    public static class JsonUtil
+    {
+        public static string Trim(string json)
+        {
+            using var ms = new MemoryStream();
+            using var writer = new Utf8JsonWriter(ms);
+            JsonDocument.Parse(json).WriteTo(writer);
+            writer.Flush();
+            return Encoding.UTF8.GetString(ms.ToArray());
+        }
+    }
+}

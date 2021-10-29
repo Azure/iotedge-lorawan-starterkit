@@ -20,3 +20,6 @@ dotnet_diagnostic.CA1062.severity = suggestion
 
 # xUnit1004: Do not skip tests
 dotnet_diagnostic.xUnit1004.severity=suggestion
+
+# CA1034: Do not nest types
+dotnet_diagnostic.CA1034.severity = none

@@ -1,9 +1,12 @@
 namespace LoRaWan.NetworkServer.BasicsStation
 {
+    using System;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
+    using Microsoft.Azure.Devices.Client.Exceptions;
+    using Microsoft.Extensions.Logging;
 
     internal class BasicsStationConfigurationService : IBasicsStationConfigurationService
     {
@@ -24,12 +27,31 @@ namespace LoRaWan.NetworkServer.BasicsStation
         {
             var queryResult = await this._loRaDeviceApiService.SearchByDevEUIAsync(stationEui.ToString());
             var info = queryResult.Single();
-            using var client = this._loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
-            var twin = await client.GetTwinAsync();
 
-            // Clone the original Json object
-            string config = twin.Properties.Desired[RouterConfigPropertyName].ToString();
-            return LnsStationConfiguration.GetConfiguration(config);
+            void Log(string message) => Logger.Log(stationEui.ToString(), message, LogLevel.Error);
+
+            try
+            {
+                using var client = this._loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
+                var twin = await client.GetTwinAsync();
+                string config = twin.Properties.Desired[RouterConfigPropertyName].ToString();
+                return LnsStationConfiguration.GetConfiguration(config);
+            }
+            catch (IotHubCommunicationException ex)
+            {
+                Log($"Error while communicating with IoT Hub during station discovery. {ex.Message}");
+                throw;
+            }
+            catch (IotHubException ex)
+            {
+                Log($"An error occured in IoT Hub during station discovery. {ex.Message}");
+                throw;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                Log($"Property '{RouterConfigPropertyName}' was not present in device twin.");
+                throw;
+            }
         }
     }
 }
