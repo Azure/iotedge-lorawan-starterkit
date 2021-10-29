@@ -14,25 +14,26 @@ namespace LoRaWan.NetworkServer.BasicsStation
     {
         private const string RouterConfigPropertyName = "routerConfig";
 
-        private readonly LoRaDeviceAPIServiceBase _loRaDeviceApiService;
-        private readonly ILoRaDeviceFactory _loRaDeviceFactory;
+        private readonly LoRaDeviceAPIServiceBase loRaDeviceApiService;
+        private readonly ILoRaDeviceFactory loRaDeviceFactory;
+
         public BasicsStationConfigurationService(LoRaDeviceAPIServiceBase loRaDeviceApiService,
                                                  ILoRaDeviceFactory loRaDeviceFactory)
         {
-            this._loRaDeviceApiService = loRaDeviceApiService;
-            this._loRaDeviceFactory = loRaDeviceFactory;
+            this.loRaDeviceApiService = loRaDeviceApiService;
+            this.loRaDeviceFactory = loRaDeviceFactory;
         }
 
         public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
-            var queryResult = await this._loRaDeviceApiService.SearchByDevEUIAsync(stationEui.ToString());
+            var queryResult = await this.loRaDeviceApiService.SearchByDevEUIAsync(stationEui.ToString());
             var info = queryResult.Single();
 
             void Log(string message) => Logger.Log(stationEui.ToString(), message, LogLevel.Error);
 
             try
             {
-                using var client = this._loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
+                using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
                 var twin = await client.GetTwinAsync();
                 var config = ((object)twin.Properties.Desired[RouterConfigPropertyName]).ToString();
                 return LnsStationConfiguration.GetConfiguration(config);
