@@ -3,19 +3,19 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
 {
-    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.Linq;
+    using System.Text.Json;
+    using System.Text.RegularExpressions;
+    using LoRaWan.NetworkServer.BasicsStation;
+    using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
+    using LoRaWan.Tests.Common;
     using Xunit;
     using static Bandwidth;
     using static SpreadingFactor;
     using static NetworkServer.BasicsStation.RouterConfigStationFlags;
-    using System.Text.Json;
-    using LoRaWan.NetworkServer.BasicsStation;
-    using System.Text.RegularExpressions;
-    using System.Linq;
-    using LoRaWan.Tests.Common;
 
     public class LnsStationConfigurationTests
     {
