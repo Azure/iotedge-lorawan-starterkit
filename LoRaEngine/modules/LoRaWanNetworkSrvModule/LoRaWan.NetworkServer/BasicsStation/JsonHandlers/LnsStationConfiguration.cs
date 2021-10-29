@@ -50,13 +50,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             public ChannelConfig ChanMultiSf7 { get; set; }
         }
 
-        private static readonly IJsonReader<ChannelConfig> ChanConfReader =
+        private static readonly IJsonReader<ChannelConfig> ChannelConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("radio", JsonReader.Int32()),
                               JsonReader.Property("if", JsonReader.Int32()),
                               (e, r, i) => new ChannelConfig { Enable = e, Radio = r == 1, If = i });
 
-        private static readonly IJsonReader<StandardConfig> StdConfReader =
+        private static readonly IJsonReader<StandardConfig> StandardConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("radio", JsonReader.Int32()),
                               JsonReader.Property("if", JsonReader.Int32()),
@@ -64,24 +64,24 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("spread_factor", JsonReader.UInt32()),
                               (e, r, i, b, sf) => new StandardConfig { Enable = e, Radio = r, If = i, Bandwidth = (Bandwidth)(b / 1000), SpreadingFactor = (SpreadingFactor)sf });
 
-        private static readonly IJsonReader<RadioConfig> RadioConfReader =
+        private static readonly IJsonReader<RadioConfig> RadioConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("freq", JsonReader.UInt32()),
                               (e, f) => new RadioConfig { Enable = e, Freq = new Hertz(f) });
 
         private static readonly IJsonReader<Sx1301Config> Sx1301ConfReader =
-            JsonReader.Object(JsonReader.Property("radio_0", RadioConfReader),
-                              JsonReader.Property("radio_1", RadioConfReader),
-                              JsonReader.Property("chan_Lora_std", StdConfReader),
-                              JsonReader.Property("chan_FSK", ChanConfReader),
-                              JsonReader.Property("chan_multiSF_0", ChanConfReader),
-                              JsonReader.Property("chan_multiSF_1", ChanConfReader),
-                              JsonReader.Property("chan_multiSF_2", ChanConfReader),
-                              JsonReader.Property("chan_multiSF_3", ChanConfReader),
-                              JsonReader.Property("chan_multiSF_4", ChanConfReader),
-                              JsonReader.Property("chan_multiSF_5", ChanConfReader),
-                              JsonReader.Property("chan_multiSF_6", ChanConfReader),
-                              JsonReader.Property("chan_multiSF_7", ChanConfReader),
+            JsonReader.Object(JsonReader.Property("radio_0", RadioConfigReader),
+                              JsonReader.Property("radio_1", RadioConfigReader),
+                              JsonReader.Property("chan_Lora_std", StandardConfigReader),
+                              JsonReader.Property("chan_FSK", ChannelConfigReader),
+                              JsonReader.Property("chan_multiSF_0", ChannelConfigReader),
+                              JsonReader.Property("chan_multiSF_1", ChannelConfigReader),
+                              JsonReader.Property("chan_multiSF_2", ChannelConfigReader),
+                              JsonReader.Property("chan_multiSF_3", ChannelConfigReader),
+                              JsonReader.Property("chan_multiSF_4", ChannelConfigReader),
+                              JsonReader.Property("chan_multiSF_5", ChannelConfigReader),
+                              JsonReader.Property("chan_multiSF_6", ChannelConfigReader),
+                              JsonReader.Property("chan_multiSF_7", ChannelConfigReader),
                               (r0, r1, std, fsk, sf0, sf1, sf2, sf3, sf4, sf5, sf6, sf7) => new Sx1301Config
                               {
                                   Radio0 = r0,
