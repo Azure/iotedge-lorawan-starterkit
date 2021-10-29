@@ -12,23 +12,23 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
     internal static class LnsStationConfiguration
     {
-        private struct ChanConf
+        private struct ChannelConfig
         {
             public bool Enable { get; set; }
             public int Radio { get; set; }
             public int If { get; set; }
         }
 
-        private struct StdConf
+        private struct StandardConfig
         {
             public bool Enable { get; set; }
             public int Radio { get; set; }
             public int If { get; set; }
             public Bandwidth Bandwidth { get; set; }
-            public SpreadingFactor SpreadFactor { get; set; }
+            public SpreadingFactor SpreadingFactor { get; set; }
         }
 
-        private struct RadioConf
+        private struct RadioConfig
         {
             public bool Enable { get; set; }
             public Hertz Freq { get; set; }
@@ -36,38 +36,38 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
         private struct Sx1301Conf
         {
-            public RadioConf Radio0 { get; set; }
-            public RadioConf Radio1 { get; set; }
-            public StdConf ChanLoraStd { get; set; }
-            public ChanConf ChanFsk { get; set; }
-            public ChanConf ChanMultiSf0 { get; set; }
-            public ChanConf ChanMultiSf1 { get; set; }
-            public ChanConf ChanMultiSf2 { get; set; }
-            public ChanConf ChanMultiSf3 { get; set; }
-            public ChanConf ChanMultiSf4 { get; set; }
-            public ChanConf ChanMultiSf5 { get; set; }
-            public ChanConf ChanMultiSf6 { get; set; }
-            public ChanConf ChanMultiSf7 { get; set; }
+            public RadioConfig Radio0 { get; set; }
+            public RadioConfig Radio1 { get; set; }
+            public StandardConfig ChanLoraStd { get; set; }
+            public ChannelConfig ChanFsk { get; set; }
+            public ChannelConfig ChanMultiSf0 { get; set; }
+            public ChannelConfig ChanMultiSf1 { get; set; }
+            public ChannelConfig ChanMultiSf2 { get; set; }
+            public ChannelConfig ChanMultiSf3 { get; set; }
+            public ChannelConfig ChanMultiSf4 { get; set; }
+            public ChannelConfig ChanMultiSf5 { get; set; }
+            public ChannelConfig ChanMultiSf6 { get; set; }
+            public ChannelConfig ChanMultiSf7 { get; set; }
         }
 
-        private static readonly IJsonReader<ChanConf> ChanConfReader =
+        private static readonly IJsonReader<ChannelConfig> ChanConfReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("radio", JsonReader.Int32()),
                               JsonReader.Property("if", JsonReader.Int32()),
-                              (e, r, i) => new ChanConf { Enable = e, Radio = r, If = i });
+                              (e, r, i) => new ChannelConfig { Enable = e, Radio = r, If = i });
 
-        private static readonly IJsonReader<StdConf> StdConfReader =
+        private static readonly IJsonReader<StandardConfig> StdConfReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("radio", JsonReader.Int32()),
                               JsonReader.Property("if", JsonReader.Int32()),
                               JsonReader.Property("bandwidth", JsonReader.UInt32()),
                               JsonReader.Property("spread_factor", JsonReader.UInt32()),
-                              (e, r, i, b, sf) => new StdConf { Enable = e, Radio = r, If = i, Bandwidth = (Bandwidth)(b / 1000), SpreadFactor = (SpreadingFactor)sf });
+                              (e, r, i, b, sf) => new StandardConfig { Enable = e, Radio = r, If = i, Bandwidth = (Bandwidth)(b / 1000), SpreadingFactor = (SpreadingFactor)sf });
 
-        private static readonly IJsonReader<RadioConf> RadioConfReader =
+        private static readonly IJsonReader<RadioConfig> RadioConfReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("freq", JsonReader.UInt32()),
-                              (e, f) => new RadioConf { Enable = e, Freq = new Hertz(f) });
+                              (e, f) => new RadioConfig { Enable = e, Freq = new Hertz(f) });
 
         private static readonly IJsonReader<Sx1301Conf> Sx1301ConfReader =
             JsonReader.Object(JsonReader.Property("radio_0", RadioConfReader),
@@ -212,18 +212,18 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             foreach (var conf in sx1301conf)
             {
                 writer.WriteStartObject();
-                WriteRadioConf("radio_0", conf.Radio0);
-                WriteRadioConf("radio_1", conf.Radio1);
-                WriteChanConf("chan_FSK", conf.ChanFsk);
-                WriteStdConf("chan_Lora_std", conf.ChanLoraStd);
-                WriteChanConf("chan_multiSF_0", conf.ChanMultiSf0);
-                WriteChanConf("chan_multiSF_1", conf.ChanMultiSf1);
-                WriteChanConf("chan_multiSF_2", conf.ChanMultiSf2);
-                WriteChanConf("chan_multiSF_3", conf.ChanMultiSf3);
-                WriteChanConf("chan_multiSF_4", conf.ChanMultiSf4);
-                WriteChanConf("chan_multiSF_5", conf.ChanMultiSf5);
-                WriteChanConf("chan_multiSF_6", conf.ChanMultiSf6);
-                WriteChanConf("chan_multiSF_7", conf.ChanMultiSf7);
+                WriteRadioConfig("radio_0", conf.Radio0);
+                WriteRadioConfig("radio_1", conf.Radio1);
+                WriteChannelConfig("chan_FSK", conf.ChanFsk);
+                WriteStandardConfig("chan_Lora_std", conf.ChanLoraStd);
+                WriteChannelConfig("chan_multiSF_0", conf.ChanMultiSf0);
+                WriteChannelConfig("chan_multiSF_1", conf.ChanMultiSf1);
+                WriteChannelConfig("chan_multiSF_2", conf.ChanMultiSf2);
+                WriteChannelConfig("chan_multiSF_3", conf.ChanMultiSf3);
+                WriteChannelConfig("chan_multiSF_4", conf.ChanMultiSf4);
+                WriteChannelConfig("chan_multiSF_5", conf.ChanMultiSf5);
+                WriteChannelConfig("chan_multiSF_6", conf.ChanMultiSf6);
+                WriteChannelConfig("chan_multiSF_7", conf.ChanMultiSf7);
                 writer.WriteEndObject();
             }
 
@@ -238,7 +238,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             writer.Flush();
             return Encoding.UTF8.GetString(ms.ToArray());
 
-            void WriteRadioConf(string property, RadioConf radioConf)
+            void WriteRadioConfig(string property, RadioConfig radioConf)
             {
                 writer.WriteStartObject(property);
                 writer.WriteBoolean("enable", radioConf.Enable);
@@ -246,7 +246,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 writer.WriteEndObject();
             }
 
-            void WriteChanConf(string property, ChanConf sxConf)
+            void WriteChannelConfig(string property, ChannelConfig sxConf)
             {
                 writer.WriteStartObject(property);
                 writer.WriteBoolean("enable", sxConf.Enable);
@@ -255,7 +255,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 writer.WriteEndObject();
             }
 
-            void WriteStdConf(string property, StdConf chanConf)
+            void WriteStandardConfig(string property, StandardConfig chanConf)
             {
                 writer.WriteStartObject(property);
                 writer.WriteBoolean("enable", chanConf.Enable);
@@ -263,8 +263,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 writer.WriteNumber("if", chanConf.If);
                 if (chanConf.Bandwidth != Bandwidth.Undefined)
                     writer.WriteNumber("bandwidth", chanConf.Bandwidth.ToHertz().AsUInt64);
-                if (chanConf.SpreadFactor != SpreadingFactor.Undefined)
-                    writer.WriteNumber("spread_factor", (int)chanConf.SpreadFactor);
+                if (chanConf.SpreadingFactor != SpreadingFactor.Undefined)
+                    writer.WriteNumber("spread_factor", (int)chanConf.SpreadingFactor);
                 writer.WriteEndObject();
             }
         }
