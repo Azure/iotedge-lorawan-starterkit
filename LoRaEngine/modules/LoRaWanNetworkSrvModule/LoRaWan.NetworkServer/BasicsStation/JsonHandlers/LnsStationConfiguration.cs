@@ -60,8 +60,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("radio", JsonReader.Int32()),
                               JsonReader.Property("if", JsonReader.Int32()),
-                              JsonReader.Property("bandwidth", JsonReader.Int32()),
-                              JsonReader.Property("spread_factor", JsonReader.Int32()),
+                              JsonReader.Property("bandwidth", JsonReader.UInt32()),
+                              JsonReader.Property("spread_factor", JsonReader.UInt32()),
                               (e, r, i, b, sf) => new StdConf { Enable = e, Radio = r, If = i, Bandwidth = (Bandwidth)(b / 1000), SpreadFactor = (SpreadingFactor)sf });
 
         private static readonly IJsonReader<RadioConf> RadioConfReader =
