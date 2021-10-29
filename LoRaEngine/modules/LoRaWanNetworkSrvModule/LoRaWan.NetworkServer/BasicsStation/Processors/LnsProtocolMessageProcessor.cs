@@ -18,6 +18,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;
 
     internal class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
@@ -43,7 +44,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         {
             if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
 
-            _ = await ProcessIncomingRequestAsync(httpContext, InternalHandleDataAsync, token);
+            _ = await ProcessIncomingRequestAsync(httpContext,
+                                                  (httpContext, json, socket, ct) => InternalHandleDataAsync(httpContext.Request.RouteValues, json, socket, ct),
+                                                  token);
         }
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
@@ -81,9 +84,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal async Task<bool> InternalHandleDataAsync(HttpContext httpContext, string json, WebSocket socket, CancellationToken token)
+        internal async Task<bool> InternalHandleDataAsync(RouteValueDictionary routeValueDictionary, string json, WebSocket socket, CancellationToken token)
         {
-            var stationEui = httpContext.Request.RouteValues.TryGetValue(BasicsStationNetworkServer.RouterIdPathParameterName, out var sEui) ?
+            var stationEui = routeValueDictionary.TryGetValue(BasicsStationNetworkServer.RouterIdPathParameterName, out var sEui) ?
                 StationEui.Parse(sEui.ToString())
                 : throw new InvalidOperationException($"{BasicsStationNetworkServer.RouterIdPathParameterName} was not present on path.");
 

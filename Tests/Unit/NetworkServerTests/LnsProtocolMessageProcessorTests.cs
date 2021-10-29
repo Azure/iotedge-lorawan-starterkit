@@ -396,7 +396,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                            });
 
             // act
-            await this.lnsMessageProcessorMock.InternalHandleDataAsync(httpContextMock.Object,
+            await this.lnsMessageProcessorMock.InternalHandleDataAsync(httpContextMock.Object.Request.RouteValues,
                                                                        inputJsonString,
                                                                        this.socketMock.Object,
                                                                        CancellationToken.None);
@@ -415,7 +415,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             SetDataPathParameter();
 
             // act + assert
-            await Assert.ThrowsAsync<NotSupportedException>(() => this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object,
+            await Assert.ThrowsAsync<NotSupportedException>(() => this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
                                                                                                                        inputJsonString,
                                                                                                                        this.socketMock.Object,
                                                                                                                        CancellationToken.None));
@@ -429,7 +429,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // act + assert
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object,
+                this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
                                                                      string.Empty,
                                                                      this.socketMock.Object,
                                                                      CancellationToken.None));
