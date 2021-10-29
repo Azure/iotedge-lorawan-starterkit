@@ -46,7 +46,7 @@ namespace LoRaWan.NetworkServer
                 return result;
             });
 
-        public static IJsonReader<bool> Bool() =>
+        public static IJsonReader<bool> Boolean() =>
             Create((ref Utf8JsonReader reader) =>
             {
 #pragma warning disable IDE0072 // Add missing cases (false positive)

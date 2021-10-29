@@ -95,17 +95,17 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public void Bool_Moves_Reader()
+        public void Boolean_Moves_Reader()
         {
-            TestMovesReaderPastReadValue(JsonReader.Bool(), "true");
+            TestMovesReaderPastReadValue(JsonReader.Boolean(), "true");
         }
 
         [Theory]
         [InlineData(true, "true")]
         [InlineData(false, "false")]
-        public void Bool_With_Valid_Input(bool expected, string json)
+        public void Boolean_With_Valid_Input(bool expected, string json)
         {
-            var result = JsonReader.Bool().Read(Strictify(json));
+            var result = JsonReader.Boolean().Read(Strictify(json));
             Assert.Equal(expected, result);
         }
 
@@ -116,9 +116,9 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("'foobar'")]
         [InlineData("[]")]
         [InlineData("{}")]
-        public void Bool_With_Invalid_Input(string json)
+        public void Boolean_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = JsonReader.Bool().Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = JsonReader.Boolean().Read(Strictify(json)));
         }
 
         [Fact]

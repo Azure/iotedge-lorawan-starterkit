@@ -51,13 +51,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         }
 
         private static readonly IJsonReader<ChanConf> ChanConfReader =
-            JsonReader.Object(JsonReader.Property("enable", JsonReader.Bool()),
+            JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("radio", JsonReader.Int32()),
                               JsonReader.Property("if", JsonReader.Int32()),
                               (e, r, i) => new ChanConf { Enable = e, Radio = r, If = i });
 
         private static readonly IJsonReader<StdConf> StdConfReader =
-            JsonReader.Object(JsonReader.Property("enable", JsonReader.Bool()),
+            JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("radio", JsonReader.Int32()),
                               JsonReader.Property("if", JsonReader.Int32()),
                               JsonReader.Property("bandwidth", JsonReader.Int32()),
@@ -65,7 +65,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               (e, r, i, b, sf) => new StdConf { Enable = e, Radio = r, If = i, Bandwidth = (Bandwidth)(b / 1000), SpreadFactor = (SpreadingFactor)sf });
 
         private static readonly IJsonReader<RadioConf> RadioConfReader =
-            JsonReader.Object(JsonReader.Property("enable", JsonReader.Bool()),
+            JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("freq", JsonReader.UInt32()),
                               (e, f) => new RadioConf { Enable = e, Freq = new Hertz(f) });
 
@@ -113,9 +113,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("DRs", JsonReader.Array(from arr in JsonReader.Array(JsonReader.UInt32())
                                                                           select ((SpreadingFactor)arr[0], (Bandwidth)arr[1], Convert.ToBoolean(arr[2])))),
                               JsonReader.Property("sx1301_conf", JsonReader.Array(Sx1301ConfReader)),
-                              JsonReader.Property("nocca", JsonReader.Bool()),
-                              JsonReader.Property("nodc", JsonReader.Bool()),
-                              JsonReader.Property("nodwell", JsonReader.Bool()),
+                              JsonReader.Property("nocca", JsonReader.Boolean()),
+                              JsonReader.Property("nodc", JsonReader.Boolean()),
+                              JsonReader.Property("nodwell", JsonReader.Boolean()),
                               (netId, joinEui, region, hwspec, freqRange, drs, sx1301conf, nocca, nodc, nodwell) =>
                                     WriteRouterConfig(netId, joinEui, region, hwspec, freqRange, drs,
                                                       sx1301conf, nocca: nocca, nodc: nodc, nodwell: nodwell));
