@@ -14,47 +14,96 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
     {
         private struct ChannelConfig
         {
-            public bool Enable { get; set; }
-            public bool Radio { get; set; }
-            public int If { get; set; }
+            public ChannelConfig(bool enable, bool radio, int @if)
+            {
+                Enable = enable;
+                Radio = radio;
+                If = @if;
+            }
+
+            public bool Enable { get; }
+            public bool Radio { get; }
+            public int If { get; }
         }
 
         private struct StandardConfig
         {
-            public bool Enable { get; set; }
-            public int Radio { get; set; }
-            public int If { get; set; }
-            public Bandwidth Bandwidth { get; set; }
-            public SpreadingFactor SpreadingFactor { get; set; }
+            public StandardConfig(bool enable, bool radio, int @if, Bandwidth bandwidth, SpreadingFactor spreadingFactor)
+            {
+                Enable = enable;
+                Radio = radio;
+                If = @if;
+                Bandwidth = bandwidth;
+                SpreadingFactor = spreadingFactor;
+            }
+
+            public bool Enable { get; }
+            public bool Radio { get; }
+            public int If { get; }
+            public Bandwidth Bandwidth { get; }
+            public SpreadingFactor SpreadingFactor { get; }
         }
 
         private struct RadioConfig
         {
-            public bool Enable { get; set; }
-            public Hertz Freq { get; set; }
+            public RadioConfig(bool enable, Hertz freq)
+            {
+                Enable = enable;
+                Freq = freq;
+            }
+
+            public bool Enable { get; }
+            public Hertz Freq { get; }
         }
 
         private struct Sx1301Config
         {
-            public RadioConfig Radio0 { get; set; }
-            public RadioConfig Radio1 { get; set; }
-            public StandardConfig ChanLoraStd { get; set; }
-            public ChannelConfig ChanFsk { get; set; }
-            public ChannelConfig ChanMultiSf0 { get; set; }
-            public ChannelConfig ChanMultiSf1 { get; set; }
-            public ChannelConfig ChanMultiSf2 { get; set; }
-            public ChannelConfig ChanMultiSf3 { get; set; }
-            public ChannelConfig ChanMultiSf4 { get; set; }
-            public ChannelConfig ChanMultiSf5 { get; set; }
-            public ChannelConfig ChanMultiSf6 { get; set; }
-            public ChannelConfig ChanMultiSf7 { get; set; }
+            public Sx1301Config(RadioConfig radio0,
+                                RadioConfig radio1,
+                                StandardConfig chanLoraStd,
+                                ChannelConfig chanFsk,
+                                ChannelConfig chanMultiSf0,
+                                ChannelConfig chanMultiSf1,
+                                ChannelConfig chanMultiSf2,
+                                ChannelConfig chanMultiSf3,
+                                ChannelConfig chanMultiSf4,
+                                ChannelConfig chanMultiSf5,
+                                ChannelConfig chanMultiSf6,
+                                ChannelConfig chanMultiSf7)
+            {
+                Radio0 = radio0;
+                Radio1 = radio1;
+                ChanLoraStd = chanLoraStd;
+                ChanFsk = chanFsk;
+                ChanMultiSf0 = chanMultiSf0;
+                ChanMultiSf1 = chanMultiSf1;
+                ChanMultiSf2 = chanMultiSf2;
+                ChanMultiSf3 = chanMultiSf3;
+                ChanMultiSf4 = chanMultiSf4;
+                ChanMultiSf5 = chanMultiSf5;
+                ChanMultiSf6 = chanMultiSf6;
+                ChanMultiSf7 = chanMultiSf7;
+            }
+
+            public RadioConfig Radio0 { get; }
+            public RadioConfig Radio1 { get; }
+            public StandardConfig ChanLoraStd { get; }
+            public ChannelConfig ChanFsk { get; }
+            public ChannelConfig ChanMultiSf0 { get; }
+            public ChannelConfig ChanMultiSf1 { get; }
+            public ChannelConfig ChanMultiSf2 { get; }
+            public ChannelConfig ChanMultiSf3 { get; }
+            public ChannelConfig ChanMultiSf4 { get; }
+            public ChannelConfig ChanMultiSf5 { get; }
+            public ChannelConfig ChanMultiSf6 { get; }
+            public ChannelConfig ChanMultiSf7 { get; }
         }
 
         private static readonly IJsonReader<ChannelConfig> ChannelConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("radio", JsonReader.Int32()),
                               JsonReader.Property("if", JsonReader.Int32()),
-                              (e, r, i) => new ChannelConfig { Enable = e, Radio = r == 1, If = i });
+                              (e, r, i) => new ChannelConfig(e, r == 1, i));
 
         private static readonly IJsonReader<StandardConfig> StandardConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
@@ -62,12 +111,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("if", JsonReader.Int32()),
                               JsonReader.Property("bandwidth", JsonReader.UInt32()),
                               JsonReader.Property("spread_factor", JsonReader.UInt32()),
-                              (e, r, i, b, sf) => new StandardConfig { Enable = e, Radio = r, If = i, Bandwidth = (Bandwidth)(b / 1000), SpreadingFactor = (SpreadingFactor)sf });
+                              (e, r, i, b, sf) => new StandardConfig(e, r == 1, i, (Bandwidth)(b / 1000), (SpreadingFactor)sf));
 
         private static readonly IJsonReader<RadioConfig> RadioConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("freq", JsonReader.UInt32()),
-                              (e, f) => new RadioConfig { Enable = e, Freq = new Hertz(f) });
+                              (e, f) => new RadioConfig(e, new Hertz(f)));
 
         private static readonly IJsonReader<Sx1301Config> Sx1301ConfReader =
             JsonReader.Object(JsonReader.Property("radio_0", RadioConfigReader),
@@ -82,21 +131,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("chan_multiSF_5", ChannelConfigReader),
                               JsonReader.Property("chan_multiSF_6", ChannelConfigReader),
                               JsonReader.Property("chan_multiSF_7", ChannelConfigReader),
-                              (r0, r1, std, fsk, sf0, sf1, sf2, sf3, sf4, sf5, sf6, sf7) => new Sx1301Config
-                              {
-                                  Radio0 = r0,
-                                  Radio1 = r1,
-                                  ChanLoraStd = std,
-                                  ChanFsk = fsk,
-                                  ChanMultiSf0 = sf0,
-                                  ChanMultiSf1 = sf1,
-                                  ChanMultiSf2 = sf2,
-                                  ChanMultiSf3 = sf3,
-                                  ChanMultiSf4 = sf4,
-                                  ChanMultiSf5 = sf5,
-                                  ChanMultiSf6 = sf6,
-                                  ChanMultiSf7 = sf7,
-                              });
+                              (r0, r1, std, fsk, sf0, sf1, sf2, sf3, sf4, sf5, sf6, sf7) =>
+                              new Sx1301Config(r0, r1, std, fsk, sf0, sf1, sf2, sf3, sf4, sf5, sf6, sf7));
 
         private static readonly IJsonReader<string> RouterConfigurationConverter =
             JsonReader.Object(JsonReader.Property("NetID", JsonReader.Array(from id in JsonReader.UInt32()
@@ -260,7 +296,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             {
                 writer.WriteStartObject(property);
                 writer.WriteBoolean("enable", chanConf.Enable);
-                writer.WriteNumber("radio", chanConf.Radio);
+                writer.WriteNumber("radio", chanConf.Radio ? 1 : 0);
                 writer.WriteNumber("if", chanConf.If);
                 if (chanConf.Bandwidth != Bandwidth.Undefined)
                     writer.WriteNumber("bandwidth", chanConf.Bandwidth.ToHertz().AsUInt64);
