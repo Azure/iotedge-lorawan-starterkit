@@ -85,7 +85,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
         internal async Task<bool> InternalHandleDataAsync(HttpContext httpContext, string json, WebSocket socket, CancellationToken token)
         {
-            
             var stationEui = httpContext.Request.RouteValues.TryGetValue(BasicsStationNetworkServer.RouterIdPathParameterName, out var sEui) ?
                 StationEui.Parse(sEui.ToString())
                 : throw new InvalidOperationException($"{BasicsStationNetworkServer.RouterIdPathParameterName} was not present on path.");

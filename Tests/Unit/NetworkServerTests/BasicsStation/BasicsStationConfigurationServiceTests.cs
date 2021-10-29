@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
 {
     using LoRaWan.NetworkServer;
@@ -71,7 +74,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
                 const string primaryKey = "foo";
                 SetupDeviceKeyLookup(this.stationEui, new IoTHubDeviceInfo { PrimaryKey = "foo", DevEUI = stationEui.ToString() });
 
-                dynamic ex = Activator.CreateInstance(type);
+                var ex = (Exception)Activator.CreateInstance(type);
                 this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(stationEui.ToString(), primaryKey))
                                           .Throws(ex);
 
@@ -104,8 +107,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
             }
 
             private void SetupDeviceKeyLookup(StationEui stationEui, params IoTHubDeviceInfo[] ioTHubDeviceInfos) =>
-            loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByDevEUIAsync(stationEui.ToString()))
-                                    .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
+                loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByDevEUIAsync(stationEui.ToString()))
+                                        .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
         }
     }
 }

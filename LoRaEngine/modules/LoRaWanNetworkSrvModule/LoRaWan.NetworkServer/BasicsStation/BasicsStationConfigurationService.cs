@@ -1,21 +1,21 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Extensions.Logging;
 
-    internal class BasicsStationConfigurationService : IBasicsStationConfigurationService
+    internal sealed class BasicsStationConfigurationService : IBasicsStationConfigurationService
     {
         private const string RouterConfigPropertyName = "routerConfig";
+
         private readonly LoRaDeviceAPIServiceBase _loRaDeviceApiService;
         private readonly ILoRaDeviceFactory _loRaDeviceFactory;
-
-        
-
         public BasicsStationConfigurationService(LoRaDeviceAPIServiceBase loRaDeviceApiService,
                                                  ILoRaDeviceFactory loRaDeviceFactory)
         {
@@ -34,7 +34,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             {
                 using var client = this._loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
                 var twin = await client.GetTwinAsync();
-                string config = twin.Properties.Desired[RouterConfigPropertyName].ToString();
+                var config = ((object)twin.Properties.Desired[RouterConfigPropertyName]).ToString();
                 return LnsStationConfiguration.GetConfiguration(config);
             }
             catch (IotHubCommunicationException ex)

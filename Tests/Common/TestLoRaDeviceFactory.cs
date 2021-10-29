@@ -96,14 +96,7 @@ namespace LoRaWan.Tests.Common
 
         public void Dispose() => this.memoryCache.Dispose();
 
-        public ILoRaDeviceClient CreateDeviceClient(string devEUI, string primaryKey)
-        {
-            if (!this.deviceClientMap.TryGetValue(devEUI, out var deviceClientToAssign))
-            {
-                deviceClientToAssign = this.loRaDeviceClient;
-            }
-
-            return deviceClientToAssign;
-        }
+        public ILoRaDeviceClient CreateDeviceClient(string devEUI, string primaryKey) =>
+            this.deviceClientMap.TryGetValue(devEUI, out var deviceClientToAssign) ? deviceClientToAssign : this.loRaDeviceClient;
     }
 }
