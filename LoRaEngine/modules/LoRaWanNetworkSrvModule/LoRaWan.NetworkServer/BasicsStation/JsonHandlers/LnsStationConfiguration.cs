@@ -34,7 +34,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             public Hertz Freq { get; set; }
         }
 
-        private struct Sx1301Conf
+        private struct Sx1301Config
         {
             public RadioConfig Radio0 { get; set; }
             public RadioConfig Radio1 { get; set; }
@@ -69,7 +69,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("freq", JsonReader.UInt32()),
                               (e, f) => new RadioConfig { Enable = e, Freq = new Hertz(f) });
 
-        private static readonly IJsonReader<Sx1301Conf> Sx1301ConfReader =
+        private static readonly IJsonReader<Sx1301Config> Sx1301ConfReader =
             JsonReader.Object(JsonReader.Property("radio_0", RadioConfReader),
                               JsonReader.Property("radio_1", RadioConfReader),
                               JsonReader.Property("chan_Lora_std", StdConfReader),
@@ -82,7 +82,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("chan_multiSF_5", ChanConfReader),
                               JsonReader.Property("chan_multiSF_6", ChanConfReader),
                               JsonReader.Property("chan_multiSF_7", ChanConfReader),
-                              (r0, r1, std, fsk, sf0, sf1, sf2, sf3, sf4, sf5, sf6, sf7) => new Sx1301Conf
+                              (r0, r1, std, fsk, sf0, sf1, sf2, sf3, sf4, sf5, sf6, sf7) => new Sx1301Config
                               {
                                   Radio0 = r0,
                                   Radio1 = r1,
@@ -145,14 +145,14 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                                 string hwspec,
                                                 (Hertz Min, Hertz Max) freqRange,
                                                 IEnumerable<(SpreadingFactor SpreadingFactor, Bandwidth Bandwidth, bool DnOnly)> dataRates,
-                                                Sx1301Conf[] sx1301conf,
+                                                Sx1301Config[] sx1301Config,
                                                 bool nocca, bool nodc, bool nodwell)
         {
             if (string.IsNullOrEmpty(region)) throw new JsonException("Region must not be null.");
             if (string.IsNullOrEmpty(hwspec)) throw new JsonException("hwspec must not be null.");
             if (freqRange is var (minFreq, maxFreq) && minFreq == maxFreq) throw new JsonException("Minimum and maximum frequencies must differ.");
             if (dataRates.Count() is 0) throw new JsonException("Datarates list must not be empty.");
-            if (sx1301conf.Length == 0) throw new JsonException("sx1301_conf must not be empty.");
+            if (sx1301Config.Length == 0) throw new JsonException("sx1301_conf must not be empty.");
 
             using var ms = new MemoryStream();
             using var writer = new Utf8JsonWriter(ms);
@@ -210,21 +210,21 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             writer.WritePropertyName("sx1301_conf");
             writer.WriteStartArray();
 
-            foreach (var conf in sx1301conf)
+            foreach (var config in sx1301Config)
             {
                 writer.WriteStartObject();
-                WriteRadioConfig("radio_0", conf.Radio0);
-                WriteRadioConfig("radio_1", conf.Radio1);
-                WriteChannelConfig("chan_FSK", conf.ChanFsk);
-                WriteStandardConfig("chan_Lora_std", conf.ChanLoraStd);
-                WriteChannelConfig("chan_multiSF_0", conf.ChanMultiSf0);
-                WriteChannelConfig("chan_multiSF_1", conf.ChanMultiSf1);
-                WriteChannelConfig("chan_multiSF_2", conf.ChanMultiSf2);
-                WriteChannelConfig("chan_multiSF_3", conf.ChanMultiSf3);
-                WriteChannelConfig("chan_multiSF_4", conf.ChanMultiSf4);
-                WriteChannelConfig("chan_multiSF_5", conf.ChanMultiSf5);
-                WriteChannelConfig("chan_multiSF_6", conf.ChanMultiSf6);
-                WriteChannelConfig("chan_multiSF_7", conf.ChanMultiSf7);
+                WriteRadioConfig("radio_0", config.Radio0);
+                WriteRadioConfig("radio_1", config.Radio1);
+                WriteChannelConfig("chan_FSK", config.ChanFsk);
+                WriteStandardConfig("chan_Lora_std", config.ChanLoraStd);
+                WriteChannelConfig("chan_multiSF_0", config.ChanMultiSf0);
+                WriteChannelConfig("chan_multiSF_1", config.ChanMultiSf1);
+                WriteChannelConfig("chan_multiSF_2", config.ChanMultiSf2);
+                WriteChannelConfig("chan_multiSF_3", config.ChanMultiSf3);
+                WriteChannelConfig("chan_multiSF_4", config.ChanMultiSf4);
+                WriteChannelConfig("chan_multiSF_5", config.ChanMultiSf5);
+                WriteChannelConfig("chan_multiSF_6", config.ChanMultiSf6);
+                WriteChannelConfig("chan_multiSF_7", config.ChanMultiSf7);
                 writer.WriteEndObject();
             }
 
