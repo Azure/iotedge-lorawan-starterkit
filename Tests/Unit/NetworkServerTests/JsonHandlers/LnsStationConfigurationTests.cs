@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
 {
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
@@ -298,7 +301,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                                                  "hwspec",
                                                  (new Hertz(863000000), new Hertz(870000000)),
                                                  new[] { (SF11, BW125, false) },
-                                                 sx1301Conf: sx1301Conf);
+                                                 sx1301Conf);
 
             // act + assert
             Assert.Throws<JsonException>(() => LnsStationConfiguration.GetConfiguration(input));
@@ -376,7 +379,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                 }
             }]";
 
-            var template = @"{{
+            const string template = @"{{
                 ""msgtype"": ""router_config"",
                 ""NetID"": {0},
                 ""JoinEui"": {1},
