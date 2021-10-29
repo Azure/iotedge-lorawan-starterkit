@@ -5,11 +5,15 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System;
     using System.Globalization;
+    using System.Net.WebSockets;
+    using System.Threading;
+    using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -80,7 +84,60 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
                                await lnsProtocolMessageProcessor.HandleDataAsync(context, context.RequestAborted);
                            });
+                       _ = endpoints.MapGet("/test/{id:required}", Test);
                    });
+        }
+
+        private static Task Test(HttpContext context) =>
+            Test(context, context.RequestAborted);
+
+        private static readonly WebSocketsRegistry<string> WebSocketsRegistry = new(null);
+
+        private static async Task Test(HttpContext context, CancellationToken cancellationToken)
+        {
+            if (!context.WebSockets.IsWebSocketRequest)
+            {
+                context.Response.StatusCode = 400;
+                return;
+            }
+
+            var socket = await context.WebSockets.AcceptWebSocketAsync();
+            var id = (string)context.Request.RouteValues["id"];
+            var channel = new WebSocketTextChannel(socket);
+            var h = WebSocketsRegistry.Register(id, channel);
+            _ = Task.Run(cancellationToken: cancellationToken, function: async () =>
+            {
+                while (true)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
+                    try
+                    {
+                        await h.SendAsync(DateTime.Now.ToLongTimeString(), cancellationToken);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.Error.WriteLine(e);
+                    }
+                }
+            });
+
+            using var cts1 = new CancellationTokenSource();
+            using var cts2 = CancellationTokenSource.CreateLinkedTokenSource(cts1.Token, cancellationToken);
+            var task = channel.ProcessSendQueueAsync(cts2.Token);
+            await using var message = channel.ReadMessages(cancellationToken);
+            while (await message.MoveNextAsync())
+                await channel.SendAsync("< " + message.Current, cancellationToken);
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", cancellationToken);
+            _ = WebSocketsRegistry.Deregister(id);
+            cts1.Cancel();
+            try
+            {
+                await task;
+            }
+            catch (OperationCanceledException)
+            {
+                // ignore because it is expected
+            }
         }
     }
 }
