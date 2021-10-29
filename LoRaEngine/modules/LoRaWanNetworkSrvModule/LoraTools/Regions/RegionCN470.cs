@@ -124,12 +124,12 @@ namespace LoRaTools.Regions
             if (deviceJoinInfo == null)
                 return false;
 
-            if (deviceJoinInfo.ReportedCN470JoinChannel == null && deviceJoinInfo.DesiredCN470JoinChannel == null)
-                return false;
-
             // We prioritize the selection of join channel index from reported twin properties (set for OTAA devices)
             // over desired twin properties (set for APB devices).
             var joinChannelIndex = deviceJoinInfo.ReportedCN470JoinChannel ?? deviceJoinInfo.DesiredCN470JoinChannel;
+
+            if (joinChannelIndex == null)
+                return false;
 
             if (!IsValidUpstreamRxpk(upstreamChannel))
                 return false;
@@ -162,6 +162,63 @@ namespace LoRaTools.Regions
             {
                 channelNumber = GetChannelNumber(upstreamChannel, 480.3);
                 frequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24];
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Logic to get the correct downstream transmission frequency for region CN470.
+        /// <param name="upstreamFrequency">The frequency at which the message was transmitted.</param>
+        /// <param name="dataRate">The upstream data rate.</param>
+        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
+        /// </summary>
+        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo)
+        {
+            downstreamFrequency = 0;
+
+            if (deviceJoinInfo == null)
+                return false;
+
+            // We prioritize the selection of join channel index from reported twin properties (set for OTAA devices)
+            // over desired twin properties (set for APB devices).
+            var joinChannelIndex = deviceJoinInfo.ReportedCN470JoinChannel ?? deviceJoinInfo.DesiredCN470JoinChannel;
+
+            if (joinChannelIndex == null)
+                return false;
+
+            if (!IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
+                return false;
+
+            int channelNumber;
+
+            // 20 MHz plan A
+            if (joinChannelIndex <= 7)
+            {
+                channelNumber = upstreamFrequency < 500 ? GetChannelNumber(upstreamFrequency, 470.3) : GetChannelNumber(upstreamFrequency, 503.5, 32);
+                downstreamFrequency = this.downstreamFrequenciesByPlanType[0][channelNumber];
+                return true;
+            }
+            // 20 MHz plan B
+            if (joinChannelIndex <= 9)
+            {
+                channelNumber = upstreamFrequency < 490 ? GetChannelNumber(upstreamFrequency, 476.9) : GetChannelNumber(upstreamFrequency, 496.9, 32);
+                downstreamFrequency = this.downstreamFrequenciesByPlanType[1][channelNumber];
+                return true;
+            }
+            // 26 MHz plan A
+            if (joinChannelIndex <= 14)
+            {
+                channelNumber = GetChannelNumber(upstreamFrequency, 470.3);
+                downstreamFrequency = this.downstreamFrequenciesByPlanType[2][channelNumber % 24];
+                return true;
+            }
+            // 26 MHz plan B
+            if (joinChannelIndex <= 19)
+            {
+                channelNumber = GetChannelNumber(upstreamFrequency, 480.3);
+                downstreamFrequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24];
                 return true;
             }
 
@@ -224,60 +281,6 @@ namespace LoRaTools.Regions
             }
 
             return rx2Window;
-        }
-
-        /// <summary>
-        /// Logic to get the correct downstream transmission frequency for region CN470.
-        /// </summary>
-        public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo)
-        {
-            downstreamFrequency = 0;
-
-            if (deviceJoinInfo == null)
-                return false;
-
-            if (deviceJoinInfo.ReportedCN470JoinChannel == null && deviceJoinInfo.DesiredCN470JoinChannel == null)
-                return false;
-
-            if (!IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
-                return false;
-
-            // We prioritize the selection of join channel index from reported twin properties (set for OTAA devices)
-            // over desired twin properties (set for APB devices).
-            var joinChannelIndex = deviceJoinInfo.ReportedCN470JoinChannel ?? deviceJoinInfo.DesiredCN470JoinChannel;
-
-            int channelNumber;
-
-            // 20 MHz plan A
-            if (joinChannelIndex <= 7)
-            {
-                channelNumber = upstreamFrequency < 500 ? GetChannelNumber(upstreamFrequency, 470.3) : GetChannelNumber(upstreamFrequency, 503.5, 32);
-                downstreamFrequency = this.downstreamFrequenciesByPlanType[0][channelNumber];
-                return true;
-            }
-            // 20 MHz plan B
-            if (joinChannelIndex <= 9)
-            {
-                channelNumber = upstreamFrequency < 490 ? GetChannelNumber(upstreamFrequency, 476.9) : GetChannelNumber(upstreamFrequency, 496.9, 32);
-                downstreamFrequency = this.downstreamFrequenciesByPlanType[1][channelNumber];
-                return true;
-            }
-            // 26 MHz plan A
-            if (joinChannelIndex <= 14)
-            {
-                channelNumber = GetChannelNumber(upstreamFrequency, 470.3);
-                downstreamFrequency = this.downstreamFrequenciesByPlanType[2][channelNumber % 24];
-                return true;
-            }
-            // 26 MHz plan B
-            if (joinChannelIndex <= 19)
-            {
-                channelNumber = GetChannelNumber(upstreamFrequency, 480.3);
-                downstreamFrequency = this.downstreamFrequenciesByPlanType[3][channelNumber % 24];
-                return true;
-            }
-
-            return false;
         }
 
         private static List<double> BuildFrequencyPlanList(double startFrequency, int startChannel, int endChannel)
