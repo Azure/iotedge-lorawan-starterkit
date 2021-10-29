@@ -244,17 +244,17 @@ namespace LoRaTools.Regions
                 // 20 MHz plan A or B
                 if (deviceJoinInfo.ReportedCN470JoinChannel < this.rx2OTAADefaultFrequencies.Count)
                 {
-                    rx2Window = new RX2ReceiveWindow(this.rx2OTAADefaultFrequencies[(int)deviceJoinInfo.ReportedCN470JoinChannel], dataRate);
+                    return new RX2ReceiveWindow(this.rx2OTAADefaultFrequencies[(int)deviceJoinInfo.ReportedCN470JoinChannel], dataRate);
                 }
                 // 26 MHz plan A
                 else if (deviceJoinInfo.ReportedCN470JoinChannel <= 14)
                 {
-                    rx2Window = new RX2ReceiveWindow(492.5, dataRate);
+                    return new RX2ReceiveWindow(492.5, dataRate);
                 }
                 // 26 MHz plan B
                 else if (deviceJoinInfo.ReportedCN470JoinChannel <= 19)
                 {
-                    rx2Window = new RX2ReceiveWindow(502.5, dataRate);
+                    return new RX2ReceiveWindow(502.5, dataRate);
                 }
             }
 
@@ -264,22 +264,22 @@ namespace LoRaTools.Regions
                 // 20 MHz plan A
                 if (deviceJoinInfo.DesiredCN470JoinChannel <= 7)
                 {
-                    rx2Window = new RX2ReceiveWindow(486.9, dataRate);
+                    return new RX2ReceiveWindow(486.9, dataRate);
                 }
                 // 20 MHz plan B
                 else if (deviceJoinInfo.DesiredCN470JoinChannel <= 9)
                 {
-                    rx2Window = new RX2ReceiveWindow(498.3, dataRate);
+                    return new RX2ReceiveWindow(498.3, dataRate);
                 }
                 // 26 MHz plan A
                 else if (deviceJoinInfo.DesiredCN470JoinChannel <= 14)
                 {
-                    rx2Window = new RX2ReceiveWindow(492.5, dataRate);
+                    return new RX2ReceiveWindow(492.5, dataRate);
                 }
                 // 26 MHz plan B
                 else if (deviceJoinInfo.DesiredCN470JoinChannel <= 19)
                 {
-                    rx2Window = new RX2ReceiveWindow(502.5, dataRate);
+                    return new RX2ReceiveWindow(502.5, dataRate);
                 }
             }
 
