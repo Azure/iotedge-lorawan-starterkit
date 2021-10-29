@@ -99,6 +99,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("-4.2")]
         [InlineData("'foobar'")]
         [InlineData("[]")]
+        [InlineData("true")]
+        [InlineData("false")]
         [InlineData("{}")]
         public void Null_With_Invalid_Input(string json)
         {
@@ -123,7 +125,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [Theory]
         [InlineData("null")]
         [InlineData("42")]
-        [InlineData("-4.2")]
         [InlineData("'foobar'")]
         [InlineData("[]")]
         [InlineData("{}")]
