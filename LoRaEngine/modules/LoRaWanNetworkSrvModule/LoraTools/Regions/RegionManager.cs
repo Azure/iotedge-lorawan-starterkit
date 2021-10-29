@@ -8,8 +8,6 @@ namespace LoRaTools.Regions
 
     public static class RegionManager
     {
-        private static readonly object RegionLock = new object();
-
         public static Region CurrentRegion
         {
             get; set;
@@ -82,15 +80,12 @@ namespace LoRaTools.Regions
             {
                 if (eu868 == null)
                 {
-                    lock (RegionLock)
-                    {
 #pragma warning disable CA1508 // Avoid dead conditional code
-                        // False positive
-                        if (eu868 == null)
+                    // False positive
+                    if (eu868 == null)
 #pragma warning restore CA1508 // Avoid dead conditional code
-                        {
-                            eu868 = new RegionEU868();
-                        }
+                    {
+                        eu868 = new RegionEU868();
                     }
                 }
 
@@ -106,15 +101,12 @@ namespace LoRaTools.Regions
             {
                 if (us915 == null)
                 {
-                    lock (RegionLock)
-                    {
 #pragma warning disable CA1508 // Avoid dead conditional code
-                        // False positive
-                        if (us915 == null)
+                    // False positive
+                    if (us915 == null)
 #pragma warning restore CA1508 // Avoid dead conditional code
-                        {
-                            us915 = new RegionUS915();
-                        }
+                    {
+                        us915 = new RegionUS915();
                     }
                 }
 
@@ -130,15 +122,12 @@ namespace LoRaTools.Regions
             {
                 if (cn470 == null)
                 {
-                    lock (RegionLock)
-                    {
 #pragma warning disable CA1508 // Avoid dead conditional code
-                        // False positive
-                        if (cn470 == null)
+                    // False positive
+                    if (cn470 == null)
 #pragma warning restore CA1508 // Avoid dead conditional code
-                        {
-                            cn470 = new RegionCN470();
-                        }
+                    {
+                        cn470 = new RegionCN470();
                     }
                 }
 
