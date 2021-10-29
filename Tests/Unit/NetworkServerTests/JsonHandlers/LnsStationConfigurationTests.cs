@@ -36,86 +36,86 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                                      },
                                      flags: NoClearChannelAssessment | NoDutyCycle | NoDwellTimeLimitations);
 
-        internal static string ValidRouterConfigMessage = @"{
-            ""msgtype"": ""router_config"",
-            ""NetID"": [1],
-            ""JoinEui"": [[0, 18446744073709551615]],
-	        ""region"": ""EU863"",
-	        ""hwspec"": ""sx1301/1"",
-	        ""freq_range"": [ 863000000, 870000000 ],
-            ""DRs"": [ [ 11, 125, 0 ],
+        internal static string ValidRouterConfigMessage = JsonUtil.Strictify(@"{
+            'msgtype': 'router_config',
+            'NetID': [1],
+            'JoinEui': [[0, 18446744073709551615]],
+	        'region': 'EU863',
+	        'hwspec': 'sx1301/1',
+	        'freq_range': [ 863000000, 870000000 ],
+            'DRs': [ [ 11, 125, 0 ],
                        [ 10, 125, 0 ],
                        [ 9, 125, 0 ],
                        [ 8, 125, 0 ],
                        [ 7, 125, 0 ],
                        [ 7, 250, 0 ] ],
-            ""sx1301_conf"": [
+            'sx1301_conf': [
                         {
-                            ""radio_0"": {
-                                ""enable"": true,
-                                ""freq"": 867500000
+                            'radio_0': {
+                                'enable': true,
+                                'freq': 867500000
                             },
-                            ""radio_1"": {
-                                ""enable"": true,
-                                ""freq"": 868500000
+                            'radio_1': {
+                                'enable': true,
+                                'freq': 868500000
                             },
-                            ""chan_FSK"": {
-                                ""enable"": true,
-                                ""radio"": 1,
-                                ""if"": 300000
+                            'chan_FSK': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': 300000
                             },
-                            ""chan_Lora_std"": {
-                                ""enable"": true,
-                                ""radio"": 1,
-                                ""if"": -200000,
-                                ""bandwidth"": 250000,
-                                ""spread_factor"": 7
+                            'chan_Lora_std': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': -200000,
+                                'bandwidth': 250000,
+                                'spread_factor': 7
                             },
-                            ""chan_multiSF_0"": {
-                                ""enable"": true,
-                                ""radio"": 1,
-                                ""if"": -400000
+                            'chan_multiSF_0': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': -400000
                             },
-                            ""chan_multiSF_1"": {
-                                ""enable"": true,
-                                ""radio"": 1,
-                                ""if"": -200000
+                            'chan_multiSF_1': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': -200000
                             },
-                            ""chan_multiSF_2"": {
-                                ""enable"": true,
-                                ""radio"": 1,
-                                ""if"": 0
+                            'chan_multiSF_2': {
+                                'enable': true,
+                                'radio': 1,
+                                'if': 0
                             },
-                            ""chan_multiSF_3"": {
-                                ""enable"": true,
-                                ""radio"": 0,
-                                ""if"": -400000
+                            'chan_multiSF_3': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': -400000
                             },
-                            ""chan_multiSF_4"": {
-                                ""enable"": true,
-                                ""radio"": 0,
-                                ""if"": -200000
+                            'chan_multiSF_4': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': -200000
                             },
-                            ""chan_multiSF_5"": {
-                                ""enable"": true,
-                                ""radio"": 0,
-                                ""if"": 0
+                            'chan_multiSF_5': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': 0
                             },
-                            ""chan_multiSF_6"": {
-                                ""enable"": true,
-                                ""radio"": 0,
-                                ""if"": 200000
+                            'chan_multiSF_6': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': 200000
                             },
-                            ""chan_multiSF_7"": {
-                                ""enable"": true,
-                                ""radio"": 0,
-                                ""if"": 400000
+                            'chan_multiSF_7': {
+                                'enable': true,
+                                'radio': 0,
+                                'if': 400000
                             }
                         }
                     ],
-            ""nocca"": true,
-            ""nodc"": true,
-            ""nodwell"": true}";
+            'nocca': true,
+            'nodc': true,
+            'nodwell': true}");
 
         [Theory]
         [InlineData(null)]
@@ -123,86 +123,86 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
         public void WriteRouterConfig_WithEmptyOrNullJoinEuiFilter(int? JoinEuiCount)
         {
             // arrange
-            const string expected = @"{
-                    ""msgtype"": ""router_config"",
-                    ""NetID"": [1],
-                    ""JoinEui"": [],
-	                ""region"": ""EU863"",
-	                ""hwspec"": ""sx1301/1"",
-	                ""freq_range"": [ 863000000, 870000000 ],
-                    ""DRs"": [ [ 11, 125, 0 ],
+            var expected = JsonUtil.Strictify(@"{
+                    'msgtype': 'router_config',
+                    'NetID': [1],
+                    'JoinEui': [],
+	                'region': 'EU863',
+	                'hwspec': 'sx1301/1',
+	                'freq_range': [ 863000000, 870000000 ],
+                    'DRs': [ [ 11, 125, 0 ],
                                [ 10, 125, 0 ],
                                [ 9, 125, 0 ],
                                [ 8, 125, 0 ],
                                [ 7, 125, 0 ],
                                [ 7, 250, 0 ] ],
-                    ""sx1301_conf"": [
+                    'sx1301_conf': [
                                 {
-                                    ""radio_0"": {
-                                        ""enable"": true,
-                                        ""freq"": 867500000
+                                    'radio_0': {
+                                        'enable': true,
+                                        'freq': 867500000
                                     },
-                                    ""radio_1"": {
-                                        ""enable"": true,
-                                        ""freq"": 868500000
+                                    'radio_1': {
+                                        'enable': true,
+                                        'freq': 868500000
                                     },
-                                    ""chan_FSK"": {
-                                        ""enable"": true,
-                                        ""radio"": 1,
-                                        ""if"": 300000
+                                    'chan_FSK': {
+                                        'enable': true,
+                                        'radio': 1,
+                                        'if': 300000
                                     },
-                                    ""chan_Lora_std"": {
-                                        ""enable"": true,
-                                        ""radio"": 1,
-                                        ""if"": -200000,
-                                        ""bandwidth"": 250000,
-                                        ""spread_factor"": 7
+                                    'chan_Lora_std': {
+                                        'enable': true,
+                                        'radio': 1,
+                                        'if': -200000,
+                                        'bandwidth': 250000,
+                                        'spread_factor': 7
                                     },
-                                    ""chan_multiSF_0"": {
-                                        ""enable"": true,
-                                        ""radio"": 1,
-                                        ""if"": -400000
+                                    'chan_multiSF_0': {
+                                        'enable': true,
+                                        'radio': 1,
+                                        'if': -400000
                                     },
-                                    ""chan_multiSF_1"": {
-                                        ""enable"": true,
-                                        ""radio"": 1,
-                                        ""if"": -200000
+                                    'chan_multiSF_1': {
+                                        'enable': true,
+                                        'radio': 1,
+                                        'if': -200000
                                     },
-                                    ""chan_multiSF_2"": {
-                                        ""enable"": true,
-                                        ""radio"": 1,
-                                        ""if"": 0
+                                    'chan_multiSF_2': {
+                                        'enable': true,
+                                        'radio': 1,
+                                        'if': 0
                                     },
-                                    ""chan_multiSF_3"": {
-                                        ""enable"": true,
-                                        ""radio"": 0,
-                                        ""if"": -400000
+                                    'chan_multiSF_3': {
+                                        'enable': true,
+                                        'radio': 0,
+                                        'if': -400000
                                     },
-                                    ""chan_multiSF_4"": {
-                                        ""enable"": true,
-                                        ""radio"": 0,
-                                        ""if"": -200000
+                                    'chan_multiSF_4': {
+                                        'enable': true,
+                                        'radio': 0,
+                                        'if': -200000
                                     },
-                                    ""chan_multiSF_5"": {
-                                        ""enable"": true,
-                                        ""radio"": 0,
-                                        ""if"": 0
+                                    'chan_multiSF_5': {
+                                        'enable': true,
+                                        'radio': 0,
+                                        'if': 0
                                     },
-                                    ""chan_multiSF_6"": {
-                                        ""enable"": true,
-                                        ""radio"": 0,
-                                        ""if"": 200000
+                                    'chan_multiSF_6': {
+                                        'enable': true,
+                                        'radio': 0,
+                                        'if': 200000
                                     },
-                                    ""chan_multiSF_7"": {
-                                        ""enable"": true,
-                                        ""radio"": 0,
-                                        ""if"": 400000
+                                    'chan_multiSF_7': {
+                                        'enable': true,
+                                        'radio': 0,
+                                        'if': 400000
                                     }
                                 }
                             ],
-                    ""nocca"": true,
-                    ""nodc"": true,
-                    ""nodwell"": true}";
+                    'nocca': true,
+                    'nodc': true,
+                    'nodwell': true}");
 
             var input = GetTwinConfigurationJson(new[] { new NetId(1) },
                                                  JoinEuiCount.HasValue ? Array.Empty<(JoinEui, JoinEui)>() : null,
@@ -316,68 +316,68 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                                                        string sx1301Conf = null,
                                                        RouterConfigStationFlags flags = None)
         {
-            var defaultSx1301Conf = @"[{
-                ""radio_0"": {
-                    ""enable"": true,
-                    ""freq"": 867500000
+            var defaultSx1301Conf = JsonUtil.Strictify(@"[{
+                'radio_0': {
+                    'enable': true,
+                    'freq': 867500000
                 },
-                ""radio_1"": {
-                    ""enable"": true,
-                    ""freq"": 868500000
+                'radio_1': {
+                    'enable': true,
+                    'freq': 868500000
                 },
-                ""chan_FSK"": {
-                    ""enable"": true,
-                    ""radio"": 1,
-                    ""if"": 300000
+                'chan_FSK': {
+                    'enable': true,
+                    'radio': 1,
+                    'if': 300000
                 },
-                ""chan_Lora_std"": {
-                    ""enable"": true,
-                    ""radio"": 1,
-                    ""if"": -200000,
-                    ""bandwidth"": 250000,
-                    ""spread_factor"": 7
+                'chan_Lora_std': {
+                    'enable': true,
+                    'radio': 1,
+                    'if': -200000,
+                    'bandwidth': 250000,
+                    'spread_factor': 7
                 },
-                ""chan_multiSF_0"": {
-                    ""enable"": true,
-                    ""radio"": 1,
-                    ""if"": -400000
+                'chan_multiSF_0': {
+                    'enable': true,
+                    'radio': 1,
+                    'if': -400000
                 },
-                ""chan_multiSF_1"": {
-                    ""enable"": true,
-                    ""radio"": 1,
-                    ""if"": -200000
+                'chan_multiSF_1': {
+                    'enable': true,
+                    'radio': 1,
+                    'if': -200000
                 },
-                ""chan_multiSF_2"": {
-                    ""enable"": true,
-                    ""radio"": 1,
-                    ""if"": 0
+                'chan_multiSF_2': {
+                    'enable': true,
+                    'radio': 1,
+                    'if': 0
                 },
-                ""chan_multiSF_3"": {
-                    ""enable"": true,
-                    ""radio"": 0,
-                    ""if"": -400000
+                'chan_multiSF_3': {
+                    'enable': true,
+                    'radio': 0,
+                    'if': -400000
                 },
-                ""chan_multiSF_4"": {
-                    ""enable"": true,
-                    ""radio"": 0,
-                    ""if"": -200000
+                'chan_multiSF_4': {
+                    'enable': true,
+                    'radio': 0,
+                    'if': -200000
                 },
-                ""chan_multiSF_5"": {
-                    ""enable"": true,
-                    ""radio"": 0,
-                    ""if"": 0
+                'chan_multiSF_5': {
+                    'enable': true,
+                    'radio': 0,
+                    'if': 0
                 },
-                ""chan_multiSF_6"": {
-                    ""enable"": true,
-                    ""radio"": 0,
-                    ""if"": 200000
+                'chan_multiSF_6': {
+                    'enable': true,
+                    'radio': 0,
+                    'if': 200000
                 },
-                ""chan_multiSF_7"": {
-                    ""enable"": true,
-                    ""radio"": 0,
-                    ""if"": 400000
+                'chan_multiSF_7': {
+                    'enable': true,
+                    'radio': 0,
+                    'if': 400000
                 }
-            }]";
+            }]");
 
             const string template = @"{{
                 ""msgtype"": ""router_config"",

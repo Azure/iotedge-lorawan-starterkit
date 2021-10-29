@@ -8,28 +8,15 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using System.Text;
     using System.Text.Json;
     using LoRaWan.NetworkServer;
+    using LoRaWan.Tests.Common;
     using Xunit;
-    using JToken = Newtonsoft.Json.Linq.JToken;
-    using Formatting = Newtonsoft.Json.Formatting;
 
     public class JsonReaderTest
     {
-        /// <summary>
-        /// Takes somewhat non-conforming JSON
-        /// (<a href="https://github.com/JamesNK/Newtonsoft.Json/issues/646#issuecomment-356194475">as accepted by Json.NET</a>)
-        /// text and re-formats it to be strictly conforming to RFC 7159.
-        /// </summary>
-        /// <remarks>
-        /// This is a helper primarily designed to make it easier to express JSON as C# literals in
-        /// inline data for theory tests, where the double quotes don't have to be escaped.
-        /// </remarks>
-        private static string Strictify(string json) =>
-            JToken.Parse(json).ToString(Formatting.None);
-
         private static void TestMovesReaderPastReadValue<T>(IJsonReader<T> reader, string json)
         {
             var sentinel = $"END-{Guid.NewGuid()}";
-            var rdr = new Utf8JsonReader(Encoding.UTF8.GetBytes(Strictify($"[{json}, '{sentinel}']")));
+            var rdr = new Utf8JsonReader(Encoding.UTF8.GetBytes(JsonUtil.Strictify($"[{json}, '{sentinel}']")));
             Assert.True(rdr.Read()); // start
             Assert.True(rdr.Read()); // "["
             reader.Read(ref rdr);
@@ -49,7 +36,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("foo bar", "'foo bar'")]
         public void String_With_Valid_Input(string expected, string json)
         {
-            var result = JsonReader.String().Read(Strictify(json));
+            var result = JsonReader.String().Read(JsonUtil.Strictify(json));
             Assert.Equal(expected, result);
         }
 
@@ -62,7 +49,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("{}")]
         public void String_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = JsonReader.String().Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = JsonReader.String().Read(JsonUtil.Strictify(json)));
         }
 
         [Fact]
@@ -75,7 +62,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(42, "42")]
         public void Byte_With_Valid_Input(ulong expected, string json)
         {
-            var result = JsonReader.Byte().Read(Strictify(json));
+            var result = JsonReader.Byte().Read(JsonUtil.Strictify(json));
             Assert.Equal(expected, result);
         }
 
@@ -91,7 +78,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("{}")]
         public void Byte_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = JsonReader.Byte().Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = JsonReader.Byte().Read(JsonUtil.Strictify(json)));
         }
 
         [Fact]
@@ -115,7 +102,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("{}")]
         public void Null_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = JsonReader.Null<object>().Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = JsonReader.Null<object>().Read(JsonUtil.Strictify(json)));
         }
 
         [Fact]
@@ -129,7 +116,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(false, "false")]
         public void Boolean_With_Valid_Input(bool expected, string json)
         {
-            var result = JsonReader.Boolean().Read(Strictify(json));
+            var result = JsonReader.Boolean().Read(JsonUtil.Strictify(json));
             Assert.Equal(expected, result);
         }
 
@@ -142,7 +129,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("{}")]
         public void Boolean_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = JsonReader.Boolean().Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = JsonReader.Boolean().Read(JsonUtil.Strictify(json)));
         }
 
         [Fact]
@@ -155,7 +142,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(42, "42")]
         public void Int32_With_Valid_Input(int expected, string json)
         {
-            var result = JsonReader.Int32().Read(Strictify(json));
+            var result = JsonReader.Int32().Read(JsonUtil.Strictify(json));
             Assert.Equal(expected, result);
         }
 
@@ -169,7 +156,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("{}")]
         public void Int32_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = JsonReader.Int32().Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = JsonReader.Int32().Read(JsonUtil.Strictify(json)));
         }
 
         [Fact]
@@ -182,7 +169,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(42, "42")]
         public void UInt16_With_Valid_Input(ulong expected, string json)
         {
-            var result = JsonReader.UInt16().Read(Strictify(json));
+            var result = JsonReader.UInt16().Read(JsonUtil.Strictify(json));
             Assert.Equal(expected, result);
         }
 
@@ -198,7 +185,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("{}")]
         public void UInt16_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = JsonReader.UInt16().Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = JsonReader.UInt16().Read(JsonUtil.Strictify(json)));
         }
 
         [Fact]
@@ -211,7 +198,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(42, "42")]
         public void UInt32_With_Valid_Input(ulong expected, string json)
         {
-            var result = JsonReader.UInt32().Read(Strictify(json));
+            var result = JsonReader.UInt32().Read(JsonUtil.Strictify(json));
             Assert.Equal(expected, result);
         }
 
@@ -227,7 +214,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("{}")]
         public void UInt32_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = JsonReader.UInt32().Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = JsonReader.UInt32().Read(JsonUtil.Strictify(json)));
         }
 
         [Fact]
@@ -240,7 +227,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(42, "42")]
         public void UInt64_With_Valid_Input(ulong expected, string json)
         {
-            var result = JsonReader.UInt64().Read(Strictify(json));
+            var result = JsonReader.UInt64().Read(JsonUtil.Strictify(json));
             Assert.Equal(expected, result);
         }
 
@@ -255,7 +242,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("{}")]
         public void UInt64_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = JsonReader.UInt64().Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = JsonReader.UInt64().Read(JsonUtil.Strictify(json)));
         }
 
         [Fact]
@@ -271,7 +258,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(400, "4e2")]
         public void Double_With_Valid_Input(double expected, string json)
         {
-            var result = JsonReader.Double().Read(Strictify(json));
+            var result = JsonReader.Double().Read(JsonUtil.Strictify(json));
             Assert.Equal(expected, result);
         }
 
@@ -284,7 +271,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("{}")]
         public void Double_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = JsonReader.Double().Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = JsonReader.Double().Read(JsonUtil.Strictify(json)));
         }
 
         [Fact]
@@ -297,7 +284,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(new ulong[] { 42 }, "[42]")]
         public void Array_With_Valid_Input(ulong[] expected, string json)
         {
-            var result = JsonReader.Array(JsonReader.UInt64()).Read(Strictify(json));
+            var result = JsonReader.Array(JsonReader.UInt64()).Read(JsonUtil.Strictify(json));
             Assert.Equal(expected, result);
         }
 
@@ -315,7 +302,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("[42, {}, 42]")]
         public void Array_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = JsonReader.Array(JsonReader.UInt64()).Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = JsonReader.Array(JsonReader.UInt64()).Read(JsonUtil.Strictify(json)));
         }
 
         [Fact]
@@ -325,7 +312,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 from words in JsonReader.Array(JsonReader.String())
                 select string.Join("-", from w in words select w.ToUpperInvariant());
 
-            var result = reader.Read(Strictify("['foo', 'bar', 'baz']"));
+            var result = reader.Read(JsonUtil.Strictify("['foo', 'bar', 'baz']"));
 
             Assert.Equal("FOO-BAR-BAZ", result);
         }
@@ -337,7 +324,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var valueReader = JsonReader.String();
             var property = JsonReader.Property(name, valueReader);
 
-            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(Strictify("{ foobar: 42 }")));
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(JsonUtil.Strictify("{ foobar: 42 }")));
             _ = reader.Read(); // "{"
             _ = reader.Read(); // property
 
@@ -355,7 +342,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             const string defaultValue = "baz";
             var property = JsonReader.Property(name, valueReader, (true, defaultValue));
 
-            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(Strictify("{ foobar: 42 }")));
+            var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(JsonUtil.Strictify("{ foobar: 42 }")));
             _ = reader.Read(); // "{"
             _ = reader.Read(); // property
 
@@ -373,7 +360,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(Strictify("{ foobar: 42 }")));
+                var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(JsonUtil.Strictify("{ foobar: 42 }")));
                 _ = reader.Read(); // "{"
                 return _ = property.IsMatch(reader);
             });
@@ -394,7 +381,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(42, "foobar", "{ nums: [1, 2, 3], str: 'foobar', num: 42, obj: {} }")]
         public void Object2_With_Valid_Input(ulong expectedNum, string expectedStr, string json)
         {
-            var (num, str) = Object2Reader.Read(Strictify(json));
+            var (num, str) = Object2Reader.Read(JsonUtil.Strictify(json));
 
             Assert.Equal(expectedNum, num);
             Assert.Equal(expectedStr, str);
@@ -412,7 +399,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("{ num: 42 }")]
         public void Object2_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = Object2Reader.Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = Object2Reader.Read(JsonUtil.Strictify(json)));
         }
 
         private static readonly IJsonReader<object> EitherReader =
@@ -433,7 +420,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(new ulong[0], "[]")]
         public void Either_With_Valid_Input(object expected, string json)
         {
-            var result = EitherReader.Read(Strictify(json));
+            var result = EitherReader.Read(JsonUtil.Strictify(json));
             Assert.Equal(expected, result);
         }
         [Theory]
@@ -444,7 +431,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData("{}")]
         public void Either_With_Invalid_Input(string json)
         {
-            Assert.Throws<JsonException>(() => _ = EitherReader.Read(Strictify(json)));
+            Assert.Throws<JsonException>(() => _ = EitherReader.Read(JsonUtil.Strictify(json)));
         }
     }
 }
