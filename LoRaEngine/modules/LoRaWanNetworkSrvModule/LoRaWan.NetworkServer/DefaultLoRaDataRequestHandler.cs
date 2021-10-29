@@ -491,7 +491,7 @@ namespace LoRaWan.NetworkServer
             // If preferred Window is RX2, this is the max. payload
             if (loRaDevice.PreferredWindow == Constants.ReceiveWindow2)
             {
-                // Get max. payload size for RX2, considering possilbe user provided Rx2DataRate
+                // Get max. payload size for RX2, considering possible user provided Rx2DataRate
                 if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
                 {
                     var deviceJoinInfo = loRaRegion.LoRaRegion == LoRaRegionType.CN470
