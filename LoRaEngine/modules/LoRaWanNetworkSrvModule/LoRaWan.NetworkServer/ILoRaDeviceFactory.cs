@@ -11,8 +11,8 @@ namespace LoRaWan.NetworkServer
         /// <summary>
         /// Creates a device client based on the devEUI and primary key.
         /// </summary>
-        /// <param name="devEUI">Dev EUI of the device.</param>
+        /// <param name="eui">Dev EUI of the device.</param>
         /// <param name="primaryKey">Primary key of the device.</param>
-        ILoRaDeviceClient CreateDeviceClient(string devEUI, string primaryKey);
+        ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey);
     }
 }
