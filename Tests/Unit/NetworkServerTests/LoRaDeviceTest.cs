@@ -435,6 +435,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                     { "NwkSKey", "ABC02000000000000000000000000009ABC02000000000000000000000000009" },
                     { "AppSKey", "ABCD2000000000000000000000000009ABC02000000000000000000000000009" },
                     { "DevAddr", "0000AABB" },
+                    { "CN470JoinChannel", 10 }
                 },
                 reported: new Dictionary<string, object>
                 {
@@ -450,7 +451,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             using var connectionManager = new SingleDeviceConnectionManager(this.loRaDeviceClient.Object);
             using var loRaDevice = new LoRaDevice("00000001", "ABC0200000000009", connectionManager);
             await loRaDevice.InitializeAsync();
-            Assert.Equal(2, loRaDevice.ReportedCN470JoinChannel);
+            Assert.Equal(2, loRaDevice.ReportedCN470JoinChannel); // check that reported property is prioritized
         }
 
         [Fact]
