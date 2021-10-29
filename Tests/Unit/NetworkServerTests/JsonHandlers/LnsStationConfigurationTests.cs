@@ -221,7 +221,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
             var actual = LnsStationConfiguration.GetConfiguration(input);
 
             // assert
-            Assert.Equal(JsonUtil.Trim(expected), actual);
+            Assert.Equal(JsonUtil.Minify(expected), actual);
         }
 
         [Theory]
@@ -250,7 +250,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
             var actual = LnsStationConfiguration.GetConfiguration(ValidStationConfiguration);
 
             // assert
-            Assert.Equal(JsonUtil.Trim(ValidRouterConfigMessage), actual);
+            Assert.Equal(JsonUtil.Minify(ValidRouterConfigMessage), actual);
         }
 
         [Fact]

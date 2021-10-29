@@ -39,13 +39,13 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
                 // arrange
                 const string primaryKey = "foo";
                 SetupDeviceKeyLookup(this.stationEui, new[] { new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey } });
-                SetupTwinResponse(this.stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Trim(LnsStationConfigurationTests.ValidStationConfiguration)} }}");
+                SetupTwinResponse(this.stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)} }}");
 
                 // act
                 var result = await this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None);
 
                 // assert
-                Assert.Equal(JsonUtil.Trim(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
+                Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
             }
 
             [Theory]
@@ -56,7 +56,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
                 // arrange
                 const string primaryKey = "foo";
                 SetupDeviceKeyLookup(this.stationEui, Enumerable.Range(0, count).Select(_ => new IoTHubDeviceInfo()).ToArray());
-                SetupTwinResponse(this.stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Trim(LnsStationConfigurationTests.ValidStationConfiguration)} }}");
+                SetupTwinResponse(this.stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)} }}");
 
                 // act + assert
                 await Assert.ThrowsAsync<InvalidOperationException>(() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));

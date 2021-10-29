@@ -9,7 +9,7 @@ namespace LoRaWan.Tests.Common
 
     public static class JsonUtil
     {
-        public static string Trim(string json)
+        public static string Minify(string json)
         {
             using var ms = new MemoryStream();
             using var writer = new Utf8JsonWriter(ms);
