@@ -9,8 +9,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
     using static SpreadingFactor;
     using static NetworkServer.BasicsStation.RouterConfigStationFlags;
     using System.Text.Json;
-    using System.Text;
-    using System.IO;
     using LoRaWan.NetworkServer.BasicsStation;
     using System.Text.RegularExpressions;
     using System.Linq;
