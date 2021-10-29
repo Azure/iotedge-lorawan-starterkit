@@ -46,6 +46,21 @@ namespace LoRaWan.NetworkServer
                 return result;
             });
 
+        public static IJsonReader<bool> Bool() =>
+            Create((ref Utf8JsonReader reader) =>
+            {
+#pragma warning disable IDE0072 // Add missing cases (false positive)
+                var result = reader.TokenType switch
+#pragma warning restore IDE0072 // Add missing cases
+                {
+                    JsonTokenType.True => true,
+                    JsonTokenType.False => false,
+                    _ => throw new JsonException()
+                };
+                _ = reader.Read();
+                return result;
+            });
+
         public static IJsonReader<object> AsObject<T>(this IJsonReader<T> reader) =>
             from v in reader select (object)v;
 
@@ -181,6 +196,12 @@ namespace LoRaWan.NetworkServer
                             return false;
 
                         _ = reader.Read();
+
+                        if (reader.TokenType == JsonTokenType.Null)
+                        {
+                            _ = reader.Read();
+                            return true;
+                        }
                         value = (true, property.Reader.Read(ref reader));
                         return true;
                     }

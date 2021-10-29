@@ -53,6 +53,14 @@ namespace LoRaWan.NetworkServer
                 return result;
             });
 
+        public static IJsonReader<int> Int32() =>
+            Create((ref Utf8JsonReader reader) =>
+            {
+                var result = reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out var n) ? n : throw new JsonException();
+                _ = reader.Read();
+                return result;
+            });
+
         /// <remarks>
         /// Properties without a default value that are missing from the read JSON object will cause
         /// <see cref="JsonException"/> to be thrown.
