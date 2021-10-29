@@ -89,6 +89,24 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             TestRegionMaxPayloadLength(datr, maxPyldSize);
         }
 
+        [Theory]
+        [InlineData(null, null, 0, null, "SF11BW125")]
+        [InlineData(null, null, 8, null, "SF11BW125")]
+        [InlineData(null, null, 10, null, "SF11BW125")]
+        [InlineData(null, null, 19, null, "SF11BW125")]
+        [InlineData(null, null, null, 5, "SF11BW125")]
+        [InlineData(null, null, null, 12, "SF11BW125")]
+        [InlineData(null, null, 10, 14, "SF11BW125")]
+        [InlineData(null, (ushort)2, 0, null, "SF10BW125")]
+        [InlineData("SF9BW125", null, 0, null, "SF9BW125")]
+        [InlineData("SF9BW125", (ushort)2, 0, null, "SF10BW125")]
+        [InlineData("SF8BW125", (ushort)3, 0, 8, "SF9BW125")]
+        public void TestRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, string expectedDr)
+        {
+            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
+            TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr, deviceJoinInfo);
+        }
+
         [Fact]
         public void TestTranslateRegionType()
         {
