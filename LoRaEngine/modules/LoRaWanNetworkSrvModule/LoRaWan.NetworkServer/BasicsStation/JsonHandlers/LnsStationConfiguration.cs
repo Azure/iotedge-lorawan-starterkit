@@ -15,7 +15,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         private struct ChannelConfig
         {
             public bool Enable { get; set; }
-            public int Radio { get; set; }
+            public bool Radio { get; set; }
             public int If { get; set; }
         }
 
@@ -54,7 +54,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
                               JsonReader.Property("radio", JsonReader.Int32()),
                               JsonReader.Property("if", JsonReader.Int32()),
-                              (e, r, i) => new ChannelConfig { Enable = e, Radio = r, If = i });
+                              (e, r, i) => new ChannelConfig { Enable = e, Radio = r == 1, If = i });
 
         private static readonly IJsonReader<StandardConfig> StdConfReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
@@ -251,7 +251,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             {
                 writer.WriteStartObject(property);
                 writer.WriteBoolean("enable", sxConf.Enable);
-                writer.WriteNumber("radio", sxConf.Radio);
+                writer.WriteNumber("radio", sxConf.Radio ? 1 : 0);
                 writer.WriteNumber("if", sxConf.If);
                 writer.WriteEndObject();
             }
