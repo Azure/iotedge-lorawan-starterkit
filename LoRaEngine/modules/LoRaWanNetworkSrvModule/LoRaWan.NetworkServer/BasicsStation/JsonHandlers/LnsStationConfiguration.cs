@@ -25,7 +25,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             public int Radio { get; set; }
             public int If { get; set; }
             public Bandwidth Bandwidth { get; set; }
-            public SpreadingFactor SpreadFactor { get; set; }
+            public SpreadingFactor SpreadingFactor { get; set; }
         }
 
         private struct RadioConfig
@@ -62,7 +62,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("if", JsonReader.Int32()),
                               JsonReader.Property("bandwidth", JsonReader.UInt32()),
                               JsonReader.Property("spread_factor", JsonReader.UInt32()),
-                              (e, r, i, b, sf) => new StandardConfig { Enable = e, Radio = r, If = i, Bandwidth = (Bandwidth)(b / 1000), SpreadFactor = (SpreadingFactor)sf });
+                              (e, r, i, b, sf) => new StandardConfig { Enable = e, Radio = r, If = i, Bandwidth = (Bandwidth)(b / 1000), SpreadingFactor = (SpreadingFactor)sf });
 
         private static readonly IJsonReader<RadioConfig> RadioConfReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
@@ -264,8 +264,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 writer.WriteNumber("if", chanConf.If);
                 if (chanConf.Bandwidth != Bandwidth.Undefined)
                     writer.WriteNumber("bandwidth", chanConf.Bandwidth.ToHertz().AsUInt64);
-                if (chanConf.SpreadFactor != SpreadingFactor.Undefined)
-                    writer.WriteNumber("spread_factor", (int)chanConf.SpreadFactor);
+                if (chanConf.SpreadingFactor != SpreadingFactor.Undefined)
+                    writer.WriteNumber("spread_factor", (int)chanConf.SpreadingFactor);
                 writer.WriteEndObject();
             }
         }
