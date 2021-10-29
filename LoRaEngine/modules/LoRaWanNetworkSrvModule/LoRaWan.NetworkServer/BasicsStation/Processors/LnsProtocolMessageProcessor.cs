@@ -22,15 +22,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
     internal class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
-        private readonly IHttpContextAccessor httpContextAccessor;
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
 
-        public LnsProtocolMessageProcessor(IHttpContextAccessor httpContextAccessor,
-                                           IBasicsStationConfigurationService basicsStationConfigurationService,
+        public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
                                            ILogger<LnsProtocolMessageProcessor> logger)
         {
-            this.httpContextAccessor = httpContextAccessor;
             this.basicsStationConfigurationService = basicsStationConfigurationService;
             this.logger = logger;
         }
@@ -46,21 +43,19 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         {
             if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
 
-            var routerId = StationEui.Parse(httpContext.Request.RouteValues[BasicsStationNetworkServer.RouterIdPathParameterName].ToString());
             _ = await ProcessIncomingRequestAsync(httpContext,
-                                                  (str, sock, tok) => InternalHandleDataAsync(routerId, str, sock, tok),
+                                                  InternalHandleDataAsync,
                                                   token);
         }
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal async Task<bool> InternalHandleDiscoveryAsync(string json, WebSocket socket, CancellationToken token)
+        internal async Task<bool> InternalHandleDiscoveryAsync(HttpContext httpContext, string json, WebSocket socket, CancellationToken token)
         {
             var stationEui = LnsDiscovery.QueryReader.Read(json);
             this.logger.LogInformation($"Received discovery request from: {stationEui}");
 
             try
             {
-                var httpContext = this.httpContextAccessor.HttpContext;
                 var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
                 var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}/{stationEui}");
 
@@ -88,8 +83,13 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal async Task<bool> InternalHandleDataAsync(StationEui stationEui, string json, WebSocket socket, CancellationToken token)
+        internal async Task<bool> InternalHandleDataAsync(HttpContext httpContext, string json, WebSocket socket, CancellationToken token)
         {
+            
+            var stationEui = httpContext.Request.RouteValues.TryGetValue(BasicsStationNetworkServer.RouterIdPathParameterName, out var sEui) ?
+                StationEui.Parse(sEui.ToString())
+                : throw new InvalidOperationException($"{BasicsStationNetworkServer.RouterIdPathParameterName} was not present on path.");
+
             switch (LnsData.MessageTypeReader.Read(json))
             {
                 case LnsMessageType.Version:
@@ -117,8 +117,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         }
 
         internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
-                                                                   Func<string, WebSocket, CancellationToken, Task<bool>> handler,
-                                                                   CancellationToken cancellationToken)
+                                                                     Func<HttpContext, string, WebSocket, CancellationToken, Task<bool>> handler,
+                                                                     CancellationToken cancellationToken)
         {
             if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
             if (handler is null) throw new ArgumentNullException(nameof(handler));
@@ -155,7 +155,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         using (var reader = new StreamReader(ms))
                             input = reader.ReadToEnd();
 
-                        if (!await handler(input, webSocket, cancellationToken))
+                        if (!await handler(httpContext, input, webSocket, cancellationToken))
                         {
                             await CloseSocketAsync(webSocket, cancellationToken);
                             break;

@@ -33,7 +33,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
                             _ = loggingBuilder.SetMinimumLevel((LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture));
                         })
                         .AddMemoryCache()
-                        .AddHttpContextAccessor()
                         .AddSingleton(NetworkServerConfiguration)
                         .AddSingleton(LoRaTools.CommonAPI.ApiVersion.LatestVersion)
                         .AddSingleton<IServiceFacadeHttpClientProvider, ServiceFacadeHttpClientProvider>()
