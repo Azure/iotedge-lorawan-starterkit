@@ -233,7 +233,8 @@ namespace LoRaTools.Regions
         {
             if (deviceJoinInfo is null) throw new ArgumentNullException(nameof(deviceJoinInfo));
 
-            var rx2Window = new RX2ReceiveWindow { Frequency = 0, DataRate = 1 };
+            // Default data rate is always 1 for CN470
+            var rx2Window = new RX2ReceiveWindow { DataRate = 1 };
 
             // OTAA device
             if (deviceJoinInfo.ReportedCN470JoinChannel != null)
