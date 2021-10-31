@@ -23,8 +23,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(488.3, 19)]
         public void TestTryGetJoinChannelIndex(double freq, int expectedIndex)
         {
-            var rxpk = GenerateRxpk("SF12BW125", freq);
-            Assert.True(Region.TryGetJoinChannelIndex(rxpk[0], out var channelIndex));
+            Assert.True(Region.TryGetJoinChannelIndex(freq, out var channelIndex));
             Assert.Equal(expectedIndex, channelIndex);
         }
 
@@ -48,67 +47,94 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(488.9, 503.9, 19)]
         public void TestFrequency(double inputFreq, double outputFreq, int joinChannel)
         {
-            var rxpk = GenerateRxpk("SF12BW125", inputFreq);
-            TestRegionFrequency(rxpk, outputFreq, joinChannel);
+            TestRegionFrequency(inputFreq, 0, outputFreq, new DeviceJoinInfo(joinChannel));
         }
 
         [Theory]
-        [InlineData("SF12BW125", "SF12BW125", 0)]
-        [InlineData("SF11BW125", "SF11BW125", 0)]
-        [InlineData("SF10BW125", "SF10BW125", 0)]
-        [InlineData("SF7BW500", "SF7BW500", 0)]
-        [InlineData("SF10BW125", "SF11BW125", 1)]
-        [InlineData("SF8BW125", "SF10BW125", 2)]
-        [InlineData("SF7BW500", "SF9BW125", 3)]
-        [InlineData("SF7BW500", "SF7BW500", 10)]
-        public void TestDataRate(string inputDr, string outputDr, int rx1DrOffset)
+        [InlineData(0, 0, 0)]
+        [InlineData(1, 1, 0)]
+        [InlineData(2, 2, 0)]
+        [InlineData(6, 6, 0)]
+        [InlineData(2, 1, 1)]
+        [InlineData(4, 2, 2)]
+        [InlineData(6, 3, 3)]
+        [InlineData(6, 6, 10)]
+        public void TestDataRate(ushort inputDr, ushort outputDr, int rx1DrOffset)
         {
-            var rxpk = GenerateRxpk(inputDr, 470.3);
-            TestRegionDataRate(rxpk, outputDr, rx1DrOffset);
+            var freq = 470.3;
+            TestRegionDataRate(freq, inputDr, outputDr, rx1DrOffset);
         }
 
         [Theory]
-        [InlineData(470, "SF12BW125")]
-        [InlineData(510, "SF11BW125")]
-        [InlineData(509, "SF2BW125")]
-        [InlineData(490, "SF30BW125")]
-        public void TestLimit(double freq, string datarate)
+        [InlineData(470, 0)]
+        [InlineData(510, 1)]
+        [InlineData(509, 100)]
+        [InlineData(490, 110)]
+        public void TestNotAllowedDataRates(double freq, ushort datarate)
         {
-            TestRegionLimit(freq, datarate, 0);
+            TestRegionLimit(freq, datarate, new DeviceJoinInfo(0));
         }
 
         [Theory]
-        [InlineData("SF11BW125", 31)]
-        [InlineData("SF10BW125", 94)]
-        [InlineData("SF9BW125", 192)]
-        [InlineData("SF8BW125", 250)]
-        [InlineData("SF7BW125", 250)]
-        [InlineData("SF7BW500", 250)]
-        [InlineData("50", 250)]
-        public void TestMaxPayloadLength(string datr, uint maxPyldSize)
+        [InlineData(1, 31)]
+        [InlineData(2, 94)]
+        [InlineData(3, 192)]
+        [InlineData(4, 250)]
+        [InlineData(5, 250)]
+        [InlineData(6, 250)]
+        [InlineData(7, 250)]
+        public void TestMaxPayloadLength(ushort datr, uint maxPyldSize)
         {
             TestRegionMaxPayloadLength(datr, maxPyldSize);
         }
 
-        // TODO: expand test cases as part of #561
         [Theory]
-        [InlineData("", null, null, 485.3, "SF11BW125")]
-        [InlineData("SF11BW125", null, null, 485.3, "SF11BW125")]
-        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        // OTAA devices - join channel set in reported twin properties
+        [InlineData(null, 0, null, 485.3)]
+        [InlineData(null, 1, 9, 486.9)]
+        [InlineData(null, 7, null, 496.5)]
+        [InlineData(null, 9, 8, 498.3)]
+        [InlineData(null, 10, null, 492.5)]
+        [InlineData(null, 14, 14, 492.5)]
+        [InlineData(null, 19, 18, 502.5)]
+        [InlineData(498.3, 7, null, 498.3)]
+        [InlineData(485.3, 15, null, 485.3)]
+        // ABP devices
+        [InlineData(null, null, 0, 486.9)]
+        [InlineData(null, null, 7, 486.9)]
+        [InlineData(null, null, 9, 498.3)]
+        [InlineData(null, null, 14, 492.5)]
+        [InlineData(null, null, 19, 502.5)]
+        [InlineData(486.9, null, 12, 486.9)]
+        [InlineData(502.5, null, 17, 502.5)]
+        public void TestRX2Frequency(double? nwksrvrx2freq, int? reportedJoinChannel, int? desiredJoinChannel, double expectedFreq)
         {
-            TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
+            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
+            TestDownstreamRX2Frequency(nwksrvrx2freq, expectedFreq, deviceJoinInfo);
+        }
+
+        [Theory]
+        [InlineData(null, null, 0, null, 1)]
+        [InlineData(null, null, 8, null, 1)]
+        [InlineData(null, null, 10, null, 1)]
+        [InlineData(null, null, 19, null, 1)]
+        [InlineData(null, null, null, 5, 1)]
+        [InlineData(null, null, null, 12, 1)]
+        [InlineData(null, null, 10, 14, 1)]
+        [InlineData(null, (ushort)2, 0, null, 2)]
+        [InlineData((ushort)3, null, 0, null, 3)]
+        [InlineData((ushort)3, (ushort)2, 0, null, 2)]
+        [InlineData((ushort)4, (ushort)3, 0, 8, 3)]
+        public void TestRX2DataRate(ushort? nwksrvrx2dr, ushort? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, ushort expectedDr)
+        {
+            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
+            TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr, deviceJoinInfo);
         }
 
         [Fact]
         public void TestTranslateRegionType()
         {
             TestTranslateToRegion(LoRaRegionType.CN470);
-        }
-
-        [Fact]
-        public void TestResolveRegion()
-        {
-            TestTryResolveRegion("SF11BW125", 470.3);
         }
     }
 }

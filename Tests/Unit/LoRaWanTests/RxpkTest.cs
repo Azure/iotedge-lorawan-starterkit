@@ -113,7 +113,9 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             physicalUpstreamPyld[0] = 2;
             var request = Encoding.Default.GetBytes(jsonUplink);
             var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());
+#pragma warning disable CS0618 // The rxpk related tests will go away
             var downstream = RegionManager.EU868.GetDownstreamDR(rxpks[0]);
+#pragma warning restore CS0618 // The rxpk related tests will go away
             Assert.Equal(expectedDatr, downstream);
         }
 
@@ -146,7 +148,9 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             physicalUpstreamPyld[0] = 2;
             var request = Encoding.Default.GetBytes(jsonUplink);
             var rxpks = Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(request).ToArray());
+#pragma warning disable CS0618 // The rxpk related tests will go away
             var downstream = RegionManager.US915.GetDownstreamDR(rxpks[0]);
+#pragma warning restore CS0618 // The rxpk related tests will go away
             Assert.Equal(expectedDatr, downstream);
         }
 

@@ -56,9 +56,9 @@ namespace LoRaWan.Tests.Integration
                 upstreamMessageMacCommandSize = new LinkCheckAnswer(1, 1).Length;
             }
 
-            expectedDownlinkDatr = euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].configuration;
+            expectedDownlinkDatr = euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].configuration;
 
-            var c2dPayloadSize = euRegion.GetMaxPayloadSize(expectedDownlinkDatr)
+            var c2dPayloadSize = euRegion.GetMaxPayloadSize(euRegion.GetDefaultRX2ReceiveWindow().DataRate)
                 - c2dMessageMacCommandSize
                 + 1 // make message too long on purpose
                 - Constants.LoraProtocolOverheadSize;

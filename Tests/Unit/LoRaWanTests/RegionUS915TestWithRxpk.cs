@@ -1,15 +1,14 @@
-// Copyright (c) Microsoft. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
+    using System;
     using System.Collections.Generic;
     using LoRaTools.Regions;
     using Xunit;
 
-    public class RegionUS915Test : RegionTestBase
+    [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
+    public class RegionUS915TestWithRxpk : RegionTestBase
     {
-        public RegionUS915Test()
+        public RegionUS915TestWithRxpk()
         {
             Region = RegionManager.US915;
         }
@@ -17,15 +16,15 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [Theory]
         [PairwiseData]
         public void TestFrequencyAndDataRateDR1To3(
-            [CombinatorialValues(0, 1, 2, 3)] ushort inputDr,
+            [CombinatorialValues("SF10BW125", "SF9BW125", "SF8BW125", "SF7BW125")] string inputDr,
             [CombinatorialValues(902.3, 902.5, 902.7, 902.9, 903.1, 903.3, 903.5, 903.7, 903.9)] double inputFreq)
         {
-            var inputDrToExpectedDr = new Dictionary<ushort, ushort>
+            var inputDrToExpectedDr = new Dictionary<string, string>
             {
-                { 0, 10 },
-                { 1, 11 },
-                { 2, 12 },
-                { 3, 13 }
+                {"SF10BW125", "SF10BW500" },
+                {"SF9BW125", "SF9BW500" },
+                {"SF8BW125", "SF8BW500" },
+                {"SF7BW125", "SF7BW500" }
             };
 
             var inputFreqToExpectedFreq = new Dictionary<double, double>
@@ -52,10 +51,10 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [Theory]
         [PairwiseData]
         public void TestFrequencyAndDataRateDR4(
-            [CombinatorialValues(4)] ushort inputDr,
+            [CombinatorialValues("SF8BW500")] string inputDr,
             [CombinatorialValues(903, 904.6, 906.2, 907.8, 909.4, 911, 912.6, 914.2)] double inputFreq)
         {
-            ushort expectedDr = 13;
+            var expectedDr = "SF7BW500";
 
             var inputFreqToExpectedFreq = new Dictionary<double, double>
             {
@@ -75,36 +74,36 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Theory]
-        [InlineData(700, 0)]
-        [InlineData(1024, 2)]
-        [InlineData(915, 90)]
-        [InlineData(920, 100)]
-        public void TestLimit(double freq, ushort datarate)
+        [InlineData(700, "SF10BW125")]
+        [InlineData(1024, "SF8BW125")]
+        [InlineData(915, "SF0BW125")]
+        [InlineData(920, "SF30BW400")]
+        public void TestLimit(double freq, string datarate)
         {
             TestRegionLimit(freq, datarate);
         }
 
         [Theory]
-        [InlineData(0,  19)]
-        [InlineData(1, 61)]
-        [InlineData(2, 133)]
-        [InlineData(3, 250)]
-        [InlineData(4, 250)]
-        [InlineData(8,  61)]
-        [InlineData(9,  137)]
-        [InlineData(10,  250)]
-        [InlineData(11, 250)]
-        [InlineData(13, 250)]
-        public void TestMaxPayloadLength(ushort datr, uint maxPyldSize)
+        [InlineData("SF10BW125", 19)]
+        [InlineData("SF9BW125", 61)]
+        [InlineData("SF8BW125", 133)]
+        [InlineData("SF7BW125", 250)]
+        [InlineData("SF8BW500", 250)]
+        [InlineData("SF12BW500", 61)]
+        [InlineData("SF11BW500", 137)]
+        [InlineData("SF10BW500", 250)]
+        [InlineData("SF9BW500", 250)]
+        [InlineData("SF7BW500", 250)]
+        public void TestMaxPayloadLength(string datr, uint maxPyldSize)
         {
             TestRegionMaxPayloadLength(datr, maxPyldSize);
         }
 
         [Theory]
-        [InlineData(null, null, null, 923.3, (ushort)8)] // Standard US.
-        [InlineData((ushort)11, null, null, 923.3, (ushort)11)] // Standard EU.
-        [InlineData((ushort)11, 920.0, (ushort)12, 920.0, (ushort)12)] // Standard EU.
-        public void TestDownstreamRX2(ushort? nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, ushort expectedDr)
+        [InlineData("", null, null, 923.3, "SF12BW500")] // Standard US.
+        [InlineData("SF9BW500", null, null, 923.3, "SF9BW500")] // Standard EU.
+        [InlineData("SF9BW500", 920.0, (ushort)12, 920.0, "SF8BW500")] // Standard EU.
+        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
         {
             TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
         }
@@ -113,6 +112,12 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public void TestTranslateRegionType()
         {
             TestTranslateToRegion(LoRaRegionType.US915);
+        }
+
+        [Fact]
+        public void TestResolveRegion()
+        {
+            TestTryResolveRegionRxpk("SF9BW500", 902.3);
         }
     }
 }
