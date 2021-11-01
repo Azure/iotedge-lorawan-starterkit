@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
     internal static class LnsStationConfiguration
     {
-        private struct ChannelConfig
+        private class ChannelConfig
         {
             public ChannelConfig(bool enable, bool radio, int @if)
             {
@@ -26,7 +26,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             public int If { get; }
         }
 
-        private struct StandardConfig
+        private class StandardConfig
         {
             public StandardConfig(bool enable, bool radio, int @if, Bandwidth bandwidth, SpreadingFactor spreadingFactor)
             {
@@ -44,7 +44,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             public SpreadingFactor SpreadingFactor { get; }
         }
 
-        private struct RadioConfig
+        private class RadioConfig
         {
             public RadioConfig(bool enable, Hertz freq)
             {
@@ -56,7 +56,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             public Hertz Freq { get; }
         }
 
-        private struct Sx1301Config
+        private class Sx1301Config
         {
             public Sx1301Config(RadioConfig radio0,
                                 RadioConfig radio1,
