@@ -14,6 +14,12 @@ namespace LoRaTools.LoRaPhysical
         [JsonProperty("txpk")]
         public Txpk Txpk { get; set; }
 
+        [JsonIgnore]
+        public string DevEui { get; }
+
+        [JsonIgnore]
+        public ushort RxDelay { get; }
+
         public DownlinkPktFwdMessage()
         {
         }
@@ -44,7 +50,7 @@ namespace LoRaTools.LoRaPhysical
         /// This method is used in case of a response to a upstream message.
         /// </summary>
         /// <returns>DownlinkPktFwdMessage object ready to be sent.</returns>
-        public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, long tmst = 0)
+        public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, string devEui, long tmst = 0, ushort rxDelay = 0)
         {
             if (loRaData is null) throw new ArgumentNullException(nameof(loRaData));
 
@@ -63,6 +69,9 @@ namespace LoRaTools.LoRaPhysical
                 Powe = 14,
                 Ipol = true
             };
+
+            DevEui = devEui;
+            RxDelay = rxDelay;
         }
 
         [Obsolete("ad")]
