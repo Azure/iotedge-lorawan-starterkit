@@ -4,7 +4,6 @@
 namespace LoRaWan
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
 
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable (false positive)
@@ -54,10 +53,10 @@ namespace LoRaWan
             this.linkedCts?.Dispose();
         }
 
-        public bool Equals([AllowNull] LinkedTimeoutCancellationToken other) =>
+        public bool Equals(LinkedTimeoutCancellationToken other) =>
             other is { } o && Token == o.Token;
 
-        public override bool Equals([AllowNull] object obj) =>
+        public override bool Equals(object? obj) =>
             obj is LinkedTimeoutCancellationToken other && Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Token);
