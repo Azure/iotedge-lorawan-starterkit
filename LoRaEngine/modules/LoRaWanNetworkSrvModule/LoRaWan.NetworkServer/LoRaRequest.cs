@@ -35,7 +35,7 @@ namespace LoRaWan.NetworkServer
             Rxpk rxpk,
             IPacketForwarder packetForwarder,
             DateTime startTime,
-            string concentratorId = null)
+            string concentratorId = default)
         {
             Rxpk = rxpk;
             PacketForwarder = packetForwarder;

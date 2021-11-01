@@ -182,7 +182,7 @@ namespace LoRaWan.NetworkServer
                 {
                     foreach (var rxpk in messageRxpks)
                     {
-                        this.messageDispatcher.DispatchRequest(new LoRaRequest(rxpk, this, startTimeProcessing, "LBSA")); // TODO
+                        this.messageDispatcher.DispatchRequest(new LoRaRequest(rxpk, this, startTimeProcessing));
                     }
                 }
             }
