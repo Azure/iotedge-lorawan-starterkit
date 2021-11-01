@@ -25,7 +25,8 @@ namespace LoRaWan.NetworkServer
 
         public void DispatchRequest(LoRaRequest request)
         {
-            _ = Task.Run(async () => await ProcessJoinRequestAsync(request));
+            // Unobserved task exceptions are logged as part of ProcessJoinRequestAsync.
+            _ = Task.Run(() => ProcessJoinRequestAsync(request));
         }
 
         /// <summary>
