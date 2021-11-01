@@ -111,7 +111,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("if", JsonReader.Int32()),
                               JsonReader.Property("bandwidth", JsonReader.UInt32()),
                               JsonReader.Property("spread_factor", JsonReader.UInt32()),
-                              (e, r, i, b, sf) => new StandardConfig(e, r == 1, i, (Bandwidth)(b / 1000), (SpreadingFactor)sf));
+                              (e, r, i, b, sf) => new StandardConfig(e, r == 1, i, GetBandwidth(b), CastToEnumIfDefined<SpreadingFactor>((int)sf)));
 
         private static readonly IJsonReader<RadioConfig> RadioConfigReader =
             JsonReader.Object(JsonReader.Property("enable", JsonReader.Boolean()),
@@ -148,7 +148,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("freq_range", from r in JsonReader.Array(JsonReader.UInt32())
                                                                 select (new Hertz(r[0]), new Hertz(r[1]))),
                               JsonReader.Property("DRs", JsonReader.Array(from arr in JsonReader.Array(JsonReader.UInt32())
-                                                                          select ((SpreadingFactor)arr[0], (Bandwidth)arr[1], Convert.ToBoolean(arr[2])))),
+                                                                          select (CastToEnumIfDefined<SpreadingFactor>((int)arr[0]), GetBandwidth(arr[1]), Convert.ToBoolean(arr[2])))),
                               JsonReader.Property("sx1301_conf", JsonReader.Array(Sx1301ConfReader)),
                               JsonReader.Property("nocca", JsonReader.Boolean()),
                               JsonReader.Property("nodc", JsonReader.Boolean()),
@@ -174,6 +174,19 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
          */
 
         public static string GetConfiguration(string jsonInput) => RouterConfigurationConverter.Read(jsonInput);
+
+        private static Bandwidth GetBandwidth(uint bandwidth)
+        {
+            // Bandwidths above 5MHz do not make sense, assume that the number is in kHz instead.
+            const int kHzLimit = 5000;
+            var bandwidthInKHz = bandwidth > kHzLimit ? (bandwidth / 1000) : bandwidth;
+            return CastToEnumIfDefined<Bandwidth>((int)bandwidthInKHz);
+        }
+
+        private static T CastToEnumIfDefined<T>(int value) where T : Enum =>
+            Enum.IsDefined(typeof(T), value)
+                ? (T)(object)value
+                : throw new JsonException($"'{value}' is not defined in enum '{nameof(T)}'.");
 
         private static string WriteRouterConfig(IEnumerable<NetId> allowedNetIds,
                                                 IEnumerable<(JoinEui Min, JoinEui Max)> joinEuiRanges,
