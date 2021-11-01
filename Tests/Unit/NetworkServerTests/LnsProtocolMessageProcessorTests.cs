@@ -274,7 +274,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                            });
 
             // act
-            await this.lnsMessageProcessorMock.InternalHandleDataAsync(httpContextMock.Object,
+            await this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
                                                                        this.socketMock.Object,
                                                                        CancellationToken.None);
 
@@ -300,7 +300,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 .ReturnsAsync(new ValueWebSocketReceiveResult(inputBytes.Length, WebSocketMessageType.Text, true));
 
             // act + assert
-            await Assert.ThrowsAsync<NotSupportedException>(() => this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object,
+            await Assert.ThrowsAsync<NotSupportedException>(() => this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
                                                                                                                        this.socketMock.Object,
                                                                                                                        CancellationToken.None));
         }
@@ -313,7 +313,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // act + assert
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object,
+                this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
                                                                      this.socketMock.Object,
                                                                      CancellationToken.None));
         }

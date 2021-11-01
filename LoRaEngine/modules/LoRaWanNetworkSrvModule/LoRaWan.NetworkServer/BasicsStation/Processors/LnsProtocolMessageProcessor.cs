@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;
 
     internal class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
@@ -69,7 +70,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             ProcessIncomingRequestAsync(httpContext, InternalHandleDiscoveryAsync, cancellationToken);
 
         public Task HandleDataAsync(HttpContext httpContext, CancellationToken cancellationToken) =>
-            ProcessIncomingRequestAsync(httpContext, InternalHandleDataAsync, cancellationToken);
+            ProcessIncomingRequestAsync(httpContext,
+                                        (httpContext, socket, ct) => InternalHandleDataAsync(httpContext.Request.RouteValues, socket, ct),
+                                        cancellationToken);
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
         internal async Task InternalHandleDiscoveryAsync(HttpContext httpContext, WebSocket socket, CancellationToken cancellationToken)
@@ -111,11 +114,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             }
         }
 
-        internal async Task InternalHandleDataAsync(HttpContext httpContext, WebSocket socket, CancellationToken cancellationToken)
+        internal async Task InternalHandleDataAsync(RouteValueDictionary routeValues, WebSocket socket, CancellationToken cancellationToken)
         {
-            if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
-
-            var stationEui = httpContext.Request.RouteValues.TryGetValue(BasicsStationNetworkServer.RouterIdPathParameterName, out var sEui) ?
+            var stationEui = routeValues.TryGetValue(BasicsStationNetworkServer.RouterIdPathParameterName, out var sEui) ?
                 StationEui.Parse(sEui.ToString())
                 : throw new InvalidOperationException($"{BasicsStationNetworkServer.RouterIdPathParameterName} was not present on path.");
 
