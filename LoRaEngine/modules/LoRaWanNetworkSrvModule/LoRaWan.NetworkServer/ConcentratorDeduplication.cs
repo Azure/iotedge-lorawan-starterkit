@@ -21,7 +21,10 @@ namespace LoRaWan.NetworkServer
                 if (!this.Cache.TryGetValue(deviceEUI, out CacheEntry previousMessage) || payloadFrameCounterAdjusted > previousMessage.FrameCounter)
                 {
                     // we have not encountered this device before or we received a newer message
-                    _ = this.Cache.Set(deviceEUI, new CacheEntry(payloadFrameCounterAdjusted, request.ConcentratorId));
+                    _ = this.Cache.Set(deviceEUI, new CacheEntry(payloadFrameCounterAdjusted, request.ConcentratorId), new MemoryCacheEntryOptions()
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
+                    });
                     return false;
                 }
 
@@ -38,7 +41,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public void Dispose() => Cache.Dispose();
+        public void Dispose() => this.Cache.Dispose();
 
         private sealed class CacheEntry
         {
