@@ -70,11 +70,12 @@ namespace LoRaWan.Tests.Common
             var adrStrategyProvider = new LoRaADRStrategyProvider();
             var adrManagerFactory = new LoRAADRManagerFactory(LoRaDeviceApi.Object);
             var functionBundlerProvider = new FunctionBundlerProvider(LoRaDeviceApi.Object);
-            RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
+            using var concentratorDeduplication = new ConcentratorDeduplication();
+            RequestHandlerImplementation = new DefaultLoRaDataRequestHandler(ServerConfiguration, FrameCounterUpdateStrategyProvider, concentratorDeduplication, PayloadDecoder, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider);
             LoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
             ConnectionManager = new LoRaDeviceClientConnectionManager(this.cache);
-            LoRaDeviceFactory = new TestLoRaDeviceFactory(ServerConfiguration, FrameCounterUpdateStrategyProvider, LoRaDeviceClient.Object, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, ConnectionManager);
+            LoRaDeviceFactory = new TestLoRaDeviceFactory(ServerConfiguration, FrameCounterUpdateStrategyProvider, LoRaDeviceClient.Object, concentratorDeduplication, deduplicationFactory, adrStrategyProvider, adrManagerFactory, functionBundlerProvider, ConnectionManager);
         }
 
         public static MemoryCache NewMemoryCache() => new MemoryCache(new MemoryCacheOptions());

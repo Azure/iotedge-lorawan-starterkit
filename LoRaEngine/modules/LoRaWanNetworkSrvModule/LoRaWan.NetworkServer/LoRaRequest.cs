@@ -18,6 +18,8 @@ namespace LoRaWan.NetworkServer
 
         public virtual DateTime StartTime { get; }
 
+        public string ConcentratorId { get; }
+
         public virtual Region Region { get; private set; }
 
         protected LoRaRequest()
@@ -32,11 +34,13 @@ namespace LoRaWan.NetworkServer
         public LoRaRequest(
             Rxpk rxpk,
             IPacketForwarder packetForwarder,
-            DateTime startTime)
+            DateTime startTime,
+            string concentratorId = null)
         {
             Rxpk = rxpk;
             PacketForwarder = packetForwarder;
             StartTime = startTime;
+            ConcentratorId = concentratorId;
         }
 
         internal void NotifyFailed(LoRaDevice loRaDevice, Exception error) => NotifyFailed(loRaDevice, LoRaDeviceRequestFailedReason.ApplicationError, error);

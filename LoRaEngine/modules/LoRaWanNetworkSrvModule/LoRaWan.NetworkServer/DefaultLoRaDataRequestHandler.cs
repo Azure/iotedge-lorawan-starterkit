@@ -18,6 +18,7 @@ namespace LoRaWan.NetworkServer
     {
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
+        private readonly IConcentratorDeduplication concentratorDeduplication;
         private readonly ILoRaPayloadDecoder payloadDecoder;
         private readonly IDeduplicationStrategyFactory deduplicationFactory;
         private readonly ILoRaADRStrategyProvider loRaADRStrategyProvider;
@@ -28,6 +29,7 @@ namespace LoRaWan.NetworkServer
         public DefaultLoRaDataRequestHandler(
             NetworkServerConfiguration configuration,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
+            IConcentratorDeduplication concentratorDeduplication,
             ILoRaPayloadDecoder payloadDecoder,
             IDeduplicationStrategyFactory deduplicationFactory,
             ILoRaADRStrategyProvider loRaADRStrategyProvider,
@@ -37,6 +39,7 @@ namespace LoRaWan.NetworkServer
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
+            this.concentratorDeduplication = concentratorDeduplication;
             this.payloadDecoder = payloadDecoder;
             this.deduplicationFactory = deduplicationFactory;
             this.classCDeviceMessageSender = classCDeviceMessageSender;
@@ -63,6 +66,12 @@ namespace LoRaWan.NetworkServer
 
             var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
             Logger.Log(loRaDevice.DevEUI, $"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}", LogLevel.Debug);
+
+            if (this.concentratorDeduplication.IsDuplicate(request, payloadFcntAdjusted, loRaDevice.DevEUI))
+            {
+                Logger.Log(loRaDevice.DevEUI, $"invalid frame counter/contentrator, message ignored, msg: {loraPayload} server: {loRaDevice.FCntUp}", LogLevel.Error);
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.InvalidFrameCounter);
+            }
 
             var payloadPort = loraPayload.FPortValue;
             var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;

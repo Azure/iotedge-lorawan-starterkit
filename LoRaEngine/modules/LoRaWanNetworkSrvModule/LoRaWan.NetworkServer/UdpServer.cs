@@ -57,11 +57,12 @@ namespace LoRaWan.NetworkServer
             var frameCounterStrategyProvider = new LoRaDeviceFrameCounterUpdateStrategyProvider(configuration, loRaDeviceAPIService);
             var deduplicationStrategyFactory = new DeduplicationStrategyFactory(loRaDeviceAPIService);
             var adrStrategyProvider = new LoRaADRStrategyProvider();
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            var dataHandlerImplementation = new DefaultLoRaDataRequestHandler(configuration, frameCounterStrategyProvider, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, new LoRAADRManagerFactory(loRaDeviceAPIService), new FunctionBundlerProvider(loRaDeviceAPIService));
+            using var cache = new MemoryCache(new MemoryCacheOptions());
+            using var concentratorDeduplication = new ConcentratorDeduplication();
+            var dataHandlerImplementation = new DefaultLoRaDataRequestHandler(configuration, frameCounterStrategyProvider, concentratorDeduplication, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, new LoRAADRManagerFactory(loRaDeviceAPIService), new FunctionBundlerProvider(loRaDeviceAPIService));
             var connectionManager = new LoRaDeviceClientConnectionManager(cache);
             var loRaDeviceFactory = new LoRaDeviceFactory(configuration, dataHandlerImplementation, connectionManager);
-            var loRaDeviceRegistry = new LoRaDeviceRegistry(configuration, cache, loRaDeviceAPIService, loRaDeviceFactory);
+            using var loRaDeviceRegistry = new LoRaDeviceRegistry(configuration, cache, loRaDeviceAPIService, loRaDeviceFactory);
 
             var messageDispatcher = new MessageDispatcher(configuration, loRaDeviceRegistry, frameCounterStrategyProvider);
             var udpServer = new UdpServer(configuration, messageDispatcher, loRaDeviceAPIService, loRaDeviceRegistry);
@@ -181,7 +182,7 @@ namespace LoRaWan.NetworkServer
                 {
                     foreach (var rxpk in messageRxpks)
                     {
-                        this.messageDispatcher.DispatchRequest(new LoRaRequest(rxpk, this, startTimeProcessing));
+                        this.messageDispatcher.DispatchRequest(new LoRaRequest(rxpk, this, startTimeProcessing, "LBSA")); // TODO
                     }
                 }
             }
