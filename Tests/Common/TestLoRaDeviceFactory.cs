@@ -34,6 +34,7 @@ namespace LoRaWan.Tests.Common
                 ExpirationScanFrequency = TimeSpan.FromSeconds(5),
             });
             this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(this.memoryCache);
+            this.concentratorDeduplication = new ConcentratorDeduplication();
         }
 
         public TestLoRaDeviceFactory(ILoRaDeviceClient loRaDeviceClient, ILoRaDataRequestHandler requestHandler, ILoRaDeviceClientConnectionManager connectionManager = null)
@@ -45,6 +46,7 @@ namespace LoRaWan.Tests.Common
                 ExpirationScanFrequency = TimeSpan.FromSeconds(5),
             });
             this.connectionManager = connectionManager ?? new LoRaDeviceClientConnectionManager(this.memoryCache);
+            this.concentratorDeduplication = new ConcentratorDeduplication();
         }
 
         public TestLoRaDeviceFactory(
