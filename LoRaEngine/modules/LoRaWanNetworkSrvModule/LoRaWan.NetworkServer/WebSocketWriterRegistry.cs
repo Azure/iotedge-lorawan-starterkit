@@ -46,8 +46,8 @@ namespace LoRaWan.NetworkServer
                 return this.sockets.TryGetValue(key, out var currentSocket) ? currentSocket.Object : null;
         }
 
-        internal async ValueTask SendAsync(TKey key, TMessage message,
-                                           CancellationToken cancellationToken)
+        public async ValueTask SendAsync(TKey key, TMessage message,
+                                         CancellationToken cancellationToken)
         {
             IWebSocketWriter<TMessage> socketWriter;
 
