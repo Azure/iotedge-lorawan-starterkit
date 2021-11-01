@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Net.WebSockets;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
@@ -93,9 +94,18 @@ namespace LoRaWan.NetworkServer
                                            CancellationToken cancellationToken)
         {
             IWebSocketWriter<TMessage> socketWriter;
+
             lock (this.sockets)
                 socketWriter = this.sockets[key].Object;
-            await socketWriter.SendAsync(message, cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await socketWriter.SendAsync(message, cancellationToken).ConfigureAwait(false);
+            }
+            catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+            {
+                _ = Deregister(key);
+            }
         }
     }
 }
