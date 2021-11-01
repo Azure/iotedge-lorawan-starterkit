@@ -27,13 +27,15 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
-            var queryResult = await this.loRaDeviceApiService.SearchByDevEUIAsync(stationEui.ToString());
-            var info = queryResult.Single();
-
             void Log(string message) => Logger.Log(stationEui.ToString(), message, LogLevel.Error);
+
+            var queryResult = await this.loRaDeviceApiService.SearchByDevEUIAsync(stationEui.ToString());
 
             try
             {
+                if (queryResult.Count != 1)
+                    Log($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.");
+                var info = queryResult.Single();
                 using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
                 var twin = await client.GetTwinAsync();
                 var configJson = ((object)twin.Properties.Desired[RouterConfigPropertyName]).ToString();
