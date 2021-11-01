@@ -30,10 +30,14 @@ namespace LoRaWan.NetworkServer
         private readonly WebSocket socket;
         private readonly Channel<Output> channel;
         private readonly Synchronized<bool> isSendQueueProcessorRunning = new(false);
+        private readonly TimeSpan sendTimeout;
 
-        public WebSocketTextChannel(WebSocket socket)
+        public WebSocketTextChannel(WebSocket socket, TimeSpan sendTimeout)
         {
             this.socket = socket;
+            this.sendTimeout = sendTimeout == Timeout.InfiniteTimeSpan || sendTimeout >= TimeSpan.Zero
+                             ? sendTimeout
+                             : throw new ArgumentOutOfRangeException(nameof(sendTimeout), sendTimeout, null);
             this.channel = Channel.CreateUnbounded<Output>();
         }
 
@@ -142,7 +146,9 @@ namespace LoRaWan.NetworkServer
         {
             if (!this.isSendQueueProcessorRunning.ReadDirty())
                 throw new InvalidOperationException();
-            using var timeoutTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            using var timeoutTokenSource = this.sendTimeout == Timeout.InfiniteTimeSpan
+                                         ? new CancellationTokenSource() // never cancels
+                                         : new CancellationTokenSource(this.sendTimeout);
             using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
             cancellationToken = linkedTokenSource.Token;
             var output = new Output(message, cancellationToken);
