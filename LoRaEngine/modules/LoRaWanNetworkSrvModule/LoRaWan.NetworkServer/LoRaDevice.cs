@@ -994,7 +994,8 @@ namespace LoRaWan.NetworkServer
                     this.runningRequest = request;
 
                     // Ensure that this is schedule in a new thread, releasing the lock asap
-                    _ = Task.Run(() => { _ = RunAndQueueNext(request); });
+                    // Exception is handled and logged as part of RunAndQueueNext.
+                    _ = Task.Run(() => RunAndQueueNext(request));
                 }
                 else
                 {
@@ -1014,7 +1015,8 @@ namespace LoRaWan.NetworkServer
                 {
                     this.runningRequest = nextRequest;
                     // Ensure that this is schedule in a new thread, releasing the lock asap
-                    _ = Task.Run(() => { _ = RunAndQueueNext(nextRequest); });
+                    // Exception is handled and logged as part of RunAndQueueNext.
+                    _ = Task.Run(() => RunAndQueueNext(nextRequest));
                 }
             }
         }
