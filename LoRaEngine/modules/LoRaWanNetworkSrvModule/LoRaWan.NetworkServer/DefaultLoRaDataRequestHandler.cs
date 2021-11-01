@@ -10,6 +10,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.ADR;
     using LoRaTools.CommonAPI;
     using LoRaTools.LoRaMessage;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer.ADR;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -499,13 +500,26 @@ namespace LoRaWan.NetworkServer
             // If preferred Window is RX2, this is the max. payload
             if (loRaDevice.PreferredWindow == Constants.ReceiveWindow2)
             {
-                // Get max. payload size for RX2, considering possilbe user provided Rx2DataRate
+                // Get max. payload size for RX2, considering possible user provided Rx2DataRate
                 if (string.IsNullOrEmpty(this.configuration.Rx2DataRate))
-                    maxPayload = loRaRegion.DRtoConfiguration[loRaRegion.RX2DefaultReceiveWindows.dr].maxPyldSize;
+                {
+                    if (loRaRegion.LoRaRegion == LoRaRegionType.CN470)
+                    {
+                        var rx2ReceiveWindow = loRaRegion.GetDefaultRX2ReceiveWindow(new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel));
+                        maxPayload = loRaRegion.DRtoConfiguration[rx2ReceiveWindow.DataRate].maxPyldSize;
+
+                    }
+                    else
+                    {
+                        maxPayload = loRaRegion.DRtoConfiguration[loRaRegion.GetDefaultRX2ReceiveWindow().DataRate].maxPyldSize;
+                    }
+                }
                 else
+                {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
                     maxPayload = loRaRegion.GetMaxPayloadSize(this.configuration.Rx2DataRate);
 #pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+                }
             }
 
             // Otherwise, it is RX1.

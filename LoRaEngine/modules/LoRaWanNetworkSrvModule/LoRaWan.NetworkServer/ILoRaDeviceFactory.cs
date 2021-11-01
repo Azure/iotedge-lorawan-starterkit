@@ -7,5 +7,12 @@ namespace LoRaWan.NetworkServer
     {
         // Creates and initializes a new lora device
         LoRaDevice Create(IoTHubDeviceInfo deviceInfo);
+
+        /// <summary>
+        /// Creates a device client based on the devEUI and primary key.
+        /// </summary>
+        /// <param name="eui">Dev EUI of the device.</param>
+        /// <param name="primaryKey">Primary key of the device.</param>
+        ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey);
     }
 }

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using LoRaTools.Regions;
@@ -48,7 +51,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public void TestFrequency(double inputFreq, double outputFreq, int joinChannel)
         {
             var rxpk = GenerateRxpk("SF12BW125", inputFreq);
-            TestRegionFrequency(rxpk, outputFreq, joinChannel);
+            TestRegionFrequency(rxpk, outputFreq, new DeviceJoinInfo(joinChannel));
         }
 
         [Theory]
@@ -73,7 +76,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(490, "SF30BW125")]
         public void TestLimit(double freq, string datarate)
         {
-            TestRegionLimit(freq, datarate, 0);
+            TestRegionLimit(freq, datarate, new DeviceJoinInfo(0));
         }
 
         [Theory]
@@ -89,13 +92,22 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             TestRegionMaxPayloadLength(datr, maxPyldSize);
         }
 
-        // TODO: expand test cases as part of #561
         [Theory]
-        [InlineData("", null, null, 485.3, "SF11BW125")]
-        [InlineData("SF11BW125", null, null, 485.3, "SF11BW125")]
-        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        [InlineData(null, null, 0, null, "SF11BW125")]
+        [InlineData(null, null, 8, null, "SF11BW125")]
+        [InlineData(null, null, 10, null, "SF11BW125")]
+        [InlineData(null, null, 19, null, "SF11BW125")]
+        [InlineData(null, null, null, 5, "SF11BW125")]
+        [InlineData(null, null, null, 12, "SF11BW125")]
+        [InlineData(null, null, 10, 14, "SF11BW125")]
+        [InlineData(null, (ushort)2, 0, null, "SF10BW125")]
+        [InlineData("SF9BW125", null, 0, null, "SF9BW125")]
+        [InlineData("SF9BW125", (ushort)2, 0, null, "SF10BW125")]
+        [InlineData("SF8BW125", (ushort)3, 0, 8, "SF9BW125")]
+        public void TestRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, string expectedDr)
         {
-            TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
+            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
+            TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr, deviceJoinInfo);
         }
 
         [Fact]

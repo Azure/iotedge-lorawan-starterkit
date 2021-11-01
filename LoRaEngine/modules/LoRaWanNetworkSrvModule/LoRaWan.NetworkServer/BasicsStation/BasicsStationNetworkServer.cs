@@ -12,6 +12,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     public static class BasicsStationNetworkServer
     {
         internal const string DiscoveryEndpoint = "/router-info";
+        internal const string RouterIdPathParameterName = "routerId";
         internal const string DataEndpoint = "/router-data";
         private const int SecurePort = 5001;
         private const int Port = 5000;

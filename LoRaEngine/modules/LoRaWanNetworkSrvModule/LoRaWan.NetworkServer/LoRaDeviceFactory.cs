@@ -73,12 +73,12 @@ namespace LoRaWan.NetworkServer
             return connectionString;
         }
 
-        private LoRaDeviceClient CreateDeviceClient(string devEUI, string primaryKey)
+        public ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey)
         {
             try
             {
-                var partConnection = CreateIoTHubConnectionString(devEUI);
-                var deviceConnectionStr = $"{partConnection}DeviceId={devEUI};SharedAccessKey={primaryKey}";
+                var partConnection = CreateIoTHubConnectionString(eui);
+                var deviceConnectionStr = $"{partConnection}DeviceId={eui};SharedAccessKey={primaryKey}";
 
                 // Enabling AMQP multiplexing
                 var transportSettings = new ITransportSettings[]
@@ -94,11 +94,11 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                return new LoRaDeviceClient(devEUI, deviceConnectionStr, transportSettings);
+                return new LoRaDeviceClient(eui, deviceConnectionStr, transportSettings);
             }
             catch (Exception ex)
             {
-                Logger.Log(devEUI, $"could not create IoT Hub device client with error: {ex.Message}", LogLevel.Error);
+                Logger.Log(eui, $"could not create IoT Hub device client with error: {ex.Message}", LogLevel.Error);
                 throw;
             }
         }

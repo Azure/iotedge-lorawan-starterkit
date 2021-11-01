@@ -4,13 +4,10 @@
 namespace LoRaTools.Regions
 {
     using System;
-    using System.Collections.Generic;
     using LoRaTools.LoRaPhysical;
 
     public static class RegionManager
     {
-        private static readonly object RegionLock = new object();
-
         public static Region CurrentRegion
         {
             get; set;
@@ -83,68 +80,17 @@ namespace LoRaTools.Regions
             {
                 if (eu868 == null)
                 {
-                    lock (RegionLock)
-                    {
 #pragma warning disable CA1508 // Avoid dead conditional code
-                        // False positive
-                        if (eu868 == null)
+                    // False positive
+                    if (eu868 == null)
 #pragma warning restore CA1508 // Avoid dead conditional code
-                        {
-                            CreateEU868Region();
-                        }
+                    {
+                        eu868 = new RegionEU868();
                     }
                 }
 
                 return eu868;
             }
-        }
-
-        private static void CreateEU868Region()
-        {
-            eu868 = new RegionEU868();
-            eu868.DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
-            eu868.DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
-            eu868.DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 59));
-            eu868.DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 123));
-            eu868.DRtoConfiguration.Add(4, (configuration: "SF8BW125", maxPyldSize: 230));
-            eu868.DRtoConfiguration.Add(5, (configuration: "SF7BW125", maxPyldSize: 230));
-            eu868.DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 230));
-            eu868.DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 230)); // USED FOR GFSK
-
-            eu868.TXPowertoMaxEIRP.Add(0, 16);
-            eu868.TXPowertoMaxEIRP.Add(1, 14);
-            eu868.TXPowertoMaxEIRP.Add(2, 12);
-            eu868.TXPowertoMaxEIRP.Add(3, 10);
-            eu868.TXPowertoMaxEIRP.Add(4, 8);
-            eu868.TXPowertoMaxEIRP.Add(5, 6);
-            eu868.TXPowertoMaxEIRP.Add(6, 4);
-            eu868.TXPowertoMaxEIRP.Add(7, 2);
-
-            eu868.RX1DROffsetTable = new int[8][]
-            {
-                new int[] { 0, 0, 0, 0, 0, 0 },
-                new int[] { 1, 0, 0, 0, 0, 0 },
-                new int[] { 2, 1, 0, 0, 0, 0 },
-                new int[] { 3, 2, 1, 0, 0, 0 },
-                new int[] { 4, 3, 2, 1, 0, 0 },
-                new int[] { 5, 4, 3, 2, 1, 0 },
-                new int[] { 6, 5, 4, 3, 2, 1 },
-                new int[] { 7, 6, 5, 4, 3, 2 }
-            };
-            var validDataRangeUpAndDownstream = new HashSet<string>()
-            {
-                "SF12BW125", // 0
-                "SF11BW125", // 1
-                "SF10BW125", // 2
-                "SF9BW125", // 3
-                "SF8BW125", // 4
-                "SF7BW125", // 5
-                "SF7BW250", // 6
-                "50" // 7 FSK 50
-            };
-
-            eu868.MaxADRDataRate = 5;
-            eu868.RegionLimits = new RegionLimits((min: 863, max: 870), validDataRangeUpAndDownstream, validDataRangeUpAndDownstream, 0, 0);
         }
 
         private static Region us915;
@@ -155,72 +101,17 @@ namespace LoRaTools.Regions
             {
                 if (us915 == null)
                 {
-                    lock (RegionLock)
-                    {
 #pragma warning disable CA1508 // Avoid dead conditional code
-                        // False positive
-                        if (us915 == null)
+                    // False positive
+                    if (us915 == null)
 #pragma warning restore CA1508 // Avoid dead conditional code
-                        {
-                            CreateUS915Region();
-                        }
+                    {
+                        us915 = new RegionUS915();
                     }
                 }
 
                 return us915;
             }
-        }
-
-        private static void CreateUS915Region()
-        {
-            us915 = new RegionUS915();
-            us915.DRtoConfiguration.Add(0, (configuration: "SF10BW125", maxPyldSize: 19));
-            us915.DRtoConfiguration.Add(1, (configuration: "SF9BW125", maxPyldSize: 61));
-            us915.DRtoConfiguration.Add(2, (configuration: "SF8BW125", maxPyldSize: 133));
-            us915.DRtoConfiguration.Add(3, (configuration: "SF7BW125", maxPyldSize: 250));
-            us915.DRtoConfiguration.Add(4, (configuration: "SF8BW500", maxPyldSize: 250));
-            us915.DRtoConfiguration.Add(8, (configuration: "SF12BW500", maxPyldSize: 61));
-            us915.DRtoConfiguration.Add(9, (configuration: "SF11BW500", maxPyldSize: 137));
-            us915.DRtoConfiguration.Add(10, (configuration: "SF10BW500", maxPyldSize: 250));
-            us915.DRtoConfiguration.Add(11, (configuration: "SF9BW500", maxPyldSize: 250));
-            us915.DRtoConfiguration.Add(12, (configuration: "SF8BW500", maxPyldSize: 250));
-            us915.DRtoConfiguration.Add(13, (configuration: "SF7BW500", maxPyldSize: 250));
-
-            for (uint i = 0; i < 14; i++)
-            {
-                us915.TXPowertoMaxEIRP.Add(i, 30 - i);
-            }
-
-            us915.RX1DROffsetTable = new int[5][]
-            {
-                new int[] { 10, 9, 8, 8 },
-                new int[] { 11, 10, 9, 8 },
-                new int[] { 12, 11, 10, 9 },
-                new int[] { 13, 12, 11, 10 },
-                new int[] { 13, 13, 12, 11 },
-            };
-
-            var upstreamValidDataranges = new HashSet<string>()
-            {
-                "SF10BW125", // 0
-                "SF9BW125", // 1
-                "SF8BW125", // 2
-                "SF7BW125", // 3
-                "SF8BW500", // 4
-            };
-
-            var downstreamValidDataranges = new HashSet<string>()
-            {
-                "SF12BW500", // 8
-                "SF11BW500", // 9
-                "SF10BW500", // 10
-                "SF9BW500", // 11
-                "SF8BW500", // 12
-                "SF7BW500" // 13
-            };
-
-            us915.MaxADRDataRate = 3;
-            us915.RegionLimits = new RegionLimits((min: 902.3, max: 927.5), upstreamValidDataranges, downstreamValidDataranges, 0, 8);
         }
 
         private static Region cn470;
@@ -231,15 +122,12 @@ namespace LoRaTools.Regions
             {
                 if (cn470 == null)
                 {
-                    lock (RegionLock)
-                    {
 #pragma warning disable CA1508 // Avoid dead conditional code
-                        // False positive
-                        if (cn470 == null)
+                    // False positive
+                    if (cn470 == null)
 #pragma warning restore CA1508 // Avoid dead conditional code
-                        {
-                            cn470 = new RegionCN470();
-                        }
+                    {
+                        cn470 = new RegionCN470();
                     }
                 }
 

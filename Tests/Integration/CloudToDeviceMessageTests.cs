@@ -478,10 +478,10 @@ namespace LoRaWan.Tests.Integration
             var txpk = downlinkMessage.Txpk;
 
             // Ensure we are using second window frequency
-            Assert.Equal(euRegion.RX2DefaultReceiveWindows.frequency, txpk.Freq);
+            Assert.Equal(euRegion.GetDefaultRX2ReceiveWindow().Frequency, txpk.Freq);
 
             // Ensure we are using second window datr
-            Assert.Equal(euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].configuration, txpk.Datr);
+            Assert.Equal(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].configuration, txpk.Datr);
 
             // Ensure tmst was computed to 2 seconds (2 windows in Europe)
             Assert.Equal(2000000, txpk.Tmst);
@@ -580,10 +580,10 @@ namespace LoRaWan.Tests.Integration
             var txpk = downlinkMessage.Txpk;
 
             // Ensure we are using second window frequency
-            Assert.Equal(euRegion.RX2DefaultReceiveWindows.frequency, txpk.Freq);
+            Assert.Equal(euRegion.GetDefaultRX2ReceiveWindow().Frequency, txpk.Freq);
 
             // Ensure we are using second window datr
-            Assert.Equal(euRegion.DRtoConfiguration[euRegion.RX2DefaultReceiveWindows.dr].configuration, txpk.Datr);
+            Assert.Equal(euRegion.DRtoConfiguration[euRegion.GetDefaultRX2ReceiveWindow().DataRate].configuration, txpk.Datr);
 
             // Ensure tmst was computed to 2 seconds (2 windows in Europe)
             Assert.Equal(2000000, txpk.Tmst);
