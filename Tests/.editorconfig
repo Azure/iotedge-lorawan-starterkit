@@ -23,3 +23,6 @@ dotnet_diagnostic.xUnit1004.severity=suggestion
 
 # CA1034: Do not nest types
 dotnet_diagnostic.CA1034.severity = none
+
+# CA1031: Do not catch general exception types
+dotnet_diagnostic.CA1031.severity=suggestion
