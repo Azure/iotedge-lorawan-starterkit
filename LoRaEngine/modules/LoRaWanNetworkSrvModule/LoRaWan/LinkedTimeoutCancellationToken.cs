@@ -53,18 +53,11 @@ namespace LoRaWan
             this.linkedCts?.Dispose();
         }
 
-        public bool Equals(LinkedTimeoutCancellationToken other) =>
-            other is { } o && Token == o.Token;
+        public bool Equals(LinkedTimeoutCancellationToken other) => Token == other.Token;
+        public override bool Equals(object? obj) => obj is LinkedTimeoutCancellationToken other && Equals(other);
+        public override int GetHashCode() => Token.GetHashCode();
 
-        public override bool Equals(object? obj) =>
-            obj is LinkedTimeoutCancellationToken other && Equals(other);
-
-        public override int GetHashCode() => HashCode.Combine(Token);
-
-        public static bool operator ==(LinkedTimeoutCancellationToken left, LinkedTimeoutCancellationToken right) =>
-            left.Equals(right);
-
-        public static bool operator !=(LinkedTimeoutCancellationToken left, LinkedTimeoutCancellationToken right) =>
-            !(left == right);
+        public static bool operator ==(LinkedTimeoutCancellationToken left, LinkedTimeoutCancellationToken right) => left.Equals(right);
+        public static bool operator !=(LinkedTimeoutCancellationToken left, LinkedTimeoutCancellationToken right) => !(left == right);
     }
 }
