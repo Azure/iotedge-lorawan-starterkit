@@ -124,7 +124,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             using var cts1 = new CancellationTokenSource();
             using var cts2 = CancellationTokenSource.CreateLinkedTokenSource(cts1.Token, cancellationToken);
             var task = channel.ProcessSendQueueAsync(cts2.Token);
-            await using var message = channel.ReadMessages(cancellationToken);
+            await using var message = socket.ReadTextMessages(cancellationToken);
             while (await message.MoveNextAsync())
                 await channel.SendAsync("< " + message.Current, cancellationToken);
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", cancellationToken);

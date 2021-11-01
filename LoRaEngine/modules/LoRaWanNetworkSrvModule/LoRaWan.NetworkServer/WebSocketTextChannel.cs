@@ -8,7 +8,6 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Buffers;
     using System.Collections.Generic;
-    using System.IO;
     using System.Net.WebSockets;
     using System.Text;
     using System.Threading;
@@ -41,64 +40,12 @@ namespace LoRaWan.NetworkServer
             this.channel = Channel.CreateUnbounded<Output>();
         }
 
-        /// <summary>
-        /// Reads all text messages arriving on the socket until a message indicating that the
-        /// socket is closed has been received.
-        /// </summary>
-        /// <exception cref="NotSupportedException">
-        /// Thrown when a message type other than text is received.
-        /// </exception>
-        /// <remarks>
-        /// The underlying socket is not closed.
-        /// </remarks>
         public IAsyncEnumerator<string> ReadMessages(CancellationToken cancellationToken) =>
             ReadMessages(MemoryPool<byte>.Shared, 1024, cancellationToken);
 
-        /// <summary>
-        /// Reads all text messages arriving on the socket until a message indicating that the
-        /// socket is closed has been received. Additional arguments specify the memory pool and
-        /// buffer size to use for receiving messages.
-        /// </summary>
-        /// <exception cref="NotSupportedException">
-        /// Thrown when a message type other than text is received.
-        /// </exception>
-        /// <remarks>
-        /// The underlying socket is not closed.
-        /// </remarks>
-        public async IAsyncEnumerator<string> ReadMessages(MemoryPool<byte> memoryPool, int minBufferSize, CancellationToken cancellationToken)
-        {
-            if (memoryPool == null) throw new ArgumentNullException(nameof(memoryPool));
-
-            while (true)
-            {
-                ValueWebSocketReceiveResult result;
-                using var buffer = memoryPool.Rent(minBufferSize);
-                using var ms = new MemoryStream(buffer.Memory.Length);
-                do
-                {
-                    result = await this.socket.ReceiveAsync(buffer.Memory, cancellationToken);
-#pragma warning disable IDE0010 // Add missing cases (all are covered)
-                    switch (result.MessageType)
-#pragma warning restore IDE0010 // Add missing cases
-                    {
-                        case WebSocketMessageType.Close:
-                            yield break;
-                        case var type and not WebSocketMessageType.Text:
-                            throw new NotSupportedException($"Invalid message type received: {type}");
-                    }
-
-                    ms.Write(buffer.Memory.Span[..result.Count]);
-                }
-                while (!result.EndOfMessage);
-
-                ms.Position = 0;
-
-                string input;
-                using (var reader = new StreamReader(ms))
-                    input = reader.ReadToEnd();
-                yield return input;
-            }
-        }
+        public IAsyncEnumerator<string> ReadMessages(MemoryPool<byte> memoryPool, int minBufferSize,
+                                                     CancellationToken cancellationToken) =>
+            this.socket.ReadTextMessages(memoryPool, minBufferSize, cancellationToken);
 
         /// <remarks>
         /// If this method is called when a previous invocation has not completed then it throws
