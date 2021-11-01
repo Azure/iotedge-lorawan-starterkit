@@ -103,7 +103,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             var socket = await context.WebSockets.AcceptWebSocketAsync();
             var id = (string)context.Request.RouteValues["id"];
-            var channel = new WebSocketTextChannel(socket, TimeSpan.FromSeconds(3));
+            var channel = new WebSocketTextChannel(socket, sendTimeout: TimeSpan.FromSeconds(3));
             var h = WebSocketWriterRegistry.Register(id, channel);
             _ = Task.Run(cancellationToken: cancellationToken, function: async () =>
             {
