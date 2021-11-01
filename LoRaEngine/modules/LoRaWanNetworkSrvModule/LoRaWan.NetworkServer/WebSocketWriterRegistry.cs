@@ -18,6 +18,9 @@ namespace LoRaWan.NetworkServer
         public static readonly TimeSpan DefaultPruningInterval = TimeSpan.FromMinutes(2);
     }
 
+    /// <summary>
+    /// A registry providing virtual handles over WebSocket writer objects.
+    /// </summary>
     public sealed class WebSocketWriterRegistry<TKey, TMessage>
         where TKey : notnull
         where TMessage : notnull
@@ -63,9 +66,15 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        /// <summary>
+        /// Removes closed sockets at default interval periods until cancellation is requested.
+        /// </summary>
         public Task RunPrunerAsync(CancellationToken cancellationToken) =>
             RunPrunerAsync(WebSocketWriterRegistry.DefaultPruningInterval, cancellationToken);
 
+        /// <summary>
+        /// Removes closed sockets at a given a interval period until cancellation is requested.
+        /// </summary>
         public Task RunPrunerAsync(TimeSpan interval, CancellationToken cancellationToken)
         {
             return Task.Run(LoopAsync, cancellationToken);
@@ -83,6 +92,9 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        /// <summary>
+        /// Removes all closed sockets, returning the keys of those removed.
+        /// </summary>
         public TKey[] Prune()
         {
             lock (this.sockets)
