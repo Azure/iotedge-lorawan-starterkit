@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer
     {
         private readonly MemoryCache Cache;
 
-
         public ConcentratorDeduplication()
         {
             this.Cache = new MemoryCache(new MemoryCacheOptions());
@@ -17,20 +16,18 @@ namespace LoRaWan.NetworkServer
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
-            lock (this.Cache) // TODO: more fine grained lock
+            lock (this.Cache)
             {
-                _ = this.Cache.TryGetValue(deviceEUI, out CacheEntry latestMessage);
-
-                if (latestMessage == null || latestMessage.FrameCounter < payloadFrameCounterAdjusted)
+                if (!this.Cache.TryGetValue(deviceEUI, out CacheEntry previousMessage) || payloadFrameCounterAdjusted > previousMessage.FrameCounter)
                 {
-                    // we have not seen this device before or we received a newer message
+                    // we have not encountered this device before or we received a newer message
                     _ = this.Cache.Set(deviceEUI, new CacheEntry(payloadFrameCounterAdjusted, request.ConcentratorId));
                     return false;
                 }
 
-                if (latestMessage.FrameCounter == payloadFrameCounterAdjusted && latestMessage.ConcentratorId == request.ConcentratorId)
+                if (payloadFrameCounterAdjusted == previousMessage.FrameCounter && request.ConcentratorId == previousMessage.ConcentratorId)
                 {
-                    // this is a retry
+                    // this is a retry from the same concentrator
                     return false;
                 }
                 else
@@ -43,10 +40,10 @@ namespace LoRaWan.NetworkServer
 
         public void Dispose() => Cache.Dispose();
 
-        private class CacheEntry
+        private sealed class CacheEntry
         {
-            public uint FrameCounter { get; set; }
-            public string ConcentratorId { get; set; }
+            public uint FrameCounter { get; private set; }
+            public string ConcentratorId { get; private set; }
 
             public CacheEntry(uint frameCounter, string concentratorId)
             {
