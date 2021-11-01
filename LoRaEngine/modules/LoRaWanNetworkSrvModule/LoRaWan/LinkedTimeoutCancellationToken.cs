@@ -14,7 +14,7 @@ namespace LoRaWan
         private readonly CancellationTokenSource? timeoutCts;
         private readonly CancellationTokenSource? linkedCts;
 
-        public CancellationToken Token { get; private set; }
+        public CancellationToken Token { get; }
 
         public LinkedTimeoutCancellationToken(TimeSpan? timeSpan, CancellationToken cancellationToken)
         {
