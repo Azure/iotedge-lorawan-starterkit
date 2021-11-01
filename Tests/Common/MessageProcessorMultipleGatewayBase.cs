@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Common
             var loRaAdrManagerFactory = new LoRAADRManagerFactory(SecondLoRaDeviceApi.Object);
             var adrStrategyProvider = new LoRaADRStrategyProvider();
             var functionBundlerProvider = new FunctionBundlerProvider(SecondLoRaDeviceApi.Object);
-            using var concentratorDeduplication = new ConcentratorDeduplication();
+            var concentratorDeduplication = new ConcentratorDeduplication();
             SecondRequestHandlerImplementation = new DefaultLoRaDataRequestHandler(SecondServerConfiguration, SecondFrameCounterUpdateStrategyProvider, concentratorDeduplication, new LoRaPayloadDecoder(), deduplicationStrategyFactory, adrStrategyProvider, loRaAdrManagerFactory, functionBundlerProvider);
             SecondLoRaDeviceClient = new Mock<ILoRaDeviceClient>(MockBehavior.Strict);
             this.cache = new MemoryCache(new MemoryCacheOptions() { ExpirationScanFrequency = TimeSpan.FromSeconds(5) });
