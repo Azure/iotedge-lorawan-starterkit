@@ -9,6 +9,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public class RegionUS915Test : RegionTestBase
     {
+        private static readonly Region region = RegionManager.US915;
+
         public RegionUS915Test()
         {
             Region = RegionManager.US915;
@@ -115,12 +117,36 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             TestTranslateToRegion(LoRaRegionType.US915);
         }
 
-        [Theory]
-        [InlineData(902.3)]
-        [InlineData(927.5)]
-        public void TestTryGetJoinChannelIndex_ReturnsInvalidIndex(double freq)
-        {
-            TestTryGetJoinChannelIndex(freq, -1);
-        }
+        public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
+            new List<object[]>
+            {
+                new object[] { region, 902.3, -1 },
+                new object[] { region, 927.5, -1 },
+            };
+
+        public static IEnumerable<object[]> TestIsValidRX1DROffsetData =>
+           new List<object[]>
+           {
+                new object[] { region, 0, true },
+                new object[] { region, 3, true },
+                new object[] { region, 4, false },
+           };
+
+        public static IEnumerable<object[]> TestIsDRIndexWithinAcceptableValuesData =>
+            new List<object[]>
+            {
+                new object[] { region, (ushort)0, true, true },
+                new object[] { region, (ushort)2, true, true },
+                new object[] { region, (ushort)4, true, true },
+                new object[] { region, (ushort)10, false, true },
+                new object[] { region, (ushort)13, false, true },
+                new object[] { region, (ushort)2, false, false },
+                new object[] { region, (ushort)5, true, false },
+                new object[] { region, (ushort)7, true, false },
+                new object[] { region, (ushort)10, true, false },
+                new object[] { region, (ushort)12, true, false },
+                new object[] { region, (ushort)14, true, false },
+                new object[] { region, null, false, false },
+            };
     }
 }

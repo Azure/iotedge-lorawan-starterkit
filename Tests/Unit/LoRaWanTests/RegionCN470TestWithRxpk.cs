@@ -104,6 +104,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData("SF9BW125", null, 0, null, "SF9BW125")]
         [InlineData("SF9BW125", (ushort)2, 0, null, "SF10BW125")]
         [InlineData("SF8BW125", (ushort)3, 0, 8, "SF9BW125")]
+        [InlineData(null, (ushort)9, 11, null, "SF11BW125")]
         public void TestRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, string expectedDr)
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);

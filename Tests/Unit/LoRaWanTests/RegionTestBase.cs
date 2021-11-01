@@ -11,7 +11,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     using LoRaTools.Regions;
     using Xunit;
 
-    public abstract class RegionTestBase
+    public class RegionTestBase
     {
         protected Region Region { get; set; }
 
@@ -158,9 +158,13 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.IsType(Region.GetType(), region);
         }
 
-        protected void TestTryGetJoinChannelIndex(double freq, int expectedIndex)
+        [Theory]
+        [MemberData(nameof(RegionUS915Test.TestTryGetJoinChannelIndexData), MemberType = typeof(RegionUS915Test))]
+        [MemberData(nameof(RegionEU868Test.TestTryGetJoinChannelIndexData), MemberType = typeof(RegionEU868Test))]
+        [MemberData(nameof(RegionCN470Test.TestTryGetJoinChannelIndexData), MemberType = typeof(RegionCN470Test))]
+        public void TestTryGetJoinChannelIndex(Region region, double freq, int expectedIndex)
         {
-            Assert.False(Region.TryGetJoinChannelIndex(freq, out var channelIndex));
+            Assert.Equal(expectedIndex != -1, region.TryGetJoinChannelIndex(freq, out var channelIndex));
             Assert.Equal(expectedIndex, channelIndex);
         }
 
@@ -170,6 +174,41 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             var rxpk = GenerateRxpk(dr, freq);
             Assert.False(Region.TryGetJoinChannelIndex(rxpk[0], out var channelIndex));
             Assert.Equal(expectedIndex, channelIndex);
+        }
+
+        [Theory]
+        [MemberData(nameof(RegionCN470Test.TestIsValidRX1DROffsetData), MemberType = typeof(RegionCN470Test))]
+        [MemberData(nameof(RegionEU868Test.TestIsValidRX1DROffsetData), MemberType = typeof(RegionEU868Test))]
+        [MemberData(nameof(RegionUS915Test.TestIsValidRX1DROffsetData), MemberType = typeof(RegionUS915Test))]
+        public void TestIsValidRX1DROffset(Region region, uint offset, bool isValid)
+        {
+            Assert.Equal(isValid, region.IsValidRX1DROffset(offset));
+        }
+
+        [Theory]
+        [InlineData(0, true)]
+        [InlineData(15, true)]
+        [InlineData(16, false)]
+        [InlineData(50, false)]
+        public void TestIsValidRXDelay(ushort delay, bool isValid)
+        {
+            Assert.Equal(isValid, Region.IsValidRXDelay(delay));
+        }
+
+        [Theory]
+        [MemberData(nameof(RegionEU868Test.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionEU868Test))]
+        [MemberData(nameof(RegionUS915Test.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionUS915Test))]
+        [MemberData(nameof(RegionCN470Test.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionCN470Test))]
+        public void TestIsDRIndexWithinAcceptableValues(Region region, ushort? datarate, bool upstream, bool isValid)
+        {
+            if (upstream && datarate != null)
+            {
+                Assert.Equal(isValid, region.RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue((ushort)datarate));
+            }
+            else
+            {
+                Assert.Equal(isValid, region.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(datarate));
+            }
         }
     }
 }

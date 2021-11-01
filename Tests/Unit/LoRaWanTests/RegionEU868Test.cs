@@ -4,10 +4,13 @@
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using LoRaTools.Regions;
+    using System.Collections.Generic;
     using Xunit;
 
     public class RegionEU868Test : RegionTestBase
     {
+        private static readonly Region region = RegionManager.EU868;
+
         public RegionEU868Test()
         {
             Region = RegionManager.EU868;
@@ -65,12 +68,33 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             TestTranslateToRegion(LoRaRegionType.EU868);
         }
 
-        [Theory]
-        [InlineData(863)]
-        [InlineData(870)]
-        public void TestTryGetJoinChannelIndex_ReturnsInvalidIndex(double freq)
-        {
-            TestTryGetJoinChannelIndex(freq, -1);
-        }
+        public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
+            new List<object[]>
+            {
+                new object[] { region, 863, -1 },
+                new object[] { region, 870, -1 },
+            };
+
+        public static IEnumerable<object[]> TestIsValidRX1DROffsetData =>
+           new List<object[]>
+           {
+                new object[] { region, 0, true },
+                new object[] { region, 5, true },
+                new object[] { region, 6, false },
+           };
+
+        public static IEnumerable<object[]> TestIsDRIndexWithinAcceptableValuesData =>
+            new List<object[]>
+            {
+                new object[] { region, (ushort)0, true, true },
+                new object[] { region, (ushort)1, true, true },
+                new object[] { region, (ushort)3, true, true },
+                new object[] { region, (ushort)5, false, true },
+                new object[] { region, (ushort)8, true, false },
+                new object[] { region, (ushort)8, false, false },
+                new object[] { region, (ushort)10, true, false },
+                new object[] { region, (ushort)10, false, false },
+                new object[] { region, null, false, false },
+            };
     }
 }

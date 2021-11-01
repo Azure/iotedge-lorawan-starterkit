@@ -4,27 +4,16 @@
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using LoRaTools.Regions;
+    using System.Collections.Generic;
     using Xunit;
 
     public class RegionCN470Test : RegionTestBase
     {
+        private static readonly Region region = RegionManager.CN470;
+
         public RegionCN470Test()
         {
             Region = RegionManager.CN470;
-        }
-
-        [Theory]
-        [InlineData(470.9, 0)]
-        [InlineData(475.7, 3)]
-        [InlineData(507.3, 6)]
-        [InlineData(499.9, 9)]
-        [InlineData(478.3, 14)]
-        [InlineData(482.3, 16)]
-        [InlineData(488.3, 19)]
-        public void TestTryGetJoinChannelIndex_ReturnsValidIndex(double freq, int expectedIndex)
-        {
-            Assert.True(Region.TryGetJoinChannelIndex(freq, out var channelIndex));
-            Assert.Equal(expectedIndex, channelIndex);
         }
 
         [Theory]
@@ -125,6 +114,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData((ushort)3, null, 0, null, 3)]
         [InlineData((ushort)3, (ushort)2, 0, null, 2)]
         [InlineData((ushort)4, (ushort)3, 0, 8, 3)]
+        [InlineData(null, (ushort)9, 11, null, 1)]
         public void TestRX2DataRate(ushort? nwksrvrx2dr, ushort? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, ushort expectedDr)
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
@@ -136,5 +126,39 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             TestTranslateToRegion(LoRaRegionType.CN470);
         }
+
+        public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
+           new List<object[]>
+           {
+                new object[] { region, 470.9, 0 },
+                new object[] { region, 475.7, 3 },
+                new object[] { region, 507.3, 6 },
+                new object[] { region, 499.9, 9 },
+                new object[] { region, 478.3, 14 },
+                new object[] { region, 482.3, 16 },
+                new object[] { region, 488.3, 19 },
+           };
+
+        public static IEnumerable<object[]> TestIsValidRX1DROffsetData =>
+           new List<object[]>
+           {
+                new object[] { region, 0, true },
+                new object[] { region, 5, true },
+                new object[] { region, 6, false },
+           };
+
+        public static IEnumerable<object[]> TestIsDRIndexWithinAcceptableValuesData =>
+            new List<object[]>
+            {
+                new object[] { region, (ushort)0, true, true },
+                new object[] { region, (ushort)2, true, true },
+                new object[] { region, (ushort)7, true, true },
+                new object[] { region, (ushort)0, false, true },
+                new object[] { region, (ushort)2, false, true },
+                new object[] { region, (ushort)7, false, true },
+                new object[] { region, (ushort)9, true, false },
+                new object[] { region, (ushort)10, false, false },
+                new object[] { region, null, false, false },
+            };
     }
 }
