@@ -91,7 +91,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         private static Task Test(HttpContext context) =>
             Test(context, context.RequestAborted);
 
-        private static readonly WebSocketsRegistry<string> WebSocketsRegistry = new(null);
+        private static readonly WebSocketWriterRegistry<string> WebSocketWriterRegistry = new(null);
 
         private static async Task Test(HttpContext context, CancellationToken cancellationToken)
         {
@@ -104,7 +104,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             var socket = await context.WebSockets.AcceptWebSocketAsync();
             var id = (string)context.Request.RouteValues["id"];
             var channel = new WebSocketTextChannel(socket);
-            var h = WebSocketsRegistry.Register(id, channel);
+            var h = WebSocketWriterRegistry.Register(id, channel);
             _ = Task.Run(cancellationToken: cancellationToken, function: async () =>
             {
                 while (true)
@@ -128,7 +128,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             while (await message.MoveNextAsync())
                 await channel.SendAsync("< " + message.Current, cancellationToken);
             await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", cancellationToken);
-            _ = WebSocketsRegistry.Deregister(id);
+            _ = WebSocketWriterRegistry.Deregister(id);
             cts1.Cancel();
             try
             {

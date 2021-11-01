@@ -15,7 +15,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Channels;
     using System.Threading.Tasks;
 
-    public sealed class WebSocketTextChannel : IWebSocket<string>
+    public sealed class WebSocketTextChannel : IWebSocketWriter<string>
     {
         private sealed class Output
         {

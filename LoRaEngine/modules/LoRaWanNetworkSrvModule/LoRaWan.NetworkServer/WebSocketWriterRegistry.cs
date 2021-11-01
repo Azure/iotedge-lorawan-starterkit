@@ -12,21 +12,21 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
 
-    public static class WebSocketsRegistry
+    public static class WebSocketWriterRegistry
     {
         public static readonly TimeSpan DefaultPruningInterval = TimeSpan.FromMinutes(2);
     }
 
-    public sealed class WebSocketsRegistry<T>
+    public sealed class WebSocketWriterRegistry<T>
     {
-        private readonly Dictionary<string, (IWebSocket<T> Object, WebSocketHandle<T> Handle)> sockets = new();
+        private readonly Dictionary<string, (IWebSocketWriter<T> Object, WebSocketWriterHandle<T> Handle)> sockets = new();
         private readonly ILogger? logger;
 
-        public WebSocketsRegistry(ILogger<WebSocketsRegistry<T>>? logger) =>
+        public WebSocketWriterRegistry(ILogger<WebSocketWriterRegistry<T>>? logger) =>
             this.logger = logger;
 
         public Task RunPrunerAsync(CancellationToken cancellationToken) =>
-            RunPrunerAsync(WebSocketsRegistry.DefaultPruningInterval, cancellationToken);
+            RunPrunerAsync(WebSocketWriterRegistry.DefaultPruningInterval, cancellationToken);
 
         public Task RunPrunerAsync(TimeSpan interval, CancellationToken cancellationToken)
         {
@@ -60,7 +60,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public WebSocketHandle<T> this[string key]
+        public WebSocketWriterHandle<T> this[string key]
         {
             get
             {
@@ -69,19 +69,19 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public WebSocketHandle<T> Register(string key, IWebSocket<T> socket)
+        public WebSocketWriterHandle<T> Register(string key, IWebSocketWriter<T> socketWriter)
         {
             lock (this.sockets)
             {
-                if (this.sockets.TryGetValue(key, out var currentSocket) && socket == currentSocket.Object)
+                if (this.sockets.TryGetValue(key, out var currentSocket) && socketWriter == currentSocket.Object)
                     return currentSocket.Handle;
-                var handle = new WebSocketHandle<T>(this, key);
-                this.sockets[key] = (socket, handle);
+                var handle = new WebSocketWriterHandle<T>(this, key);
+                this.sockets[key] = (socketWriter, handle);
                 return handle;
             }
         }
 
-        public IWebSocket<T>? Deregister(string key)
+        public IWebSocketWriter<T>? Deregister(string key)
         {
             lock (this.sockets)
                 return this.sockets.TryGetValue(key, out var currentSocket) ? currentSocket.Object: null;
@@ -90,10 +90,10 @@ namespace LoRaWan.NetworkServer
         internal async ValueTask SendAsync(string key, T message,
                                            CancellationToken cancellationToken)
         {
-            IWebSocket<T> socket;
+            IWebSocketWriter<T> socketWriter;
             lock (this.sockets)
-                socket = this.sockets[key].Object;
-            await socket.SendAsync(message, cancellationToken).ConfigureAwait(false);
+                socketWriter = this.sockets[key].Object;
+            await socketWriter.SendAsync(message, cancellationToken).ConfigureAwait(false);
         }
     }
 }

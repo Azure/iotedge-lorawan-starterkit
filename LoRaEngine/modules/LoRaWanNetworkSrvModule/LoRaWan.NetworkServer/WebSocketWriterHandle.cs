@@ -11,12 +11,12 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Tasks;
 
     [DebuggerDisplay("{" + nameof(key) + "}")]
-    public sealed class WebSocketHandle<T> : IEquatable<WebSocketHandle<T>>
+    public sealed class WebSocketWriterHandle<T> : IEquatable<WebSocketWriterHandle<T>>
     {
-        private readonly WebSocketsRegistry<T> registry;
+        private readonly WebSocketWriterRegistry<T> registry;
         private readonly string key;
 
-        public WebSocketHandle(WebSocketsRegistry<T> registry, string key)
+        public WebSocketWriterHandle(WebSocketWriterRegistry<T> registry, string key)
         {
             this.registry = registry;
             this.key = key;
@@ -26,9 +26,9 @@ namespace LoRaWan.NetworkServer
             this.registry.SendAsync(this.key, message, cancellationToken);
 
         public override bool Equals(object? obj) =>
-            ReferenceEquals(this, obj) || Equals(obj as WebSocketHandle<T>);
+            ReferenceEquals(this, obj) || Equals(obj as WebSocketWriterHandle<T>);
 
-        public bool Equals(WebSocketHandle<T>? other) =>
+        public bool Equals(WebSocketWriterHandle<T>? other) =>
             other is not null && this.registry.Equals(other.registry) && this.key == other.key;
 
         public override int GetHashCode() => HashCode.Combine(this.registry, this.key);

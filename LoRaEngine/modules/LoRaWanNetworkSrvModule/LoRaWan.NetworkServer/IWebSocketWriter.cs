@@ -8,7 +8,7 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
 
-    public interface IWebSocket<in T>
+    public interface IWebSocketWriter<in T>
     {
         bool IsClosed { get; }
         ValueTask SendAsync(T message, CancellationToken cancellationToken);
