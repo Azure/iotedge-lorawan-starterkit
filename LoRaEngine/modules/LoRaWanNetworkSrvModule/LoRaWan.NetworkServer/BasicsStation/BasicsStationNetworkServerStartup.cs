@@ -54,7 +54,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<IJoinRequestMessageHandler, JoinRequestMessageHandler>()
                         .AddSingleton<IMessageDispatcher, MessageDispatcher>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
-                        .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>();
+                        .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>()
+                        .AddSingleton<WebSocketWriterRegistry<StationEui, string>>();
         }
 
 #pragma warning disable CA1822 // Mark members as static
@@ -84,60 +85,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
                                await lnsProtocolMessageProcessor.HandleDataAsync(context, context.RequestAborted);
                            });
-                       _ = endpoints.MapGet("/test/{id:required}", Test);
                    });
-        }
-
-        private static Task Test(HttpContext context) =>
-            Test(context, context.RequestAborted);
-
-        private static readonly WebSocketWriterRegistry<string, string> WebSocketWriterRegistry = new(null);
-
-        private static async Task Test(HttpContext context, CancellationToken cancellationToken)
-        {
-            if (!context.WebSockets.IsWebSocketRequest)
-            {
-                context.Response.StatusCode = 400;
-                return;
-            }
-
-            var socket = await context.WebSockets.AcceptWebSocketAsync();
-            var id = (string)context.Request.RouteValues["id"];
-            var channel = new WebSocketTextChannel(socket, sendTimeout: TimeSpan.FromSeconds(3));
-            var h = WebSocketWriterRegistry.Register(id, channel);
-            _ = Task.Run(cancellationToken: cancellationToken, function: async () =>
-            {
-                while (true)
-                {
-                    await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
-                    try
-                    {
-                        await h.SendAsync(DateTime.Now.ToLongTimeString(), cancellationToken);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.Error.WriteLine(e);
-                    }
-                }
-            });
-
-            using var cts1 = new CancellationTokenSource();
-            using var cts2 = CancellationTokenSource.CreateLinkedTokenSource(cts1.Token, cancellationToken);
-            var task = channel.ProcessSendQueueAsync(cts2.Token);
-            await using var message = socket.ReadTextMessages(cancellationToken);
-            while (await message.MoveNextAsync())
-                await channel.SendAsync("< " + message.Current, cancellationToken);
-            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", cancellationToken);
-            _ = WebSocketWriterRegistry.Deregister(id);
-            cts1.Cancel();
-            try
-            {
-                await task;
-            }
-            catch (OperationCanceledException)
-            {
-                // ignore because it is expected
-            }
         }
     }
 }
