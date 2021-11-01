@@ -6,10 +6,12 @@
 namespace LoRaWan.NetworkServer
 {
     using System.Collections.Generic;
+    using System.Diagnostics;
 
     /// <summary>
     /// Provides exclusive thread-synchronized access to a value.
     /// </summary>
+    [DebuggerDisplay("{" + nameof(value) + "}")]
     public sealed class Synchronized<T>
     {
         private readonly object mutex;
