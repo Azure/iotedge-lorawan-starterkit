@@ -91,7 +91,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         private static Task Test(HttpContext context) =>
             Test(context, context.RequestAborted);
 
-        private static readonly WebSocketWriterRegistry<string> WebSocketWriterRegistry = new(null);
+        private static readonly WebSocketWriterRegistry<string, string> WebSocketWriterRegistry = new(null);
 
         private static async Task Test(HttpContext context, CancellationToken cancellationToken)
         {

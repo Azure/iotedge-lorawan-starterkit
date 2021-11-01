@@ -17,12 +17,14 @@ namespace LoRaWan.NetworkServer
         public static readonly TimeSpan DefaultPruningInterval = TimeSpan.FromMinutes(2);
     }
 
-    public sealed class WebSocketWriterRegistry<T>
+    public sealed class WebSocketWriterRegistry<TKey, TMessage>
+        where TKey : notnull
+        where TMessage : notnull
     {
-        private readonly Dictionary<string, (IWebSocketWriter<T> Object, WebSocketWriterHandle<T> Handle)> sockets = new();
+        private readonly Dictionary<TKey, (IWebSocketWriter<TMessage> Object, WebSocketWriterHandle<TKey, TMessage> Handle)> sockets = new();
         private readonly ILogger? logger;
 
-        public WebSocketWriterRegistry(ILogger<WebSocketWriterRegistry<T>>? logger) =>
+        public WebSocketWriterRegistry(ILogger<WebSocketWriterRegistry<TKey, TMessage>>? logger) =>
             this.logger = logger;
 
         public Task RunPrunerAsync(CancellationToken cancellationToken) =>
@@ -45,7 +47,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public string[] Prune()
+        public TKey[] Prune()
         {
             lock (this.sockets)
             {
@@ -60,7 +62,7 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public WebSocketWriterHandle<T> this[string key]
+        public WebSocketWriterHandle<TKey, TMessage> this[TKey key]
         {
             get
             {
@@ -69,28 +71,28 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public WebSocketWriterHandle<T> Register(string key, IWebSocketWriter<T> socketWriter)
+        public WebSocketWriterHandle<TKey, TMessage> Register(TKey key, IWebSocketWriter<TMessage> socketWriter)
         {
             lock (this.sockets)
             {
                 if (this.sockets.TryGetValue(key, out var currentSocket) && socketWriter == currentSocket.Object)
                     return currentSocket.Handle;
-                var handle = new WebSocketWriterHandle<T>(this, key);
+                var handle = new WebSocketWriterHandle<TKey, TMessage>(this, key);
                 this.sockets[key] = (socketWriter, handle);
                 return handle;
             }
         }
 
-        public IWebSocketWriter<T>? Deregister(string key)
+        public IWebSocketWriter<TMessage>? Deregister(TKey key)
         {
             lock (this.sockets)
                 return this.sockets.TryGetValue(key, out var currentSocket) ? currentSocket.Object: null;
         }
 
-        internal async ValueTask SendAsync(string key, T message,
+        internal async ValueTask SendAsync(TKey key, TMessage message,
                                            CancellationToken cancellationToken)
         {
-            IWebSocketWriter<T> socketWriter;
+            IWebSocketWriter<TMessage> socketWriter;
             lock (this.sockets)
                 socketWriter = this.sockets[key].Object;
             await socketWriter.SendAsync(message, cancellationToken).ConfigureAwait(false);
