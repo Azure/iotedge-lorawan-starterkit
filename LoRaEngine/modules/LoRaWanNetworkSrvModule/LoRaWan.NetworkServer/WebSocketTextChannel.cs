@@ -40,13 +40,6 @@ namespace LoRaWan.NetworkServer
             this.channel = Channel.CreateUnbounded<Output>();
         }
 
-        public IAsyncEnumerator<string> ReadMessages(CancellationToken cancellationToken) =>
-            ReadMessages(MemoryPool<byte>.Shared, 1024, cancellationToken);
-
-        public IAsyncEnumerator<string> ReadMessages(MemoryPool<byte> memoryPool, int minBufferSize,
-                                                     CancellationToken cancellationToken) =>
-            this.socket.ReadTextMessages(memoryPool, minBufferSize, cancellationToken);
-
         /// <remarks>
         /// If this method is called when a previous invocation has not completed then it throws
         /// <see cref="InvalidOperationException"/>.
