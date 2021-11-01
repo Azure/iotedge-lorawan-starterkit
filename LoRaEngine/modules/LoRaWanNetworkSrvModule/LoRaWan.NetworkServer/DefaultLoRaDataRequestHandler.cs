@@ -466,6 +466,7 @@ namespace LoRaWan.NetworkServer
         {
             if (this.classCDeviceMessageSender != null)
             {
+                // Exception is logged as part of DefaultClassCDevicesMessageSender.SendAsync.
                 _ = Task.Run(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage));
             }
         }
