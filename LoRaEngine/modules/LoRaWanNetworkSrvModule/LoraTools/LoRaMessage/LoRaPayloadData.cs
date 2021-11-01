@@ -274,7 +274,7 @@ namespace LoRaTools.LoRaMessage
         /// <param name="tmst">time stamp.</param>
         /// <param name="devEUI">the device EUI.</param>
         /// <returns>the Downlink message.</returns>
-        public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI)
+        public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI, ushort rxDelay)
         {
             if (devEUI is null) throw new ArgumentNullException(nameof(devEUI));
 
@@ -289,7 +289,7 @@ namespace LoRaTools.LoRaMessage
             }
 
             SetMic(nwkSKey);
-            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, tmst);
+            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEUI, tmst, rxDelay);
             if (Logger.LoggerLevel < LogLevel.Information)
             {
                 var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);
