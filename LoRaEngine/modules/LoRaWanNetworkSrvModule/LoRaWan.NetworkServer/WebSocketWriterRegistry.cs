@@ -28,41 +28,6 @@ namespace LoRaWan.NetworkServer
         public WebSocketWriterRegistry(ILogger<WebSocketWriterRegistry<TKey, TMessage>>? logger) =>
             this.logger = logger;
 
-        public Task RunPrunerAsync(CancellationToken cancellationToken) =>
-            RunPrunerAsync(WebSocketWriterRegistry.DefaultPruningInterval, cancellationToken);
-
-        public Task RunPrunerAsync(TimeSpan interval, CancellationToken cancellationToken)
-        {
-            return Task.Run(LoopAsync, cancellationToken);
-
-            async Task LoopAsync()
-            {
-                while (true)
-                {
-                    await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
-
-                    var prunedKeys = Prune();
-
-                    this.logger?.LogDebug($"Pruned closed WebSocket connections: {string.Join(",", prunedKeys)}");
-                }
-            }
-        }
-
-        public TKey[] Prune()
-        {
-            lock (this.sockets)
-            {
-                var keys = this.sockets.Where(e => e.Value.Object.IsClosed)
-                                       .Select(e => e.Key)
-                                       .ToArray();
-
-                foreach (var key in keys)
-                    _ = this.sockets.Remove(key);
-
-                return keys;
-            }
-        }
-
         public WebSocketWriterHandle<TKey, TMessage> Register(TKey key, IWebSocketWriter<TMessage> socketWriter)
         {
             lock (this.sockets)
@@ -96,6 +61,41 @@ namespace LoRaWan.NetworkServer
             catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
             {
                 _ = Deregister(key);
+            }
+        }
+
+        public Task RunPrunerAsync(CancellationToken cancellationToken) =>
+            RunPrunerAsync(WebSocketWriterRegistry.DefaultPruningInterval, cancellationToken);
+
+        public Task RunPrunerAsync(TimeSpan interval, CancellationToken cancellationToken)
+        {
+            return Task.Run(LoopAsync, cancellationToken);
+
+            async Task LoopAsync()
+            {
+                while (true)
+                {
+                    await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
+
+                    var prunedKeys = Prune();
+
+                    this.logger?.LogDebug($"Pruned closed WebSocket connections: {string.Join(",", prunedKeys)}");
+                }
+            }
+        }
+
+        public TKey[] Prune()
+        {
+            lock (this.sockets)
+            {
+                var keys = this.sockets.Where(e => e.Value.Object.IsClosed)
+                               .Select(e => e.Key)
+                               .ToArray();
+
+                foreach (var key in keys)
+                    _ = this.sockets.Remove(key);
+
+                return keys;
             }
         }
     }
