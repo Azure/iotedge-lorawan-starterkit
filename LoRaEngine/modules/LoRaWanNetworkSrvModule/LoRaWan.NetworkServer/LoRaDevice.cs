@@ -1091,6 +1091,7 @@ namespace LoRaWan.NetworkServer
                 result = await this.dataRequestHandler.ProcessRequestAsync(request, this);
             }
 #pragma warning disable CA1031 // Do not catch general exception types. revisit in #565
+            // Method is not awaited on call site, removing general exception handling might result in loss of observability.
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {
