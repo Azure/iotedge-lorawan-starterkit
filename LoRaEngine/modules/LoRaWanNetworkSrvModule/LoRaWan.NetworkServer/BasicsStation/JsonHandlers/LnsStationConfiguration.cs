@@ -60,43 +60,43 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         {
             public Sx1301Config(RadioConfig radio0,
                                 RadioConfig radio1,
-                                StandardConfig chanLoraStd,
-                                ChannelConfig chanFsk,
-                                ChannelConfig chanMultiSf0,
-                                ChannelConfig chanMultiSf1,
-                                ChannelConfig chanMultiSf2,
-                                ChannelConfig chanMultiSf3,
-                                ChannelConfig chanMultiSf4,
-                                ChannelConfig chanMultiSf5,
-                                ChannelConfig chanMultiSf6,
-                                ChannelConfig chanMultiSf7)
+                                StandardConfig channelLoraStd,
+                                ChannelConfig channelFsk,
+                                ChannelConfig channelMultiSf0,
+                                ChannelConfig channelMultiSf1,
+                                ChannelConfig channelMultiSf2,
+                                ChannelConfig channelMultiSf3,
+                                ChannelConfig channelMultiSf4,
+                                ChannelConfig channelMultiSf5,
+                                ChannelConfig channelMultiSf6,
+                                ChannelConfig channelMultiSf7)
             {
                 Radio0 = radio0;
                 Radio1 = radio1;
-                ChanLoraStd = chanLoraStd;
-                ChanFsk = chanFsk;
-                ChanMultiSf0 = chanMultiSf0;
-                ChanMultiSf1 = chanMultiSf1;
-                ChanMultiSf2 = chanMultiSf2;
-                ChanMultiSf3 = chanMultiSf3;
-                ChanMultiSf4 = chanMultiSf4;
-                ChanMultiSf5 = chanMultiSf5;
-                ChanMultiSf6 = chanMultiSf6;
-                ChanMultiSf7 = chanMultiSf7;
+                ChannelLoraStd = channelLoraStd;
+                ChannelFsk = channelFsk;
+                ChannelMultiSf0 = channelMultiSf0;
+                ChannelMultiSf1 = channelMultiSf1;
+                ChannelMultiSf2 = channelMultiSf2;
+                ChannelMultiSf3 = channelMultiSf3;
+                ChannelMultiSf4 = channelMultiSf4;
+                ChannelMultiSf5 = channelMultiSf5;
+                ChannelMultiSf6 = channelMultiSf6;
+                ChannelMultiSf7 = channelMultiSf7;
             }
 
             public RadioConfig Radio0 { get; }
             public RadioConfig Radio1 { get; }
-            public StandardConfig ChanLoraStd { get; }
-            public ChannelConfig ChanFsk { get; }
-            public ChannelConfig ChanMultiSf0 { get; }
-            public ChannelConfig ChanMultiSf1 { get; }
-            public ChannelConfig ChanMultiSf2 { get; }
-            public ChannelConfig ChanMultiSf3 { get; }
-            public ChannelConfig ChanMultiSf4 { get; }
-            public ChannelConfig ChanMultiSf5 { get; }
-            public ChannelConfig ChanMultiSf6 { get; }
-            public ChannelConfig ChanMultiSf7 { get; }
+            public StandardConfig ChannelLoraStd { get; }
+            public ChannelConfig ChannelFsk { get; }
+            public ChannelConfig ChannelMultiSf0 { get; }
+            public ChannelConfig ChannelMultiSf1 { get; }
+            public ChannelConfig ChannelMultiSf2 { get; }
+            public ChannelConfig ChannelMultiSf3 { get; }
+            public ChannelConfig ChannelMultiSf4 { get; }
+            public ChannelConfig ChannelMultiSf5 { get; }
+            public ChannelConfig ChannelMultiSf6 { get; }
+            public ChannelConfig ChannelMultiSf7 { get; }
         }
 
         private static readonly IJsonReader<ChannelConfig> ChannelConfigReader =
@@ -251,16 +251,16 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                 writer.WriteStartObject();
                 WriteRadioConfig("radio_0", config.Radio0);
                 WriteRadioConfig("radio_1", config.Radio1);
-                WriteChannelConfig("chan_FSK", config.ChanFsk);
-                WriteStandardConfig("chan_Lora_std", config.ChanLoraStd);
-                WriteChannelConfig("chan_multiSF_0", config.ChanMultiSf0);
-                WriteChannelConfig("chan_multiSF_1", config.ChanMultiSf1);
-                WriteChannelConfig("chan_multiSF_2", config.ChanMultiSf2);
-                WriteChannelConfig("chan_multiSF_3", config.ChanMultiSf3);
-                WriteChannelConfig("chan_multiSF_4", config.ChanMultiSf4);
-                WriteChannelConfig("chan_multiSF_5", config.ChanMultiSf5);
-                WriteChannelConfig("chan_multiSF_6", config.ChanMultiSf6);
-                WriteChannelConfig("chan_multiSF_7", config.ChanMultiSf7);
+                WriteChannelConfig("chan_FSK", config.ChannelFsk);
+                WriteStandardConfig("chan_Lora_std", config.ChannelLoraStd);
+                WriteChannelConfig("chan_multiSF_0", config.ChannelMultiSf0);
+                WriteChannelConfig("chan_multiSF_1", config.ChannelMultiSf1);
+                WriteChannelConfig("chan_multiSF_2", config.ChannelMultiSf2);
+                WriteChannelConfig("chan_multiSF_3", config.ChannelMultiSf3);
+                WriteChannelConfig("chan_multiSF_4", config.ChannelMultiSf4);
+                WriteChannelConfig("chan_multiSF_5", config.ChannelMultiSf5);
+                WriteChannelConfig("chan_multiSF_6", config.ChannelMultiSf6);
+                WriteChannelConfig("chan_multiSF_7", config.ChannelMultiSf7);
                 writer.WriteEndObject();
             }
 

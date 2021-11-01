@@ -36,8 +36,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
             {
                 using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
                 var twin = await client.GetTwinAsync();
-                var config = ((object)twin.Properties.Desired[RouterConfigPropertyName]).ToString();
-                return LnsStationConfiguration.GetConfiguration(config);
+                var configJson = ((object)twin.Properties.Desired[RouterConfigPropertyName]).ToString();
+                return LnsStationConfiguration.GetConfiguration(configJson);
             }
             catch (IotHubCommunicationException ex)
             {
