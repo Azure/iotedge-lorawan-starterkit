@@ -32,8 +32,10 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             using var cts = new CancellationTokenSource();
             yield return new object[] { new LinkedTimeoutCancellationToken(null, CancellationToken.None), false };
             yield return new object[] { new LinkedTimeoutCancellationToken(TimeSpan.Zero, CancellationToken.None), true };
+            yield return new object[] { new LinkedTimeoutCancellationToken(Timeout.InfiniteTimeSpan, CancellationToken.None), false };
             yield return new object[] { new LinkedTimeoutCancellationToken(null, cts.Token), false };
             yield return new object[] { new LinkedTimeoutCancellationToken(TimeSpan.Zero, cts.Token), true };
+            yield return new object[] { new LinkedTimeoutCancellationToken(Timeout.InfiniteTimeSpan, CancellationToken.None), false };
         }
 
         [Theory]

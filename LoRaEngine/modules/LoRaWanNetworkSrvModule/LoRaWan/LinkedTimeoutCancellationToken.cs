@@ -21,7 +21,7 @@ namespace LoRaWan
             this.timeoutCts = null;
             this.linkedCts = null;
 
-            if (timeSpan is { } ts)
+            if (timeSpan is { } ts && ts != Timeout.InfiniteTimeSpan)
             {
                 this.timeoutCts = new CancellationTokenSource(ts);
                 var tempTimeoutCts = this.timeoutCts;

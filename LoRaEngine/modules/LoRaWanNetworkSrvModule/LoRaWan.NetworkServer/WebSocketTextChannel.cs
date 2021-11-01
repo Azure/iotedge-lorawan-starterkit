@@ -146,11 +146,8 @@ namespace LoRaWan.NetworkServer
         {
             if (!this.isSendQueueProcessorRunning.ReadDirty())
                 throw new InvalidOperationException();
-            using var timeoutTokenSource = this.sendTimeout == Timeout.InfiniteTimeSpan
-                                         ? new CancellationTokenSource() // never cancels
-                                         : new CancellationTokenSource(this.sendTimeout);
-            using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutTokenSource.Token, cancellationToken);
-            cancellationToken = linkedTokenSource.Token;
+            using var linkedTimeoutCancellationToken = new LinkedTimeoutCancellationToken(this.sendTimeout, cancellationToken);
+            cancellationToken = linkedTimeoutCancellationToken.Token;
             var output = new Output(message, cancellationToken);
             await this.channel.Writer.WriteAsync(output, cancellationToken).ConfigureAwait(false);
             using var registration = cancellationToken.Register(() =>
