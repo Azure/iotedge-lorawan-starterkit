@@ -8,7 +8,7 @@ namespace LoRaWan
     using System.Threading;
 
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable (false positive)
-    public struct LinkedTimeoutCancellationToken : IEquatable<LinkedTimeoutCancellationToken>, IDisposable
+    public readonly struct LinkedTimeoutCancellationToken : IEquatable<LinkedTimeoutCancellationToken>, IDisposable
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable
     {
         private readonly CancellationTokenSource? timeoutCts;
