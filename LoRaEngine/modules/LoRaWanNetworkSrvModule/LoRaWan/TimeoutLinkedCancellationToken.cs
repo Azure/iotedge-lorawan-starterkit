@@ -7,7 +7,7 @@ namespace LoRaWan
     using System.Threading;
 
 #pragma warning disable CA1001 // Types that own disposable fields should be disposable (false positive)
-    public readonly struct LinkedTimeoutCancellationToken : IEquatable<LinkedTimeoutCancellationToken>, IDisposable
+    public readonly struct TimeoutLinkedCancellationToken : IEquatable<TimeoutLinkedCancellationToken>, IDisposable
 #pragma warning restore CA1001 // Types that own disposable fields should be disposable
     {
         private readonly CancellationTokenSource? timeoutCts;
@@ -15,7 +15,7 @@ namespace LoRaWan
 
         public CancellationToken Token { get; }
 
-        public LinkedTimeoutCancellationToken(TimeSpan? timeSpan, CancellationToken cancellationToken)
+        public TimeoutLinkedCancellationToken(TimeSpan? timeSpan, CancellationToken cancellationToken)
         {
             this.timeoutCts = this.linkedCts = null;
 
@@ -53,11 +53,11 @@ namespace LoRaWan
             this.linkedCts?.Dispose();
         }
 
-        public bool Equals(LinkedTimeoutCancellationToken other) => Token == other.Token;
-        public override bool Equals(object? obj) => obj is LinkedTimeoutCancellationToken other && Equals(other);
+        public bool Equals(TimeoutLinkedCancellationToken other) => Token == other.Token;
+        public override bool Equals(object? obj) => obj is TimeoutLinkedCancellationToken other && Equals(other);
         public override int GetHashCode() => Token.GetHashCode();
 
-        public static bool operator ==(LinkedTimeoutCancellationToken left, LinkedTimeoutCancellationToken right) => left.Equals(right);
-        public static bool operator !=(LinkedTimeoutCancellationToken left, LinkedTimeoutCancellationToken right) => !(left == right);
+        public static bool operator ==(TimeoutLinkedCancellationToken left, TimeoutLinkedCancellationToken right) => left.Equals(right);
+        public static bool operator !=(TimeoutLinkedCancellationToken left, TimeoutLinkedCancellationToken right) => !(left == right);
     }
 }

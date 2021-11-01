@@ -19,28 +19,28 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             var ts2 = TimeSpan.FromMilliseconds(43);
 
             // act + assert
-            Assert.Equal(new LinkedTimeoutCancellationToken(ts1, cts.Token), new LinkedTimeoutCancellationToken(ts1, cts.Token));
-            Assert.True(new LinkedTimeoutCancellationToken(ts1, cts.Token) == new LinkedTimeoutCancellationToken(ts1, cts.Token));
-            Assert.False(new LinkedTimeoutCancellationToken(ts1, cts.Token) != new LinkedTimeoutCancellationToken(ts1, cts.Token));
-            Assert.NotEqual(new LinkedTimeoutCancellationToken(ts1, cts.Token), new LinkedTimeoutCancellationToken(ts2, cts.Token));
-            Assert.False(new LinkedTimeoutCancellationToken(ts1, cts.Token) == new LinkedTimeoutCancellationToken(ts2, cts.Token));
-            Assert.True(new LinkedTimeoutCancellationToken(ts1, cts.Token) != new LinkedTimeoutCancellationToken(ts2, cts.Token));
+            Assert.Equal(new TimeoutLinkedCancellationToken(ts1, cts.Token), new TimeoutLinkedCancellationToken(ts1, cts.Token));
+            Assert.True(new TimeoutLinkedCancellationToken(ts1, cts.Token) == new TimeoutLinkedCancellationToken(ts1, cts.Token));
+            Assert.False(new TimeoutLinkedCancellationToken(ts1, cts.Token) != new TimeoutLinkedCancellationToken(ts1, cts.Token));
+            Assert.NotEqual(new TimeoutLinkedCancellationToken(ts1, cts.Token), new TimeoutLinkedCancellationToken(ts2, cts.Token));
+            Assert.False(new TimeoutLinkedCancellationToken(ts1, cts.Token) == new TimeoutLinkedCancellationToken(ts2, cts.Token));
+            Assert.True(new TimeoutLinkedCancellationToken(ts1, cts.Token) != new TimeoutLinkedCancellationToken(ts2, cts.Token));
         }*/
 
         public static IEnumerable<object[]> CancellationByTimeoutSuccessCases()
         {
             using var cts = new CancellationTokenSource();
-            yield return new object[] { new LinkedTimeoutCancellationToken(null, CancellationToken.None), false };
-            yield return new object[] { new LinkedTimeoutCancellationToken(TimeSpan.Zero, CancellationToken.None), true };
-            yield return new object[] { new LinkedTimeoutCancellationToken(Timeout.InfiniteTimeSpan, CancellationToken.None), false };
-            yield return new object[] { new LinkedTimeoutCancellationToken(null, cts.Token), false };
-            yield return new object[] { new LinkedTimeoutCancellationToken(TimeSpan.Zero, cts.Token), true };
-            yield return new object[] { new LinkedTimeoutCancellationToken(Timeout.InfiniteTimeSpan, CancellationToken.None), false };
+            yield return new object[] { new TimeoutLinkedCancellationToken(null, CancellationToken.None), false };
+            yield return new object[] { new TimeoutLinkedCancellationToken(TimeSpan.Zero, CancellationToken.None), true };
+            yield return new object[] { new TimeoutLinkedCancellationToken(Timeout.InfiniteTimeSpan, CancellationToken.None), false };
+            yield return new object[] { new TimeoutLinkedCancellationToken(null, cts.Token), false };
+            yield return new object[] { new TimeoutLinkedCancellationToken(TimeSpan.Zero, cts.Token), true };
+            yield return new object[] { new TimeoutLinkedCancellationToken(Timeout.InfiniteTimeSpan, CancellationToken.None), false };
         }
 
         [Theory]
         [MemberData(nameof(CancellationByTimeoutSuccessCases))]
-        public void Cancellation_By_Timeout_Success_Cases(LinkedTimeoutCancellationToken sut, bool cancellationRequested)
+        public void Cancellation_By_Timeout_Success_Cases(TimeoutLinkedCancellationToken sut, bool cancellationRequested)
         {
             try
             {
@@ -55,14 +55,14 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public static IEnumerable<object[]> CancellationByTokenSuccessCases()
         {
             var cts1 = new CancellationTokenSource();
-            yield return new object[] { new LinkedTimeoutCancellationToken(TimeSpan.FromSeconds(42), cts1.Token), cts1 };
+            yield return new object[] { new TimeoutLinkedCancellationToken(TimeSpan.FromSeconds(42), cts1.Token), cts1 };
             var cts2 = new CancellationTokenSource();
-            yield return new object[] { new LinkedTimeoutCancellationToken(null, cts2.Token), cts2 };
+            yield return new object[] { new TimeoutLinkedCancellationToken(null, cts2.Token), cts2 };
         }
 
         [Theory]
         [MemberData(nameof(CancellationByTokenSuccessCases))]
-        public void Cancellation_By_Token_Success_Cases(LinkedTimeoutCancellationToken sut, CancellationTokenSource cts)
+        public void Cancellation_By_Token_Success_Cases(TimeoutLinkedCancellationToken sut, CancellationTokenSource cts)
         {
             try
             {
