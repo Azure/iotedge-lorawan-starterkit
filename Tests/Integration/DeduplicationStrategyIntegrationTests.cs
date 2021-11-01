@@ -118,11 +118,7 @@ namespace LoRaWan.Tests.Integration
             using var request2 = CreateWaitableRequest(rxpk);
 
             messageProcessor1.DispatchRequest(request1);
-
-            _ = Task.Run(() =>
-            {
-                messageProcessor2.DispatchRequest(request2);
-            });
+            messageProcessor2.DispatchRequest(request2);
 
             await Task.WhenAll(request1.WaitCompleteAsync(Timeout.Infinite), request2.WaitCompleteAsync(Timeout.Infinite));
 
