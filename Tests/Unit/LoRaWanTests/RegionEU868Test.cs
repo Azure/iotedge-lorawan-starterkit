@@ -3,8 +3,8 @@
 
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
-    using LoRaTools.Regions;
     using System.Collections.Generic;
+    using LoRaTools.Regions;
     using Xunit;
 
     public class RegionEU868Test : RegionTestBase
