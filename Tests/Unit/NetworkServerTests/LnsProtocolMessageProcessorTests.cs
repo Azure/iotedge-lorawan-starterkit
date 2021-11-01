@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Common;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
@@ -25,6 +26,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         private readonly LnsProtocolMessageProcessor lnsMessageProcessorMock;
         private readonly Mock<WebSocket> socketMock;
         private readonly Mock<HttpContext> httpContextMock;
+        private readonly MockSequence receiveSequence = new();
 
         public LnsProtocolMessageProcessorTests()
         {
@@ -90,8 +92,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public async Task ProcessIncomingRequestAsync_ShouldProcess_WebsocketRequests()
         {
             // arrange
-            var testString = "test";
-            var testbytes = Encoding.UTF8.GetBytes(testString);
             var httpContextMock = new Mock<HttpContext>();
 
             // mocking a websocket request
@@ -109,13 +109,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                              this.socketMock.Setup(x => x.CloseStatus).Returns(wscs);
                              this.socketMock.Setup(x => x.CloseStatusDescription).Returns(reason);
                          });
-            // setting up the mock so that when ReceiveAsync is invoked the "testbytes" are written to the Memory portion
-            this.socketMock.Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                         .Callback<Memory<byte>, CancellationToken>((m, c) =>
-                         {
-                             testbytes.CopyTo(m);
-                         })
-                         .ReturnsAsync(new ValueWebSocketReceiveResult(testbytes.Length, WebSocketMessageType.Text, true));
+            SetupSocketReceiveAsync(MessageFormat.Text, "test");
             httpContextMock.Setup(m => m.WebSockets).Returns(webSocketsManager.Object);
 
             // this is needed for logging the Basic Station (caller) remote ip address
@@ -183,7 +177,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public async Task InternalHandleDiscoveryAsync_ShouldSendProperJson(bool isHttps, bool isValidNic)
         {
             // arrange
-            var testbytes = Encoding.UTF8.GetBytes(@"{ ""router"": ""b827:ebff:fee1:e39a"" }");
             InitializeConfigurationServiceMock();
 
             // mocking localIpAddress
@@ -211,13 +204,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             mockHttpRequest.SetupGet(x => x.IsHttps).Returns(isHttps);
             this.httpContextMock.Setup(h => h.Request).Returns(mockHttpRequest.Object);
 
-            // setting up the mock so that when ReceiveAsync is invoked the "testbytes" are written to the Memory portion
-            this.socketMock.Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                .Callback<Memory<byte>, CancellationToken>((m, c) =>
-                {
-                    testbytes.CopyTo(m);
-                })
-                .ReturnsAsync(new ValueWebSocketReceiveResult(testbytes.Length, WebSocketMessageType.Text, true));
+            SetupSocketReceiveAsync(@"{ router: 'b827:ebff:fee1:e39a' }");
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;
@@ -243,25 +230,11 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public async Task InternalHandleDataAsync_ShouldSendExpectedJsonResponseType_ForVersionMessage()
         {
             // arrange
-            var inputBytes = Encoding.UTF8.GetBytes(@"{""msgtype"": ""version"", ""station"": ""stationName"" }");
             var expectedSubstring = @"""msgtype"":""router_config""";
             InitializeConfigurationServiceMock();
             SetDataPathParameter();
 
-            // setting up the mock so that when ReceiveAsync is invoked the "testbytes" are written to the Memory portion
-            var receiveSequence = new MockSequence();
-            this.socketMock
-                .InSequence(receiveSequence)
-                .Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                .Callback<Memory<byte>, CancellationToken>((m, c) =>
-                {
-                    inputBytes.CopyTo(m);
-                })
-                .ReturnsAsync(new ValueWebSocketReceiveResult(inputBytes.Length, WebSocketMessageType.Text, true));
-            this.socketMock
-                .InSequence(receiveSequence)
-                .Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true));
+            SetupSocketReceiveAsync(@"{ msgtype: 'version', station: 'stationName' }");
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;
@@ -288,16 +261,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public async Task InternalHandleDataAsync_ShouldThrow_OnNotExpectedMessageTypes(string msgtype)
         {
             // arrange
-            var inputBytes = Encoding.UTF8.GetBytes($@"{{""msgtype"":""{msgtype}""}}");
             SetDataPathParameter();
-
-            // setting up the mock so that when ReceiveAsync is invoked the "testbytes" are written to the Memory portion
-            this.socketMock.Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                .Callback<Memory<byte>, CancellationToken>((m, c) =>
-                {
-                    inputBytes.CopyTo(m);
-                })
-                .ReturnsAsync(new ValueWebSocketReceiveResult(inputBytes.Length, WebSocketMessageType.Text, true));
+            SetupSocketReceiveAsync($@"{{ msgtype: '{msgtype}' }}");
 
             // act + assert
             await Assert.ThrowsAsync<NotSupportedException>(() => this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
@@ -332,5 +297,29 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 };
                 return httpContext.Request;
             });
+
+        private enum MessageFormat { Json, Text };
+
+        private void SetupSocketReceiveAsync(params string[] jsonMessages) =>
+            SetupSocketReceiveAsync(MessageFormat.Json, jsonMessages);
+
+        private void SetupSocketReceiveAsync(MessageFormat format, params string[] messages)
+        {
+            foreach (var bytes in from m in messages
+                                  select format == MessageFormat.Json ? JsonUtil.Strictify(m) : m into m
+                                  select Encoding.UTF8.GetBytes(m))
+            {
+                this.socketMock
+                    .InSequence(receiveSequence)
+                    .Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                    .Callback<Memory<byte>, CancellationToken>((destination, _) => bytes.CopyTo(destination))
+                    .ReturnsAsync(new ValueWebSocketReceiveResult(bytes.Length, WebSocketMessageType.Text, true));
+            }
+
+            this.socketMock
+                .InSequence(receiveSequence)
+                .Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true));
+        }
     }
 }
