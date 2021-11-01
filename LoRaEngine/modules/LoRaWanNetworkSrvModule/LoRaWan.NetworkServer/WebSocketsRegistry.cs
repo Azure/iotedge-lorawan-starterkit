@@ -156,54 +156,6 @@ namespace LoRaWan.NetworkServer
         }
     }
 
-    /*
-    public struct TimeoutSource : IDisposable
-    {
-        private readonly CancellationTokenSource? cancellationTokenSource;
-        private readonly CancellationTokenSource? linkedCancellationTokenSource;
-
-        public TimeoutSource(CancellationTokenSource cancellationTokenSource, CancellationTokenSource? linkedCancellationTokenSource, CancellationToken cancellationToken)
-        {
-            this.cancellationTokenSource = cancellationTokenSource;
-            this.linkedCancellationTokenSource = linkedCancellationTokenSource;
-            CancellationToken = cancellationToken;
-        }
-
-        public static TimeoutSource Create(TimeSpan duration, CancellationToken cancellationToken)
-        {
-            CancellationTokenSource? cancellationTokenSource = null, linkedCancellationTokenSource = null;
-            try
-            {
-                cancellationTokenSource = new CancellationTokenSource(duration);
-                var cancellationToken = cancellationTokenSource.Token;
-                if (cancellationToken.CanBeCanceled)
-                {
-                    linkedCancellationTokenSource =
-                        CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token,
-                                                                        cancellationToken);
-                    cancellationToken = linkedCancellationTokenSource.Token;
-                }
-                var r = new TimeoutSource(cancellationTokenSource, linkedCancellationTokenSource, cancellationToken);
-                cancellationTokenSource = linkedCancellationTokenSource = null;
-                return r;
-            }
-            finally
-            {
-                linkedCancellationTokenSource?.Dispose();
-                cancellationTokenSource?.Dispose();
-            }
-        }
-
-        public CancellationToken CancellationToken { get; }
-
-        public void Dispose()
-        {
-            this.linkedCancellationTokenSource?.Dispose();
-            this.cancellationTokenSource.Dispose();
-        }
-    }
-    */
-
     [DebuggerDisplay("{" + nameof(key) + "}")]
     public sealed class WebSocketHandle<T> : IEquatable<WebSocketHandle<T>>
     {
