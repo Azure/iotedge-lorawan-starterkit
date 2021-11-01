@@ -3,6 +3,7 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
+    using System;
     using System.Globalization;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer.ADR;
@@ -32,7 +33,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
                             _ = loggingBuilder.SetMinimumLevel((LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture));
                         })
                         .AddMemoryCache()
-                        .AddHttpContextAccessor()
                         .AddSingleton(NetworkServerConfiguration)
                         .AddSingleton(LoRaTools.CommonAPI.ApiVersion.LatestVersion)
                         .AddSingleton<IServiceFacadeHttpClientProvider, ServiceFacadeHttpClientProvider>()
@@ -49,7 +49,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<ILoRaDeviceRegistry, LoRaDeviceRegistry>()
                         .AddSingleton<IJoinRequestMessageHandler, JoinRequestMessageHandler>()
                         .AddSingleton<IMessageDispatcher, MessageDispatcher>()
-                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
+                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
+                        .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>();
         }
 
 #pragma warning disable CA1822 // Mark members as static
@@ -74,7 +75,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
                                await lnsProtocolMessageProcessor.HandleDiscoveryAsync(context, context.RequestAborted);
                            });
-                       _ = endpoints.MapGet(BasicsStationNetworkServer.DataEndpoint, async context =>
+                       _ = endpoints.MapGet($"{BasicsStationNetworkServer.DataEndpoint}/{{{BasicsStationNetworkServer.RouterIdPathParameterName}:required}}", async context =>
                            {
                                var lnsProtocolMessageProcessor = context.RequestServices.GetRequiredService<ILnsProtocolMessageProcessor>();
                                await lnsProtocolMessageProcessor.HandleDataAsync(context, context.RequestAborted);

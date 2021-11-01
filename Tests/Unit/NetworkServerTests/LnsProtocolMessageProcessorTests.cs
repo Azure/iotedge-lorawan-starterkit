@@ -14,12 +14,14 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Routing;
     using Microsoft.Extensions.Logging;
     using Moq;
     using Xunit;
 
     public class LnsProtocolMessageProcessorTests
     {
+        private readonly Mock<IBasicsStationConfigurationService> basicsStationConfigurationMock;
         private readonly LnsProtocolMessageProcessor lnsMessageProcessorMock;
         private readonly Mock<WebSocket> socketMock;
         private readonly Mock<HttpContext> httpContextMock;
@@ -29,10 +31,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var loggerMock = Mock.Of<ILogger<LnsProtocolMessageProcessor>>();
             this.socketMock = new Mock<WebSocket>();
             this.httpContextMock = new Mock<HttpContext>();
-            var httpContextAccessorMock = new Mock<IHttpContextAccessor>();
-            httpContextAccessorMock.Setup(x => x.HttpContext).Returns(this.httpContextMock.Object);
+            this.basicsStationConfigurationMock = new Mock<IBasicsStationConfigurationService>();
 
-            this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(httpContextAccessorMock.Object, loggerMock);
+            this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(basicsStationConfigurationMock.Object,
+                                                                           loggerMock);
         }
 
         [Fact]
@@ -76,8 +78,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // act
             await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(this.httpContextMock.Object,
-                                                                            (string a, WebSocket s, CancellationToken t) => { return Task.FromResult(false); },
-                                                                            CancellationToken.None);
+                                                                           (HttpContext _, string a, WebSocket s, CancellationToken t) => { return Task.FromResult(false); },
+                                                                           CancellationToken.None);
 
             // assert
             Assert.Equal(400, this.httpContextMock.Object.Response.StatusCode);
@@ -122,7 +124,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // act and assert
             await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(httpContextMock.Object,
-                                                                           (string input, WebSocket _, CancellationToken _) =>
+                                                                           (HttpContext _, string input, WebSocket _, CancellationToken _) =>
                                                                            {
                                                                                Assert.Equal(input, testString);
                                                                                return Task.FromResult(false);
@@ -168,7 +170,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // act and assert
             await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(httpContextMock.Object,
-                                                                           (string _, WebSocket _, CancellationToken _) =>
+                                                                           (HttpContext _, string _, WebSocket _, CancellationToken _) =>
                                                                            {
                                                                                // this assertion will fail only if we reach the handler
                                                                                // which should not be the case for prematurely ended connections
@@ -232,12 +234,12 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // act
             await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(httpContextMock.Object,
-                                                                            (string input, WebSocket _, CancellationToken _) =>
-                                                                                {
-                                                                                    Assert.Equal(string.Concat(testString1, testString2), input);
-                                                                                    return Task.FromResult(false);
-                                                                                },
-                                                                            CancellationToken.None);
+                                                                           (HttpContext _, string input, WebSocket _, CancellationToken _) =>
+                                                                               {
+                                                                                   Assert.Equal(string.Concat(testString1, testString2), input);
+                                                                                   return Task.FromResult(false);
+                                                                               },
+                                                                           CancellationToken.None);
 
             // assert that websocket is closed, as the input string was already verified through local function handler
             Assert.Equal(WebSocketState.Closed, this.socketMock.Object.State);
@@ -299,7 +301,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // act
             await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(httpContextMock.Object,
-                                                                           (string input, WebSocket _, CancellationToken _) =>
+                                                                           (HttpContext _, string input, WebSocket _, CancellationToken _) =>
                                                                            {
                                                                                if (handlerInvokationCount++ == 0)
                                                                                {
@@ -329,6 +331,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             var inputJsonString = @"{ ""router"": ""b827:ebff:fee1:e39a"" }";
+            InitializeConfigurationServiceMock();
 
             // mocking localIpAddress
             var connectionInfoMock = new Mock<ConnectionInfo>();
@@ -367,10 +370,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                            });
 
             var muxs = Id6.Format(firstNic?.GetPhysicalAddress().Convert48To64() ?? 0, Id6.FormatOptions.FixedWidth);
-            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}""}}";
+            var expectedString = @$"{{""router"":""b827:ebff:fee1:e39a"",""muxs"":""{muxs}"",""uri"":""{(isHttps ? "wss" : "ws")}://localhost:1234{BasicsStationNetworkServer.DataEndpoint}/B8-27-EB-FF-FE-E1-E3-9A""}}";
 
             // act
-            await this.lnsMessageProcessorMock.InternalHandleDiscoveryAsync(inputJsonString, this.socketMock.Object, CancellationToken.None);
+            await this.lnsMessageProcessorMock.InternalHandleDiscoveryAsync(this.httpContextMock.Object, inputJsonString, this.socketMock.Object, CancellationToken.None);
 
             // assert
             Assert.Equal(expectedString, sentString);
@@ -382,6 +385,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // arrange
             var inputJsonString = @"{""msgtype"": ""version"", ""station"": ""stationName"" }";
             var expectedSubstring = @"""msgtype"":""router_config""";
+            InitializeConfigurationServiceMock();
+            SetDataPathParameter();
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;
@@ -394,7 +399,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                            });
 
             // act
-            await this.lnsMessageProcessorMock.InternalHandleDataAsync(inputJsonString, this.socketMock.Object, CancellationToken.None);
+            await this.lnsMessageProcessorMock.InternalHandleDataAsync(httpContextMock.Object.Request.RouteValues,
+                                                                       inputJsonString,
+                                                                       this.socketMock.Object,
+                                                                       CancellationToken.None);
 
             // assert
             Assert.Contains(expectedSubstring, sentString, StringComparison.Ordinal);
@@ -407,8 +415,42 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             var inputJsonString = $@"{{""msgtype"":""{msgtype}""}}";
-            // act
-            await Assert.ThrowsAsync<NotSupportedException>(() => this.lnsMessageProcessorMock.InternalHandleDataAsync(inputJsonString, this.socketMock.Object, CancellationToken.None));
+            SetDataPathParameter();
+
+            // act + assert
+            await Assert.ThrowsAsync<NotSupportedException>(() => this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
+                                                                                                                       inputJsonString,
+                                                                                                                       this.socketMock.Object,
+                                                                                                                       CancellationToken.None));
         }
+
+        [Fact]
+        public async Task InternalHandleDataAsync_Should_Rethrow_If_Value_Not_Present()
+        {
+            // arrange
+            this.httpContextMock.SetupGet(h => h.Request).Returns(() => new DefaultHttpContext().Request);
+
+            // act + assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                this.lnsMessageProcessorMock.InternalHandleDataAsync(this.httpContextMock.Object.Request.RouteValues,
+                                                                     string.Empty,
+                                                                     this.socketMock.Object,
+                                                                     CancellationToken.None));
+        }
+
+        private void InitializeConfigurationServiceMock() =>
+            this.basicsStationConfigurationMock.Setup(bcs => bcs.GetRouterConfigMessageAsync(It.IsAny<StationEui>(), It.IsAny<CancellationToken>()))
+                                               .Returns(Task.FromResult(@"{""msgtype"":""router_config"",...}"));
+
+        private void SetDataPathParameter(StationEui stationEui = default) =>
+            this.httpContextMock.SetupGet(h => h.Request).Returns(() =>
+            {
+                var httpContext = new DefaultHttpContext();
+                httpContext.Request.RouteValues = new RouteValueDictionary
+                {
+                    [BasicsStationNetworkServer.RouterIdPathParameterName] = stationEui
+                };
+                return httpContext.Request;
+            });
     }
 }

@@ -194,11 +194,11 @@ namespace LoRaWan.NetworkServer
             if (this.cache.TryGetValue<LoRaDevice>(CacheKeyForDevEUIDevice(devEUI), out var cachedDevice))
                 return cachedDevice;
 
-            var deviceInfo = await this.loRaDeviceAPIService.SearchByDevEUIAsync(devEUI);
-            if (deviceInfo?.Devices == null || deviceInfo.Devices.Count == 0)
+            var searchResult = await this.loRaDeviceAPIService.SearchByDevEUIAsync(devEUI);
+            if (searchResult == null || searchResult.Count == 0)
                 return null;
 
-            var loRaDevice = this.deviceFactory.Create(deviceInfo.Devices[0]);
+            var loRaDevice = this.deviceFactory.Create(searchResult[0]);
             _ = await loRaDevice.InitializeAsync();
             if (this.initializers != null)
             {
