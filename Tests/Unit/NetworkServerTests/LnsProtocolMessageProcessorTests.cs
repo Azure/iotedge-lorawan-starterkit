@@ -249,12 +249,19 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             SetDataPathParameter();
 
             // setting up the mock so that when ReceiveAsync is invoked the "testbytes" are written to the Memory portion
-            this.socketMock.Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+            var receiveSequence = new MockSequence();
+            this.socketMock
+                .InSequence(receiveSequence)
+                .Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
                 .Callback<Memory<byte>, CancellationToken>((m, c) =>
                 {
                     inputBytes.CopyTo(m);
                 })
                 .ReturnsAsync(new ValueWebSocketReceiveResult(inputBytes.Length, WebSocketMessageType.Text, true));
+            this.socketMock
+                .InSequence(receiveSequence)
+                .Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true));
 
             // intercepting the SendAsync to verify that what we sent is actually what we expected
             var sentString = string.Empty;
