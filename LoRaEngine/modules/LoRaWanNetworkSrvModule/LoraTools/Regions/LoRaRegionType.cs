@@ -8,6 +8,9 @@ namespace LoRaTools.Regions
         NotSet,
         EU868,
         US915,
-        CN470
+        CN470,
+        //Following regions are added in the enum for BasicsStation compatibility
+        EU863,
+        US902
     }
 }
