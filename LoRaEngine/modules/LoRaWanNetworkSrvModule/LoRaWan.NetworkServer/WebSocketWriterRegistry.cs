@@ -78,7 +78,7 @@ namespace LoRaWan.NetworkServer
         public IWebSocketWriter<TMessage>? Deregister(TKey key)
         {
             lock (this.sockets)
-                return this.sockets.TryGetValue(key, out var currentSocket) ? currentSocket.Object: null;
+                return this.sockets.TryGetValue(key, out var currentSocket) ? currentSocket.Object : null;
         }
 
         internal async ValueTask SendAsync(TKey key, TMessage message,
