@@ -12,6 +12,10 @@ namespace LoRaWan.NetworkServer
     using System.Threading.Channels;
     using System.Threading.Tasks;
 
+    /// <summary>
+    /// A <see cref="IWebSocketWriter{T}"/> implementation for text messages that uses a queue to
+    /// synchronize concurrent writes to a WebSocket.
+    /// </summary>
     public sealed class WebSocketTextChannel : IWebSocketWriter<string>
     {
         private sealed class Output
@@ -38,6 +42,9 @@ namespace LoRaWan.NetworkServer
             this.channel = Channel.CreateUnbounded<Output>();
         }
 
+        /// <summary>
+        /// Asynchronously processes the send queue indefinitely until cancellation is requested.
+        /// </summary>
         /// <remarks>
         /// If this method is called when a previous invocation has not completed then it throws
         /// <see cref="InvalidOperationException"/>.
@@ -78,8 +85,23 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        /// <summary>
+        /// Gets a Boolean indicating whether the WebSocket is closed.
+        /// </summary>
         public bool IsClosed => this.socket.State == WebSocketState.Closed;
 
+        /// <summary>
+        /// Asynchronously sends a message on the WebSocket via a queue to synchronize concurrent
+        /// writes.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The sending queue is not being processed. Call <see cref="ProcessSendQueueAsync"/>.
+        /// </exception>
+        /// <remarks>
+        /// The asynchronous operation completes when the send queue has finished sending the
+        /// message on the WebSocket. It cancels the operation if the message takes to long to be
+        /// processed (the time-out duration specified to the constructor).
+        /// </remarks>
         public async ValueTask SendAsync(string message, CancellationToken cancellationToken)
         {
             if (!this.isSendQueueProcessorRunning.ReadDirty())
