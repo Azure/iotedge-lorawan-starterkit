@@ -18,7 +18,7 @@ namespace LoRaWan.Tests.Common
     public class MessageProcessorTestBase : IDisposable
     {
         protected const string ServerGatewayID = "test-gateway";
-        protected ConcentratorDeduplication ConcentratorDeduplication { get; private set; }
+        protected IConcentratorDeduplication ConcentratorDeduplication { get; private set; }
 
         private readonly MemoryCache cache;
         private readonly byte[] macAddress;
@@ -124,7 +124,7 @@ namespace LoRaWan.Tests.Common
                 if (disposing)
                 {
                     this.cache.Dispose();
-                    ConcentratorDeduplication.Dispose();
+                    ((ConcentratorDeduplication)ConcentratorDeduplication).Dispose();
                 }
 
                 this.disposedValue = true;

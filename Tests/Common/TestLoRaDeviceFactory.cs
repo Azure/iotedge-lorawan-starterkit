@@ -18,7 +18,7 @@ namespace LoRaWan.Tests.Common
         private readonly IDictionary<string, LoRaDevice> deviceMap = new Dictionary<string, LoRaDevice>();
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
-        private readonly ConcentratorDeduplication concentratorDeduplication;
+        private readonly IConcentratorDeduplication concentratorDeduplication;
         private readonly IDeduplicationStrategyFactory deduplicationFactory;
         private readonly ILoRaADRStrategyProvider adrStrategyProvider;
         private readonly ILoRAADRManagerFactory adrManagerFactory;
@@ -51,7 +51,7 @@ namespace LoRaWan.Tests.Common
             NetworkServerConfiguration configuration,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
             ILoRaDeviceClient loRaDeviceClient,
-            ConcentratorDeduplication concentratorDeduplication,
+            IConcentratorDeduplication concentratorDeduplication,
             IDeduplicationStrategyFactory deduplicationFactory,
             ILoRaADRStrategyProvider adrStrategyProvider,
             ILoRAADRManagerFactory adrManagerFactory,
