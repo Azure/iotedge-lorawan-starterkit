@@ -63,15 +63,6 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        public WebSocketWriterHandle<TKey, TMessage> this[TKey key]
-        {
-            get
-            {
-                lock (this.sockets)
-                    return this.sockets[key].Handle;
-            }
-        }
-
         public WebSocketWriterHandle<TKey, TMessage> Register(TKey key, IWebSocketWriter<TMessage> socketWriter)
         {
             lock (this.sockets)
