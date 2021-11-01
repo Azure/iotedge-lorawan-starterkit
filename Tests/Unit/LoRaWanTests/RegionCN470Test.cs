@@ -21,7 +21,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(478.3, 14)]
         [InlineData(482.3, 16)]
         [InlineData(488.3, 19)]
-        public void TestTryGetJoinChannelIndex(double freq, int expectedIndex)
+        public void TestTryGetJoinChannelIndex_ReturnsValidIndex(double freq, int expectedIndex)
         {
             Assert.True(Region.TryGetJoinChannelIndex(freq, out var channelIndex));
             Assert.Equal(expectedIndex, channelIndex);

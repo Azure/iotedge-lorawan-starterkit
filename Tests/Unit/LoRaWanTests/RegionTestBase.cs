@@ -157,5 +157,19 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.True(RegionManager.TryResolveRegion(rxpk[0], out var region));
             Assert.IsType(Region.GetType(), region);
         }
+
+        protected void TestTryGetJoinChannelIndex(double freq, int expectedIndex)
+        {
+            Assert.False(Region.TryGetJoinChannelIndex(freq, out var channelIndex));
+            Assert.Equal(expectedIndex, channelIndex);
+        }
+
+        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
+        protected void TestTryGetJoinChannelIndexRxpk(string dr, double freq, int expectedIndex)
+        {
+            var rxpk = GenerateRxpk(dr, freq);
+            Assert.False(Region.TryGetJoinChannelIndex(rxpk[0], out var channelIndex));
+            Assert.Equal(expectedIndex, channelIndex);
+        }
     }
 }

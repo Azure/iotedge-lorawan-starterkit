@@ -122,5 +122,13 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             TestTryResolveRegionRxpk("SF9BW500", 902.3);
         }
+
+        [Theory]
+        [InlineData(902.3)]
+        [InlineData(927.5)]
+        public void TestTryGetJoinChannelIndex_ReturnsInvalidIndex(double freq)
+        {
+            TestTryGetJoinChannelIndexRxpk("SF12BW500", freq, -1);
+        }
     }
 }

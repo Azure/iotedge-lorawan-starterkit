@@ -114,5 +114,13 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             TestTranslateToRegion(LoRaRegionType.US915);
         }
+
+        [Theory]
+        [InlineData(902.3)]
+        [InlineData(927.5)]
+        public void TestTryGetJoinChannelIndex_ReturnsInvalidIndex(double freq)
+        {
+            TestTryGetJoinChannelIndex(freq, -1);
+        }
     }
 }
