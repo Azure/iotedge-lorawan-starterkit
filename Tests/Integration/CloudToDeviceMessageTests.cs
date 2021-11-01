@@ -610,6 +610,83 @@ namespace LoRaWan.Tests.Integration
             Assert.False(loRaDevice.HasFrameCountChanges);
         }
 
+        [Fact]
+        public async Task When_CN470_Frequency_Used_Should_Respond_Using_CN470_Region()
+        {
+            const uint PayloadFcnt = 10;
+            const uint InitialDeviceFcntUp = 9;
+            const uint InitialDeviceFcntDown = 20;
+
+            var simulatedDevice = new SimulatedDevice(
+                TestDeviceInfo.CreateABPDevice(1, gatewayID: ServerConfiguration.GatewayID),
+                frmCntUp: InitialDeviceFcntUp,
+                frmCntDown: InitialDeviceFcntDown);
+
+            var devAddr = simulatedDevice.DevAddr;
+            var devEUI = simulatedDevice.DevEUI;
+
+            // Set CN470 device join channel in twin properties
+            var deviceTwin = TestUtils.CreateABPTwin(simulatedDevice, desiredProperties: new Dictionary<string, object>
+            { { TwinProperty.CN470JoinChannel, 0 } });
+
+            LoRaDeviceClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(deviceTwin);
+            LoRaDeviceClient.Setup(x => x.SendEventAsync(It.IsNotNull<LoRaDeviceTelemetry>(), null))
+                .ReturnsAsync(true);
+            LoRaDeviceClient.Setup(x => x.UpdateReportedPropertiesAsync(It.IsNotNull<TwinCollection>()))
+                .ReturnsAsync(true);
+
+            using var cloudToDeviceMessage = new ReceivedLoRaCloudToDeviceMessage() { Payload = "c2d", Fport = 1 }
+                .CreateMessage();
+
+            LoRaDeviceClient.SetupSequence(x => x.ReceiveAsync(It.IsAny<TimeSpan>()))
+                .ReturnsAsync(cloudToDeviceMessage)
+                .ReturnsAsync((Message)null);
+            LoRaDeviceClient.Setup(x => x.CompleteAsync(cloudToDeviceMessage))
+                .ReturnsAsync(true);
+            LoRaDeviceApi.Setup(x => x.SearchByDevAddrAsync(devAddr))
+                .ReturnsAsync(new SearchDevicesResult(new IoTHubDeviceInfo(devAddr, devEUI, "adad").AsList()));
+
+            using var cache = NewMemoryCache();
+            using var loRaDeviceRegistry = new LoRaDeviceRegistry(ServerConfiguration, cache, LoRaDeviceApi.Object, LoRaDeviceFactory);
+
+            // Send to message processor
+            using var messageProcessor = new MessageDispatcher(
+                ServerConfiguration,
+                loRaDeviceRegistry,
+                FrameCounterUpdateStrategyProvider);
+
+            var payload = simulatedDevice.CreateUnconfirmedDataUpMessage("1234", fcnt: PayloadFcnt);
+            // Use CN470 frequency for upstream
+            var rxpk = payload.SerializeUplink(simulatedDevice.AppSKey, simulatedDevice.NwkSKey, freq: 470.3).Rxpk[0];
+            using var request = CreateWaitableRequest(rxpk);
+            messageProcessor.DispatchRequest(request);
+            Assert.True(await request.WaitCompleteAsync());
+
+            // Expectations
+            // 1. Message was sent to IoT Hub
+            LoRaDeviceClient.VerifyAll();
+            LoRaDeviceApi.VerifyAll();
+
+            // 2. Return is downstream message with correct frequency and data rate
+            Assert.NotNull(request.ResponseDownlink);
+            Assert.True(request.ProcessingSucceeded);
+            Assert.Single(PacketForwarder.DownlinkMessages);
+            var downlinkMessage = PacketForwarder.DownlinkMessages[0];
+            var txpk = downlinkMessage.Txpk;
+            var cnRegion = RegionManager.CN470;
+            var cn470DeviceJoinInfo = new DeviceJoinInfo(desiredCN470JoinChannel: 0);
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+            Assert.True(cnRegion.TryGetDownstreamChannelFrequency(rxpk, out var frequency, cn470DeviceJoinInfo));
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+            // Ensure we are using second window frequency
+            Assert.Equal(frequency, txpk.Freq);
+
+            // Ensure we are using second window datr
+#pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+            Assert.Equal(cnRegion.GetDownstreamDR(rxpk), txpk.Datr);
+#pragma warning restore CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
+        }
+
         [Theory]
         // Preferred Window: 1
         // - Aiming for RX1
