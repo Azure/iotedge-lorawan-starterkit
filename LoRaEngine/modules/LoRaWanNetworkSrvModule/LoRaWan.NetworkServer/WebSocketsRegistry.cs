@@ -141,11 +141,6 @@ namespace LoRaWan.NetworkServer
 
         public bool IsClosed => this.socket.State == WebSocketState.Closed;
 
-        public ValueTask<string> ReceiveAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
         public async ValueTask SendAsync(string message, CancellationToken cancellationToken)
         {
             if (!this.isSendQueueProcessorRunning.ReadDirty())
@@ -221,9 +216,6 @@ namespace LoRaWan.NetworkServer
             this.key = key;
         }
 
-        public ValueTask<T> ReceiveAsync(CancellationToken cancellationToken) =>
-            this.registry.ReceiveAsync(this.key, cancellationToken);
-
         public ValueTask SendAsync(T message, CancellationToken cancellationToken) =>
             this.registry.SendAsync(this.key, message, cancellationToken);
 
@@ -236,12 +228,9 @@ namespace LoRaWan.NetworkServer
         public override int GetHashCode() => HashCode.Combine(this.registry, this.key);
     }
 
-    public interface IWebSocket<T>
+    public interface IWebSocket<in T>
     {
         bool IsClosed { get; }
-
-        ValueTask<T> ReceiveAsync(CancellationToken cancellationToken);
-
         ValueTask SendAsync(T message, CancellationToken cancellationToken);
     }
 
@@ -318,14 +307,6 @@ namespace LoRaWan.NetworkServer
         {
             lock (this.sockets)
                 return this.sockets.TryGetValue(key, out var currentSocket) ? currentSocket.Object: null;
-        }
-
-        internal async ValueTask<T> ReceiveAsync(string key, CancellationToken cancellationToken)
-        {
-            IWebSocket<T> socket;
-            lock (this.sockets)
-                socket = this.sockets[key].Object;
-            return await socket.ReceiveAsync(cancellationToken).ConfigureAwait(false);
         }
 
         internal async ValueTask SendAsync(string key, T message,
