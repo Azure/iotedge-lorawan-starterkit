@@ -18,13 +18,11 @@ namespace LoRaWan
 
         public LinkedTimeoutCancellationToken(TimeSpan? timeSpan, CancellationToken cancellationToken)
         {
-            this.timeoutCts = null;
-            this.linkedCts = null;
+            this.timeoutCts = this.linkedCts = null;
 
             if (timeSpan is { } ts && ts != Timeout.InfiniteTimeSpan)
             {
-                this.timeoutCts = new CancellationTokenSource(ts);
-                var tempTimeoutCts = this.timeoutCts;
+                var tempTimeoutCts = this.timeoutCts = new CancellationTokenSource(ts);
 
                 try
                 {
@@ -32,20 +30,16 @@ namespace LoRaWan
                     {
                         this.linkedCts = CancellationTokenSource.CreateLinkedTokenSource(this.timeoutCts.Token, cancellationToken);
                         Token = this.linkedCts.Token;
+                        tempTimeoutCts = null;
                     }
                     else
                     {
                         Token = this.timeoutCts.Token;
                     }
-
-                    tempTimeoutCts = null;
                 }
                 finally
                 {
-#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
-                    if (tempTimeoutCts != null)
-#pragma warning restore CA1508 // Avoid dead conditional code
-                        tempTimeoutCts.Dispose();
+                    tempTimeoutCts?.Dispose();
                 }
             }
             else
