@@ -121,7 +121,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                                   .Callback((Memory<byte> mem, CancellationToken _) =>
                                   {
                                       // Sending the WebSocketMessageType.Close message.
-                                      if (currentChunkIndex == chunks.Count - 1) return;
+                                      if (currentChunkIndex == chunks.Count - 1)
+                                          return;
 
                                       var m = new Memory<byte>(chunks[currentChunkIndex].Bytes);
                                       m.CopyTo(mem);
