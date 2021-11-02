@@ -19,19 +19,19 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         protected void TestRegionFrequencyAndDataRate(string inputDr, double inputFreq, string outputDr, double outputFreq, DeviceJoinInfo deviceJoinInfo = null)
         {
             var rxpk = GenerateRxpk(inputDr, inputFreq);
-            TestRegionFrequency(rxpk, outputFreq, deviceJoinInfo);
-            TestRegionDataRate(rxpk, outputDr);
+            TestRegionFrequencyRxpk(rxpk, outputFreq, deviceJoinInfo);
+            TestRegionDataRateRxpk(rxpk, outputDr);
         }
 
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        protected void TestRegionFrequency(IList<Rxpk> rxpk, double outputFreq, DeviceJoinInfo deviceJoinInfo = null)
+        protected void TestRegionFrequencyRxpk(IList<Rxpk> rxpk, double outputFreq, DeviceJoinInfo deviceJoinInfo = null)
         {
             Assert.True(Region.TryGetDownstreamChannelFrequency(rxpk[0], out var frequency, deviceJoinInfo));
             Assert.Equal(frequency, outputFreq);
         }
 
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        protected void TestRegionDataRate(IList<Rxpk> rxpk, string outputDr, int rx1DrOffset = 0)
+        protected void TestRegionDataRateRxpk(IList<Rxpk> rxpk, string outputDr, int rx1DrOffset = 0)
         {
             Assert.Equal(Region.GetDownstreamDR(rxpk[0], rx1DrOffset), outputDr);
         }
@@ -44,25 +44,26 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.Null(Region.GetDownstreamDR(rxpk[0]));
         }
 
-        protected void TestRegionFrequencyAndDataRate(ushort inputDataRate,
-                                                      double inputFrequency,
-                                                      ushort outputDataRate,
-                                                      double outputFrequency,
-                                                      DeviceJoinInfo deviceJoinInfo = null)
+        [Theory]
+        [MemberData(nameof(RegionEU868Test.TestRegionFrequencyData), MemberType = typeof(RegionEU868Test))]
+        [MemberData(nameof(RegionUS915Test.TestRegionFrequencyDataDR1To3), MemberType = typeof(RegionUS915Test))]
+        [MemberData(nameof(RegionUS915Test.TestRegionFrequencyDataDR4), MemberType = typeof(RegionUS915Test))]
+        [MemberData(nameof(RegionCN470Test.TestRegionFrequencyData), MemberType = typeof(RegionCN470Test))]
+        protected void TestRegionFrequency(Region region, double inputFrequency, ushort inputDataRate, double outputFreq, int? joinChannel = null)
         {
-            TestRegionFrequency(inputFrequency, inputDataRate, outputFrequency, deviceJoinInfo);
-            TestRegionDataRate(inputFrequency, inputDataRate, outputDataRate);
-        }
-
-        protected void TestRegionFrequency(double inputFrequency, ushort inputDataRate, double outputFreq, DeviceJoinInfo deviceJoinInfo = null)
-        {
-            Assert.True(Region.TryGetDownstreamChannelFrequency(inputFrequency, inputDataRate, out var frequency, deviceJoinInfo));
+            var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
+            Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, inputDataRate, out var frequency, deviceJoinInfo));
             Assert.Equal(frequency, outputFreq);
         }
 
-        protected void TestRegionDataRate(double inputFrequency, ushort inputDataRate, ushort outputDr, int rx1DrOffset = 0)
+        [Theory]
+        [MemberData(nameof(RegionEU868Test.TestRegionDataRateData), MemberType = typeof(RegionEU868Test))]
+        [MemberData(nameof(RegionUS915Test.TestRegionDataRateDataDR1To3), MemberType = typeof(RegionUS915Test))]
+        [MemberData(nameof(RegionUS915Test.TestRegionDataRateDataDR4), MemberType = typeof(RegionUS915Test))]
+        [MemberData(nameof(RegionCN470Test.TestRegionDataRateData), MemberType = typeof(RegionCN470Test))]
+        public void TestRegionDataRate(Region region, double inputFrequency, ushort inputDataRate, ushort outputDr, int rx1DrOffset = 0)
         {
-            Assert.Equal(Region.GetDownstreamDR(inputFrequency, inputDataRate, rx1DrOffset), outputDr);
+            Assert.Equal(region.GetDownstreamDR(inputFrequency, inputDataRate, rx1DrOffset), outputDr);
         }
 
         [Theory]
@@ -127,11 +128,11 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(RegionEU868Test.TestDownstreamRX2FrequencyData), MemberType = typeof(RegionEU868Test))]
         [MemberData(nameof(RegionUS915Test.TestDownstreamRX2FrequencyData), MemberType = typeof(RegionUS915Test))]
         [MemberData(nameof(RegionCN470Test.TestDownstreamRX2FrequencyData), MemberType = typeof(RegionCN470Test))]
-        public void TestDownstreamRX2Frequency(double? nwksrvrx2freq, double expectedFreq, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
+        public void TestDownstreamRX2Frequency(Region region, double? nwksrvrx2freq, double expectedFreq, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
             var devEui = "testDevice";
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
-            var freq = Region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq, deviceJoinInfo);
+            var freq = region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq, deviceJoinInfo);
             Assert.Equal(expectedFreq, freq);
         }
 

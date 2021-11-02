@@ -5,62 +5,57 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using System.Collections.Generic;
     using LoRaTools.Regions;
-    using Xunit;
 
-    public class RegionCN470Test : RegionTestBase
+    public static class RegionCN470Test
     {
         private static readonly Region region = RegionManager.CN470;
 
-        public RegionCN470Test()
+        public static IEnumerable<object[]> TestRegionFrequencyData()
         {
-            Region = RegionManager.CN470;
+            var dataRate = 0;
+
+            return new List<object[]>
+            {
+                // 20 MHz plan A
+                new object[] { region, 470.3, dataRate, 483.9, 0 },
+                new object[] { region, 471.5, dataRate, 485.1, 1 },
+                new object[] { region, 476.5, dataRate, 490.1, 2 },
+                new object[] { region, 503.9, dataRate, 490.7, 3 },
+                new object[] { region, 503.5, dataRate, 490.3, 4 },
+                new object[] { region, 504.5, dataRate, 491.3, 5 },
+                new object[] { region, 509.7, dataRate, 496.5, 7 },
+                // 20 MHz plan B                                 
+                new object[] { region, 476.9, dataRate, 476.9, 8 }, 
+                new object[] { region, 479.9, dataRate, 479.9, 8 },
+                new object[] { region, 503.1, dataRate, 503.1, 9 },
+                // 26 MHz plan A
+                new object[] { region, 470.3, dataRate, 490.1, 10 },
+                new object[] { region, 473.3, dataRate, 493.1, 11 },
+                new object[] { region, 475.1, dataRate, 490.1, 12 },
+                new object[] { region, 471.1, dataRate, 490.9, 14 },
+                // 26 MHz plan B                                  
+                new object[] { region, 480.3, dataRate, 500.1, 15 },
+                new object[] { region, 485.1, dataRate, 500.1, 16 },
+                new object[] { region, 485.3, dataRate, 500.3, 17 },
+                new object[] { region, 489.7, dataRate, 504.7, 18 },
+                new object[] { region, 488.9, dataRate, 503.9, 19 },
+            };
         }
 
-        [Theory]
-        // 20 MHz plan A
-        [InlineData(470.3, 483.9, 0)]
-        [InlineData(471.5, 485.1, 1)]
-        [InlineData(476.5, 490.1, 2)]
-        [InlineData(503.9, 490.7, 3)]
-        [InlineData(503.5, 490.3, 4)]
-        [InlineData(504.5, 491.3, 5)]
-        [InlineData(509.7, 496.5, 7)]
-        // 20 MHz plan B
-        [InlineData(476.9, 476.9, 8)]
-        [InlineData(479.9, 479.9, 8)]
-        [InlineData(503.1, 503.1, 9)]
-        // 26 MHz plan A
-        [InlineData(470.3, 490.1, 10)]
-        [InlineData(473.3, 493.1, 11)]
-        [InlineData(475.1, 490.1, 12)]
-        [InlineData(471.1, 490.9, 14)]
-        // 26 MHz plan B
-        [InlineData(480.3, 500.1, 15)]
-        [InlineData(485.1, 500.1, 16)]
-        [InlineData(485.3, 500.3, 17)]
-        [InlineData(489.7, 504.7, 18)]
-        [InlineData(488.9, 503.9, 19)]
-        public void TestFrequency(double inputFreq, double outputFreq, int joinChannel)
-        {
-            TestRegionFrequency(inputFreq, 0, outputFreq, new DeviceJoinInfo(joinChannel));
-        }
-
-        [Theory]
-        [InlineData(0, 0, 0)]
-        [InlineData(1, 1, 0)]
-        [InlineData(2, 2, 0)]
-        [InlineData(6, 6, 0)]
-        [InlineData(2, 1, 1)]
-        [InlineData(3, 1, 2)]
-        [InlineData(4, 2, 2)]
-        [InlineData(6, 3, 3)]
-        [InlineData(6, 6, 7)]
-        [InlineData(1, 1, 10)]
-        public void TestDataRate(ushort inputDr, ushort outputDr, int rx1DrOffset)
-        {
-            var freq = 470.3;
-            TestRegionDataRate(freq, inputDr, outputDr, rx1DrOffset);
-        }
+        public static IEnumerable<object[]> TestRegionDataRateData =>
+           new List<object[]>
+           {
+               new object[] { region, 470.3, 0, 0, 0 },
+               new object[] { region, 470.3, 1, 1, 0 },
+               new object[] { region, 470.3, 2, 2, 0 },
+               new object[] { region, 470.3, 6, 6, 0 },
+               new object[] { region, 470.3, 2, 1, 1 },
+               new object[] { region, 470.3, 3, 1, 2 },
+               new object[] { region, 470.3, 4, 2, 2 },
+               new object[] { region, 470.3, 6, 3, 3 },
+               new object[] { region, 470.3, 6, 6, 7 },
+               new object[] { region, 470.3, 1, 1, 10 },
+           };
 
         public static IEnumerable<object[]> TestRegionLimitData =>
            new List<object[]>
@@ -87,28 +82,28 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
            new List<object[]>
            {
                // OTAA devices
-               new object[] { null, 485.3, 0, null },
-               new object[] { null, 486.9, 1, 9 },
-               new object[] { null, 496.5, 7, null },
-               new object[] { null, 498.3, 9, 8 },
-               new object[] { null, 492.5, 10, null },
-               new object[] { null, 492.5, 12, null },
-               new object[] { null, 492.5, 14, 14 },
-               new object[] { null, 502.5, 17, null },
-               new object[] { null, 502.5, 19, 18 },
-               new object[] { 498.3, 498.3, 7, null },
-               new object[] { 485.3, 485.3, 15, null },
-               new object[] { 492.5, 492.5, 15, 15 },
+               new object[] { region, null, 485.3, 0, null },
+               new object[] { region, null, 486.9, 1, 9 },
+               new object[] { region, null, 496.5, 7, null },
+               new object[] { region, null, 498.3, 9, 8 },
+               new object[] { region, null, 492.5, 10, null },
+               new object[] { region, null, 492.5, 12, null },
+               new object[] { region, null, 492.5, 14, 14 },
+               new object[] { region, null, 502.5, 17, null },
+               new object[] { region, null, 502.5, 19, 18 },
+               new object[] { region, 498.3, 498.3, 7, null },
+               new object[] { region, 485.3, 485.3, 15, null },
+               new object[] { region, 492.5, 492.5, 15, 15 },
                // ABP devices
-               new object[] { null, 486.9, null, 0 },
-               new object[] { null, 486.9, null, 7 },
-               new object[] { null, 498.3, null, 8 },
-               new object[] { null, 498.3, null, 9 },
-               new object[] { null, 492.5, null, 14 },
-               new object[] { null, 502.5, null, 15 },
-               new object[] { null, 502.5, null, 19 },
-               new object[] { 486.9, 486.9, null, 12 },
-               new object[] { 502.5, 502.5, null, 17 },
+               new object[] { region, null, 486.9, null, 0 },
+               new object[] { region, null, 486.9, null, 7 },
+               new object[] { region, null, 498.3, null, 8 },
+               new object[] { region, null, 498.3, null, 9 },
+               new object[] { region, null, 492.5, null, 14 },
+               new object[] { region, null, 502.5, null, 15 },
+               new object[] { region, null, 502.5, null, 19 },
+               new object[] { region, 486.9, 486.9, null, 12 },
+               new object[] { region, 502.5, 502.5, null, 17 },
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>

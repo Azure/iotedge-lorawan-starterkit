@@ -5,27 +5,28 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using System.Collections.Generic;
     using LoRaTools.Regions;
-    using Xunit;
 
-    public class RegionEU868Test : RegionTestBase
+    public static class RegionEU868Test
     {
         private static readonly Region region = RegionManager.EU868;
+        private static readonly List<ushort> dataRates = new List<ushort> { 0, 1, 2, 3, 4, 5, 6 };
+        private static readonly List<double> frequencies = new List<double> { 868.1, 868.3, 868.5 };
 
-        public RegionEU868Test()
+        public static IEnumerable<object[]> TestRegionFrequencyData()
         {
-            Region = RegionManager.EU868;
+            foreach (var dr in dataRates)
+            {
+                foreach (var freq in frequencies)
+                    yield return new object[] { region, freq, dr, freq };
+            }
         }
 
-        [Theory]
-        [CombinatorialData]
-        public void TestFrequencyAndDataRate(
-            [CombinatorialValues(0, 1, 2, 3, 4, 5, 6)] ushort inputDr,
-            [CombinatorialValues(868.1, 868.3, 868.5)] double inputFreq)
-        {
-            var expectedDr = inputDr;
-            var expectedFreq = inputFreq;
-
-            TestRegionFrequencyAndDataRate(inputDr, inputFreq, expectedDr, expectedFreq);
+        public static IEnumerable<object[]> TestRegionDataRateData() {
+            foreach (var dr in dataRates)
+            {
+                foreach (var freq in frequencies)
+                    yield return new object[] { region, freq, dr, dr };
+            }
         }
 
         public static IEnumerable<object[]> TestRegionLimitData =>
@@ -54,9 +55,9 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
            new List<object[]>
            {
-               new object[] { null, 869.525 },
-               new object[] { null, 869.525 },
-               new object[] { 868.250, 868.250 },
+               new object[] { region, null, 869.525 },
+               new object[] { region, null, 869.525 },
+               new object[] { region, 868.250, 868.250 },
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>

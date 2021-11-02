@@ -5,30 +5,15 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using System.Collections.Generic;
     using LoRaTools.Regions;
-    using Xunit;
 
-    public class RegionUS915Test : RegionTestBase
+    public static class RegionUS915Test
     {
         private static readonly Region region = RegionManager.US915;
 
-        public RegionUS915Test()
+        public static IEnumerable<object[]> TestRegionFrequencyDataDR1To3()
         {
-            Region = RegionManager.US915;
-        }
-
-        [Theory]
-        [PairwiseData]
-        public void TestFrequencyAndDataRateDR1To3(
-            [CombinatorialValues(0, 1, 2, 3)] ushort inputDr,
-            [CombinatorialValues(902.3, 902.5, 902.7, 902.9, 903.1, 903.3, 903.5, 903.7, 903.9)] double inputFreq)
-        {
-            var inputDrToExpectedDr = new Dictionary<ushort, ushort>
-            {
-                { 0, 10 },
-                { 1, 11 },
-                { 2, 12 },
-                { 3, 13 }
-            };
+            var frequencies = new List<double> { 902.3, 902.5, 902.7, 902.9, 903.1, 903.3, 903.5, 903.7, 903.9 };
+            var dataRates = new List<ushort> { 0, 1, 2, 3 };
 
             var inputFreqToExpectedFreq = new Dictionary<double, double>
             {
@@ -45,19 +30,17 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
                 { 904.3, 924.5 },
             };
 
-            var expectedDr = inputDrToExpectedDr[inputDr];
-            var expectedFreq = inputFreqToExpectedFreq[inputFreq];
-
-            TestRegionFrequencyAndDataRate(inputDr, inputFreq, expectedDr, expectedFreq);
+            foreach (var dr in dataRates)
+            {
+                foreach (var freq in frequencies)
+                    yield return new object[] { region, freq, dr, inputFreqToExpectedFreq[freq] };
+            }
         }
 
-        [Theory]
-        [PairwiseData]
-        public void TestFrequencyAndDataRateDR4(
-            [CombinatorialValues(4)] ushort inputDr,
-            [CombinatorialValues(903, 904.6, 906.2, 907.8, 909.4, 911, 912.6, 914.2)] double inputFreq)
+        public static IEnumerable<object[]> TestRegionFrequencyDataDR4()
         {
-            ushort expectedDr = 13;
+            var frequencies = new List<double> { 903, 904.6, 906.2, 907.8, 909.4, 911, 912.6, 914.2 };
+            var dataRates = new List<ushort> { 4 };
 
             var inputFreqToExpectedFreq = new Dictionary<double, double>
             {
@@ -71,9 +54,45 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
                 { 914.2, 927.5 },
             };
 
-            var expectedFreq = inputFreqToExpectedFreq[inputFreq];
+            foreach (var dr in dataRates)
+            {
+                foreach (var freq in frequencies)
+                    yield return new object[] { region, freq, dr, inputFreqToExpectedFreq[freq] };
+            }
+        }
 
-            TestRegionFrequencyAndDataRate(inputDr, inputFreq, expectedDr, expectedFreq);
+        public static IEnumerable<object[]> TestRegionDataRateDataDR1To3()
+        {
+            var frequencies = new List<double> { 902.3, 902.5, 902.7, 902.9, 903.1, 903.3, 903.5, 903.7, 903.9 };
+            var dataRates = new List<ushort> { 0, 1, 2, 3 };
+
+            var inputDrToExpectedDr = new Dictionary<ushort, ushort>
+            {
+                { 0, 10 },
+                { 1, 11 },
+                { 2, 12 },
+                { 3, 13 }
+            };
+
+            foreach (var dr in dataRates)
+            {
+                foreach (var freq in frequencies)
+                    yield return new object[] { region, freq, dr, inputDrToExpectedDr[dr] };
+            }
+        }
+
+        public static IEnumerable<object[]> TestRegionDataRateDataDR4()
+        {
+            var frequencies = new List<double> { 903, 904.6, 906.2, 907.8, 909.4, 911, 912.6, 914.2 };
+            var dataRates = new List<ushort> { 4 };
+
+            ushort expectedDr = 13;
+
+            foreach (var dr in dataRates)
+            {
+                foreach (var freq in frequencies)
+                    yield return new object[] { region, freq, dr, expectedDr };
+            }
         }
 
         public static IEnumerable<object[]> TestRegionLimitData =>
@@ -103,9 +122,9 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
            new List<object[]>
            {
-               new object[] { null, 923.3, },
-               new object[] { null, 923.3, },
-               new object[] { 920.0, 920.0 },
+               new object[] { region, null, 923.3, },
+               new object[] { region, null, 923.3, },
+               new object[] { region, 920.0, 920.0 },
            };
 
         public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>

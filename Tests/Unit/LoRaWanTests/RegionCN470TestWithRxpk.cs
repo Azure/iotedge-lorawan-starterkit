@@ -53,7 +53,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public void TestFrequency(double inputFreq, double outputFreq, int joinChannel)
         {
             var rxpk = GenerateRxpk("SF12BW125", inputFreq);
-            TestRegionFrequency(rxpk, outputFreq, new DeviceJoinInfo(joinChannel));
+            TestRegionFrequencyRxpk(rxpk, outputFreq, new DeviceJoinInfo(joinChannel));
         }
 
         [Theory]
@@ -68,7 +68,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public void TestDataRate(string inputDr, string outputDr, int rx1DrOffset)
         {
             var rxpk = GenerateRxpk(inputDr, 470.3);
-            TestRegionDataRate(rxpk, outputDr, rx1DrOffset);
+            TestRegionDataRateRxpk(rxpk, outputDr, rx1DrOffset);
         }
 
         [Theory]
