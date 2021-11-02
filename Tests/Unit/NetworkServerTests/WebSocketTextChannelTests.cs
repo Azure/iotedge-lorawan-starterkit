@@ -87,7 +87,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public async Task SendAsync_Fails_If_Send_Queue_Is_Not_Being_Processed_Anymore()
         {
             // act + assert 1
-            using (UseProcessSendQueueListener())
+            await using (UseProcessSendQueueListener())
             {
                 // Sending should succeed while someone is listening on ProcessSendQueue.
                 await this.sut.SendAsync("foo", CancellationToken.None);
@@ -103,7 +103,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             const int numberOfConcurrentSends = 5;
-            using var t = UseProcessSendQueueListener();
+            await using var t = UseProcessSendQueueListener();
             var messages = Enumerable.Range(0, numberOfConcurrentSends)
                                      .Select(i => i.ToString(CultureInfo.InvariantCulture))
                                      .ToList();
@@ -126,7 +126,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             const int numberOfConcurrentSends = 5;
-            using var t = UseProcessSendQueueListener();
+            await using var t = UseProcessSendQueueListener();
             _ = this.webSocketMock.Setup(ws => ws.SendAsync(It.IsAny<ArraySegment<byte>>(),
                                                             It.IsAny<WebSocketMessageType>(),
                                                             It.IsAny<bool>(),
@@ -160,7 +160,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                                                             It.IsAny<bool>(),
                                                             It.Is((CancellationToken ct) => ct.IsCancellationRequested)))
                                   .Throws(new OperationCanceledException());
-            using var t = UseProcessSendQueueListener(sut);
+            await using var t = UseProcessSendQueueListener(sut);
 
             // act
             async Task Act() => await sut.SendAsync("foo", CancellationToken.None);
@@ -169,10 +169,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             _ = await Assert.ThrowsAsync<TaskCanceledException>(Act);
         }
 
-        private IDisposable UseProcessSendQueueListener(WebSocketTextChannel webSocketTextChannel = null) =>
+        private IAsyncDisposable UseProcessSendQueueListener(WebSocketTextChannel webSocketTextChannel = null) =>
             new ProcessSendQueueListener(webSocketTextChannel ?? this.sut);
 
-        private sealed class ProcessSendQueueListener : IDisposable
+        private sealed class ProcessSendQueueListener : IAsyncDisposable
         {
             private readonly CancellationTokenSource cts;
             private readonly Task webSocketTextChannelListenTask;
@@ -183,10 +183,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 this.webSocketTextChannelListenTask = webSocketTextChannel.ProcessSendQueueAsync(cts.Token);
             }
 
-            public void Dispose()
+            public async ValueTask DisposeAsync()
             {
                 this.cts.Cancel();
-                _ = Assert.ThrowsAsync<OperationCanceledException>(() => this.webSocketTextChannelListenTask).GetAwaiter().GetResult();
+                await Assert.ThrowsAsync<OperationCanceledException>(() => this.webSocketTextChannelListenTask);
                 this.cts.Dispose();
             }
         }
