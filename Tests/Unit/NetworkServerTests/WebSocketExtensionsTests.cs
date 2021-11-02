@@ -36,7 +36,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             SetupWebSocketResponse(numberOfChunks, message);
 
             // act + assert
-            await using var result = WebSocketExtensions.ReadTextMessages(this.webSocketMock.Object, CancellationToken.None);
+            await using var result = this.webSocketMock.Object.ReadTextMessages(CancellationToken.None);
             Assert.True(await result.MoveNextAsync());
             Assert.False(await result.MoveNextAsync());
         }
@@ -53,7 +53,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             SetupWebSocketResponse(numberOfChunks, message);
 
             // act + assert
-            await using var result = WebSocketExtensions.ReadTextMessages(this.webSocketMock.Object, CancellationToken.None);
+            await using var result = this.webSocketMock.Object.ReadTextMessages(CancellationToken.None);
             Assert.True(await result.MoveNextAsync());
             Assert.Equal(message, result.Current);
         }
@@ -66,7 +66,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                                   .Returns(() => new ValueTask<ValueWebSocketReceiveResult>(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Binary, true)));
 
             // act
-            await using var result = WebSocketExtensions.ReadTextMessages(this.webSocketMock.Object, CancellationToken.None);
+            await using var result = this.webSocketMock.Object.ReadTextMessages(CancellationToken.None);
 
             // assert
             await Assert.ThrowsAsync<NotSupportedException>(async () => await result.MoveNextAsync());
@@ -83,7 +83,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             SetupWebSocketResponse(numberOfChunks, Enumerable.Range(0, numberOfMessages).Select(_ => message).ToArray());
 
             // act + assert
-            await using var result = WebSocketExtensions.ReadTextMessages(this.webSocketMock.Object, CancellationToken.None);
+            await using var result = this.webSocketMock.Object.ReadTextMessages(CancellationToken.None);
             for (var i = 0; i < numberOfMessages; ++i)
             {
                 Assert.True(await result.MoveNextAsync());
