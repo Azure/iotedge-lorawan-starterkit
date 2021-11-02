@@ -43,7 +43,8 @@ namespace LoRaWan.NetworkServer
                 ReferenceEquals(this, obj) || Equals(obj as Handle);
 
             private bool Equals(Handle? other) =>
-                other is not null && this.registry.Equals(other.registry) && EqualityComparer<TKey>.Default.Equals(this.key, other.key);
+                other is not null && this.registry == other.registry
+                                  && EqualityComparer<TKey>.Default.Equals(this.key, other.key);
 
             public override int GetHashCode() => HashCode.Combine(this.registry, this.key);
         }
