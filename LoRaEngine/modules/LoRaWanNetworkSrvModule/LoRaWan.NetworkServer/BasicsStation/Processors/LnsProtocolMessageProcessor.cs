@@ -132,11 +132,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 while (await message.MoveNextAsync())
                     await HandleDataMessageAsync(stationEui, handle, message.Current, cancellationToken);
 
-                cancellationTokenSource.Cancel();
+                cancellationTokenSource.Cancel(); // cancel send queue processing, then...
 
                 try
                 {
-                    await task;
+                    await task; // ...wait for its task to complete (practically instantaneous)
                 }
                 catch (OperationCanceledException)
                 {
