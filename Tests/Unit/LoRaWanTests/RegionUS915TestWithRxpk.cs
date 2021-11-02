@@ -11,6 +11,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
     public class RegionUS915TestWithRxpk : RegionTestBase
     {
+        private static readonly Region region = RegionManager.US915;
+
         public RegionUS915TestWithRxpk()
         {
             Region = RegionManager.US915;
@@ -83,39 +85,31 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(920, "SF30BW400")]
         public void TestLimit(double freq, string datarate)
         {
-            TestRegionLimit(freq, datarate);
+            TestRegionLimitRxpk(freq, datarate);
         }
 
-        [Theory]
-        [InlineData("SF10BW125", 19)]
-        [InlineData("SF9BW125", 61)]
-        [InlineData("SF8BW125", 133)]
-        [InlineData("SF7BW125", 250)]
-        [InlineData("SF8BW500", 250)]
-        [InlineData("SF12BW500", 61)]
-        [InlineData("SF11BW500", 137)]
-        [InlineData("SF10BW500", 250)]
-        [InlineData("SF9BW500", 250)]
-        [InlineData("SF7BW500", 250)]
-        public void TestMaxPayloadLength(string datr, uint maxPyldSize)
-        {
-            TestRegionMaxPayloadLength(datr, maxPyldSize);
-        }
+        public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
+          new List<object[]>
+          {
+               new object[] { region, "SF10BW125",19 },
+               new object[] { region, "SF9BW125", 61 },
+               new object[] { region, "SF8BW125", 133 },
+               new object[] { region, "SF7BW125", 250 },
+               new object[] { region, "SF8BW500", 250 },
+               new object[] { region, "SF12BW500",61 },
+               new object[] { region, "SF11BW500",137 },
+               new object[] { region, "SF10BW500", 250 },
+               new object[] { region, "SF9BW500",  250 },
+               new object[] { region, "SF7BW500", 250 },
+          };
 
-        [Theory]
-        [InlineData("", null, null, 923.3, "SF12BW500")] // Standard US.
-        [InlineData("SF9BW500", null, null, 923.3, "SF9BW500")] // Standard EU.
-        [InlineData("SF9BW500", 920.0, (ushort)12, 920.0, "SF8BW500")] // Standard EU.
-        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
-        {
-            TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
-        }
-
-        [Fact]
-        public void TestTranslateRegionType()
-        {
-            TestTranslateToRegion(LoRaRegionType.US915);
-        }
+        public static IEnumerable<object[]> TestDownstreamRX2DataRateRxpkData =>
+           new List<object[]>
+           {
+                new object[] { region, "", null, "SF12BW500" },
+                new object[] { region, "SF9BW500", null, "SF9BW500" },
+                new object[] { region, "SF9BW500", (ushort)12, "SF8BW500" },
+           };
 
         [Fact]
         public void TestResolveRegion()

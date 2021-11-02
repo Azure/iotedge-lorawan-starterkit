@@ -19,20 +19,26 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [Theory]
         // 20 MHz plan A
         [InlineData(470.3, 483.9, 0)]
-        [InlineData(476.5, 490.1, 1)]
+        [InlineData(471.5, 485.1, 1)]
+        [InlineData(476.5, 490.1, 2)]
+        [InlineData(503.9, 490.7, 3)]
         [InlineData(503.5, 490.3, 4)]
         [InlineData(504.5, 491.3, 5)]
         [InlineData(509.7, 496.5, 7)]
         // 20 MHz plan B
         [InlineData(476.9, 476.9, 8)]
+        [InlineData(479.9, 479.9, 8)]
         [InlineData(503.1, 503.1, 9)]
         // 26 MHz plan A
         [InlineData(470.3, 490.1, 10)]
+        [InlineData(473.3, 493.1, 11)]
         [InlineData(475.1, 490.1, 12)]
         [InlineData(471.1, 490.9, 14)]
         // 26 MHz plan B
         [InlineData(480.3, 500.1, 15)]
-        [InlineData(489.7, 504.7, 17)]
+        [InlineData(485.1, 500.1, 16)]
+        [InlineData(485.3, 500.3, 17)]
+        [InlineData(489.7, 504.7, 18)]
         [InlineData(488.9, 503.9, 19)]
         public void TestFrequency(double inputFreq, double outputFreq, int joinChannel)
         {
@@ -45,87 +51,88 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(2, 2, 0)]
         [InlineData(6, 6, 0)]
         [InlineData(2, 1, 1)]
+        [InlineData(3, 1, 2)]
         [InlineData(4, 2, 2)]
         [InlineData(6, 3, 3)]
-        [InlineData(6, 6, 10)]
+        [InlineData(6, 6, 7)]
+        [InlineData(1, 1, 10)]
         public void TestDataRate(ushort inputDr, ushort outputDr, int rx1DrOffset)
         {
             var freq = 470.3;
             TestRegionDataRate(freq, inputDr, outputDr, rx1DrOffset);
         }
 
-        [Theory]
-        [InlineData(470, 0)]
-        [InlineData(510, 1)]
-        [InlineData(509, 100)]
-        [InlineData(490, 110)]
-        public void TestNotAllowedDataRates(double freq, ushort datarate)
-        {
-            TestRegionLimit(freq, datarate, new DeviceJoinInfo(0));
-        }
+        public static IEnumerable<object[]> TestRegionLimitData =>
+           new List<object[]>
+           {
+               new object[] { region, 470, 0, 0 },
+               new object[] { region, 510, 1, 0 },
+               new object[] { region, 509, 100, 0 },
+               new object[] { region, 490, 110, 0 },
+           };
 
-        [Theory]
-        [InlineData(1, 31)]
-        [InlineData(2, 94)]
-        [InlineData(3, 192)]
-        [InlineData(4, 250)]
-        [InlineData(5, 250)]
-        [InlineData(6, 250)]
-        [InlineData(7, 250)]
-        public void TestMaxPayloadLength(ushort datr, uint maxPyldSize)
-        {
-            TestRegionMaxPayloadLength(datr, maxPyldSize);
-        }
+        public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
+           new List<object[]>
+           {
+               new object[] { region, 1, 31 },
+               new object[] { region, 2, 94 },
+               new object[] { region, 3, 192 },
+               new object[] { region, 4, 250 },
+               new object[] { region, 5, 250 },
+               new object[] { region, 6, 250 },
+               new object[] { region, 7, 250 },
+           };
 
-        [Theory]
-        // OTAA devices - join channel set in reported twin properties
-        [InlineData(null, 0, null, 485.3)]
-        [InlineData(null, 1, 9, 486.9)]
-        [InlineData(null, 7, null, 496.5)]
-        [InlineData(null, 9, 8, 498.3)]
-        [InlineData(null, 10, null, 492.5)]
-        [InlineData(null, 14, 14, 492.5)]
-        [InlineData(null, 19, 18, 502.5)]
-        [InlineData(498.3, 7, null, 498.3)]
-        [InlineData(485.3, 15, null, 485.3)]
-        // ABP devices
-        [InlineData(null, null, 0, 486.9)]
-        [InlineData(null, null, 7, 486.9)]
-        [InlineData(null, null, 9, 498.3)]
-        [InlineData(null, null, 14, 492.5)]
-        [InlineData(null, null, 19, 502.5)]
-        [InlineData(486.9, null, 12, 486.9)]
-        [InlineData(502.5, null, 17, 502.5)]
-        public void TestRX2Frequency(double? nwksrvrx2freq, int? reportedJoinChannel, int? desiredJoinChannel, double expectedFreq)
-        {
-            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
-            TestDownstreamRX2Frequency(nwksrvrx2freq, expectedFreq, deviceJoinInfo);
-        }
+        public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
+           new List<object[]>
+           {
+               // OTAA devices
+               new object[] { null, 485.3, 0, null },
+               new object[] { null, 486.9, 1, 9 },
+               new object[] { null, 496.5, 7, null },
+               new object[] { null, 498.3, 9, 8 },
+               new object[] { null, 492.5, 10, null },
+               new object[] { null, 492.5, 12, null },
+               new object[] { null, 492.5, 14, 14 },
+               new object[] { null, 502.5, 17, null },
+               new object[] { null, 502.5, 19, 18 },
+               new object[] { 498.3, 498.3, 7, null },
+               new object[] { 485.3, 485.3, 15, null },
+               new object[] { 492.5, 492.5, 15, 15 },
+               // ABP devices
+               new object[] { null, 486.9, null, 0 },
+               new object[] { null, 486.9, null, 7 },
+               new object[] { null, 498.3, null, 8 },
+               new object[] { null, 498.3, null, 9 },
+               new object[] { null, 492.5, null, 14 },
+               new object[] { null, 502.5, null, 15 },
+               new object[] { null, 502.5, null, 19 },
+               new object[] { 486.9, 486.9, null, 12 },
+               new object[] { 502.5, 502.5, null, 17 },
+           };
 
-        [Theory]
-        [InlineData(null, null, 0, null, 1)]
-        [InlineData(null, null, 8, null, 1)]
-        [InlineData(null, null, 10, null, 1)]
-        [InlineData(null, null, 19, null, 1)]
-        [InlineData(null, null, null, 5, 1)]
-        [InlineData(null, null, null, 12, 1)]
-        [InlineData(null, null, 10, 14, 1)]
-        [InlineData(null, (ushort)2, 0, null, 2)]
-        [InlineData((ushort)3, null, 0, null, 3)]
-        [InlineData((ushort)3, (ushort)2, 0, null, 2)]
-        [InlineData((ushort)4, (ushort)3, 0, 8, 3)]
-        [InlineData(null, (ushort)9, 11, null, 1)]
-        public void TestRX2DataRate(ushort? nwksrvrx2dr, ushort? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, ushort expectedDr)
-        {
-            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
-            TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr, deviceJoinInfo);
-        }
+        public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
+            new List<object[]>
+            {
+                new object[] { region, null, null, 1, 0, null },
+                new object[] { region, null, null, 1, 8, null },
+                new object[] { region, null, null, 1, 10, null },
+                new object[] { region, null, null, 1, 19, null },
+                new object[] { region, null, null, 1, null, 5 },
+                new object[] { region, null, null, 1, null, 12 },
+                new object[] { region, null, null, 1, 10, 14 },
+                new object[] { region, null, (ushort)2, 2, 0, null },
+                new object[] { region, (ushort)3, null, 3, 0, null },
+                new object[] { region, (ushort)3, (ushort)2, 2, 0, null },
+                new object[] { region, (ushort)4, (ushort)3, 3, 0, 8 },
+                new object[] { region, null, (ushort)9, 1, 11, null },
+            };
 
-        [Fact]
-        public void TestTranslateRegionType()
-        {
-            TestTranslateToRegion(LoRaRegionType.CN470);
-        }
+        public static IEnumerable<object[]> TestTranslateToRegionData =>
+           new List<object[]>
+           {
+                new object[] { region, LoRaRegionType.CN470 },
+           };
 
         public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
            new List<object[]>

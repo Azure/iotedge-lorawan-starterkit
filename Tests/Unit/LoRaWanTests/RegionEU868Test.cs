@@ -28,45 +28,50 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             TestRegionFrequencyAndDataRate(inputDr, inputFreq, expectedDr, expectedFreq);
         }
 
-        [Theory]
-        [InlineData(800, 0)]
-        [InlineData(1023, 4)]
-        [InlineData(868.1, 90)]
-        [InlineData(869.3, 100)]
-        [InlineData(800, 110)]
-        public void TestLimit(double freq, ushort datarate)
-        {
-            TestRegionLimit(freq, datarate);
-        }
+        public static IEnumerable<object[]> TestRegionLimitData =>
+          new List<object[]>
+          {
+               new object[] { region, 800, 0 },
+               new object[] { region, 1023, 4 },
+               new object[] { region, 868.1, 90 },
+               new object[] { region, 869.3, 100 },
+               new object[] { region, 800, 100 },
+          };
 
-        [Theory]
-        [InlineData(0, 59)]
-        [InlineData(1, 59)]
-        [InlineData(2, 59)]
-        [InlineData(3, 123)]
-        [InlineData(4, 230)]
-        [InlineData(5, 230)]
-        [InlineData(6, 230)]
-        [InlineData(7, 230)]
-        public void TestMaxPayloadLength(ushort datr, uint maxPyldSize)
-        {
-            TestRegionMaxPayloadLength(datr, maxPyldSize);
-        }
+        public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
+           new List<object[]>
+           {
+               new object[] { region, 0, 59 },
+               new object[] { region, 1, 59 },
+               new object[] { region, 2, 59 },
+               new object[] { region, 3, 123 },
+               new object[] { region, 4, 230 },
+               new object[] { region, 5, 230 },
+               new object[] { region, 6, 230 },
+               new object[] { region, 7, 230 },
+           };
 
-        [Theory]
-        [InlineData(null, null, null, 869.525, (ushort)0)] // Standard EU.
-        [InlineData((ushort)3, null, null, 869.525, (ushort)3)] // nwksrvDR is correctly applied if no device twins.
-        [InlineData((ushort)3, 868.250, (ushort)6, 868.250, (ushort)6)] // device twins are applied in priority.
-        public void TestDownstreamRX2(ushort? nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, ushort expectedDr)
-        {
-            TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
-        }
+        public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
+           new List<object[]>
+           {
+               new object[] { null, 869.525 },
+               new object[] { null, 869.525 },
+               new object[] { 868.250, 868.250 },
+           };
 
-        [Fact]
-        public void TestTranslateRegionType()
-        {
-            TestTranslateToRegion(LoRaRegionType.EU868);
-        }
+        public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
+            new List<object[]>
+            {
+                new object[] { region, null, null, (ushort)0 }, // Standard EU.
+                new object[] { region, (ushort)3, null, (ushort)3 }, // nwksrvDR is correctly applied if no device twins.
+                new object[] { region, (ushort)3, (ushort)6, (ushort)6 }, // device twins are applied in priority.
+            };
+
+        public static IEnumerable<object[]> TestTranslateToRegionData =>
+           new List<object[]>
+           {
+                new object[] { region, LoRaRegionType.EU868 },
+           };
 
         public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
             new List<object[]>

@@ -76,46 +76,51 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             TestRegionFrequencyAndDataRate(inputDr, inputFreq, expectedDr, expectedFreq);
         }
 
-        [Theory]
-        [InlineData(700, 0)]
-        [InlineData(1024, 2)]
-        [InlineData(915, 90)]
-        [InlineData(920, 100)]
-        public void TestLimit(double freq, ushort datarate)
-        {
-            TestRegionLimit(freq, datarate);
-        }
+        public static IEnumerable<object[]> TestRegionLimitData =>
+          new List<object[]>
+          {
+               new object[] { region, 700, 0 },
+               new object[] { region, 1024, 2 },
+               new object[] { region, 915, 90 },
+               new object[] { region, 920, 100 },
+          };
 
-        [Theory]
-        [InlineData(0,  19)]
-        [InlineData(1, 61)]
-        [InlineData(2, 133)]
-        [InlineData(3, 250)]
-        [InlineData(4, 250)]
-        [InlineData(8,  61)]
-        [InlineData(9,  137)]
-        [InlineData(10,  250)]
-        [InlineData(11, 250)]
-        [InlineData(13, 250)]
-        public void TestMaxPayloadLength(ushort datr, uint maxPyldSize)
-        {
-            TestRegionMaxPayloadLength(datr, maxPyldSize);
-        }
+        public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
+           new List<object[]>
+           {
+               new object[] { region, 0, 19 },
+               new object[] { region, 1, 61 },
+               new object[] { region, 2, 133 },
+               new object[] { region, 3, 250 },
+               new object[] { region, 4, 250 },
+               new object[] { region, 8, 61 },
+               new object[] { region, 9, 137 },
+               new object[] { region, 10, 250 },
+               new object[] { region, 11, 250 },
+               new object[] { region, 13, 250 },
+           };
 
-        [Theory]
-        [InlineData(null, null, null, 923.3, (ushort)8)] // Standard US.
-        [InlineData((ushort)11, null, null, 923.3, (ushort)11)] // Standard EU.
-        [InlineData((ushort)11, 920.0, (ushort)12, 920.0, (ushort)12)] // Standard EU.
-        public void TestDownstreamRX2(ushort? nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, ushort expectedDr)
-        {
-            TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
-        }
+        public static IEnumerable<object[]> TestDownstreamRX2FrequencyData =>
+           new List<object[]>
+           {
+               new object[] { null, 923.3, },
+               new object[] { null, 923.3, },
+               new object[] { 920.0, 920.0 },
+           };
 
-        [Fact]
-        public void TestTranslateRegionType()
-        {
-            TestTranslateToRegion(LoRaRegionType.US915);
-        }
+        public static IEnumerable<object[]> TestDownstreamRX2DataRateData =>
+           new List<object[]>
+           {
+                new object[] { region, null, null, (ushort)8 },
+                new object[] { region, (ushort)11, null, (ushort)11 }, 
+                new object[] { region, (ushort)11, (ushort)12, (ushort)12 },
+           };
+
+        public static IEnumerable<object[]> TestTranslateToRegionData =>
+           new List<object[]>
+           {
+                new object[] { region, LoRaRegionType.US915 },
+           };
 
         public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>
             new List<object[]>

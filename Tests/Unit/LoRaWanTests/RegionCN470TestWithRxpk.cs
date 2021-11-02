@@ -5,11 +5,13 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using LoRaTools.Regions;
     using System;
+    using System.Collections.Generic;
     using Xunit;
 
     [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
     public class RegionCN470TestWithRxpk : RegionTestBase
     {
+        private static readonly Region region = RegionManager.CN470;
         public RegionCN470TestWithRxpk()
         {
             Region = RegionManager.CN470;
@@ -76,46 +78,37 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(490, "SF30BW125")]
         public void TestLimit(double freq, string datarate)
         {
-            TestRegionLimit(freq, datarate, new DeviceJoinInfo(0));
+            TestRegionLimitRxpk(freq, datarate, new DeviceJoinInfo(0));
         }
 
-        [Theory]
-        [InlineData("SF11BW125", 31)]
-        [InlineData("SF10BW125", 94)]
-        [InlineData("SF9BW125", 192)]
-        [InlineData("SF8BW125", 250)]
-        [InlineData("SF7BW125", 250)]
-        [InlineData("SF7BW500", 250)]
-        [InlineData("50", 250)]
-        public void TestMaxPayloadLength(string datr, uint maxPyldSize)
-        {
-            TestRegionMaxPayloadLength(datr, maxPyldSize);
-        }
+        public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
+           new List<object[]>
+           {
+               new object[] { region, "SF11BW125", 31 },
+               new object[] { region, "SF10BW125", 94 },
+               new object[] { region, "SF9BW125",  192 },
+               new object[] { region, "SF8BW125",  250 },
+               new object[] { region, "SF7BW125",  250 },
+               new object[] { region, "SF7BW500", 250 },
+               new object[] { region, "50", 250 },
+           };
 
-        [Theory]
-        [InlineData(null, null, 0, null, "SF11BW125")]
-        [InlineData(null, null, 8, null, "SF11BW125")]
-        [InlineData(null, null, 10, null, "SF11BW125")]
-        [InlineData(null, null, 19, null, "SF11BW125")]
-        [InlineData(null, null, null, 5, "SF11BW125")]
-        [InlineData(null, null, null, 12, "SF11BW125")]
-        [InlineData(null, null, 10, 14, "SF11BW125")]
-        [InlineData(null, (ushort)2, 0, null, "SF10BW125")]
-        [InlineData("SF9BW125", null, 0, null, "SF9BW125")]
-        [InlineData("SF9BW125", (ushort)2, 0, null, "SF10BW125")]
-        [InlineData("SF8BW125", (ushort)3, 0, 8, "SF9BW125")]
-        [InlineData(null, (ushort)9, 11, null, "SF11BW125")]
-        public void TestRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, int? reportedJoinChannel, int? desiredJoinChannel, string expectedDr)
-        {
-            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
-            TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr, deviceJoinInfo);
-        }
-
-        [Fact]
-        public void TestTranslateRegionType()
-        {
-            TestTranslateToRegion(LoRaRegionType.CN470);
-        }
+        public static IEnumerable<object[]> TestDownstreamRX2DataRateRxpkData =>
+           new List<object[]>
+           {
+               new object[] { region, null, null, "SF11BW125", 0, null },
+               new object[] { region, null, null, "SF11BW125", 8, null },
+               new object[] { region, null, null, "SF11BW125", 10, null },
+               new object[] { region, null, null, "SF11BW125", 19, null },
+               new object[] { region, null, null, "SF11BW125", null, 5 },
+               new object[] { region, null, null, "SF11BW125", null, 12 },
+               new object[] { region, null, null, "SF11BW125", 10, 14 },
+               new object[] { region, null, (ushort)2, "SF10BW125", 0, null },
+               new object[] { region, "SF9BW125", null, "SF9BW125", 0, null },
+               new object[] { region, "SF9BW125", (ushort)2, "SF10BW125", 0, null },
+               new object[] { region, "SF8BW125", (ushort)3, "SF9BW125", 0, 8 },
+               new object[] { region, null, (ushort)9, "SF11BW125", 11, null },
+           };
 
         [Fact]
         public void TestResolveRegion()

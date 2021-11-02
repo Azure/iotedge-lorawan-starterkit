@@ -37,7 +37,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        protected void TestRegionLimit(double freq, string datarate, DeviceJoinInfo deviceJoinInfo = null)
+        protected void TestRegionLimitRxpk(double freq, string datarate, DeviceJoinInfo deviceJoinInfo = null)
         {
             var rxpk = GenerateRxpk(datarate, freq);
             Assert.False(Region.TryGetDownstreamChannelFrequency(rxpk[0], out _, deviceJoinInfo));
@@ -65,10 +65,15 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.Equal(Region.GetDownstreamDR(inputFrequency, inputDataRate, rx1DrOffset), outputDr);
         }
 
-        protected void TestRegionLimit(double inputFrequency, ushort datarate, DeviceJoinInfo deviceJoinInfo = null)
+        [Theory]
+        [MemberData(nameof(RegionEU868Test.TestRegionLimitData), MemberType = typeof(RegionEU868Test))]
+        [MemberData(nameof(RegionUS915Test.TestRegionLimitData), MemberType = typeof(RegionUS915Test))]
+        [MemberData(nameof(RegionCN470Test.TestRegionLimitData), MemberType = typeof(RegionCN470Test))]
+        public void TestRegionLimit(Region region, double inputFrequency, ushort datarate, int? reportedJoinChannel = null)
         {
-            Assert.False(Region.TryGetDownstreamChannelFrequency(inputFrequency, datarate, out _, deviceJoinInfo));
-            Assert.Null(Region.GetDownstreamDR(inputFrequency, datarate));
+            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel);
+            Assert.False(region.TryGetDownstreamChannelFrequency(inputFrequency, datarate, out _, deviceJoinInfo));
+            Assert.Null(region.GetDownstreamDR(inputFrequency, datarate));
         }
 
         protected static IList<Rxpk> GenerateRxpk(string dr, double freq)
@@ -97,57 +102,74 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             return Rxpk.CreateRxpk(physicalUpstreamPyld.Concat(multiRxpkInput).ToArray());
         }
 
+        [Theory]
+#pragma warning disable CS0618 // Type or member is obsolete; classes will be deleted as soon as the complete LNS implementation is done
+        [MemberData(nameof(RegionEU868TestWithRxpk.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionEU868TestWithRxpk))]
+        [MemberData(nameof(RegionUS915TestWithRxpk.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionUS915TestWithRxpk))]
+        [MemberData(nameof(RegionCN470TestWithRxpk.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionCN470TestWithRxpk))]
+#pragma warning restore CS0618 // Type or member is obsolete
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        protected void TestRegionMaxPayloadLength(string datarate, uint maxPyldSize)
+        public void TestRegionMaxPayloadLengthRxpk(Region region, string datarate, uint maxPyldSize)
         {
-            Assert.Equal(Region.GetMaxPayloadSize(datarate), maxPyldSize);
+            Assert.Equal(region.GetMaxPayloadSize(datarate), maxPyldSize);
         }
 
-        protected void TestRegionMaxPayloadLength(ushort datarate, uint maxPyldSize)
+        [Theory]
+        [MemberData(nameof(RegionEU868Test.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionEU868Test))]
+        [MemberData(nameof(RegionUS915Test.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionUS915Test))]
+        [MemberData(nameof(RegionCN470Test.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionCN470Test))]
+        public void TestRegionMaxPayloadLength(Region region, ushort datarate, uint maxPyldSize)
         {
-            Assert.Equal(Region.GetMaxPayloadSize(datarate), maxPyldSize);
+            Assert.Equal(region.GetMaxPayloadSize(datarate), maxPyldSize);
         }
 
-        [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        protected void TestDownstreamRX2FrequencyAndDataRate(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins,
-            double expectedFreq, string expectedDr, DeviceJoinInfo deviceJoinInfo = null)
-        {
-            TestDownstreamRX2Frequency(nwksrvrx2freq, expectedFreq, deviceJoinInfo);
-            TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr);
-        }
-
-        protected void TestDownstreamRX2FrequencyAndDataRate(ushort? nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, ushort expectedDr, DeviceJoinInfo deviceJoinInfo = null)
-        {
-            TestDownstreamRX2Frequency(nwksrvrx2freq, expectedFreq, deviceJoinInfo);
-            TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr, deviceJoinInfo);
-        }
-
-        protected void TestDownstreamRX2Frequency(double? nwksrvrx2freq, double expectedFreq, DeviceJoinInfo deviceJoinInfo = null)
+        [Theory]
+        [MemberData(nameof(RegionEU868Test.TestDownstreamRX2FrequencyData), MemberType = typeof(RegionEU868Test))]
+        [MemberData(nameof(RegionUS915Test.TestDownstreamRX2FrequencyData), MemberType = typeof(RegionUS915Test))]
+        [MemberData(nameof(RegionCN470Test.TestDownstreamRX2FrequencyData), MemberType = typeof(RegionCN470Test))]
+        public void TestDownstreamRX2Frequency(double? nwksrvrx2freq, double expectedFreq, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
             var devEui = "testDevice";
+            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
             var freq = Region.GetDownstreamRX2Freq(devEui, nwksrvrx2freq, deviceJoinInfo);
             Assert.Equal(expectedFreq, freq);
         }
 
+        [Theory]
+#pragma warning disable CS0618 // Type or member is obsolete; classes will be deleted as soon as the complete LNS implementation is done
+        [MemberData(nameof(RegionEU868TestWithRxpk.TestDownstreamRX2DataRateRxpkData), MemberType = typeof(RegionEU868TestWithRxpk))]
+        [MemberData(nameof(RegionUS915TestWithRxpk.TestDownstreamRX2DataRateRxpkData), MemberType = typeof(RegionUS915TestWithRxpk))]
+        [MemberData(nameof(RegionCN470TestWithRxpk.TestDownstreamRX2DataRateRxpkData), MemberType = typeof(RegionCN470TestWithRxpk))]
+#pragma warning restore CS0618 // Type or member is obsolete
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        protected void TestDownstreamRX2DataRate(string nwksrvrx2dr, ushort? rx2drfromtwins, string expectedDr, DeviceJoinInfo deviceJoinInfo = null)
+        public void TestDownstreamRX2DataRateRxpk(Region region, string nwksrvrx2dr, ushort? rx2drfromtwins, string expectedDr, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
             var devEui = "testDevice";
-            var datr = Region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins, deviceJoinInfo);
+            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
+            var datr = region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins, deviceJoinInfo);
             Assert.Equal(expectedDr, datr);
         }
 
-        protected void TestDownstreamRX2DataRate(ushort? nwksrvrx2dr, ushort? rx2drfromtwins, ushort expectedDr, DeviceJoinInfo deviceJoinInfo = null)
+        [Theory]
+        [MemberData(nameof(RegionEU868Test.TestDownstreamRX2DataRateData), MemberType = typeof(RegionEU868Test))]
+        [MemberData(nameof(RegionUS915Test.TestDownstreamRX2DataRateData), MemberType = typeof(RegionUS915Test))]
+        [MemberData(nameof(RegionCN470Test.TestDownstreamRX2DataRateData), MemberType = typeof(RegionCN470Test))]
+        public void TestDownstreamRX2DataRate(Region region, ushort? nwksrvrx2dr, ushort? rx2drfromtwins, ushort expectedDr, int? reportedJoinChannel = null, int? desiredJoinChannel = null)
         {
             var devEui = "testDevice";
-            var datr = Region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins, deviceJoinInfo);
+            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
+            var datr = region.GetDownstreamRX2Datarate(devEui, nwksrvrx2dr, rx2drfromtwins, deviceJoinInfo);
             Assert.Equal(expectedDr, datr);
         }
 
-        protected void TestTranslateToRegion(LoRaRegionType loRaRegion)
+        [Theory]
+        [MemberData(nameof(RegionUS915Test.TestTranslateToRegionData), MemberType = typeof(RegionUS915Test))]
+        [MemberData(nameof(RegionEU868Test.TestTranslateToRegionData), MemberType = typeof(RegionEU868Test))]
+        [MemberData(nameof(RegionCN470Test.TestTranslateToRegionData), MemberType = typeof(RegionCN470Test))]
+        public void TestTranslateToRegion(Region region, LoRaRegionType loRaRegion)
         {
-            Assert.True(RegionManager.TryTranslateToRegion(loRaRegion, out var region));
-            Assert.IsType(Region.GetType(), region);
+            Assert.True(RegionManager.TryTranslateToRegion(loRaRegion, out var translatedRegion));
+            Assert.IsType(region.GetType(), translatedRegion);
         }
 
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
