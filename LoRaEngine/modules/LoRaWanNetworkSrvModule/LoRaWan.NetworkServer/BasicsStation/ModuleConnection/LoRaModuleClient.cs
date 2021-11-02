@@ -5,7 +5,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 {
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
-    using System;
     using System.Threading.Tasks;
 
     public sealed class LoRaModuleClient : ILoraModuleClient
@@ -41,9 +40,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             await this.moduleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, p);
         }
 
-        public async Task SetMethodDefaultHandlerAsync(Func<MethodRequest, object, Task<MethodResponse>> onDirectMethodCalled, object p)
+        public async Task SetMethodDefaultHandlerAsync(MethodCallback onDirectMethodCalled, object p)
         {
-            await this.SetMethodDefaultHandlerAsync(onDirectMethodCalled, p);
+            await this.moduleClient.SetMethodDefaultHandlerAsync(onDirectMethodCalled, p);
         }
     }
 }

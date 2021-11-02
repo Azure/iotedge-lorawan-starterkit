@@ -33,14 +33,12 @@ namespace LoRaWan.NetworkServer
             IDeduplicationStrategyFactory deduplicationFactory,
             ILoRaADRStrategyProvider loRaADRStrategyProvider,
             ILoRAADRManagerFactory loRaADRManagerFactory,
-            IFunctionBundlerProvider functionBundlerProvider,
-            IClassCDeviceMessageSender classCDeviceMessageSender = null)
+            IFunctionBundlerProvider functionBundlerProvider)
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.payloadDecoder = payloadDecoder;
             this.deduplicationFactory = deduplicationFactory;
-            this.classCDeviceMessageSender = classCDeviceMessageSender;
             this.loRaADRStrategyProvider = loRaADRStrategyProvider;
             this.loRaADRManagerFactory = loRaADRManagerFactory;
             this.functionBundlerProvider = functionBundlerProvider;

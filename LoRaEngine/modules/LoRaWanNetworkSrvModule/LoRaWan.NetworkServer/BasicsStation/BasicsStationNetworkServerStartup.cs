@@ -51,6 +51,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<IJoinRequestMessageHandler, JoinRequestMessageHandler>()
                         .AddSingleton<IMessageDispatcher, MessageDispatcher>()
                         .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>();
+                        .AddSingleton<IClassCDeviceMessageSender, DefaultClassCDevicesMessageSender>()
                         .AddTransient<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
         }
@@ -75,6 +76,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 var moduleConnection = app.ApplicationServices.GetService<ModuleConnectionHost>();
                 moduleConnection.CreateAsync().GetAwaiter().GetResult();
             }
+
+            // Manually set the class C as otherwise the DI fails.
+            var classCMessageSender = app.ApplicationServices.GetService<IClassCDeviceMessageSender>();
+            var dataHandlerImplementation = app.ApplicationServices.GetService<DefaultLoRaDataRequestHandler>();
+            dataHandlerImplementation.SetClassCMessageSender(classCMessageSender);
+
 
             _ = app.UseRouting()
                    .UseWebSockets()

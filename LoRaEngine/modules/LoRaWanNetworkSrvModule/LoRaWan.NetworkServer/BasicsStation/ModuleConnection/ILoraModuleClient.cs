@@ -17,6 +17,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         public ModuleClient GetModuleClient();
         Task<Twin> GetTwinAsync();
         Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback onDesiredPropertiesUpdate, object p);
-        Task SetMethodDefaultHandlerAsync(Func<MethodRequest, object, Task<MethodResponse>> onDirectMethodCalled, object p);
+        Task SetMethodDefaultHandlerAsync(MethodCallback onDirectMethodCalled, object p);
     }
 }

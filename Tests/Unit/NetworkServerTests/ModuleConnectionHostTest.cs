@@ -30,15 +30,15 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // ASSERT
             Assert.ThrowsAsync<ArgumentNullException>(async () =>
                {
-                   await using var tmp = new ModuleConnectionHost(null, classCMessageSender, loRaDeviceRegistry);
+                   await using var _ = new ModuleConnectionHost(null, classCMessageSender, loRaDeviceRegistry);
                });
             Assert.ThrowsAsync<ArgumentNullException>(async () =>
             {
-                await using var tmp = new ModuleConnectionHost(networkServerConfiguration, null, loRaDeviceRegistry);
+                await using var _ = new ModuleConnectionHost(networkServerConfiguration, null, loRaDeviceRegistry);
             });
             Assert.ThrowsAsync<ArgumentNullException>(async () =>
             {
-                await using var tmp = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, null);
+                await using var _ = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, null);
             });
 
         }
