@@ -22,11 +22,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     internal class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
-        private readonly IWebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
+        private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
-                                           IWebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
+                                           WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
                                            ILogger<LnsProtocolMessageProcessor> logger)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;

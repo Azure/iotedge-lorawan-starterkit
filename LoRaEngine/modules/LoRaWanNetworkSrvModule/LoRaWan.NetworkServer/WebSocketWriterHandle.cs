@@ -17,10 +17,10 @@ namespace LoRaWan.NetworkServer
         where TKey : notnull
         where TMessage : notnull
     {
-        private readonly IWebSocketWriterRegistry<TKey, TMessage> registry;
+        private readonly WebSocketWriterRegistry<TKey, TMessage> registry;
         private readonly TKey key;
 
-        public WebSocketWriterHandle(IWebSocketWriterRegistry<TKey, TMessage> registry, TKey key)
+        public WebSocketWriterHandle(WebSocketWriterRegistry<TKey, TMessage> registry, TKey key)
         {
             this.registry = registry;
             this.key = key;

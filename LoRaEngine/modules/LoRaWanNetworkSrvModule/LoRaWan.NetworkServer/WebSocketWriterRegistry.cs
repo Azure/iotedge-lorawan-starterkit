@@ -21,9 +21,7 @@ namespace LoRaWan.NetworkServer
     /// <summary>
     /// A registry providing virtual handles over WebSocket writer objects.
     /// </summary>
-    public sealed class WebSocketWriterRegistry<TKey, TMessage> : IWebSocketWriterRegistry<TKey, TMessage>
-        where TKey : notnull
-        where TMessage : notnull
+    public sealed class WebSocketWriterRegistry<TKey, TMessage> where TKey : notnull where TMessage : notnull
     {
         private readonly Dictionary<TKey, (IWebSocketWriter<TMessage> Object, WebSocketWriterHandle<TKey, TMessage> Handle)> sockets = new();
         private readonly ILogger? logger;
