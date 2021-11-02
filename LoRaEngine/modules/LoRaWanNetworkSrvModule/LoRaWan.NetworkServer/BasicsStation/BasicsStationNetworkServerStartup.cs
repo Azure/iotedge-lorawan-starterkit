@@ -3,7 +3,6 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
-    using System;
     using System.Globalization;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer.ADR;
@@ -38,6 +37,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<IServiceFacadeHttpClientProvider, ServiceFacadeHttpClientProvider>()
                         .AddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
                         .AddSingleton<ILoRaDeviceFrameCounterUpdateStrategyProvider, LoRaDeviceFrameCounterUpdateStrategyProvider>()
+                        .AddSingleton<IConcentratorDeduplication, ConcentratorDeduplication>()
                         .AddSingleton<IDeduplicationStrategyFactory, DeduplicationStrategyFactory>()
                         .AddSingleton<ILoRaADRStrategyProvider, LoRaADRStrategyProvider>()
                         .AddSingleton<ILoRAADRManagerFactory, LoRAADRManagerFactory>()
