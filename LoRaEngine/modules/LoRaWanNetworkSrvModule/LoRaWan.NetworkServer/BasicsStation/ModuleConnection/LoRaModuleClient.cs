@@ -5,6 +5,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 {
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
+    using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public sealed class LoRaModuleClient : ILoraModuleClient
@@ -12,15 +14,15 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private ModuleClient moduleClient;
 
         public uint OperationTimeoutInMilliseconds { get => this.moduleClient.OperationTimeoutInMilliseconds; set => this.moduleClient.OperationTimeoutInMilliseconds = value; }
+        public TimeSpan OperationTimeout { get; set; }
 
         public async Task CreateFromEnvironmentAsync(ITransportSettings[] settings)
         {
-            moduleClient = await ModuleClient.CreateFromEnvironmentAsync();
+            moduleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
         }
 
         public async ValueTask DisposeAsync()
         {
-            // this check is needed for tests.
             if (moduleClient != null)
             {
                 await this.moduleClient.CloseAsync();
@@ -30,9 +32,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
         public ModuleClient GetModuleClient() => this.moduleClient;
 
-        public async Task<Twin> GetTwinAsync()
+        public Task<Twin> GetTwinAsync(CancellationToken cancellationToken)
         {
-            return await this.moduleClient.GetTwinAsync();
+            return this.moduleClient.GetTwinAsync(cancellationToken);
         }
 
         public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback onDesiredPropertiesUpdate, object p)

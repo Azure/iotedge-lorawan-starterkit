@@ -6,8 +6,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using Microsoft.AspNetCore;
     using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.DependencyInjection;
 
     public static class BasicsStationNetworkServer
     {
@@ -25,6 +27,16 @@ namespace LoRaWan.NetworkServer.BasicsStation
                                        .UseStartup<BasicsStationNetworkServerStartup>()
                                        .UseKestrel()
                                        .Build();
+
+            // We want to make sure the module connection is started at the start of the Network server.
+            // This is needed when we run as module, therefore we are blocking.
+            if (webHost.Services.GetRequiredService<NetworkServerConfiguration>().RunningAsIoTEdgeModule)
+            {
+                var moduleConnection = webHost.Services.GetRequiredService<ModuleConnectionHost>();
+                await moduleConnection.CreateAsync(cancellationToken);
+            }
+
+
             await webHost.RunAsync(cancellationToken);
         }
     }

@@ -3,12 +3,12 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
-    using System;
     using System.Globalization;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
+    using LoRaWan.NetworkServer.BasicsStation.Stubs;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
@@ -53,12 +53,15 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>()
                         .AddSingleton<IClassCDeviceMessageSender, DefaultClassCDevicesMessageSender>()
                         .AddTransient<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
-                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
+                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
+
+                        // STUB for the Ipkt Fwd until Danigian implement the LNS implementation.
+                        .AddSingleton<IPacketForwarder, PacketForwarderStub>();
         }
 
 #pragma warning disable CA1822 // Mark members as static
         // Startup class methods should not be static
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, NetworkServerConfiguration networkServerConfiguration)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 #pragma warning restore CA1822 // Mark members as static
         {
             if (env.IsDevelopment())
@@ -68,14 +71,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             // TO DO: When certificate generation is properly handled, enable https redirection
             // app.UseHttpsRedirection();
-
-            // We want to make sure the module connection is started at the start of the Network server.
-            // This is needed when we run as module, therefore we are blocking.
-            if (networkServerConfiguration.RunningAsIoTEdgeModule)
-            {
-                var moduleConnection = app.ApplicationServices.GetService<ModuleConnectionHost>();
-                moduleConnection.CreateAsync().GetAwaiter().GetResult();
-            }
 
             // Manually set the class C as otherwise the DI fails.
             var classCMessageSender = app.ApplicationServices.GetService<IClassCDeviceMessageSender>();

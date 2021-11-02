@@ -6,16 +6,20 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
     using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Shared;
     using System;
+    using System.Threading;
     using System.Threading.Tasks;
 
-    public interface ILoraModuleClient:IAsyncDisposable
+    public interface ILoraModuleClient : IAsyncDisposable
     {
-        uint OperationTimeoutInMilliseconds { get; set; }
+        /// <summary>
+        /// Operation Timeout for the module connection in milliseconds.
+        /// </summary>
+        public TimeSpan OperationTimeout { get; set; }
 
         public Task CreateFromEnvironmentAsync(ITransportSettings[] settings);
 
         public ModuleClient GetModuleClient();
-        Task<Twin> GetTwinAsync();
+        Task<Twin> GetTwinAsync(CancellationToken cancellationToken);
         Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback onDesiredPropertiesUpdate, object p);
         Task SetMethodDefaultHandlerAsync(MethodCallback onDirectMethodCalled, object p);
     }

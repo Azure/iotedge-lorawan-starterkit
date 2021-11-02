@@ -46,16 +46,16 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             this.loRaModuleClient = loraModuleClient;
         }
 
-        public async Task CreateAsync()
+        public async Task CreateAsync(CancellationToken cancellationToken)
         {
             ITransportSettings[] settings = { new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_Tcp_Only) };
 
             await this.loRaModuleClient.CreateFromEnvironmentAsync(settings);
-            await InitModuleAsync();
+            await InitModuleAsync(cancellationToken);
 
         }
 
-        internal async Task InitModuleAsync()
+        internal async Task InitModuleAsync(CancellationToken cancellationToken)
         { 
             // Obsolete, this should be removed as part of #456
             Logger.Init(new LoggerConfiguration
@@ -72,7 +72,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             if (networkServerConfiguration.IoTEdgeTimeout > 0)
             {
-                this.loRaModuleClient.OperationTimeoutInMilliseconds = networkServerConfiguration.IoTEdgeTimeout;
+                this.loRaModuleClient.OperationTimeout = TimeSpan.FromMilliseconds(networkServerConfiguration.IoTEdgeTimeout);
                 Logger.Log($"Changing timeout to {networkServerConfiguration.IoTEdgeTimeout} ms", LogLevel.Debug);
             }
 
@@ -80,7 +80,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             Twin moduleTwin;
             try
             {
-                moduleTwin = await this.loRaModuleClient.GetTwinAsync();
+                moduleTwin = await this.loRaModuleClient.GetTwinAsync(cancellationToken);
             }
             catch (IotHubCommunicationException)
             {
@@ -174,11 +174,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
         private bool TryUpdateConfigurationWithDesiredProperties(TwinCollection desiredProperties)
         {
-            if (desiredProperties.Contains(Constants.FacadeServerUrlKey) && !string.IsNullOrEmpty((string)desiredProperties[Constants.FacadeServerUrlKey]))
+            if (desiredProperties.Contains(Constants.FacadeServerUrlKey)
+                && (string)desiredProperties[Constants.FacadeServerUrlKey] is { Length: > 0 } urlString)
             {
-                if (Uri.TryCreate((string)desiredProperties[Constants.FacadeServerUrlKey], UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+                if (Uri.TryCreate(urlString, UriKind.Absolute, out var url) && (url.Scheme == Uri.UriSchemeHttp || url.Scheme == Uri.UriSchemeHttps))
                 {
-                    this.networkServerConfiguration.FacadeServerUrl = uri;
+                    this.networkServerConfiguration.FacadeServerUrl = url;
                     if (desiredProperties.Contains(Constants.FacadeServerAuthCodeKey))
                     {
                         this.networkServerConfiguration.FacadeAuthCode = (string)desiredProperties[Constants.FacadeServerAuthCodeKey];

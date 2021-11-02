@@ -106,10 +106,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             {
                 Desired = new TwinCollection($"{{\"FacadeServerUrl\": \"{facadeUri}\", \"FacadeAuthCode\":\"{facadeCode}\"}}")
             };
-            loRaModuleClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(new Twin(twinProperty));
+            loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Twin(twinProperty));
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, loRaDeviceRegistry.Object, loRaModuleClient.Object);
-            await moduleClient.InitModuleAsync();
+            await moduleClient.InitModuleAsync(CancellationToken.None);
             Assert.Equal(facadeUri + "/", networkServerConfiguration.FacadeServerUrl.ToString());
             Assert.Equal(facadeCode, networkServerConfiguration.FacadeAuthCode);
         }
@@ -129,10 +129,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             {
                 Desired = new TwinCollection(twin)
             };
-            loRaModuleClient.Setup(x => x.GetTwinAsync()).ReturnsAsync(new Twin(twinProperty));
+            loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Twin(twinProperty));
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, loRaDeviceRegistry.Object, loRaModuleClient.Object);
-            await Assert.ThrowsAsync<ArgumentException>(() => moduleClient.InitModuleAsync());
+            await Assert.ThrowsAsync<ArgumentException>(() => moduleClient.InitModuleAsync(CancellationToken.None));
         }
 
         [Fact]
@@ -148,10 +148,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var facadeUri = this.faker.Internet.Url();
             var facadeCode = this.faker.Internet.Password();
 
-            loRaModuleClient.Setup(x => x.GetTwinAsync()).Throws<IotHubCommunicationException>();
+            loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).Throws<IotHubCommunicationException>();
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, loRaDeviceRegistry.Object, loRaModuleClient.Object);
-            await Assert.ThrowsAsync<IotHubCommunicationException>(() => moduleClient.InitModuleAsync());
+            await Assert.ThrowsAsync<IotHubCommunicationException>(() => moduleClient.InitModuleAsync(CancellationToken.None));
 
         }
 
