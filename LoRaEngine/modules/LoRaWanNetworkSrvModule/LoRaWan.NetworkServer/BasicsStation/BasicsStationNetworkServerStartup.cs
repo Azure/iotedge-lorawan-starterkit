@@ -55,7 +55,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<IMessageDispatcher, MessageDispatcher>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
                         .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>()
-                        .AddSingleton<WebSocketWriterRegistry<StationEui, string>>();
+                        .AddSingleton<IWebSocketWriterRegistry<StationEui, string>, WebSocketWriterRegistry<StationEui, string>>();
         }
 
 #pragma warning disable CA1822 // Mark members as static
