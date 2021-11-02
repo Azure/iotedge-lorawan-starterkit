@@ -13,23 +13,22 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading;
     using System.Threading.Tasks;
 
-    public class DownstreamSender : IPacketForwarder
+    internal class DownstreamSender : IPacketForwarder
     {
         private readonly WebSocket socket;
-        private readonly Region region;
-        private readonly RadioMetadata radioMetadata;
+        private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
 
-        public DownstreamSender(WebSocket socket, Region region, RadioMetadata radioMetadata)
+        public DownstreamSender(WebSocket socket, IBasicsStationConfigurationService basicsStationConfigurationService)
         {
             this.socket = socket;
-            this.region = region;
-            this.radioMetadata = radioMetadata;
+            this.basicsStationConfigurationService = basicsStationConfigurationService;
         }
 
         public async Task SendDownstreamAsync(DownlinkPktFwdMessage message)
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
-            var payload = Message(message, this.region);
+            var region = await this.basicsStationConfigurationService.GetRegionFromBasicsStationConfiguration(message.StationEui, CancellationToken.None);
+            var payload = Message(message, region);
             await this.socket.SendAsync(Encoding.UTF8.GetBytes(payload), WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
