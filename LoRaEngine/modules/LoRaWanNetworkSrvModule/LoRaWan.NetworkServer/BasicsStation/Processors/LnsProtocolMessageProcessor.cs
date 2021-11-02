@@ -130,31 +130,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
                 await using var message = socket.ReadTextMessages(cancellationToken);
                 while (await message.MoveNextAsync())
-                {
-                    var json = message.Current;
-                    switch (LnsData.MessageTypeReader.Read(json))
-                    {
-                        case LnsMessageType.Version:
-                            var stationVersion = LnsData.VersionMessageReader.Read(json);
-                            this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
-                            var response = await basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
-                            await handle.SendAsync(response, cancellationToken);
-                            break;
-                        case LnsMessageType.JoinRequest:
-                            this.logger.LogInformation($"Received 'jreq' message: {json}.");
-                            break;
-                        case LnsMessageType.UplinkDataFrame:
-                            this.logger.LogInformation($"Received 'updf' message: {json}.");
-                            break;
-                        case LnsMessageType.TransmitConfirmation:
-                            this.logger.LogInformation($"Received 'dntxed' message: {json}.");
-                            break;
-                        case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
-                            throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
-                        default:
-                            throw new SwitchExpressionException();
-                    }
-                }
+                    await HandleDataMessageAsync(stationEui, handle, message.Current, cancellationToken);
 
                 cancellationTokenSource.Cancel();
 
@@ -169,7 +145,36 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             }
             finally
             {
-                _ = socketWriterRegistry.Deregister(stationEui);
+                _ = this.socketWriterRegistry.Deregister(stationEui);
+            }
+        }
+
+        private async Task HandleDataMessageAsync(StationEui stationEui,
+                                                  WebSocketWriterHandle<StationEui, string> socket,
+                                                  string json,
+                                                  CancellationToken cancellationToken)
+        {
+            switch (LnsData.MessageTypeReader.Read(json))
+            {
+                case LnsMessageType.Version:
+                    var stationVersion = LnsData.VersionMessageReader.Read(json);
+                    this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
+                    var response = await basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
+                    await socket.SendAsync(response, cancellationToken);
+                    break;
+                case LnsMessageType.JoinRequest:
+                    this.logger.LogInformation($"Received 'jreq' message: {json}.");
+                    break;
+                case LnsMessageType.UplinkDataFrame:
+                    this.logger.LogInformation($"Received 'updf' message: {json}.");
+                    break;
+                case LnsMessageType.TransmitConfirmation:
+                    this.logger.LogInformation($"Received 'dntxed' message: {json}.");
+                    break;
+                case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
+                    throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
+                default:
+                    throw new SwitchExpressionException();
             }
         }
 
