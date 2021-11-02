@@ -17,7 +17,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(RegionUS915TestData.TestRegionFrequencyDataDR1To3), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionUS915TestData.TestRegionFrequencyDataDR4), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionCN470TestData.TestRegionFrequencyData), MemberType = typeof(RegionCN470TestData))]
-        protected void TestRegionFrequency(Region region, double inputFrequency, ushort inputDataRate, double outputFreq, int? joinChannel = null)
+        protected void TestDownstreamFrequency(Region region, double inputFrequency, ushort inputDataRate, double outputFreq, int? joinChannel = null)
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
             Assert.True(region.TryGetDownstreamChannelFrequency(inputFrequency, inputDataRate, out var frequency, deviceJoinInfo));
@@ -29,7 +29,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(RegionUS915TestData.TestRegionDataRateDataDR1To3), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionUS915TestData.TestRegionDataRateDataDR4), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionCN470TestData.TestRegionDataRateData), MemberType = typeof(RegionCN470TestData))]
-        public void TestRegionDataRate(Region region, double inputFrequency, ushort inputDataRate, ushort outputDr, int rx1DrOffset = 0)
+        public void TestDownstreamDataRate(Region region, double inputFrequency, ushort inputDataRate, ushort outputDr, int rx1DrOffset = 0)
         {
             Assert.Equal(region.GetDownstreamDR(inputFrequency, inputDataRate, rx1DrOffset), outputDr);
         }
@@ -38,9 +38,9 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(RegionEU868TestData.TestRegionLimitData), MemberType = typeof(RegionEU868TestData))]
         [MemberData(nameof(RegionUS915TestData.TestRegionLimitData), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionCN470TestData.TestRegionLimitData), MemberType = typeof(RegionCN470TestData))]
-        public void TestRegionLimit(Region region, double inputFrequency, ushort datarate, int? reportedJoinChannel = null)
+        public void TestRegionLimits(Region region, double inputFrequency, ushort datarate, int? joinChannel = null)
         {
-            var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel);
+            var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
             Assert.False(region.TryGetDownstreamChannelFrequency(inputFrequency, datarate, out _, deviceJoinInfo));
             Assert.Null(region.GetDownstreamDR(inputFrequency, datarate));
         }
@@ -49,7 +49,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(RegionEU868TestData.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionEU868TestData))]
         [MemberData(nameof(RegionUS915TestData.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionUS915TestData))]
         [MemberData(nameof(RegionCN470TestData.TestRegionMaxPayloadLengthData), MemberType = typeof(RegionCN470TestData))]
-        public void TestRegionMaxPayloadLength(Region region, ushort datarate, uint maxPyldSize)
+        public void TestMaxPayloadLength(Region region, ushort datarate, uint maxPyldSize)
         {
             Assert.Equal(region.GetMaxPayloadSize(datarate), maxPyldSize);
         }
@@ -124,13 +124,9 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public void TestIsDRIndexWithinAcceptableValues(Region region, ushort? datarate, bool upstream, bool isValid)
         {
             if (upstream && datarate != null)
-            {
                 Assert.Equal(isValid, region.RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue((ushort)datarate));
-            }
             else
-            {
                 Assert.Equal(isValid, region.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(datarate));
-            }
         }
 
         private static IList<Rxpk> GenerateRxpk(string dr, double freq)
