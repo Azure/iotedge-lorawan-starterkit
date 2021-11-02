@@ -123,48 +123,54 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
             var channel = new WebSocketTextChannel(socket, sendTimeout: TimeSpan.FromSeconds(3));
             _ = socketWriterRegistry.Register(stationEui, channel);
 
-            using var cancellationTokenSource = new CancellationTokenSource();
-            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token, cancellationToken);
-            var task = channel.ProcessSendQueueAsync(linkedCancellationTokenSource.Token);
-
-            await using var message = socket.ReadTextMessages(cancellationToken);
-            while (await message.MoveNextAsync())
-            {
-                var json = message.Current;
-                switch (LnsData.MessageTypeReader.Read(json))
-                {
-                    case LnsMessageType.Version:
-                        var stationVersion = LnsData.VersionMessageReader.Read(json);
-                        this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
-                        var response = await basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
-                        await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, cancellationToken);
-                        break;
-                    case LnsMessageType.JoinRequest:
-                        this.logger.LogInformation($"Received 'jreq' message: {json}.");
-                        break;
-                    case LnsMessageType.UplinkDataFrame:
-                        this.logger.LogInformation($"Received 'updf' message: {json}.");
-                        break;
-                    case LnsMessageType.TransmitConfirmation:
-                        this.logger.LogInformation($"Received 'dntxed' message: {json}.");
-                        break;
-                    case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
-                        throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
-                    default:
-                        throw new SwitchExpressionException();
-                }
-            }
-
-            _ = socketWriterRegistry.Deregister(stationEui);
-            cancellationTokenSource.Cancel();
-
             try
             {
-                await task;
+                using var cancellationTokenSource = new CancellationTokenSource();
+                using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token, cancellationToken);
+                var task = channel.ProcessSendQueueAsync(linkedCancellationTokenSource.Token);
+
+                await using var message = socket.ReadTextMessages(cancellationToken);
+                while (await message.MoveNextAsync())
+                {
+                    var json = message.Current;
+                    switch (LnsData.MessageTypeReader.Read(json))
+                    {
+                        case LnsMessageType.Version:
+                            var stationVersion = LnsData.VersionMessageReader.Read(json);
+                            this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
+                            var response = await basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
+                            await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, cancellationToken);
+                            break;
+                        case LnsMessageType.JoinRequest:
+                            this.logger.LogInformation($"Received 'jreq' message: {json}.");
+                            break;
+                        case LnsMessageType.UplinkDataFrame:
+                            this.logger.LogInformation($"Received 'updf' message: {json}.");
+                            break;
+                        case LnsMessageType.TransmitConfirmation:
+                            this.logger.LogInformation($"Received 'dntxed' message: {json}.");
+                            break;
+                        case var messageType and (LnsMessageType.DownlinkMessage or LnsMessageType.RouterConfig):
+                            throw new NotSupportedException($"'{messageType}' is not a valid message type for this endpoint and is only valid for 'downstream' messages.");
+                        default:
+                            throw new SwitchExpressionException();
+                    }
+                }
+
+                cancellationTokenSource.Cancel();
+
+                try
+                {
+                    await task;
+                }
+                catch (OperationCanceledException)
+                {
+                    // ignore because it is expected
+                }
             }
-            catch (OperationCanceledException)
+            finally
             {
-                // ignore because it is expected
+                _ = socketWriterRegistry.Deregister(stationEui);
             }
         }
 
