@@ -121,7 +121,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 : throw new InvalidOperationException($"{BasicsStationNetworkServer.RouterIdPathParameterName} was not present on path.");
 
             var channel = new WebSocketTextChannel(socket, sendTimeout: TimeSpan.FromSeconds(3));
-            _ = socketWriterRegistry.Register(stationEui, channel);
+            var handle = socketWriterRegistry.Register(stationEui, channel);
 
             try
             {
@@ -139,7 +139,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                             var stationVersion = LnsData.VersionMessageReader.Read(json);
                             this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
                             var response = await basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
-                            await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, cancellationToken);
+                            await handle.SendAsync(response, cancellationToken);
                             break;
                         case LnsMessageType.JoinRequest:
                             this.logger.LogInformation($"Received 'jreq' message: {json}.");
