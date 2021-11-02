@@ -17,12 +17,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
     public class WebSocketExtensionsTests
     {
-        private readonly Mock<WebSocket> webSocketMock;
-
-        public WebSocketExtensionsTests()
-        {
-            this.webSocketMock = new Mock<WebSocket>();
-        }
+        private readonly Mock<WebSocket> webSocketMock = new();
 
         [Theory]
         [InlineData(1)]
