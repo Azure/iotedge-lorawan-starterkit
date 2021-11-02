@@ -96,13 +96,27 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 into bytes
                 let chunkSize = (int)Math.Ceiling((double)bytes.Length / numberOfChunks)
                 from chunk in Chunks(bytes, chunkSize).Append(Array.Empty<byte>())
-                select (new ValueWebSocketReceiveResult(chunk.Length, WebSocketMessageType.Text, chunk.Length == 0), chunk);
+                select new
+                {
+                    Memory = chunk,
+                    MessageType = WebSocketMessageType.Text,
+                    EndOfMessage = chunk.Length == 0,
+                };
 
-            chunks = chunks.Append((new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true), Array.Empty<byte>()));
+            var close = new
+            {
+                Memory = (ReadOnlyMemory<byte>) Array.Empty<byte>(),
+                MessageType = WebSocketMessageType.Close,
+                EndOfMessage = true,
+            };
+
+            var receives = // [chunks..., close]
+                from r in chunks.Append(close)
+                select (r.Memory, new ValueWebSocketReceiveResult(r.Memory.Length, r.MessageType, r.EndOfMessage));
 
             var mockSequence = new MockSequence();
 
-            foreach (var (result, source) in chunks)
+            foreach (var (source, result) in receives)
             {
                 _ = this.webSocketMock
                         .InSequence(mockSequence)
