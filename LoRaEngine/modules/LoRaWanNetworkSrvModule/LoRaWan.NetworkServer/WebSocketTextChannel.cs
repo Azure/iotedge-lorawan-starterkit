@@ -112,8 +112,8 @@ namespace LoRaWan.NetworkServer
             cancellationToken = linkedTimeoutCancellationToken.Token;
             var output = new Output(message, cancellationToken);
             await this.channel.Writer.WriteAsync(output, cancellationToken).ConfigureAwait(false);
-            using var registration = cancellationToken.Register(() =>
-                _ = output.TaskCompletionSource.TrySetCanceled(), useSynchronizationContext: false);
+            using var registration = cancellationToken.Register(static output =>
+                _ = ((Output?)output)!.TaskCompletionSource.TrySetCanceled(), output, useSynchronizationContext: false);
             _ = await output.TaskCompletionSource.Task.ConfigureAwait(false);
         }
     }
