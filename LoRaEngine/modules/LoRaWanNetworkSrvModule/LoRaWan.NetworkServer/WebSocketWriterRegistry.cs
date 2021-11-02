@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Net.WebSockets;
     using System.Threading;
@@ -18,12 +19,44 @@ namespace LoRaWan.NetworkServer
         public static readonly TimeSpan DefaultPruningInterval = TimeSpan.FromMinutes(2);
     }
 
+    public partial class WebSocketWriterRegistry<TKey, TMessage>
+    {
+        [DebuggerDisplay("{" + nameof(key) + "}")]
+        private sealed class Handle : IWebSocketWriterHandle<TMessage>
+        {
+            private readonly WebSocketWriterRegistry<TKey, TMessage> registry;
+            private readonly TKey key;
+
+            public Handle(WebSocketWriterRegistry<TKey, TMessage> registry, TKey key)
+            {
+                this.registry = registry;
+                this.key = key;
+            }
+
+            public ValueTask SendAsync(TMessage message, CancellationToken cancellationToken) =>
+                this.registry.SendAsync(this.key, message, cancellationToken);
+
+            bool IEquatable<IWebSocketWriterHandle<TMessage>>.Equals(IWebSocketWriterHandle<TMessage>? other) =>
+                Equals(other as Handle);
+
+            public override bool Equals(object? obj) =>
+                ReferenceEquals(this, obj) || Equals(obj as Handle);
+
+            private bool Equals(Handle? other) =>
+                other is not null && this.registry.Equals(other.registry) && EqualityComparer<TKey>.Default.Equals(this.key, other.key);
+
+            public override int GetHashCode() => HashCode.Combine(this.registry, this.key);
+        }
+    }
+
     /// <summary>
     /// A registry providing virtual handles over WebSocket writer objects.
     /// </summary>
-    public sealed class WebSocketWriterRegistry<TKey, TMessage> where TKey : notnull where TMessage : notnull
+    public sealed partial class WebSocketWriterRegistry<TKey, TMessage>
+        where TKey : notnull
+        where TMessage : notnull
     {
-        private readonly Dictionary<TKey, (IWebSocketWriter<TMessage> Object, WebSocketWriterHandle<TKey, TMessage> Handle)> sockets = new();
+        private readonly Dictionary<TKey, (IWebSocketWriter<TMessage> Object, Handle Handle)> sockets = new();
         private readonly ILogger? logger;
 
         public WebSocketWriterRegistry(ILogger<WebSocketWriterRegistry<TKey, TMessage>>? logger) =>
@@ -35,11 +68,11 @@ namespace LoRaWan.NetworkServer
         /// <remarks>
         /// This method is idempotent.
         /// </remarks>
-        public WebSocketWriterHandle<TKey, TMessage> Register(TKey key, IWebSocketWriter<TMessage> socketWriter)
+        public IWebSocketWriterHandle<TMessage> Register(TKey key, IWebSocketWriter<TMessage> socketWriter)
         {
             lock (this.sockets)
             {
-                WebSocketWriterHandle<TKey, TMessage> handle;
+                Handle handle;
 
                 if (this.sockets.TryGetValue(key, out var current))
                 {
@@ -49,7 +82,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    handle = WebSocketWriterHandle.Create(this, key);
+                    handle = new Handle(this, key);
                 }
 
                 this.sockets[key] = (socketWriter, handle);
@@ -84,7 +117,7 @@ namespace LoRaWan.NetworkServer
         /// If the send fails because the socket has been closed prematurely then the socket writer
         /// is unregistered before this method returns.
         /// </remarks>
-        public async ValueTask SendAsync(TKey key, TMessage message, CancellationToken cancellationToken)
+        private async ValueTask SendAsync(TKey key, TMessage message, CancellationToken cancellationToken)
         {
             IWebSocketWriter<TMessage> socketWriter;
 

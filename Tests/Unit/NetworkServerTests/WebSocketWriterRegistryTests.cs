@@ -29,7 +29,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var writer = new Mock<IWebSocketWriter<string>>();
 
             // act
-            WebSocketWriterHandle<string, string> Act() => this.sut.Register("foo", writer.Object);
+            IWebSocketWriterHandle<string> Act() => this.sut.Register("foo", writer.Object);
             var firstHandle = Act();
             var secondHandle = Act();
 
@@ -52,7 +52,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // assert
             Assert.Same(oldHandler, newHandler);
             // new handler/writer is used for sending
-            await this.sut.SendAsync(key, "bar", CancellationToken.None);
+            await newHandler.SendAsync("bar", CancellationToken.None);
             oldWriter.Verify(w => w.SendAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
             newWriter.Verify(w => w.SendAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -62,37 +62,29 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             using var cts = new CancellationTokenSource();
-            const string key = "foo";
             const string message = "bar";
-            var writer = CreateAndRegisterWebSocketWriterMock(key);
+            var (handle, writer) = CreateAndRegisterWebSocketWriterMock("foo");
 
             // act
-            await this.sut.SendAsync(key, message, cts.Token);
+            await handle.SendAsync(message, cts.Token);
 
             // assert
             writer.Verify(sw => sw.SendAsync(message, cts.Token), Times.Once);
         }
 
         [Fact]
-        public async Task SendAsync_Throws_When_Writer_Is_Not_Registered()
-        {
-            await CustomAssert.WriterIsNotRegistered(this.sut, "foo");
-        }
-
-        [Fact]
         public async Task SendAsync_Deregisters_When_Connection_Is_Closed_Prematurely()
         {
             // arrange
-            const string key = "foo";
-            var writer = CreateAndRegisterWebSocketWriterMock(key);
+            var (handle, writer) = CreateAndRegisterWebSocketWriterMock("foo");
             writer.Setup(w => w.SendAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                   .Throws(new WebSocketException(WebSocketError.ConnectionClosedPrematurely));
 
             // act
-            await this.sut.SendAsync(key, "bar", CancellationToken.None);
+            await handle.SendAsync("bar", CancellationToken.None);
 
             // assert
-            await CustomAssert.WriterIsNotRegistered(this.sut, key);
+            await CustomAssert.WriterIsNotRegistered(handle);
         }
 
         [Fact]
@@ -100,13 +92,13 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             const string key = "foo";
-            var writer = CreateAndRegisterWebSocketWriterMock(key);
+            var (handle, writer) = CreateAndRegisterWebSocketWriterMock(key);
 
             // act
             var deregisteredWriter = this.sut.Deregister(key);
 
             // assert
-            await CustomAssert.WriterIsNotRegistered(this.sut, key);
+            await CustomAssert.WriterIsNotRegistered(handle);
             Assert.Same(writer.Object, deregisteredWriter);
         }
 
@@ -115,7 +107,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             const string key = "foo";
-            var writer = CreateAndRegisterWebSocketWriterMock(key);
+            var (handle, writer) = CreateAndRegisterWebSocketWriterMock(key);
 
             // act
             var firstWriter = this.sut.Deregister(key);
@@ -124,7 +116,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // assert
             Assert.Same(writer.Object, firstWriter);
             Assert.Null(secondWriter);
-            await CustomAssert.WriterIsNotRegistered(this.sut, key);
+            await CustomAssert.WriterIsNotRegistered(handle);
         }
 
         [Fact]
@@ -132,10 +124,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             const string staleKey = "foo";
-            var staleWriter = CreateAndRegisterWebSocketWriterMock(staleKey);
+            var (staleHandle, staleWriter) = CreateAndRegisterWebSocketWriterMock(staleKey);
             staleWriter.SetupGet(w => w.IsClosed).Returns(true);
             const string activeKey = "bar";
-            var activeWriter = CreateAndRegisterWebSocketWriterMock(activeKey);
+            var (activeHandle, activeWriter) = CreateAndRegisterWebSocketWriterMock(activeKey);
             activeWriter.SetupGet(w => w.IsClosed).Returns(false);
 
             // act
@@ -144,27 +136,25 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // assert
             var prunedKey = Assert.Single(result);
             Assert.Equal(staleKey, prunedKey);
-            await CustomAssert.WriterIsNotRegistered(this.sut, staleKey);
-            await CustomAssert.WriterIsRegistered(this.sut, activeKey, activeWriter);
+            await CustomAssert.WriterIsNotRegistered(staleHandle);
+            await CustomAssert.WriterIsRegistered(activeHandle, activeWriter);
         }
 
         [Fact]
         public async Task RunPrunerAsync_Prunes_Until_Canceled()
         {
             // arrange
-            Mock<IWebSocketWriter<string>> CreateWebSocketWriterMock(string key, bool firstIsClosed, bool secondIsClosed)
+            (IWebSocketWriterHandle<string>, Mock<IWebSocketWriter<string>>)
+                CreateWebSocketWriterMock(string key, bool firstIsClosed, bool secondIsClosed)
             {
-                var result = CreateAndRegisterWebSocketWriterMock(key);
+                var (handle, result) = CreateAndRegisterWebSocketWriterMock(key);
                 _ = result.SetupSequence(w => w.IsClosed).Returns(firstIsClosed).Returns(secondIsClosed);
-                return result;
+                return (handle, result);
             }
 
-            const string staleKey = "foo";
-            _ = CreateWebSocketWriterMock(staleKey, true, true);
-            const string transitioningKey = "bar";
-            _ = CreateWebSocketWriterMock(transitioningKey, false, true);
-            const string activeKey = "baz";
-            var activeWriter = CreateWebSocketWriterMock(activeKey, false, false);
+            var (staleHandle, _) = CreateWebSocketWriterMock("foo", true, true);
+            var (transitioningHandle, _) = CreateWebSocketWriterMock("bar", false, true);
+            var (activeHandle, activeWriter) = CreateWebSocketWriterMock("baz", false, false);
             using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
 
             // act
@@ -172,29 +162,28 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // assert
             await Assert.ThrowsAsync<TaskCanceledException>(Act);
-            await CustomAssert.WriterIsNotRegistered(this.sut, staleKey);
-            await CustomAssert.WriterIsNotRegistered(this.sut, transitioningKey);
-            await CustomAssert.WriterIsRegistered(this.sut, activeKey, activeWriter);
+            await CustomAssert.WriterIsNotRegistered(staleHandle);
+            await CustomAssert.WriterIsNotRegistered(transitioningHandle);
+            await CustomAssert.WriterIsRegistered(activeHandle, activeWriter);
         }
 
-        private Mock<IWebSocketWriter<string>> CreateAndRegisterWebSocketWriterMock(string key)
+        private (IWebSocketWriterHandle<string> Handle, Mock<IWebSocketWriter<string>> WriterMock)
+            CreateAndRegisterWebSocketWriterMock(string key)
         {
-            var result = new Mock<IWebSocketWriter<string>>();
-            this.sut.Register(key, result.Object);
-            return result;
+            var writerMock = new Mock<IWebSocketWriter<string>>();
+            return (this.sut.Register(key, writerMock.Object), writerMock);
         }
 
         private static class CustomAssert
         {
-            public static Task WriterIsNotRegistered(WebSocketWriterRegistry<string, string> registry, string key) =>
-                Assert.ThrowsAsync<KeyNotFoundException>(async () => await registry.SendAsync(key, "bar", CancellationToken.None));
+            public static Task WriterIsNotRegistered(IWebSocketWriterHandle<string> handle) =>
+                Assert.ThrowsAsync<KeyNotFoundException>(async () => await handle.SendAsync("bar", CancellationToken.None));
 
-            public static async Task WriterIsRegistered(WebSocketWriterRegistry<string, string> registry,
-                                                        string key,
+            public static async Task WriterIsRegistered(IWebSocketWriterHandle<string> handle,
                                                         Mock<IWebSocketWriter<string>> writer)
             {
                 const string message = "baz";
-                await registry.SendAsync(key, message, CancellationToken.None);
+                await handle.SendAsync(message, CancellationToken.None);
                 writer.Verify(w => w.SendAsync(message, CancellationToken.None), Times.Once);
             }
         }

@@ -11,41 +11,41 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
     public class WebSocketWriterHandleTests
     {
-        private const string Key = "foo";
-
-        private readonly WebSocketWriterRegistry<string, string> registry;
-        private readonly WebSocketWriterHandle<string, string> sut;
-
-        public WebSocketWriterHandleTests()
-        {
-            this.registry = new WebSocketWriterRegistry<string, string>(null);
-            this.sut = WebSocketWriterHandle.Create(this.registry, Key);
-        }
-
         [Fact]
         public async Task SendAsync_Delegates_To_Registry()
         {
             // arrange
             const string message = "bar";
             using var cts = new CancellationTokenSource();
-            var writer = new Mock<IWebSocketWriter<string>>();
-            _ = this.registry.Register(Key, writer.Object);
+            var registry = new WebSocketWriterRegistry<string, string>(null);
+            var writerMock = new Mock<IWebSocketWriter<string>>();
+            var sut = registry.Register("foo", writerMock.Object);
 
             // act
-            await this.sut.SendAsync(message, cts.Token);
+            await sut.SendAsync(message, cts.Token);
 
             // assert
-            writer.Verify(r => r.SendAsync(message, cts.Token), Times.Once);
+            writerMock.Verify(r => r.SendAsync(message, cts.Token), Times.Once);
         }
 
         [Fact]
         public void Equality_Comparison()
         {
-            Assert.True(this.sut.Equals(WebSocketWriterHandle.Create(this.registry, Key)));
-            Assert.False(this.sut.Equals(WebSocketWriterHandle.Create(this.registry, "anotherkey")));
-            Assert.False(this.sut.Equals(WebSocketWriterHandle.Create(new WebSocketWriterRegistry<string, string>(null), Key)));
-            Assert.False(this.sut.Equals((object)null));
-            Assert.False(this.sut.Equals(new object()));
+            var registry = new
+            {
+                A = new WebSocketWriterRegistry<string, string>(null),
+                B = new WebSocketWriterRegistry<string, string>(null),
+            };
+
+            var sut = registry.A.Register("a", new Mock<IWebSocketWriter<string>>().Object);
+            var handle1 = registry.A.Register("b", new Mock<IWebSocketWriter<string>>().Object);
+            var handle2 = registry.B.Register("a", new Mock<IWebSocketWriter<string>>().Object);
+
+            Assert.Equal(sut, sut);
+            Assert.NotEqual(sut, handle1);
+            Assert.NotEqual(sut, handle2);
+            Assert.False(sut.Equals((object)null));
+            Assert.False(sut.Equals(new object()));
         }
     }
 }
