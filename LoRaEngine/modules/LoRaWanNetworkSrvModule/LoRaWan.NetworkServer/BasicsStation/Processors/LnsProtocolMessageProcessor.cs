@@ -176,7 +176,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         var routerRegion = await basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
 
                         var rxpk = new BasicStationToRxpk(jreq.RadioMetadata, routerRegion);
-                        var downstreamSender = new DownstreamSender(socket, routerRegion, jreq.RadioMetadata);
+                        var downstreamSender = new DownstreamSender(socket, this.basicsStationConfigurationService);
                         var loraRequest = new LoRaRequest(rxpk, downstreamSender, DateTime.UtcNow);
                         loraRequest.SetPayload(new LoRaPayloadJoinRequestLbs(jreq.MacHeader,
                                                                              jreq.JoinEui,
@@ -184,6 +184,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                                              jreq.DevNonce,
                                                                              jreq.Mic));
                         loraRequest.SetRegion(routerRegion);
+                        loraRequest.SetStationEui(stationEui);
                         this.messageDispatcher.DispatchRequest(loraRequest);
 
                     }
@@ -201,7 +202,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         var routerRegion = await basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
 
                         var rxpk = new BasicStationToRxpk(updf.RadioMetadata, routerRegion);
-                        var downstreamSender = new DownstreamSender(socket, routerRegion, updf.RadioMetadata);
+                        var downstreamSender = new DownstreamSender(socket, this.basicsStationConfigurationService);
                         var loraRequest = new LoRaRequest(rxpk, downstreamSender, DateTime.UtcNow);
                         loraRequest.SetPayload(new LoRaPayloadDataLbs(updf.DevAddr,
                                                                       updf.MacHeader,
@@ -212,6 +213,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                                                                       updf.Port,
                                                                       updf.Mic));
                         loraRequest.SetRegion(routerRegion);
+                        loraRequest.SetStationEui(stationEui);
                         this.messageDispatcher.DispatchRequest(loraRequest);
                     }
                     catch (JsonException)
