@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<ILoRaDeviceRegistry, LoRaDeviceRegistry>()
                         .AddSingleton<IJoinRequestMessageHandler, JoinRequestMessageHandler>()
                         .AddSingleton<IMessageDispatcher, MessageDispatcher>()
-                        .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>();
+                        .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>()
                         .AddSingleton<IClassCDeviceMessageSender, DefaultClassCDevicesMessageSender>()
                         .AddTransient<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
