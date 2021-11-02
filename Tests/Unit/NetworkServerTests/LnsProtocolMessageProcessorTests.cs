@@ -127,48 +127,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.Equal(WebSocketCloseStatus.NormalClosure, this.socketMock.Object.CloseStatus);
         }
 
-        [Fact]
-        public async Task ProcessIncomingRequestAsync_ShouldNotExecuteHandler_WhenConnectionClosedPrematurelyException()
-        {
-            // arrange
-            var testString = "test";
-            var testbytes = Encoding.UTF8.GetBytes(testString);
-            var httpContextMock = new Mock<HttpContext>();
-
-            // mocking a websocket request
-            var webSocketsManager = new Mock<WebSocketManager>();
-            // setting up the mock so that WebSocketRequests are "acceptable"
-            webSocketsManager.Setup(x => x.IsWebSocketRequest).Returns(true);
-            webSocketsManager.Setup(x => x.AcceptWebSocketAsync()).ReturnsAsync(this.socketMock.Object);
-            // initially the WebSocketState is Open
-            this.socketMock.Setup(x => x.State).Returns(WebSocketState.Open);
-            // setting up the mock so that when ReceiveAsync is invoked the "testbytes" are written to the Memory portion
-            this.socketMock.Setup(x => x.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                         .Callback<Memory<byte>, CancellationToken>((m, c) =>
-                         {
-                             var innerException = new WebSocketException(WebSocketError.ConnectionClosedPrematurely);
-                             throw new OperationCanceledException("Mocked exception", innerException);
-                         })
-                         .ReturnsAsync(new ValueWebSocketReceiveResult(testbytes.Length, WebSocketMessageType.Text, true));
-            httpContextMock.Setup(m => m.WebSockets).Returns(webSocketsManager.Object);
-
-            // this is needed for logging the Basic Station (caller) remote ip address
-            var connectionInfo = new Mock<ConnectionInfo>();
-            connectionInfo.Setup(c => c.RemoteIpAddress).Returns(System.Net.IPAddress.Loopback);
-            httpContextMock.Setup(m => m.Connection).Returns(connectionInfo.Object);
-
-            // act and assert
-            await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(httpContextMock.Object,
-                                                                           delegate
-                                                                           {
-                                                                               // this assertion will fail only if we reach the handler
-                                                                               // which should not be the case for prematurely ended connections
-                                                                               Assert.True(false);
-                                                                               return Task.FromResult(false);
-                                                                           },
-                                                                           CancellationToken.None);
-        }
-
         [Theory]
         [InlineData(true, true)]
         [InlineData(false, false)]
