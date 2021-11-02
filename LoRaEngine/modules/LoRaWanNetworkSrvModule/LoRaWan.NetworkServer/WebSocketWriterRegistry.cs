@@ -31,6 +31,12 @@ namespace LoRaWan.NetworkServer
         public WebSocketWriterRegistry(ILogger<WebSocketWriterRegistry<TKey, TMessage>>? logger) =>
             this.logger = logger;
 
+        /// <summary>
+        /// Registers a socket writer under a key, returning a handle to the writer.
+        /// </summary>
+        /// <remarks>
+        /// This method is idempotent.
+        /// </remarks>
         public WebSocketWriterHandle<TKey, TMessage> Register(TKey key, IWebSocketWriter<TMessage> socketWriter)
         {
             lock (this.sockets)
@@ -53,6 +59,10 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        /// <summary>
+        /// Deregisters any socket writer associated with a key, return the associated writer if one
+        /// was previously registered.
+        /// </summary>
         public IWebSocketWriter<TMessage>? Deregister(TKey key)
         {
             lock (this.sockets)
@@ -69,6 +79,13 @@ namespace LoRaWan.NetworkServer
             }
         }
 
+        /// <summary>
+        /// Sends a message to the socket writer associated with the given key.
+        /// </summary>
+        /// <remarks>
+        /// If the send fails because the socket has been closed prematurely then the socket writer
+        /// is unregistered before this method returns.
+        /// </remarks>
         public async ValueTask SendAsync(TKey key, TMessage message, CancellationToken cancellationToken)
         {
             IWebSocketWriter<TMessage> socketWriter;
