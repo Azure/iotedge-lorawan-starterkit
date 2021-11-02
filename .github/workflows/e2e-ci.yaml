@@ -177,7 +177,7 @@ jobs:
       max-parallel: 1
       matrix:
         testsToRun: ${{ fromjson(needs.env_var.outputs.E2ETestsToRun) }}
-    if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success' && needs.build_and_test.result == 'success'))
+    if: always() && (needs.env_var.outputs.RunE2ETestsOnly == 'true' || (needs.deploy_arm_gw_iot_edge.result == 'success' && needs.deploy_facade_function.result == 'success'))
     needs:
       - deploy_arm_gw_iot_edge
       - deploy_facade_function

@@ -73,7 +73,9 @@ namespace LoRaWan.NetworkServer
                     {
                         // ignore and continue with next
                     }
+#pragma warning disable CA1031 // Do not catch general exception types (propagated to task)
                     catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                     {
                         _ = output.TaskCompletionSource.TrySetException(ex);
                     }

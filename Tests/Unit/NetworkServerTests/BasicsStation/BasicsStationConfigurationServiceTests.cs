@@ -9,6 +9,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
     using LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
+    using Microsoft.Extensions.Caching.Memory;
     using Moq;
     using System;
     using System.Linq;
@@ -16,19 +17,24 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
     using System.Threading.Tasks;
     using Xunit;
 
-    public class BasicsStationConfigurationServiceTests
+    public class BasicsStationConfigurationServiceTests : IDisposable
     {
         private readonly Mock<LoRaDeviceAPIServiceBase> loRaDeviceApiServiceMock;
         private readonly Mock<ILoRaDeviceFactory> loRaDeviceFactoryMock;
+        private readonly IMemoryCache memoryCache;
         private readonly StationEui stationEui;
         private readonly BasicsStationConfigurationService sut;
+        private bool disposedValue;
 
         public BasicsStationConfigurationServiceTests()
         {
             this.stationEui = new StationEui(ulong.MaxValue);
             this.loRaDeviceApiServiceMock = new Mock<LoRaDeviceAPIServiceBase>();
             this.loRaDeviceFactoryMock = new Mock<ILoRaDeviceFactory>();
-            this.sut = new BasicsStationConfigurationService(this.loRaDeviceApiServiceMock.Object, this.loRaDeviceFactoryMock.Object);
+            this.memoryCache = new MemoryCache(new MemoryCacheOptions());
+            this.sut = new BasicsStationConfigurationService(this.loRaDeviceApiServiceMock.Object,
+                                                             this.loRaDeviceFactoryMock.Object,
+                                                             this.memoryCache);
         }
 
         public class GetRouterConfigMessageAsync : BasicsStationConfigurationServiceTests
@@ -38,8 +44,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, new[] { new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey } });
-                SetupTwinResponse(this.stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)} }}");
+                SetupDeviceKeyLookup(this.stationEui, primaryKey);
+                SetupTwinResponse(this.stationEui, primaryKey);
 
                 // act
                 var result = await this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None);
@@ -56,7 +62,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
                 // arrange
                 const string primaryKey = "foo";
                 SetupDeviceKeyLookup(this.stationEui, Enumerable.Range(0, count).Select(_ => new IoTHubDeviceInfo()).ToArray());
-                SetupTwinResponse(this.stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)} }}");
+                SetupTwinResponse(this.stationEui, primaryKey);
 
                 // act + assert
                 await Assert.ThrowsAsync<InvalidOperationException>(() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
@@ -72,7 +78,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, new IoTHubDeviceInfo { PrimaryKey = "foo", DevEUI = stationEui.ToString() });
+                SetupDeviceKeyLookup(this.stationEui, "foo");
 
                 var ex = (Exception)Activator.CreateInstance(type);
                 this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(stationEui.ToString(), primaryKey))
@@ -90,12 +96,59 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
             {
                 // arrange
                 const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, new IoTHubDeviceInfo { PrimaryKey = "foo", DevEUI = stationEui.ToString() });
+                SetupDeviceKeyLookup(this.stationEui, "foo");
                 SetupTwinResponse(this.stationEui, primaryKey, @$"{{ ""foo"": ""bar"" }}");
 
                 // act + assert
                 await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
             }
+
+            [Fact]
+            public async Task Caches_And_Handles_Concurrent_Access()
+            {
+                // arrange
+                const int numberOfConcurrentAccess = 5;
+                const string primaryKey = "foo";
+                SetupDeviceKeyLookup(this.stationEui, primaryKey);
+                SetupTwinResponse(this.stationEui, primaryKey);
+
+                // act
+                var result = await Task.WhenAll(from i in Enumerable.Range(0, numberOfConcurrentAccess)
+                                                select this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
+
+                // assert
+                Assert.Equal(result.Length, numberOfConcurrentAccess);
+                this.loRaDeviceFactoryMock.Verify(ldf => ldf.CreateDeviceClient(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByDevEUIAsync(It.IsAny<string>()), Times.Once);
+                foreach (var r in result)
+                    Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), r);
+            }
+
+            [Fact]
+            public async Task Resumes_After_Failure()
+            {
+                // arrange
+                const string primaryKey = "foo";
+                SetupTwinResponse(this.stationEui, primaryKey);
+                this.loRaDeviceApiServiceMock.SetupSequence(ldas => ldas.SearchByDevEUIAsync(It.IsAny<string>()))
+                                             .Throws(new InvalidOperationException())
+                                             .Returns(Task.FromResult(new SearchDevicesResult(new[]
+                                             {
+                                                 new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey }
+                                             })));
+
+                // act
+                Task<string> Act() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None);
+                await Assert.ThrowsAsync<InvalidOperationException>(Act);
+                var result = await Act();
+
+                // assert
+                this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByDevEUIAsync(It.IsAny<string>()), Times.Exactly(2));
+                Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
+            }
+
+            private void SetupTwinResponse(StationEui stationEui, string primaryKey) =>
+                SetupTwinResponse(stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)} }}");
 
             private void SetupTwinResponse(StationEui stationEui, string primaryKey, string json)
             {
@@ -106,9 +159,33 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
                                           .Returns(deviceClientMock.Object);
             }
 
+            private void SetupDeviceKeyLookup(StationEui stationEui, string primaryKey) =>
+                SetupDeviceKeyLookup(stationEui, new[] { new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey } });
+
             private void SetupDeviceKeyLookup(StationEui stationEui, params IoTHubDeviceInfo[] ioTHubDeviceInfos) =>
                 loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByDevEUIAsync(stationEui.ToString()))
                                         .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!this.disposedValue)
+            {
+                if (disposing)
+                {
+                    this.sut.Dispose();
+                    this.memoryCache.Dispose();
+                }
+
+                this.disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

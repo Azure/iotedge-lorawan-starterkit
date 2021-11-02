@@ -180,7 +180,9 @@ namespace LoRaWan.NetworkServer
                         {
                             decryptedPayloadData = loraPayload.GetDecryptedPayload(loRaDevice.AppSKey);
                         }
+#pragma warning disable CA1031 // Do not catch general exception types
                         catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
                         {
                             Logger.Log(loRaDevice.DevEUI, $"failed to decrypt message: {ex.Message}", LogLevel.Error);
                         }
