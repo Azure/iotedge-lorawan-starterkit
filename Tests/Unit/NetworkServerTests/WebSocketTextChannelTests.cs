@@ -103,21 +103,23 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             const int numberOfConcurrentSends = 5;
-            await using var t = UseProcessSendQueueListener();
-            var messages = Enumerable.Range(0, numberOfConcurrentSends)
-                                     .Select(i => i.ToString(CultureInfo.InvariantCulture))
-                                     .ToList();
-
-            // act
-            await Task.WhenAll(from m in messages
-                               select this.sut.SendAsync(m, CancellationToken.None).AsTask());
-
-            // assert
-            foreach (var m in messages)
+            await using (UseProcessSendQueueListener())
             {
-                this.webSocketMock.Verify(ws => ws.SendAsync(It.Is((ArraySegment<byte> bytes) => Encoding.UTF8.GetString(bytes) == m),
-                                                             WebSocketMessageType.Text,
-                                                             true, CancellationToken.None), Times.Once);
+                var messages = Enumerable.Range(0, numberOfConcurrentSends)
+                                         .Select(i => i.ToString(CultureInfo.InvariantCulture))
+                                         .ToList();
+
+                // act
+                await Task.WhenAll(from m in messages
+                                   select this.sut.SendAsync(m, CancellationToken.None).AsTask());
+
+                // assert
+                foreach (var m in messages)
+                {
+                    this.webSocketMock.Verify(ws => ws.SendAsync(It.Is((ArraySegment<byte> bytes) => Encoding.UTF8.GetString(bytes) == m),
+                                                                 WebSocketMessageType.Text,
+                                                                 true, CancellationToken.None), Times.Once);
+                }
             }
         }
 
@@ -126,27 +128,29 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             const int numberOfConcurrentSends = 5;
-            await using var t = UseProcessSendQueueListener();
-            _ = this.webSocketMock.Setup(ws => ws.SendAsync(It.IsAny<ArraySegment<byte>>(),
-                                                            It.IsAny<WebSocketMessageType>(),
-                                                            It.IsAny<bool>(),
-                                                            It.IsAny<CancellationToken>()))
-                                  .Throws(new WebSocketException());
-            var messages = Enumerable.Range(0, numberOfConcurrentSends)
-                                     .Select(i => i.ToString(CultureInfo.InvariantCulture))
-                                     .ToList();
-
-            // act
-            var tasks = messages.Select(m => this.sut.SendAsync(m, CancellationToken.None).AsTask())
-                                .ToArray();
-
-            // assert
-            foreach (var (m, task) in messages.Zip(tasks))
+            await using (UseProcessSendQueueListener())
             {
-                _ = await Assert.ThrowsAsync<WebSocketException>(() => task);
-                this.webSocketMock.Verify(ws => ws.SendAsync(It.Is((ArraySegment<byte> bytes) => Encoding.UTF8.GetString(bytes) == m),
-                                                             WebSocketMessageType.Text,
-                                                             true, CancellationToken.None), Times.Once);
+                _ = this.webSocketMock.Setup(ws => ws.SendAsync(It.IsAny<ArraySegment<byte>>(),
+                                                                It.IsAny<WebSocketMessageType>(),
+                                                                It.IsAny<bool>(),
+                                                                It.IsAny<CancellationToken>()))
+                        .Throws(new WebSocketException());
+                var messages = Enumerable.Range(0, numberOfConcurrentSends)
+                                         .Select(i => i.ToString(CultureInfo.InvariantCulture))
+                                         .ToList();
+
+                // act
+                var tasks = messages.Select(m => this.sut.SendAsync(m, CancellationToken.None).AsTask())
+                                    .ToArray();
+
+                // assert
+                foreach (var (m, task) in messages.Zip(tasks))
+                {
+                    _ = await Assert.ThrowsAsync<WebSocketException>(() => task);
+                    this.webSocketMock.Verify(ws => ws.SendAsync(It.Is((ArraySegment<byte> bytes) => Encoding.UTF8.GetString(bytes) == m),
+                                                                 WebSocketMessageType.Text,
+                                                                 true, CancellationToken.None), Times.Once);
+                }
             }
         }
 
@@ -160,13 +164,14 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                                                             It.IsAny<bool>(),
                                                             It.Is((CancellationToken ct) => ct.IsCancellationRequested)))
                                   .Throws(new OperationCanceledException());
-            await using var t = UseProcessSendQueueListener(sut);
+            await using (UseProcessSendQueueListener(sut))
+            {
+                // act
+                async Task Act() => await sut.SendAsync("foo", CancellationToken.None);
 
-            // act
-            async Task Act() => await sut.SendAsync("foo", CancellationToken.None);
-
-            // assert
-            _ = await Assert.ThrowsAsync<TaskCanceledException>(Act);
+                // assert
+                _ = await Assert.ThrowsAsync<TaskCanceledException>(Act);
+            }
         }
 
         private IAsyncDisposable UseProcessSendQueueListener(WebSocketTextChannel webSocketTextChannel = null) =>
