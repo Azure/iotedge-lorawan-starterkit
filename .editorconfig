@@ -27,6 +27,9 @@ indent_size = 4
 
 dotnet_analyzer_diagnostic.severity = error
 dotnet_code_quality.severity = error
+dotnet_analyzer_diagnostic.category-Style.severity = error
+
+dotnet_sort_system_directives_first = true
 
 # Prefer "var" everywhere
 csharp_style_var_for_built_in_types = true:suggestion
@@ -77,7 +80,7 @@ dotnet_diagnostic.IDE0021.severity=suggestion
 dotnet_diagnostic.IDE0061.severity=suggestion
 
 # IDE0055: Fix formatting
-dotnet_diagnostic.IDE0055.severity=suggestion
+dotnet_diagnostic.IDE0055.severity=error
 
 # IDE0052: Unused private member
 dotnet_diagnostic.IDE0052.severity=suggestion
