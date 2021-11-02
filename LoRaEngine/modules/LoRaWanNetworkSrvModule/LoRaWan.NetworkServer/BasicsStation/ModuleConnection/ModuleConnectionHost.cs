@@ -117,7 +117,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             Logger.Log($"Unknown direct method called: {methodRequest.Name}", LogLevel.Error);
 
-            return new MethodResponse((int)HttpStatusCode.NotFound);
+            return new MethodResponse((int)HttpStatusCode.BadRequest);
         }
 
         internal async Task<MethodResponse> SendCloudToDeviceMessageAsync(MethodRequest methodRequest)
@@ -167,7 +167,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             try
             {
                 _ = TryUpdateConfigurationWithDesiredProperties(desiredProperties);
-            } catch (ConfigurationErrorsException ex)
+            }
+            catch (ConfigurationErrorsException ex)
             {
                 Logger.Log($"A desired properties update was detected but the parameters are out of range with exception :  {ex}", LogLevel.Warning);
             }
@@ -200,7 +201,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
             Logger.Log("no desired property changed", LogLevel.Debug);
             return false;
-
         }
 
         public async ValueTask DisposeAsync()

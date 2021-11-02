@@ -12,7 +12,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
     public interface ILoraModuleClient : IAsyncDisposable
     {
         /// <summary>
-        /// Operation Timeout for the module connection in milliseconds.
+        /// Operation Timeout for the module connection.
         /// </summary>
         public TimeSpan OperationTimeout { get; set; }
 
@@ -20,7 +20,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
         public ModuleClient GetModuleClient();
         Task<Twin> GetTwinAsync(CancellationToken cancellationToken);
-        Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback onDesiredPropertiesUpdate, object p);
-        Task SetMethodDefaultHandlerAsync(MethodCallback onDirectMethodCalled, object p);
+        Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback onDesiredPropertiesUpdate, object usercontext);
+        Task SetMethodDefaultHandlerAsync(MethodCallback onDirectMethodCalled, object usercontext);
     }
 }

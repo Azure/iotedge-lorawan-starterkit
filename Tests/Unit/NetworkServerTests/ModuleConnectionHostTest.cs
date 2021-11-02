@@ -40,8 +40,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var networkServerConfiguration = new NetworkServerConfiguration();
             var classCMessageSender = Mock.Of<IClassCDeviceMessageSender>();
             var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
-            var loRaModuleClient = new Mock<ILoraModuleClient>();
-            loRaModuleClient.Setup(x => x.DisposeAsync());
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, loRaDeviceRegistry);
             var url1 = this.faker.Internet.Url();

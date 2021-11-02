@@ -37,14 +37,14 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             return this.moduleClient.GetTwinAsync(cancellationToken);
         }
 
-        public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback onDesiredPropertiesUpdate, object p)
+        public async Task SetDesiredPropertyUpdateCallbackAsync(DesiredPropertyUpdateCallback onDesiredPropertiesUpdate, object usercontext)
         {
-            await this.moduleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, p);
+            await this.moduleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, usercontext);
         }
 
-        public async Task SetMethodDefaultHandlerAsync(MethodCallback onDirectMethodCalled, object p)
+        public async Task SetMethodDefaultHandlerAsync(MethodCallback onDirectMethodCalled, object usercontext)
         {
-            await this.moduleClient.SetMethodDefaultHandlerAsync(onDirectMethodCalled, p);
+            await this.moduleClient.SetMethodDefaultHandlerAsync(onDirectMethodCalled, usercontext);
         }
     }
 }

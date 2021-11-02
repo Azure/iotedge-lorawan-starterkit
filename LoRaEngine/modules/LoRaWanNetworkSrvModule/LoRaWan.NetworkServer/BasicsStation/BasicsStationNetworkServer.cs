@@ -36,7 +36,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 await moduleConnection.CreateAsync(cancellationToken);
             }
 
-
             await webHost.RunAsync(cancellationToken);
         }
     }
