@@ -19,7 +19,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public WebSocketWriterHandleTests()
         {
             this.registry = new WebSocketWriterRegistry<string, string>(null);
-            this.sut = new WebSocketWriterHandle<string, string>(this.registry, Key);
+            this.sut = WebSocketWriterHandle.Create(this.registry, Key);
         }
 
         [Fact]
@@ -41,9 +41,9 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [Fact]
         public void Equality_Comparison()
         {
-            Assert.True(this.sut.Equals(new WebSocketWriterHandle<string, string>(this.registry, Key)));
-            Assert.False(this.sut.Equals(new WebSocketWriterHandle<string, string>(this.registry, "anotherkey")));
-            Assert.False(this.sut.Equals(new WebSocketWriterHandle<string, string>(new WebSocketWriterRegistry<string, string>(null), Key)));
+            Assert.True(this.sut.Equals(WebSocketWriterHandle.Create(this.registry, Key)));
+            Assert.False(this.sut.Equals(WebSocketWriterHandle.Create(this.registry, "anotherkey")));
+            Assert.False(this.sut.Equals(WebSocketWriterHandle.Create(new WebSocketWriterRegistry<string, string>(null), Key)));
             Assert.False(this.sut.Equals((object)null));
             Assert.False(this.sut.Equals(new object()));
         }

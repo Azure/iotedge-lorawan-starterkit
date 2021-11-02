@@ -11,6 +11,15 @@ namespace LoRaWan.NetworkServer
     using System.Threading;
     using System.Threading.Tasks;
 
+    public static class WebSocketWriterHandle
+    {
+        public static WebSocketWriterHandle<TKey, TMessage>
+            Create<TKey, TMessage>(WebSocketWriterRegistry<TKey, TMessage> registry, TKey key)
+            where TKey : notnull
+            where TMessage : notnull =>
+            new(registry, key);
+    }
+
     [DebuggerDisplay("{" + nameof(key) + "}")]
     public sealed class WebSocketWriterHandle<TKey, TMessage> :
         IEquatable<WebSocketWriterHandle<TKey, TMessage>>

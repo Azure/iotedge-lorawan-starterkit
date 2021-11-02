@@ -49,7 +49,7 @@ namespace LoRaWan.NetworkServer
                 }
                 else
                 {
-                    handle = new WebSocketWriterHandle<TKey, TMessage>(this, key);
+                    handle = WebSocketWriterHandle.Create(this, key);
                 }
 
                 this.sockets[key] = (socketWriter, handle);
