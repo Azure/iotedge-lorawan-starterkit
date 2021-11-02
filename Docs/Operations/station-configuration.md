@@ -9,7 +9,7 @@ In the following we describe how to register an LBS in IoT Hub and how to store 
    1. The configuration follows the `router_config` format from the LNS protocol as closely as possible. However, since device twins encode numbers as 32-bit values and given some configuration properties (such as EUIs) are 64-bit numbers, there are some minor differences.
    2. The `JoinEui` nested array must consist of hexadecimal-encoded strings. The property should look similar to: `"JoinEui": [["DC-A6-32-FF-FE-B3-2F-C5","DC-A6-32-FF-FE-B3-2F-C7"]]`
    3. A full configuration example might look like this, relative to the desired twin property path `properties.desired`:
-   
+
       ```json
       {
         "routerConfig": {
@@ -54,7 +54,7 @@ In the following we describe how to register an LBS in IoT Hub and how to store 
         }
       }
       ```
-   
+
    4. A more thorough description of `sx1301_conf` can be found at [The LNS Protocol](https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message) specification.
 
 By saving the configuration per LBS in its device twin, the LBS will be able to successfully connect to the LNS and it can start sending frames.
