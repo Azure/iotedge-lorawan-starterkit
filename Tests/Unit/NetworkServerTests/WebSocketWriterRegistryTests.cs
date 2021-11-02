@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var newHandler = this.sut.Register(key, newWriter.Object);
 
             // assert
-            Assert.NotSame(oldHandler, newHandler);
+            Assert.Same(oldHandler, newHandler);
             // new handler/writer is used for sending
             await this.sut.SendAsync(key, "bar", CancellationToken.None);
             oldWriter.Verify(w => w.SendAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
