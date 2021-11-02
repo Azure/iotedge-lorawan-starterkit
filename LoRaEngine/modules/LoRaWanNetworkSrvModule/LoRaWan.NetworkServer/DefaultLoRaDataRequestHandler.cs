@@ -87,18 +87,20 @@ namespace LoRaWan.NetworkServer
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
             var isFrameCounterFromNewlyStartedDevice = await DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
 
+            // First, we check if the request is a duplicate and then if it's a valid request
+            // The order of checks here affect which requests are filtered.
+            if (this.concentratorDeduplication.IsDuplicate(request, payloadFcntAdjusted, isFrameCounterFromNewlyStartedDevice, loRaDevice.DevEUI))
+            {
+                Logger.Log(loRaDevice.DevEUI, $"duplication message from multiple concentrators was detected on LNS, message ignored, msg: {loraPayload} server: {loRaDevice.FCntUp}", LogLevel.Information);
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
+            }
+
             // Reply attack or confirmed reply
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
             // Device will send it again and we just need to return an ack (but also check for C2D to send it over)
             if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, requiresConfirmation, out var isConfirmedResubmit, out var result))
             {
                 return result;
-            }
-
-            if (this.concentratorDeduplication.IsDuplicate(request, payloadFcntAdjusted, isFrameCounterFromNewlyStartedDevice, loRaDevice.DevEUI))
-            {
-                Logger.Log(loRaDevice.DevEUI, $"duplication from multiple concentrators detected on LNS level, message ignored, msg: {loraPayload} server: {loRaDevice.FCntUp}", LogLevel.Information);
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
             }
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);

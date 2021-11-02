@@ -6,6 +6,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using LoRaWan.NetworkServer;
     using System;
     using Xunit;
+    using static LoRaWan.NetworkServer.ConcentratorDeduplication;
 
     public sealed class ConcentratorDeduplicationTest : IDisposable
     {
@@ -27,28 +28,36 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 _ = this.ConcentratorDeduplication.IsDuplicate(loraRequest, 123, isRestartedDevice: false, "another_device");
             }
 
-            var result = this.ConcentratorDeduplication.IsDuplicate(loraRequest, 1, isRestartedDevice: false, "a_device");
+            var result = this.ConcentratorDeduplication.IsDuplicate(loraRequest, 5, isRestartedDevice: false, "a_device");
             Assert.False(result);
         }
 
         [Theory]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        public void When_Device_Is_Restarted_Should_Not_Find_Duplicates(bool isRestartedDevice, bool expectedResult)
+        [InlineData(false)]
+        [InlineData(true)]
+        public void When_Device_Is_Restarted_Should_Update_Cache(bool isRestartedDevice)
         {
             var loraRequest = new LoRaRequest(default, default, default, "a_concentrator");
             var deviceEUI = "a_device";
-            _ = this.ConcentratorDeduplication.IsDuplicate(loraRequest, 123, isRestartedDevice: false, deviceEUI);
+            uint previousFrameCounter = 123;
+            uint newFrameCounter = 1;
+            _ = this.ConcentratorDeduplication.IsDuplicate(loraRequest, previousFrameCounter, false, deviceEUI);
 
-            var result = this.ConcentratorDeduplication.IsDuplicate(loraRequest, 1, isRestartedDevice, deviceEUI);
-            Assert.Equal(result, expectedResult);
+            _ = this.ConcentratorDeduplication.IsDuplicate(loraRequest, newFrameCounter, isRestartedDevice, deviceEUI);
+            _ = this.ConcentratorDeduplication.Cache.TryGetValue(deviceEUI, out var value);
+            var cachedFrameCounter = ((DeviceEUICacheEntry)value).FrameCounter;
+
+            if (isRestartedDevice)
+                Assert.Equal(newFrameCounter, cachedFrameCounter);
+            else
+                Assert.Equal(previousFrameCounter, cachedFrameCounter);
         }
 
         [Theory]
-        [InlineData(0, true)]
+        [InlineData(0, false)]
         [InlineData(1, false)]
         [InlineData(2, false)]
-        public void When_Cache_Contains_Message_From_The_Same_Concentrator_Result_Depends_On_FrameCounter(uint frameCounterReceived, bool expectedResult)
+        public void When_Cache_Contains_Message_From_The_Same_Concentrator_Result_Does_Not_Depend_On_FrameCounter(uint frameCounterReceived, bool expectedResult)
         {
             var loraRequest = new LoRaRequest(default, default, default, "a_concentrator");
             var deviceEUI = "a_device";
@@ -60,10 +69,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Theory]
-        [InlineData(0, true)]
+        [InlineData(0, false)]
         [InlineData(1, true)]
         [InlineData(2, false)]
-        public void When_Cache_Contains_Message_From_The_Different_Concentrator_Result_Depends_On_FrameCounter(uint frameCounterReceived, bool expectedResult)
+        public void When_Cache_Contains_Message_From_Different_Concentrator_Result_Depends_On_FrameCounter(uint frameCounterReceived, bool expectedResult)
         {
             var loraRequest = new LoRaRequest(default, default, default, "a_concentrator");
             var deviceEUI = "a_device";
@@ -75,9 +84,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.Equal(expectedResult, result);
         }
 
-        public void Dispose()
-        {
-            this.ConcentratorDeduplication.Dispose();
-        }
+        public void Dispose() => this.ConcentratorDeduplication.Dispose();
     }
 }
