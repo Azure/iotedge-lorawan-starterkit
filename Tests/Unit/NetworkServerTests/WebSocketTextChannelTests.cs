@@ -143,10 +143,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // assert
             foreach (var (m, task) in messages.Zip(tasks))
             {
+                _ = await Assert.ThrowsAsync<WebSocketException>(() => task);
                 this.webSocketMock.Verify(ws => ws.SendAsync(It.Is((ArraySegment<byte> bytes) => Encoding.UTF8.GetString(bytes) == m),
                                                              WebSocketMessageType.Text,
                                                              true, CancellationToken.None), Times.Once);
-                _ = await Assert.ThrowsAsync<WebSocketException>(() => task);
             }
         }
 
