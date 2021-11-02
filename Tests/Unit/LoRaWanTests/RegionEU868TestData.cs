@@ -6,7 +6,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     using System.Collections.Generic;
     using LoRaTools.Regions;
 
-    public static class RegionEU868Test
+    public static class RegionEU868TestData
     {
         private static readonly Region region = RegionManager.EU868;
         private static readonly List<ushort> dataRates = new List<ushort> { 0, 1, 2, 3, 4, 5, 6 };

@@ -4,15 +4,12 @@
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using System;
-    using System.Collections.Generic;
     using LoRaTools.Regions;
     using Xunit;
 
     [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-    public class RegionEU868TestWithRxpk : RegionTestBase
+    public class RegionEU868TestWithRxpk : RegionTestBaseRxpk
     {
-        private static readonly Region region = RegionManager.EU868;
-
         public RegionEU868TestWithRxpk()
         {
             Region = RegionManager.EU868;
@@ -41,26 +38,28 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             TestRegionLimitRxpk(freq, datarate);
         }
 
-        public static IEnumerable<object[]> TestRegionMaxPayloadLengthData =>
-           new List<object[]>
-           {
-               new object[] { region, "SF12BW125", 59 },
-               new object[] { region, "SF11BW125", 59 },
-               new object[] { region, "SF10BW125", 59 },
-               new object[] { region, "SF9BW125", 123 },
-               new object[] { region, "SF8BW125", 230 },
-               new object[] { region, "SF7BW125", 230 },
-               new object[] { region, "SF7BW250", 230 },
-               new object[] { region, "50", 230 },
-           };
+        [Theory]
+        [InlineData("SF12BW125", 59)]
+        [InlineData("SF11BW125", 59)]
+        [InlineData("SF10BW125", 59)]
+        [InlineData("SF9BW125", 123)]
+        [InlineData("SF8BW125", 230)]
+        [InlineData("SF7BW125", 230)]
+        [InlineData("SF7BW250", 230)]
+        [InlineData("50", 230)]
+        public void TestMaxPayloadLength(string datr, uint maxPyldSize)
+        {
+            TestRegionMaxPayloadLength(datr, maxPyldSize);
+        }
 
-        public static IEnumerable<object[]> TestDownstreamRX2DataRateRxpkData =>
-            new List<object[]>
-            {
-                new object[] { region, "", null, "SF12BW125" }, // Standard EU.
-                new object[] { region, "SF9BW125", null, "SF9BW125" }, // nwksrvDR is correctly applied if no device twins.
-                new object[] { region, "SF9BW125", (ushort)6, "SF7BW250" }, // device twins are applied in priority.
-            };
+        [Theory]
+        [InlineData("", null, null, 869.525, "SF12BW125")] // Standard EU.
+        [InlineData("SF9BW125", null, null, 869.525, "SF9BW125")] // nwksrvDR is correctly applied if no device twins.
+        [InlineData("SF9BW125", 868.250, (ushort)6, 868.250, "SF7BW250")] // device twins are applied in priority.
+        public void TestDownstreamRX2(string nwksrvrx2dr, double? nwksrvrx2freq, ushort? rx2drfromtwins, double expectedFreq, string expectedDr)
+        {
+            TestDownstreamRX2FrequencyAndDataRate(nwksrvrx2dr, nwksrvrx2freq, rx2drfromtwins, expectedFreq, expectedDr);
+        }
 
         [Fact]
         public void TestResolveRegion()

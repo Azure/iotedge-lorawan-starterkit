@@ -6,7 +6,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     using System.Collections.Generic;
     using LoRaTools.Regions;
 
-    public static class RegionCN470Test
+    public static class RegionCN470TestData
     {
         private static readonly Region region = RegionManager.CN470;
 
