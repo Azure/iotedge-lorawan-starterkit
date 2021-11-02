@@ -11,7 +11,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     using LoRaTools.Regions;
     using Xunit;
 
-    public class RegionTestBaseRxpk
+    public abstract class RegionTestBaseRxpk
     {
         protected Region Region { get; set; }
 
