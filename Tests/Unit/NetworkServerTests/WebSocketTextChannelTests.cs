@@ -186,7 +186,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             public async ValueTask DisposeAsync()
             {
                 this.cts.Cancel();
-                await Assert.ThrowsAsync<OperationCanceledException>(() => this.webSocketTextChannelListenTask);
+                // Throws either OperationCanceledException or TaskCanceledException.
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => this.webSocketTextChannelListenTask);
                 this.cts.Dispose();
             }
         }
