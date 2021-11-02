@@ -74,7 +74,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public async Task SendAsync_Fails_If_ProcessSendQueueAsync_Is_Not_Running()
+        public async Task SendAsync_Fails_If_Send_Queue_Is_Not_Being_Processed()
         {
             // arrange + act
             async Task Act() => await this.sut.SendAsync("foo", CancellationToken.None);
@@ -84,7 +84,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public async Task SendAsync_Fails_If_ProcessSendQueueAsync_Is_Not_Running_Anymore()
+        public async Task SendAsync_Fails_If_Send_Queue_Is_Not_Being_Processed_Anymore()
         {
             // act + assert 1
             using (var t = UseProcessSendQueueListener())
@@ -99,7 +99,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public async Task SendAsync_Handles_Concurrent_Operations_If_ProcessSendQueueAsync_Is_Running()
+        public async Task SendAsync_Handles_Concurrent_Operations_If_Send_Queue_Is_Being_Processed()
         {
             // arrange
             const int numberOfConcurrentSends = 5;
