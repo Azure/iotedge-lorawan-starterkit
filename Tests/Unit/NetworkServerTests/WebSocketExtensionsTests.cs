@@ -33,7 +33,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             var message = JsonUtil.Strictify("{'foo':'bar'}");
-            SetupWebSocketResponse(message, numberOfChunks);
+            SetupWebSocketResponse(numberOfChunks, message);
 
             // act + assert
             await using var result = WebSocketExtensions.ReadTextMessages(this.webSocketMock.Object, CancellationToken.None);
@@ -50,7 +50,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         {
             // arrange
             var message = JsonUtil.Strictify("{'foo':'bar'}");
-            SetupWebSocketResponse(message, numberOfChunks);
+            SetupWebSocketResponse(numberOfChunks, message);
 
             // act + assert
             await using var result = WebSocketExtensions.ReadTextMessages(this.webSocketMock.Object, CancellationToken.None);
@@ -58,40 +58,81 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.Equal(message, result.Current);
         }
 
-        private void SetupWebSocketResponse(string message, int numberOfChunks)
+        [Fact]
+        public async Task ReadTextMessages_Should_Throw_For_Unhandled_WebSocketMessageType()
         {
-            var bytes = Encoding.UTF8.GetBytes(message);
+            // arrange
+            _ = this.webSocketMock.Setup(ws => ws.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                                  .Returns(() => new ValueTask<ValueWebSocketReceiveResult>(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Binary, true)));
 
-            if (numberOfChunks < 1 || bytes.Length < numberOfChunks)
-                throw new ArgumentOutOfRangeException(nameof(numberOfChunks));
+            // act
+            await using var result = WebSocketExtensions.ReadTextMessages(this.webSocketMock.Object, CancellationToken.None);
 
-            var chunkSize = (int)Math.Ceiling((double)bytes.Length / numberOfChunks);
-            // readjust effective number of chunks, taking ceiling of chunkSize into account.
-            numberOfChunks = (bytes.Length / chunkSize) + 1;
-            var chunks =
-                Enumerable.Range(0, numberOfChunks - 1)
-                          .Select(_ => new ValueWebSocketReceiveResult(chunkSize, WebSocketMessageType.Text, false))
-                          .ToList();
+            // assert
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await result.MoveNextAsync());
+        }
 
-            chunks.Add(new ValueWebSocketReceiveResult(bytes.Length % chunkSize, WebSocketMessageType.Text, true));
-            chunks.Add(new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true));
+        [Theory]
+        [InlineData(3, 3)]
+        [InlineData(1, 3)]
+        [InlineData(3, 1)]
+        public async Task ReadTextMessages_Should_Handle_Multiple_End_Of_Messages(int numberOfMessages, int numberOfChunks)
+        {
+            // arrange
+            var message = JsonUtil.Strictify("{'foo':'bar'}");
+            SetupWebSocketResponse(numberOfChunks, Enumerable.Range(0, numberOfMessages).Select(_ => message).ToArray());
 
-            var setup = new Queue<ValueWebSocketReceiveResult>(chunks);
+            // act + assert
+            await using var result = WebSocketExtensions.ReadTextMessages(this.webSocketMock.Object, CancellationToken.None);
+            for (var i = 0; i < numberOfMessages; ++i)
+            {
+                Assert.True(await result.MoveNextAsync());
+                Assert.Equal(message, result.Current);
+            }
+
+            Assert.Equal(message, result.Current);
+        }
+
+        private void SetupWebSocketResponse(int numberOfChunks, params string[] messages)
+        {
+            var chunks = new List<(ValueWebSocketReceiveResult Result, byte[] Bytes)>();
+
+            foreach (var m in messages)
+            {
+                var bytes = Encoding.UTF8.GetBytes(m);
+
+                if (numberOfChunks < 1 || bytes.Length < numberOfChunks)
+                    throw new ArgumentOutOfRangeException(nameof(numberOfChunks));
+
+                var chunkSize = (int)Math.Ceiling((double)bytes.Length / numberOfChunks);
+                // readjust effective number of chunks, taking ceiling of chunkSize into account.
+                var adjustedNumberOfChunks = (bytes.Length / chunkSize) + 1;
+                chunks.AddRange(Enumerable.Range(0, adjustedNumberOfChunks - 1)
+                                          .Select(_ => new ValueWebSocketReceiveResult(chunkSize, WebSocketMessageType.Text, false))
+                                          .Select((r, i) => (Result: r, Start: i * chunkSize, End: (i * chunkSize) + chunkSize))
+                                          .Select(r => (r.Result, Bytes: bytes[r.Start..r.End])));
+
+                // Last chunk can have a bytes count minus 1, depending on the chunk size and number of chunks.
+                chunks.Add((Result: new ValueWebSocketReceiveResult(bytes.Length % chunkSize, WebSocketMessageType.Text, true),
+                            Bytes: bytes[((adjustedNumberOfChunks - 1) * chunkSize)..]));
+            }
+ 
+            chunks.Add((Result: new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true), Bytes: Array.Empty<byte>()));
+
+            var setup = new Queue<(ValueWebSocketReceiveResult Result, byte[] Bytes)>(chunks);
 
             var currentChunkIndex = 0;
             _ = this.webSocketMock.Setup(ws => ws.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
                                   .Callback((Memory<byte> mem, CancellationToken _) =>
                                   {
                                       // Sending the WebSocketMessageType.Close message.
-                                      if (currentChunkIndex == numberOfChunks) return;
+                                      if (currentChunkIndex == chunks.Count - 1) return;
 
-                                      var start = currentChunkIndex * chunkSize;
-                                      var end = start + chunks[currentChunkIndex].Count;
-                                      var m = new Memory<byte>(bytes[start..end]);
+                                      var m = new Memory<byte>(chunks[currentChunkIndex].Bytes);
                                       m.CopyTo(mem);
                                       ++currentChunkIndex;
                                   })
-                                  .Returns(() => new ValueTask<ValueWebSocketReceiveResult>(setup.Dequeue()));
+                                  .Returns(() => new ValueTask<ValueWebSocketReceiveResult>(setup.Dequeue().Result));
         }
     }
 }
