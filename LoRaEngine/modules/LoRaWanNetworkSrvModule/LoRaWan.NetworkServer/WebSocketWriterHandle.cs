@@ -20,9 +20,15 @@ namespace LoRaWan.NetworkServer
             new(registry, key);
     }
 
+    public interface IWebSocketWriterHandle<in T> where T : notnull
+    {
+        ValueTask SendAsync(T message, CancellationToken cancellationToken);
+    }
+
     [DebuggerDisplay("{" + nameof(key) + "}")]
     public sealed class WebSocketWriterHandle<TKey, TMessage> :
-        IEquatable<WebSocketWriterHandle<TKey, TMessage>>
+        IEquatable<WebSocketWriterHandle<TKey, TMessage>>,
+        IWebSocketWriterHandle<TMessage>
         where TKey : notnull
         where TMessage : notnull
     {

@@ -150,7 +150,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
         }
 
         private async Task HandleDataMessageAsync(StationEui stationEui,
-                                                  WebSocketWriterHandle<StationEui, string> socket,
+                                                  IWebSocketWriterHandle<string> socket,
                                                   string json,
                                                   CancellationToken cancellationToken)
         {
