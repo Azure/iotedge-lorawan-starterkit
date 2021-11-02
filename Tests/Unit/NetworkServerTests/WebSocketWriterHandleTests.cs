@@ -44,7 +44,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.Equal(sut, sut);
             Assert.NotEqual(sut, handle1);
             Assert.NotEqual(sut, handle2);
-            Assert.False(sut.Equals((object)null));
+            Assert.False(sut.Equals(null));
             Assert.False(sut.Equals(new object()));
         }
     }
