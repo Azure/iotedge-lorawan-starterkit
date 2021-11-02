@@ -35,9 +35,19 @@ namespace LoRaWan.NetworkServer
         {
             lock (this.sockets)
             {
-                if (this.sockets.TryGetValue(key, out var currentSocket) && socketWriter == currentSocket.Object)
-                    return currentSocket.Handle;
-                var handle = new WebSocketWriterHandle<TKey, TMessage>(this, key);
+                WebSocketWriterHandle<TKey, TMessage> handle;
+
+                if (this.sockets.TryGetValue(key, out var current))
+                {
+                    handle = current.Handle;
+                    if (socketWriter == current.Object)
+                        return handle;
+                }
+                else
+                {
+                    handle = new WebSocketWriterHandle<TKey, TMessage>(this, key);
+                }
+
                 this.sockets[key] = (socketWriter, handle);
                 return handle;
             }
@@ -47,10 +57,10 @@ namespace LoRaWan.NetworkServer
         {
             lock (this.sockets)
             {
-                if (this.sockets.TryGetValue(key, out var currentSocket))
+                if (this.sockets.TryGetValue(key, out var current))
                 {
                     _ = this.sockets.Remove(key);
-                    return currentSocket.Object;
+                    return current.Object;
                 }
                 else
                 {
