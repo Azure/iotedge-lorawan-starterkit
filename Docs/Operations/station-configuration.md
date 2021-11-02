@@ -1,6 +1,6 @@
 # Basics Station configuration
 
-Following the LoRaWAN specification, each Basics Station (LBS) will at some point invoke the discovery endpoint on a LoRaWAN Network Server (LNS). Subsequently, it will establish a data connection on the data endpoint to receive its setup information. To ensure that the LBS is able to receive the setup information, you will need to add the LBS configuration (in LNS protocol specification called: "`router_config`") to IoT Hub. An LBS that does not have its configuration stored in IoT Hub will not be able to connect to the LNS.
+Following the LoRaWAN  Network Server (LNS) specification, each Basics Station (LBS) will at some point invoke the discovery endpoint on a LNS. Subsequently, it will establish a data connection on the data endpoint to receive its setup information. To ensure that the LBS is able to receive the setup information, you will need to add the LBS configuration (in LNS protocol specification called: "`router_config`") to IoT Hub. An LBS that does not have its configuration stored in IoT Hub will not be able to connect to the LNS.
 
 In the following we describe how to register an LBS in IoT Hub and how to store its configuration.
 
