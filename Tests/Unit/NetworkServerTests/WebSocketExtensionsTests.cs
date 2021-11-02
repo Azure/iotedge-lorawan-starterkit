@@ -116,7 +116,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 chunks.Add((Result: new ValueWebSocketReceiveResult(bytes.Length % chunkSize, WebSocketMessageType.Text, true),
                             Bytes: bytes[((adjustedNumberOfChunks - 1) * chunkSize)..]));
             }
- 
+
             chunks.Add((Result: new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true), Bytes: Array.Empty<byte>()));
 
             var setup = new Queue<(ValueWebSocketReceiveResult Result, byte[] Bytes)>(chunks);
