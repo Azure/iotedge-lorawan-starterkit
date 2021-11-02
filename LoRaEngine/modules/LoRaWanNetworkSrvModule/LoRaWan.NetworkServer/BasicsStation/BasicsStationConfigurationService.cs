@@ -7,6 +7,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Extensions.Caching.Memory;
@@ -33,6 +34,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
         }
 
         public void Dispose() => this.cacheSemaphore.Dispose();
+
+        public async Task<Region> GetRegionFromBasicsStationConfiguration(StationEui stationEui, CancellationToken cancellationToken)
+        {
+            var config = await this.GetRouterConfigMessageAsync(stationEui, cancellationToken);
+            return LnsStationConfiguration.GetRegion(config);
+        }
 
         public async Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
