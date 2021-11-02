@@ -5,6 +5,6 @@ namespace LoRaWan.NetworkServer
 {
     public interface IConcentratorDeduplication
     {
-        bool IsDuplicate(LoRaRequest request, uint payloadFrameCounterAdjusted, string deviceEUI);
+        bool IsDuplicate(LoRaRequest request, uint payloadFrameCounterAdjusted, bool isRestartedDevice, string deviceEUI);
     }
 }

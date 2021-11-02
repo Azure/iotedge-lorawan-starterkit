@@ -15,15 +15,15 @@ namespace LoRaWan.NetworkServer
             this.Cache = new MemoryCache(new MemoryCacheOptions());
         }
 
-        public bool IsDuplicate(LoRaRequest request, uint payloadFrameCounterAdjusted, string deviceEUI)
+        public bool IsDuplicate(LoRaRequest request, uint payloadFrameCounterAdjusted, bool isRestartedDevice, string deviceEUI)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
 
             lock (this.Cache)
             {
-                if (!this.Cache.TryGetValue(deviceEUI, out CacheEntry previousMessage) || payloadFrameCounterAdjusted > previousMessage.FrameCounter)
+                // we have not encountered this device ever, the device is restarted (-> counter was reset) or we received a newer message or the device
+                if (!this.Cache.TryGetValue(deviceEUI, out CacheEntry previousMessage) || isRestartedDevice || payloadFrameCounterAdjusted > previousMessage.FrameCounter)
                 {
-                    // we have not encountered this device before or we received a newer message
                     _ = this.Cache.Set(deviceEUI, new CacheEntry(payloadFrameCounterAdjusted, request.ConcentratorId), new MemoryCacheEntryOptions()
                     {
                         AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
@@ -31,14 +31,13 @@ namespace LoRaWan.NetworkServer
                     return false;
                 }
 
+                // we received a retry: only the concentrator that won the first time is allowed
                 if (payloadFrameCounterAdjusted == previousMessage.FrameCounter && request.ConcentratorId == previousMessage.ConcentratorId)
                 {
-                    // this is a retry from the same concentrator
                     return false;
                 }
                 else
                 {
-                    // we received an older message from any concentrator or the same message but from a different concentrator
                     return true;
                 }
             }

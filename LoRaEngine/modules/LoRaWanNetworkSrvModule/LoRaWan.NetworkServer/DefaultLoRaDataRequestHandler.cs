@@ -68,12 +68,6 @@ namespace LoRaWan.NetworkServer
             var payloadFcntAdjusted = LoRaPayload.InferUpper32BitsForClientFcnt(payloadFcnt, loRaDevice.FCntUp);
             Logger.Log(loRaDevice.DevEUI, $"converted 16bit FCnt {payloadFcnt} to 32bit FCnt {payloadFcntAdjusted}", LogLevel.Debug);
 
-            if (this.concentratorDeduplication.IsDuplicate(request, payloadFcntAdjusted, loRaDevice.DevEUI))
-            {
-                Logger.Log(loRaDevice.DevEUI, $"invalid frame counter/contentrator, message ignored, msg: {loraPayload} server: {loRaDevice.FCntUp}", LogLevel.Error);
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.InvalidFrameCounter);
-            }
-
             var payloadPort = loraPayload.FPortValue;
             var requiresConfirmation = loraPayload.IsConfirmed || loraPayload.IsMacAnswerRequired;
 
@@ -99,6 +93,12 @@ namespace LoRaWan.NetworkServer
             if (!ValidateRequest(request, isFrameCounterFromNewlyStartedDevice, payloadFcntAdjusted, loRaDevice, requiresConfirmation, out var isConfirmedResubmit, out var result))
             {
                 return result;
+            }
+
+            if (this.concentratorDeduplication.IsDuplicate(request, payloadFcntAdjusted, isFrameCounterFromNewlyStartedDevice, loRaDevice.DevEUI))
+            {
+                Logger.Log(loRaDevice.DevEUI, $"duplication from multiple concentrators detected on LNS level, message ignored, msg: {loraPayload} server: {loRaDevice.FCntUp}", LogLevel.Information);
+                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
             }
 
             var useMultipleGateways = string.IsNullOrEmpty(loRaDevice.GatewayID);
