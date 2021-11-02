@@ -42,21 +42,15 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(CancellationByTimeoutSuccessCases))]
         public void Cancellation_By_Timeout_Success_Cases(TimeoutLinkedCancellationToken sut, bool cancellationRequested)
         {
-            try
-            {
+            using (sut)
                 Assert.Equal(cancellationRequested, sut.Token.IsCancellationRequested);
-            }
-            finally
-            {
-                sut.Dispose();
-            }
         }
 
         public static IEnumerable<object[]> CancellationByTokenSuccessCases()
         {
-            var cts1 = new CancellationTokenSource();
+            using var cts1 = new CancellationTokenSource();
             yield return new object[] { new TimeoutLinkedCancellationToken(TimeSpan.FromSeconds(42), cts1.Token), cts1 };
-            var cts2 = new CancellationTokenSource();
+            using var cts2 = new CancellationTokenSource();
             yield return new object[] { new TimeoutLinkedCancellationToken(null, cts2.Token), cts2 };
         }
 
@@ -64,7 +58,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(CancellationByTokenSuccessCases))]
         public void Cancellation_By_Token_Success_Cases(TimeoutLinkedCancellationToken sut, CancellationTokenSource cts)
         {
-            try
+            using (sut)
+            using (cts)
             {
                 // assert 1
                 Assert.False(sut.Token.IsCancellationRequested);
@@ -74,11 +69,6 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
                 // assert 2
                 Assert.True(sut.Token.IsCancellationRequested);
-            }
-            finally
-            {
-                sut.Dispose();
-                cts.Dispose();
             }
         }
     }
