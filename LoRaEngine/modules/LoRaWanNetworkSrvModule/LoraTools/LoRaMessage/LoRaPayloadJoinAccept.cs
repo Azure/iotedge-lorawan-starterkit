@@ -9,6 +9,7 @@ namespace LoRaTools.LoRaMessage
     using System.Security.Cryptography;
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Utils;
+    using LoRaWan;
     using Org.BouncyCastle.Crypto.Engines;
     using Org.BouncyCastle.Crypto.Parameters;
 
@@ -209,7 +210,7 @@ namespace LoRaTools.LoRaMessage
             throw new NotImplementedException();
         }
 
-        public DownlinkPktFwdMessage Serialize(string appKey, string datr, double freq, string devEui, long tmst, ushort rxDelay = 0)
+        public DownlinkPktFwdMessage Serialize(string appKey, string datr, double freq, string devEui, long tmst, ushort rxDelay = 0, StationEui stationEui = default)
         {
             var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
             if (!CfList.Span.IsEmpty)
@@ -218,7 +219,7 @@ namespace LoRaTools.LoRaMessage
             _ = CalculateMic(appKey, algoinput);
             _ = PerformEncryption(appKey);
 
-            return new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEui, tmst, rxDelay);
+            return new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEui, tmst, rxDelay, stationEui: stationEui);
         }
     }
 }
