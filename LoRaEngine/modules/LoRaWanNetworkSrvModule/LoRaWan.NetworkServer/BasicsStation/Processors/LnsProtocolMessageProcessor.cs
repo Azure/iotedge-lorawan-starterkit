@@ -11,7 +11,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     using System.Linq;
     using System.Net.NetworkInformation;
     using System.Net.WebSockets;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
