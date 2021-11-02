@@ -53,5 +53,6 @@ In the following we describe how to register an LBS in IoT Hub and how to store 
      }
    }
    ```
+   4. A more thorough description of `sx1301_conf` can be found at [The LNS Protocol](https://doc.sm.tc/station/tcproto.html?highlight=sx1301conf#router-config-message) specification.
 
 By saving the configuration per LBS in its device twin, the LBS will be able to successfully connect to the LNS and it can start sending frames.
