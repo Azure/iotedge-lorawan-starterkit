@@ -87,7 +87,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public async Task SendAsync_Fails_If_Send_Queue_Is_Not_Being_Processed_Anymore()
         {
             // act + assert 1
-            using (var t = UseProcessSendQueueListener())
+            using (UseProcessSendQueueListener())
             {
                 // Sending should succeed while someone is listening on ProcessSendQueue.
                 await this.sut.SendAsync("foo", CancellationToken.None);
