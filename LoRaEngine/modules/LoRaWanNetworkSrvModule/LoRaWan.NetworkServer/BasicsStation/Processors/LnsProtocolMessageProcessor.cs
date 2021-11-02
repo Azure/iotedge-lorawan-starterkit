@@ -23,16 +23,22 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     internal class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
+        private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
+        private readonly IPacketForwarder downstreamSender;
         private readonly IMessageDispatcher messageDispatcher;
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
+                                           WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
+                                           IPacketForwarder packetForwarder,
                                            IMessageDispatcher messageDispatcher,
                                            WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
                                            ILogger<LnsProtocolMessageProcessor> logger)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
+            this.socketWriterRegistry = socketWriterRegistry;
+            this.downstreamSender = packetForwarder;
             this.messageDispatcher = messageDispatcher;
             this.socketWriterRegistry = socketWriterRegistry;
             this.logger = logger;
@@ -164,8 +170,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 case LnsMessageType.Version:
                     var stationVersion = LnsData.VersionMessageReader.Read(json);
                     this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
-                    var response = await basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
-                    await socket.SendAsync(response, cancellationToken);
+                    var routerConfigResponse = await this.basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
+                    await socket.SendAsync(routerConfigResponse, cancellationToken);
                     break;
                 case LnsMessageType.JoinRequest:
                     this.logger.LogInformation($"Received 'jreq' message: {json}.");
@@ -175,8 +181,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
                         var routerRegion = await basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
 
-                        var rxpk = new BasicStationToRxpk(jreq.RadioMetadata, routerRegion);
-                        var downstreamSender = new DownstreamSender(socket, this.basicsStationConfigurationService);
+                        var rxpk = new BasicStationToRxpk(radioMetadata, routerRegion);
                         var loraRequest = new LoRaRequest(rxpk, downstreamSender, DateTime.UtcNow);
                         loraRequest.SetPayload(new LoRaPayloadJoinRequestLbs(jreq.MacHeader,
                                                                              jreq.JoinEui,
@@ -201,8 +206,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
                         var routerRegion = await basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
 
-                        var rxpk = new BasicStationToRxpk(updf.RadioMetadata, routerRegion);
-                        var downstreamSender = new DownstreamSender(socket, this.basicsStationConfigurationService);
+                        var rxpk = new BasicStationToRxpk(radioMetadata, routerRegion);
                         var loraRequest = new LoRaRequest(rxpk, downstreamSender, DateTime.UtcNow);
                         loraRequest.SetPayload(new LoRaPayloadDataLbs(updf.DevAddr,
                                                                       updf.MacHeader,

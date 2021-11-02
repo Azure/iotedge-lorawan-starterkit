@@ -7,7 +7,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using LoRaTools.Regions;
     using System;
     using System.IO;
-    using System.Net.WebSockets;
     using System.Text;
     using System.Text.Json;
     using System.Threading;
@@ -15,21 +14,22 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
     internal class DownstreamSender : IPacketForwarder
     {
-        private readonly WebSocket socket;
+        private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
 
-        public DownstreamSender(WebSocket socket, IBasicsStationConfigurationService basicsStationConfigurationService)
+        public DownstreamSender(WebSocketWriterRegistry<StationEui, string> socketWriterRegistry, IBasicsStationConfigurationService basicsStationConfigurationService)
         {
-            this.socket = socket;
+            this.socketWriterRegistry = socketWriterRegistry;
             this.basicsStationConfigurationService = basicsStationConfigurationService;
         }
 
         public async Task SendDownstreamAsync(DownlinkPktFwdMessage message)
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
-            var region = await this.basicsStationConfigurationService.GetRegionFromBasicsStationConfiguration(message.StationEui, CancellationToken.None);
+            var stationEui = message.StationEui;
+            var region = await this.basicsStationConfigurationService.GetRegionFromBasicsStationConfiguration(stationEui, CancellationToken.None);
             var payload = Message(message, region);
-            await this.socket.SendAsync(Encoding.UTF8.GetBytes(payload), WebSocketMessageType.Text, true, CancellationToken.None);
+            await this.socketWriterRegistry.SendAsync(stationEui, payload, CancellationToken.None);
         }
 
         /*
