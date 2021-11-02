@@ -39,6 +39,12 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.NotNull(new WebSocketTextChannel(this.webSocketMock.Object, TimeSpan.FromSeconds(timeoutInSeconds)));
         }
 
+        [Fact]
+        public void Constructor_Allows_Infinite_Send_Timeout()
+        {
+            Assert.NotNull(new WebSocketTextChannel(this.webSocketMock.Object, Timeout.InfiniteTimeSpan));
+        }
+
         [Theory]
         [InlineData(WebSocketState.Open, false)]
         [InlineData(WebSocketState.Closed, true)]
