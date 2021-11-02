@@ -90,45 +90,36 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
         private void SetupWebSocketResponse(int numberOfChunks, params string[] messages)
         {
-            var chunks = new List<(ValueWebSocketReceiveResult Result, byte[] Bytes)>();
+            var chunks =
+                from m in messages
+                select Encoding.UTF8.GetBytes(m).AsMemory()
+                into bytes
+                let chunkSize = (int)Math.Ceiling((double)bytes.Length / numberOfChunks)
+                from chunk in Chunks(bytes, chunkSize).Append(Array.Empty<byte>())
+                select (new ValueWebSocketReceiveResult(chunk.Length, WebSocketMessageType.Text, chunk.Length == 0), chunk);
 
-            foreach (var m in messages)
+            chunks = chunks.Append((new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true), Array.Empty<byte>()));
+
+            var mockSequence = new MockSequence();
+
+            foreach (var (result, source) in chunks)
             {
-                var bytes = Encoding.UTF8.GetBytes(m);
-
-                if (numberOfChunks < 1 || bytes.Length < numberOfChunks)
-                    throw new ArgumentOutOfRangeException(nameof(numberOfChunks));
-
-                var chunkSize = (int)Math.Ceiling((double)bytes.Length / numberOfChunks);
-                // readjust effective number of chunks, taking ceiling of chunkSize into account.
-                var adjustedNumberOfChunks = (bytes.Length / chunkSize) + 1;
-                chunks.AddRange(Enumerable.Range(0, adjustedNumberOfChunks - 1)
-                                          .Select(_ => new ValueWebSocketReceiveResult(chunkSize, WebSocketMessageType.Text, false))
-                                          .Select((r, i) => (Result: r, Start: i * chunkSize, End: (i * chunkSize) + chunkSize))
-                                          .Select(r => (r.Result, Bytes: bytes[r.Start..r.End])));
-
-                // Last chunk can have a bytes count minus 1, depending on the chunk size and number of chunks.
-                chunks.Add((Result: new ValueWebSocketReceiveResult(bytes.Length % chunkSize, WebSocketMessageType.Text, true),
-                            Bytes: bytes[((adjustedNumberOfChunks - 1) * chunkSize)..]));
+                _ = this.webSocketMock
+                        .InSequence(mockSequence)
+                        .Setup(ws => ws.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
+                        .Callback((Memory<byte> destination, CancellationToken _) => source.CopyTo(destination))
+                        .Returns(() => new ValueTask<ValueWebSocketReceiveResult>(result));
             }
 
-            chunks.Add((Result: new ValueWebSocketReceiveResult(0, WebSocketMessageType.Close, true), Bytes: Array.Empty<byte>()));
-
-            var setup = new Queue<(ValueWebSocketReceiveResult Result, byte[] Bytes)>(chunks);
-
-            var currentChunkIndex = 0;
-            _ = this.webSocketMock.Setup(ws => ws.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
-                                  .Callback((Memory<byte> mem, CancellationToken _) =>
-                                  {
-                                      // Sending the WebSocketMessageType.Close message.
-                                      if (currentChunkIndex == chunks.Count - 1)
-                                          return;
-
-                                      var m = new Memory<byte>(chunks[currentChunkIndex].Bytes);
-                                      m.CopyTo(mem);
-                                      ++currentChunkIndex;
-                                  })
-                                  .Returns(() => new ValueTask<ValueWebSocketReceiveResult>(setup.Dequeue().Result));
+            static IEnumerable<ReadOnlyMemory<byte>> Chunks(ReadOnlyMemory<byte> source, int chunkSize)
+            {
+                while (!source.IsEmpty)
+                {
+                    var size = Math.Min(chunkSize, source.Length);
+                    yield return source[..size];
+                    source = source[size..];
+                }
+            }
         }
     }
 }
