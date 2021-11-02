@@ -8,7 +8,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
     using Xunit;
 
     [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-    public class RegionEU868TestWithRxpk : RegionTestBase
+    public class RegionEU868TestWithRxpk : RegionTestBaseRxpk
     {
         public RegionEU868TestWithRxpk()
         {
@@ -35,7 +35,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(800, "SF0BW125")]
         public void TestLimit(double freq, string datarate)
         {
-            TestRegionLimit(freq, datarate);
+            TestRegionLimitRxpk(freq, datarate);
         }
 
         [Theory]
@@ -62,15 +62,17 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Fact]
-        public void TestTranslateRegionType()
-        {
-            TestTranslateToRegion(LoRaRegionType.EU868);
-        }
-
-        [Fact]
         public void TestResolveRegion()
         {
             TestTryResolveRegionRxpk("SF9BW125", 868.1);
+        }
+
+        [Theory]
+        [InlineData(863)]
+        [InlineData(870)]
+        public void TestTryGetJoinChannelIndexReturns_InvalidIndex(double freq)
+        {
+            TestTryGetJoinChannelIndexRxpk("SF9BW125", freq, -1);
         }
     }
 }

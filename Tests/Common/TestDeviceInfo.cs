@@ -5,7 +5,6 @@ namespace LoRaWan.Tests.Common
 {
     using System.Collections.Generic;
     using System.Globalization;
-    using LoRaTools.Utils;
 
     public class TestDeviceInfo
     {
