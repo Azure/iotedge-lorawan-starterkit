@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(3)]
         [InlineData(6)]
         [InlineData(10)]
-        public async Task ReadTextMessages_When_Socket_Closed_AsyncEnumerator_Should_Terminate(int numberOfChunks)
+        public async Task ReadTextMessages_Stops_Enumerating_When_Socket_Closes(int numberOfChunks)
         {
             // arrange
             var message = JsonUtil.Strictify("{'foo':'bar'}");
@@ -41,7 +41,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(3)]
         [InlineData(6)]
         [InlineData(10)]
-        public async Task ReadTextMessages_Should_Accumulate_Message_Independent_Of_Number_Of_Chunks(int numberOfChunks)
+        public async Task ReadTextMessages_Accumulates_Messages_Independent_Of_Number_Of_Chunks(int numberOfChunks)
         {
             // arrange
             var message = JsonUtil.Strictify("{'foo':'bar'}");
@@ -54,7 +54,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public async Task ReadTextMessages_Should_Throw_For_Unhandled_WebSocketMessageType()
+        public async Task ReadTextMessages_Throws_For_Unhandled_Message_Type()
         {
             // arrange
             _ = this.webSocketMock.Setup(ws => ws.ReceiveAsync(It.IsAny<Memory<byte>>(), It.IsAny<CancellationToken>()))
@@ -71,7 +71,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         [InlineData(3, 3)]
         [InlineData(1, 3)]
         [InlineData(3, 1)]
-        public async Task ReadTextMessages_Should_Handle_Multiple_End_Of_Messages(int numberOfMessages, int numberOfChunks)
+        public async Task ReadTextMessages_Iterates_Multiple_Messages(int numberOfMessages, int numberOfChunks)
         {
             // arrange
             var message = JsonUtil.Strictify("{'foo':'bar'}");
