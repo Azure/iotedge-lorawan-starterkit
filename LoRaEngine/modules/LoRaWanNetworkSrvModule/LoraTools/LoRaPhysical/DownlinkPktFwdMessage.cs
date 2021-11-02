@@ -9,7 +9,7 @@ namespace LoRaTools.LoRaPhysical
     /// <summary>
     /// JSON of a Downlink message for the Packet forwarder.
     /// </summary>
-    public class DownlinkPktFwdMessage : PktFwdMessage
+    public class DownlinkPktFwdMessage
     {
         [JsonProperty("txpk")]
         public Txpk Txpk { get; set; }
@@ -22,27 +22,6 @@ namespace LoRaTools.LoRaPhysical
 
         public DownlinkPktFwdMessage()
         {
-        }
-
-        [Obsolete("This constructor will be faded out at message processor refactory")]
-        public DownlinkPktFwdMessage(string data, string datr = "SF12BW125", uint rfch = 0, double freq = 869.525000, long tmst = 0)
-        {
-            var byteData = Convert.FromBase64String(data);
-            Txpk = new Txpk()
-            {
-                Imme = tmst == 0,
-                Tmst = tmst,
-                Data = data,
-                Size = (uint)byteData.Length,
-                Freq = freq,
-                Rfch = rfch,
-                Modu = "LORA",
-                Datr = datr,
-                Codr = "4/5",
-                // TODO put 14 for EU
-                Powe = 14,
-                Ipol = true
-            };
         }
 
         /// <summary>
@@ -72,20 +51,6 @@ namespace LoRaTools.LoRaPhysical
 
             DevEui = devEui;
             RxDelay = rxDelay;
-        }
-
-        [Obsolete("ad")]
-        [JsonIgnore]
-        public override PktFwdMessageAdapter PktFwdMessageAdapter
-        {
-            get
-            {
-                var pktFwdMessageAdapter = new PktFwdMessageAdapter
-                {
-                    Txpk = Txpk
-                };
-                return pktFwdMessageAdapter;
-            }
         }
     }
 }
