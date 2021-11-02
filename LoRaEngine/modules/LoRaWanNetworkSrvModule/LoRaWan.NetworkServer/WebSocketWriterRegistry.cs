@@ -46,7 +46,17 @@ namespace LoRaWan.NetworkServer
         public IWebSocketWriter<TMessage>? Deregister(TKey key)
         {
             lock (this.sockets)
-                return this.sockets.TryGetValue(key, out var currentSocket) ? currentSocket.Object : null;
+            {
+                if (this.sockets.TryGetValue(key, out var currentSocket))
+                {
+                    _ = this.sockets.Remove(key);
+                    return currentSocket.Object;
+                }
+                else
+                {
+                    return null;
+                };
+            }
         }
 
         public async ValueTask SendAsync(TKey key, TMessage message, CancellationToken cancellationToken)
@@ -100,8 +110,8 @@ namespace LoRaWan.NetworkServer
             lock (this.sockets)
             {
                 var keys = this.sockets.Where(e => e.Value.Object.IsClosed)
-                               .Select(e => e.Key)
-                               .ToArray();
+                                       .Select(e => e.Key)
+                                       .ToArray();
 
                 foreach (var key in keys)
                     _ = this.sockets.Remove(key);
