@@ -93,10 +93,15 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             _ = this.socketMock.Setup(ws => ws.CloseAsync(WebSocketCloseStatus.NormalClosure, It.IsAny<string>(), It.IsAny<CancellationToken>()))
                                .Throws(new OperationCanceledException("websocketexception", new WebSocketException(WebSocketError.ConnectionClosedPrematurely)));
 
-            // act + assert (does not throw)
-            _ = await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(this.httpContextMock.Object,
-                                                                               delegate { return Task.CompletedTask; },
-                                                                               CancellationToken.None);
+            // act
+            var ex =
+                await Record.ExceptionAsync(() =>
+                    this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(this.httpContextMock.Object,
+                                                                             delegate { return Task.CompletedTask; },
+                                                                             CancellationToken.None));
+
+            // assert
+            Assert.Null(ex);
         }
 
         [Fact]
