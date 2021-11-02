@@ -23,7 +23,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public void Register_Idempotency()
+        public void Register_Is_Idempotent()
         {
             // arrange
             var writer = new Mock<IWebSocketWriter<string>>();
@@ -38,27 +38,27 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public async Task Register_Should_Overwrite_Stale_Writer()
+        public async Task Register_Overwrites_Previous_Writer_When_Given_New_Writer()
         {
             // arrange
             const string key = "foo";
-            var staleWriter = new Mock<IWebSocketWriter<string>>();
-            var staleHandler = this.sut.Register(key, staleWriter.Object);
+            var oldWriter = new Mock<IWebSocketWriter<string>>();
+            var oldHandler = this.sut.Register(key, oldWriter.Object);
             var newWriter = new Mock<IWebSocketWriter<string>>();
 
             // act
             var newHandler = this.sut.Register(key, newWriter.Object);
 
             // assert
-            Assert.NotSame(staleHandler, newHandler);
+            Assert.NotSame(oldHandler, newHandler);
             // new handler/writer is used for sending
             await this.sut.SendAsync(key, "bar", CancellationToken.None);
-            staleWriter.Verify(w => w.SendAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+            oldWriter.Verify(w => w.SendAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
             newWriter.Verify(w => w.SendAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
-        public async Task SendAsync_Success_When_Writer_Registered()
+        public async Task SendAsync_Succeeds_When_Writer_Is_Registered()
         {
             // arrange
             using var cts = new CancellationTokenSource();
@@ -74,13 +74,13 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public async Task SendAsync_Throws_When_Writer_Not_Registered()
+        public async Task SendAsync_Throws_When_Writer_Is_Not_Registered()
         {
             await CustomAssert.WriterIsNotRegistered(this.sut, "foo");
         }
 
         [Fact]
-        public async Task SendAsync_Deregisters_When_ConnectionClosedPrematurely()
+        public async Task SendAsync_Deregisters_When_Connection_Is_Closed_Prematurely()
         {
             // arrange
             const string key = "foo";
@@ -96,7 +96,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public async Task Deregister_Success_Case()
+        public async Task Deregister_Removes_And_Returns_Registered_Writer()
         {
             // arrange
             const string key = "foo";
@@ -111,7 +111,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public async Task Deregister_Idempotency()
+        public async Task Deregister_Is_Idempotent()
         {
             // arrange
             const string key = "foo";
@@ -128,20 +128,15 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public async Task Prune_Should_Only_Remove_Closed_Entries()
+        public async Task Prune_Removes_Closed_Entries_Only()
         {
             // arrange
-            Mock<IWebSocketWriter<string>> RegisterWebSocketWriterMock(string key, bool isClosed)
-            {
-                var result = CreateAndRegisterWebSocketWriterMock(key);
-                result.SetupGet(w => w.IsClosed).Returns(isClosed);
-                return result;
-            }
-
             const string staleKey = "foo";
-            var staleWebSocketWriter = RegisterWebSocketWriterMock(staleKey, isClosed: true);
+            var staleWebSocketWriter = CreateAndRegisterWebSocketWriterMock(staleKey);
+            staleWebSocketWriter.SetupGet(w => w.IsClosed).Returns(true);
             const string activeKey = "bar";
-            var activeWebSocketWriter = RegisterWebSocketWriterMock(activeKey, isClosed: false);
+            var activeWebSocketWriter = CreateAndRegisterWebSocketWriterMock(activeKey);
+            activeWebSocketWriter.SetupGet(w => w.IsClosed).Returns(false);
 
             // act
             var result = this.sut.Prune();
@@ -154,7 +149,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public async Task RunPruner_SuccessCase()
+        public async Task RunPrunerAsync_Prunes_Until_Canceled()
         {
             // arrange
             Mock<IWebSocketWriter<string>> CreateWebSocketWriterMock(string key, bool firstIsClosed, bool secondIsClosed)
@@ -165,9 +160,9 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             }
 
             const string staleKey = "foo";
-            var staleWebSocketWriter = CreateWebSocketWriterMock(staleKey, true, true);
+            _ = CreateWebSocketWriterMock(staleKey, true, true);
             const string transitioningKey = "bar";
-            var transitioningWebSocketWriter = CreateWebSocketWriterMock(transitioningKey, false, true);
+            _ = CreateWebSocketWriterMock(transitioningKey, false, true);
             const string activeKey = "baz";
             var activeWebSocketWriter = CreateWebSocketWriterMock(activeKey, false, false);
             using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
