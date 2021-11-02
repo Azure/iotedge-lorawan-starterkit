@@ -70,7 +70,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public async Task ProcessIncomingRequestAsync_ShouldNotProcess_NonWebsocketRequests()
         {
             // mocking a non-websocket request
-            var webSocketsManager = SetupWebSocketConnection(isWebSocketRequest: false);
+            _ = SetupWebSocketConnection(isWebSocketRequest: false);
 
             // providing a mocked HttpResponse so that it's possible to verify stubbed properties
             InitializeHttpContextMockWithHttpResponse();
@@ -94,9 +94,9 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                                .Throws(new OperationCanceledException("websocketexception", new WebSocketException(WebSocketError.ConnectionClosedPrematurely)));
 
             // act + assert (does not throw)
-            var result = await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(this.httpContextMock.Object,
-                                                                                        delegate { return Task.CompletedTask; },
-                                                                                        CancellationToken.None);
+            _ = await this.lnsMessageProcessorMock.ProcessIncomingRequestAsync(this.httpContextMock.Object,
+                                                                               delegate { return Task.CompletedTask; },
+                                                                               CancellationToken.None);
         }
 
         [Fact]
