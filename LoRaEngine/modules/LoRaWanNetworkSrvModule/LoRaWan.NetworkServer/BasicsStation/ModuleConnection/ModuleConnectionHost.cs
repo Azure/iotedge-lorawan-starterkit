@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Logging;
     using System;
+    using System.Configuration;
     using System.Net;
     using System.Text.Json;
     using System.Threading;
@@ -56,7 +57,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         }
 
         internal async Task InitModuleAsync(CancellationToken cancellationToken)
-        { 
+        {
             // Obsolete, this should be removed as part of #456
             Logger.Init(new LoggerConfiguration
             {
@@ -93,7 +94,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             if (!TryUpdateConfigurationWithDesiredProperties(moduleTwinCollection))
             {
                 Logger.Log($"The initial configuration of the facade function could not be found in the desired properties", LogLevel.Error);
-                throw new ArgumentException("Could not get Facade information from module twin");
+                throw new ConfigurationErrorsException("Could not get Facade information from module twin");
             }
 
             await this.loRaModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
@@ -103,6 +104,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
         internal async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
         {
+            if (methodRequest == null) throw new ArgumentNullException(nameof(methodRequest));
+
             if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
             {
                 return await ClearCache();
@@ -112,7 +115,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 return await SendCloudToDeviceMessageAsync(methodRequest);
             }
 
-            Logger.Log($"Unknown direct method called: {methodRequest?.Name}", LogLevel.Error);
+            Logger.Log($"Unknown direct method called: {methodRequest.Name}", LogLevel.Error);
 
             return new MethodResponse((int)HttpStatusCode.NotFound);
         }
@@ -129,7 +132,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 }
                 catch (JsonException ex)
                 {
-                    Logger.Log($"Impossible to parse Json for c2d message {c2d}, error: {ex}", LogLevel.Error);
+                    Logger.Log($"Impossible to parse Json for c2d message for device {c2d?.DevEUI}, error: {ex}", LogLevel.Error);
                     return new MethodResponse((int)HttpStatusCode.BadRequest);
                 }
 
@@ -164,7 +167,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             try
             {
                 _ = TryUpdateConfigurationWithDesiredProperties(desiredProperties);
-            } catch (ArgumentOutOfRangeException ex)
+            } catch (ConfigurationErrorsException ex)
             {
                 Logger.Log($"A desired properties update was detected but the parameters are out of range with exception :  {ex}", LogLevel.Warning);
             }
@@ -191,7 +194,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 else
                 {
                     Logger.Log("The Facade server Url present in device desired properties was malformed.", LogLevel.Error);
-                    throw new ArgumentOutOfRangeException(nameof(desiredProperties));
+                    throw new ConfigurationErrorsException(nameof(desiredProperties));
                 }
             }
 

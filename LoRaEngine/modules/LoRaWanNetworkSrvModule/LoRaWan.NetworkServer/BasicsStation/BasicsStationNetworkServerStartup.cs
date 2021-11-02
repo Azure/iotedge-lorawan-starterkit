@@ -74,7 +74,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             // Manually set the class C as otherwise the DI fails.
             var classCMessageSender = app.ApplicationServices.GetService<IClassCDeviceMessageSender>();
-            var dataHandlerImplementation = app.ApplicationServices.GetService<DefaultLoRaDataRequestHandler>();
+            var dataHandlerImplementation = app.ApplicationServices.GetService<ILoRaDataRequestHandler>();
             dataHandlerImplementation.SetClassCMessageSender(classCMessageSender);
 
 

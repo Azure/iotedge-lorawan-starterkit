@@ -10,6 +10,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using Microsoft.Azure.Devices.Shared;
     using Moq;
     using System;
+    using System.Configuration;
     using System.Net;
     using System.Text;
     using System.Threading;
@@ -28,19 +29,9 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
 
             // ASSERT
-            Assert.ThrowsAsync<ArgumentNullException>(async () =>
-               {
-                   await using var _ = new ModuleConnectionHost(null, classCMessageSender, loRaDeviceRegistry);
-               });
-            Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            {
-                await using var _ = new ModuleConnectionHost(networkServerConfiguration, null, loRaDeviceRegistry);
-            });
-            Assert.ThrowsAsync<ArgumentNullException>(async () =>
-            {
-                await using var _ = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, null);
-            });
-
+            Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(null, classCMessageSender, loRaDeviceRegistry));
+            Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, null, loRaDeviceRegistry));
+            Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, null));
         }
 
         [Fact]
@@ -132,7 +123,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new Twin(twinProperty));
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, loRaDeviceRegistry.Object, loRaModuleClient.Object);
-            await Assert.ThrowsAsync<ArgumentException>(() => moduleClient.InitModuleAsync(CancellationToken.None));
+            await Assert.ThrowsAsync<ConfigurationErrorsException>(() => moduleClient.InitModuleAsync(CancellationToken.None));
         }
 
         [Fact]
@@ -145,8 +136,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             loRaModuleClient.Setup(x => x.DisposeAsync());
             // Change the iot edge timeout.
             networkServerConfiguration.IoTEdgeTimeout = 5;
-            var facadeUri = this.faker.Internet.Url();
-            var facadeCode = this.faker.Internet.Password();
 
             loRaModuleClient.Setup(x => x.GetTwinAsync(It.IsAny<CancellationToken>())).Throws<IotHubCommunicationException>();
 
@@ -166,8 +155,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             loRaModuleClient.Setup(x => x.DisposeAsync());
             // Change the iot edge timeout.
             networkServerConfiguration.IoTEdgeTimeout = 5;
-            var facadeUri = this.faker.Internet.Url();
-            var facadeCode = this.faker.Internet.Password();
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, loRaDeviceRegistry.Object, loRaModuleClient.Object);
             await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceClearCache), null);
@@ -185,15 +172,29 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             loRaModuleClient.Setup(x => x.DisposeAsync());
             // Change the iot edge timeout.
             networkServerConfiguration.IoTEdgeTimeout = 5;
-            var facadeUri = this.faker.Internet.Url();
-            var facadeCode = this.faker.Internet.Password();
-
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, loRaDeviceRegistry.Object, loRaModuleClient.Object);
             var c2d = "{\"test\":\"asd\"}";
 
             var response = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(c2d), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)), null);
             Assert.Equal((int)HttpStatusCode.OK, response.Status);
+        }
+
+        [Fact]
+        public async Task OnDirectMethodCall_When_Null_Or_Empty_MethodName_Should_Throw()
+        {
+            var networkServerConfiguration = new NetworkServerConfiguration();
+            var classCMessageSender = new Mock<IClassCDeviceMessageSender>(MockBehavior.Strict);
+            classCMessageSender.Setup(x => x.SendAsync(It.IsAny<ReceivedLoRaCloudToDeviceMessage>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+            var loRaDeviceRegistry = new Mock<ILoRaDeviceRegistry>(MockBehavior.Strict);
+            var loRaModuleClient = new Mock<ILoraModuleClient>();
+            loRaModuleClient.Setup(x => x.DisposeAsync());
+            // Change the iot edge timeout.
+            networkServerConfiguration.IoTEdgeTimeout = 5;
+
+            await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, loRaDeviceRegistry.Object, loRaModuleClient.Object);
+
+            await Assert.ThrowsAnyAsync<ArgumentNullException>(async () => await moduleClient.OnDirectMethodCalled(null, null));
         }
 
         [Fact]
@@ -207,8 +208,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             loRaModuleClient.Setup(x => x.DisposeAsync());
             // Change the iot edge timeout.
             networkServerConfiguration.IoTEdgeTimeout = 5;
-            var facadeUri = this.faker.Internet.Url();
-            var facadeCode = this.faker.Internet.Password();
 
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, loRaDeviceRegistry.Object, loRaModuleClient.Object);
             var c2d = "{\"test\":\"asd\"}";
@@ -228,8 +227,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             loRaModuleClient.Setup(x => x.DisposeAsync());
             // Change the iot edge timeout.
             networkServerConfiguration.IoTEdgeTimeout = 5;
-            var facadeUri = this.faker.Internet.Url();
-            var facadeCode = this.faker.Internet.Password();
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, loRaDeviceRegistry.Object, loRaModuleClient.Object);
 
             var response = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDecoderElementName, null), null);
@@ -250,8 +247,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             loRaModuleClient.Setup(x => x.DisposeAsync());
             // Change the iot edge timeout.
             networkServerConfiguration.IoTEdgeTimeout = 5;
-            var facadeUri = this.faker.Internet.Url();
-            var facadeCode = this.faker.Internet.Password();
             await using var moduleClient = new ModuleConnectionHost(networkServerConfiguration, classCMessageSender.Object, loRaDeviceRegistry.Object, loRaModuleClient.Object);
 
             var response = await moduleClient.OnDirectMethodCalled(new Microsoft.Azure.Devices.Client.MethodRequest(Constants.CloudToDeviceDecoderElementName, Encoding.UTF8.GetBytes(faker.Random.String2(10))), null);
