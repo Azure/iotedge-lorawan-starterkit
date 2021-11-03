@@ -76,6 +76,14 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Fact]
+        public void AsByteArray_Returns_Expected_ByteArray()
+        {
+            var expectedBytes = new byte[] { 120, 86, 52, 18 };
+            var actualBytes = this.subject.AsByteArray();
+            Assert.Equal(expectedBytes, actualBytes);
+        }
+
+        [Fact]
         public void Compute()
         {
             var joinEui = JoinEui.Parse("00-05-10-00-00-00-00-04");
