@@ -9,7 +9,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public class LinkedTimeoutCancellationTokenTests
     {
-        [Fact]
+        /*[Fact]
         public void Equality()
         {
             // arrange
@@ -24,7 +24,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.NotEqual(new TimeoutLinkedCancellationToken(ts1, cts.Token), new TimeoutLinkedCancellationToken(ts2, cts.Token));
             Assert.False(new TimeoutLinkedCancellationToken(ts1, cts.Token) == new TimeoutLinkedCancellationToken(ts2, cts.Token));
             Assert.True(new TimeoutLinkedCancellationToken(ts1, cts.Token) != new TimeoutLinkedCancellationToken(ts2, cts.Token));
-        }
+        }*/
 
         [Theory]
         [InlineData(null            , false, false)]
