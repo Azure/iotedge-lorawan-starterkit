@@ -204,7 +204,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider);
 
-            Assert.False(await target.SendAsync(c2dToDeviceMessage));
+            _ = await Assert.ThrowsAsync<ArgumentNullException>(() => target.SendAsync(c2dToDeviceMessage));
 
             this.packetForwarder.VerifyAll();
             this.deviceApi.VerifyAll();
@@ -246,7 +246,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 this.packetForwarder.Object,
                 this.frameCounterStrategyProvider);
 
-            Assert.False(await target.SendAsync(c2dToDeviceMessage));
+            _ = await Assert.ThrowsAsync<TimeoutException>(() => target.SendAsync(c2dToDeviceMessage));
 
             this.packetForwarder.VerifyAll();
             this.deviceApi.VerifyAll();

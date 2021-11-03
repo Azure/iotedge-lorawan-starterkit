@@ -320,14 +320,21 @@ namespace LoRaWan.NetworkServer
 
             using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
 
-            if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
+            try
             {
-                return new MethodResponse((int)HttpStatusCode.OK);
+                if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
+                {
+                    return new MethodResponse((int)HttpStatusCode.OK);
+                }
             }
-            else
+#pragma warning disable CA1031 // Do not catch general exception types. To be revisited as part of #565
+            catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
-                return new MethodResponse((int)HttpStatusCode.BadRequest);
+                Logger.Log(c2d.DevEUI, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error);
             }
+
+            return new MethodResponse((int)HttpStatusCode.BadRequest);
         }
 
         private Task<MethodResponse> ClearCache()

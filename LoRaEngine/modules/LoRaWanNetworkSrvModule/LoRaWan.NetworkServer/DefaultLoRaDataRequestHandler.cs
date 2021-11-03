@@ -466,8 +466,19 @@ namespace LoRaWan.NetworkServer
         {
             if (this.classCDeviceMessageSender != null)
             {
-                // Exception is logged as part of DefaultClassCDevicesMessageSender.SendAsync.
-                _ = Task.Run(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage));
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        _ = await this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage);
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types. To be revisited as part of #565
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        Logger.Log(cloudToDeviceMessage.DevEUI, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error);
+                    }
+                });
             }
         }
 
