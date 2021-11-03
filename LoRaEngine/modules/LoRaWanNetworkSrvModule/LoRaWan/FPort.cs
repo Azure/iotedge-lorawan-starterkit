@@ -20,10 +20,11 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is FramePort other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public override string ToString() => this.value.ToString("X2", CultureInfo.InvariantCulture);
-
         public static bool operator ==(FramePort left, FramePort right) => left.Equals(right);
         public static bool operator !=(FramePort left, FramePort right) => !left.Equals(right);
+
+        public bool IsMacCommandFPort => this.value == 0;
+        public bool IsMacLayerTestFPort => this.value == 224;
 
         public Span<byte> Write(Span<byte> buffer)
         {
