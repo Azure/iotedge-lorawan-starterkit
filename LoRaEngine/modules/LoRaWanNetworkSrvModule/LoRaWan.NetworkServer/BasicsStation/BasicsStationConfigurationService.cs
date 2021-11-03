@@ -58,11 +58,13 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         private async Task<string> GetRouterConfigMessageInternalAsync(StationEui stationEui)
         {
-            void Log(string message) => Logger.Log(stationEui.ToString(), message, LogLevel.Error);
-
             var queryResult = await this.loRaDeviceApiService.SearchByDevEUIAsync(stationEui.ToString());
             if (queryResult.Count != 1)
-                Log($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.");
+            {
+                throw new LoRaProcessingException($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.",
+                                                  LoRaProcessingErrorCode.InvalidDeviceConfiguration);
+            }
+
             var info = queryResult.Single();
             using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
             var twin = await client.GetTwinAsync();
@@ -74,8 +76,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             }
             catch (ArgumentOutOfRangeException)
             {
-                Log($"Property '{RouterConfigPropertyName}' was not present in device twin.");
-                throw;
+                throw new LoRaProcessingException($"Property '{RouterConfigPropertyName}' was not present in device twin.", LoRaProcessingErrorCode.InvalidDeviceConfiguration);
             }
         }
     }

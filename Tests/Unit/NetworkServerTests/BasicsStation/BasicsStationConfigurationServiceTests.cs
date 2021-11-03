@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
     using LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers;
-    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Microsoft.Extensions.Caching.Memory;
     using Moq;
@@ -65,7 +64,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
                 SetupTwinResponse(this.stationEui, primaryKey);
 
                 // act + assert
-                await Assert.ThrowsAsync<InvalidOperationException>(() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
+                var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
+                Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, ex.ErrorCode);
             }
 
             [Fact]
@@ -87,6 +87,19 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
                 this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByDevEUIAsync(It.IsAny<string>()), Times.Once);
                 foreach (var r in result)
                     Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), r);
+            }
+
+            [Fact]
+            public async Task Rethrows_When_Router_Config_Not_Present()
+            {
+                // arrange
+                const string primaryKey = "foo";
+                SetupDeviceKeyLookup(this.stationEui, "foo");
+                SetupTwinResponse(this.stationEui, primaryKey, @$"{{ ""foo"": ""bar"" }}");
+
+                // act + assert
+                var ex = await Assert.ThrowsAsync<LoRaProcessingException>(() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
+                Assert.Equal(LoRaProcessingErrorCode.InvalidDeviceConfiguration, ex.ErrorCode);
             }
 
             [Fact]

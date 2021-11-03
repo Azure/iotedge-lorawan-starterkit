@@ -26,6 +26,12 @@ namespace LoRaWan
             ErrorCode = errorCode;
         }
 
+        public LoRaProcessingException(string message, LoRaProcessingErrorCode errorCode)
+            : base(message)
+        {
+            ErrorCode = errorCode;
+        }
+
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -48,6 +54,7 @@ namespace LoRaWan
     public enum LoRaProcessingErrorCode
     {
         Default,
-        TwinFetchFailed
+        TwinFetchFailed,
+        InvalidDeviceConfiguration
     }
 }
