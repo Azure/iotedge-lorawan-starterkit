@@ -29,9 +29,13 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var loRaDeviceRegistry = Mock.Of<ILoRaDeviceRegistry>();
 
             // ASSERT
-            Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(null, classCMessageSender, loRaDeviceRegistry));
-            Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, null, loRaDeviceRegistry));
-            Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, null));
+            ArgumentNullException ex;
+            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(null, classCMessageSender, loRaDeviceRegistry));
+            Assert.Equal("networkServerConfiguration", ex.ParamName);
+            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, null, loRaDeviceRegistry));
+            Assert.Equal("defaultClassCDevicesMessageSender", ex.ParamName);
+            ex = Assert.Throws<ArgumentNullException>(() => new ModuleConnectionHost(networkServerConfiguration, classCMessageSender, null));
+            Assert.Equal("loRaDeviceRegistry", ex.ParamName);
         }
 
         [Fact]
@@ -56,10 +60,9 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Theory]
-        [InlineData("{\"FacadeServerUrl\": \"url2\", \"FacadeAuthCode\":\"authCode\"}")]// not a url
-        [InlineData("{\"FacadeAuthCode\":\"authCode\"}")] // no Url
-        [InlineData("{\"FacadeServerUrl\": \"\", \"FacadeAuthCode\":\"authCode\"}")]// empty url
-
+        [InlineData("{ FacadeServerUrl: 'url2', FacadeAuthCode: 'authCode' }")]// not a url
+        [InlineData("{ FacadeAuthCode: 'authCode' }")] // no Url
+        [InlineData("{ FacadeServerUrl: '', FacadeAuthCode: 'authCode' }")]// empty url
         public async Task On_Desired_Properties_Incorrect_Update_Should_Not_Update(string twinUpdate)
         {
             var facadeUri = faker.Internet.Url();
