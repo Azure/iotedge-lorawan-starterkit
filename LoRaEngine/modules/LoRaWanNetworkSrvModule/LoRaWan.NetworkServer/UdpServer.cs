@@ -293,47 +293,44 @@ namespace LoRaWan.NetworkServer
 
         private async Task<MethodResponse> OnDirectMethodCalled(MethodRequest methodRequest, object userContext)
         {
-            if (string.Equals("clearcache", methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+            string devEui = null;
+
+            try
             {
-                return await ClearCache();
+                if (string.Equals("clearcache", methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return await ClearCache();
+                }
+                else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (this.classCMessageSender == null)
+                    {
+                        return new MethodResponse((int)HttpStatusCode.NotFound);
+                    }
+
+                    var c2d = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
+                    devEui = c2d.DevEUI;
+                    Logger.Log(devEui, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
+
+                    using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
+
+                    if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
+                    {
+                        return new MethodResponse((int)HttpStatusCode.OK);
+                    }
+
+                    return new MethodResponse((int)HttpStatusCode.BadRequest);
+                }
             }
-            else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex)
             {
-                return await SendCloudToDeviceMessageAsync(methodRequest);
+                Logger.Log(devEui, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error);
+                throw;
             }
 
             Logger.Log($"Unknown direct method called: {methodRequest?.Name}", LogLevel.Error);
 
             return new MethodResponse(404);
-        }
-
-        private async Task<MethodResponse> SendCloudToDeviceMessageAsync(MethodRequest methodRequest)
-        {
-            if (this.classCMessageSender == null)
-            {
-                return new MethodResponse((int)HttpStatusCode.NotFound);
-            }
-
-            var c2d = JsonConvert.DeserializeObject<ReceivedLoRaCloudToDeviceMessage>(methodRequest.DataAsJson);
-            Logger.Log(c2d.DevEUI, $"received cloud to device message from direct method: {methodRequest.DataAsJson}", LogLevel.Debug);
-
-            using var cts = methodRequest.ResponseTimeout.HasValue ? new CancellationTokenSource(methodRequest.ResponseTimeout.Value) : null;
-
-            try
-            {
-                if (await this.classCMessageSender.SendAsync(c2d, cts?.Token ?? CancellationToken.None))
-                {
-                    return new MethodResponse((int)HttpStatusCode.OK);
-                }
-            }
-#pragma warning disable CA1031 // Do not catch general exception types. To be revisited as part of #565
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                Logger.Log(c2d.DevEUI, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error);
-            }
-
-            return new MethodResponse((int)HttpStatusCode.BadRequest);
         }
 
         private Task<MethodResponse> ClearCache()
@@ -365,12 +362,13 @@ namespace LoRaWan.NetworkServer
                 {
                     Logger.Log($"Error when receiving desired property: {exception}", LogLevel.Error);
                 }
+
+                throw;
             }
-#pragma warning disable CA1031 // Do not catch general exception types. Recommended by doc.
             catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
             {
                 Logger.Log($"Error when receiving desired property: {ex.Message}", LogLevel.Error);
+                throw;
             }
 
             return Task.CompletedTask;
