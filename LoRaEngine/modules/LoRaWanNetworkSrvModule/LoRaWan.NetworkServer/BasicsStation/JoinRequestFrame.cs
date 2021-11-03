@@ -12,7 +12,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
             DevEui = devEui;
             DevNonce = devNonce;
             Mic = mic;
-            Mic = mic;
             MHdr = mHdr;
             RadioMetadata = radioMetadata;
         }
