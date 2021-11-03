@@ -50,7 +50,7 @@ namespace LoRaWan.NetworkServer
         public double? Rx2Frequency { get; set; }
 
         /// <summary>
-        /// Gets or sets the IoT Edge timeout, 0 keeps default value,.
+        /// Gets or sets the IoT Edge timeout in milliseconds, 0 keeps default value,.
         /// </summary>
         public uint IoTEdgeTimeout { get; set; }
 
