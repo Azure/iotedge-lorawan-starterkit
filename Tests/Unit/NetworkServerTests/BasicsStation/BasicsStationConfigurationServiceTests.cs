@@ -68,41 +68,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
                 await Assert.ThrowsAsync<InvalidOperationException>(() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
             }
 
-            /// <summary>
-            /// This test should become useful with https://github.com/Azure/iotedge-lorawan-starterkit/issues/565.
-            /// </summary>
-            [Theory]
-            [InlineData(typeof(IotHubException))]
-            [InlineData(typeof(IotHubCommunicationException))]
-            public async Task Rethrows_Specific_Error_Cases(Type type)
-            {
-                // arrange
-                const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, "foo");
-
-                var ex = (Exception)Activator.CreateInstance(type);
-                this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(stationEui.ToString(), primaryKey))
-                                          .Throws(ex);
-
-                // act + assert
-                await Assert.ThrowsAsync(type, () => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
-            }
-
-            /// <summary>
-            /// This test should become useful with https://github.com/Azure/iotedge-lorawan-starterkit/issues/565.
-            /// </summary>
-            [Fact]
-            public async Task Rethrows_When_Router_Config_Not_Present()
-            {
-                // arrange
-                const string primaryKey = "foo";
-                SetupDeviceKeyLookup(this.stationEui, "foo");
-                SetupTwinResponse(this.stationEui, primaryKey, @$"{{ ""foo"": ""bar"" }}");
-
-                // act + assert
-                await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => this.sut.GetRouterConfigMessageAsync(this.stationEui, CancellationToken.None));
-            }
-
             [Fact]
             public async Task Caches_And_Handles_Concurrent_Access()
             {

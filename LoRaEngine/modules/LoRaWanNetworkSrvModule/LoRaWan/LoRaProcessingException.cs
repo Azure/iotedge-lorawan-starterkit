@@ -47,6 +47,7 @@ namespace LoRaWan
 
     public enum LoRaProcessingErrorCode
     {
-        Default
+        Default,
+        TwinFetchFailed
     }
 }

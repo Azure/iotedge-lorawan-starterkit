@@ -8,7 +8,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
-    using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
 
@@ -62,26 +61,16 @@ namespace LoRaWan.NetworkServer.BasicsStation
             void Log(string message) => Logger.Log(stationEui.ToString(), message, LogLevel.Error);
 
             var queryResult = await this.loRaDeviceApiService.SearchByDevEUIAsync(stationEui.ToString());
+            if (queryResult.Count != 1)
+                Log($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.");
+            var info = queryResult.Single();
+            using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
+            var twin = await client.GetTwinAsync();
 
             try
             {
-                if (queryResult.Count != 1)
-                    Log($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.");
-                var info = queryResult.Single();
-                using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
-                var twin = await client.GetTwinAsync();
                 var configJson = ((object)twin.Properties.Desired[RouterConfigPropertyName]).ToString();
                 return LnsStationConfiguration.GetConfiguration(configJson);
-            }
-            catch (IotHubCommunicationException ex)
-            {
-                Log($"Error while communicating with IoT Hub during station discovery. {ex.Message}");
-                throw;
-            }
-            catch (IotHubException ex)
-            {
-                Log($"An error occured in IoT Hub during station discovery. {ex.Message}");
-                throw;
             }
             catch (ArgumentOutOfRangeException)
             {

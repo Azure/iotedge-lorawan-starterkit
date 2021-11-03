@@ -210,21 +210,7 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         public async Task<bool> InitializeAsync()
         {
-            Twin twin;
-            try
-            {
-                twin = await this.connectionManager.GetClient(this)?.GetTwinAsync();
-            }
-            catch (IotHubCommunicationException ex)
-            {
-                Logger.Log(this.DevEUI, $"Error while communication with IoT Hub during device initialization. {ex.Message}", LogLevel.Error);
-                throw;
-            }
-            catch (IotHubException ex)
-            {
-                Logger.Log(this.DevEUI, $"An error occured in IoT Hub during device initialization. {ex.Message}", LogLevel.Error);
-                throw;
-            }
+            var twin = await this.connectionManager.GetClient(this)?.GetTwinAsync();
 
             if (twin != null)
             {
