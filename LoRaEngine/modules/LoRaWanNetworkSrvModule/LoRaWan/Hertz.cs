@@ -25,7 +25,7 @@ namespace LoRaWan
         public double Mega => this.value / 1e6;
         public double Giga => this.value / 1e9;
 
-        public static Hertz FromMega(double value) => new Hertz((ulong)(value * 1e6));
+        public static Hertz FromMega(double value) => new Hertz(checked((ulong)(value * 1e6)));
 
         public bool Equals(Hertz other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is Hertz other && Equals(other);
