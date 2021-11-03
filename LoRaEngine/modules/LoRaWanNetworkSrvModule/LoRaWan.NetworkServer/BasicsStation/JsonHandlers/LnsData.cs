@@ -10,19 +10,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
     public static class LnsData
     {
         internal static readonly IJsonReader<LnsMessageType> MessageTypeReader =
-            JsonReader.Object(
-                JsonReader.Property("msgtype",
-                    from s in JsonReader.String()
-                    select s switch
-                    {
-                        "version"       => LnsMessageType.Version,
-                        "router_config" => LnsMessageType.RouterConfig,
-                        "jreq"          => LnsMessageType.JoinRequest,
-                        "updf"          => LnsMessageType.UplinkDataFrame,
-                        "dntxed"        => LnsMessageType.TransmitConfirmation,
-                        "dnmsg"         => LnsMessageType.DownlinkMessage,
-                        var type => throw new JsonException("Invalid or unsupported message type: " + type)
-                    }));
+            JsonReader.Object(MessageTypeProperty());
+
+        internal static IJsonProperty<LnsMessageType> MessageTypeProperty(LnsMessageType? expectedType = null) =>
+            JsonReader.Property("msgtype",
+                                from t in JsonReader.String()
+                                select LnsMessageTypeExtensions.ParseAndValidate(t, expectedType));
 
         /*
             {
@@ -58,7 +51,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                   }
                */
 
-        private static class RadioMetadataProperties
+        internal static class RadioMetadataProperties
         {
             public static readonly IJsonProperty<DataRate> DataRate =
                 JsonReader.Property("DR", from n in JsonReader.Byte() select new DataRate(n));
@@ -92,11 +85,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             }
          */
 
-        private static IJsonProperty<LnsMessageType> MessageTypeProperty(LnsMessageType expectedType) =>
-            JsonReader.Property("msgtype",
-                                from t in MessageTypeReader
-                                select t == expectedType ? t : throw new JsonException("Invalid or unsupported message type: " + t));
-
         internal static readonly IJsonReader<UpstreamDataFrame> UpstreamDataFrameReader =
             JsonReader.Object(MessageTypeProperty(LnsMessageType.UplinkDataFrame),
                               JsonReader.Property("MHdr", JsonReader.Byte()),
@@ -126,12 +114,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             }
          */
 
-        private static IJsonProperty<T> EuiProperty<T>(string name, Func<ulong, T> factory) =>
+        private static IJsonProperty<T> EuiProperty<T>(string name, Func<ulong, T> factory, char separator = '-') =>
             JsonReader.Property(name,
-                from s in JsonReader.String()
-                select Hexadecimal.TryParse(s, out var eui, '-')
-                     ? factory(eui)
-                     : throw new JsonException($"Could not parse {name} as {typeof(T)}."));
+                                from s in JsonReader.String()
+                                select Hexadecimal.TryParse(s, out var eui, separator)
+                                     ? factory(eui)
+                                     : throw new JsonException($"Could not parse {name} as {typeof(T)}."));
 
         internal static readonly IJsonReader<JoinRequestFrame> JoinRequestFrameReader =
             JsonReader.Object(MessageTypeProperty(LnsMessageType.JoinRequest),
