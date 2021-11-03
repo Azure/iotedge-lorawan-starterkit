@@ -108,12 +108,13 @@ namespace LoRaWan.NetworkServer
         {
             if (!this.isSendQueueProcessorRunning.ReadDirty())
                 throw new InvalidOperationException();
-            using var linkedTimeoutCancellationToken = new TimeoutLinkedCancellationToken(this.sendTimeout, cancellationToken);
-            cancellationToken = linkedTimeoutCancellationToken.Token;
+            using var linkedCancellationTokens = cancellationToken.LinkWithTimeout(this.sendTimeout);
+            cancellationToken = linkedCancellationTokens;
             var output = new Output(message, cancellationToken);
             await this.channel.Writer.WriteAsync(output, cancellationToken).ConfigureAwait(false);
-            using var registration = cancellationToken.Register(static output =>
-                _ = ((Output?)output)!.TaskCompletionSource.TrySetCanceled(), output, useSynchronizationContext: false);
+            using var registration =
+                cancellationToken.Register(static output => _ = ((Output?)output)!.TaskCompletionSource.TrySetCanceled(),
+                                           output, useSynchronizationContext: false);
             _ = await output.TaskCompletionSource.Task.ConfigureAwait(false);
         }
     }
