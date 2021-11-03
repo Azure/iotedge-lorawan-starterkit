@@ -16,6 +16,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
     using static Bandwidth;
     using static SpreadingFactor;
     using static NetworkServer.BasicsStation.RouterConfigStationFlags;
+    using LoRaTools.Regions;
 
     public class LnsStationConfigurationTests
     {
@@ -455,6 +456,27 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                                  Serialize((flags & NoClearChannelAssessment) == NoClearChannelAssessment),
                                  Serialize((flags & NoDutyCycle) == NoDutyCycle),
                                  Serialize((flags & NoDwellTimeLimitations) == NoDwellTimeLimitations));
+        }
+
+        [Fact]
+        public void RegionConfigurationConverter_Succeeds()
+        {
+            var region = LnsStationConfiguration.GetRegion(ValidStationConfiguration);
+            Assert.Equal(RegionManager.EU868, region);
+        }
+
+        [Fact]
+        public void RegionConfigurationConverter_Throws_OnEmptyRegion()
+        {
+            var config = JsonUtil.Strictify(@"{'region':''}");
+            Assert.Throws<JsonException>(() => _ = LnsStationConfiguration.GetRegion(config));
+        }
+
+        [Fact]
+        public void RegionConfigurationConverter_Throws_OnNotSetRegion()
+        {
+            var config = JsonUtil.Strictify(@"{'region':'NotSet'}");
+            Assert.Throws<NotSupportedException>(() => _ = LnsStationConfiguration.GetRegion(config));
         }
     }
 }

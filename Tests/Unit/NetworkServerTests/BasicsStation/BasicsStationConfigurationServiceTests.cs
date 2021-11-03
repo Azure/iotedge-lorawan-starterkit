@@ -3,6 +3,7 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
 {
+    using LoRaTools.Regions;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using LoRaWan.Tests.Common;
@@ -35,6 +36,44 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
             this.sut = new BasicsStationConfigurationService(this.loRaDeviceApiServiceMock.Object,
                                                              this.loRaDeviceFactoryMock.Object,
                                                              this.memoryCache);
+        }
+
+
+        private void SetupDeviceKeyLookup(StationEui stationEui, string primaryKey) =>
+            SetupDeviceKeyLookup(stationEui, new[] { new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey } });
+
+        private void SetupDeviceKeyLookup(StationEui stationEui, params IoTHubDeviceInfo[] ioTHubDeviceInfos) =>
+            loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByDevEUIAsync(stationEui.ToString()))
+                                    .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
+
+        private void SetupTwinResponse(StationEui stationEui, string primaryKey) =>
+            SetupTwinResponse(stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)} }}");
+
+        private void SetupTwinResponse(StationEui stationEui, string primaryKey, string json)
+        {
+            var deviceTwin = new Twin(new TwinProperties { Desired = new TwinCollection(json) });
+            var deviceClientMock = new Mock<ILoRaDeviceClient>();
+            deviceClientMock.Setup(dc => dc.GetTwinAsync()).Returns(Task.FromResult(deviceTwin));
+            this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(stationEui.ToString(), primaryKey))
+                                      .Returns(deviceClientMock.Object);
+        }
+
+        public class GetRegionAsync : BasicsStationConfigurationServiceTests
+        {
+            [Fact]
+            public async Task Success()
+            {
+                // arrange
+                const string primaryKey = "foo";
+                SetupDeviceKeyLookup(this.stationEui, primaryKey);
+                SetupTwinResponse(this.stationEui, primaryKey);
+
+                // act
+                var result = await this.sut.GetRegionAsync(this.stationEui, CancellationToken.None);
+
+                // assert
+                Assert.Equal(RegionManager.EU868, result);
+            }
         }
 
         public class GetRouterConfigMessageAsync : BasicsStationConfigurationServiceTests
@@ -146,25 +185,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
                 this.loRaDeviceApiServiceMock.Verify(ldf => ldf.SearchByDevEUIAsync(It.IsAny<string>()), Times.Exactly(2));
                 Assert.Equal(JsonUtil.Minify(LnsStationConfigurationTests.ValidRouterConfigMessage), result);
             }
-
-            private void SetupTwinResponse(StationEui stationEui, string primaryKey) =>
-                SetupTwinResponse(stationEui, primaryKey, @$"{{ ""routerConfig"": {JsonUtil.Minify(LnsStationConfigurationTests.ValidStationConfiguration)} }}");
-
-            private void SetupTwinResponse(StationEui stationEui, string primaryKey, string json)
-            {
-                var deviceTwin = new Twin(new TwinProperties { Desired = new TwinCollection(json) });
-                var deviceClientMock = new Mock<ILoRaDeviceClient>();
-                deviceClientMock.Setup(dc => dc.GetTwinAsync()).Returns(Task.FromResult(deviceTwin));
-                this.loRaDeviceFactoryMock.Setup(ldf => ldf.CreateDeviceClient(stationEui.ToString(), primaryKey))
-                                          .Returns(deviceClientMock.Object);
-            }
-
-            private void SetupDeviceKeyLookup(StationEui stationEui, string primaryKey) =>
-                SetupDeviceKeyLookup(stationEui, new[] { new IoTHubDeviceInfo { DevEUI = this.stationEui.ToString(), PrimaryKey = primaryKey } });
-
-            private void SetupDeviceKeyLookup(StationEui stationEui, params IoTHubDeviceInfo[] ioTHubDeviceInfos) =>
-                loRaDeviceApiServiceMock.Setup(ldas => ldas.SearchByDevEUIAsync(stationEui.ToString()))
-                                        .Returns(Task.FromResult(new SearchDevicesResult(ioTHubDeviceInfos)));
         }
 
         protected virtual void Dispose(bool disposing)
