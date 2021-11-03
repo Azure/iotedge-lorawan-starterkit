@@ -241,7 +241,7 @@ namespace LoRaWan.NetworkServer
                     }
 
                 // The following DesiredRxDelay is different than the RxDelay to be passed to Serialize function
-                // This one is a delay between TX and RX for any message to be processed by joining devie
+                // This one is a delay between TX and RX for any message to be processed by joining device
                 // The field accepted by Serialize method is an indication of the delay (compared to receive time of join request)
                 // of when the message Join Accept message should be sent
                 ushort desiredRxDelay = 0;
