@@ -5,9 +5,6 @@ namespace LoRaWan
 {
     using System;
 
-    /// <summary>
-    /// Frame port.
-    /// </summary>
     public readonly struct FramePort : IEquatable<FramePort>
     {
         public const int Size = sizeof(byte);
