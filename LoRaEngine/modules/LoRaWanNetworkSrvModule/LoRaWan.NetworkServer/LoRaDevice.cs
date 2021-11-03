@@ -970,10 +970,7 @@ namespace LoRaWan.NetworkServer
                 if (this.runningRequest == null)
                 {
                     this.runningRequest = request;
-
-                    // Ensure that this is schedule in a new thread, releasing the lock asap
-                    // Exception is handled and logged as part of RunAndQueueNext.
-                    _ = Task.Run(() => RunAndQueueNext(request));
+                    _ = RunAndQueueNext(request);
                 }
                 else
                 {
@@ -992,9 +989,7 @@ namespace LoRaWan.NetworkServer
                 if (this.queuedRequests.TryDequeue(out var nextRequest))
                 {
                     this.runningRequest = nextRequest;
-                    // Ensure that this is schedule in a new thread, releasing the lock asap
-                    // Exception is handled and logged as part of RunAndQueueNext.
-                    _ = Task.Run(() => RunAndQueueNext(nextRequest));
+                    _ = RunAndQueueNext(nextRequest);
                 }
             }
         }
@@ -1059,39 +1054,37 @@ namespace LoRaWan.NetworkServer
             return ++val;
         }
 
-        private async Task RunAndQueueNext(LoRaRequest request)
+        private Task RunAndQueueNext(LoRaRequest request)
         {
-            LoRaDeviceRequestProcessResult result = null;
-            Exception processingError = null;
+            return Task.Run(() => CoreAsync());
 
-            try
+            async Task CoreAsync()
             {
-                result = await this.dataRequestHandler.ProcessRequestAsync(request, this);
-            }
-#pragma warning disable CA1031 // Do not catch general exception types. revisit in #565
-            // Method is not awaited on call site, removing general exception handling might result in loss of observability.
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
-            {
-                Logger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error);
-                processingError = ex;
-            }
-            finally
-            {
-                ProcessNext();
-            }
+                LoRaDeviceRequestProcessResult result = null;
 
-            if (processingError != null)
-            {
-                request.NotifyFailed(this, processingError);
-            }
-            else if (result.FailedReason.HasValue)
-            {
-                request.NotifyFailed(this, result.FailedReason.Value);
-            }
-            else
-            {
-                request.NotifySucceeded(this, result?.DownlinkMessage);
+                try
+                {
+                    result = await this.dataRequestHandler.ProcessRequestAsync(request, this);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error);
+                    request.NotifyFailed(this, ex);
+                    throw;
+                }
+                finally
+                {
+                    ProcessNext();
+                }
+
+                if (result.FailedReason.HasValue)
+                {
+                    request.NotifyFailed(this, result.FailedReason.Value);
+                }
+                else
+                {
+                    request.NotifySucceeded(this, result?.DownlinkMessage);
+                }
             }
         }
 
