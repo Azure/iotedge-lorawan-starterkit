@@ -58,8 +58,8 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(CancellationByTokenSuccessCases))]
         public void Cancellation_By_Token_Success_Cases(TimeoutLinkedCancellationToken sut, CancellationTokenSource cts)
         {
-            using (sut)
             using (cts)
+            using (sut)
             {
                 // assert 1
                 Assert.False(sut.Token.IsCancellationRequested);
