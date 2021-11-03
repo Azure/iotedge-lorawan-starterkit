@@ -10,6 +10,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
     internal interface IBasicsStationConfigurationService
     {
         Task<string> GetRouterConfigMessageAsync(StationEui stationEui, CancellationToken cancellationToken);
-        Task<Region> GetRegionFromBasicsStationConfiguration(StationEui stationEui, CancellationToken cancellationToken);
+        Task<Region> GetRegionAsync(StationEui stationEui, CancellationToken cancellationToken);
     }
 }

@@ -35,7 +35,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         public void Dispose() => this.cacheSemaphore.Dispose();
 
-        public async Task<Region> GetRegionFromBasicsStationConfiguration(StationEui stationEui, CancellationToken cancellationToken)
+        public async Task<Region> GetRegionAsync(StationEui stationEui, CancellationToken cancellationToken)
         {
             var config = await this.GetRouterConfigMessageAsync(stationEui, cancellationToken);
             return LnsStationConfiguration.GetRegion(config);
