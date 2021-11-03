@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading;
     using Xunit;
 
@@ -27,49 +26,47 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
             Assert.True(new TimeoutLinkedCancellationToken(ts1, cts.Token) != new TimeoutLinkedCancellationToken(ts2, cts.Token));
         }*/
 
-        public static IEnumerable<object[]> CancellationByTimeoutSuccessCases()
+        [Theory]
+        [InlineData(null            , false, false)]
+        [InlineData(0               , false, true )]
+        [InlineData(Timeout.Infinite, false, false)]
+        [InlineData(null            , true , false)]
+        [InlineData(0               , true , true )]
+        [InlineData(Timeout.Infinite, true , false)]
+        public void Cancellation_By_Timeout_Success_Cases(int? timeoutInMilliseconds,
+                                                          bool withOtherCancellationToken,
+                                                          bool isCancellationRequested)
         {
+            var timeout = timeoutInMilliseconds is { } someTimeoutInMilliseconds
+                        ? TimeSpan.FromMilliseconds(someTimeoutInMilliseconds)
+                        : (TimeSpan?)null;
+
+            using var cts = withOtherCancellationToken ? new CancellationTokenSource() : null;
+            using var sut = new TimeoutLinkedCancellationToken(timeout, cts?.Token ?? CancellationToken.None);
+
+            Assert.Equal(isCancellationRequested, sut.Token.IsCancellationRequested);
+        }
+
+        [Theory]
+        [InlineData(42)]
+        [InlineData(null)]
+        public void Cancellation_By_Token_Success_Cases(int? timeoutInSeconds)
+        {
+            var timeout = timeoutInSeconds is { } someTimeoutInSeconds
+                        ? TimeSpan.FromSeconds(someTimeoutInSeconds)
+                        : (TimeSpan?)null;
+
             using var cts = new CancellationTokenSource();
-            yield return new object[] { new TimeoutLinkedCancellationToken(null, CancellationToken.None), false };
-            yield return new object[] { new TimeoutLinkedCancellationToken(TimeSpan.Zero, CancellationToken.None), true };
-            yield return new object[] { new TimeoutLinkedCancellationToken(Timeout.InfiniteTimeSpan, CancellationToken.None), false };
-            yield return new object[] { new TimeoutLinkedCancellationToken(null, cts.Token), false };
-            yield return new object[] { new TimeoutLinkedCancellationToken(TimeSpan.Zero, cts.Token), true };
-            yield return new object[] { new TimeoutLinkedCancellationToken(Timeout.InfiniteTimeSpan, CancellationToken.None), false };
-        }
+            using var sut = new TimeoutLinkedCancellationToken(timeout, cts.Token);
 
-        [Theory]
-        [MemberData(nameof(CancellationByTimeoutSuccessCases))]
-        public void Cancellation_By_Timeout_Success_Cases(TimeoutLinkedCancellationToken sut, bool cancellationRequested)
-        {
-            using (sut)
-                Assert.Equal(cancellationRequested, sut.Token.IsCancellationRequested);
-        }
+            // assert 1
+            Assert.False(sut.Token.IsCancellationRequested);
 
-        public static IEnumerable<object[]> CancellationByTokenSuccessCases()
-        {
-            using var cts1 = new CancellationTokenSource();
-            yield return new object[] { new TimeoutLinkedCancellationToken(TimeSpan.FromSeconds(42), cts1.Token), cts1 };
-            using var cts2 = new CancellationTokenSource();
-            yield return new object[] { new TimeoutLinkedCancellationToken(null, cts2.Token), cts2 };
-        }
+            // act
+            cts.Cancel();
 
-        [Theory]
-        [MemberData(nameof(CancellationByTokenSuccessCases))]
-        public void Cancellation_By_Token_Success_Cases(TimeoutLinkedCancellationToken sut, CancellationTokenSource cts)
-        {
-            using (cts)
-            using (sut)
-            {
-                // assert 1
-                Assert.False(sut.Token.IsCancellationRequested);
-
-                // act
-                cts.Cancel();
-
-                // assert 2
-                Assert.True(sut.Token.IsCancellationRequested);
-            }
+            // assert 2
+            Assert.True(sut.Token.IsCancellationRequested);
         }
     }
 }
