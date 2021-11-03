@@ -19,7 +19,6 @@ namespace LoRaWan.NetworkServer
     {
         private readonly NetworkServerConfiguration configuration;
         private readonly ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider;
-        private readonly IConcentratorDeduplication concentratorDeduplication;
         private readonly ILoRaPayloadDecoder payloadDecoder;
         private readonly IDeduplicationStrategyFactory deduplicationFactory;
         private readonly ILoRaADRStrategyProvider loRaADRStrategyProvider;
@@ -30,7 +29,6 @@ namespace LoRaWan.NetworkServer
         public DefaultLoRaDataRequestHandler(
             NetworkServerConfiguration configuration,
             ILoRaDeviceFrameCounterUpdateStrategyProvider frameCounterUpdateStrategyProvider,
-            IConcentratorDeduplication concentratorDeduplication,
             ILoRaPayloadDecoder payloadDecoder,
             IDeduplicationStrategyFactory deduplicationFactory,
             ILoRaADRStrategyProvider loRaADRStrategyProvider,
@@ -40,7 +38,6 @@ namespace LoRaWan.NetworkServer
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
-            this.concentratorDeduplication = concentratorDeduplication;
             this.payloadDecoder = payloadDecoder;
             this.deduplicationFactory = deduplicationFactory;
             this.classCDeviceMessageSender = classCDeviceMessageSender;
@@ -86,14 +83,6 @@ namespace LoRaWan.NetworkServer
             // Leaf devices that restart lose the counter. In relax mode we accept the incoming frame counter
             // ABP device does not reset the Fcnt so in relax mode we should reset for 0 (LMIC based) or 1
             var isFrameCounterFromNewlyStartedDevice = await DetermineIfFramecounterIsFromNewlyStartedDeviceAsync(loRaDevice, payloadFcntAdjusted, frameCounterStrategy);
-
-            // First, we check if the request is a duplicate and then if it's a valid request
-            // The order of checks here affect which requests are filtered.
-            if (this.concentratorDeduplication.IsDuplicate(request, payloadFcntAdjusted, isFrameCounterFromNewlyStartedDevice, loRaDevice.DevEUI))
-            {
-                Logger.Log(loRaDevice.DevEUI, $"duplication message from multiple concentrators was detected on LNS, message ignored, msg: {loraPayload} server: {loRaDevice.FCntUp}", LogLevel.Information);
-                return new LoRaDeviceRequestProcessResult(loRaDevice, request, LoRaDeviceRequestFailedReason.DeduplicationDrop);
-            }
 
             // Reply attack or confirmed reply
             // Confirmed resubmit: A confirmed message that was received previously but we did not answer in time
