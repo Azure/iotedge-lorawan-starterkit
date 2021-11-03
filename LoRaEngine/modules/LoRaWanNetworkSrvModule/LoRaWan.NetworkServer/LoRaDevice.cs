@@ -214,10 +214,8 @@ namespace LoRaWan.NetworkServer
 
             if (twin != null)
             {
-                try
-                {
-                    // ABP requires the property AppSKey, AppNwkSKey, DevAddr to be present
-                    if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
+                // ABP requires the property AppSKey, AppNwkSKey, DevAddr to be present
+                if (twin.Properties.Desired.Contains(TwinProperty.AppSKey))
                     {
                         // ABP Case
                         AppSKey = twin.Properties.Desired[TwinProperty.AppSKey].Value as string;
@@ -247,7 +245,7 @@ namespace LoRaWan.NetworkServer
 
                         IsOurDevice = true;
                     }
-                    else
+                else
                     {
                         // OTAA
                         if (!twin.Properties.Desired.Contains(TwinProperty.AppKey))
@@ -312,33 +310,33 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
-                        GatewayID = twin.Properties.Desired[TwinProperty.GatewayID].Value as string;
-                    if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
-                        SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder].Value as string;
+                if (twin.Properties.Desired.Contains(TwinProperty.GatewayID))
+                    GatewayID = twin.Properties.Desired[TwinProperty.GatewayID].Value as string;
+                if (twin.Properties.Desired.Contains(TwinProperty.SensorDecoder))
+                    SensorDecoder = twin.Properties.Desired[TwinProperty.SensorDecoder].Value as string;
 
-                    InitializeFrameCounters(twin);
+                InitializeFrameCounters(twin);
 
-                    if (twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled))
-                    {
-                        DownlinkEnabled = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value);
-                    }
+                if (twin.Properties.Desired.Contains(TwinProperty.DownlinkEnabled))
+                {
+                    DownlinkEnabled = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.DownlinkEnabled].Value);
+                }
 
-                    if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
+                if (twin.Properties.Desired.Contains(TwinProperty.PreferredWindow))
                     {
                         var preferredWindowTwinValue = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.PreferredWindow].Value);
                         if (preferredWindowTwinValue == Constants.ReceiveWindow2)
                             PreferredWindow = preferredWindowTwinValue;
                     }
 
-                    if (twin.Properties.Desired.Contains(TwinProperty.Deduplication))
+                if (twin.Properties.Desired.Contains(TwinProperty.Deduplication))
                     {
                         var val = twin.Properties.Desired[TwinProperty.Deduplication].Value as string;
                         _ = Enum.TryParse<DeduplicationMode>(val, true, out var mode);
                         Deduplication = mode;
                     }
 
-                    if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
+                if (twin.Properties.Desired.Contains(TwinProperty.ClassType))
                     {
                         if (string.Equals("c", (string)twin.Properties.Desired[TwinProperty.ClassType], StringComparison.OrdinalIgnoreCase))
                         {
@@ -346,12 +344,12 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    if (twin.Properties.Reported.Contains(TwinProperty.PreferredGatewayID))
+                if (twin.Properties.Reported.Contains(TwinProperty.PreferredGatewayID))
                     {
                         this.preferredGatewayID = new ChangeTrackingProperty<string>(TwinProperty.PreferredGatewayID, twin.Properties.Reported[TwinProperty.PreferredGatewayID].Value as string);
                     }
 
-                    if (twin.Properties.Reported.Contains(TwinProperty.Region))
+                if (twin.Properties.Reported.Contains(TwinProperty.Region))
                     {
                         var regionValue = twin.Properties.Reported[TwinProperty.Region].Value as string;
                         if (Enum.TryParse<LoRaRegionType>(regionValue, true, out var loRaRegion))
@@ -368,23 +366,23 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    //  We are prioritizing the choice of the join channel from reported properties (set for OTAA devices)
-                    //  over the manually provisioned channel (set in desired properties for ABP devices).
-                    if (twin.Properties.Reported.Contains(TwinProperty.CN470JoinChannel))
+                //  We are prioritizing the choice of the join channel from reported properties (set for OTAA devices)
+                //  over the manually provisioned channel (set in desired properties for ABP devices).
+                if (twin.Properties.Reported.Contains(TwinProperty.CN470JoinChannel))
                     {
                         ReportedCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Reported[TwinProperty.CN470JoinChannel].Value);
                     }
-                    else if (twin.Properties.Desired.Contains(TwinProperty.CN470JoinChannel))
+                else if (twin.Properties.Desired.Contains(TwinProperty.CN470JoinChannel))
                     {
                         DesiredCN470JoinChannel = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.CN470JoinChannel].Value);
                     }
 
-                    if (twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt))
+                if (twin.Properties.Desired.Contains(TwinProperty.Supports32BitFCnt))
                     {
                         Supports32BitFCnt = GetTwinPropertyBoolValue(twin.Properties.Desired[TwinProperty.Supports32BitFCnt].Value);
                     }
 
-                    if (twin.Properties.Desired.Contains(TwinProperty.KeepAliveTimeout))
+                if (twin.Properties.Desired.Contains(TwinProperty.KeepAliveTimeout))
                     {
                         var value = GetTwinPropertyIntValue(twin.Properties.Desired[TwinProperty.KeepAliveTimeout].Value);
                         if (value > 0)
@@ -393,13 +391,7 @@ namespace LoRaWan.NetworkServer
                         }
                     }
 
-                    return true;
-                }
-                catch (InvalidLoRaDeviceException ex)
-                {
-                    Logger.Log(this.DevEUI, $"A required property was not present in the twin during device initialization. {ex.Message}", LogLevel.Error);
-                    throw;
-                }
+                return true;
             }
 
             return false;
