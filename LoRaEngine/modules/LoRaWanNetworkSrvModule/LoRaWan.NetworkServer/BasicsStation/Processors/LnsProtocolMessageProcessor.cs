@@ -94,8 +94,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
 
                     var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
                                                            .SingleOrDefault(ni => ni.GetIPProperties()
-                                                                                .UnicastAddresses
-                                                                                .Any(info => info.Address.Equals(httpContext.Connection.LocalIpAddress)));
+                                                                                    .UnicastAddresses
+                                                                                    .Any(info => info.Address.Equals(httpContext.Connection.LocalIpAddress)));
 
                     var muxs = Id6.Format(networkInterface is { } someNetworkInterface
                                               ? someNetworkInterface.GetPhysicalAddress().Convert48To64() : 0,
