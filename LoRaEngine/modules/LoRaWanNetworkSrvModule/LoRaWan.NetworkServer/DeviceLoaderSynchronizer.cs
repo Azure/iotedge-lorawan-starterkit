@@ -105,8 +105,7 @@ namespace LoRaWan.NetworkServer
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(this.devAddr, $"error searching device for payload. {ex.Message}", LogLevel.Error);
-                    throw;
+                    throw new LoRaProcessingException("Error when searching device for payload.", ex);
                 }
 
                 SetState(LoaderState.CreatingDeviceInstances);
