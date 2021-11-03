@@ -4,7 +4,6 @@
 namespace LoRaWan
 {
     using System;
-    using System.Globalization;
 
     /// <summary>
     /// Frame port.
