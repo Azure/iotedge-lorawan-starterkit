@@ -26,13 +26,6 @@ namespace LoRaWan
 
         public DevAddr(uint value) => this.value = value;
 
-        public byte[] AsByteArray()
-        {
-            Span<byte> byteSpan = stackalloc byte[Size];
-            BinaryPrimitives.WriteUInt32LittleEndian(byteSpan, this.value);
-            return byteSpan.ToArray();
-        }
-
         /// <summary>
         /// The <c>NwkID</c> (bits 25..31).
         /// </summary>
@@ -51,5 +44,11 @@ namespace LoRaWan
 
         public static bool operator ==(DevAddr left, DevAddr right) => left.Equals(right);
         public static bool operator !=(DevAddr left, DevAddr right) => !left.Equals(right);
+
+        public Span<byte> Write(Span<byte> buffer)
+        {
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer, this.value);
+            return buffer[Size..];
+        }
     }
 }

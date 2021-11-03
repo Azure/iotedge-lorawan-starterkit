@@ -76,11 +76,12 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Fact]
-        public void AsByteArray_Returns_Expected_ByteArray()
+        public void Write_Writes_Byte_And_Returns_Updated_Span()
         {
-            var expectedBytes = new byte[] { 120, 86, 52, 18 };
-            var actualBytes = this.subject.AsByteArray();
-            Assert.Equal(expectedBytes, actualBytes);
+            var bytes = new byte[4];
+            var remainingBytes = this.subject.Write(bytes);
+            Assert.Equal(0, remainingBytes.Length);
+            Assert.Equal(new byte[] { 120, 86, 52, 18 }, bytes);
         }
 
         [Fact]

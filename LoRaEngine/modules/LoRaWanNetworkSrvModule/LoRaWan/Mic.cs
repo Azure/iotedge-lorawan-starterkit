@@ -23,17 +23,16 @@ namespace LoRaWan
         public override bool Equals(object? obj) => obj is Mic other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
 
-        public byte[] AsByteArray()
-        {
-            Span<byte> byteSpan = stackalloc byte[Size];
-            BinaryPrimitives.WriteUInt32LittleEndian(byteSpan, this.value);
-            return byteSpan.ToArray();
-        }
-
         public override string ToString() => this.value.ToString("X4", CultureInfo.InvariantCulture);
 
         public static bool operator ==(Mic left, Mic right) => left.Equals(right);
         public static bool operator !=(Mic left, Mic right) => !left.Equals(right);
+
+        public Span<byte> Write(Span<byte> buffer)
+        {
+            BinaryPrimitives.WriteUInt32LittleEndian(buffer, this.value);
+            return buffer[Size..];
+        }
 
         //   The Message Integrity Code (MIC) ensures the integrity and authenticity of a message.
         //   The message integrity code is calculated over all the fields in the message and then added
