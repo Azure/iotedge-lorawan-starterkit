@@ -45,7 +45,6 @@ namespace LoRaWan.NetworkServer
         private readonly HashSet<ILoRaDeviceInitializer> initializers;
         private readonly NetworkServerConfiguration configuration;
         private readonly Action<LoRaDevice> registerDeviceAction;
-        private readonly Task loading;
         private volatile LoaderState state;
         private volatile bool loadingDevicesFailed;
         private readonly object queueLock;
@@ -72,10 +71,21 @@ namespace LoRaWan.NetworkServer
             this.loadingDevicesFailed = false;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
-            this.loading = Task.Run(() => Load().ContinueWith((t) => continuationAction(t, this),
-                                                                   CancellationToken.None,
-                                                                   TaskContinuationOptions.ExecuteSynchronously,
-                                                                   TaskScheduler.Default));
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Load().ContinueWith(t => continuationAction(t, this),
+                                              CancellationToken.None,
+                                              TaskContinuationOptions.ExecuteSynchronously,
+                                              TaskScheduler.Default);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"Error while loading: {ex}.", LogLevel.Error);
+                    throw;
+                }
+            });
         }
 
         private async Task Load()
