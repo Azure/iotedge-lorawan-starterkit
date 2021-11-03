@@ -4,7 +4,6 @@
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
     using System;
-    using System.Collections.Generic;
     using LoRaTools.Regions;
     using Xunit;
 

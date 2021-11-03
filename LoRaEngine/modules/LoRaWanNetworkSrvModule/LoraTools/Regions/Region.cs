@@ -129,8 +129,12 @@ namespace LoRaTools.Regions
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         public abstract RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null);
 
+        /// <summary>
         /// Implements logic to get the correct downstream transmission frequency for the given region based on the upstream channel frequency.
         /// </summary>
+        /// <param name="upstreamFrequency">Frequency of the upstream message.</param>
+        /// <param name="dataRate">Ustream data rate.</param>
+        /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
         public abstract bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo = null);
 
         /// <summary>

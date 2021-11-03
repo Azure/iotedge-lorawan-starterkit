@@ -33,6 +33,10 @@ namespace LoRaTools.Regions
                     region = CN470;
                     return true;
 
+                case LoRaRegionType.AS923:
+                    region = CN470;
+                    return true;
+
                 case LoRaRegionType.NotSet:
                 default:
                     return false;
@@ -132,6 +136,27 @@ namespace LoRaTools.Regions
                 }
 
                 return cn470;
+            }
+        }
+
+        private static Region as923;
+
+        public static Region AS923
+        {
+            get
+            {
+                if (as923 == null)
+                {
+#pragma warning disable CA1508 // Avoid dead conditional code
+                    // False positive
+                    if (as923 == null)
+#pragma warning restore CA1508 // Avoid dead conditional code
+                    {
+                        as923 = new RegionAS923();
+                    }
+                }
+
+                return as923;
             }
         }
     }

@@ -8,6 +8,7 @@ namespace LoRaTools.Regions
         NotSet,
         EU868,
         US915,
-        CN470
+        CN470,
+        AS923
     }
 }
