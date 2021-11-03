@@ -90,18 +90,26 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         {
             if (methodRequest == null) throw new ArgumentNullException(nameof(methodRequest));
 
-            if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                return await ClearCache();
+                if (string.Equals(Constants.CloudToDeviceClearCache, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return await ClearCache();
+                }
+                else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return await SendCloudToDeviceMessageAsync(methodRequest);
+                }
+
+                Logger.Log($"Unknown direct method called: {methodRequest.Name}", LogLevel.Error);
+
+                return new MethodResponse((int)HttpStatusCode.BadRequest);
             }
-            else if (string.Equals(Constants.CloudToDeviceDecoderElementName, methodRequest.Name, StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex)
             {
-                return await SendCloudToDeviceMessageAsync(methodRequest);
+                Logger.Log($"An exception occurred on a direct method call: {ex}", LogLevel.Error);
+                throw;
             }
-
-            Logger.Log($"Unknown direct method called: {methodRequest.Name}", LogLevel.Error);
-
-            return new MethodResponse((int)HttpStatusCode.BadRequest);
         }
 
         internal async Task<MethodResponse> SendCloudToDeviceMessageAsync(MethodRequest methodRequest)
@@ -155,6 +163,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             catch (ConfigurationErrorsException ex)
             {
                 Logger.Log($"A desired properties update was detected but the parameters are out of range with exception :  {ex}", LogLevel.Warning);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"An exception occurred on desired property update: {ex}", LogLevel.Error);
+                throw;
             }
 
             return Task.CompletedTask;
