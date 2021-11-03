@@ -30,6 +30,14 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Fact]
+        public void AsByteArray_Returns_Expected_ByteArray()
+        {
+            var expectedBytes = new byte[] { 222, 123, 111, 235 };
+            var actualBytes = this.subject.AsByteArray();
+            Assert.Equal(expectedBytes, actualBytes);
+        }
+
+        [Fact]
         public void Equals_Returns_True_When_Value_Equals()
         {
             var other = this.subject; // assignment = value copy semantics

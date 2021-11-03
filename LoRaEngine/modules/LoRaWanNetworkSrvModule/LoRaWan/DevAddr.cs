@@ -25,7 +25,7 @@ namespace LoRaWan
 
         public DevAddr(uint value) => this.value = value;
 
-        public byte[] AsByteArray() => BitConverter.GetBytes(value);
+        public byte[] AsByteArray() => BitConverter.GetBytes(this.value);
 
         /// <summary>
         /// The <c>NwkID</c> (bits 25..31).
