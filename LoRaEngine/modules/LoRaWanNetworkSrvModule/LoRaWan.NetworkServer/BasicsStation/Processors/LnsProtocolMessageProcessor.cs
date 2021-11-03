@@ -45,21 +45,29 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 return httpContext;
             }
 
-            using var socket = await httpContext.WebSockets.AcceptWebSocketAsync();
-            this.logger.Log(LogLevel.Debug, $"WebSocket connection from {httpContext.Connection.RemoteIpAddress} established");
-
             try
             {
-                await handler(httpContext, socket, cancellationToken);
-                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", cancellationToken);
-            }
-            catch (OperationCanceledException ex)
+                using var socket = await httpContext.WebSockets.AcceptWebSocketAsync();
+                this.logger.Log(LogLevel.Debug, $"WebSocket connection from {httpContext.Connection.RemoteIpAddress} established");
+
+                try
+                {
+                    await handler(httpContext, socket, cancellationToken);
+                    await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", cancellationToken);
+                }
+                catch (OperationCanceledException ex)
 #pragma warning disable CA1508 // Avoid dead conditional code (false positive)
-                when (ex is { InnerException: WebSocketException { WebSocketErrorCode: WebSocketError.ConnectionClosedPrematurely } })
+                    when (ex is { InnerException: WebSocketException { WebSocketErrorCode: WebSocketError.ConnectionClosedPrematurely } })
 #pragma warning restore CA1508 // Avoid dead conditional code
+                {
+                    // This can happen if the basic station client is losing connectivity
+                    this.logger.LogDebug(ex, ex.Message);
+                }
+            }
+            catch (Exception ex)
             {
-                // This can happen if the basic station client is losing connectivity
-                this.logger.LogDebug(ex, ex.Message);
+                this.logger.LogError(ex, $"An exception occurred while processing requests: {ex}.");
+                throw;
             }
 
             return httpContext;

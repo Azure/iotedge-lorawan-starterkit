@@ -55,6 +55,7 @@ namespace LoRaWan
     {
         Default,
         TwinFetchFailed,
-        InvalidDeviceConfiguration
+        InvalidDeviceConfiguration,
+        DeviceClientCreationFailed,
     }
 }
