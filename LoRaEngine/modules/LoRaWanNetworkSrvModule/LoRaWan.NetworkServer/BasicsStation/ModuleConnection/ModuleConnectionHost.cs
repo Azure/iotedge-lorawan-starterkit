@@ -69,8 +69,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             }
             catch (IotHubCommunicationException)
             {
-                Logger.Log($"There was a critical problem with the IoT Hub in getting the module twins.", LogLevel.Error);
-                throw;
+                throw new LoRaProcessingException("There was a critical problem with the IoT Hub in getting the module twins.",
+                                                  LoRaProcessingErrorCode.TwinFetchFailed);
             }
 
             var moduleTwinCollection = moduleTwin?.Properties?.Desired;
