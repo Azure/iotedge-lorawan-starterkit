@@ -4,6 +4,7 @@
 namespace LoRaWan
 {
     using System;
+    using System.Buffers.Binary;
     using System.Globalization;
 
     /// <summary>
@@ -25,7 +26,12 @@ namespace LoRaWan
 
         public DevAddr(uint value) => this.value = value;
 
-        public byte[] AsByteArray() => BitConverter.GetBytes(this.value);
+        public byte[] AsByteArray()
+        {
+            Span<byte> byteSpan = stackalloc byte[Size];
+            BinaryPrimitives.WriteUInt32LittleEndian(byteSpan, this.value);
+            return byteSpan.ToArray();
+        }
 
         /// <summary>
         /// The <c>NwkID</c> (bits 25..31).

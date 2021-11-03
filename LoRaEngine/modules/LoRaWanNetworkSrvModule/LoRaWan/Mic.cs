@@ -22,7 +22,13 @@ namespace LoRaWan
         public bool Equals(Mic other) => this.value == other.value;
         public override bool Equals(object? obj) => obj is Mic other && this.Equals(other);
         public override int GetHashCode() => this.value.GetHashCode();
-        public byte[] AsByteArray() => BitConverter.GetBytes(this.value);
+
+        public byte[] AsByteArray()
+        {
+            Span<byte> byteSpan = stackalloc byte[Size];
+            BinaryPrimitives.WriteUInt32LittleEndian(byteSpan, this.value);
+            return byteSpan.ToArray();
+        }
 
         public override string ToString() => this.value.ToString("X4", CultureInfo.InvariantCulture);
 
