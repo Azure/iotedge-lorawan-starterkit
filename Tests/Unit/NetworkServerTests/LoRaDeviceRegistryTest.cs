@@ -25,7 +25,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Fact]
-        public async Task GetDeviceForJoinRequestAsync_When_Device_Api_Throws_Error_Should_Return_Null()
+        public async Task GetDeviceForJoinRequestAsync_When_Device_Api_Throws_Error_Should_Not_Catch()
         {
             const string devEUI = "0000000000000001";
             const string devNonce = "0001";
@@ -35,8 +35,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 .Throws(new InvalidOperationException());
             using var target = new LoRaDeviceRegistry(ServerConfiguration, this.cache, apiService.Object, this.loraDeviceFactoryMock.Object);
 
-            var actual = await target.GetDeviceForJoinRequestAsync(devEUI, devNonce);
-            Assert.Null(actual);
+            Task Act() => target.GetDeviceForJoinRequestAsync(devEUI, devNonce);
+            _ = await Assert.ThrowsAsync<InvalidOperationException>(Act);
 
             // Device was searched by DevAddr
             apiService.VerifyAll();

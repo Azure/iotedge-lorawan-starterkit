@@ -273,14 +273,12 @@ namespace LoRaWan.NetworkServer
                         }
                     }
                 }
-#pragma warning disable CA1031 // Do not catch general exception types. To be revisited as part of #565
-                // Method is not awaited on call site, removing general exception handling might result in loss of observability.
                 catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
                 {
                     var deviceId = devEUI ?? ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
                     Logger.Log(deviceId, $"failed to handle join request. {ex.Message}", LogLevel.Error);
                     request.NotifyFailed(loRaDevice, ex);
+                    throw;
                 }
             }
         }
