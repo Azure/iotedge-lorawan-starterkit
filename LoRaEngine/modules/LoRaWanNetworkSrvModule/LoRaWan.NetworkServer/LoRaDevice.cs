@@ -994,7 +994,8 @@ namespace LoRaWan.NetworkServer
                     this.runningRequest = request;
 
                     // Ensure that this is schedule in a new thread, releasing the lock asap
-                    _ = Task.Run(() => { _ = RunAndQueueNext(request); });
+                    // Exception is handled and logged as part of RunAndQueueNext.
+                    _ = Task.Run(() => RunAndQueueNext(request));
                 }
                 else
                 {
@@ -1014,7 +1015,8 @@ namespace LoRaWan.NetworkServer
                 {
                     this.runningRequest = nextRequest;
                     // Ensure that this is schedule in a new thread, releasing the lock asap
-                    _ = Task.Run(() => { _ = RunAndQueueNext(nextRequest); });
+                    // Exception is handled and logged as part of RunAndQueueNext.
+                    _ = Task.Run(() => RunAndQueueNext(nextRequest));
                 }
             }
         }
@@ -1089,6 +1091,7 @@ namespace LoRaWan.NetworkServer
                 result = await this.dataRequestHandler.ProcessRequestAsync(request, this);
             }
 #pragma warning disable CA1031 // Do not catch general exception types. revisit in #565
+            // Method is not awaited on call site, removing general exception handling might result in loss of observability.
             catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
             {

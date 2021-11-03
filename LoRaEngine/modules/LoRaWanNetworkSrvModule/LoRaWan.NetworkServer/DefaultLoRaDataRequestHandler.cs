@@ -33,14 +33,12 @@ namespace LoRaWan.NetworkServer
             IDeduplicationStrategyFactory deduplicationFactory,
             ILoRaADRStrategyProvider loRaADRStrategyProvider,
             ILoRAADRManagerFactory loRaADRManagerFactory,
-            IFunctionBundlerProvider functionBundlerProvider,
-            IClassCDeviceMessageSender classCDeviceMessageSender = null)
+            IFunctionBundlerProvider functionBundlerProvider)
         {
             this.configuration = configuration;
             this.frameCounterUpdateStrategyProvider = frameCounterUpdateStrategyProvider;
             this.payloadDecoder = payloadDecoder;
             this.deduplicationFactory = deduplicationFactory;
-            this.classCDeviceMessageSender = classCDeviceMessageSender;
             this.loRaADRStrategyProvider = loRaADRStrategyProvider;
             this.loRaADRManagerFactory = loRaADRManagerFactory;
             this.functionBundlerProvider = functionBundlerProvider;
@@ -462,13 +460,25 @@ namespace LoRaWan.NetworkServer
             }
         }
 
-        internal void SetClassCMessageSender(IClassCDeviceMessageSender classCMessageSender) => this.classCDeviceMessageSender = classCMessageSender;
+        public void SetClassCMessageSender(IClassCDeviceMessageSender classCMessageSender) => this.classCDeviceMessageSender = classCMessageSender;
 
         private void SendClassCDeviceMessage(IReceivedLoRaCloudToDeviceMessage cloudToDeviceMessage)
         {
             if (this.classCDeviceMessageSender != null)
             {
-                _ = Task.Run(() => this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage));
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        _ = await this.classCDeviceMessageSender.SendAsync(cloudToDeviceMessage);
+                    }
+#pragma warning disable CA1031 // Do not catch general exception types. To be revisited as part of #565
+                    catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
+                    {
+                        Logger.Log(cloudToDeviceMessage.DevEUI, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error);
+                    }
+                });
             }
         }
 

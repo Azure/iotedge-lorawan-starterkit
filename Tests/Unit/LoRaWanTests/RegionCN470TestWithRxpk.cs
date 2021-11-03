@@ -3,12 +3,13 @@
 
 namespace LoRaWan.Tests.Unit.LoRaWanTests
 {
-    using LoRaTools.Regions;
     using System;
+    using System.Collections.Generic;
+    using LoRaTools.Regions;
     using Xunit;
 
     [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-    public class RegionCN470TestWithRxpk : RegionTestBase
+    public class RegionCN470TestWithRxpk : RegionTestBaseRxpk
     {
         public RegionCN470TestWithRxpk()
         {
@@ -23,7 +24,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(478.3, 14)]
         [InlineData(482.3, 16)]
         [InlineData(488.3, 19)]
-        public void TestTryGetJoinChannelIndex(double freq, int expectedIndex)
+        public void TestTryGetJoinChannelIndex_ReturnsValidIndex(double freq, int expectedIndex)
         {
             var rxpk = GenerateRxpk("SF12BW125", freq);
             Assert.True(Region.TryGetJoinChannelIndex(rxpk[0], out var channelIndex));
@@ -51,7 +52,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public void TestFrequency(double inputFreq, double outputFreq, int joinChannel)
         {
             var rxpk = GenerateRxpk("SF12BW125", inputFreq);
-            TestRegionFrequency(rxpk, outputFreq, new DeviceJoinInfo(joinChannel));
+            TestRegionFrequencyRxpk(rxpk, outputFreq, new DeviceJoinInfo(joinChannel));
         }
 
         [Theory]
@@ -66,7 +67,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         public void TestDataRate(string inputDr, string outputDr, int rx1DrOffset)
         {
             var rxpk = GenerateRxpk(inputDr, 470.3);
-            TestRegionDataRate(rxpk, outputDr, rx1DrOffset);
+            TestRegionDataRateRxpk(rxpk, outputDr, rx1DrOffset);
         }
 
         [Theory]
@@ -76,7 +77,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [InlineData(490, "SF30BW125")]
         public void TestLimit(double freq, string datarate)
         {
-            TestRegionLimit(freq, datarate, new DeviceJoinInfo(0));
+            TestRegionLimitRxpk(freq, datarate, new DeviceJoinInfo(0));
         }
 
         [Theory]
@@ -108,12 +109,6 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             var deviceJoinInfo = new DeviceJoinInfo(reportedJoinChannel, desiredJoinChannel);
             TestDownstreamRX2DataRate(nwksrvrx2dr, rx2drfromtwins, expectedDr, deviceJoinInfo);
-        }
-
-        [Fact]
-        public void TestTranslateRegionType()
-        {
-            TestTranslateToRegion(LoRaRegionType.CN470);
         }
 
         [Fact]

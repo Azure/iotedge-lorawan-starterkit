@@ -3,17 +3,15 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
-    using System;
     using System.Globalization;
-    using System.Net.WebSockets;
-    using System.Threading;
-    using System.Threading.Tasks;
     using LoRaTools.ADR;
     using LoRaWan.NetworkServer.ADR;
+    using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
+    using LoRaWan.NetworkServer.BasicsStation.Stubs;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
+    using Microsoft.Azure.Devices.Client;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -32,6 +30,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
         public void ConfigureServices(IServiceCollection services)
         {
+            ITransportSettings[] settings = { new AmqpTransportSettings(TransportType.Amqp_Tcp_Only) };
+            var loraModuleFactory = new LoRaModuleClientFactory(settings);
+
             _ = services.AddLogging(loggingBuilder =>
                         {
                             _ = loggingBuilder.SetMinimumLevel((LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture));
@@ -39,8 +40,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddMemoryCache()
                         .AddSingleton(NetworkServerConfiguration)
                         .AddSingleton(LoRaTools.CommonAPI.ApiVersion.LatestVersion)
+                        .AddSingleton<ModuleConnectionHost>()
                         .AddSingleton<IServiceFacadeHttpClientProvider, ServiceFacadeHttpClientProvider>()
-                        .AddSingleton<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
                         .AddSingleton<ILoRaDeviceFrameCounterUpdateStrategyProvider, LoRaDeviceFrameCounterUpdateStrategyProvider>()
                         .AddSingleton<IDeduplicationStrategyFactory, DeduplicationStrategyFactory>()
                         .AddSingleton<ILoRaADRStrategyProvider, LoRaADRStrategyProvider>()
@@ -53,9 +54,15 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<ILoRaDeviceRegistry, LoRaDeviceRegistry>()
                         .AddSingleton<IJoinRequestMessageHandler, JoinRequestMessageHandler>()
                         .AddSingleton<IMessageDispatcher, MessageDispatcher>()
-                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
                         .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>()
-                        .AddSingleton<WebSocketWriterRegistry<StationEui, string>>();
+                        .AddSingleton<IClassCDeviceMessageSender, DefaultClassCDevicesMessageSender>()
+                        .AddSingleton<ILoRaModuleClientFactory>(loraModuleFactory)
+                        .AddTransient<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
+                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
+                        .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
+
+                        // STUB for the Ipkt Fwd until Danigian implement the LNS implementation.
+                        .AddSingleton<IPacketForwarder, PacketForwarderStub>();
         }
 
 #pragma warning disable CA1822 // Mark members as static
@@ -70,6 +77,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             // TO DO: When certificate generation is properly handled, enable https redirection
             // app.UseHttpsRedirection();
+
+            // Manually set the class C as otherwise the DI fails.
+            var classCMessageSender = app.ApplicationServices.GetService<IClassCDeviceMessageSender>();
+            var dataHandlerImplementation = app.ApplicationServices.GetService<ILoRaDataRequestHandler>();
+            dataHandlerImplementation.SetClassCMessageSender(classCMessageSender);
+
 
             _ = app.UseRouting()
                    .UseWebSockets()
