@@ -12,11 +12,9 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
     public interface ILoraModuleClient : IAsyncDisposable
     {
         /// <summary>
-        /// Operation Timeout for the module connection.
+        /// Operation timeout for the module connection.
         /// </summary>
         public TimeSpan OperationTimeout { get; set; }
-
-        public Task CreateFromEnvironmentAsync(ITransportSettings[] settings);
 
         public ModuleClient GetModuleClient();
         Task<Twin> GetTwinAsync(CancellationToken cancellationToken);

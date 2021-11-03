@@ -19,41 +19,25 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
         private readonly NetworkServerConfiguration networkServerConfiguration;
         private readonly IClassCDeviceMessageSender classCMessageSender;
         private readonly ILoRaDeviceRegistry loRaDeviceRegistry;
-        private readonly ILoraModuleClient loRaModuleClient;
+        private ILoraModuleClient loRaModuleClient;
+        private readonly ILoRaModuleClientFactory loRaModuleClientFactory;
 
         public ModuleConnectionHost(
             NetworkServerConfiguration networkServerConfiguration,
             IClassCDeviceMessageSender defaultClassCDevicesMessageSender,
+            ILoRaModuleClientFactory loRaModuleClientFactory,
             ILoRaDeviceRegistry loRaDeviceRegistry)
         {
             this.networkServerConfiguration = networkServerConfiguration ?? throw new ArgumentNullException(nameof(networkServerConfiguration));
             this.classCMessageSender = defaultClassCDevicesMessageSender ?? throw new ArgumentNullException(nameof(defaultClassCDevicesMessageSender));
             this.loRaDeviceRegistry = loRaDeviceRegistry ?? throw new ArgumentNullException(nameof(loRaDeviceRegistry));
-            this.loRaModuleClient = new LoRaModuleClient();
-        }
-
-        /// <summary>
-        /// This constructor is only to be used by tests.
-        /// </summary>
-        internal ModuleConnectionHost(
-           NetworkServerConfiguration networkServerConfiguration,
-           IClassCDeviceMessageSender defaultClassCDevicesMessageSender,
-           ILoRaDeviceRegistry loRaDeviceRegistry,
-           ILoraModuleClient loraModuleClient)
-        {
-            this.networkServerConfiguration = networkServerConfiguration ?? throw new ArgumentNullException(nameof(networkServerConfiguration));
-            this.classCMessageSender = defaultClassCDevicesMessageSender ?? throw new ArgumentNullException(nameof(defaultClassCDevicesMessageSender));
-            this.loRaDeviceRegistry = loRaDeviceRegistry ?? throw new ArgumentNullException(nameof(loRaDeviceRegistry));
-            this.loRaModuleClient = loraModuleClient;
+            this.loRaModuleClientFactory = loRaModuleClientFactory ?? throw new ArgumentNullException(nameof(loRaModuleClientFactory));
         }
 
         public async Task CreateAsync(CancellationToken cancellationToken)
         {
-            ITransportSettings[] settings = { new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_Tcp_Only) };
-
-            await this.loRaModuleClient.CreateFromEnvironmentAsync(settings);
+            this.loRaModuleClient = await this.loRaModuleClientFactory.CreateAsync();
             await InitModuleAsync(cancellationToken);
-
         }
 
         internal async Task InitModuleAsync(CancellationToken cancellationToken)
@@ -89,7 +73,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
                 throw;
             }
 
-            var moduleTwinCollection = moduleTwin.Properties.Desired;
+            var moduleTwinCollection = moduleTwin?.Properties?.Desired;
 
             if (!TryUpdateConfigurationWithDesiredProperties(moduleTwinCollection))
             {
@@ -178,6 +162,11 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
         private bool TryUpdateConfigurationWithDesiredProperties(TwinCollection desiredProperties)
         {
+            if (desiredProperties is null)
+            {
+                return false;
+            }
+
             if (desiredProperties.Contains(Constants.FacadeServerUrlKey)
                 && (string)desiredProperties[Constants.FacadeServerUrlKey] is { Length: > 0 } urlString)
             {
@@ -205,7 +194,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
         public async ValueTask DisposeAsync()
         {
-            await this.loRaModuleClient.DisposeAsync();
+            if (this.loRaModuleClient != null)
+            {
+                await this.loRaModuleClient.DisposeAsync();
+            }
         }
     }
 }

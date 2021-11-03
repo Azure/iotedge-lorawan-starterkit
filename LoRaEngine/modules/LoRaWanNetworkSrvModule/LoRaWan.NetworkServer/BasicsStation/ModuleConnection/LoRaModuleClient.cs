@@ -11,15 +11,15 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
     public sealed class LoRaModuleClient : ILoraModuleClient
     {
-        private ModuleClient moduleClient;
+        private readonly ModuleClient moduleClient;
 
-        public uint OperationTimeoutInMilliseconds { get => this.moduleClient.OperationTimeoutInMilliseconds; set => this.moduleClient.OperationTimeoutInMilliseconds = value; }
+        public LoRaModuleClient(ModuleClient moduleClient)
+        {
+            this.moduleClient = moduleClient;
+        }
+
         public TimeSpan OperationTimeout { get; set; }
 
-        public async Task CreateFromEnvironmentAsync(ITransportSettings[] settings)
-        {
-            moduleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
-        }
 
         public async ValueTask DisposeAsync()
         {
