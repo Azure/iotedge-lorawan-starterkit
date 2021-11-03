@@ -90,11 +90,20 @@ namespace LoRaWan.NetworkServer
         public static async Task RunServerAsync()
         {
             Logger.LogAlways("Starting LoRaWAN Server...");
-            using var udpServer = UdpServer.Create();
 
-            await udpServer.InitCallBack();
+            try
+            {
+                using var udpServer = UdpServer.Create();
 
-            await udpServer.RunUdpListener();
+                await udpServer.InitCallBack();
+
+                await udpServer.RunUdpListener();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Initialization failed with error: {ex.Message}", LogLevel.Error);
+                throw;
+            }
         }
 
         private async Task UdpSendMessageAsync(byte[] messageToSend, string remoteLoRaAggregatorIp, int remoteLoRaAggregatorPort)
@@ -207,85 +216,75 @@ namespace LoRaWan.NetworkServer
 
         private async Task InitCallBack()
         {
-            try
+            ITransportSettings transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_Tcp_Only);
+
+            ITransportSettings[] settings = { transportSettings };
+
+            // if running as Edge module
+            if (this.configuration.RunningAsIoTEdgeModule)
             {
-                ITransportSettings transportSettings = new AmqpTransportSettings(Microsoft.Azure.Devices.Client.TransportType.Amqp_Tcp_Only);
+                this.ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
 
-                ITransportSettings[] settings = { transportSettings };
-
-                // if running as Edge module
-                if (this.configuration.RunningAsIoTEdgeModule)
+                Logger.Init(new LoggerConfiguration
                 {
-                    this.ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
+                    ModuleClient = this.ioTHubModuleClient,
+                    LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
+                    LogToConsole = this.configuration.LogToConsole,
+                    LogToHub = this.configuration.LogToHub,
+                    LogToUdp = this.configuration.LogToUdp,
+                    LogToUdpPort = this.configuration.LogToUdpPort,
+                    LogToUdpAddress = this.configuration.LogToUdpAddress,
+                    GatewayId = this.configuration.GatewayID
+                });
 
-                    Logger.Init(new LoggerConfiguration
-                    {
-                        ModuleClient = this.ioTHubModuleClient,
-                        LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
-                        LogToConsole = this.configuration.LogToConsole,
-                        LogToHub = this.configuration.LogToHub,
-                        LogToUdp = this.configuration.LogToUdp,
-                        LogToUdpPort = this.configuration.LogToUdpPort,
-                        LogToUdpAddress = this.configuration.LogToUdpAddress,
-                        GatewayId = this.configuration.GatewayID
-                    });
-
-                    if (this.configuration.IoTEdgeTimeout > 0)
-                    {
-                        this.ioTHubModuleClient.OperationTimeoutInMilliseconds = this.configuration.IoTEdgeTimeout;
-                        Logger.Log($"Changing timeout to {this.ioTHubModuleClient.OperationTimeoutInMilliseconds} ms", LogLevel.Debug);
-                    }
-
-                    Logger.Log("Getting properties from module twin...", LogLevel.Information);
-
-                    var moduleTwin = await this.ioTHubModuleClient.GetTwinAsync();
-                    var moduleTwinCollection = moduleTwin.Properties.Desired;
-                    try
-                    {
-                        this.loRaDeviceAPIService.URL = new Uri(moduleTwinCollection["FacadeServerUrl"].Value);
-                        Logger.LogAlways($"Facade function url: {this.loRaDeviceAPIService.URL}");
-                    }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                        Logger.Log("Module twin FacadeServerUrl property does not exist", LogLevel.Error);
-                        throw;
-                    }
-
-                    try
-                    {
-                        this.loRaDeviceAPIService.SetAuthCode(moduleTwinCollection["FacadeAuthCode"].Value as string);
-                    }
-                    catch (ArgumentOutOfRangeException)
-                    {
-                        Logger.Log("Module twin FacadeAuthCode does not exist", LogLevel.Error);
-                        throw;
-                    }
-
-                    await this.ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
-
-                    await this.ioTHubModuleClient.SetMethodDefaultHandlerAsync(OnDirectMethodCalled, null);
+                if (this.configuration.IoTEdgeTimeout > 0)
+                {
+                    this.ioTHubModuleClient.OperationTimeoutInMilliseconds = this.configuration.IoTEdgeTimeout;
+                    Logger.Log($"Changing timeout to {this.ioTHubModuleClient.OperationTimeoutInMilliseconds} ms", LogLevel.Debug);
                 }
 
-                // running as non edge module for test and debugging
-                else
+                Logger.Log("Getting properties from module twin...", LogLevel.Information);
+
+                var moduleTwin = await this.ioTHubModuleClient.GetTwinAsync();
+                var moduleTwinCollection = moduleTwin.Properties.Desired;
+                try
                 {
-                    Logger.Init(new LoggerConfiguration
-                    {
-                        ModuleClient = null,
-                        LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
-                        LogToConsole = this.configuration.LogToConsole,
-                        LogToHub = this.configuration.LogToHub,
-                        LogToUdp = this.configuration.LogToUdp,
-                        LogToUdpPort = this.configuration.LogToUdpPort,
-                        LogToUdpAddress = this.configuration.LogToUdpAddress,
-                        GatewayId = this.configuration.GatewayID
-                    });
+                    this.loRaDeviceAPIService.URL = new Uri(moduleTwinCollection["FacadeServerUrl"].Value);
+                    Logger.LogAlways($"Facade function url: {this.loRaDeviceAPIService.URL}");
                 }
+                catch (ArgumentOutOfRangeException)
+                {
+                    throw new LoRaProcessingException("Module twin 'FacadeServerUrl' property does not exist.", LoRaProcessingErrorCode.InvalidModuleConfiguration);
+                }
+
+                try
+                {
+                    this.loRaDeviceAPIService.SetAuthCode(moduleTwinCollection["FacadeAuthCode"].Value as string);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    throw new LoRaProcessingException("Module twin 'FacadeAuthCode' does not exist.", LoRaProcessingErrorCode.InvalidModuleConfiguration);
+                }
+
+                await this.ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, null);
+
+                await this.ioTHubModuleClient.SetMethodDefaultHandlerAsync(OnDirectMethodCalled, null);
             }
-            catch (Exception ex)
+
+            // running as non edge module for test and debugging
+            else
             {
-                Logger.Log($"Initialization failed with error: {ex.Message}", LogLevel.Error);
-                throw;
+                Logger.Init(new LoggerConfiguration
+                {
+                    ModuleClient = null,
+                    LogLevel = LoggerConfiguration.InitLogLevel(this.configuration.LogLevel),
+                    LogToConsole = this.configuration.LogToConsole,
+                    LogToHub = this.configuration.LogToHub,
+                    LogToUdp = this.configuration.LogToUdp,
+                    LogToUdpPort = this.configuration.LogToUdpPort,
+                    LogToUdpAddress = this.configuration.LogToUdpAddress,
+                    GatewayId = this.configuration.GatewayID
+                });
             }
 
             // Report Log level
