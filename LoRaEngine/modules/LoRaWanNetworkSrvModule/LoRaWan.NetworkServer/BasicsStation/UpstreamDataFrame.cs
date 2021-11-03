@@ -5,7 +5,8 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     public class UpstreamDataFrame
     {
-        public UpstreamDataFrame(MacHeader mHdr, DevAddr devAddr, FrameControl frameControl, ushort frameCounter, string fOpts, FramePort fPort, string fRMPayload, Mic mic)
+        public UpstreamDataFrame(MacHeader mHdr, DevAddr devAddr, FrameControl frameControl, ushort frameCounter, string fOpts, FramePort fPort, string fRMPayload, Mic mic,
+                                 RadioMetadata radioMetadata)
         {
             MHdr = mHdr;
             DevAddr = devAddr;
@@ -15,6 +16,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             FPort = fPort;
             FRMPayload = fRMPayload;
             Mic = mic;
+            RadioMetadata = radioMetadata;
         }
 
         public MacHeader MHdr { get; }
@@ -25,11 +27,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public FramePort FPort { get; }
         public string FRMPayload { get; }
         public Mic Mic { get; }
-        public RadioMetadata RadioMetadata { get; private set; }
-
-        public void SetRadioMetadata(RadioMetadata radioMetadata)
-        {
-            RadioMetadata = radioMetadata;
-        }
+        public RadioMetadata RadioMetadata { get; }
     }
 }

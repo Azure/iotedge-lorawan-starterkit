@@ -5,7 +5,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     public class JoinRequestFrame
     {
-        public JoinRequestFrame(MacHeader mHdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce, Mic mic)
+        public JoinRequestFrame(MacHeader mHdr, JoinEui joinEui, DevEui devEui, DevNonce devNonce, Mic mic, RadioMetadata radioMetadata)
         {
             MHdr = mHdr;
             JoinEui = joinEui;
@@ -14,18 +14,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
             Mic = mic;
             Mic = mic;
             MHdr = mHdr;
+            RadioMetadata = radioMetadata;
         }
 
-        public RadioMetadata RadioMetadata { get; private set; }
+        public RadioMetadata RadioMetadata { get; }
         public MacHeader MHdr { get; }
         public JoinEui JoinEui { get; }
         public DevEui DevEui { get; }
         public DevNonce DevNonce { get; }
         public Mic Mic { get; }
-
-        public void SetRadioMetadata(RadioMetadata radioMetadata)
-        {
-            RadioMetadata = radioMetadata;
-        }
     }
 }
