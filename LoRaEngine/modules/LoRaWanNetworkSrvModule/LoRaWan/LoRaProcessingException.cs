@@ -58,5 +58,6 @@ namespace LoRaWan
         InvalidDeviceConfiguration,
         InvalidModuleConfiguration,
         DeviceClientCreationFailed,
+        PayloadDecryptionFailed
     }
 }
