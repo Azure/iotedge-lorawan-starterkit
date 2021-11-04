@@ -76,6 +76,15 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         }
 
         [Fact]
+        public void Write_Writes_Byte_And_Returns_Updated_Span()
+        {
+            var bytes = new byte[4];
+            var remainingBytes = this.subject.Write(bytes);
+            Assert.Equal(0, remainingBytes.Length);
+            Assert.Equal(new byte[] { 120, 86, 52, 18 }, bytes);
+        }
+
+        [Fact]
         public void Compute()
         {
             var joinEui = JoinEui.Parse("00-05-10-00-00-00-00-04");
