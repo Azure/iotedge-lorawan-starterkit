@@ -129,9 +129,8 @@ namespace LoRaWan.NetworkServer
                     SetState(LoaderState.Finished);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Logger.Log(this.devAddr, $"failed to create one or more devices. {ex.Message}", LogLevel.Error);
                 NotifyQueueItemsDueToError(LoRaDeviceRequestFailedReason.ApplicationError);
                 throw;
             }
