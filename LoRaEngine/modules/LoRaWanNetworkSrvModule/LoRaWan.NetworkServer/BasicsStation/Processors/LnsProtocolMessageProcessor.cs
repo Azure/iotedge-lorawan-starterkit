@@ -64,9 +64,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     this.logger.LogDebug(ex, ex.Message);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => this.logger.LogError(ex, $"An exception occurred while processing requests: {ex}.")))
             {
-                this.logger.LogError(ex, $"An exception occurred while processing requests: {ex}.");
                 throw;
             }
 

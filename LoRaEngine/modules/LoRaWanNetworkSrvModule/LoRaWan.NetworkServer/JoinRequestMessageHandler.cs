@@ -273,10 +273,11 @@ namespace LoRaWan.NetworkServer
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when
+                    (ExceptionFilterUtility.False(() => Logger.Log(devEUI ?? ConversionHelper.ByteArrayToString(request.Payload.DevAddr),
+                                                                   $"failed to handle join request. {ex.Message}",
+                                                                   LogLevel.Error)))
                 {
-                    var deviceId = devEUI ?? ConversionHelper.ByteArrayToString(request.Payload.DevAddr);
-                    Logger.Log(deviceId, $"failed to handle join request. {ex.Message}", LogLevel.Error);
                     request.NotifyFailed(loRaDevice, ex);
                     throw;
                 }

@@ -99,9 +99,8 @@ namespace LoRaWan.NetworkServer
 
                 await udpServer.RunUdpListener();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"Initialization failed with error: {ex.Message}", LogLevel.Error)))
             {
-                Logger.Log($"Initialization failed with error: {ex.Message}", LogLevel.Error);
                 throw;
             }
         }
@@ -322,9 +321,8 @@ namespace LoRaWan.NetworkServer
                     return new MethodResponse((int)HttpStatusCode.BadRequest);
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log(devEui, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error)))
             {
-                Logger.Log(devEui, $"[class-c] error sending class C cloud to device message. {ex.Message}", LogLevel.Error);
                 throw;
             }
 
@@ -365,9 +363,8 @@ namespace LoRaWan.NetworkServer
 
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"Error when receiving desired property: {ex.Message}", LogLevel.Error)))
             {
-                Logger.Log($"Error when receiving desired property: {ex.Message}", LogLevel.Error);
                 throw;
             }
 

@@ -75,14 +75,19 @@ namespace LoRaWan.NetworkServer
             {
                 try
                 {
-                    await Load().ContinueWith(t => continuationAction(t, this),
-                                              CancellationToken.None,
-                                              TaskContinuationOptions.ExecuteSynchronously,
-                                              TaskScheduler.Default);
+                    var t = Load();
+
+                    try
+                    {
+                        await t;
+                    }
+                    finally
+                    {
+                        continuationAction(t, this);
+                    }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"Error while loading: {ex}.", LogLevel.Error)))
                 {
-                    Logger.Log($"Error while loading: {ex}.", LogLevel.Error);
                     throw;
                 }
             });

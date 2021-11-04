@@ -1062,9 +1062,8 @@ namespace LoRaWan.NetworkServer
                 {
                     await CoreAsync();
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error)))
                 {
-                    Logger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error);
                     throw;
                 }
             });

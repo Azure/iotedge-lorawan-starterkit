@@ -105,9 +105,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
 
                 return new MethodResponse((int)HttpStatusCode.BadRequest);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"An exception occurred on a direct method call: {ex}", LogLevel.Error)))
             {
-                Logger.Log($"An exception occurred on a direct method call: {ex}", LogLevel.Error);
                 throw;
             }
         }
@@ -164,9 +163,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.ModuleConnection
             {
                 Logger.Log($"A desired properties update was detected but the parameters are out of range with exception :  {ex}", LogLevel.Warning);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"An exception occurred on desired property update: {ex}", LogLevel.Error)))
             {
-                Logger.Log($"An exception occurred on desired property update: {ex}", LogLevel.Error);
                 throw;
             }
 
