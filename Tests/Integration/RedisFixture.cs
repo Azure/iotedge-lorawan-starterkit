@@ -7,6 +7,7 @@ namespace LoRaWan.Tests.Integration
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Net;
     using System.Threading;
     using System.Threading.Tasks;
     using Docker.DotNet;
@@ -91,11 +92,14 @@ namespace LoRaWan.Tests.Integration
 
                 System.Console.WriteLine("Finish booting sequence container...");
             }
-#pragma warning disable CA1031 // Do not catch general exception types. This is for tests
-            catch (Exception ex)
-#pragma warning restore CA1031 // Do not catch general exception types
+            catch (DockerApiException e) when (e.StatusCode == HttpStatusCode.Conflict)
             {
-                System.Console.WriteLine(ex.ToString());
+                Console.WriteLine("Docker container is already running.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
             }
         }
 
