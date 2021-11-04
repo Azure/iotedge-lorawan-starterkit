@@ -5,12 +5,14 @@
 
 namespace LoRaWan.NetworkServer
 {
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
 
-    public interface IWebSocketWriter<in T> where T : notnull
+    public interface IWebSocketWriterHandle<T> :
+        IEquatable<IWebSocketWriterHandle<T>>
+        where T : notnull
     {
-        bool IsClosed { get; }
         ValueTask SendAsync(T message, CancellationToken cancellationToken);
     }
 }
