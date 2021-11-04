@@ -88,10 +88,10 @@ namespace LoRaTools.Regions
 
         /// <summary>
         /// Logic to get the correct downstream transmission frequency for region CN470.
+        /// </summary>
         /// <param name="upstreamFrequency">The frequency at which the message was transmitted.</param>
         /// <param name="dataRate">The upstream data rate.</param>
         /// <param name="deviceJoinInfo">Join info for the device, if applicable.</param>
-        /// </summary>
         public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo)
         {
             downstreamFrequency = 0;
