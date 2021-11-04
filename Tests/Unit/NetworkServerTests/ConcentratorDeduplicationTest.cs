@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 {
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using System;
     using System.Net.WebSockets;
@@ -16,7 +17,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
         public ConcentratorDeduplicationTest()
         {
-            this.ConcentratorDeduplication = new ConcentratorDeduplication();
+            this.ConcentratorDeduplication = new ConcentratorDeduplication(NullLogger<ConcentratorDeduplication>.Instance);
         }
 
         [Theory]
@@ -42,41 +43,49 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Theory]
-        [InlineData(true, true, false)] // true, false does not make sense: since we just received this message the socket should still be open
-        [InlineData(false, true, true)]
-        [InlineData(false, false, false)]
-        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool activeConnection, bool expectedResult)
+        [InlineData(true, true, true, false)]
+        [InlineData(true, false, false, true)]
+        [InlineData(false, true, true, true)]
+        [InlineData(false, true, false, true)]
+        [InlineData(false, false, true, false)]
+        [InlineData(false, false, false, true)]
+        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool activeConnectionToPreviousStation, bool activeConnectionToCurrentStation, bool expectedResult)
         {
             // arrange
-            var socketMock = new Mock<WebSocket>();
-            IWebSocketWriter<string> channel = null;
-            if (!activeConnection)
+            var stationEui = new StationEui();
+            var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
+
+            var previousStationSocketMock = new Mock<WebSocket>();
+            var currentStationSocketMock = new Mock<WebSocket>();
+
+            IWebSocketWriter<string> previousChannel = null;
+            IWebSocketWriter<string> currentChannel = null;
+            if (!activeConnectionToPreviousStation)
             {
-                socketMock.Setup(x => x.State).Returns(WebSocketState.Closed);
+                previousStationSocketMock.Setup(x => x.State).Returns(WebSocketState.Closed);
             }
-            channel = new WebSocketTextChannel(socketMock.Object, TimeSpan.FromMinutes(1)); // send timeout not relevant
+            if (!activeConnectionToCurrentStation)
+            {
+                currentStationSocketMock.Setup(x => x.State).Returns(WebSocketState.Closed);
+            }
+            previousChannel = new WebSocketTextChannel(previousStationSocketMock.Object, TimeSpan.FromMinutes(1)); // send timeout not relevant
+            currentChannel = new WebSocketTextChannel(currentStationSocketMock.Object, TimeSpan.FromMinutes(1)); // send timeout not relevant
+            this.ConcentratorDeduplication.webSocketRegistry.Add(stationEui, previousChannel);
+
+            if (!sameStationAsBefore)
+            {
+                this.ConcentratorDeduplication.webSocketRegistry.Add(anotherStation, currentChannel);
+            }
 
             var updf = new UpstreamDataFrame(default, 1, "payload", default);
-            var stationEui = new StationEui();
             this.ConcentratorDeduplication.IsDuplicate(updf, stationEui);
 
-            this.ConcentratorDeduplication.webSocketRegistry.Add(stationEui, channel);
-            var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
 
             // act/assert
             Assert.Equal(expectedResult, this.ConcentratorDeduplication.IsDuplicate(updf, anotherStation));
             var key = ConcentratorDeduplication.CreateCacheKey(updf);
             Assert.Equal(1, this.ConcentratorDeduplication.Cache.Count);
-            this.ConcentratorDeduplication.Cache.TryGetValue(key, out var value);
-
-            if (expectedResult)
-            {
-                Assert.Equal(value, stationEui);
-            }
-            else
-            {
-                Assert.Equal(value, anotherStation);
-            }
+            Assert.True(this.ConcentratorDeduplication.Cache.TryGetValue(key, out var _));
         }
 
         public void Dispose() => this.ConcentratorDeduplication.Dispose();

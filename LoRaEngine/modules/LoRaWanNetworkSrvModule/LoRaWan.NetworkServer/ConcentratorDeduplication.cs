@@ -1,10 +1,11 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
 {
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging;
     using System;
     using System.Collections.Generic;
     using System.Security.Cryptography;
@@ -16,11 +17,13 @@ namespace LoRaWan.NetworkServer
         private static readonly TimeSpan CacheEntryExpiration = TimeSpan.FromMinutes(1);
 
         internal readonly Dictionary<StationEui, IWebSocketWriter<string>> webSocketRegistry;
+        private readonly ILogger logger;
 
-        public ConcentratorDeduplication() // TODO depends on WebSocketRegistry, will be added with #676
+        public ConcentratorDeduplication(ILogger<ConcentratorDeduplication> logger) // TODO depends on WebSocketRegistry, will be added with #676
         {
             Cache = new MemoryCache(new MemoryCacheOptions());
             this.webSocketRegistry = new Dictionary<StationEui, IWebSocketWriter<string>>();
+            this.logger = logger;
         }
 
         /// <summary>
@@ -47,8 +50,15 @@ namespace LoRaWan.NetworkServer
                 {
                     if (previousMessageFromDevice == stationEui)
                     {
-                        // received from the same station as before
-                        return false; // it's a resubmit
+                        if (IsConnectionOpen(stationEui))
+                        {
+                            return false; // it's a resubmit
+                        }
+
+                        this.logger.Log(LogLevel.Debug, $"No open web socket connection found for {stationEui}, dropping message.");
+
+                        // TODO shall we remove from cache as well?
+                        return true;
                     }
                     else
                     {
@@ -57,10 +67,17 @@ namespace LoRaWan.NetworkServer
                             // we still have a connection open to the station used last time
                             return true;
                         }
-                        else
+                        else if (IsConnectionOpen(stationEui))
                         {
                             AddToCache(key, stationEui);
                             return false;
+                        }
+                        else
+                        {
+                            this.logger.Log(LogLevel.Debug, $"No open web socket connection found for {stationEui} or {previousMessageFromDevice}, dropping message.");
+
+                            // TODO shall we remove from cache as well?
+                            return true;
                         }
                     }
                 }
