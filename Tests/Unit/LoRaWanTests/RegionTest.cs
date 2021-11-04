@@ -31,7 +31,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(RegionCN470TestData.TestRegionDataRateData), MemberType = typeof(RegionCN470TestData))]
         public void TestDownstreamDataRate(Region region, double inputFrequency, ushort inputDataRate, ushort outputDr, int rx1DrOffset = 0)
         {
-            Assert.Equal(region.GetDownstreamDR(inputFrequency, inputDataRate, rx1DrOffset), outputDr);
+            Assert.Equal(region.GetDownstreamDataRate(inputFrequency, inputDataRate, rx1DrOffset), outputDr);
         }
 
         [Theory]
@@ -42,7 +42,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             var deviceJoinInfo = new DeviceJoinInfo(joinChannel);
             Assert.False(region.TryGetDownstreamChannelFrequency(inputFrequency, datarate, out _, deviceJoinInfo));
-            Assert.Null(region.GetDownstreamDR(inputFrequency, datarate));
+            Assert.Null(region.GetDownstreamDataRate(inputFrequency, datarate));
         }
 
         [Theory]
@@ -123,10 +123,15 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         [MemberData(nameof(RegionCN470TestData.TestIsDRIndexWithinAcceptableValuesData), MemberType = typeof(RegionCN470TestData))]
         public void TestIsDRIndexWithinAcceptableValues(Region region, ushort? datarate, bool upstream, bool isValid)
         {
-            if (upstream && datarate != null)
+            if (upstream)
+            {
+                Assert.NotNull(datarate);
                 Assert.Equal(isValid, region.RegionLimits.IsCurrentUpstreamDRIndexWithinAcceptableValue((ushort)datarate));
+            }
             else
+            {
                 Assert.Equal(isValid, region.RegionLimits.IsCurrentDownstreamDRIndexWithinAcceptableValue(datarate));
+            }
         }
 
         private static IList<Rxpk> GenerateRxpk(string dr, double freq)

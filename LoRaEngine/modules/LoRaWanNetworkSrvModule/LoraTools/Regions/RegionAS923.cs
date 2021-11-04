@@ -72,7 +72,16 @@ namespace LoRaTools.Regions
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
         public override bool TryGetDownstreamChannelFrequency(Rxpk upstreamChannel, out double frequency, DeviceJoinInfo deviceJoinInfo)
         {
+            if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
+
             frequency = 0;
+
+            if (IsValidUpstreamRxpk(upstreamChannel))
+            {
+                // Use the same frequency as the upstream.
+                frequency = upstreamChannel.Freq;
+                return true;
+            }
 
             return false;
         }
@@ -86,6 +95,13 @@ namespace LoRaTools.Regions
         public override bool TryGetDownstreamChannelFrequency(double upstreamFrequency, ushort dataRate, out double downstreamFrequency, DeviceJoinInfo deviceJoinInfo)
         {
             downstreamFrequency = 0;
+
+            if (IsValidUpstreamFrequencyAndDataRate(upstreamFrequency, dataRate))
+            {
+                // Use the same frequency as the upstream.
+                downstreamFrequency = upstreamFrequency;
+                return true;
+            }
 
             return false;
         }
