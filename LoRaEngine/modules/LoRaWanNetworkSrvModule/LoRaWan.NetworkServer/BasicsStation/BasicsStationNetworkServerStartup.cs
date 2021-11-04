@@ -59,6 +59,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<ILoRaModuleClientFactory>(loraModuleFactory)
                         .AddTransient<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
                         .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
+                        .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
 
                         // STUB for the Ipkt Fwd until Danigian implement the LNS implementation.
                         .AddSingleton<IPacketForwarder, PacketForwarderStub>();

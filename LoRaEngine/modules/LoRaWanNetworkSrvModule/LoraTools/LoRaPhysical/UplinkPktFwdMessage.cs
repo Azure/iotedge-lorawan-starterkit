@@ -3,14 +3,13 @@
 
 namespace LoRaTools.LoRaPhysical
 {
-    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
 
     /// <summary>
     /// an uplink Json for the packet forwarder.
     /// </summary>
-    public class UplinkPktFwdMessage : PktFwdMessage
+    public class UplinkPktFwdMessage
     {
 #pragma warning disable CA2227 // Collection properties should be read only
         // Class is a DTO.
@@ -58,9 +57,5 @@ namespace LoRaTools.LoRaPhysical
                 }
             };
         }
-
-        [Obsolete("to remove")]
-        [JsonIgnore]
-        public override PktFwdMessageAdapter PktFwdMessageAdapter => new PktFwdMessageAdapter(Rxpk, null);
     }
 }

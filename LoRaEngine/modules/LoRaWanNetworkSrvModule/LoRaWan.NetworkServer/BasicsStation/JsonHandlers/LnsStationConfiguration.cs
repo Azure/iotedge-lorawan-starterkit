@@ -9,6 +9,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
     using System.Linq;
     using System.Text;
     using System.Text.Json;
+    using LoRaTools.Regions;
 
     internal static class LnsStationConfiguration
     {
@@ -157,6 +158,14 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                     WriteRouterConfig(netId, joinEui, region, hwspec, freqRange, drs,
                                                       sx1301conf, nocca, nodc, nodwell));
 
+        private static readonly IJsonReader<Region> RegionConfigurationConverter =
+            JsonReader.Object(JsonReader.Property("region", from s in JsonReader.String()
+                                                            select Enum.TryParse<LoRaRegionType>(s, out var loraRegionType)
+                                                                    ? RegionManager.TryTranslateToRegion(loraRegionType, out var resolvedRegion)
+                                                                        ? resolvedRegion
+                                                                        : throw new NotSupportedException($"'{loraRegionType}' is not a supported region.")
+                                                                    : throw new JsonException($"'{s}' is not a valid region value as defined in '{nameof(LoRaRegionType)}'.")));
+
         /*
             {
               "msgtype"    : "router_config"
@@ -182,6 +191,8 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
             var bandwidthInKHz = bandwidth > kHzLimit ? (bandwidth / 1000) : bandwidth;
             return CastToEnumIfDefined<Bandwidth>((int)bandwidthInKHz);
         }
+
+        public static Region GetRegion(string jsonInput) => RegionConfigurationConverter.Read(jsonInput);
 
         private static T CastToEnumIfDefined<T>(int value) where T : Enum =>
             Enum.IsDefined(typeof(T), value)
