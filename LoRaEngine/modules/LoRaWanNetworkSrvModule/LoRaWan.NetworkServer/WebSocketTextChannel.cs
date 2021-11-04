@@ -39,7 +39,7 @@ namespace LoRaWan.NetworkServer
             this.sendTimeout = sendTimeout == Timeout.InfiniteTimeSpan || sendTimeout >= TimeSpan.Zero
                              ? sendTimeout
                              : throw new ArgumentOutOfRangeException(nameof(sendTimeout), sendTimeout, null);
-            this.channel = Channel.CreateUnbounded<Output>();
+            this.channel = Channel.CreateUnbounded<Output>(new UnboundedChannelOptions { SingleReader = true });
         }
 
         /// <summary>
