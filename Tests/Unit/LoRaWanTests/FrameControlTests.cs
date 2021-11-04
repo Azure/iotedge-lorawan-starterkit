@@ -136,5 +136,14 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
         {
             Assert.Equal("15", this.subject.ToString());
         }
+
+        [Fact]
+        public void Write_Writes_Byte_And_Returns_Updated_Span()
+        {
+            var bytes = new byte[1];
+            var remainingBytes = this.subject.Write(bytes);
+            Assert.Equal(0, remainingBytes.Length);
+            Assert.Equal(new byte[] { 21 }, bytes);
+        }
     }
 }
