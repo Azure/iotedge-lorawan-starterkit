@@ -178,7 +178,7 @@ namespace LoRaWan.NetworkServer
                 double freq = 0;
                 string datr = null;
                 uint tmst = 0;
-                ushort rxDelay = 0;
+                ushort lnsRxDelay = 0;
                 if (windowToUse == Constants.ReceiveWindow1)
                 {
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
@@ -193,13 +193,13 @@ namespace LoRaWan.NetworkServer
 
                     // set tmst for the normal case
                     tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay1 * 1000000);
-                    rxDelay = (ushort)loraRegion.JoinAcceptDelay1;
+                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay1;
                 }
                 else
                 {
                     Logger.Log(devEUI, $"processing of the join request took too long, using second join accept receive window", LogLevel.Debug);
                     tmst = request.Rxpk.Tmst + (loraRegion.JoinAcceptDelay2 * 1000000);
-                    rxDelay = (ushort)loraRegion.JoinAcceptDelay2;
+                    lnsRxDelay = (ushort)loraRegion.JoinAcceptDelay2;
 
                         freq = loraRegion.GetDownstreamRX2Freq(devEUI, this.configuration.Rx2Frequency);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
@@ -244,10 +244,10 @@ namespace LoRaWan.NetworkServer
                 // This one is a delay between TX and RX for any message to be processed by joining device
                 // The field accepted by Serialize method is an indication of the delay (compared to receive time of join request)
                 // of when the message Join Accept message should be sent
-                ushort desiredRxDelay = 0;
+                ushort loraSpecDesiredRxDelay = 0;
                 if (loRaDevice.DesiredRXDelay != 0 && Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
                 {
-                    desiredRxDelay = loRaDevice.DesiredRXDelay;
+                    loraSpecDesiredRxDelay = loRaDevice.DesiredRXDelay;
                 }
                 else
                 {
@@ -259,10 +259,10 @@ namespace LoRaWan.NetworkServer
                     ConversionHelper.StringToByteArray(devAddr), // todo add device address management
                     appNonceBytes,
                     dlSettings,
-                    desiredRxDelay,
+                    loraSpecDesiredRxDelay,
                     null);
 
-                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, rxDelay, request.StationEui);
+                var joinAccept = loRaPayloadJoinAccept.Serialize(loRaDevice.AppKey, datr, freq, devEUI, tmst, lnsRxDelay, request.StationEui);
                 if (joinAccept != null)
                 {
                     _ = request.PacketForwarder.SendDownstreamAsync(joinAccept);

@@ -273,8 +273,12 @@ namespace LoRaTools.LoRaMessage
         /// <param name="freq">The frequency at which to be sent.</param>
         /// <param name="tmst">time stamp.</param>
         /// <param name="devEUI">the device EUI.</param>
+        /// <param name="lnsRxDelay">the rx delay as specified in LNS protocol.</param>
+        /// <param name="rfch">the index of the preferred antenna.</param>
+        /// <param name="time">the original receive time.</param>
+        /// <param name="stationEui">the station eui which will handle the downlink message.</param>
         /// <returns>the Downlink message.</returns>
-        public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI, ushort rxDelay, uint rfch = 0, string time = "", StationEui stationEui = default)
+        public DownlinkPktFwdMessage Serialize(string appSKey, string nwkSKey, string datr, double freq, long tmst, string devEUI, ushort lnsRxDelay, uint rfch = 0, string time = "", StationEui stationEui = default)
         {
             if (devEUI is null) throw new ArgumentNullException(nameof(devEUI));
 
@@ -289,7 +293,7 @@ namespace LoRaTools.LoRaMessage
             }
 
             SetMic(nwkSKey);
-            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEUI, tmst, rxDelay, rfch, time, stationEui);
+            var downlinkPktFwdMessage = new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEUI, tmst, lnsRxDelay, rfch, time, stationEui);
             if (Logger.LoggerLevel < LogLevel.Information)
             {
                 var jsonMsg = JsonConvert.SerializeObject(downlinkPktFwdMessage);

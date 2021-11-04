@@ -67,7 +67,7 @@ namespace LoRaWan.NetworkServer
             string datr;
             double freq;
             long tmst;
-            ushort rxDelay = 0;
+            ushort lnsRxDelay = 0;
 
             var deviceJoinInfo = request.Region.LoRaRegion == LoRaRegionType.CN470
                 ? new DeviceJoinInfo(loRaDevice.ReportedCN470JoinChannel, loRaDevice.DesiredCN470JoinChannel)
@@ -75,7 +75,7 @@ namespace LoRaWan.NetworkServer
 
             if (receiveWindow == Constants.ReceiveWindow2)
             {
-                rxDelay = (ushort)timeWatcher.GetReceiveWindow2Delay(loRaDevice);
+                lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow2Delay(loRaDevice);
                 tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow2Delay(loRaDevice), loRaDevice.ReportedRXDelay);
                 freq = loRaRegion.GetDownstreamRX2Freq(loRaDevice.DevEUI, configuration.Rx2Frequency, deviceJoinInfo);
 #pragma warning disable CS0618 // #655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done
@@ -102,7 +102,7 @@ namespace LoRaWan.NetworkServer
                 }
 
                 tmst = rxpk.Tmst + CalculateTime(timeWatcher.GetReceiveWindow1Delay(loRaDevice), loRaDevice.ReportedRXDelay);
-                rxDelay = (ushort)timeWatcher.GetReceiveWindow1Delay(loRaDevice);
+                lnsRxDelay = (ushort)timeWatcher.GetReceiveWindow1Delay(loRaDevice);
             }
 
             // get max. payload size based on data rate from LoRaRegion
@@ -222,7 +222,7 @@ namespace LoRaWan.NetworkServer
             // todo: check the device twin preference if using confirmed or unconfirmed down
             Logger.Log(loRaDevice.DevEUI, $"sending a downstream message with ID {ConversionHelper.ByteArrayToString(rndToken)}", LogLevel.Information);
             return new DownlinkMessageBuilderResponse(
-                ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, rxDelay, rxpk.Rfch, rxpk.Time, request.StationEui),
+                ackLoRaMessage.Serialize(loRaDevice.AppSKey, loRaDevice.NwkSKey, datr, freq, tmst, loRaDevice.DevEUI, lnsRxDelay, rxpk.Rfch, rxpk.Time, request.StationEui),
                 isMessageTooLong);
         }
 

@@ -20,7 +20,7 @@ namespace LoRaTools.LoRaPhysical
         public string DevEui { get; }
 
         [JsonIgnore]
-        public ushort RxDelay { get; }
+        public ushort LnsRxDelay { get; }
 
         [JsonIgnore]
         public ulong Xtime { get; }
@@ -40,7 +40,7 @@ namespace LoRaTools.LoRaPhysical
         /// This method is used in case of a response to a upstream message.
         /// </summary>
         /// <returns>DownlinkPktFwdMessage object ready to be sent.</returns>
-        public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, string devEui, long tmst = 0, ushort rxDelay = 0, uint? rfch = null, string time = "", StationEui stationEui = default)
+        public DownlinkPktFwdMessage(byte[] loRaData, string datr, double freq, string devEui, long tmst = 0, ushort lnsRxDelay = 0, uint? rfch = null, string time = "", StationEui stationEui = default)
         {
             if (loRaData is null) throw new ArgumentNullException(nameof(loRaData));
 
@@ -61,7 +61,7 @@ namespace LoRaTools.LoRaPhysical
             };
 
             DevEui = devEui;
-            RxDelay = rxDelay;
+            LnsRxDelay = lnsRxDelay;
             AntennaPreference = rfch;
             StationEui = stationEui;
             Xtime = string.IsNullOrEmpty(time) ? 0 : ulong.Parse(time, CultureInfo.InvariantCulture);
