@@ -245,7 +245,7 @@ namespace LoRaWan.NetworkServer
                 // The field accepted by Serialize method is an indication of the delay (compared to receive time of join request)
                 // of when the message Join Accept message should be sent
                 ushort loraSpecDesiredRxDelay = 0;
-                if (loRaDevice.DesiredRXDelay != 0 && Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
+                if (Region.IsValidRXDelay(loRaDevice.DesiredRXDelay))
                 {
                     loraSpecDesiredRxDelay = loRaDevice.DesiredRXDelay;
                 }
