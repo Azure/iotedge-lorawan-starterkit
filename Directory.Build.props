@@ -39,6 +39,8 @@
       <CoverletMSBuild>3.1.0</CoverletMSBuild>
       <MicrosoftAzureEventHubsVersion>4.3.2</MicrosoftAzureEventHubsVersion>
       <MicrosoftAzureEventHubsProcessorVersion>4.3.2</MicrosoftAzureEventHubsProcessorVersion>
+      <MicrosoftExtensionsLogging>3.1.5</MicrosoftExtensionsLogging>
+      <MicrosoftExtensionsLoggingConfiguration>3.1.5</MicrosoftExtensionsLoggingConfiguration>
       <BogusVersion>33.1.1</BogusVersion>
     </PropertyGroup>
 
