@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 {
     using System.Globalization;
     using LoRaTools.ADR;
+    using LoRaWan;
     using LoRaWan.NetworkServer.ADR;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
     using LoRaWan.NetworkServer.BasicsStation.Processors;
@@ -34,7 +35,10 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             _ = services.AddLogging(loggingBuilder =>
                         {
-                            _ = loggingBuilder.SetMinimumLevel((LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture));
+                            _ = loggingBuilder.ClearProviders();
+                            var logLevel = (LogLevel)int.Parse(NetworkServerConfiguration.LogLevel, CultureInfo.InvariantCulture);
+                            _ = loggingBuilder.SetMinimumLevel(logLevel);
+                            _ = loggingBuilder.AddLoRaConsoleLogger(c => c.LogLevel = logLevel);
                         })
                         .AddMemoryCache()
                         .AddSingleton(NetworkServerConfiguration)
