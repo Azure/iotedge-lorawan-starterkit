@@ -3,10 +3,10 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
     using System;
     using System.Globalization;
+    using LoRaTools.LoRaPhysical;
+    using LoRaTools.Regions;
 
     public class BasicStationToRxpk : Rxpk
     {
