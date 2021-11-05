@@ -23,6 +23,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     public class LnsProtocolMessageProcessorTests
     {
         private readonly Mock<IBasicsStationConfigurationService> basicsStationConfigurationMock;
+        private readonly Mock<IMessageDispatcher> messageDispatcher;
+        private readonly Mock<IPacketForwarder> packetForwarder;
         private readonly LnsProtocolMessageProcessor lnsMessageProcessorMock;
         private readonly Mock<WebSocket> socketMock;
         private readonly Mock<HttpContext> httpContextMock;
@@ -34,9 +36,13 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             this.socketMock = new Mock<WebSocket>();
             this.httpContextMock = new Mock<HttpContext>();
             this.basicsStationConfigurationMock = new Mock<IBasicsStationConfigurationService>();
+            this.messageDispatcher = new Mock<IMessageDispatcher>();
+            this.packetForwarder = new Mock<IPacketForwarder>();
 
-            this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(basicsStationConfigurationMock.Object,
+            this.lnsMessageProcessorMock = new LnsProtocolMessageProcessor(this.basicsStationConfigurationMock.Object,
                                                                            new WebSocketWriterRegistry<StationEui, string>(Mock.Of<ILogger<WebSocketWriterRegistry<StationEui, string>>>()),
+                                                                           this.packetForwarder.Object,
+                                                                           this.messageDispatcher.Object,
                                                                            loggerMock);
         }
 
