@@ -25,7 +25,7 @@ namespace LoRaTools.LoRaMessage
             DevNonce = new byte[LoRaWan.DevNonce.Size];
             _ = devNonce.Write(DevNonce.Span);
 
-            Mic = mic.AsByteArray();
+            _ = mic.Write(Mic.Span);
         }
     }
 }

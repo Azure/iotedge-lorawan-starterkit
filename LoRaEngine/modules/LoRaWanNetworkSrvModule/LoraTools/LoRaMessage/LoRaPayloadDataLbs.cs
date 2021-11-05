@@ -20,8 +20,8 @@ namespace LoRaTools.LoRaMessage
                                   Mic mic)
         {
             if (string.IsNullOrEmpty(frmPayload)) throw new ArgumentNullException(nameof(frmPayload));
-            var reversedAddr = devAddr.AsByteArray().Reverse();
-            DevAddr = reversedAddr.ToArray();
+            _ = devAddr.Write(DevAddr.Span);
+            DevAddr.Span.Reverse();
 
             LoRaMessageType = mhdr.MessageType switch
             {
@@ -74,7 +74,7 @@ namespace LoRaTools.LoRaMessage
                 MacCommands = MacCommand.CreateMacCommandFromBytes(ConversionHelper.ByteArrayToString(DevAddr), Fopts);
             }
 
-            Mic = mic.AsByteArray();
+            _ = mic.Write(Mic.Span);
         }
     }
 }
