@@ -75,7 +75,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 if (queryResult.Count != 1)
                     Log($"The configuration request of station '{stationEui}' did not match any configuration in IoT Hub. If you expect this connection request to succeed, make sure to provision the Basics Station in the device registry.");
                 var info = queryResult.Single();
-                using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey);
+                using var client = this.loRaDeviceFactory.CreateDeviceClient(info.DevEUI, info.PrimaryKey, info.IoTHubHostName);
                 var twin = await client.GetTwinAsync();
                 var configJson = ((object)twin.Properties.Desired[RouterConfigPropertyName]).ToString();
                 return LnsStationConfiguration.GetConfiguration(configJson);

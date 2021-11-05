@@ -156,35 +156,31 @@ namespace LoraKeysManagerFacade
                         // if the device is not found is the cache we query, if there was something, it is probably not our device.
                         if (results.Count == 0 && devAddressesInfo == null)
                         {
-                            if (await devAddrCache.TryTakeDevAddrUpdateLock(devAddr))
+                            var query = await this.registryManager.FindDeviceByAddrAsync(devAddr);
+
+                            var resultCount = 0;
+
+                            while (query.HasMoreResults)
                             {
-                                try
+                                var page = await query.GetNextPageAsync();
+
+                                foreach (var twin in page)
                                 {
-                                    var query = await this.registryManager.FindDeviceByAddrAsync(devAddr);
-
-                                    var resultCount = 0;
-
-                                    while (query.HasMoreResults)
+                                    if (twin.DeviceId != null)
                                     {
-                                        var page = await query.GetNextPageAsync();
-
-                                        foreach (var twin in page)
+                                        var device = await this.registryManager.GetDeviceAsync(twin.DeviceId);
+                                        var iotHubDeviceInfo = new DevAddrCacheInfo
                                         {
-                                            if (twin.DeviceId != null)
-                                            {
-                                                var device = await this.registryManager.GetDeviceAsync(twin.DeviceId);
-                                                var iotHubDeviceInfo = new DevAddrCacheInfo
-                                                {
-                                                    DevAddr = devAddr,
-                                                    DevEUI = twin.DeviceId,
-                                                    PrimaryKey = device.PrimaryKey,
-                                                    GatewayId = twin.GetGatewayID() ?? string.Empty,
-                                                    NwkSKey = twin.GetNwkSKey(),
-                                                    LastUpdatedTwins = twin.GetLastUpdated()
-                                                };
-                                                results.Add(iotHubDeviceInfo);
-                                                _ = devAddrCache.StoreInfo(iotHubDeviceInfo);
-                                            }
+                                            DevAddr = devAddr,
+                                            DevEUI = twin.DeviceId,
+                                            PrimaryKey = device.PrimaryKey,
+                                            GatewayId = twin.GetGatewayID() ?? string.Empty,
+                                            NwkSKey = twin.GetNwkSKey(),
+                                            LastUpdatedTwins = twin.GetLastUpdated()
+                                        };
+                                        results.Add(iotHubDeviceInfo);
+                                        _ = devAddrCache.StoreInfo(iotHubDeviceInfo);
+                                    }
 
                                     resultCount++;
                                 }

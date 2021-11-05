@@ -13,6 +13,6 @@ namespace LoRaWan.NetworkServer
         /// </summary>
         /// <param name="eui">Dev EUI of the device.</param>
         /// <param name="primaryKey">Primary key of the device.</param>
-        ILoRaDeviceClient CreateDeviceClient(string eui, string primaryKey);
+        ILoRaDeviceClient CreateDeviceClient(string devEUI, string primaryKey, string assignedIoTHubHostName);
     }
 }

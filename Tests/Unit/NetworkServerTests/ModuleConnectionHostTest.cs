@@ -6,7 +6,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using Bogus;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation.ModuleConnection;
-    using Microsoft.Azure.Devices.Client;
     using Microsoft.Azure.Devices.Client.Exceptions;
     using Microsoft.Azure.Devices.Shared;
     using Moq;

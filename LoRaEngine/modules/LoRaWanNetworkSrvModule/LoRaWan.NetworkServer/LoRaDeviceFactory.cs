@@ -76,7 +76,7 @@ namespace LoRaWan.NetworkServer
             return connectionString;
         }
 
-        private LoRaDeviceClient CreateDeviceClient(string devEUI, string primaryKey, string assignedIoTHubHostName)
+        public ILoRaDeviceClient CreateDeviceClient(string devEUI, string primaryKey, string assignedIoTHubHostName)
         {
             try
             {
@@ -97,11 +97,11 @@ namespace LoRaWan.NetworkServer
                     }
                 };
 
-                return new LoRaDeviceClient(eui, deviceConnectionStr, transportSettings);
+                return new LoRaDeviceClient(devEUI, deviceConnectionStr, transportSettings);
             }
             catch (Exception ex)
             {
-                Logger.Log(eui, $"could not create IoT Hub device client with error: {ex.Message}", LogLevel.Error);
+                Logger.Log(devEUI, $"could not create IoT Hub device client with error: {ex.Message}", LogLevel.Error);
                 throw;
             }
         }
