@@ -3,7 +3,8 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
-    using System.Runtime.CompilerServices;
+    using System;
+
     internal enum LnsMessageType
     {
         Version,                // version
@@ -34,7 +35,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             LnsMessageType.UplinkDataFrame      => "updf",
             LnsMessageType.TransmitConfirmation => "dntxed",
             LnsMessageType.DownlinkMessage      => "dnmsg",
-            _ => throw new SwitchExpressionException("Invalid internal state"),
+            _ => throw new ArgumentOutOfRangeException(nameof(lnsMessageType), lnsMessageType, null),
         };
     }
 }
