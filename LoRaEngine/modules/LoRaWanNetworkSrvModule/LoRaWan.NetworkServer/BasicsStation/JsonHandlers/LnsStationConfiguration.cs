@@ -219,7 +219,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
 
             writer.WriteStartObject();
 
-            writer.WriteString("msgtype", "router_config");
+            writer.WriteString("msgtype", LnsMessageType.RouterConfig.ToBasicStationString());
 
             writer.WritePropertyName("NetID");
             writer.WriteStartArray();

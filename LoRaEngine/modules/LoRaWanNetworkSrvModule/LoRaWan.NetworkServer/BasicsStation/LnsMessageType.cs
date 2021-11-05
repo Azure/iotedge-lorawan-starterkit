@@ -3,6 +3,8 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
+    using System;
+
     internal enum LnsMessageType
     {
         Version,                // version
@@ -21,5 +23,19 @@ namespace LoRaWan.NetworkServer.BasicsStation
         RemoteShell,            // rmtsh
 
         */
+    }
+
+    internal static class LnsMessageTypeExtensions
+    {
+        internal static string ToBasicStationString(this LnsMessageType lnsMessageType) => lnsMessageType switch
+        {
+            LnsMessageType.Version              => "version",
+            LnsMessageType.RouterConfig         => "router_config",
+            LnsMessageType.JoinRequest          => "jreq",
+            LnsMessageType.UplinkDataFrame      => "updf",
+            LnsMessageType.TransmitConfirmation => "dntxed",
+            LnsMessageType.DownlinkMessage      => "dnmsg",
+            _ => throw new ArgumentOutOfRangeException(nameof(lnsMessageType), lnsMessageType, null),
+        };
     }
 }
