@@ -15,12 +15,9 @@ namespace LoRaWan.NetworkServer
         internal MemoryCache Cache { get; private set; }
         private static readonly TimeSpan CacheEntryExpiration = TimeSpan.FromMinutes(1);
 
-        internal readonly Dictionary<StationEui, IWebSocketWriter<string>> webSocketRegistry;
-
-        public ConcentratorDeduplication() // TODO depends on WebSocketRegistry, will be added with #676
+        public ConcentratorDeduplication()
         {
             Cache = new MemoryCache(new MemoryCacheOptions());
-            this.webSocketRegistry = new Dictionary<StationEui, IWebSocketWriter<string>>();
         }
 
         /// <summary>
@@ -52,16 +49,7 @@ namespace LoRaWan.NetworkServer
                     }
                     else
                     {
-                        if (IsConnectionOpen(previousMessageFromDevice))
-                        {
-                            // we still have a connection open to the station used last time
-                            return true;
-                        }
-                        else
-                        {
-                            AddToCache(key, stationEui);
-                            return false;
-                        }
+                        return true;
                     }
                 }
             }
@@ -73,13 +61,6 @@ namespace LoRaWan.NetworkServer
             var key = sha256.ComputeHash(Encoding.UTF8.GetBytes(string.Join("", updf.DevAddr, updf.FrameCounter, updf.FRMPayload, updf.Mic)));
 
             return BitConverter.ToString(key);
-        }
-
-        internal bool IsConnectionOpen(StationEui stationEui)
-        {
-            _ = this.webSocketRegistry.TryGetValue(stationEui, out var socket);
-
-            return socket != null && !socket.IsClosed;
         }
 
         private void AddToCache(string key, StationEui stationEui)

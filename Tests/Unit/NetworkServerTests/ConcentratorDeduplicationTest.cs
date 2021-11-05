@@ -7,7 +7,6 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using LoRaWan.NetworkServer.BasicsStation;
     using Moq;
     using System;
-    using System.Net.WebSockets;
     using Xunit;
 
     public sealed class ConcentratorDeduplicationTest : IDisposable
@@ -42,25 +41,15 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Theory]
-        [InlineData(true, true, false)] // true, false does not make sense: since we just received this message the socket should still be open
-        [InlineData(false, true, true)]
-        [InlineData(false, false, false)]
-        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool activeConnection, bool expectedResult)
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool expectedResult)
         {
             // arrange
-            var socketMock = new Mock<WebSocket>();
-            IWebSocketWriter<string> channel = null;
-            if (!activeConnection)
-            {
-                socketMock.Setup(x => x.State).Returns(WebSocketState.Closed);
-            }
-            channel = new WebSocketTextChannel(socketMock.Object, TimeSpan.FromMinutes(1)); // send timeout not relevant
-
             var updf = new UpstreamDataFrame(default, 1, "payload", default);
             var stationEui = new StationEui();
             this.ConcentratorDeduplication.IsDuplicate(updf, stationEui);
 
-            this.ConcentratorDeduplication.webSocketRegistry.Add(stationEui, channel);
             var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
 
             // act/assert
@@ -69,14 +58,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.Equal(1, this.ConcentratorDeduplication.Cache.Count);
             this.ConcentratorDeduplication.Cache.TryGetValue(key, out var value);
 
-            if (expectedResult)
-            {
-                Assert.Equal(value, stationEui);
-            }
-            else
-            {
-                Assert.Equal(value, anotherStation);
-            }
+            Assert.Equal(expectedResult ? stationEui : anotherStation, value);
         }
 
         [Fact]
