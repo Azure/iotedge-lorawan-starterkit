@@ -51,12 +51,12 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                            ""upinfo"": {""rctx"": 0,""xtime"": 40250921680313459,""gpstime"": 0,""fts"": -1,""rssi"": -60,""snr"": 9,""rxtime"": 1635347491.917289}}";
             var updf = LnsData.UpstreamDataFrameReader.Read(json);
             Assert.Equal(new DevAddr(58772467), updf.DevAddr);
-            Assert.Equal(string.Empty, updf.FOpts);
-            Assert.Equal(new FramePort(8), updf.FPort);
-            Assert.Equal(new FrameControl(0), updf.FrameControl);
-            Assert.Equal(164, updf.FrameCounter);
-            Assert.Equal("5ABBBA", updf.FRMPayload);
-            Assert.Equal(new MacHeader(128), updf.MHdr);
+            Assert.Equal(string.Empty, updf.Options);
+            Assert.Equal(new FramePort(8), updf.Port);
+            Assert.Equal(new FrameControl(0), updf.Control);
+            Assert.Equal(164, updf.Counter);
+            Assert.Equal("5ABBBA", updf.Payload);
+            Assert.Equal(new MacHeader(128), updf.MacHeader);
             Assert.Equal(new Mic(unchecked((uint)-1943282916)), updf.Mic);
             Assert.Equal(new DataRate(4), updf.RadioMetadata.DataRate);
             Assert.Equal(new Hertz(868100000), updf.RadioMetadata.Frequency);
@@ -96,12 +96,11 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.JsonHandlers
                           ""DevNonce"":41675,""MIC"":1528855177, ""DR"": 4, ""Freq"": 868100000,
                           ""upinfo"": {""rctx"": 0,""xtime"": 40250921680313459,""gpstime"": 0,""fts"": -1,""rssi"": -60,""snr"": 9,""rxtime"": 1635347491.917289}}";
             var jreq = LnsData.JoinRequestFrameReader.Read(json);
-            Assert.Equal(new MacHeader(0), jreq.MHdr);
+            Assert.Equal(new MacHeader(0), jreq.MacHeader);
             Assert.Equal(new JoinEui(5143806528655115445), jreq.JoinEui);
             Assert.Equal(new DevEui(9594850698661729950), jreq.DevEui);
             Assert.Equal(new DevNonce(41675), jreq.DevNonce);
             Assert.Equal(new Mic(1528855177), jreq.Mic);
-            Assert.Equal(new MacHeader(0), jreq.MHdr);
             Assert.Equal(new DataRate(4), jreq.RadioMetadata.DataRate);
             Assert.Equal(new Hertz(868100000), jreq.RadioMetadata.Frequency);
             Assert.Equal((ulong)40250921680313459, jreq.RadioMetadata.UpInfo.Xtime);
