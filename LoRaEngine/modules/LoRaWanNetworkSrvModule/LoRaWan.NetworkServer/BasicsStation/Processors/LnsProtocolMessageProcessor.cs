@@ -8,12 +8,9 @@ using System.Runtime.CompilerServices;
 namespace LoRaWan.NetworkServer.BasicsStation.Processors
 {
     using System;
-    using System.Buffers;
-    using System.IO;
     using System.Linq;
     using System.Net.NetworkInformation;
     using System.Net.WebSockets;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using LoRaWan.NetworkServer.BasicsStation.JsonHandlers;
@@ -24,79 +21,146 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
     internal class LnsProtocolMessageProcessor : ILnsProtocolMessageProcessor
     {
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
+        private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly ILogger<LnsProtocolMessageProcessor> logger;
 
         public LnsProtocolMessageProcessor(IBasicsStationConfigurationService basicsStationConfigurationService,
+                                           WebSocketWriterRegistry<StationEui, string> socketWriterRegistry,
                                            ILogger<LnsProtocolMessageProcessor> logger)
         {
             this.basicsStationConfigurationService = basicsStationConfigurationService;
+            this.socketWriterRegistry = socketWriterRegistry;
             this.logger = logger;
         }
 
-        public async Task HandleDiscoveryAsync(HttpContext httpContext, CancellationToken token)
+        internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
+                                                                     Func<HttpContext, WebSocket, CancellationToken, Task> handler,
+                                                                     CancellationToken cancellationToken)
         {
             if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
 
-            _ = await ProcessIncomingRequestAsync(httpContext, InternalHandleDiscoveryAsync, token);
-        }
+            if (!httpContext.WebSockets.IsWebSocketRequest)
+            {
+                httpContext.Response.StatusCode = 400;
+                return httpContext;
+            }
 
-        public async Task HandleDataAsync(HttpContext httpContext, CancellationToken token)
-        {
-            if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
-
-            _ = await ProcessIncomingRequestAsync(httpContext,
-                                                  (httpContext, json, socket, ct) => InternalHandleDataAsync(httpContext.Request.RouteValues, json, socket, ct),
-                                                  token);
-        }
-
-        /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal async Task<bool> InternalHandleDiscoveryAsync(HttpContext httpContext, string json, WebSocket socket, CancellationToken token)
-        {
-            var stationEui = LnsDiscovery.QueryReader.Read(json);
-            this.logger.LogInformation($"Received discovery request from: {stationEui}");
+            using var socket = await httpContext.WebSockets.AcceptWebSocketAsync();
+            this.logger.Log(LogLevel.Debug, $"WebSocket connection from {httpContext.Connection.RemoteIpAddress} established");
 
             try
             {
-                var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
-                var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}/{stationEui}");
-
-                var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
-                                                       .SingleOrDefault(ni => ni.GetIPProperties()
-                                                                                .UnicastAddresses
-                                                                                .Any(info => info.Address.Equals(httpContext.Connection.LocalIpAddress)));
-
-                var muxs = Id6.Format(networkInterface is { } someNetworkInterface
-                                      ? someNetworkInterface.GetPhysicalAddress().Convert48To64() : 0,
-                                      Id6.FormatOptions.FixedWidth);
-
-                var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, muxs, url));
-                await socket.SendAsync(response, WebSocketMessageType.Text, true, token);
+                await handler(httpContext, socket, cancellationToken);
+                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Goodbye", cancellationToken);
             }
-            catch (Exception ex)
+            catch (OperationCanceledException ex)
+#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
+                when (ex is { InnerException: WebSocketException { WebSocketErrorCode: WebSocketError.ConnectionClosedPrematurely } })
+#pragma warning restore CA1508 // Avoid dead conditional code
             {
-                var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, ex.Message));
-                await socket.SendAsync(response, WebSocketMessageType.Text, true, token);
-                throw;
+                // This can happen if the basic station client is losing connectivity
+                this.logger.LogDebug(ex, ex.Message);
             }
 
-            return false;
+            return httpContext;
         }
 
+        public Task HandleDiscoveryAsync(HttpContext httpContext, CancellationToken cancellationToken) =>
+            ProcessIncomingRequestAsync(httpContext, InternalHandleDiscoveryAsync, cancellationToken);
+
+        public Task HandleDataAsync(HttpContext httpContext, CancellationToken cancellationToken) =>
+            ProcessIncomingRequestAsync(httpContext,
+                                        (httpContext, socket, ct) => InternalHandleDataAsync(httpContext.Request.RouteValues, socket, ct),
+                                        cancellationToken);
 
         /// <returns>A boolean stating if more requests are expected on this endpoint. If false, the underlying socket should be closed.</returns>
-        internal async Task<bool> InternalHandleDataAsync(RouteValueDictionary routeValueDictionary, string json, WebSocket socket, CancellationToken token)
+        internal async Task InternalHandleDiscoveryAsync(HttpContext httpContext, WebSocket socket, CancellationToken cancellationToken)
         {
-            var stationEui = routeValueDictionary.TryGetValue(BasicsStationNetworkServer.RouterIdPathParameterName, out var sEui) ?
+            await using var message = socket.ReadTextMessages(cancellationToken);
+            if (!await message.MoveNextAsync())
+            {
+                this.logger.LogWarning($"Did not receive discovery request from station.");
+            }
+            else
+            {
+                var json = message.Current;
+                var stationEui = LnsDiscovery.QueryReader.Read(json);
+                this.logger.LogInformation($"Received discovery request from: {stationEui}");
+
+                try
+                {
+                    var scheme = httpContext.Request.IsHttps ? "wss" : "ws";
+                    var url = new Uri($"{scheme}://{httpContext.Request.Host}{BasicsStationNetworkServer.DataEndpoint}/{stationEui}");
+
+                    var networkInterface = NetworkInterface.GetAllNetworkInterfaces()
+                                                           .SingleOrDefault(ni => ni.GetIPProperties()
+                                                                                    .UnicastAddresses
+                                                                                    .Any(info => info.Address.Equals(httpContext.Connection.LocalIpAddress)));
+
+                    var muxs = Id6.Format(networkInterface is { } someNetworkInterface
+                                              ? someNetworkInterface.GetPhysicalAddress().Convert48To64() : 0,
+                                          Id6.FormatOptions.FixedWidth);
+
+                    var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, muxs, url));
+                    await socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    var response = Json.Write(w => LnsDiscovery.WriteResponse(w, stationEui, ex.Message));
+                    await socket.SendAsync(response, WebSocketMessageType.Text, true, cancellationToken);
+                    throw;
+                }
+            }
+        }
+
+        internal async Task InternalHandleDataAsync(RouteValueDictionary routeValues, WebSocket socket, CancellationToken cancellationToken)
+        {
+            var stationEui = routeValues.TryGetValue(BasicsStationNetworkServer.RouterIdPathParameterName, out var sEui) ?
                 StationEui.Parse(sEui.ToString())
                 : throw new InvalidOperationException($"{BasicsStationNetworkServer.RouterIdPathParameterName} was not present on path.");
 
+            var channel = new WebSocketTextChannel(socket, sendTimeout: TimeSpan.FromSeconds(3));
+            var handle = socketWriterRegistry.Register(stationEui, channel);
+
+            try
+            {
+                using var cancellationTokenSource = new CancellationTokenSource();
+                using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenSource.Token, cancellationToken);
+                var task = channel.ProcessSendQueueAsync(linkedCancellationTokenSource.Token);
+
+                await using var message = socket.ReadTextMessages(cancellationToken);
+                while (await message.MoveNextAsync())
+                    await HandleDataMessageAsync(stationEui, handle, message.Current, cancellationToken);
+
+                cancellationTokenSource.Cancel(); // cancel send queue processing, then...
+
+                try
+                {
+                    await task; // ...wait for its task to complete (practically instantaneous)
+                }
+                catch (OperationCanceledException)
+                {
+                    // ignore because it is expected
+                }
+            }
+            finally
+            {
+                _ = this.socketWriterRegistry.Deregister(stationEui);
+            }
+        }
+
+        private async Task HandleDataMessageAsync(StationEui stationEui,
+                                                  IWebSocketWriterHandle<string> socket,
+                                                  string json,
+                                                  CancellationToken cancellationToken)
+        {
             switch (LnsData.MessageTypeReader.Read(json))
             {
                 case LnsMessageType.Version:
                     var stationVersion = LnsData.VersionMessageReader.Read(json);
                     this.logger.LogInformation($"Received 'version' message for station '{stationVersion}'.");
-                    var response = await basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, token);
-                    await socket.SendAsync(Encoding.UTF8.GetBytes(response), WebSocketMessageType.Text, true, token);
+                    var response = await basicsStationConfigurationService.GetRouterConfigMessageAsync(stationEui, cancellationToken);
+                    await socket.SendAsync(response, cancellationToken);
                     break;
                 case LnsMessageType.JoinRequest:
                     this.logger.LogInformation($"Received 'jreq' message: {json}.");
@@ -112,70 +176,6 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                 default:
                     throw new SwitchExpressionException();
             }
-
-            return true;
-        }
-
-        internal async Task<HttpContext> ProcessIncomingRequestAsync(HttpContext httpContext,
-                                                                     Func<HttpContext, string, WebSocket, CancellationToken, Task<bool>> handler,
-                                                                     CancellationToken cancellationToken)
-        {
-            if (httpContext is null) throw new ArgumentNullException(nameof(httpContext));
-            if (handler is null) throw new ArgumentNullException(nameof(handler));
-
-            if (httpContext.WebSockets.IsWebSocketRequest)
-            {
-                using var webSocket = await httpContext.WebSockets.AcceptWebSocketAsync();
-                this.logger.Log(LogLevel.Debug, $"WebSocket connection from {httpContext.Connection.RemoteIpAddress} established");
-                try
-                {
-                    while (true)
-                    {
-                        ValueWebSocketReceiveResult result;
-                        using var buffer = MemoryPool<byte>.Shared.Rent(1024);
-                        using var ms = new MemoryStream(buffer.Memory.Length);
-                        do
-                        {
-                            result = await webSocket.ReceiveAsync(buffer.Memory, cancellationToken);
-                            if (result.MessageType == WebSocketMessageType.Close)
-                            {
-                                await CloseSocketAsync(webSocket, cancellationToken);
-                                return httpContext;
-                            }
-                            else
-                            {
-                                ms.Write(buffer.Memory.Span[..result.Count]);
-                            }
-                        }
-                        while (!result.EndOfMessage);
-
-                        ms.Position = 0;
-
-                        string input;
-                        using (var reader = new StreamReader(ms))
-                            input = reader.ReadToEnd();
-
-                        if (!await handler(httpContext, input, webSocket, cancellationToken))
-                        {
-                            await CloseSocketAsync(webSocket, cancellationToken);
-                            break;
-                        }
-                    }
-                }
-                catch (OperationCanceledException ex)
-#pragma warning disable CA1508 // Avoid dead conditional code (false positive)
-                    when (ex is { InnerException: WebSocketException { WebSocketErrorCode: WebSocketError.ConnectionClosedPrematurely } })
-#pragma warning restore CA1508 // Avoid dead conditional code
-                {
-                    // This can happen if the basic station client is losing connectivity
-                    this.logger.LogDebug(ex, ex.Message);
-                }
-            }
-            else
-            {
-                httpContext.Response.StatusCode = 400;
-            }
-            return httpContext;
         }
 
         internal async Task CloseSocketAsync(WebSocket socket, CancellationToken cancellationToken)

@@ -25,7 +25,8 @@ foreach (var e in new[]
     new { Native = "uint"  , Api = "UInt32" },
     new { Native = "ulong" , Api = "UInt64" },
     new { Native = "double", Api = "Double" },
-    new { Native = "int",    Api = "Int32"  },
+    new { Native = "float" , Api = "Single" },
+    new { Native = "int"   , Api = "Int32" },
 })
 { #>
 

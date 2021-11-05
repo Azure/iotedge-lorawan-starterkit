@@ -72,6 +72,7 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
            new List<object[]>
            {
                 new object[] { region, LoRaRegionType.EU868 },
+                new object[] { region, LoRaRegionType.EU863 },
            };
 
         public static IEnumerable<object[]> TestTryGetJoinChannelIndexData =>

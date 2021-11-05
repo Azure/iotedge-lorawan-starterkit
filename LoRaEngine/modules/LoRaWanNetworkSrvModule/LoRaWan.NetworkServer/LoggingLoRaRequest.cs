@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using LoRaTools.LoRaPhysical;
     using LoRaTools.Regions;
     using LoRaTools.Utils;
+    using LoRaWan;
     using Microsoft.Extensions.Logging;
 
     /// <summary>
@@ -26,6 +27,8 @@ namespace LoRaWan.NetworkServer
         public override Rxpk Rxpk => this.wrappedRequest.Rxpk;
 
         public override DateTime StartTime => this.wrappedRequest.StartTime;
+
+        public override StationEui StationEui => this.wrappedRequest.StationEui;
 
         public LoggingLoRaRequest(LoRaRequest wrappedRequest)
         {
