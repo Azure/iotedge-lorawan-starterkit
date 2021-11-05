@@ -3,8 +3,6 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
-    using System;
-    using System.ComponentModel.DataAnnotations;
     using System.Runtime.CompilerServices;
     internal enum LnsMessageType
     {
@@ -28,28 +26,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
     internal static class LnsMessageTypeExtensions
     {
-        internal static bool TryParseLnsMessageType(string s, out LnsMessageType? lnsMessageType)
-        {
-            lnsMessageType = s switch
-            {
-                "version" => LnsMessageType.Version,
-                "router_config" => LnsMessageType.RouterConfig,
-                "jreq" => LnsMessageType.JoinRequest,
-                "updf" => LnsMessageType.UplinkDataFrame,
-                "dntxed" => LnsMessageType.TransmitConfirmation,
-                "dnmsg" => LnsMessageType.DownlinkMessage,
-                _ => null
-            };
-            return lnsMessageType is not null;
-        }
-
-        internal static LnsMessageType ParseAndValidate(string s, LnsMessageType? expectedType) =>
-            TryParseLnsMessageType(s, out var parsedType)
-               ? expectedType is null ^ parsedType == expectedType
-                   ? parsedType.Value
-                   : throw new ValidationException($"Input msgtype parsed as {parsedType}, but was expecting {expectedType}.")
-               : throw new FormatException($"Could not parse {s} as a valid {nameof(LnsMessageType)}.");
-
         internal static string ToBasicStationString(this LnsMessageType lnsMessageType) => lnsMessageType switch
         {
             LnsMessageType.Version              => "version",

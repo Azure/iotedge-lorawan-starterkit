@@ -19,7 +19,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
         [InlineData("dnmsg", LnsMessageType.DownlinkMessage)]
         internal void TryParseLnsMessageType_Succeeds(string input, LnsMessageType expectedType)
         {
-            Assert.True(LnsMessageTypeExtensions.TryParseLnsMessageType(input, out var actualType));
+            var actualType = LnsMessageTypeParser.TryParse(input);
+            Assert.NotNull(actualType);
             Assert.Equal(expectedType, actualType);
         }
 
@@ -32,7 +33,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
         [InlineData("NOTdnmsg")]
         internal void TryParseLnsMessageType_Fails(string input)
         {
-            Assert.False(LnsMessageTypeExtensions.TryParseLnsMessageType(input, out var actualType));
+            var actualType = LnsMessageTypeParser.TryParse(input);
             Assert.Null(actualType);
         }
 
@@ -53,19 +54,19 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests.BasicsStation
         [InlineData(LnsMessageType.JoinRequest)]
         internal void ParseAndValidate_Suceeds(LnsMessageType? lnsMessageType)
         {
-            Assert.Equal(LnsMessageType.JoinRequest, LnsMessageTypeExtensions.ParseAndValidate("jreq", lnsMessageType));
+            Assert.Equal(LnsMessageType.JoinRequest, LnsMessageTypeParser.ParseAndValidate("jreq", lnsMessageType));
         }
 
         [Fact]
         internal void ParseAndValidate_Throws_OnNonSuccessfulValidation()
         {
-            Assert.Throws<ValidationException>(() => _ = LnsMessageTypeExtensions.ParseAndValidate("jreq", LnsMessageType.UplinkDataFrame));
+            Assert.Throws<ValidationException>(() => _ = LnsMessageTypeParser.ParseAndValidate("jreq", LnsMessageType.UplinkDataFrame));
         }
 
         [Fact]
         internal void ParseAndValidate_Throws_OnNonValidMessageType()
         {
-            Assert.Throws<FormatException>(() => _ = LnsMessageTypeExtensions.ParseAndValidate("jreqNotValid", LnsMessageType.UplinkDataFrame));
+            Assert.Throws<FormatException>(() => _ = LnsMessageTypeParser.ParseAndValidate("jreqNotValid", LnsMessageType.UplinkDataFrame));
         }
     }
 }
