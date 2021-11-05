@@ -49,7 +49,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             // 0 is for Class A devices, 2 is for Class C devices
             // Ideally there Class C downlink frame which answers an uplink which have Tmst and RxDelay set
-            var deviceClassType = message.Txpk.Tmst == 0 && message.LnsRxDelay == 0 ? LoRaDeviceClassType.C : LoRaDeviceClassType.A;
+            var deviceClassType = message.LnsRxDelay == 0 ? LoRaDeviceClassType.C : LoRaDeviceClassType.A;
             writer.WriteNumber("dC", (int)deviceClassType);
 
             // Getting and writing payload bytes
