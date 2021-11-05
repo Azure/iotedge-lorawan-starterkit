@@ -159,6 +159,7 @@ namespace LoRaTools.Regions
                     if (as923 == null)
 #pragma warning restore CA1508 // Avoid dead conditional code
                     {
+                        // Temporarily using these default parameter values until we can pass the configured frequencies to the region
                         as923 = new RegionAS923(new LoRaWan.Hertz(923200000), new LoRaWan.Hertz(923400000));
                     }
                 }
