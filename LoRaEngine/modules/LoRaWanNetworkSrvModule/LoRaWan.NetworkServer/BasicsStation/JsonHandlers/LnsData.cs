@@ -68,6 +68,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                                                       (rctx, xtime, gpsTime, rssi, snr) => new RadioMetadataUpInfo(rctx, xtime, gpsTime, rssi, snr)));
         }
 
+        private static readonly IJsonProperty<Mic> MicProperty =
+            JsonReader.Property("MIC", from i in JsonReader.Int32()
+                                       select new Mic(unchecked((uint)i)));
+
         /*
             {
               "msgtype"   : "updf",
@@ -93,12 +97,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               JsonReader.Property("FOpts", JsonReader.String()),
                               JsonReader.Property("FPort", JsonReader.Byte()),
                               JsonReader.Property("FRMPayload", JsonReader.String()),
-                              JsonReader.Property("MIC", JsonReader.Int32()),
+                              MicProperty,
                               RadioMetadataProperties.DataRate,
                               RadioMetadataProperties.Freq,
                               RadioMetadataProperties.UpInfo,
                               (_, mhdr, devAddr, ctrl, cnt, opts, port, payload, mic, dr, freq, upInfo) =>
-                                new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), new FrameControl(ctrl), cnt, opts, new FramePort(port), payload, new Mic((uint)mic),
+                                new UpstreamDataFrame(new MacHeader(mhdr), new DevAddr(devAddr), new FrameControl(ctrl), cnt, opts, new FramePort(port), payload, mic,
                                                       new RadioMetadata(dr, freq, upInfo)));
         /*
          * {
@@ -126,12 +130,12 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
                               EuiProperty("JoinEui", eui => new JoinEui(eui)),
                               EuiProperty("DevEui", eui => new DevEui(eui)),
                               JsonReader.Property("DevNonce", JsonReader.UInt16()),
-                              JsonReader.Property("MIC", JsonReader.Int32()),
+                              MicProperty,
                               RadioMetadataProperties.DataRate,
                               RadioMetadataProperties.Freq,
                               RadioMetadataProperties.UpInfo,
                               (_, mhdr, joinEui, devEui, devNonce, mic, dr, freq, upInfo) =>
-                                new JoinRequestFrame(new MacHeader(mhdr), joinEui, devEui, new DevNonce(devNonce), new Mic((uint)mic),
+                                new JoinRequestFrame(new MacHeader(mhdr), joinEui, devEui, new DevNonce(devNonce), mic,
                                                      new RadioMetadata(dr, freq, upInfo)));
 
     }
