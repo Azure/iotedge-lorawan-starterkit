@@ -15,13 +15,16 @@ namespace LoRaWan.NetworkServer
     {
         internal MemoryCache Cache { get; private set; }
 
-        private readonly ILogger<IConcentratorDeduplication> logger;
-        private static readonly TimeSpan CacheEntryExpiration = TimeSpan.FromMinutes(1);
+        private readonly ILogger<IConcentratorDeduplication> Logger;
+        private readonly TimeSpan CacheEntryExpiration;
 
-        public ConcentratorDeduplication(ILogger<IConcentratorDeduplication> logger)
+        public ConcentratorDeduplication(
+            ILogger<IConcentratorDeduplication> logger,
+            int cacheEntryExpirationInMilliSeconds = 60_000)
         {
             Cache = new MemoryCache(new MemoryCacheOptions());
-            this.logger = logger;
+            this.Logger = logger;
+            this.CacheEntryExpiration = TimeSpan.FromMilliseconds(cacheEntryExpirationInMilliSeconds);
         }
 
         public bool ShouldDrop(UpstreamDataFrame updf, StationEui stationEui)
@@ -42,11 +45,11 @@ namespace LoRaWan.NetworkServer
 
             if (previousStation == stationEui)
             {
-                this.logger.LogDebug($"Message received from the same DevAddr: {updf.DevAddr} as before, considered a resubmit.");
+                this.Logger.LogDebug($"Message received from the same DevAddr: {updf.DevAddr} as before, considered a resubmit.");
                 return false;
             }
 
-            this.logger.LogInformation($"Duplicate message detected from DevAddr: {updf.DevAddr}, dropping.");
+            this.Logger.LogInformation($"Duplicate message detected from DevAddr: {updf.DevAddr}, dropping.");
             return true;
         }
 
@@ -61,7 +64,7 @@ namespace LoRaWan.NetworkServer
         private void AddToCache(string key, StationEui stationEui)
             => Cache.Set(key, stationEui, new MemoryCacheEntryOptions()
             {
-                SlidingExpiration = CacheEntryExpiration
+                SlidingExpiration = this.CacheEntryExpiration
             });
 
         public void Dispose() => Cache.Dispose();

@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using System;
+    using System.Threading.Tasks;
     using Xunit;
 
     public sealed class ConcentratorDeduplicationTest : IDisposable
@@ -81,6 +82,25 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
             // assert
             updf.VerifyAll();
+        }
+
+        [Theory]
+        [InlineData(100, 50, true)]
+        [InlineData(100, 150, false)]
+        public async void CachedEntries_Should_Expire(int expirationTimeout, int delay, bool expectedResult)
+        {
+            // arrange
+            using var sut = new ConcentratorDeduplication(NullLogger<IConcentratorDeduplication>.Instance, expirationTimeout);
+            var updf = new UpstreamDataFrame(default, 1, "payload", default);
+            var stationEui = new StationEui();
+
+            // act
+            _ = sut.ShouldDrop(updf, stationEui);
+
+            // assert
+            await Task.Delay(delay);
+            var key = ConcentratorDeduplication.CreateCacheKey(updf);
+            Assert.Equal(expectedResult, sut.Cache.TryGetValue(key, out var _));
         }
 
         public void Dispose() => this.ConcentratorDeduplication.Dispose();
