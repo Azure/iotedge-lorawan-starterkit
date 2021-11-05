@@ -43,7 +43,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             writer.WriteStartObject();
 
-            writer.WriteString("msgtype", "dnmsg");
+            writer.WriteString("msgtype", LnsMessageType.DownlinkMessage.ToBasicStationString());
             writer.WriteString("DevEui", message.DevEui);
 
             // 0 is for Class A devices, 2 is for Class C devices
@@ -51,13 +51,15 @@ namespace LoRaWan.NetworkServer.BasicsStation
             var deviceClassType = message.Txpk.Tmst == 0 && message.LnsRxDelay == 0 ? LoRaDeviceClassType.C : LoRaDeviceClassType.A;
             writer.WriteNumber("dC", (int)deviceClassType);
 
-#pragma warning disable CA5394 // Do not use insecure randomness
-            writer.WriteNumber("diid", new Random().Next(int.MinValue, int.MaxValue));
-#pragma warning restore CA5394 // Do not use insecure randomness
+            // Getting and writing payload bytes
             var pduBytes = Convert.FromBase64String(message.Txpk.Data);
             var pduChars = new char[pduBytes.Length * 2];
             Hexadecimal.Write(pduBytes, pduChars);
             writer.WriteString("pdu", pduChars);
+
+#pragma warning disable CA5394 // Do not use insecure randomness. This is fine as not used for any crypto operations.
+            writer.WriteNumber("diid", new Random().Next(int.MinValue, int.MaxValue));
+#pragma warning restore CA5394 // Do not use insecure randomness
 
 #pragma warning disable CS0618 // Type or member is obsolete
             var dataRate = region.GetDRFromFreqAndChan(message.Txpk.Datr);
@@ -77,11 +79,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
                 writer.WriteNumber("RX2DR", dataRate);
                 writer.WriteNumber("RX2Freq", (ulong)(message.Txpk.Freq * 1e6));
             }
-            writer.WriteNumber("priority", 0);
+
             if (message.AntennaPreference.HasValue)
             {
                 writer.WriteNumber("rctx", message.AntennaPreference.Value);
             }
+
+            writer.WriteNumber("priority", 0); // Currently always setting to maximum priority.
+
             writer.WriteEndObject();
 
             writer.Flush();
