@@ -8,6 +8,7 @@ namespace LoRaWan.NetworkServer
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Net.WebSockets;
     using System.Threading;
@@ -62,6 +63,26 @@ namespace LoRaWan.NetworkServer
 
         public WebSocketWriterRegistry(ILogger<WebSocketWriterRegistry<TKey, TMessage>>? logger) =>
             this.logger = logger;
+
+        /// <summary>
+        /// Attempts to retrieve the socket writer handle for the given key.
+        /// </summary>
+        public bool TryGetHandle(TKey key, [NotNullWhen(true)] out IWebSocketWriterHandle<TMessage>? handle)
+        {
+            lock (this.sockets)
+            {
+                if (this.sockets.TryGetValue(key, out var entry))
+                {
+                    handle = entry.Handle;
+                    return true;
+                }
+                else
+                {
+                    handle = default;
+                    return false;
+                }
+            }
+        }
 
         /// <summary>
         /// Registers a socket writer under a key, returning a handle to the writer.
