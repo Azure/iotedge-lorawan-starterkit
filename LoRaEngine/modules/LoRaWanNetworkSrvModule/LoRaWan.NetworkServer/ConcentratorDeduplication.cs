@@ -3,12 +3,12 @@
 
 namespace LoRaWan.NetworkServer
 {
-    using LoRaWan.NetworkServer.BasicsStation;
-    using Microsoft.Extensions.Caching.Memory;
-    using Microsoft.Extensions.Logging;
     using System;
     using System.Security.Cryptography;
     using System.Text;
+    using LoRaWan.NetworkServer.BasicsStation;
+    using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging;
 
     public sealed class ConcentratorDeduplication : IConcentratorDeduplication, IDisposable
     {

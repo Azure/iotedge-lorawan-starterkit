@@ -3,12 +3,12 @@
 
 namespace LoRaWan.Tests.Unit.NetworkServerTests
 {
+    using System;
+    using System.Threading.Tasks;
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
-    using System;
-    using System.Threading.Tasks;
     using Xunit;
 
     public sealed class ConcentratorDeduplicationTest : IDisposable
