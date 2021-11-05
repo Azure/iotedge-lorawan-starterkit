@@ -24,13 +24,7 @@ namespace LoRaWan.NetworkServer
             this.logger = logger;
         }
 
-        /// <summary>
-        /// Detects duplicate data frames. 
-        /// </summary>
-        /// <param name="updf"></param>
-        /// <param name="stationEui"></param>
-        /// <returns>True if dataframe has been encountered in the past and should be dropped.</returns>
-        public bool IsDuplicate(UpstreamDataFrame updf, StationEui stationEui)
+        public bool ShouldDrop(UpstreamDataFrame updf, StationEui stationEui)
         {
             if (updf == null) throw new ArgumentNullException(nameof(updf));
 

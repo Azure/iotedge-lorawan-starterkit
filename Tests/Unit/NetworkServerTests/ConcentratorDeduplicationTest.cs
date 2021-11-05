@@ -29,11 +29,11 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             var stationEui = new StationEui();
             if (!isCacheEmpty)
             {
-                _ = this.ConcentratorDeduplication.IsDuplicate(new UpstreamDataFrame(default, 1, "another_payload", default), stationEui);
+                _ = this.ConcentratorDeduplication.ShouldDrop(new UpstreamDataFrame(default, 1, "another_payload", default), stationEui);
             }
 
             // act
-            var result = this.ConcentratorDeduplication.IsDuplicate(updf, stationEui);
+            var result = this.ConcentratorDeduplication.ShouldDrop(updf, stationEui);
 
             // assert
             Assert.False(result);
@@ -49,12 +49,12 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // arrange
             var updf = new UpstreamDataFrame(default, 1, "payload", default);
             var stationEui = new StationEui();
-            this.ConcentratorDeduplication.IsDuplicate(updf, stationEui);
+            this.ConcentratorDeduplication.ShouldDrop(updf, stationEui);
 
             var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
 
             // act/assert
-            Assert.Equal(expectedResult, this.ConcentratorDeduplication.IsDuplicate(updf, anotherStation));
+            Assert.Equal(expectedResult, this.ConcentratorDeduplication.ShouldDrop(updf, anotherStation));
             var key = ConcentratorDeduplication.CreateCacheKey(updf);
             Assert.Equal(1, this.ConcentratorDeduplication.Cache.Count);
             this.ConcentratorDeduplication.Cache.TryGetValue(key, out var value);
