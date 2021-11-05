@@ -3,70 +3,50 @@
 
 namespace LoRaTools.LoRaMessage
 {
+    using System;
+    using System.Buffers.Binary;
     using LoRaTools.Utils;
     using LoRaWan;
-    using System;
-    using System.Linq;
 
     public class LoRaPayloadDataLbs : LoRaPayloadData
     {
-        public LoRaPayloadDataLbs(DevAddr devAddr,
-                                  MacHeader mhdr,
-                                  FrameControl fctrl,
-                                  ushort fcnt,
-                                  string fopts,
-                                  string frmPayload,
-                                  FramePort framePort,
+        public LoRaPayloadDataLbs(DevAddr devAddress,
+                                  MacHeader macHeader,
+                                  FrameControl control,
+                                  ushort counter,
+                                  string options,
+                                  string payload,
+                                  FramePort port,
                                   Mic mic)
         {
-            if (string.IsNullOrEmpty(frmPayload)) throw new ArgumentNullException(nameof(frmPayload));
-            _ = devAddr.Write(DevAddr.Span);
+            if (string.IsNullOrEmpty(payload)) throw new ArgumentNullException(nameof(payload));
+
+            // Writing the DevAddr
+            DevAddr = new byte[LoRaWan.DevAddr.Size];
+            _ = devAddress.Write(DevAddr.Span);
             DevAddr.Span.Reverse();
-
-            LoRaMessageType = mhdr.MessageType switch
-            {
-                MacMessageType.JoinRequest => LoRaMessageType.JoinRequest,
-                MacMessageType.JoinAccept => LoRaMessageType.JoinAccept,
-                MacMessageType.UnconfirmedDataUp => LoRaMessageType.UnconfirmedDataUp,
-                MacMessageType.UnconfirmedDataDown => LoRaMessageType.UnconfirmedDataDown,
-                MacMessageType.ConfirmedDataUp => LoRaMessageType.ConfirmedDataUp,
-                MacMessageType.ConfirmedDataDown => LoRaMessageType.ConfirmedDataDown,
-                MacMessageType.RejoinRequest => throw new NotImplementedException(),
-                MacMessageType.Proprietary => throw new NotImplementedException(),
-                _ => throw new NotImplementedException(),
-            };
-
+            
             // in this case the payload is not downlink of our type
-            if (LoRaMessageType is LoRaMessageType.ConfirmedDataDown or
-                LoRaMessageType.JoinAccept or
-                LoRaMessageType.UnconfirmedDataDown)
-            {
-                Direction = 1;
-            }
-            else
-            {
-                Direction = 0;
-            }
+            Direction = macHeader.MessageType is MacMessageType.ConfirmedDataDown or
+                                            MacMessageType.JoinAccept or
+                                            MacMessageType.UnconfirmedDataDown ? 1 : 0;
 
+            // Setting MHdr value
             Mhdr = new byte[1];
-            _ = mhdr.Write(Mhdr.Span);
-            // Fctrl Frame Control Octet
+            _ = macHeader.Write(Mhdr.Span);
+
+            // Setting Fctrl
             Fctrl = new byte[1];
-            _ = fctrl.Write(Fctrl.Span);
-            // Fcnt
-            Fcnt = BitConverter.GetBytes(fcnt);
+            _ = control.Write(Fctrl.Span);
 
-            // FOpts
-            var foptsSize = fctrl.OptionsLength;
+            // Setting Fcnt
+            Fcnt = new byte[sizeof(ushort)];
+            BinaryPrimitives.WriteUInt16LittleEndian(Fcnt.Span, counter);
+
+            // Setting FOpts
+            var foptsSize = control.OptionsLength;
             Fopts = new byte[foptsSize];
-            _ = Hexadecimal.TryParse(fopts, Fopts.Span);
-            // frmpayload
-            Frmpayload = new byte[frmPayload.Length / 2];
-            _ = Hexadecimal.TryParse(frmPayload, Frmpayload.Span);
-
-            // Fport can be empty if no commands!
-            Fport = new byte[FramePort.Size];
-            _ = framePort.Write(Fport.Span);
+            _ = Hexadecimal.TryParse(options, Fopts.Span);
 
             // Populate the MacCommands present in the payload.
             if (foptsSize > 0)
@@ -74,6 +54,15 @@ namespace LoRaTools.LoRaMessage
                 MacCommands = MacCommand.CreateMacCommandFromBytes(ConversionHelper.ByteArrayToString(DevAddr), Fopts);
             }
 
+            // Setting FRMPayload
+            Frmpayload = new byte[payload.Length / 2];
+            _ = Hexadecimal.TryParse(payload, Frmpayload.Span);
+
+            // Fport can be empty if no commands
+            Fport = new byte[FramePort.Size];
+            _ = port.Write(Fport.Span);
+
+            Mic = new byte[LoRaWan.Mic.Size];
             _ = mic.Write(Mic.Span);
         }
     }

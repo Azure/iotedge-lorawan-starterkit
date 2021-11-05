@@ -7,14 +7,14 @@ namespace LoRaTools.LoRaMessage
 
     public class LoRaPayloadJoinRequestLbs : LoRaPayloadJoinRequest
     {
-        public LoRaPayloadJoinRequestLbs(MacHeader mhdr,
+        public LoRaPayloadJoinRequestLbs(MacHeader macHeader,
                                          JoinEui joinEui,
                                          DevEui devEui,
                                          DevNonce devNonce,
                                          Mic mic)
         {
-            Mhdr = new byte[1];
-            _ = mhdr.Write(Mhdr.Span);
+            Mhdr = new byte[MacHeader.Size];
+            _ = macHeader.Write(Mhdr.Span);
 
             AppEUI = new byte[JoinEui.Size];
             _ = joinEui.Write(AppEUI.Span);
@@ -25,6 +25,7 @@ namespace LoRaTools.LoRaMessage
             DevNonce = new byte[LoRaWan.DevNonce.Size];
             _ = devNonce.Write(DevNonce.Span);
 
+            Mic = new byte[LoRaWan.Mic.Size];
             _ = mic.Write(Mic.Span);
         }
     }
