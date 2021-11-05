@@ -16,6 +16,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
     {
         private readonly WebSocketWriterRegistry<StationEui, string> socketWriterRegistry;
         private readonly IBasicsStationConfigurationService basicsStationConfigurationService;
+        private readonly Random random = new Random();
 
         public DownstreamSender(WebSocketWriterRegistry<StationEui, string> socketWriterRegistry, IBasicsStationConfigurationService basicsStationConfigurationService)
         {
@@ -36,7 +37,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             };
         }
 
-        private static string Message(DownlinkPktFwdMessage message, Region region)
+        private string Message(DownlinkPktFwdMessage message, Region region)
         {
             using var ms = new MemoryStream();
             using var writer = new Utf8JsonWriter(ms);
@@ -58,7 +59,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
             writer.WriteString("pdu", pduChars);
 
 #pragma warning disable CA5394 // Do not use insecure randomness. This is fine as not used for any crypto operations.
-            writer.WriteNumber("diid", new Random().Next(int.MinValue, int.MaxValue));
+            writer.WriteNumber("diid", this.random.Next(int.MinValue, int.MaxValue));
 #pragma warning restore CA5394 // Do not use insecure randomness
 
 #pragma warning disable CS0618 // Type or member is obsolete
