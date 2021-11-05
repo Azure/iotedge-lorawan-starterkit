@@ -26,7 +26,7 @@ Jekyll requires you to add specific `yaml` snippets to your documentation to be 
 
 #### 2.2 Use docFX static site generator
 
-DocFX is an open source tool provided by Microsoft that allows you to generate a static website based on a set of markdown files. Additionally, it can build documentation for a codebase based on the "triple slash" comments (`///`) in .NET code.  
+[DocFX](https://dotnet.github.io/docfx/) is an open source tool provided by Microsoft that allows you to generate a static website based on a set of markdown files. Additionally, it can build documentation for a codebase based on the "triple slash" comments (`///`) in .NET code.  
 It uses `yaml` files to provide structure to the documentation. There is no built-in support, but there are already some Github Actions available to help automate the publishing of docs.
 
 ## Decision
@@ -39,4 +39,4 @@ What needs to be done:
 - [ ] Create a main TOC file to provide to overall structure. Potential top-level items: Overview / Architecture / Tools / Samples / Specification LNS
 - [ ] Bring in DocFX to generate a static site to a `/docs` folder (this means renaming the current /Docs folder). This folder will not be checked into the repository.
 - [ ] Create a Github Action that runs on each push to master (merge of PR) and then builds the code and creates the static website in `/docs`. Then create a detached branch `gh-pages` where the `/docs` gets pushed to. (This means `/docs` is _not_ part of the main repo).
-- Setup GitHub pages to deploy from branch `gh-pages` and folder `/docs`.
+- [ ] Setup GitHub pages to deploy from branch `gh-pages` and folder `/docs`.
