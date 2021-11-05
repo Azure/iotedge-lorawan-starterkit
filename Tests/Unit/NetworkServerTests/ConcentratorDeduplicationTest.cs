@@ -71,10 +71,10 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
                 (ushort)0x0,
                 "payload",
                 new Mic(0x0));
-            updf.Setup(x => x.DevAddr);
-            updf.Setup(x => x.FrameCounter);
-            updf.Setup(x => x.FRMPayload);
-            updf.Setup(x => x.Mic);
+            _ = updf.Setup(x => x.DevAddr);
+            _ = updf.Setup(x => x.FrameCounter);
+            _ = updf.Setup(x => x.FRMPayload);
+            _ = updf.Setup(x => x.Mic);
 
             // act
             _ = ConcentratorDeduplication.CreateCacheKey(updf.Object);
