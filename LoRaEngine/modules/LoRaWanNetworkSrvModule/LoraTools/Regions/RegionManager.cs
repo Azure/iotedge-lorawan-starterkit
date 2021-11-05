@@ -72,7 +72,9 @@ namespace LoRaTools.Regions
                 region = CN470;
                 return true;
             }
-            else if (rxpk.Freq is <= 928 and > 915)
+            // Note: Resolving region based on frequency should be avoided as AS923 frequency band overlaps with US915;
+            // should be removed once this obsolete method is no longer used.
+            else if (rxpk.Freq is <= 928 and >= 915)
             {
                 region = AS923;
                 return true;

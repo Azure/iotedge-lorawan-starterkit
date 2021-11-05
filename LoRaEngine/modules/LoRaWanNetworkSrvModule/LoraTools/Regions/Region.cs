@@ -146,7 +146,7 @@ namespace LoRaTools.Regions
         /// </summary>
         /// <param name="upstreamChannel">the channel at which the message was transmitted.</param>
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done.")]
-        public string GetDownstreamDR(Rxpk upstreamChannel, int rx1DrOffset = 0)
+        public string GetDownstreamDataRate(Rxpk upstreamChannel, int rx1DrOffset = 0)
         {
             if (upstreamChannel is null) throw new ArgumentNullException(nameof(upstreamChannel));
 
@@ -231,7 +231,7 @@ namespace LoRaTools.Regions
         /// <param name="deviceJoinInfo">join info for the device, if applicable.</param>
         /// <returns>the rx2 datarate.</returns>
         [Obsolete("#655 - This Rxpk based implementation will go away as soon as the complete LNS implementation is done")]
-        public string GetDownstreamRX2Datarate(string devEUI, string nwkSrvRx2Dr, ushort? rx2DrFromTwins, DeviceJoinInfo deviceJoinInfo = null)
+        public string GetDownstreamRX2DataRate(string devEUI, string nwkSrvRx2Dr, ushort? rx2DrFromTwins, DeviceJoinInfo deviceJoinInfo = null)
         {
             // If the rx2 datarate property is in twins, we take it from there
             if (rx2DrFromTwins.HasValue)
@@ -272,7 +272,7 @@ namespace LoRaTools.Regions
         /// <param name="nwkSrvRx2Dr">the network server rx2 datarate.</param>
         /// <param name="rx2DrFromTwins">rx2 datarate value from twins.</param>
         /// <returns>the rx2 datarate.</returns>
-        public ushort GetDownstreamRX2Datarate(string devEUI, ushort? nwkSrvRx2Dr, ushort? rx2DrFromTwins, DeviceJoinInfo deviceJoinInfo = null)
+        public ushort GetDownstreamRX2DataRate(string devEUI, ushort? nwkSrvRx2Dr, ushort? rx2DrFromTwins, DeviceJoinInfo deviceJoinInfo = null)
         {
             // If the rx2 datarate property is in twins, we take it from there
             if (rx2DrFromTwins.HasValue)
