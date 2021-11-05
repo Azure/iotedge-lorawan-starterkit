@@ -27,9 +27,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
             var stationEui = message.StationEui;
-            var region = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, CancellationToken.None);
-            var payload = Message(message, region);
-            await this.socketWriterRegistry.SendAsync(stationEui, payload, CancellationToken.None);
+            if (this.socketWriterRegistry.TryGetHandle(stationEui, out var webSocketWriterHandle))
+            {
+                var region = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, CancellationToken.None);
+                var payload = Message(message, region);
+                await webSocketWriterHandle.SendAsync(payload, CancellationToken.None);
+            };
         }
 
         /*
@@ -54,7 +57,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
              data | string | Base64 encoded RF packet payload, padding optional
              ncrc | bool   | If true, disable the CRC of the physical layer (optional)
          */
-        private string Message(DownlinkPktFwdMessage message, Region region)
+        private static string Message(DownlinkPktFwdMessage message, Region region)
         {
             using var ms = new MemoryStream();
             using var writer = new Utf8JsonWriter(ms);
@@ -63,7 +66,12 @@ namespace LoRaWan.NetworkServer.BasicsStation
 
             writer.WriteString("msgtype", "dnmsg");
             writer.WriteString("DevEui", message.DevEui);
-            writer.WriteNumber("dC", 0); //TODO DANIELE: DEVICECLASS 
+
+            // 0 is for Class A devices, 2 is for Class C devices
+            // Ideally there Class C downlink frame which answers an uplink which have Tmst and RxDelay set
+            var deviceClassType = message.Txpk.Tmst == 0 && message.LnsRxDelay == 0 ? LoRaDeviceClassType.C : LoRaDeviceClassType.A;
+            writer.WriteNumber("dC", (int)deviceClassType);
+
 #pragma warning disable CA5394 // Do not use insecure randomness
             writer.WriteNumber("diid", new Random().Next(int.MinValue, int.MaxValue));
 #pragma warning restore CA5394 // Do not use insecure randomness
@@ -73,17 +81,28 @@ namespace LoRaWan.NetworkServer.BasicsStation
             writer.WriteString("pdu", pduChars);
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            var rx1dr = region.GetDRFromFreqAndChan(message.Txpk.Datr);
+            var dataRate = region.GetDRFromFreqAndChan(message.Txpk.Datr);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            writer.WriteNumber("RxDelay", message.LnsRxDelay);
-            writer.WriteNumber("RX1DR", rx1dr);
-            writer.WriteNumber("RX1Freq", (ulong)(message.Txpk.Freq * 1e6));
-            writer.WriteNumber("RX2DR", region.GetDefaultRX2ReceiveWindow().DataRate);
-            writer.WriteNumber("RX2Freq", (ulong)(region.GetDefaultRX2ReceiveWindow().Frequency * 1e6));
+            if (deviceClassType is LoRaDeviceClassType.A)
+            {
+                writer.WriteNumber("RxDelay", message.LnsRxDelay);
+                writer.WriteNumber("RX1DR", dataRate);
+                writer.WriteNumber("RX1Freq", (ulong)(message.Txpk.Freq * 1e6));
+                writer.WriteNumber("RX2DR", region.GetDefaultRX2ReceiveWindow().DataRate);
+                writer.WriteNumber("RX2Freq", (ulong)(region.GetDefaultRX2ReceiveWindow().Frequency * 1e6));
+                writer.WriteNumber("xtime", message.Xtime);
+            }
+            else if (deviceClassType is LoRaDeviceClassType.C)
+            {
+                writer.WriteNumber("RX2DR", dataRate);
+                writer.WriteNumber("RX2Freq", (ulong)(message.Txpk.Freq * 1e6));
+            }
             writer.WriteNumber("priority", 0);
-            writer.WriteNumber("xtime", message.Xtime);
-            writer.WriteNumber("rctx", message.AntennaPreference);
+            if (message.AntennaPreference.HasValue)
+            {
+                writer.WriteNumber("rctx", message.AntennaPreference.Value);
+            }
             writer.WriteEndObject();
 
             writer.Flush();
