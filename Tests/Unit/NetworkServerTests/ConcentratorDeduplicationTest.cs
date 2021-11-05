@@ -38,7 +38,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // assert
             Assert.False(result);
             var key = ConcentratorDeduplication.CreateCacheKey(updf);
-            Assert.True(this.ConcentratorDeduplication.Cache.TryGetValue(key, out var _));
+            Assert.True(this.ConcentratorDeduplication.Cache.TryGetValue(key, out var addedStation));
+            Assert.Equal(stationEui, addedStation);
         }
 
         [Theory]
@@ -49,7 +50,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             // arrange
             var updf = new UpstreamDataFrame(default, 1, "payload", default);
             var stationEui = new StationEui();
-            this.ConcentratorDeduplication.ShouldDrop(updf, stationEui);
+            _ = this.ConcentratorDeduplication.ShouldDrop(updf, stationEui);
 
             var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
 
@@ -57,9 +58,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             Assert.Equal(expectedResult, this.ConcentratorDeduplication.ShouldDrop(updf, anotherStation));
             var key = ConcentratorDeduplication.CreateCacheKey(updf);
             Assert.Equal(1, this.ConcentratorDeduplication.Cache.Count);
-            this.ConcentratorDeduplication.Cache.TryGetValue(key, out var value);
-
-            Assert.Equal(expectedResult ? stationEui : anotherStation, value);
+            Assert.True(this.ConcentratorDeduplication.Cache.TryGetValue(key, out var addedStation));
+            Assert.Equal(expectedResult ? stationEui : anotherStation, addedStation);
         }
 
         [Fact]
