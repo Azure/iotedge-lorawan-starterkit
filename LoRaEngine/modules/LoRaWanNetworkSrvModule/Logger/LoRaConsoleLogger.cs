@@ -4,15 +4,15 @@
 
 namespace LoRaWan
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.DependencyInjection.Extensions;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Configuration;
     using Microsoft.Extensions.Options;
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
 
     public class LoRaConsoleLoggerConfiguration
     {

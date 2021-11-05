@@ -3,12 +3,12 @@
 
 namespace LoRaWan.Tests.Unit.LoggerTests
 {
+    using System;
+    using LoRaWan;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
     using Moq;
-    using System;
     using Xunit;
-    using LoRaWan;
 
     public class LoRaConsoleLoggerTests : LoRaConsoleLoggerTestBase
     {
