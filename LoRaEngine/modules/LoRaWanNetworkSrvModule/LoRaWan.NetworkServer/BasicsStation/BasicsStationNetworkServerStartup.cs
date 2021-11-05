@@ -58,10 +58,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
                         .AddSingleton<IClassCDeviceMessageSender, DefaultClassCDevicesMessageSender>()
                         .AddSingleton<ILoRaModuleClientFactory>(loraModuleFactory)
                         .AddTransient<LoRaDeviceAPIServiceBase, LoRaDeviceAPIService>()
-                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>()
-                        .AddSingleton<IBasicsStationConfigurationService, BasicsStationConfigurationService>()
                         .AddSingleton<WebSocketWriterRegistry<StationEui, string>>()
-                        .AddSingleton<IPacketForwarder, DownstreamSender>();
+                        .AddSingleton<IPacketForwarder, DownstreamSender>()
+                        .AddTransient<ILnsProtocolMessageProcessor, LnsProtocolMessageProcessor>();
         }
 
 #pragma warning disable CA1822 // Mark members as static
