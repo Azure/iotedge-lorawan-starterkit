@@ -26,10 +26,11 @@ namespace LoRaWan.NetworkServer.BasicsStation
         public async Task SendDownstreamAsync(DownlinkPktFwdMessage message)
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
-            var stationEui = message.StationEui;
-            if (this.socketWriterRegistry.TryGetHandle(stationEui, out var webSocketWriterHandle))
+            if (message.StationEui == default) throw new ArgumentException($"A proper StationEui needs to be set. Received '{message.StationEui}'.");
+
+            if (this.socketWriterRegistry.TryGetHandle(message.StationEui, out var webSocketWriterHandle))
             {
-                var region = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, CancellationToken.None);
+                var region = await this.basicsStationConfigurationService.GetRegionAsync(message.StationEui, CancellationToken.None);
                 var payload = Message(message, region);
                 await webSocketWriterHandle.SendAsync(payload, CancellationToken.None);
             };
