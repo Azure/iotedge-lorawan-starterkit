@@ -1,7 +1,7 @@
 name: 'Test Report'
 on:
   workflow_run:
-    workflows: ['LoRa CI']                     # runs after CI workflow
+    workflows: ['LoRa E2E CI', 'LoRa Build & Test CI']                     # runs after CI workflow
     types:
       - completed
 jobs:

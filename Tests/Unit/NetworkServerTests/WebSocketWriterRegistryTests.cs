@@ -167,6 +167,27 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             await CustomAssert.WriterIsRegistered(activeHandle, activeWriter);
         }
 
+        [Fact]
+        public void TryGetHandle_Returns_False_With_Null_Handle_When_Not_Registered_Under_Given_Key()
+        {
+            var succeeded = this.sut.TryGetHandle("foo", out var handle);
+
+            Assert.False(succeeded);
+            Assert.Null(handle);
+        }
+
+        [Fact]
+        public void TryGetHandle_Returns_True_With_Handle_Registered_Under_Key()
+        {
+            const string key = "key";
+            var (initialHandle, _) = CreateAndRegisterWebSocketWriterMock(key);
+
+            var succeeded = this.sut.TryGetHandle(key, out var handle);
+
+            Assert.True(succeeded);
+            Assert.Same(initialHandle, handle);
+        }
+
         private (IWebSocketWriterHandle<string> Handle, Mock<IWebSocketWriter<string>> WriterMock)
             CreateAndRegisterWebSocketWriterMock(string key)
         {
