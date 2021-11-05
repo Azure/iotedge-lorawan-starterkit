@@ -210,7 +210,7 @@ namespace LoRaTools.LoRaMessage
             throw new NotImplementedException();
         }
 
-        public DownlinkPktFwdMessage Serialize(string appKey, string datr, double freq, string devEui, long tmst, ushort lnsRxDelay = 0, StationEui stationEui = default)
+        public DownlinkPktFwdMessage Serialize(string appKey, string datr, double freq, string devEui, long tmst, ushort lnsRxDelay = 0, uint? rfch = 0, string time = "", StationEui stationEui = default)
         {
             var algoinput = Mhdr.ToArray().Concat(AppNonce.ToArray()).Concat(NetID.ToArray()).Concat(DevAddr.ToArray()).Concat(DlSettings.ToArray()).Concat(RxDelay.ToArray()).ToArray();
             if (!CfList.Span.IsEmpty)
@@ -219,7 +219,7 @@ namespace LoRaTools.LoRaMessage
             _ = CalculateMic(appKey, algoinput);
             _ = PerformEncryption(appKey);
 
-            return new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEui, tmst, lnsRxDelay, stationEui: stationEui);
+            return new DownlinkPktFwdMessage(GetByteMessage(), datr, freq, devEui, tmst, lnsRxDelay, rfch, time, stationEui: stationEui);
         }
     }
 }
