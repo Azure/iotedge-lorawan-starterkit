@@ -14,15 +14,18 @@ namespace LoRaWan.NetworkServer
     public sealed class ConcentratorDeduplication : IConcentratorDeduplication, IDisposable
     {
         internal MemoryCache Cache { get; private set; }
+        internal readonly WebSocketWriterRegistry<StationEui, string> SocketRegistry;
 
         private readonly ILogger<IConcentratorDeduplication> Logger;
         private readonly TimeSpan CacheEntryExpiration;
 
         public ConcentratorDeduplication(
+            WebSocketWriterRegistry<StationEui, string> socketRegistry,
             ILogger<IConcentratorDeduplication> logger,
             int cacheEntryExpirationInMilliSeconds = 60_000)
         {
             Cache = new MemoryCache(new MemoryCacheOptions());
+            this.SocketRegistry = socketRegistry;
             this.Logger = logger;
             this.CacheEntryExpiration = TimeSpan.FromMilliseconds(cacheEntryExpirationInMilliSeconds);
         }

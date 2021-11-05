@@ -17,7 +17,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
         public ConcentratorDeduplicationTest()
         {
-            this.ConcentratorDeduplication = new ConcentratorDeduplication(NullLogger<IConcentratorDeduplication>.Instance);
+            var socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
+            this.ConcentratorDeduplication = new ConcentratorDeduplication(socketRegistry, NullLogger<IConcentratorDeduplication>.Instance);
         }
 
         [Theory]
@@ -90,7 +91,8 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         public async void CachedEntries_Should_Expire(int expirationTimeout, int delay, bool expectedResult)
         {
             // arrange
-            using var sut = new ConcentratorDeduplication(NullLogger<IConcentratorDeduplication>.Instance, expirationTimeout);
+            var socketRegistry = new WebSocketWriterRegistry<StationEui, string>(NullLogger<WebSocketWriterRegistry<StationEui, string>>.Instance);
+            using var sut = new ConcentratorDeduplication(socketRegistry, NullLogger<IConcentratorDeduplication>.Instance, expirationTimeout);
             var updf = new UpstreamDataFrame(default, 1, "payload", default);
             var stationEui = new StationEui();
 
