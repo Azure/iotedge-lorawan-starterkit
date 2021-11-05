@@ -11,7 +11,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.JsonHandlers
         internal static readonly IJsonReader<LnsMessageType> MessageTypeReader =
             JsonReader.Object(MessageTypeProperty());
 
-        internal static IJsonProperty<LnsMessageType> MessageTypeProperty(LnsMessageType? expectedType = null) =>
+        private static IJsonProperty<LnsMessageType> MessageTypeProperty(LnsMessageType? expectedType = null) =>
             JsonReader.Property("msgtype",
                                 from t in JsonReader.String()
                                 select LnsMessageTypeParser.ParseAndValidate(t, expectedType));
