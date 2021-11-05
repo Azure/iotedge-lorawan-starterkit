@@ -119,14 +119,12 @@ namespace LoRaWan
             {
                 scopeProvider.ForEachScope<object>((activeScope, _) =>
                 {
-                    if (activeScope is IDictionary<string, object> activeScopeDictionary)
+                    if (activeScope is IDictionary<string, object> activeScopeDictionary &&
+                        activeScopeDictionary.TryGetValue(ILoggerExtensions.DevEUIKey, out var obj) &&
+                        obj is string devEUI &&
+                        !message.StartsWith(devEUI, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (activeScopeDictionary.TryGetValue(ILoggerExtensions.DevEUIKey, out var obj) &&
-                            obj is string devEUI &&
-                           !message.StartsWith(devEUI, StringComparison.OrdinalIgnoreCase))
-                        {
-                            message = string.Concat(devEUI, " ", message);
-                        }
+                        message = string.Concat(devEUI, " ", message);
                     }
                 }, null);
             }
