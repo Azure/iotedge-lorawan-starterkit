@@ -71,26 +71,20 @@ namespace LoRaWan.NetworkServer
             this.loadingDevicesFailed = false;
             this.queueLock = new object();
             this.queuedRequests = new List<LoRaRequest>();
-            _ = Task.Run(async () =>
+            _ = TaskUtil.RunOnThreadPool(async () =>
             {
+                var t = Load();
+
                 try
                 {
-                    var t = Load();
-
-                    try
-                    {
-                        await t;
-                    }
-                    finally
-                    {
-                        continuationAction(t, this);
-                    }
+                    await t;
                 }
-                catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log($"Error while loading: {ex}.", LogLevel.Error)))
+                finally
                 {
-                    throw;
+                    continuationAction(t, this);
                 }
-            });
+            },
+            ex => Logger.Log($"Error while loading: {ex}.", LogLevel.Error));
         }
 
         private async Task Load()

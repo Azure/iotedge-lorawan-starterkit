@@ -1056,17 +1056,8 @@ namespace LoRaWan.NetworkServer
 
         private Task RunAndQueueNext(LoRaRequest request)
         {
-            return Task.Run(async () =>
-            {
-                try
-                {
-                    await CoreAsync();
-                }
-                catch (Exception ex) when (ExceptionFilterUtility.False(() => Logger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error)))
-                {
-                    throw;
-                }
-            });
+            return TaskUtil.RunOnThreadPool(() => CoreAsync(),
+                                            ex => Logger.Log(DevEUI, $"error processing request: {ex.Message}", LogLevel.Error));
 
             async Task CoreAsync()
             {
