@@ -79,6 +79,27 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
             }
         }
 
+        [Fact]
+        public void CacheKey_Should_Consider_All_Required_Fields()
+        {
+            // arrange
+            var updf = new Mock<UpstreamDataFrame>(
+                new DevAddr(0x0),
+                (ushort)0x0,
+                "payload",
+                new Mic(0x0));
+            updf.Setup(x => x.DevAddr);
+            updf.Setup(x => x.FrameCounter);
+            updf.Setup(x => x.FRMPayload);
+            updf.Setup(x => x.Mic);
+
+            // act
+            _ = ConcentratorDeduplication.CreateCacheKey(updf.Object);
+
+            // assert
+            updf.VerifyAll();
+        }
+
         public void Dispose() => this.ConcentratorDeduplication.Dispose();
     }
 }

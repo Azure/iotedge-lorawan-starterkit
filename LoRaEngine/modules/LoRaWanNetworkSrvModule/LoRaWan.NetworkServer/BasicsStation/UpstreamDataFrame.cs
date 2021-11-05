@@ -13,9 +13,9 @@ namespace LoRaWan.NetworkServer.BasicsStation
             Mic = mic;
         }
 
-        public DevAddr DevAddr { get; }
-        public ushort FrameCounter { get; }
-        public string FRMPayload { get; }
-        public Mic Mic { get; }
+        public virtual DevAddr DevAddr { get; }
+        public virtual ushort FrameCounter { get; }
+        public virtual string FRMPayload { get; }
+        public virtual Mic Mic { get; }
     }
 }
