@@ -27,7 +27,6 @@ namespace LoRaTools.Regions
 
             // Values assuming FOpts param is used
             DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
-
             DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
             DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 123));
             DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 123));

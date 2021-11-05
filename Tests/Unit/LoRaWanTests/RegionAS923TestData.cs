@@ -9,7 +9,10 @@ namespace LoRaWan.Tests.Unit.LoRaWanTests
 
     public static class RegionAS923TestData
     {
-        private static readonly List<DataRate> dataRates = new List<int> { 0, 1, 2, 3, 4, 5, 6, 7 }.Select(dr => new DataRate(dr)).ToList();
+        private static readonly List<DataRate> dataRates =
+            new List<int> { 0, 1, 2, 3, 4, 5, 6, 7 }
+            .Select(dr => new DataRate(dr)).ToList();
+
         private static readonly List<Hertz> frequencies =
             new List<ulong> { 923_200_000, 923_400_000, 921_400_000, 916_600_000, 917_500_000 }
             .Select(fr => new Hertz(fr)).ToList();

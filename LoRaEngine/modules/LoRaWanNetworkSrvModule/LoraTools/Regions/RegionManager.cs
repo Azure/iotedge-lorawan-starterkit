@@ -72,6 +72,11 @@ namespace LoRaTools.Regions
                 region = CN470;
                 return true;
             }
+            else if (rxpk.Freq is <= 928 and > 915)
+            {
+                region = AS923;
+                return true;
+            }
 
             return false;
         }
