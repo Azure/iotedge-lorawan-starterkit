@@ -61,7 +61,7 @@ namespace LoRaWan.NetworkServer
         private void AddToCache(string key, StationEui stationEui)
             => Cache.Set(key, stationEui, new MemoryCacheEntryOptions()
             {
-                AbsoluteExpirationRelativeToNow = CacheEntryExpiration
+                SlidingExpiration = CacheEntryExpiration
             });
 
         public void Dispose() => Cache.Dispose();
