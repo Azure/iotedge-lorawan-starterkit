@@ -27,7 +27,7 @@ namespace LoRaWan.NetworkServer.BasicsStation
         {
             if (message is null) throw new ArgumentNullException(nameof(message));
             var stationEui = message.StationEui;
-            var region = await this.basicsStationConfigurationService.GetRegionFromBasicsStationConfiguration(stationEui, CancellationToken.None);
+            var region = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, CancellationToken.None);
             var payload = Message(message, region);
             await this.socketWriterRegistry.SendAsync(stationEui, payload, CancellationToken.None);
         }
@@ -76,14 +76,14 @@ namespace LoRaWan.NetworkServer.BasicsStation
             var rx1dr = region.GetDRFromFreqAndChan(message.Txpk.Datr);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            writer.WriteNumber("RxDelay", message.RxDelay);
+            writer.WriteNumber("RxDelay", message.LnsRxDelay);
             writer.WriteNumber("RX1DR", rx1dr);
             writer.WriteNumber("RX1Freq", (ulong)(message.Txpk.Freq * 1e6));
             writer.WriteNumber("RX2DR", region.GetDefaultRX2ReceiveWindow().DataRate);
             writer.WriteNumber("RX2Freq", (ulong)(region.GetDefaultRX2ReceiveWindow().Frequency * 1e6));
             writer.WriteNumber("priority", 0);
-            writer.WriteNumber("xtime", this.radioMetadata.Xtime);
-            writer.WriteNumber("rctx", this.radioMetadata.AntennaPreference);
+            writer.WriteNumber("xtime", message.Xtime);
+            writer.WriteNumber("rctx", message.AntennaPreference);
             writer.WriteEndObject();
 
             writer.Flush();
