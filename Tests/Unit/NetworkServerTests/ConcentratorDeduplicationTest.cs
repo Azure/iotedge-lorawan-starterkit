@@ -8,6 +8,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
     using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using System;
+    using System.Net.WebSockets;
     using System.Threading.Tasks;
     using Xunit;
 
@@ -45,14 +46,26 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
         }
 
         [Theory]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool expectedResult)
+        [InlineData(true, true, false)]
+        // we consider sameStationAsBefore: true, activeConnectionToPreviousStation: false
+        // an edge case as we just received a message from that same station
+        [InlineData(false, true, true)]
+        [InlineData(false, false, false)]
+        public void When_Message_Encountered_Should_Not_Find_Duplicates_And_Add_To_Cache(bool sameStationAsBefore, bool activeConnectionToPreviousStation, bool expectedResult)
         {
             // arrange
             var updf = new UpstreamDataFrame(default, 1, "payload", default);
             var stationEui = new StationEui();
             _ = this.ConcentratorDeduplication.ShouldDrop(updf, stationEui);
+
+            var socketMock = new Mock<WebSocket>();
+            IWebSocketWriter<string> channel = null;
+            if (!activeConnectionToPreviousStation)
+            {
+                _ = socketMock.Setup(x => x.State).Returns(WebSocketState.Closed);
+            }
+            channel = new WebSocketTextChannel(socketMock.Object, TimeSpan.FromMinutes(1)); // send timeout not relevant
+            this.ConcentratorDeduplication.SocketRegistry.Register(stationEui, channel);
 
             var anotherStation = sameStationAsBefore ? stationEui : new StationEui(1234);
 

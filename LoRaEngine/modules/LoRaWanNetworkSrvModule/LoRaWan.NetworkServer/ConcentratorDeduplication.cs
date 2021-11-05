@@ -51,8 +51,18 @@ namespace LoRaWan.NetworkServer
                 return false;
             }
 
-            this.Logger.LogInformation($"Duplicate message detected from DevAddr: {updf.DevAddr}, dropping.");
-            return true;
+            // received from a different station
+            if (IsConnectionOpen(previousStation))
+            {
+                this.Logger.LogInformation($"Duplicate message received from station with EUI: {stationEui}, dropping.");
+                return true;
+            }
+
+            this.Logger.LogInformation($"Connectivity to previous station with EUI {previousStation}, was lost, will use {stationEui} from now onwards.");
+            lock (this.Cache)
+                AddToCache(key, stationEui);
+
+            return false;
         }
 
         internal static string CreateCacheKey(UpstreamDataFrame updf)
@@ -62,6 +72,9 @@ namespace LoRaWan.NetworkServer
 
             return BitConverter.ToString(key);
         }
+
+        private bool IsConnectionOpen(StationEui stationEui)
+            => this.SocketRegistry.IsSocketWriterOpen(stationEui);
 
         private void AddToCache(string key, StationEui stationEui)
             => this.Cache.Set(key, stationEui, new MemoryCacheEntryOptions()

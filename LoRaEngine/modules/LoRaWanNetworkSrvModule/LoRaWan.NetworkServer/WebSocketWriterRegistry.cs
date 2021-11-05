@@ -136,6 +136,28 @@ namespace LoRaWan.NetworkServer
         }
 
         /// <summary>
+        /// Checks whether the socket writer associated with the given key
+        /// is flagged as open. Actual connectivity is not checked.
+        /// </summary>
+        /// <remarks>
+        /// Implementation does not throw when key is not present in the underlying dictionary.
+        /// </remarks>
+        public bool IsSocketWriterOpen(TKey key)
+        {
+            IWebSocketWriter<TMessage> socketWriter;
+
+            try
+            {
+                socketWriter = this.sockets[key].Object;
+                return !socketWriter.IsClosed;
+            }
+            catch (KeyNotFoundException)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Removes closed sockets at default interval periods until cancellation is requested.
         /// </summary>
         public Task RunPrunerAsync(CancellationToken cancellationToken) =>
