@@ -34,7 +34,7 @@ namespace LoRaTools.Regions
                     return true;
 
                 case LoRaRegionType.AS923:
-                    region = CN470;
+                    region = AS923;
                     return true;
 
                 case LoRaRegionType.NotSet:
