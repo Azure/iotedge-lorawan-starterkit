@@ -5,6 +5,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 {
     using LoRaWan.NetworkServer;
     using LoRaWan.NetworkServer.BasicsStation;
+    using Microsoft.Extensions.Logging.Abstractions;
     using Moq;
     using System;
     using Xunit;
@@ -15,7 +16,7 @@ namespace LoRaWan.Tests.Unit.NetworkServerTests
 
         public ConcentratorDeduplicationTest()
         {
-            this.ConcentratorDeduplication = new ConcentratorDeduplication();
+            this.ConcentratorDeduplication = new ConcentratorDeduplication(NullLogger<IConcentratorDeduplication>.Instance);
         }
 
         [Theory]

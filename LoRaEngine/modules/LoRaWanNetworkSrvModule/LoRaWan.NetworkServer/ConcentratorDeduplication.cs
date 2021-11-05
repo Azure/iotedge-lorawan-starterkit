@@ -5,6 +5,7 @@ namespace LoRaWan.NetworkServer
 {
     using LoRaWan.NetworkServer.BasicsStation;
     using Microsoft.Extensions.Caching.Memory;
+    using Microsoft.Extensions.Logging;
     using System;
     using System.Collections.Generic;
     using System.Security.Cryptography;
@@ -13,11 +14,14 @@ namespace LoRaWan.NetworkServer
     public sealed class ConcentratorDeduplication : IConcentratorDeduplication, IDisposable
     {
         internal MemoryCache Cache { get; private set; }
+
+        private readonly ILogger<IConcentratorDeduplication> logger;
         private static readonly TimeSpan CacheEntryExpiration = TimeSpan.FromMinutes(1);
 
-        public ConcentratorDeduplication()
+        public ConcentratorDeduplication(ILogger<IConcentratorDeduplication> logger)
         {
             Cache = new MemoryCache(new MemoryCacheOptions());
+            this.logger = logger;
         }
 
         /// <summary>
@@ -36,7 +40,6 @@ namespace LoRaWan.NetworkServer
             {
                 if (!Cache.TryGetValue(key, out StationEui previousMessageFromDevice))
                 {
-                    // this message has not been encountered before
                     AddToCache(key, stationEui);
                     return false;
                 }
@@ -44,11 +47,12 @@ namespace LoRaWan.NetworkServer
                 {
                     if (previousMessageFromDevice == stationEui)
                     {
-                        // received from the same station as before
-                        return false; // it's a resubmit
+                        this.logger.LogDebug($"Message received from the same DevAddr: {updf.DevAddr} as before, considered a resubmit.");
+                        return false;
                     }
                     else
                     {
+                        this.logger.LogInformation($"Duplicate message detected from DevAddr: {updf.DevAddr}, dropping.");
                         return true;
                     }
                 }
