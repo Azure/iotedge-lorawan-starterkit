@@ -152,7 +152,7 @@ namespace LoRaTools.Regions
                     if (as923 == null)
 #pragma warning restore CA1508 // Avoid dead conditional code
                     {
-                        as923 = new RegionAS923();
+                        as923 = new RegionAS923(new LoRaWan.Hertz(923200000), new LoRaWan.Hertz(923400000));
                     }
                 }
 

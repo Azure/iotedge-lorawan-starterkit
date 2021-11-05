@@ -11,13 +11,20 @@ namespace LoRaTools.Regions
 
     public class RegionAS923 : Region
     {
-        private static readonly Hertz AS923FreqOffset = new Hertz(0);
+        private readonly Hertz frequencyOffset;
 
-        public RegionAS923()
+        public RegionAS923(Hertz frequencyChannel0, Hertz frequencyChannel1)
             : base(LoRaRegionType.AS923)
         {
+            frequencyOffset = new Hertz(frequencyChannel0.AsUInt64 - 923_200_000);
+            if (frequencyChannel1.AsUInt64 - 923_400_000 != frequencyOffset.AsUInt64)
+            {
+                throw new ArgumentException($"Provided channel frequencies {frequencyChannel0}, {frequencyChannel1} for Region {LoRaRegion} are inconsistent.");
+            }
+
             // Values assuming FOpts param is not used and DwellTime = 0
             DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
+
             DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
             DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 123));
             DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 123));
@@ -111,6 +118,6 @@ namespace LoRaTools.Regions
         /// </summary>
         /// <param name="deviceJoinInfo">Join info for the device.</param>
         public override RX2ReceiveWindow GetDefaultRX2ReceiveWindow(DeviceJoinInfo deviceJoinInfo = null) =>
-            new RX2ReceiveWindow(923.2 + AS923FreqOffset.Mega, 2);
+            new RX2ReceiveWindow(923.2 + frequencyOffset.Mega, 2);
     }
 }
