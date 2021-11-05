@@ -179,7 +179,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         var rxpk = new BasicStationToRxpk(jreq.RadioMetadata, routerRegion);
 
                         var loraRequest = new LoRaRequest(rxpk, this.downstreamSender, DateTime.UtcNow);
-                        loraRequest.SetPayload(new LoRaPayloadJoinRequestLbs(jreq.MacHeader,
+                        loraRequest.SetPayload(new LoRaPayloadJoinRequestLns(jreq.MacHeader,
                                                                              jreq.JoinEui,
                                                                              jreq.DevEui,
                                                                              jreq.DevNonce,
@@ -203,7 +203,7 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                         var rxpk = new BasicStationToRxpk(updf.RadioMetadata, routerRegion);
 
                         var loraRequest = new LoRaRequest(rxpk, this.downstreamSender, DateTime.UtcNow);
-                        loraRequest.SetPayload(new LoRaPayloadDataLbs(updf.DevAddr,
+                        loraRequest.SetPayload(new LoRaPayloadDataLns(updf.DevAddr,
                                                                       updf.MacHeader,
                                                                       updf.Control,
                                                                       updf.Counter,

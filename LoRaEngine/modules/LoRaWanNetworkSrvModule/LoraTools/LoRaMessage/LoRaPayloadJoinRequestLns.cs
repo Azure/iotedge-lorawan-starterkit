@@ -5,9 +5,9 @@ namespace LoRaTools.LoRaMessage
 {
     using LoRaWan;
 
-    public class LoRaPayloadJoinRequestLbs : LoRaPayloadJoinRequest
+    public class LoRaPayloadJoinRequestLns : LoRaPayloadJoinRequest
     {
-        public LoRaPayloadJoinRequestLbs(MacHeader macHeader,
+        public LoRaPayloadJoinRequestLns(MacHeader macHeader,
                                          JoinEui joinEui,
                                          DevEui devEui,
                                          DevNonce devNonce,

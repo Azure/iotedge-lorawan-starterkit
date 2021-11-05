@@ -8,9 +8,9 @@ namespace LoRaTools.LoRaMessage
     using LoRaTools.Utils;
     using LoRaWan;
 
-    public class LoRaPayloadDataLbs : LoRaPayloadData
+    public class LoRaPayloadDataLns : LoRaPayloadData
     {
-        public LoRaPayloadDataLbs(DevAddr devAddress,
+        public LoRaPayloadDataLns(DevAddr devAddress,
                                   MacHeader macHeader,
                                   FrameControl control,
                                   ushort counter,
