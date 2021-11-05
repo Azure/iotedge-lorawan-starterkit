@@ -175,11 +175,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     try
                     {
                         var jreq = LnsData.JoinRequestFrameReader.Read(json);
-
-                        var routerRegion = await basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
-
+                        var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(jreq.RadioMetadata, routerRegion);
-                        var loraRequest = new LoRaRequest(rxpk, downstreamSender, DateTime.UtcNow);
+
+                        var loraRequest = new LoRaRequest(rxpk, this.downstreamSender, DateTime.UtcNow);
                         loraRequest.SetPayload(new LoRaPayloadJoinRequestLbs(jreq.MacHeader,
                                                                              jreq.JoinEui,
                                                                              jreq.DevEui,
@@ -200,11 +199,10 @@ namespace LoRaWan.NetworkServer.BasicsStation.Processors
                     try
                     {
                         var updf = LnsData.UpstreamDataFrameReader.Read(json);
-
-                        var routerRegion = await basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
-
+                        var routerRegion = await this.basicsStationConfigurationService.GetRegionAsync(stationEui, cancellationToken);
                         var rxpk = new BasicStationToRxpk(updf.RadioMetadata, routerRegion);
-                        var loraRequest = new LoRaRequest(rxpk, downstreamSender, DateTime.UtcNow);
+
+                        var loraRequest = new LoRaRequest(rxpk, this.downstreamSender, DateTime.UtcNow);
                         loraRequest.SetPayload(new LoRaPayloadDataLbs(updf.DevAddr,
                                                                       updf.MacHeader,
                                                                       updf.Control,
