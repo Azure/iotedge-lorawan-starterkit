@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 namespace LoRaWan.NetworkServer
@@ -7,13 +7,12 @@ namespace LoRaWan.NetworkServer
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.Logging;
     using System;
-    using System.Collections.Generic;
     using System.Security.Cryptography;
     using System.Text;
 
     public sealed class ConcentratorDeduplication : IConcentratorDeduplication, IDisposable
     {
-        internal MemoryCache Cache { get; private set; }
+        internal readonly MemoryCache Cache;
 
         private readonly ILogger<IConcentratorDeduplication> Logger;
         private readonly TimeSpan CacheEntryExpiration;
@@ -22,7 +21,7 @@ namespace LoRaWan.NetworkServer
             ILogger<IConcentratorDeduplication> logger,
             int cacheEntryExpirationInMilliSeconds = 60_000)
         {
-            Cache = new MemoryCache(new MemoryCacheOptions());
+            this.Cache = new MemoryCache(new MemoryCacheOptions());
             this.Logger = logger;
             this.CacheEntryExpiration = TimeSpan.FromMilliseconds(cacheEntryExpirationInMilliSeconds);
         }
@@ -34,9 +33,9 @@ namespace LoRaWan.NetworkServer
             var key = CreateCacheKey(updf);
             StationEui previousStation;
 
-            lock (Cache)
+            lock (this.Cache)
             {
-                if (!Cache.TryGetValue(key, out previousStation))
+                if (!this.Cache.TryGetValue(key, out previousStation))
                 {
                     AddToCache(key, stationEui);
                     return false;
@@ -62,11 +61,11 @@ namespace LoRaWan.NetworkServer
         }
 
         private void AddToCache(string key, StationEui stationEui)
-            => Cache.Set(key, stationEui, new MemoryCacheEntryOptions()
+            => this.Cache.Set(key, stationEui, new MemoryCacheEntryOptions()
             {
                 SlidingExpiration = this.CacheEntryExpiration
             });
 
-        public void Dispose() => Cache.Dispose();
+        public void Dispose() => this.Cache.Dispose();
     }
 }
