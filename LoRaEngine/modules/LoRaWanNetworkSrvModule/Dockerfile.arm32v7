@@ -1,23 +1,34 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:5.0-bullseye-slim AS build-env
 
 WORKDIR /build
-
-WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/
 COPY Directory.Build.props ./
 COPY AssemblyInfo.cs ./
 COPY .editorconfig ./
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger ./Logger
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools ./LoraTools
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer ./LoRaWan.NetworkServer
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule ./LoRaWanNetworkSrvModule
-COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan ./LoRaWan
+COPY global.json ./
+
+WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule
+COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj", "LoRaWanNetworkSrvModule/"]
+COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer/LoRaWan.NetworkServer.csproj", "LoRaWan.NetworkServer/"]
+COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan/LoRaWan.csproj", "LoRaWan/"]
+COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools/LoRaTools.csproj", "LoraTools/"]
+COPY ["LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger/Logger.csproj", "Logger/"]
+RUN dotnet restore "LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule.csproj"
+
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/Logger Logger
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoraTools LoraTools
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan.NetworkServer LoRaWan.NetworkServer
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule LoRaWanNetworkSrvModule
+COPY ./LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWan LoRaWan
 
 WORKDIR /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule
-RUN dotnet restore
 
-RUN dotnet publish -c Release -o out
+RUN dotnet publish "LoRaWanNetworkSrvModule.csproj" -c Release -o out --no-restore
 
-FROM mcr.microsoft.com/dotnet/aspnet:3.1-buster-slim-arm32v7
+FROM mcr.microsoft.com/dotnet/aspnet:3.1-bullseye-slim-arm32v7
 WORKDIR /app
 COPY --from=build-env /build/LoRaEngine/modules/LoRaWanNetworkSrvModule/LoRaWanNetworkSrvModule/out/* ./
+
+RUN useradd -ms /bin/bash moduleuser
+USER moduleuser
+
 ENTRYPOINT ["dotnet", "LoRaWanNetworkSrvModule.dll"]
