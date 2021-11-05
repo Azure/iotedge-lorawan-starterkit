@@ -25,10 +25,8 @@ This document summarizes decisions taken for the purpose of implementing support
 
 The `AS923_FREQ_OFFSET` parameter can be calculated based on the channel 0 and channel 1 frequencies in the LoRa Basics Station configuration. The corresponding channels for region AS923 are defined as follows:
 
-```
-Channel 0 frequency Hz = 923200000 + AS923_FREQ_OFFSET_HZ
-Channel 1 frequency Hz = 923400000 + AS923_FREQ_OFFSET_HZ
-```
+`Channel 0 frequency Hz = 923200000 + AS923_FREQ_OFFSET_HZ`
+`Channel 1 frequency Hz = 923400000 + AS923_FREQ_OFFSET_HZ`
 
 Using this formula we will calculate the offset by subtracting 923200000 from the configured channel 0 frequency. We will use the formula for channel 1 frequency to validate the offset value and throw and exception if values are not the same.
 
