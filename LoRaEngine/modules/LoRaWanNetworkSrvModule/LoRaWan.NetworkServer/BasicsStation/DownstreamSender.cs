@@ -3,14 +3,14 @@
 
 namespace LoRaWan.NetworkServer.BasicsStation
 {
-    using LoRaTools.LoRaPhysical;
-    using LoRaTools.Regions;
     using System;
     using System.IO;
     using System.Text;
     using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
+    using LoRaTools.LoRaPhysical;
+    using LoRaTools.Regions;
 
     internal class DownstreamSender : IPacketForwarder
     {
@@ -35,28 +35,6 @@ namespace LoRaWan.NetworkServer.BasicsStation
             };
         }
 
-        /*
-         * 
-
-             Name |  Type  | Function
-            :----:|:------:|--------------------------------------------------------------
-             imme | bool   | Send packet immediately (will ignore tmst & time)
-             tmst | number | Send packet on a certain timestamp value (will ignore time)
-             tmms | number | Send packet at a certain GPS time (GPS synchronization required)
-             freq | number | TX central frequency in MHz (unsigned float, Hz precision)
-             rfch | number | Concentrator "RF chain" used for TX (unsigned integer)
-             powe | number | TX output power in dBm (unsigned integer, dBm precision)
-             modu | string | Modulation identifier "LORA" or "FSK"
-             datr | string | LoRa datarate identifier (eg. SF12BW500)
-             datr | number | FSK datarate (unsigned, in bits per second)
-             codr | string | LoRa ECC coding rate identifier
-             fdev | number | FSK frequency deviation (unsigned integer, in Hz) 
-             ipol | bool   | Lora modulation polarization inversion
-             prea | number | RF preamble size (unsigned integer)
-             size | number | RF packet payload size in bytes (unsigned integer)
-             data | string | Base64 encoded RF packet payload, padding optional
-             ncrc | bool   | If true, disable the CRC of the physical layer (optional)
-         */
         private static string Message(DownlinkPktFwdMessage message, Region region)
         {
             using var ms = new MemoryStream();
