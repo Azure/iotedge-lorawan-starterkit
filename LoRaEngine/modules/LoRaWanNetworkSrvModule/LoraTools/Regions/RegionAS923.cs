@@ -12,8 +12,9 @@ namespace LoRaTools.Regions
     public class RegionAS923 : Region
     {
         private readonly Hertz frequencyOffset;
+        private readonly bool useDwellTimeLimit;
 
-        public RegionAS923(Hertz frequencyChannel0, Hertz frequencyChannel1)
+        public RegionAS923(Hertz frequencyChannel0, Hertz frequencyChannel1, int dwellTime = 0)
             : base(LoRaRegionType.AS923)
         {
             frequencyOffset = new Hertz(frequencyChannel0.AsUInt64 - 923_200_000);
@@ -22,16 +23,25 @@ namespace LoRaTools.Regions
                 throw new ArgumentException($"Provided channel frequencies {frequencyChannel0}, {frequencyChannel1} for Region {LoRaRegion} are inconsistent.");
             }
 
-            // Values assuming FOpts param is not used and DwellTime = 0
+            useDwellTimeLimit = dwellTime == 1;
+
+            // Values assuming FOpts param is used
             DRtoConfiguration.Add(0, (configuration: "SF12BW125", maxPyldSize: 59));
 
             DRtoConfiguration.Add(1, (configuration: "SF11BW125", maxPyldSize: 59));
             DRtoConfiguration.Add(2, (configuration: "SF10BW125", maxPyldSize: 123));
             DRtoConfiguration.Add(3, (configuration: "SF9BW125", maxPyldSize: 123));
-            DRtoConfiguration.Add(4, (configuration: "SF8BW125", maxPyldSize: 250));
-            DRtoConfiguration.Add(5, (configuration: "SF7BW125", maxPyldSize: 250));
-            DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 250));
-            DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 250)); // FSK 50
+            DRtoConfiguration.Add(4, (configuration: "SF8BW125", maxPyldSize: 230));
+            DRtoConfiguration.Add(5, (configuration: "SF7BW125", maxPyldSize: 230));
+            DRtoConfiguration.Add(6, (configuration: "SF7BW250", maxPyldSize: 230));
+            DRtoConfiguration.Add(7, (configuration: "50", maxPyldSize: 230)); // FSK 50
+
+            if (useDwellTimeLimit)
+            {
+                DRtoConfiguration[2] = (configuration: "SF10BW125", maxPyldSize: 19);
+                DRtoConfiguration[3] = (configuration: "SF10BW125", maxPyldSize: 61);
+                DRtoConfiguration[4] = (configuration: "SF10BW125", maxPyldSize: 133);
+            }
 
             TXPowertoMaxEIRP.Add(0, 16);
             TXPowertoMaxEIRP.Add(1, 14);
@@ -42,18 +52,34 @@ namespace LoRaTools.Regions
             TXPowertoMaxEIRP.Add(6, 4);
             TXPowertoMaxEIRP.Add(7, 2);
 
-            // Values assuming DownlinkDwellTime = 0
-            RX1DROffsetTable = new int[8][]
+            if (useDwellTimeLimit)
             {
-                new int[] { 0, 0, 0, 0, 0, 0, 1, 2 },
-                new int[] { 1, 0, 0, 0, 0, 0, 2, 3 },
-                new int[] { 2, 1, 0, 0, 0, 0, 3, 4 },
-                new int[] { 3, 2, 1, 0, 0, 0, 4, 5 },
-                new int[] { 4, 3, 2, 1, 0, 0, 5, 6 },
-                new int[] { 5, 4, 3, 2, 1, 0, 6, 7 },
-                new int[] { 6, 5, 4, 3, 2, 1, 7, 7 },
-                new int[] { 7, 6, 5, 4, 3, 2, 7, 7 },
-            };
+                RX1DROffsetTable = new int[8][]
+                {
+                    new int[] { 2, 2, 2, 2, 2, 2, 2, 2 },
+                    new int[] { 2, 2, 2, 2, 2, 2, 2, 3 },
+                    new int[] { 2, 2, 2, 2, 2, 2, 3, 4 },
+                    new int[] { 3, 2, 2, 2, 2, 2, 4, 5 },
+                    new int[] { 4, 3, 2, 2, 2, 2, 5, 6 },
+                    new int[] { 5, 4, 3, 2, 2, 2, 6, 7 },
+                    new int[] { 6, 5, 4, 3, 2, 2, 7, 7 },
+                    new int[] { 7, 6, 5, 4, 3, 2, 7, 7 },
+                };
+            }
+            else
+            {
+                RX1DROffsetTable = new int[8][]
+                 {
+                    new int[] { 0, 0, 0, 0, 0, 0, 1, 2 },
+                    new int[] { 1, 0, 0, 0, 0, 0, 2, 3 },
+                    new int[] { 2, 1, 0, 0, 0, 0, 3, 4 },
+                    new int[] { 3, 2, 1, 0, 0, 0, 4, 5 },
+                    new int[] { 4, 3, 2, 1, 0, 0, 5, 6 },
+                    new int[] { 5, 4, 3, 2, 1, 0, 6, 7 },
+                    new int[] { 6, 5, 4, 3, 2, 1, 7, 7 },
+                    new int[] { 7, 6, 5, 4, 3, 2, 7, 7 },
+                 };
+            }
 
             var validDatarates = new HashSet<string>()
             {
