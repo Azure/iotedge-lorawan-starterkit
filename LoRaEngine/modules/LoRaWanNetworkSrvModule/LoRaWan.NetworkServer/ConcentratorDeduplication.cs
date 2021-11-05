@@ -29,28 +29,25 @@ namespace LoRaWan.NetworkServer
             if (updf == null) throw new ArgumentNullException(nameof(updf));
 
             var key = CreateCacheKey(updf);
+            StationEui previousStation;
 
             lock (Cache)
             {
-                if (!Cache.TryGetValue(key, out StationEui previousMessageFromDevice))
+                if (!Cache.TryGetValue(key, out previousStation))
                 {
                     AddToCache(key, stationEui);
                     return false;
                 }
-                else
-                {
-                    if (previousMessageFromDevice == stationEui)
-                    {
-                        this.logger.LogDebug($"Message received from the same DevAddr: {updf.DevAddr} as before, considered a resubmit.");
-                        return false;
-                    }
-                    else
-                    {
-                        this.logger.LogInformation($"Duplicate message detected from DevAddr: {updf.DevAddr}, dropping.");
-                        return true;
-                    }
-                }
             }
+
+            if (previousStation == stationEui)
+            {
+                this.logger.LogDebug($"Message received from the same DevAddr: {updf.DevAddr} as before, considered a resubmit.");
+                return false;
+            }
+
+            this.logger.LogInformation($"Duplicate message detected from DevAddr: {updf.DevAddr}, dropping.");
+            return true;
         }
 
         internal static string CreateCacheKey(UpstreamDataFrame updf)
