@@ -50,6 +50,25 @@ namespace LoRaWan.Tests.Unit.LoggerTests
             moqInfo.Verify(x => x.Invoke(It.Is<string>(x => x == expected)), Times.Once);
         }
 
+        [Fact]
+        public void When_Message_Already_Prefixed_Scope_Should_Not_Be_Added()
+        {
+            var options = CreateLoggerConfigMonitor();
+            options.CurrentValue.UseScopes = true;
+
+            var moqInfo = new Mock<Action<string>>();
+            var provider = new Mock<LoRaConsoleLoggerProvider>(options);
+
+            var logger = new TestLoRaConsoleLogger(moqInfo.Object, null, provider.Object);
+
+            const string devEUI = "12345678";
+            const string message = devEUI + " test";
+            using var scope = logger.BeginDeviceScope(devEUI);
+            logger.LogInformation(message);
+
+            moqInfo.Verify(x => x.Invoke(It.Is<string>(x => x == message)), Times.Once);
+        }
+
         [Theory]
         [InlineData(0, 0, true)]
         [InlineData(0, 1, true)]

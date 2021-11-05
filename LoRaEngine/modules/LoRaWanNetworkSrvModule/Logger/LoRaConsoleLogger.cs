@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+#nullable enable
 
 namespace LoRaWan
 {
@@ -11,6 +12,7 @@ namespace LoRaWan
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
 
     public class LoRaConsoleLoggerConfiguration
     {
@@ -32,6 +34,7 @@ namespace LoRaWan
             UpdateConfiguration(config.CurrentValue);
         }
 
+        [MemberNotNull(nameof(Configuration))]
         private void UpdateConfiguration(LoRaConsoleLoggerConfiguration configuration)
         {
             Configuration = configuration;
@@ -41,7 +44,7 @@ namespace LoRaWan
         public LogLevel LogLevel => Configuration.LogLevel;
         public EventId EventId => Configuration.EventId;
         internal LoRaConsoleLoggerConfiguration Configuration { get; private set; }
-        internal IExternalScopeProvider ScopeProvider { get; private set; }
+        internal IExternalScopeProvider? ScopeProvider { get; private set; }
 
         public ILogger CreateLogger(string categoryName) =>
             this.loggers.GetOrAdd(categoryName, name => new LoRaConsoleLogger(this));
@@ -73,18 +76,23 @@ namespace LoRaWan
 
         public LoRaConsoleLogger(LoRaConsoleLoggerProvider consoleLoggerProvider)
         {
+            _ = consoleLoggerProvider ?? throw new ArgumentNullException(nameof(consoleLoggerProvider));
             this.provider = consoleLoggerProvider;
         }
 
-        public IDisposable BeginScope<TState>(TState state) =>
+        public IDisposable? BeginScope<TState>(TState state) =>
             this.provider.ScopeProvider is { } scopeProvider ? scopeProvider.Push(state) : default;
 
         public bool IsEnabled(LogLevel logLevel) => logLevel >= this.provider.LogLevel;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            if (!IsEnabled(logLevel)) return;
             _ = formatter ?? throw new ArgumentNullException(nameof(formatter));
+
+            if (!IsEnabled(logLevel))
+            {
+                return;
+            }
 
             var configuredEventId = this.provider.EventId;
 
@@ -117,7 +125,7 @@ namespace LoRaWan
         {
             if (this.provider.ScopeProvider is { } scopeProvider)
             {
-                scopeProvider.ForEachScope<object>((activeScope, _) =>
+                scopeProvider.ForEachScope<object?>((activeScope, _) =>
                 {
                     if (activeScope is IDictionary<string, object> activeScopeDictionary &&
                         activeScopeDictionary.TryGetValue(ILoggerExtensions.DevEUIKey, out var obj) &&
@@ -155,7 +163,7 @@ namespace LoRaWan
         }
 
         public static ILoggingBuilder AddLoRaConsoleLogger(this ILoggingBuilder builder,
-                                                            Action<LoRaConsoleLoggerConfiguration> configure)
+                                                           Action<LoRaConsoleLoggerConfiguration> configure)
         {
             _ = builder.AddLoRaConsoleLogger();
             _ = builder.Services.Configure(configure);
